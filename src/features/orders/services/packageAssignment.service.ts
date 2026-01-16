@@ -1,0 +1,465 @@
+import { supabase } from '@/lib/supabase';
+import { errorService } from '@/services/error.service';
+
+export interface AvailablePackage {
+  id: string;
+  package_id: string;
+  product_name: string;
+  strain: string | null;
+  batch: string | null;
+  batch_number: string | null;
+  available_qty: number;
+  unit: string;
+  status: string;
+  room: string | null;
+  package_date: string | null;
+  thc_percentage: number | null;
+  cbd_percentage: number | null;
+}
+
+export interface PackageAssignment {
+  id: string;
+  order_id: string;
+  order_item_id: string;
+  package_id: string;
+  quantity_assigned: number;
+  label_id: string | null;
+  notes: string | null;
+  assigned_by: string | null;
+  assigned_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PackageAssignmentWithDetails extends PackageAssignment {
+  order_number: string;
+  customer_id: string;
+  scheduled_delivery_date: string | null;
+  order_status: string;
+  order_item_quantity: number;
+  unit_price: number;
+  order_item_strain: string | null;
+  product_name: string;
+  product_type: string;
+  inventory_item_id: string | null;
+  inventory_product_name: string | null;
+  strain: string | null;
+  batch: string | null;
+  available_qty: number | null;
+  unit: string | null;
+  room: string | null;
+  package_date: string | null;
+  label_number: string | null;
+  barcode_data: string | null;
+  printed_at: string | null;
+  voided_at: string | null;
+}
+
+class PackageAssignmentServiceError extends Error {
+  constructor(message: string, public originalError?: any, public code?: string) {
+    super(message);
+    this.name = 'PackageAssignmentServiceError';
+  }
+}
+
+export const packageAssignmentService = {
+  /**
+   * Get available packages for a specific product name
+   * Filters by product_name and excludes packages with insufficient quantity
+   */
+  async getAvailablePackagesForProduct(
+    productName: string,
+    requiredQty: number
+  ): Promise<AvailablePackage[]> {
+    errorService.debug('[packageAssignmentService] Fetching available packages', {
+      productName,
+      requiredQty
+    });
+
+    try {
+      const { data, error } = await supabase
+        .from('inventory_items')
+        .select('id, package_id, product_name, strain, batch, batch_number, available_qty, unit, status, room, package_date, thc_percentage, cbd_percentage')
+        .eq('product_name', productName)
+        .gt('available_qty', 0)
+        .in('status', ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged'])
+        .order('package_date', { ascending: false });
+
+      if (error) {
+        throw new PackageAssignmentServiceError(
+          'Failed to fetch available packages',
+          error,
+          error.code
+        );
+      }
+
+      errorService.debug('[packageAssignmentService] Successfully fetched packages', {
+        count: data?.length || 0
+      });
+
+      return (data as AvailablePackage[]) || [];
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Get Available Packages',
+        metadata: { productName, requiredQty },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Validate that a package has sufficient available quantity
+   */
+  async validatePackageAvailability(
+    packageId: string,
+    requestedQty: number
+  ): Promise<{ valid: boolean; available_qty: number; message?: string }> {
+    errorService.debug('[packageAssignmentService] Validating package availability', {
+      packageId,
+      requestedQty
+    });
+
+    try {
+      const { data, error } = await supabase
+        .from('inventory_items')
+        .select('available_qty, status')
+        .eq('package_id', packageId)
+        .single();
+
+      if (error || !data) {
+        return {
+          valid: false,
+          available_qty: 0,
+          message: 'Package not found',
+        };
+      }
+
+      const validStatuses = ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged'];
+      if (!validStatuses.includes(data.status)) {
+        return {
+          valid: false,
+          available_qty: data.available_qty,
+          message: `Package status is ${data.status}`,
+        };
+      }
+
+      if (data.available_qty < requestedQty) {
+        return {
+          valid: false,
+          available_qty: data.available_qty,
+          message: `Insufficient quantity. Available: ${data.available_qty}`,
+        };
+      }
+
+      return {
+        valid: true,
+        available_qty: data.available_qty,
+      };
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Validate Package Availability',
+        metadata: { packageId, requestedQty },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Assign a package to an order item
+   * This will also trigger automatic label generation (via labelAutoFill service)
+   */
+  async assignPackageToOrderItem(
+    orderId: string,
+    orderItemId: string,
+    packageId: string,
+    quantityAssigned: number,
+    notes?: string
+  ): Promise<PackageAssignment> {
+    errorService.debug('[packageAssignmentService] Assigning package to order item', {
+      orderId,
+      orderItemId,
+      packageId,
+      quantityAssigned,
+    });
+
+    try {
+      // First validate availability
+      const validation = await this.validatePackageAvailability(packageId, quantityAssigned);
+      if (!validation.valid) {
+        throw new PackageAssignmentServiceError(
+          validation.message || 'Package validation failed',
+          null,
+          'VALIDATION_ERROR'
+        );
+      }
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Create assignment
+      const { data, error } = await supabase
+        .from('package_assignments')
+        .insert({
+          order_id: orderId,
+          order_item_id: orderItemId,
+          package_id: packageId,
+          quantity_assigned: quantityAssigned,
+          notes: notes || null,
+          assigned_by: user?.id || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505') {
+          throw new PackageAssignmentServiceError(
+            'This package is already assigned to this order item',
+            error,
+            'DUPLICATE_ASSIGNMENT'
+          );
+        }
+        throw new PackageAssignmentServiceError(
+          'Failed to create package assignment',
+          error,
+          error.code
+        );
+      }
+
+      errorService.debug('[packageAssignmentService] Successfully created assignment', {
+        assignmentId: data.id
+      });
+
+      return data as PackageAssignment;
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Assign Package to Order Item',
+        metadata: { orderId, orderItemId, packageId, quantityAssigned },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get all package assignments for an order
+   */
+  async getPackageAssignmentsForOrder(orderId: string): Promise<PackageAssignmentWithDetails[]> {
+    errorService.debug('[packageAssignmentService] Fetching package assignments for order', {
+      orderId
+    });
+
+    try {
+      const { data, error } = await supabase
+        .from('package_assignments_details')
+        .select('*')
+        .eq('order_id', orderId)
+        .order('assigned_at', { ascending: false });
+
+      if (error) {
+        throw new PackageAssignmentServiceError(
+          'Failed to fetch package assignments',
+          error,
+          error.code
+        );
+      }
+
+      errorService.debug('[packageAssignmentService] Successfully fetched assignments', {
+        count: data?.length || 0
+      });
+
+      return (data as PackageAssignmentWithDetails[]) || [];
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Get Package Assignments for Order',
+        metadata: { orderId },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get all package assignments for a specific order item
+   */
+  async getPackageAssignmentsForOrderItem(orderItemId: string): Promise<PackageAssignmentWithDetails[]> {
+    errorService.debug('[packageAssignmentService] Fetching package assignments for order item', {
+      orderItemId
+    });
+
+    try {
+      const { data, error } = await supabase
+        .from('package_assignments_details')
+        .select('*')
+        .eq('order_item_id', orderItemId)
+        .order('assigned_at', { ascending: false });
+
+      if (error) {
+        throw new PackageAssignmentServiceError(
+          'Failed to fetch package assignments',
+          error,
+          error.code
+        );
+      }
+
+      return (data as PackageAssignmentWithDetails[]) || [];
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Get Package Assignments for Order Item',
+        metadata: { orderItemId },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Remove a package assignment
+   * Optionally void the associated label
+   */
+  async removePackageAssignment(
+    assignmentId: string,
+    voidLabel: boolean = false
+  ): Promise<void> {
+    errorService.debug('[packageAssignmentService] Removing package assignment', {
+      assignmentId,
+      voidLabel
+    });
+
+    try {
+      // If voiding label, get the label_id first
+      if (voidLabel) {
+        const { data: assignment } = await supabase
+          .from('package_assignments')
+          .select('label_id')
+          .eq('id', assignmentId)
+          .single();
+
+        if (assignment?.label_id) {
+          await supabase
+            .from('labels')
+            .update({ voided_at: new Date().toISOString() })
+            .eq('id', assignment.label_id);
+        }
+      }
+
+      // Delete the assignment
+      const { error } = await supabase
+        .from('package_assignments')
+        .delete()
+        .eq('id', assignmentId);
+
+      if (error) {
+        throw new PackageAssignmentServiceError(
+          'Failed to remove package assignment',
+          error,
+          error.code
+        );
+      }
+
+      errorService.debug('[packageAssignmentService] Successfully removed assignment');
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Remove Package Assignment',
+        metadata: { assignmentId, voidLabel },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get total assigned quantity for an order item
+   */
+  async getTotalAssignedQuantity(orderItemId: string): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('package_assignments')
+        .select('quantity_assigned')
+        .eq('order_item_id', orderItemId);
+
+      if (error) {
+        throw new PackageAssignmentServiceError(
+          'Failed to calculate total assigned quantity',
+          error,
+          error.code
+        );
+      }
+
+      const total = data.reduce((sum, assignment) => sum + Number(assignment.quantity_assigned), 0);
+      return total;
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Get Total Assigned Quantity',
+        metadata: { orderItemId },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get package assignments for a specific order item
+   */
+  async getAssignmentsForOrderItem(orderItemId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('package_assignments')
+        .select(`
+          *,
+          inventory_items(*)
+        `)
+        .eq('order_item_id', orderItemId);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      errorService.handle(error, 'Get package assignments for order item');
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Get labels for package assignments by order ID
+   */
+  async getLabelsForOrder(orderId: string) {
+    try {
+      // First get label IDs from assignments
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('package_assignments')
+        .select('label_id')
+        .eq('order_id', orderId)
+        .not('label_id', 'is', null);
+
+      if (assignmentsError) throw assignmentsError;
+
+      const labelIds = (assignments || []).map(a => a.label_id).filter(Boolean);
+      
+      if (labelIds.length === 0) {
+        return { data: [], error: null };
+      }
+
+      // Fetch label details
+      const { data, error } = await supabase
+        .from('labels')
+        .select(`
+          id,
+          label_number,
+          package_id,
+          product_name,
+          strain,
+          batch_id,
+          batch_number,
+          net_weight_grams,
+          thc_percentage,
+          cbd_percentage,
+          qr_code_data,
+          printed_at,
+          voided_at,
+          created_at
+        `)
+        .in('id', labelIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      errorService.handle(error, 'Get labels for order');
+      return { data: null, error };
+    }
+  },
+};

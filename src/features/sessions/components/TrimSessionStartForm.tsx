@@ -1,0 +1,254 @@
+import { useState } from 'react';
+import type { TrimSessionInsert, InventoryItem } from '../types';
+import { AVAILABLE_TRIMMERS } from '../hooks/useSessionData';
+import { createTrimSession } from '../services/sessions.service';
+
+interface TrimSessionStartFormProps {
+  buckedPackages: InventoryItem[];
+  availableStrains: string[];
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+export function TrimSessionStartForm({
+  buckedPackages,
+  availableStrains,
+  onSuccess,
+  onCancel,
+}: TrimSessionStartFormProps) {
+  const [form, setForm] = useState<Partial<TrimSessionInsert>>({
+    trim_method: 'hand',
+    pulled_weight: 0,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (field: keyof TrimSessionInsert, value: any) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Explicitly map fields to ensure pulled_weight is included
+      const sessionData = {
+        trimmer_name: form.trimmer_name,
+        strain: form.strain,
+        batch_id: form.batch_id,
+        package_id: form.package_id,
+        pulled_weight: form.pulled_weight, // Explicitly include pulled_weight
+        trim_method: form.trim_method,
+        notes: form.notes,
+        started_at: new Date().toISOString(),
+      };
+
+      console.log('=== TRIM SESSION DEBUG ===');
+      console.log('Form state:', form);
+      console.log('Session data being sent:', sessionData);
+      console.log('pulled_weight value:', form.pulled_weight);
+      console.log('pulled_weight type:', typeof form.pulled_weight);
+      console.log('=========================');
+
+      const { data, error: createError } = await createTrimSession(sessionData);
+
+      if (createError) {
+        throw new Error(createError.message || 'Failed to create trim session');
+      }
+
+      if (!data) {
+        throw new Error('No data returned from server');
+      }
+
+      // Success!
+      onSuccess();
+    } catch (err: any) {
+      console.error('Error creating trim session:', err);
+      setError(err.message || 'Failed to create trim session');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getBatchesForStrain = (strain: string) => {
+    if (!strain || !buckedPackages || buckedPackages.length === 0) {
+      return [];
+    }
+
+    const batches = buckedPackages
+      .filter((pkg: any) => pkg && pkg.strain?.name === strain && pkg.batch_id)
+      .map((pkg: any) => pkg.batch_id as string);
+    return [...new Set(batches)].sort();
+  };
+
+  const getPackagesForBatch = (strain: string, batchId: string) => {
+    if (!strain || !batchId || !buckedPackages || buckedPackages.length === 0) {
+      return [];
+    }
+
+    return buckedPackages.filter((pkg: any) =>
+      pkg &&
+      pkg.strain?.name === strain &&
+      pkg.batch_id === batchId &&
+      pkg.on_hand_qty && pkg.on_hand_qty > 0
+    );
+  };
+
+  const batches = form.strain ? getBatchesForStrain(form.strain) : [];
+  const packages = form.strain && form.batch_id ? getPackagesForBatch(form.strain, form.batch_id) : [];
+
+  return (
+    <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
+      <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">
+        Start New Trim Session
+      </h2>
+
+      {error && (
+        <div className="mb-4 bg-red-900/20 border border-red-500 text-red-200 p-3 rounded">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Trimmer*</label>
+            <select
+              value={form.trimmer_name || ''}
+              onChange={(e) => handleChange('trimmer_name', e.target.value)}
+              required
+              disabled={isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            >
+              <option value="">Select trimmer</option>
+              {AVAILABLE_TRIMMERS.map(trimmer => (
+                <option key={trimmer} value={trimmer}>{trimmer}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Strain*</label>
+            <select
+              value={form.strain || ''}
+              onChange={(e) => {
+                handleChange('strain', e.target.value);
+                handleChange('batch_id', '');
+                handleChange('package_id', '');
+              }}
+              required
+              disabled={isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            >
+              <option value="">Select strain</option>
+              {availableStrains.map(strain => (
+                <option key={strain} value={strain}>{strain}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Batch ID*</label>
+            <select
+              value={form.batch_id || ''}
+              onChange={(e) => {
+                handleChange('batch_id', e.target.value);
+                handleChange('package_id', '');
+              }}
+              required
+              disabled={!form.strain || isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            >
+              <option value="">Select batch</option>
+              {batches.map(batch => (
+                <option key={batch} value={batch}>{batch}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Package ID*</label>
+            <select
+              value={form.package_id || ''}
+              onChange={(e) => {
+                const selectedPkg = packages.find((p: any) => p.package_id === e.target.value);
+                handleChange('package_id', e.target.value);
+                if (selectedPkg) {
+                  handleChange('pulled_weight', (selectedPkg as any).on_hand_qty || 0);
+                }
+              }}
+              required
+              disabled={!form.batch_id || isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            >
+              <option value="">Select package</option>
+              {packages.map((pkg: any) => (
+                <option key={pkg.package_id} value={pkg.package_id}>
+                  {pkg.package_id} ({(pkg.on_hand_qty || 0).toFixed(0)}g)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Pulled Weight (g)*</label>
+            <input
+              type="number"
+              step="0.01"
+              value={form.pulled_weight || ''}
+              onChange={(e) => handleChange('pulled_weight', parseFloat(e.target.value))}
+              required
+              disabled={isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-cult-white mb-1">Trim Method</label>
+            <select
+              value={form.trim_method || 'hand'}
+              onChange={(e) => handleChange('trim_method', e.target.value)}
+              disabled={isSubmitting}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            >
+              <option value="hand">Hand Trim</option>
+              <option value="machine">Machine Trim</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>
+          <textarea
+            value={form.notes || ''}
+            onChange={(e) => handleChange('notes', e.target.value)}
+            rows={3}
+            disabled={isSubmitting}
+            className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            placeholder="Any special notes or observations..."
+          />
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-cult-dark-gray text-white rounded hover:bg-cult-medium-gray transition disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-cult-green text-cult-black rounded font-bold hover:bg-cult-green-bright transition disabled:opacity-50"
+          >
+            {isSubmitting ? 'Creating...' : 'Start Session'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

@@ -1,0 +1,341 @@
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
+
+dotenv.config();
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const csvData = `package_id,product_name,category,strain,batch_number,available_qty,unit,room,status,tags
+251021-CAP-01,Binned - Capulator Junky,Flower - Binned,Capulator Junky,250916-CAP,1032.0,g,Dry Room,Available,
+251021-CAP-02,Binned - Capulator Junky,Flower - Binned,Capulator Junky,250916-CAP,824.0,g,Dry Room,Available,
+251021-CAP-03,Binned - Capulator Junky,Flower - Binned,Capulator Junky,250916-CAP,746.0,g,Dry Room,Available,
+251021-CAP-04,Binned - Capulator Junky,Flower - Binned,Capulator Junky,250916-CAP,920.0,g,Dry Room,Available,
+251021-BLP-01,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1014.0,g,Dry Room,Available,
+251021-BLP-02,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1002.0,g,Dry Room,Available,
+251021-BLP-03,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1046.0,g,Dry Room,Available,
+251021-BLP-04,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1076.0,g,Dry Room,Available,
+251021-BLP-05,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1050.0,g,Dry Room,Available,
+251021-BLP-06,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,1048.0,g,Dry Room,Available,
+251021-BLP-07,Binned - Blue Pave,Flower - Binned,Blue Pave,250916-BLP,998.0,g,Dry Room,Available,
+251021-DOG-01,Binned - Dog Walker,Flower - Binned,Dog Walker,250916-DOG,190.0,g,Dry Room,Available,
+251021-CHP-01,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,930.0,g,Dry Room,Available,
+251021-CHP-02,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,1068.0,g,Dry Room,Available,
+251021-CHP-03,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,988.0,g,Dry Room,Available,
+251021-CHP-04,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,1074.0,g,Dry Room,Available,
+251021-CHP-05,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,1054.0,g,Dry Room,Available,
+251021-CHP-06,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,894.0,g,Dry Room,Available,
+251021-CHP-07,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,980.0,g,Dry Room,Available,
+251021-CHP-08,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,762.0,g,Dry Room,Available,
+251021-CHP-09,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,1068.0,g,Dry Room,Available,
+251021-CHP-10,Binned - Cherry Paloma,Flower - Binned,Cherry Paloma,250916-CHP,1052.0,g,Dry Room,Available,
+251021-SSM-01,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,1050.0,g,Dry Room,Available,
+251021-SSM-02,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,928.0,g,Dry Room,Available,
+251021-SSM-03,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,954.0,g,Dry Room,Available,
+251021-SSM-04,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,812.0,g,Dry Room,Available,
+251021-SSM-05,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,880.0,g,Dry Room,Available,
+251021-SSM-06,Binned - Silver Marker,Flower - Binned,Silver Marker,250916-SSM,966.0,g,Dry Room,Available,
+251021-MGM-01,Binned - Magic Marker,Flower - Binned,Magic Marker,250916-MGM,1102.0,g,Dry Room,Available,
+251021-MGM-02,Binned - Magic Marker,Flower - Binned,Magic Marker,250916-MGM,1029.0,g,Dry Room,Available,
+251021-MGM-03,Binned - Magic Marker,Flower - Binned,Magic Marker,250916-MGM,1106.0,g,Dry Room,Available,
+251021-MGM-04,Binned - Magic Marker,Flower - Binned,Magic Marker,250916-MGM,788.0,g,Dry Room,Available,
+251021-MGM-05,Binned - Magic Marker,Flower - Binned,Magic Marker,250916-MGM,958.0,g,Dry Room,Available,
+251021-WTD-01,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,796.0,g,Dry Room,Available,
+251021-WTD-02,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,961.0,g,Dry Room,Available,
+251021-WTD-03,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,800.0,g,Dry Room,Available,
+251021-WTD-04,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,960.0,g,Dry Room,Available,
+251021-WTD-05,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,782.0,g,Dry Room,Available,
+251021-WTD-06,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,806.0,g,Dry Room,Available,
+251021-WTD-07,Binned - White Devil,Flower - Binned,White Devil,250916-WTD,800.0,g,Dry Room,Available,
+251021-GAS-01,Binned - Gas Face,Flower - Binned,Gas Face,250916-GAS,684.0,g,Dry Room,Available,
+251021-GAS-02,Binned - Gas Face,Flower - Binned,Gas Face,250916-GAS,576.0,g,Dry Room,Available,
+251021-ZMK-01,Binned - Z Marker,Flower - Binned,Z Marker,250916-ZMK,1226.0,g,Dry Room,Available,
+251021-ZMK-02,Binned - Z Marker,Flower - Binned,Z Marker,250916-ZMK,616.0,g,Dry Room,Available,
+251021-ZMK-03,Binned - Z Marker,Flower - Binned,Z Marker,250916-ZMK,600.0,g,Dry Room,Available,
+251021-BLP-08,Bucked Smalls - Blue Pave,Flower - Bucked,Blue Pave,250916-BLP,558.0,g,Dry Room,Available,
+251021-BLP-09,Bucked Smalls - Blue Pave,Flower - Bucked,Blue Pave,250916-BLP,422.0,g,Dry Room,Available,
+251021-BLP-10,Bucked Smalls - Blue Pave,Flower - Bucked,Blue Pave,250916-BLP,1510.0,g,Dry Room,Available,
+251021-BLP-11,Bucked Smalls - Blue Pave,Flower - Bucked,Blue Pave,250916-BLP,414.0,g,Dry Room,Available,
+251021-DOG-02,Bucked Smalls - Dog Walker,Flower - Bucked,Dog Walker,250916-DOG,452.0,g,Dry Room,Available,
+251021-DOG-03,Bucked Smalls - Dog Walker,Flower - Bucked,Dog Walker,250916-DOG,560.0,g,Dry Room,Available,
+251021-PPB-01,Bucked Smalls - Peanut Butter Breath,Flower - Bucked,Peanut Butter Breath,250916-PBB,628.0,g,Dry Room,Available,
+251021-CHL-01,Bucked Smalls - Chemlatto,Flower - Bucked,Chemlatto,250916-CHL,878.0,g,Dry Room,Available,
+251021-CHL-02,Bucked Smalls - Chemlatto,Flower - Bucked,Chemlatto,,182.0,g,Dry Room,Available,
+251021-CAP-05,Bulk Smalls - Capulator Junky,Flower - Bulk,Capulator Junky,250916-CAP,258.7,g,Inventory,Smalls,Untrimmed
+251021-CAP-06,Bulk Flower - Capulator Junky,Flower - Bulk,Capulator Junky,250916-CAP,148.7,g,Inventory,Bigs,Hand Trimmed
+251021-SWF-01,Bulk Smalls - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,1814.0,g,Inventory,Smalls,Machine Trimmed
+251021-SWF-02,Trim - Swamp Water Fumez,Trim - Bulk,Swamp Water Fumez,250916-SWF,333.1,g,Inventory,Trim,
+251021-SWF-03,Bulk Smalls - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,389.0,g,Inventory,Smalls,Machine Trimmed
+251021-CAP-07,Trim - Capulator Junky,Trim - Bulk,Capulator Junky,250916-CAP,117.0,g,Inventory,Trim,
+251021-CAP-08,Bulk Smalls - Capulator Junky,Flower - Bulk,Capulator Junky,250916-CAP,201.3,g,Inventory,Smalls,Untrimmed
+251021-CAP-09,Bulk Flower - Capulator Junky,Flower - Bulk,Capulator Junky,250916-CAP,135.6,g,Inventory,Bigs,Hand Trimmed
+251021-DOG-04,Bulk Smalls - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,66.5,g,Inventory,Smalls,Untrimmed
+251021-LMD-01,Trim - Lemondary,Trim - Bulk,Lemondary,250704HA,70.1,g,Inventory,Trim,
+251021-LMD-02,Bulk Smalls - Lemondary,Flower - Bulk,Lemondary,250704HA,68.5,g,Inventory,Smalls,Untrimmed
+251021-LMD-03,Bulk Flower - Lemondary,Flower - Bulk,Lemondary,250704HA,361.2,g,Inventory,B - Buds,Hand Trimmed
+251021-DOG-05,Bulk Smalls - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,1894.5,g,Inventory,Smalls,Machine Trimmed
+251021-GAS-03,Trim - Gas Face,Trim - Bulk,Gas Face,250916-GAS,130.6,g,Inventory,Trim,
+251021-GAS-04,Bulk Smalls - Gas Face,Flower - Bulk,Gas Face,250916-GAS,174.0,g,Inventory,Smalls,Untrimmed
+251021-GAS-05,Bulk Smalls - Gas Face,Flower - Bulk,Gas Face,250916-GAS,295.9,g,Inventory,B - Buds,Untrimmed
+251021-GAS-06,Bulk Flower - Gas Face,Flower - Bulk,Gas Face,250916-GAS,310.5,g,Inventory,Bigs,Hand Trimmed
+251021-DOG-06,Bulk Smalls - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,209.2,g,Inventory,B - Buds,Untrimmed
+251021-ASU-01,Bulk Smalls - Animal Tsunami,Flower - Bulk,Animal Tsunami,250916-ASU,1292.0,g,Inventory,Smalls,Machine Trimmed
+251021-SWF-04,Bulk Flower - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,632.8,g,Inventory,Bigs,Hand Trimmed
+251021-DOG-07,Bulk Smalls - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,37.3,g,Inventory,,
+251021-DOG-08,Bulk Flower - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,79.0,g,Inventory,,
+251021-SWF-05,Bulk Flower - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,103.0,g,Inventory,,
+251021-DOG-09,Bucked Flower - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,344.4,g,Inventory,Bigs,Untrimmed
+251021-ASU-02,Bucked Smalls - Animal Tsunami,Flower - Bulk,Animal Tsunami,250916-ASU,296.0,g,Inventory,Unsorted,Untrimmed
+251021-BLP-12,Packaged 3.5g - Blue Pave,Flower - Prepack,Blue Pave,250916-BLP,34.0,g,Inventory,,
+251021-CHL-03,Bulk Smalls - Chemlatto,Flower - Bulk,Chemlatto,250916-CHL,57.9,g,Inventory,,
+251021-PPB-02,Trim - Peanut Butter Breath,Trim - Bulk,Peanut Butter Breath,250916-PBB,254.0,g,Inventory,Trim,
+251021-CHL-04,Trim - Chemlatto,Trim - Bulk,Chemlatto,250916-CHL,7.2,g,Inventory,,
+251021-THL-01,Bulk Flower - Tahoe Larry,Pre-Rolls - Standard,Tahoe Larry,250704HB,437.0,g,Inventory,,
+251021-ZMK-04,Bulk Flower - Z Marker,Pre-Rolls - Standard,Z Marker,250704HH,435.0,g,Inventory,,
+251021-CHP-11,Bulk Flower - Cherry Paloma,Pre-Rolls - Standard,Cherry Paloma,25064HF,424.0,g,Inventory,,
+251021-LMD-04,Bulk Flower - Lemondary,Pre-Rolls - Standard,Lemondary,25074HA,431.0,g,Inventory,,
+251021-CHL-05,Packaged 3.5g - Chemlatto,Flower - Prepack,Chemlatto,250916-CHL,30.0,g,Inventory,,
+251021-CHL-06,Packaged 14g Smalls - Chemlatto,Flower - Prepack,Chemlatto,250916-CHL,9.0,g,Inventory,,
+251021-PPB-03,Bulk Smalls - Peanut Butter Breath,Flower - Bulk,Peanut Butter Breath,250916-PBB,516.0,g,Inventory,Unsorted,Untrimmed
+251021-BLP-13,Trim - Blue Pave,Trim - Bulk,Blue Pave,250916-BLP,8.0,g,Inventory,,
+251021-PPB-04,Bulk Flower - Peanut Butter Breath,Flower - Bulk,Peanut Butter Breath,250916-PBB,525.2,g,Inventory,Bigs,Hand Trimmed
+251021-ZMK-05,Bulk Flower - Z Marker,Flower - Bulk,Z Marker,250704HH,228.0,g,Inventory,Bigs,Hand Trimmed
+251021-CHP-12,Bulk Flower - Cherry Paloma,Flower - Bulk,Cherry Paloma,25064HF,148.0,g,Inventory,,
+251021-GAS-07,Bulk Flower - Gas Face,Flower - Bulk,Gas Face,25064H,148.0,g,Inventory,,
+251021-ZCH-01,Bulk Flower - Z Chem,Flower - Bulk,Z Chem,250704HI,396.9,g,Inventory,,
+251021-RBI-01,Trim - Rainbow Inferno,Trim - Bulk,Rainbow Inferno,25064HA,32.1,g,Inventory,,
+251021-SWF-06,Packaged 3.5g - Swamp Water Fumez,Flower - Prepack,Swamp Water Fumez,250916-SWF,2.0,g,Inventory,Packaged,
+251021-MGM-06,Trim - Magic Marker,Trim - Bulk,Magic Marker,250704HF,19.9,g,Inventory,,
+251021-ASU-03,Bulk Flower - Animal Tsunami,Flower - Bulk,Animal Tsunami,250916-ASU,460.0,g,Inventory,,
+251021-SWF-07,Bulk Flower - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,480.1,g,Inventory,Bigs,Hand Trimmed
+251021-DOG-10,Trim - Dog Walker,Trim - Bulk,Dog Walker,250916-DOG,1724.0,g,Inventory,,
+251021-DOG-11,Bulk Flower - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,548.8,g,Inventory,,
+251021-SWF-08,Bucked Flower - Swamp Water Fumez,Flower - Bulk,Swamp Water Fumez,250916-SWF,122.7,g,Inventory,Bigs,Untrimmed
+251021-CHL-07,Bucked Smalls - Chemlatto,Flower - Bulk,Chemlatto,250916-CHL,182.0,g,Inventory,Smalls,Untrimmed
+251021-ASU-04,Bucked Smalls - Animal Tsunami,Flower - Bulk,Animal Tsunami,250916-ASU,190.9,g,Inventory,Smalls,Untrimmed
+251021-SWF-09,Trim - Swamp Water Fumez,Trim - Bulk,Swamp Water Fumez,250916-SWF,1380.0,g,Inventory,Trim,
+251021-BLP-14,Bulk Flower - Blue Pave,Flower - Bulk,Blue Pave,250916-BLP,322.0,g,Inventory,Trimmed,
+251021-BLP-15,Trim - Blue Pave,Trim - Bulk,Blue Pave,250916-BLP,306.6,g,Inventory,Trim,
+251021-BLP-16,Bulk Smalls - Blue Pave,Flower - Bulk,Blue Pave,250916-BLP,734.9,g,Inventory,,
+251021-BLP-17,Bulk Flower - Blue Pave,Flower - Bulk,Blue Pave,250916-BLP,463.0,g,Inventory,,
+251021-ASU-05,Trim - Animal Tsunami,Trim - Bulk,Animal Tsunami,250916-ASU,1328.0,g,Inventory,Trim,
+251021-ASU-06,Bulk Smalls - Animal Tsunami,Flower - Bulk,Animal Tsunami,250916-ASU,1548.0,g,Inventory,Unsorted,Untrimmed
+251021-CHL-08,Trim - Chemlatto,Trim - Bulk,Chemlatto,250916-CHL,574.0,g,Inventory,Trim,
+251021-CHL-09,Bulk Smalls - Chemlatto,Flower - Bulk,Chemlatto,250916-CHL,1042.0,g,Inventory,Smalls,Untrimmed
+251021-CHL-10,Bulk Flower - Chemlatto,Flower - Bulk,Chemlatto,250916-CHL,192.7,g,Inventory,Trimmed,Hand Trimmed
+251021-PPB-05,Bucked Smalls - Peanut Butter Breath,Flower - Bulk,Peanut Butter Breath,250916-PBB,628.0,g,Inventory,Smalls,Untrimmed
+251021-PPB-06,Bucked Flower - Peanut Butter Breath,Flower - Bulk,Peanut Butter Breath,250916-PBB,56.0,g,Inventory,Bigs,Untrimmed
+251021-DOG-12,Bucked Smalls - Dog Walker,Flower - Bulk,Dog Walker,250916-DOG,452.0,g,Inventory,Smalls,Untrimmed
+251021-CHL-11,Bucked Smalls - Chemlatto,Flower - Bulk,Chemlatto,250916-CHL,878.0,g,Inventory,Smalls,Untrimmed
+251021-BLP-18,Bucked Smalls - Blue Pave,Flower - Bulk,Blue Pave,250916-BLP,558.0,g,Inventory,Smalls,Untrimmed
+251021-MGM-07,Bulk Flower - Magic Marker,Flower - Bulk,Magic Marker,250218HL,35.0,g,Inventory,Bulk,Packaged
+251021-CHP-13,Bulk Smalls - Cherry Paloma,Flower - Bulk,Cherry Paloma,25064HF,2.0,g,Inventory,,
+251021-DON-01,Bulk Smalls - Donny Burger,Flower - Bulk,Donny Burger,241209HE,908.0,g,Inventory,Packaged,Bulk
+251021-DON-02,Bulk Smalls - Donny Burger,Flower - Bulk,Donny Burger,241209HE,908.0,g,Inventory,Packaged,Bulk
+251021-GAS-08,Bulk Smalls - Gas Face,Flower - Bulk,Gas Face,250218HL,559.3,g,Inventory,Packaged,Bulk
+251021-BAN-01,Bulk Smalls - Bananaconda,Flower - Bulk,Bananaconda,250218HN,454.0,g,Inventory,Packaged,
+251021-BAN-02,Bulk Smalls - Bananaconda,Flower - Bulk,Bananaconda,250218HN,96.0,g,Inventory,Packaged,
+251021-UNK-01,Bulk Smalls - Dante's Inferno,Flower - Bulk,Dante's Inferno,250318HL,85.3,g,Inventory,Packaged,
+251021-CHP-14,Bucked Flower - Cherry Paloma,Flower - Bulk,Cherry Paloma,25064HF,18.0,g,Inventory,Bigs,Untrimmed
+251021-RBI-02,Bulk Flower - Rainbow Inferno,Flower - Bulk,Rainbow Inferno,250520HC,40.0,g,Inventory,Bulk,Packaged
+251021-CHP-15,Packaged 14g Smalls - Cherry Paloma,Flower - Prepack,Cherry Paloma,25064HF,8.0,g,Inventory,Packaged,
+251021-SGA-01,Bulk Smalls - Strawguava,Flower - Bulk,Strawguava,250128HE,48.5,g,Inventory,Bulk,Packaged
+251021-PPB-07,Bulk Smalls - Peanut Butter Breath,Flower - Bulk,Peanut Butter Breath,250218HG,102.0,g,Inventory,Bulk,Packaged
+251021-WTD-08,Bulk Flower - White Devil,Flower - Bulk,White Devil,250403HG,404.0,g,Inventory,Trimmed,
+251021-SGA-02,Trim - Strawguava,Trim - Bulk,Strawguava,25064HB,2416.0,g,Inventory,Trim,
+251021-SGA-03,Bulk Flower - Strawguava,Flower - Bulk,Strawguava,25064HB,2223.9,g,Inventory,Trimmed,Machine Trimmed
+251021-LMD-05,Bulk Flower - Lemondary,Flower - Bulk,Lemondary,250704HA,47.2,g,Inventory,Transfer Ready,Machine Trimmed
+251021-MGM-08,Bulk Flower - Magic Marker,Flower - Bulk,Magic Marker,250704HF,330.0,g,Inventory,Trimmed,
+251021-UNK-01,Bulk Flower - Devil Driver,Flower - Bulk,Devil Driver,250704H,390.3,g,Inventory,Trimmed,Machine Trimmed
+251021-UNK-02,Trim - Devil Driver,Trim - Bulk,Devil Driver,250704H,684.0,g,Inventory,Trim,
+251021-MGM-09,Bucked Flower - Magic Marker,Flower - Bulk,Magic Marker,250704HF,150.0,g,Inventory,Bigs,Untrimmed
+251021-MGM-10,Trim - Magic Marker,Trim - Bulk,Magic Marker,250704HF,2794.0,g,Inventory,Trim,
+251021-CHB-01,Bulk Flower - Chembanger,Flower - Bulk,Chembanger,250520HN,42.0,g,Inventory,Bulk,Packaged
+251021-PPB-08,Trim - Peanut Butter Breath,Trim - Bulk,Peanut Butter Breath,250520HH,62.9,g,Inventory,Trim,
+251021-VLD-01,Bulk Smalls - Valley Dog,Flower - Bulk,Valley Dog,25064HM,83.0,g,Inventory,Bulk,Packaged
+251021-MGM-11,Packaged 3.5g - Magic Marker,Flower - Prepack,Magic Marker,250704HF,5.0,g,Inventory,Packaged,
+251021-RBI-03,Bucked Flower - Rainbow Inferno,Flower - Bulk,Rainbow Inferno,250520HC,130.0,g,Inventory,Bigs,Untrimmed
+251021-RBI-04,Bulk Smalls - Rainbow Inferno,Flower - Bulk,Rainbow Inferno,25064HA,1612.0,g,Inventory,Trimmed,Hand Trimmed
+251021-ZCH-02,Bulk Smalls - Z Chem,Flower - Bulk,Z Chem,250704HI,154.1,g,Inventory,Trimmed,Machine Trimmed
+251021-RBI-05,Bulk Flower - Rainbow Inferno,Flower - Bulk,Rainbow Inferno,25064HA,1694.2,g,Inventory,Trimmed,Hand Trimmed
+251021-ZMK-06,Trim - Z Marker,Trim - Bulk,Z Marker,250704HH,2118.09,g,Inventory,Trim,
+251021-CHL-12,Packaged 14g Smalls - Chemlatto,Flower - Prepack,Chemlatto,250704HD,9.0,g,Inventory,Packaged,
+251021-SGA-04,Trim - Strawguava,Trim - Bulk,Strawguava,250318HN,1566.0,g,Inventory,Trim,
+251021-SGA-05,Bulk Flower - Strawguava,Flower - Bulk,Strawguava,250318HN,486.2,g,Inventory,Trimmed,Machine Trimmed
+251021-GAS-09,Trim - Gas Face,Trim - Bulk,Gas Face,25064H,1124.0,g,Inventory,Trim,
+251021-ASU-07,Trim - Animal Tsunami,Trim - Bulk,Animal Tsunami,250704HC,1468.0,g,Inventory,Trim,
+251021-ZMK-07,Bulk Smalls - Z Marker,Flower - Bulk,Z Marker,250704HH,1374.0,g,Inventory,,
+251021-FGF-01,Bulk Smalls - Fugazi Funk,Flower - Bulk,Fugazi Funk,250403HB,100.0,g,Inventory,Bulk,Packaged
+251021-ZMK-08,Bucked Flower - Z Marker,Flower - Bulk,Z Marker,250704HH,192.0,g,Inventory,Bigs,Untrimmed
+251021-MGM-12,Bulk Smalls - Magic Marker,Flower - Bulk,Magic Marker,250704HF,684.0,g,Inventory,Trimmed,Machine Trimmed
+251021-MGM-13,Bulk Flower - Magic Marker,Flower - Bulk,Magic Marker,250704HF,993.6,g,Inventory,Trimmed,Hand Trimmed
+251021-ZCH-03,Bucked Flower - Z Chem,Flower - Bulk,Z Chem,250704HI,276.0,g,Inventory,Bigs,Untrimmed
+251021-ZCH-04,Bucked Flower - Z Chem,Flower - Bulk,Z Chem,250704HI,1602.0,g,Inventory,Bigs,Untrimmed
+251021-ZCH-05,Bucked Flower - Z Chem,Flower - Bulk,Z Chem,250704HI,1562.0,g,Inventory,Bigs,Untrimmed
+251021-RBI-06,Trim - Rainbow Inferno,Trim - Bulk,Rainbow Inferno,25064HA,2162.0,g,Inventory,Trim,
+251021-LMD-06,Trim - Lemondary,Trim - Bulk,Lemondary,250704HA,2098.0,g,Inventory,Trim,
+251021-GAP-01,Trim - Georgia Apple Pie,Trim - Bulk,Georgia Apple Pie,250520HM,790.0,g,Inventory,Trim,
+251021-ZCH-06,Trim - Z Chem,Trim - Bulk,Z Chem,250704HI,950.0,g,Inventory,Trim,
+251021-THL-02,Trim - Tahoe Larry,Trim - Bulk,Tahoe Larry,250704HB,742.5,g,Inventory,Trim,
+251021-VLD-02,Trim - Valley Dog,Trim - Bulk,Valley Dog,25064HM,1412.0,g,Inventory,Trim,
+251021-ZCH-07,Bulk Flower - Z Chem,Flower - Bulk,Z Chem,250704HI,589.2,g,Inventory,Trimmed,Hand Trimmed
+251021-LMD-07,Packaged 3.5g - Lemondary,Flower - Prepack,Lemondary,250704HA,95.0,g,Inventory,,
+251021-LMD-08,Bulk Smalls - Lemondary,Flower - Bulk,Lemondary,250704HA,1809.5,g,Inventory,Trimmed,Machine Trimmed
+251021-THL-03,Bulk Smalls - Tahoe Larry,Flower - Bulk,Tahoe Larry,250704HB,13.6,g,Inventory,Trimmed,Machine Trimmed
+251021-CHP-16,Trim - Cherry Paloma,Trim - Bulk,Cherry Paloma,25064HF,3322.0,g,Inventory,Trim,
+251021-LMD-09,Bucked Flower - Lemondary,Flower - Bulk,Lemondary,250704HA,1579.0,g,Inventory,Bigs,Untrimmed
+251021-LMD-10,Bucked Flower - Lemondary,Flower - Bulk,Lemondary,250704HA,1124.0,g,Inventory,Bigs,Untrimmed
+251021-LMD-11,Bucked Flower - Lemondary,Flower - Bulk,Lemondary,250704HA,1534.0,g,Inventory,Bigs,Untrimmed
+251021-GAS-10,Bulk Smalls - Gas Face,Flower - Bulk,Gas Face,25064H,6.0,g,Inventory,Trimmed,Machine Trimmed
+251021-GAP-02,Bulk Smalls - Georgia Apple Pie,Flower - Bulk,Georgia Apple Pie,250520HM,90.4,g,Inventory,Trimmed,Machine Trimmed
+251021-CHP-17,Bulk Smalls - Cherry Paloma,Flower - Bulk,Cherry Paloma,25064HF,188.0,g,Inventory,Trimmed,Machine Trimmed
+251021-GAS-11,Bulk Flower - Gas Face,Flower - Bulk,Gas Face,25064H,332.1,g,Inventory,Trimmed,Hand Trimmed
+251021-CAP-10,Trim - Capulator Junky,Trim - Bulk,Capulator Junky,25064HD,1626.0,g,Inventory,Trim,
+251021-RBI-07,Trim - Rainbow Inferno,Trim - Bulk,Rainbow Inferno,250520HC,1284.6,g,Inventory,Trim,
+251021-LMD-12,Trim - Lemondary,Trim - Bulk,Lemondary,250520HE,672.0,g,Inventory,Trim,`;
+
+function parseCSVLine(line: string): string[] {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+async function uploadInventory() {
+  console.log('Starting inventory upload...');
+
+  const rows = csvData.split('\n').filter(row => row.trim());
+  const headers = parseCSVLine(rows[0]);
+
+  console.log('CSV Headers:', headers);
+  console.log(`Processing ${rows.length - 1} rows...`);
+
+  const { data: snapshotData, error: snapshotError } = await supabase
+    .from('inventory_snapshots')
+    .insert({
+      file_name: 'inventory_consolidated_UNIFIED_IDS.csv',
+      row_count: rows.length - 1,
+      status: 'processing',
+      imported_by: 'system'
+    })
+    .select()
+    .single();
+
+  if (snapshotError) {
+    console.error('Error creating snapshot:', snapshotError);
+    throw snapshotError;
+  }
+
+  const snapshotId = snapshotData.id;
+  console.log('Created snapshot:', snapshotId);
+
+  const parseNumber = (val: string) => {
+    if (!val) return null;
+    const cleaned = val.replace(/[^\d.-]/g, '');
+    return cleaned ? parseFloat(cleaned) : null;
+  };
+
+  const items = [];
+  for (let i = 1; i < rows.length; i++) {
+    const values = parseCSVLine(rows[i]);
+    const row: Record<string, string> = {};
+    headers.forEach((header, idx) => {
+      row[header] = values[idx] || '';
+    });
+
+    const packageId = row['package_id'];
+    if (!packageId) continue;
+
+    items.push({
+      package_id: packageId,
+      product_name: row['product_name'] || null,
+      batch: row['batch_number'] || null,
+      strain: row['strain'] || null,
+      status: row['status'] || null,
+      category: row['category'] || null,
+      tags: row['tags'] || null,
+      room: row['room'] || null,
+      available_qty: parseNumber(row['available_qty']),
+      unit: row['unit'] || null,
+      snapshot_id: snapshotId
+    });
+  }
+
+  console.log(`Parsed ${items.length} valid items`);
+
+  console.log('Clearing existing inventory items...');
+  const { error: deleteError } = await supabase
+    .from('inventory_items')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+  if (deleteError) {
+    console.error('Error clearing inventory:', deleteError);
+  }
+
+  const batchSize = 100;
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const { error } = await supabase
+      .from('inventory_items')
+      .upsert(batch, {
+        onConflict: 'package_id',
+        ignoreDuplicates: false
+      });
+
+    if (error) {
+      console.error('Batch insert error:', error);
+      throw error;
+    }
+    console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)}`);
+  }
+
+  await supabase
+    .from('inventory_snapshots')
+    .update({ status: 'completed' })
+    .eq('id', snapshotId);
+
+  console.log(`Successfully imported ${items.length} inventory items!`);
+
+  const binnedCount = items.filter(i => i.category?.includes('Binned')).length;
+  const buckedCount = items.filter(i => i.category?.includes('Bucked')).length;
+  const bulkCount = items.filter(i => i.category?.includes('Bulk')).length;
+  const prepackCount = items.filter(i => i.category?.includes('Prepack')).length;
+
+  console.log('\nInventory Summary:');
+  console.log(`- Binned items: ${binnedCount}`);
+  console.log(`- Bucked items: ${buckedCount}`);
+  console.log(`- Bulk items: ${bulkCount}`);
+  console.log(`- Prepack items: ${prepackCount}`);
+
+  const strains = new Set(items.map(i => i.strain).filter(Boolean));
+  console.log(`- Unique strains: ${strains.size}`);
+  console.log(`- Strains: ${Array.from(strains).sort().join(', ')}`);
+}
+
+uploadInventory()
+  .then(() => {
+    console.log('\nUpload completed successfully!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('\nUpload failed:', error);
+    process.exit(1);
+  });
