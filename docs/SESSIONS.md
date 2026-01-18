@@ -190,6 +190,29 @@ stateDiagram-v2
 
 ## Bucking Sessions
 
+> **📦 THREE-STEP PATTERN: BUCKING**
+>
+> ```
+> 1️⃣ RESERVE → fn_reserve_inventory_on_session_start()
+>    └─ Lock binned inventory via inventory_movements
+>
+> 2️⃣ PROCESS → Operator completes bucking work
+>    └─ Enter bucked flower, bucked smalls, waste weights
+>
+> 3️⃣ FINALIZE → Manager approves conversion
+>    └─ Creates inventory_items with package IDs
+> ```
+>
+> **Database Tables:**
+> - `trim_sessions` (session_status: active → completed)
+> - `inventory_movements` (ledger entries)
+> - `pending_conversions` → `conversion_summary_view` (awaiting finalization)
+>
+> **Movement Types Created:**
+> - RESERVE: `SESSION_RESERVE` (locks binned inventory)
+> - CONSUME: `SESSION_INPUT` (consumes binned material)
+> - PRODUCE: `SESSION_OUTPUT` (produces bucked flower + smalls)
+
 ### Purpose
 
 Bucking is the first processing stage where binned material (whole plants) is separated into bucked flower, bucked smalls, and waste.
@@ -282,6 +305,35 @@ Bucking is the first processing stage where binned material (whole plants) is se
 ---
 
 ## Trim Sessions
+
+> **🌿 THREE-STEP PATTERN: TRIM**
+>
+> ```
+> 1️⃣ RESERVE → fn_reserve_inventory_on_session_start()
+>    └─ Lock bucked inventory via inventory_movements
+>
+> 2️⃣ PROCESS → Operator completes trimming work
+>    └─ Enter bulk flower, bulk smalls, trim, waste weights
+>
+> 3️⃣ FINALIZE → Manager approves conversion
+>    └─ Creates inventory_items with package IDs
+> ```
+>
+> **Database Tables:**
+> - `trim_sessions` (session_status: active → completed)
+> - `inventory_movements` (ledger entries)
+> - `pending_conversions` → `conversion_summary_view` (awaiting finalization)
+>
+> **Movement Types Created:**
+> - RESERVE: `SESSION_RESERVE` (locks bucked inventory)
+> - CONSUME: `SESSION_INPUT` (consumes bucked material)
+> - PRODUCE: `SESSION_OUTPUT` (produces bulk flower + smalls + trim)
+>
+> **Stage Transitions:**
+> - `BuckedFlower` → `BulkFlower` + `Trim` ✅
+> - `BuckedSmalls` → `BulkSmalls` + `Trim` ✅
+> - `BuckedSmalls` → `BulkFlower` ❌ (invalid)
+> - `BuckedFlower` → `BulkSmalls` ❌ (invalid)
 
 ### Purpose
 
@@ -383,6 +435,36 @@ Trim sessions convert bucked material (flower or smalls) into bulk material read
 ---
 
 ## Packaging Sessions
+
+> **📦 THREE-STEP PATTERN: PACKAGING**
+>
+> ```
+> 1️⃣ RESERVE → fn_reserve_inventory_on_session_start()
+>    └─ Lock bulk inventory via inventory_movements
+>
+> 2️⃣ PROCESS → Operator completes packaging work
+>    └─ Enter output units (e.g., 10× 3.5g packages) + waste
+>
+> 3️⃣ FINALIZE → Manager approves conversion
+>    └─ Creates inventory_items with unique package IDs
+> ```
+>
+> **Database Tables:**
+> - `packaging_sessions` (session_status: active → completed)
+> - `inventory_movements` (ledger entries)
+> - `pending_conversions` → `conversion_summary_view` (awaiting finalization)
+>
+> **Movement Types Created:**
+> - RESERVE: `SESSION_RESERVE` (locks bulk inventory)
+> - CONSUME: `SESSION_INPUT` (consumes bulk material)
+> - PRODUCE: `SESSION_OUTPUT` (produces packaged units)
+>
+> **Stage Transitions:**
+> - `BulkFlower` → `Packaged_3_5g` / `Packaged_14g` / `Packaged_28g` ✅
+> - `BulkSmalls` → `Packaged_3_5gSmalls` / `Packaged_14gSmalls` ✅
+> - `BulkSmalls` → `Packaged_3_5g` ❌ (invalid - must use smalls products)
+>
+> **Package ID Format:** `YYMMDD-STR-NN` (e.g., `250106-GSC-01`)
 
 ### Purpose
 

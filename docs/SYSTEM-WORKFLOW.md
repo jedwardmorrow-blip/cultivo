@@ -237,6 +237,16 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 
 ## 2. POST-PRODUCTION PROCESSING
 
+> **📊 VISUAL REFERENCE:** For a complete visual diagram of the inventory flow pattern used across all processing stages, see the **three-step pattern** documented in [AI-BUILD-SESSION-CHECKLIST.md](./AI-BUILD-SESSION-CHECKLIST.md#the-three-step-pattern):
+>
+> ```
+> 1️⃣ RESERVE → Lock inventory via fn_reserve_inventory_on_session_start()
+> 2️⃣ PROCESS → Operator completes work (bucking/trim/packaging)
+> 3️⃣ FINALIZE → Manager approves conversion and creates inventory_items
+> ```
+>
+> **All sessions follow this pattern.** Each subsection below details the specific inputs, outputs, and side effects for each processing stage.
+
 ### 2.1 Bucking Session (Binned → Bucked)
 
 **AS-IS (Evidence):**
@@ -306,10 +316,30 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 - bucked_flower_weight + bucked_smalls_weight + waste_weight ≈ input_weight (within tolerance)
 - variance_reason REQUIRED if |variance| > threshold
 
-**Side Effects:**
-- inventory_items (input package): on_hand_qty decremented by input_weight
-- inventory_items (new): Two packages created (flower + smalls) with parent_item_id = input_package_id
-- batch_registry: lifecycle_state → `'bucked'`
+**Side Effects (Three-Step Pattern):**
+
+**1️⃣ RESERVE (Session Start):**
+- `inventory_movements`: INSERT movement_kind='SESSION_RESERVE'
+- Locks binned inventory (prevents concurrent use)
+- No quantity change yet (soft lock)
+
+**2️⃣ PROCESS (Session Complete):**
+- `inventory_movements`: INSERT movement_kind='SESSION_INPUT' (consume binned)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce bucked flower)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce bucked smalls)
+- `inventory_items` (input): on_hand_qty decremented by input_weight
+- `trim_sessions`: finalization_status='pending' (awaits manager)
+
+**3️⃣ FINALIZE (Manager Action):**
+- `inventory_items`: New packages created with unique package_ids (YYMMDD-STRAIN-NNN)
+- Two packages: Bucked Flower + Bucked Smalls
+- Each inherits batch_id via parent_item_id chain
+- `trim_sessions`: finalization_status='finalized'
+
+**Database State Changes:**
+- `batch_registry`: lifecycle_state → `'bucked'`
+- `batch_production_history`: bucking_completed event logged
+- `batch_lifecycle_events`: state_transition recorded
 
 **DELTA & ACTIONS:**
 1. **WRONG:** lifecycle_state updated prematurely at session START
@@ -398,10 +428,31 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 - Output weights sum to input_weight ± tolerance
 - Rounding precision: 0.1g
 
-**Side Effects:**
-- inventory_items (input): on_hand_qty decremented
-- inventory_items (new): 3 packages created (bulk_flower, bulk_smalls, trim)
-- batch_registry: lifecycle_state → `'bulk_available'`
+**Side Effects (Three-Step Pattern):**
+
+**1️⃣ RESERVE (Session Start):**
+- `inventory_movements`: INSERT movement_kind='SESSION_RESERVE'
+- Locks bucked inventory (prevents concurrent use)
+- No quantity change yet (soft lock)
+
+**2️⃣ PROCESS (Session Complete):**
+- `inventory_movements`: INSERT movement_kind='SESSION_INPUT' (consume bucked)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce bulk flower)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce bulk smalls)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce trim)
+- `inventory_items` (input): on_hand_qty decremented
+- `trim_sessions`: finalization_status='pending' (awaits manager)
+
+**3️⃣ FINALIZE (Manager Action):**
+- `inventory_items`: New packages created with unique package_ids (YYMMDD-STRAIN-NNN)
+- Three packages: Bulk Flower + Bulk Smalls + Trim
+- Each inherits batch_id via parent_item_id chain
+- `trim_sessions`: finalization_status='finalized'
+
+**Database State Changes:**
+- `batch_registry`: lifecycle_state → `'bulk_available'`
+- `batch_production_history`: trim_completed event logged
+- `batch_lifecycle_events`: state_transition recorded
 
 **DELTA & ACTIONS:**
 1. **MISSING:** Stage transition validation
@@ -486,16 +537,34 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 - Package ID format: `YYMMDD-STR-NN` (generated)
 - Rounding: 0.1g precision
 
-**Side Effects:**
-- inventory_items (input): on_hand_qty decremented by input_weight
-- inventory_items (new): output_units packages created, each with:
-  - unique package_id
+**Side Effects (Three-Step Pattern):**
+
+**1️⃣ RESERVE (Session Start):**
+- `inventory_movements`: INSERT movement_kind='SESSION_RESERVE'
+- Locks bulk inventory (prevents concurrent use)
+- No quantity change yet (soft lock)
+
+**2️⃣ PROCESS (Session Complete):**
+- `inventory_movements`: INSERT movement_kind='SESSION_INPUT' (consume bulk)
+- `inventory_movements`: INSERT movement_kind='SESSION_OUTPUT' (produce packaged units)
+- `inventory_items` (input): on_hand_qty decremented by input_weight
+- `packaging_sessions`: finalization_status='pending' (awaits manager)
+
+**3️⃣ FINALIZE (Manager Action):**
+- `inventory_items`: New packages created with unique package_ids (YYMMDD-STRAIN-NNN)
+- Each package has:
+  - unique package_id (auto-generated sequential)
   - unit = 'unit'
   - on_hand_qty = 1
   - product_stage_id = target stage (Packaged_3_5g, Packaged_14gSmalls)
   - parent_item_id = input package ID
   - batch_id = inherited from parent
-- batch_registry: lifecycle_state → `'packaged'`
+- `packaging_sessions`: finalization_status='finalized'
+
+**Database State Changes:**
+- `batch_registry`: lifecycle_state → `'packaged'`
+- `batch_production_history`: packaging_completed event logged
+- `batch_lifecycle_events`: state_transition recorded
 
 **DELTA & ACTIONS:**
 1. **PLANNED:** COA validation before packaging

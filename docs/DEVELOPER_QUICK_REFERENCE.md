@@ -63,6 +63,79 @@ npm run build
 
 ---
 
+## Inventory Flow Quick Reference
+
+### The Three-Step Pattern (All Sessions)
+
+All post-production processing follows the same pattern:
+
+| Step | Function/Trigger | Database Impact | Ledger Entry |
+|------|-----------------|-----------------|--------------|
+| **1️⃣ RESERVE** | `fn_reserve_inventory_on_session_start()` | Soft lock (no qty change) | `movement_kind='SESSION_RESERVE'` |
+| **2️⃣ PROCESS** | Session completion trigger | Consume input, produce output | `movement_kind='SESSION_INPUT'` + `'SESSION_OUTPUT'` |
+| **3️⃣ FINALIZE** | Manager approval (UI) | Create inventory_items with IDs | `finalization_status='finalized'` |
+
+### Session Types Quick Lookup
+
+| Session Type | Input Stage | Output Stages | Table | Completion Trigger |
+|--------------|-------------|---------------|-------|-------------------|
+| **Bucking** | Binned | Bucked Flower + Bucked Smalls | `trim_sessions` | `trg_trim_session_complete` |
+| **Trim** | Bucked Flower/Smalls | Bulk Flower/Smalls + Trim | `trim_sessions` | `trg_trim_session_complete` |
+| **Packaging** | Bulk Flower/Smalls | Packaged units (3.5g, 14g, etc.) | `packaging_sessions` | `trg_packaging_session_complete` |
+
+### Stage Transition Rules
+
+| From Stage | Valid Outputs | Invalid (Blocked) |
+|------------|---------------|-------------------|
+| **Binned** | Bucked Flower, Bucked Smalls | ❌ Direct to Bulk or Packaged |
+| **Bucked Flower** | Bulk Flower, Trim | ❌ Bulk Smalls (quality downgrade) |
+| **Bucked Smalls** | Bulk Smalls, Trim | ❌ Bulk Flower (wrong lineage) |
+| **Bulk Flower** | Packaged_3_5g, _14g, _28g | ❌ Smalls products |
+| **Bulk Smalls** | Packaged_3_5gSmalls, _14gSmalls | ❌ Regular packaged products |
+
+### Movement Kinds Reference
+
+| Movement Kind | Purpose | Qty Impact | Use Case |
+|--------------|---------|------------|----------|
+| `SESSION_RESERVE` | Lock inventory | None (soft lock) | Session starts |
+| `SESSION_INPUT` | Consume material | Decrements source | Session completes |
+| `SESSION_OUTPUT` | Produce material | Creates new items | Session completes |
+| `FULFILLMENT` | Ship to customer | Decrements inventory | Order delivery |
+| `ADJUSTMENT` | Manual correction | +/- as needed | Audit adjustments |
+| `RECONCILIATION` | Physical count sync | +/- as needed | Audit completion |
+
+### Package ID Formats
+
+| Stage | Format | Example | Generator Function |
+|-------|--------|---------|-------------------|
+| Bulk/Bucked | `YYMMDD-STRAIN-NNN` | `260113-DOG-001` | `fn_generate_next_package_id()` |
+| Packaged Units | `YYMMDD-STRAIN-NNN` | `260113-GSC-042` | Same function |
+| Binned (Initial) | `YYMMDD-STRAIN-BIN` | `260113-GMO-BIN` | Manual assignment |
+
+**Key Rules:**
+- Sequential numbering per batch per day
+- Strain code from `strains.abbreviation` (3 chars)
+- Auto-generated during finalization
+- Uniqueness guaranteed by database sequence
+
+### Finalization Status Flow
+
+```
+Session Completes → finalization_status = 'pending'
+                    ↓
+Manager Reviews → Conversions UI shows aggregated sessions
+                    ↓
+Manager Creates Packages → finalization_status = 'finalized'
+                    ↓
+Inventory Items Created → Available for orders
+```
+
+**Views:**
+- `conversion_summary_view` - Aggregated pending sessions
+- `conversion_history_view` - Detailed session history
+
+---
+
 ## Development Environment
 
 ### Required Tools

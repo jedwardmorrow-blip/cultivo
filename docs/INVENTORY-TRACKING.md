@@ -856,6 +856,121 @@ VALUES ('PRODUCTION', new_item_id, qty, session_id, 'session_finalization');
 **Priority:** HIGH - Without this, the finalization workflow is incomplete
 **See:** Plan B in AI-BUILD-SESSION-CHECKLIST.md for detailed fix plan
 
+### Stage-Specific Conversion Flows
+
+Each processing stage follows the same three-step pattern but with different inputs/outputs:
+
+#### Bucking Conversion (Binned → Bucked)
+
+> **📦 BUCKING CONVERSION PATTERN**
+>
+> ```
+> INPUT:  Binned material (whole plants)
+> OUTPUT: Bucked Flower + Bucked Smalls + Waste
+>
+> LEDGER FLOW:
+> 1. RESERVE → locks binned inventory (movement_kind='SESSION_RESERVE')
+> 2. CONSUME → removes binned material (movement_kind='SESSION_INPUT')
+> 3. PRODUCE → creates bucked outputs (movement_kind='SESSION_OUTPUT')
+> 4. FINALIZE → manager creates inventory_items with package IDs
+>
+> FINALIZATION:
+> - Manager splits total bucked flower/smalls into multiple bags
+> - Each bag gets unique package_id: YYMMDD-STRAIN-NNN
+> - Example: 500g bucked flower → 200g + 200g + 100g (3 bags)
+> - Partial finalization allowed (create some bags now, rest later)
+> ```
+>
+> **Database Views:**
+> - Query: `conversion_summary_view` WHERE `product_name` IN ('Bucked Flower', 'Bucked Smalls')
+> - Aggregates: Total weight from all completed bucking sessions awaiting finalization
+
+#### Trim Conversion (Bucked → Bulk)
+
+> **🌿 TRIM CONVERSION PATTERN**
+>
+> ```
+> INPUT:  Bucked Flower OR Bucked Smalls
+> OUTPUT: Bulk Flower OR Bulk Smalls + Trim + Waste
+>
+> STAGE RULES:
+> - BuckedFlower → BulkFlower ✅
+> - BuckedSmalls → BulkSmalls ✅
+> - BuckedSmalls → BulkFlower ❌ (wrong lineage)
+> - BuckedFlower → BulkSmalls ❌ (quality downgrade)
+>
+> LEDGER FLOW:
+> 1. RESERVE → locks bucked inventory (movement_kind='SESSION_RESERVE')
+> 2. CONSUME → removes bucked material (movement_kind='SESSION_INPUT')
+> 3. PRODUCE → creates bulk outputs (movement_kind='SESSION_OUTPUT')
+> 4. FINALIZE → manager creates inventory_items with package IDs
+>
+> FINALIZATION:
+> - Manager splits total bulk flower/smalls into multiple bags
+> - Each bag gets unique package_id: YYMMDD-STRAIN-NNN
+> - Example: 400g bulk flower → 200g + 100g + 100g (3 bags)
+> - Trim byproduct handled separately (typically single package)
+> ```
+>
+> **Database Views:**
+> - Query: `conversion_summary_view` WHERE `product_name` IN ('Bulk Flower', 'Bulk Smalls', 'Trim')
+> - Aggregates: Total weight from all completed trim sessions awaiting finalization
+
+#### Packaging Conversion (Bulk → Packaged)
+
+> **📦 PACKAGING CONVERSION PATTERN**
+>
+> ```
+> INPUT:  Bulk Flower OR Bulk Smalls
+> OUTPUT: Packaged units (3.5g, 14g, 28g, etc.)
+>
+> STAGE RULES:
+> - BulkFlower → Packaged_3_5g / _14g / _28g ✅
+> - BulkSmalls → Packaged_3_5gSmalls / _14gSmalls ✅
+> - BulkSmalls → Packaged_3_5g ❌ (must use smalls products)
+>
+> LEDGER FLOW:
+> 1. RESERVE → locks bulk inventory (movement_kind='SESSION_RESERVE')
+> 2. CONSUME → removes bulk material (movement_kind='SESSION_INPUT')
+> 3. PRODUCE → creates packaged units (movement_kind='SESSION_OUTPUT')
+> 4. FINALIZE → manager creates inventory_items with package IDs
+>
+> FINALIZATION:
+> - Manager finalizes entire session output (all units at once)
+> - Each unit gets unique package_id: YYMMDD-STRAIN-NNN
+> - Example: 10 units → 10 individual packages with sequential IDs
+> - Package format: "3.5g Dog Walker OG" (weight + strain name)
+> - Unit tracking: on_hand_qty = 1 per package, unit = 'unit'
+> ```
+>
+> **Database Views:**
+> - Query: `conversion_summary_view` WHERE `product_name` LIKE 'Packaged_%'
+> - Aggregates: Total units from all completed packaging sessions awaiting finalization
+>
+> **Package ID Generation:**
+> - Function: `fn_generate_next_package_id(batch_id, strain_code, date)`
+> - Format: `YYMMDD-STRAIN-NNN` (e.g., `260113-DOG-001`)
+> - Sequence: Auto-increments per batch per day
+> - Uniqueness: Guaranteed by batch + strain + date + sequence
+
+### Conversion Lock System
+
+> **⚠️ CURRENT STATUS: NOT IMPLEMENTED**
+>
+> The conversion lock system was designed to prevent concurrent finalization but is not yet enabled:
+>
+> ```
+> PLANNED WORKFLOW:
+> 1. Manager starts finalization → fn_acquire_conversion_lock()
+> 2. Other managers see "🔒 Processing by [Username]"
+> 3. Manager completes or abandons → fn_release_conversion_lock()
+> 4. Lock auto-expires after 10 minutes (pg_cron job)
+> ```
+>
+> **Current Behavior:** No locking; multiple managers could finalize same session
+> **Workaround:** Process discipline (one manager per shift)
+> **Priority:** MEDIUM - Race condition unlikely in practice
+
 ---
 
 ## Audits & Reconciliation
