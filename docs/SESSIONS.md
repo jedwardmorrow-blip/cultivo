@@ -395,6 +395,44 @@ Trim sessions convert bucked material (flower or smalls) into bulk material read
 - ❌ `BuckedSmalls` → `BulkFlower` (wrong product path)
 - ❌ `BuckedFlower` → `BulkSmalls` (downgrading quality)
 
+### Stage Naming Clarification
+
+> **IMPORTANT:** Understanding the difference between product names and stage names
+
+**Product Stage Progression:**
+```
+Binned → Bucked → Trimmed → Packaged
+```
+
+**Product Naming vs. Stage Mapping:**
+
+| Product Name Pattern | Product Stage | Net Weight | Notes |
+|---------------------|---------------|------------|-------|
+| "Binned - [Strain] - Flower" | **Binned** | varies | Raw harvest, wet weight |
+| "Bulk Flower (Bucked)" | **Bucked** | varies | Temporary session output name |
+| "Bucked - [Strain] - Flower" | **Bucked** | varies | Stems removed, ready for trimming |
+| "Bulk - [Strain] - Flower" | **Trimmed** | 0g | Ready for packaging or bulk sale |
+| "Bulk - [Strain] - Smalls" | **Trimmed** | 0g | Ready for packaging or bulk sale |
+| "Bulk - [Strain] - Trim" | **Trimmed** | 0g | Trim byproduct |
+| "Bulk - [Strain] - Flower" | **Packaged** | 454g | 1lb bulk package (consumer-ready) |
+| "1lb Flower - [Strain]" | **Packaged** | 454g | 1lb bulk package (consumer-ready) |
+| "Packaged - [Strain] - 3.5g Flower" | **Packaged** | 3.5g | Consumer unit |
+| "Packaged - [Strain] - 14g Smalls" | **Packaged** | 14g | Consumer unit |
+
+**Key Points:**
+
+1. **"Bulk" in product names means Trimmed stage** (except for 454g/1lb packages which are Packaged)
+   - "Bulk - Magic Marker - Flower" with net_weight=0 → **Trimmed** stage
+   - "Bulk - Magic Marker - Flower" with net_weight=454 → **Packaged** stage
+
+2. **Trim session outputs go to Trimmed stage:**
+   - Product names: "Bulk - [Strain] - Flower/Smalls/Trim"
+   - Stage: **Trimmed** (ready for packaging or bulk sale)
+
+3. **1lb/454g bulk packages are Packaged stage:**
+   - These are consumer-ready bulk packages, not intermediate processing stage
+   - Different from zero-weight "Bulk" products which are in Trimmed stage
+
 ### Validation Rules
 
 **Preconditions:**

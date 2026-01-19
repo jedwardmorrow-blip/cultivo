@@ -26,6 +26,48 @@ import { inventoryMovementService } from '@/services';
 // =====================================================
 
 /**
+ * Map product name to correct product_stage_id
+ *
+ * Stage Progression: Binned → Bucked → Trimmed → Packaged
+ *
+ * Product Stage Mapping:
+ * - "Bulk Flower (Bucked)" → Bucked stage (temporary session output)
+ * - "Bucked - [Strain] - Flower" → Bucked stage
+ * - "Bulk - [Strain] - Flower" → Trimmed stage (ready for packaging/bulk sale)
+ * - "Bulk - [Strain] - Smalls" → Trimmed stage (ready for packaging/bulk sale)
+ * - "1lb Flower/Smalls - [Strain]" (454g) → Packaged stage (bulk packages)
+ * - "Packaged - [Strain] - 3.5g/14g" → Packaged stage (consumer units)
+ */
+export function getProductStageIdFromProductName(productName: string): string {
+  const lower = productName.toLowerCase();
+
+  // Bucked stage (session output before trim)
+  if (lower.includes('bucked')) {
+    return '35d07a66-851d-4b2d-be18-290b03b91d2d'; // Bucked
+  }
+
+  // Binned stage
+  if (lower.includes('binned')) {
+    return 'c360e356-eb78-4512-8777-ee47c328157d'; // Binned
+  }
+
+  // Packaged stage (includes 1lb/454g bulk packages AND consumer units)
+  // Must check this BEFORE Trimmed to avoid "Bulk" false positives
+  if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) {
+    return '323ee0fe-1342-4b26-9379-c373f3cabbb9'; // Packaged
+  }
+
+  // Trimmed stage (includes "Bulk" products)
+  // "Bulk - [Strain] - Flower" and "Bulk - [Strain] - Smalls"
+  if (lower.includes('bulk')) {
+    return '30be0d52-a3b2-482d-a462-1803054cf792'; // Trimmed
+  }
+
+  // Default to Trimmed if unclear
+  return '30be0d52-a3b2-482d-a462-1803054cf792'; // Trimmed
+}
+
+/**
  * Calculate remaining weight/units for a batch + product combination
  * Original output (from sessions) - already packaged (from conversion_packages)
  * Supports partial finalization workflow
@@ -209,6 +251,9 @@ export async function finalizeConversion(params: {
   }
 
   // Step 2: Create packages with finalized status
+  // Use helper to determine correct stage from product_name
+  const correctStageId = getProductStageIdFromProductName(params.product_name);
+
   const packagesToInsert = params.packages.map((pkg) => ({
     batch_id: params.batch_id,
     product_id: params.product_id,
@@ -216,7 +261,7 @@ export async function finalizeConversion(params: {
     package_id: pkg.package_id,
     weight: pkg.weight || null,
     units: pkg.units || null,
-    inventory_stage_id: params.inventory_stage_id || null,
+    inventory_stage_id: correctStageId,
     source_session_ids: params.session_ids,  // All aggregated session IDs
     finalization_status: 'finalized' as FinalizationStatus,
     finalized_at: new Date().toISOString(),
@@ -276,13 +321,15 @@ export async function finalizeConversion(params: {
     // Create inventory_items for each package
     const inventoryItems = createdPackages.map((pkg) => {
       const quantity = pkg.weight || pkg.units || 0;
+      // Use helper to map product name to correct stage
+      const correctStageId = getProductStageIdFromProductName(productName);
       return {
         package_id: pkg.package_id,
         batch_id: pkg.batch_id,
         batch_number: batchNumber,
         strain_id: batchData.strain_id,
         strain: strainName,
-        product_stage_id: pkg.inventory_stage_id,
+        product_stage_id: correctStageId,
         product_name: productName,
         on_hand_qty: quantity,
         available_qty: quantity,

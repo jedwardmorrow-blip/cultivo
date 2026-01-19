@@ -6,11 +6,20 @@
  *
  * Naming Convention:
  * Products table format: "[Stage] - [Strain] - [Type]"
- * Examples:
- *   - "Binned - Blue Pave - Flower"
- *   - "Bulk - Lemondary - Flower"
- *   - "Bulk - Magic Marker - Smalls"
- *   - "Packaged - Z Marker - 3.5g Flower"
+ *
+ * IMPORTANT: Product Stage Progression
+ * Binned → Bucked → Trimmed → Packaged
+ *
+ * Product Name to Stage Mapping:
+ * - "Binned - [Strain] - Flower" → Binned stage
+ * - "Bucked - [Strain] - Flower" → Bucked stage
+ * - "Bulk - [Strain] - Flower" → Trimmed stage (ready for packaging)
+ * - "Bulk - [Strain] - Smalls" → Trimmed stage (ready for packaging)
+ * - "1lb Flower - [Strain]" (454g) → Packaged stage (bulk package)
+ * - "Packaged - [Strain] - 3.5g Flower" → Packaged stage (consumer unit)
+ *
+ * Note: "Bulk" in product names refers to Trimmed stage, except for 454g/1lb
+ * packages which are consumer-ready Packaged stage items.
  */
 
 export interface ProductNameComponents {
@@ -49,12 +58,15 @@ export function parseProductName(productName: string): ProductNameComponents | n
  * Standardize inventory product name to match products catalog convention
  *
  * Transformation rules based on category:
- * - "Flower - Binned" → "Binned - [Strain] - Flower"
- * - "Flower - Bucked" → "Bucked - [Strain] - Flower" (Note: Bucked isn't in products, keeps as-is)
- * - "Flower - Bulk" → "Bulk - [Strain] - [Flower/Smalls]" (determined from product_name)
- * - "Trim - Bulk" → "Trim - [Strain] - Bulk"
- * - "Flower - Prepack" → "Packaged - [Strain] - [Size]"
+ * - "Flower - Binned" → "Binned - [Strain] - Flower" (Binned stage)
+ * - "Flower - Bucked" → "Bucked - [Strain] - Flower" (Bucked stage)
+ * - "Flower - Bulk" → "Bulk - [Strain] - [Flower/Smalls]" (Trimmed stage)
+ * - "Trim - Bulk" → "Bulk - [Strain] - Trim" (Trimmed stage)
+ * - "Flower - Prepack" → "Packaged - [Strain] - [Size]" (Packaged stage)
  * - "Pre-Rolls - Standard" → Already correct format
+ *
+ * Note: "Bulk" products map to Trimmed stage, representing trimmed material
+ * ready for packaging or bulk sale.
  */
 export function standardizeProductName(
   productName: string,
