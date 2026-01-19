@@ -243,20 +243,34 @@ export async function finalizeConversion(params: {
       .single();
 
     if (batchError) {
-      console.error('[finalizeConversion] Error fetching batch data:', batchError);
       throw new Error(`Failed to fetch batch data: ${batchError.message}`);
+    }
+
+    // Validate batch data exists
+    if (!batchData) {
+      throw new Error(`Batch not found: ${params.batch_id}`);
+    }
+
+    // Validate required batch fields
+    if (!batchData.batch_number) {
+      throw new Error(`Batch ${params.batch_id} missing batch_number`);
+    }
+
+    if (!batchData.strain_id) {
+      throw new Error(`Batch ${params.batch_id} missing strain_id. All batches must have a strain.`);
     }
 
     // Use product_name directly from params (captured at session completion)
     const productName = params.product_name;
     const strainName = batchData?.strains?.name || 'Unknown Strain';
-    const batchNumber = batchData?.batch_number || 'Unknown';
+    const batchNumber = batchData.batch_number;
 
     console.log('[finalizeConversion] Creating inventory items:', {
       packageCount: createdPackages.length,
       strainName,
       batchNumber,
       productName,
+      strainId: batchData.strain_id,
     });
 
     // Create inventory_items for each package
@@ -285,13 +299,14 @@ export async function finalizeConversion(params: {
       .insert(inventoryItems);
 
     if (inventoryError) {
-      console.error('[finalizeConversion] Failed to create inventory items:', inventoryError);
       throw new Error(`Failed to create inventory items: ${inventoryError.message}`);
     }
 
     console.log('[finalizeConversion] Successfully created inventory items');
 
     // Step 4: Create inventory movements for audit trail
+    const movementErrors: string[] = [];
+
     for (const pkg of createdPackages) {
       // Get the inventory_item id
       const { data: invItem, error: invItemError } = await supabase
@@ -301,24 +316,40 @@ export async function finalizeConversion(params: {
         .single();
 
       if (invItemError) {
-        console.error(`[finalizeConversion] Could not find inventory item for package ${pkg.package_id}:`, invItemError);
+        const errorMsg = `Could not find inventory item for package ${pkg.package_id}: ${invItemError.message}`;
+        console.error(`[finalizeConversion] ${errorMsg}`);
+        movementErrors.push(errorMsg);
         continue;
       }
 
-      if (invItem) {
-        const movementResult = await inventoryMovementService.recordMovement({
-          movement_kind: 'PRODUCE',
-          dest_item_id: invItem.id,
-          qty: pkg.weight || pkg.units || 0,
-          unit: pkg.weight ? 'g' : 'unit',
-          reason_code: 'finalized_conversion',
-          notes: `Finalized from ${params.session_ids.length} ${params.session_type} session(s)`,
-        });
-
-        if (!movementResult.success) {
-          console.error(`[finalizeConversion] Failed to create movement for ${pkg.package_id}:`, movementResult.error);
-        }
+      if (!invItem) {
+        const errorMsg = `Inventory item not found for package ${pkg.package_id}`;
+        console.error(`[finalizeConversion] ${errorMsg}`);
+        movementErrors.push(errorMsg);
+        continue;
       }
+
+      const movementResult = await inventoryMovementService.recordMovement({
+        movement_kind: 'PRODUCE',
+        dest_item_id: invItem.id,
+        qty: pkg.weight || pkg.units || 0,
+        unit: pkg.weight ? 'g' : 'unit',
+        reason_code: 'finalized_conversion',
+        notes: `Finalized from ${params.session_ids.length} ${params.session_type} session(s)`,
+      });
+
+      if (!movementResult.success) {
+        const errorMsg = `Failed to create movement for package ${pkg.package_id}: ${movementResult.error}`;
+        console.error(`[finalizeConversion] ${errorMsg}`);
+        movementErrors.push(errorMsg);
+      }
+    }
+
+    // If any movements failed, log warning but don't fail the entire operation
+    // Inventory items were successfully created, movements are for audit trail
+    if (movementErrors.length > 0) {
+      console.warn('[finalizeConversion] Some movements failed to create:', movementErrors);
+      console.warn('[finalizeConversion] Inventory items created successfully, but audit trail incomplete');
     }
   }
 
