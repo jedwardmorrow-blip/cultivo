@@ -35,6 +35,7 @@
 - **`COA-VAL-001-SUMMARY.md`** - COA validation implementation
 - **`BATCH1-AUDIT-001-SUMMARY.md`** - Code audit (zero violations)
 - **`BATCH1-CODE-AUDIT-RESULTS.md`** - Detailed audit report
+- **`BATCH1-MIG-003-TO-006-SUMMARY.md`** - Migrations 3-6 status verification
 
 ---
 
@@ -111,8 +112,8 @@ Every session must:
 
 ### Overall Progress
 - **Phases Complete:** 1 of 3 (33%)
-- **Sessions Complete:** 3 of 9+ (33%)
-- **Total Time:** 165 minutes
+- **Sessions Complete:** 4 of 9+ (44%)
+- **Total Time:** 195 minutes
 - **Build Status:** ✅ Passing
 - **Breaking Changes:** 0
 
@@ -120,15 +121,17 @@ Every session must:
 
 ## Next Steps
 
-**Recommended:** BATCH1-MIG-003 (Deploy Migration 3: Lifecycle State Timing)
+**Recommended:** BATCH1-VERIFY (Final Verification & Testing)
 
 **Duration:** 45-60 minutes
 
 **Purpose:**
-- Deploy trigger that moves lifecycle state updates from session START to session COMPLETION
-- Ensures batch states reflect actual completion, not just intention
-- Improves data accuracy and workflow visibility
-- Safe to deploy (no code changes required)
+- Test all 6 deployed Batch 1 migrations
+- Verify trigger functionality (12 triggers active)
+- Test quarantine gate enforcement
+- Validate ledger-only pattern
+- Document any issues found
+- Create final Batch 1 completion report
 
 ---
 
@@ -141,5 +144,6 @@ Every session must:
 - [Session 1.2](./COA-VAL-001-SUMMARY.md) - COA validation
 - [Session 2.1](./BATCH1-AUDIT-001-SUMMARY.md) - Code audit
 - [Audit Report](./BATCH1-CODE-AUDIT-RESULTS.md) - Detailed findings
+- [Session 2.2](./BATCH1-MIG-003-TO-006-SUMMARY.md) - Migrations 3-6 verification
 
-**Status:** Phase 2 In Progress 🔄 | Session 2.1 Complete ✅
+**Status:** Phase 2 Near Complete 🔄 | Sessions 2.1-2.2 Complete ✅
