@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PackagingSessionInsert, InventoryItem } from '../types';
 import { createPackagingSession } from '../services/sessions.service';
+import { supabase } from '@/lib/supabase';
+import { CheckCircle2, AlertCircle, Upload } from 'lucide-react';
 
 const AVAILABLE_PACKAGERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo', 'Mike', 'Josie'];
 
@@ -26,6 +28,69 @@ export function PackagingSessionStartForm({
     pull_weight: 0,
     notes: ''
   });
+
+  const [coaStatus, setCoaStatus] = useState<{
+    loading: boolean;
+    hasValidCoa: boolean | null;
+    batchRegistryId: string | null;
+  }>({
+    loading: false,
+    hasValidCoa: null,
+    batchRegistryId: null,
+  });
+
+  // Check COA status when batch is selected
+  useEffect(() => {
+    const checkCoaStatus = async () => {
+      if (!formData.batch_id) {
+        setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: null });
+        return;
+      }
+
+      setCoaStatus(prev => ({ ...prev, loading: true }));
+
+      try {
+        // Get batch_registry_id from batch_number
+        const { data: batchData, error: batchError } = await supabase
+          .from('batch_registry')
+          .select('id')
+          .eq('batch_number', formData.batch_id)
+          .single();
+
+        if (batchError || !batchData) {
+          console.error('Error fetching batch:', batchError);
+          setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: null });
+          return;
+        }
+
+        // Check for active COA
+        const { data: coaData, error: coaError } = await supabase
+          .from('certificates_of_analysis')
+          .select('id')
+          .eq('batch_id', batchData.id)
+          .eq('is_active', true)
+          .limit(1);
+
+        if (coaError) {
+          console.error('Error fetching COA:', coaError);
+          setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: batchData.id });
+          return;
+        }
+
+        const hasValidCoa = (coaData && coaData.length > 0);
+        setCoaStatus({
+          loading: false,
+          hasValidCoa,
+          batchRegistryId: batchData.id
+        });
+      } catch (error) {
+        console.error('Unexpected error checking COA:', error);
+        setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: null });
+      }
+    };
+
+    checkCoaStatus();
+  }, [formData.batch_id]);
 
   const getAvailableBatchesForStrain = (strain: string) => {
     const batches = inventoryPackages
@@ -94,6 +159,12 @@ export function PackagingSessionStartForm({
           'The selected package could not be found in inventory. ' +
           'It may have been consumed or removed.\n\n' +
           'Please refresh and select a different package.'
+        );
+      } else if (error.message.includes('Certificate of Analysis') || error.message.includes('COA')) {
+        alert(
+          'COA Required\n\n' +
+          error.message + '\n\n' +
+          'Please upload a Certificate of Analysis in the Batches section before packaging this batch.'
         );
       } else {
         alert('Error starting session: ' + error.message);
@@ -167,6 +238,28 @@ export function PackagingSessionStartForm({
                 <option key={batch} value={batch}>{batch}</option>
               ))}
             </select>
+
+            {/* COA Status Indicator */}
+            {formData.batch_id && (
+              <div className="mt-2">
+                {coaStatus.loading ? (
+                  <div className="flex items-center gap-2 text-sm text-cult-light-gray">
+                    <div className="animate-spin h-4 w-4 border-2 border-cult-light-gray border-t-transparent rounded-full"></div>
+                    <span>Checking COA status...</span>
+                  </div>
+                ) : coaStatus.hasValidCoa === true ? (
+                  <div className="flex items-center gap-2 text-sm text-cult-green">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="font-medium">Valid COA on file</span>
+                  </div>
+                ) : coaStatus.hasValidCoa === false ? (
+                  <div className="flex items-center gap-2 text-sm text-yellow-500">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="font-medium">No COA found - upload required before packaging</span>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-cult-white mb-1">
