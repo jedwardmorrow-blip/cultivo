@@ -395,6 +395,34 @@ export async function finalizeConversion(params: {
 
     console.log('[finalizeConversion] Successfully created inventory items');
 
+    // Step 3.5: Validate ATP consistency for all created items
+    // After PRODUCE trigger runs, verify: available_qty = on_hand_qty - reserved_qty
+    console.log('[finalizeConversion] Validating ATP consistency...');
+
+    for (const item of inventoryItems) {
+      const { data: invItem, error: checkError } = await supabase
+        .from('inventory_items')
+        .select('package_id, on_hand_qty, available_qty, reserved_qty')
+        .eq('package_id', item.package_id)
+        .single();
+
+      if (checkError || !invItem) {
+        console.error(`[finalizeConversion] ATP check failed - could not find item: ${item.package_id}`);
+        continue;
+      }
+
+      const expectedAvailableQty = invItem.on_hand_qty - (invItem.reserved_qty || 0);
+      const actualAvailableQty = invItem.available_qty;
+
+      if (Math.abs(expectedAvailableQty - actualAvailableQty) > 0.01) {
+        const atpError = `ATP VIOLATION: ${invItem.package_id} - Expected available_qty=${expectedAvailableQty}, Got=${actualAvailableQty} (on_hand=${invItem.on_hand_qty}, reserved=${invItem.reserved_qty})`;
+        console.error(`[finalizeConversion] ${atpError}`);
+        errorService.handle(new Error(atpError), 'ATP consistency check failed');
+      }
+    }
+
+    console.log('[finalizeConversion] ATP consistency validated');
+
     // Step 4: Create inventory movements for audit trail
     const movementErrors: string[] = [];
 

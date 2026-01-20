@@ -4,6 +4,202 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-21 - Available Quantity ATP Violations Fix
+
+**Type:** 🔴 CRITICAL BUG FIX + DATABASE INTEGRITY
+**Module:** Inventory Tracking & Data Integrity
+**Priority:** CRITICAL - Production Workflow Blocked
+**Impact:** 14,459g of inventory made visible + Future violation prevention
+**Status:** ✅ COMPLETE
+**Migrations:** 3 new migrations added
+**Files Changed:** 1 service file + 3 documentation files
+**Session ID:** AVAIL-QTY-FIX-001
+**Documentation:** docs/SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX.md
+
+### Summary
+
+Fixed critical data integrity issue where inventory items showed "0 grams" in UI despite having actual on-hand quantity, making 14,459g of inventory invisible to production. Root cause: ATP (Available-to-Promise) formula violations where `available_qty ≠ (on_hand_qty - reserved_qty)`. Added database constraint and application-level validation to prevent future occurrences.
+
+### Problem
+
+**User Report:** "What's up with these line items in the inventory screen with 0 grams?"
+
+**Symptoms:**
+- 12 inventory packages showing 0 grams in All Inventory view
+- Packages had `on_hand_qty > 0` but `available_qty = 0` or incorrect value
+- Total hidden inventory: 14,459g across 3 strains
+- Production workflow blocked: invisible inventory cannot be used
+
+**Root Causes:**
+
+1. **Historical Conversion Bug (12 packages, Jan 15-19)**
+   - Conversion finalization set `available_qty` incorrectly
+   - Pattern 1: `available_qty = 0` (should equal on_hand_qty)
+   - Pattern 2: `available_qty = on_hand_qty / 2` (should equal on_hand_qty - reserved_qty)
+   - Affected: 3 trim packages (8,920g) + 9 bucking packages (5,539g)
+
+2. **Stale Session Reservations (2 packages, >24 hours)**
+   - Two Magic Marker trim sessions pending finalization
+   - RESERVE movements decremented available_qty
+   - Sessions never finalized or voided → orphaned reservations
+   - 1,000g effectively locked but not visible
+
+### Solution
+
+**Part 1: Data Repair (3 migrations)**
+
+Migration `fix_broken_available_qty_bug`:
+- Created variance_log audit entries for 3 packages
+- Corrected `available_qty = on_hand_qty` for packages with zero reserved_qty
+- Created `inventory_qty_health` monitoring view
+- **Restored:** 8,920g across 3 packages
+
+Migration `fix_atp_violations_bucking_sessions`:
+- Created variance_log audit entries for 9 packages
+- Corrected `available_qty = on_hand_qty - reserved_qty` using ATP formula
+- Verified zero violations after repair
+- **Restored:** 5,539g across 9 packages (some partially reserved)
+
+Migration `add_atp_consistency_constraint`:
+- Added CHECK constraint: `available_qty = on_hand_qty - COALESCE(reserved_qty, 0)`
+- Prevents future ATP violations at database write-time
+- Minimal performance overhead (runs on INSERT/UPDATE only)
+
+**Part 2: Stale Session Cleanup (Manual)**
+
+Voided 2 Magic Marker trim sessions:
+```sql
+UPDATE trim_sessions
+SET finalization_status = 'voided',
+    void_reason = 'Stale session cleanup - Session exceeded 24hr pending threshold'
+WHERE id IN ('4ba133f6...', '823e992c...');
+```
+
+Created RELEASE movements to restore available_qty:
+- Package 260119-MGM-004: Released 500g
+- Package 260119-MGM-006: Released 500g
+
+**Part 3: Application Validation (1 file)**
+
+`src/features/inventory/services/conversions.service.ts` (lines 398-424):
+- Added ATP validation after inventory_items creation
+- Validates: `available_qty = on_hand_qty - reserved_qty`
+- Logs violations to console and error service
+- Provides diagnostic information for debugging
+
+**Part 4: Process Documentation (3 files)**
+
+`docs/INVENTORY-TRACKING.md`:
+- Added TROUBLESHOOTING section with ATP violation guide
+- Detection queries, repair workflow, prevention measures
+- Common causes and resolution procedures
+
+`docs/SESSIONS.md`:
+- Added Session Timeout Policy (>24 hours → review and void)
+- Detection query for stale sessions
+- 4-step resolution workflow
+- Monitoring and exception guidelines
+
+`docs/AI-BUILD-SESSION-CHECKLIST.md`:
+- Enhanced Post-Session checklist with ATP validation
+- 6-step verification process for inventory changes
+- Pre/post-deployment checks
+- Stale session detection
+
+### Impact
+
+**Inventory Restored:**
+- ✅ 14,459g total inventory made visible and usable
+- ✅ 12 packages repaired across 3 strains (Asunder, Dog Shit, Chembanger, Gas Face, Magic Marker)
+- ✅ Zero data loss - all corrections audited in variance_log
+
+**Data Integrity Improved:**
+- ✅ ATP constraint prevents future violations at database level
+- ✅ Application validation provides early detection and diagnostics
+- ✅ Monitoring view (`inventory_qty_health`) enables proactive detection
+- ✅ Session timeout policy prevents orphaned reservations
+
+**Production Workflow:**
+- ✅ All inventory now visible for trimming/packaging
+- ✅ Magic Marker finalization can proceed
+- ✅ No breaking changes - backward compatible
+
+### Files Modified
+
+**Database Migrations (3):**
+1. `supabase/migrations/20260121000000_fix_broken_available_qty_bug.sql`
+2. `supabase/migrations/20260121000001_fix_atp_violations_bucking_sessions.sql`
+3. `supabase/migrations/20260121000002_add_atp_consistency_constraint.sql`
+
+**Application Code (1):**
+1. `src/features/inventory/services/conversions.service.ts` - Added ATP validation
+
+**Documentation (3):**
+1. `docs/INVENTORY-TRACKING.md` - Added TROUBLESHOOTING section
+2. `docs/SESSIONS.md` - Added Session Management Policies
+3. `docs/AI-BUILD-SESSION-CHECKLIST.md` - Enhanced with ATP validation
+
+**Session Summary:**
+- `docs/SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX.md` - Complete fix documentation
+
+### Technical Details
+
+**ATP Formula (Now Enforced):**
+```
+available_qty = on_hand_qty - COALESCE(reserved_qty, 0)
+```
+
+**Monitoring View:**
+```sql
+CREATE VIEW inventory_qty_health AS
+SELECT
+  package_id,
+  on_hand_qty,
+  available_qty,
+  reserved_qty,
+  (on_hand_qty - COALESCE(reserved_qty, 0)) as expected_available_qty,
+  CASE
+    WHEN available_qty != (on_hand_qty - COALESCE(reserved_qty, 0))
+    THEN 'MISMATCH' ELSE 'OK'
+  END as health_status
+FROM inventory_items;
+```
+
+**Stale Session Detection:**
+```sql
+-- Find sessions pending > 24 hours
+SELECT session_type, id, batch_registry_id, NOW() - completed_at as pending_duration
+FROM (
+  SELECT 'trim', id, batch_registry_id, completed_at FROM trim_sessions WHERE finalization_status = 'pending'
+  UNION ALL
+  SELECT 'packaging', id, batch_registry_id, completed_at FROM packaging_sessions WHERE finalization_status = 'pending'
+  UNION ALL
+  SELECT 'bucking', id, batch_registry_id, completed_at FROM bucking_sessions WHERE finalization_status = 'pending'
+) WHERE NOW() - completed_at > INTERVAL '24 hours';
+```
+
+### Verification
+
+```sql
+-- ✅ Zero ATP violations after fix
+SELECT COUNT(*) FROM inventory_qty_health WHERE health_status = 'MISMATCH';
+-- Result: 0
+
+-- ✅ Constraint active
+SELECT constraint_name FROM information_schema.check_constraints
+WHERE constraint_name = 'chk_atp_consistency';
+-- Result: chk_atp_consistency
+
+-- ✅ All 12 packages visible with correct available_qty
+SELECT package_id, on_hand_qty, available_qty, reserved_qty
+FROM inventory_items
+WHERE package_id IN ('260115-ASU-001', '260115-ASU-002', '260115-DOG-001', ...)
+ORDER BY package_id;
+-- All show: available_qty = on_hand_qty - reserved_qty
+```
+
+---
+
 ## 2026-01-20 - Batch Display & Trim Session Form Critical Bug Fix
 
 **Type:** 🔴 CRITICAL BUG FIX

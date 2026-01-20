@@ -2472,6 +2472,53 @@ ORDER BY event_object_table, trigger_name;
 - Add version history entry to updated docs
 - Update "Last Updated" date in document header
 - Cross-reference related docs to ensure consistency
+- **If inventory/conversion changes:** Verify ATP consistency (see ATP Validation section below)
+
+**ATP (Available-to-Promise) Validation Checklist:**
+
+CRITICAL: Always run after changes to inventory, sessions, or conversion workflows.
+
+1. **Pre-Deployment: Check for Existing Violations**
+   ```sql
+   SELECT COUNT(*) FROM inventory_qty_health WHERE health_status = 'MISMATCH';
+   ```
+   - If violations found: Fix before deploying code changes
+   - See INVENTORY-TRACKING.md Troubleshooting for repair workflow
+
+2. **Post-Deployment: Verify ATP Constraint**
+   ```sql
+   -- Constraint should exist
+   SELECT constraint_name, check_clause
+   FROM information_schema.check_constraints
+   WHERE constraint_name = 'chk_atp_consistency';
+   ```
+   - Expected: `available_qty = on_hand_qty - COALESCE(reserved_qty, 0)`
+   - If missing: Add via migration (see add_atp_consistency_constraint)
+
+3. **Session Changes: Verify Reservation Behavior**
+   - Start test session → verify RESERVE movement decrements available_qty
+   - Void test session → verify RELEASE movement restores available_qty
+   - Complete test session → verify finalization creates correct available_qty
+   - Check: `SELECT * FROM inventory_qty_health WHERE health_status = 'MISMATCH'`
+
+4. **Stale Session Check**
+   ```sql
+   -- Find sessions pending > 24 hours
+   SELECT session_type, id, batch_registry_id, NOW() - completed_at as pending_duration
+   FROM (...) WHERE NOW() - completed_at > INTERVAL '24 hours';
+   ```
+   - Action: Void stale sessions per SESSIONS.md timeout policy
+   - Create RELEASE movements to restore available_qty
+
+5. **Application Validation Check**
+   - Verify ATP validation exists in conversions.service.ts (line ~398-424)
+   - Check logs for ATP violations after test finalization
+   - Expected: Console logs "ATP consistency validated" with no errors
+
+6. **Documentation Update**
+   - If ATP violations found/fixed: Update session summary
+   - If new violation patterns: Add to INVENTORY-TRACKING.md Troubleshooting
+   - If constraint added/modified: Update DATASETS.md schema reference
 
 **Critical Documents Requiring Cross-Validation:**
 1. SYSTEM-WORKFLOW.md - Master workflow reference

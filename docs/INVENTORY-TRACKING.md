@@ -1626,6 +1626,104 @@ export function useCombineWorkflow(packages: InventoryItem[]) {
 
 ---
 
+## TROUBLESHOOTING
+
+### ATP (Available-to-Promise) Violations
+
+**Symptom:** Inventory items showing 0 grams in UI despite having on_hand_qty > 0
+
+**Root Cause:** ATP consistency violation where `available_qty ≠ (on_hand_qty - reserved_qty)`
+
+**ATP Formula (Enforced by Database Constraint):**
+```
+available_qty = on_hand_qty - reserved_qty
+```
+
+**Detection:**
+```sql
+-- View all ATP violations
+SELECT * FROM inventory_qty_health WHERE health_status = 'MISMATCH';
+```
+
+**Common Causes:**
+
+1. **Historical Conversion Bug (Fixed 2026-01-21)**
+   - **Symptom:** `available_qty` set to half of expected value
+   - **Affected:** Bucking/trim sessions Jan 15-19, 2026
+   - **Detection:** available_qty = expected_qty / 2
+   - **Fix:** Run migration `fix_atp_violations_bucking_sessions`
+
+2. **Stale Session Reservations (>24 hours pending)**
+   - **Symptom:** reserved_qty > 0 with no active session
+   - **Detection:** Check `trim_sessions/packaging_sessions/bucking_sessions` for pending status
+   - **Fix:** Void stale session + create RELEASE movements
+   - **Policy:** Sessions pending > 24 hours should be voided
+
+3. **Direct Quantity Updates (Now Prevented)**
+   - **Symptom:** on_hand_qty changed without corresponding movement
+   - **Prevention:** Database trigger blocks direct updates (as of 2025-11-28)
+   - **Fix:** Use inventory_movements ledger only
+
+**Repair Workflow:**
+
+```sql
+-- Step 1: Identify violations
+SELECT
+  package_id,
+  on_hand_qty,
+  available_qty,
+  reserved_qty,
+  (on_hand_qty - COALESCE(reserved_qty, 0)) as expected_available_qty
+FROM inventory_qty_health
+WHERE health_status = 'MISMATCH';
+
+-- Step 2: Create variance_log audit entry
+INSERT INTO variance_log (
+  source_type, source_id, inventory_item_id, package_id,
+  expected_qty, actual_qty, variance_qty, variance_percentage,
+  variance_reason, notes, unit, inventory_stage, strain, batch, product_name,
+  timestamp, created_at
+) ...;
+
+-- Step 3: Repair available_qty
+UPDATE inventory_items
+SET
+  available_qty = on_hand_qty - COALESCE(reserved_qty, 0),
+  last_updated = NOW()
+WHERE package_id IN (...);
+
+-- Step 4: Verify fix
+SELECT COUNT(*) FROM inventory_qty_health WHERE health_status = 'MISMATCH';
+-- Should return 0
+```
+
+**Prevention:**
+
+1. **Database Constraint (Added 2026-01-21):**
+   ```sql
+   ALTER TABLE inventory_items
+   ADD CONSTRAINT chk_atp_consistency
+   CHECK (available_qty = on_hand_qty - COALESCE(reserved_qty, 0));
+   ```
+
+2. **Application Validation (Added 2026-01-21):**
+   - `conversions.service.ts` validates ATP after inventory_items creation
+   - Logs ATP violations to console and error service
+   - See: `src/features/inventory/services/conversions.service.ts:398-424`
+
+3. **Monitoring View:**
+   - `inventory_qty_health` view tracks ATP consistency
+   - Query daily to detect violations
+   - Include in scheduled reports
+
+**Session Fixes:**
+- Session: AVAIL-QTY-FIX-001 (2026-01-21)
+- Total Fixed: 14,459g across 12 packages
+- Migrations: `fix_broken_available_qty_bug`, `fix_atp_violations_bucking_sessions`
+- See: `docs/SESSION-2026-01-21-ATP-FIX.md` (when created)
+
+---
+
 ## REFERENCES
 
 - **SYSTEM-WORKFLOW.md Section 4** - Source of this document

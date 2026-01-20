@@ -985,6 +985,121 @@ variance = input_weight - expected_weight - waste_weight
 
 ---
 
+## Session Management Policies
+
+### Session Timeout Policy
+
+**Problem:** Sessions left in pending state create orphaned inventory reservations that hide available inventory from production workflow.
+
+**Policy:** Sessions pending finalization for >24 hours should be reviewed and voided if appropriate.
+
+**Rationale:**
+- Pending sessions create RESERVE movements that decrement `available_qty`
+- Reserved inventory cannot be used for other production activities
+- Stale reservations cause ATP (Available-to-Promise) violations
+- Long-pending sessions indicate workflow blockage or abandoned work
+
+**Detection:**
+```sql
+-- Find sessions pending > 24 hours
+SELECT
+  session_type,
+  id,
+  batch_registry_id,
+  completed_at,
+  NOW() - completed_at as pending_duration
+FROM (
+  SELECT 'trim' as session_type, id, batch_registry_id, completed_at
+  FROM trim_sessions
+  WHERE session_status = 'completed' AND finalization_status = 'pending'
+
+  UNION ALL
+
+  SELECT 'packaging' as session_type, id, batch_registry_id, completed_at
+  FROM packaging_sessions
+  WHERE session_status = 'completed' AND finalization_status = 'pending'
+
+  UNION ALL
+
+  SELECT 'bucking' as session_type, id, batch_registry_id, completed_at
+  FROM bucking_sessions
+  WHERE session_status = 'completed' AND finalization_status = 'pending'
+) sessions
+WHERE NOW() - completed_at > INTERVAL '24 hours'
+ORDER BY pending_duration DESC;
+```
+
+**Resolution Workflow:**
+
+1. **Investigate Why Session Is Pending**
+   - Check with production manager
+   - Review session data for errors
+   - Verify if work was actually completed
+
+2. **Void Stale Session (if appropriate)**
+   ```sql
+   -- Example: Void stale trim session
+   UPDATE trim_sessions
+   SET
+     finalization_status = 'voided',
+     void_reason = 'Stale session cleanup - Session exceeded 24hr pending threshold'
+   WHERE id = 'session-uuid';
+   ```
+
+3. **Release Reserved Inventory**
+   - Voiding session should trigger automatic RELEASE movements (see Session Cancellation)
+   - If trigger doesn't exist, manually create RELEASE movements:
+   ```sql
+   INSERT INTO inventory_movements (
+     movement_kind,
+     dest_item_id,
+     qty,
+     unit,
+     reason_code,
+     reference_type,
+     reference_id,
+     notes
+   ) VALUES (
+     'RELEASE',
+     'inventory-item-uuid',
+     reserved_qty,
+     'g',
+     'session_voided',
+     'trim_session',
+     'session-uuid',
+     'Released from stale session void'
+   );
+   ```
+
+4. **Update Inventory Items**
+   ```sql
+   -- Restore available_qty after RELEASE movement
+   UPDATE inventory_items
+   SET
+     available_qty = on_hand_qty - COALESCE(reserved_qty, 0),
+     reserved_qty = 0,
+     last_updated = NOW()
+   WHERE package_id IN ('affected-packages');
+   ```
+
+**Monitoring:**
+- Run detection query daily
+- Alert production manager if sessions pending > 24 hours
+- Include in daily production reports
+- Track void reasons to identify systemic issues
+
+**Exceptions:**
+- Sessions pending due to COA wait: Acceptable if COA expected soon
+- Sessions pending due to manager approval: Acceptable if manager notified
+- Sessions pending due to equipment issues: Document in notes
+
+**Related:**
+- See INVENTORY-TRACKING.md Troubleshooting section for ATP violations
+- See Session Cancellation section for trigger behavior
+- Session fix history: AVAIL-QTY-FIX-001 (2026-01-21)
+
+---
+
 ## Implementation Status
 
 ### Completed Features ✅
