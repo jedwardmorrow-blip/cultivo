@@ -31,21 +31,39 @@ export function BuckingSessionStartForm({
   };
 
   const getBatchesForStrain = (strain: string) => {
-    const batches = binnedPackages
-      .filter(pkg => pkg.strain === strain && pkg.batch)
-      .map(pkg => pkg.batch as string);
-    return [...new Set(batches)].sort();
+    if (!strain || !binnedPackages || binnedPackages.length === 0) {
+      return [];
+    }
+
+    // Create a map to store unique batch_id -> batch_number mappings
+    const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
+
+    binnedPackages
+      .filter((pkg: any) => pkg && pkg.strain === strain && pkg.batch_id)
+      .forEach((pkg: any) => {
+        if (!batchMap.has(pkg.batch_id)) {
+          batchMap.set(pkg.batch_id, {
+            batch_id: pkg.batch_id,
+            batch_number: pkg.batch_number || pkg.batch_id // Fallback to UUID if missing
+          });
+        }
+      });
+
+    // Return array sorted by batch_number
+    return Array.from(batchMap.values()).sort((a, b) =>
+      a.batch_number.localeCompare(b.batch_number)
+    );
   };
 
   const getPackagesForBatch = (strain: string, batchId: string) => {
-    return binnedPackages.filter(pkg =>
+    return binnedPackages.filter((pkg: any) =>
       pkg.strain === strain &&
-      pkg.batch === batchId &&
+      pkg.batch_id === batchId &&
       pkg.available_qty && pkg.available_qty > 0
     );
   };
 
-  const batches = form.strain ? getBatchesForStrain(form.strain) : [];
+  const batches: Array<{ batch_id: string; batch_number: string }> = form.strain ? getBatchesForStrain(form.strain) : [];
   const packages = form.strain && form.batch_id ? getPackagesForBatch(form.strain, form.batch_id) : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,7 +189,9 @@ export function BuckingSessionStartForm({
             >
               <option value="">Select batch</option>
               {batches.map(batch => (
-                <option key={batch} value={batch}>{batch}</option>
+                <option key={batch.batch_id} value={batch.batch_id}>
+                  {batch.batch_number}
+                </option>
               ))}
             </select>
           </div>

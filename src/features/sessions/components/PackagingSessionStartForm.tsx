@@ -50,30 +50,18 @@ export function PackagingSessionStartForm({
       setCoaStatus(prev => ({ ...prev, loading: true }));
 
       try {
-        // Get batch_registry_id from batch_number
-        const { data: batchData, error: batchError } = await supabase
-          .from('batch_registry')
-          .select('id')
-          .eq('batch_number', formData.batch_id)
-          .single();
-
-        if (batchError || !batchData) {
-          console.error('Error fetching batch:', batchError);
-          setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: null });
-          return;
-        }
-
-        // Check for active COA
+        // formData.batch_id now contains the UUID, not batch_number
+        // Check for active COA directly using the batch_id
         const { data: coaData, error: coaError } = await supabase
           .from('certificates_of_analysis')
           .select('id')
-          .eq('batch_id', batchData.id)
+          .eq('batch_id', formData.batch_id)
           .eq('is_active', true)
           .limit(1);
 
         if (coaError) {
           console.error('Error fetching COA:', coaError);
-          setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: batchData.id });
+          setCoaStatus({ loading: false, hasValidCoa: null, batchRegistryId: formData.batch_id });
           return;
         }
 
@@ -81,7 +69,7 @@ export function PackagingSessionStartForm({
         setCoaStatus({
           loading: false,
           hasValidCoa,
-          batchRegistryId: batchData.id
+          batchRegistryId: formData.batch_id
         });
       } catch (error) {
         console.error('Unexpected error checking COA:', error);
@@ -93,16 +81,34 @@ export function PackagingSessionStartForm({
   }, [formData.batch_id]);
 
   const getAvailableBatchesForStrain = (strain: string) => {
-    const batches = inventoryPackages
-      .filter(pkg => pkg.strain === strain && pkg.batch)
-      .map(pkg => pkg.batch as string);
-    return [...new Set(batches)].sort();
+    if (!strain || !inventoryPackages || inventoryPackages.length === 0) {
+      return [];
+    }
+
+    // Create a map to store unique batch_id -> batch_number mappings
+    const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
+
+    inventoryPackages
+      .filter((pkg: any) => pkg && pkg.strain === strain && pkg.batch_id)
+      .forEach((pkg: any) => {
+        if (!batchMap.has(pkg.batch_id)) {
+          batchMap.set(pkg.batch_id, {
+            batch_id: pkg.batch_id,
+            batch_number: pkg.batch_number || pkg.batch_id // Fallback to UUID if missing
+          });
+        }
+      });
+
+    // Return array sorted by batch_number
+    return Array.from(batchMap.values()).sort((a, b) =>
+      a.batch_number.localeCompare(b.batch_number)
+    );
   };
 
   const getPackagesForBatch = (strain: string, batchId: string) => {
-    return inventoryPackages.filter(pkg =>
+    return inventoryPackages.filter((pkg: any) =>
       pkg.strain === strain &&
-      pkg.batch === batchId &&
+      pkg.batch_id === batchId &&
       pkg.available_qty && pkg.available_qty > 0
     );
   };
@@ -235,7 +241,9 @@ export function PackagingSessionStartForm({
             >
               <option value="">{formData.strain ? 'Select Batch ID' : 'Select strain first'}</option>
               {getAvailableBatchesForStrain(formData.strain || '').map(batch => (
-                <option key={batch} value={batch}>{batch}</option>
+                <option key={batch.batch_id} value={batch.batch_id}>
+                  {batch.batch_number}
+                </option>
               ))}
             </select>
 

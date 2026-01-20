@@ -77,10 +77,24 @@ export function TrimSessionStartForm({
       return [];
     }
 
-    const batches = buckedPackages
+    // Create a map to store unique batch_id -> batch_number mappings
+    const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
+
+    buckedPackages
       .filter((pkg: any) => pkg && pkg.strain?.name === strain && pkg.batch_id)
-      .map((pkg: any) => pkg.batch_id as string);
-    return [...new Set(batches)].sort();
+      .forEach((pkg: any) => {
+        if (!batchMap.has(pkg.batch_id)) {
+          batchMap.set(pkg.batch_id, {
+            batch_id: pkg.batch_id,
+            batch_number: pkg.batch_number || pkg.batch_id // Fallback to UUID if missing
+          });
+        }
+      });
+
+    // Return array sorted by batch_number
+    return Array.from(batchMap.values()).sort((a, b) =>
+      a.batch_number.localeCompare(b.batch_number)
+    );
   };
 
   const getPackagesForBatch = (strain: string, batchId: string) => {
@@ -96,7 +110,7 @@ export function TrimSessionStartForm({
     );
   };
 
-  const batches = form.strain ? getBatchesForStrain(form.strain) : [];
+  const batches: Array<{ batch_id: string; batch_number: string }> = form.strain ? getBatchesForStrain(form.strain) : [];
   const packages = form.strain && form.batch_id ? getPackagesForBatch(form.strain, form.batch_id) : [];
 
   return (
@@ -163,7 +177,9 @@ export function TrimSessionStartForm({
             >
               <option value="">Select batch</option>
               {batches.map(batch => (
-                <option key={batch} value={batch}>{batch}</option>
+                <option key={batch.batch_id} value={batch.batch_id}>
+                  {batch.batch_number}
+                </option>
               ))}
             </select>
           </div>

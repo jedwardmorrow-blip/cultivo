@@ -91,7 +91,7 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
         on_hand_qty: item.on_hand_qty,
         unit: item.unit || 'g',
         batch_id: item.batch_id || '',
-        batch_number: item.batch || 'Unknown',
+        batch_number: item.batch_number || 'Unknown',
         product_id: item.product_id || '',
         product_name: item.product_name || 'Unknown',
         product_stage_id: item.product_stage_id || '',
@@ -334,8 +334,8 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
           },
           {
             header: 'Batch',
-            accessor: 'batch',
-            format: (val) => <span className="text-cult-light-gray">{val}</span>,
+            accessor: 'batch_number',
+            format: (val) => <span className="text-cult-light-gray">{val || '-'}</span>,
           },
           {
             header: 'Room',
