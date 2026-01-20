@@ -1,5 +1,111 @@
 # Changelog — CULT Seed-to-Sale System
 
+## 2026-01-20 - Conversion Double-Counting Bug Fix
+
+### Bug Fix
+**Type:** 🐛 Critical Bug Fix
+**Priority:** HIGH
+**Impact:** Inventory accuracy and session workflows
+**Session:** CONV-FIX-001 Update
+**Affected Documents:**
+- AI-Build-Sessions/CONV-FIX-001-SUMMARY.md: Updated with double-counting fix
+
+#### Issue
+Conversion finalization was creating inventory items with `on_hand_qty` already set, then recording a PRODUCE movement that added to it again, causing quantities to be **doubled**.
+
+**Evidence:**
+```
+Package 260119-MGM-001:
+- Created with: 300g
+- Movement added: +300g
+- Result: on_hand_qty = 600g (doubled!)
+- Available: 300g (correct)
+- Discrepancy: 300g
+```
+
+**Root Cause:** Violated immutable ledger architecture by setting `on_hand_qty` directly AND recording a movement, breaking the single-source-of-truth principle.
+
+#### Fix Applied
+
+**Files Modified:**
+1. `src/features/inventory/services/conversions.service.ts` (Line 334)
+   - Changed: `on_hand_qty: quantity` → `on_hand_qty: 0`
+   - Rationale: Let PRODUCE movement trigger set the quantity (single source of truth)
+
+2. `src/features/sessions/components/TrimSessionStartForm.tsx` (3 locations)
+   - Filter packages by `available_qty > 0` (not `on_hand_qty`)
+   - Auto-fill pulled weight from `available_qty`
+   - Display `available_qty` in package dropdown
+
+3. `src/features/sessions/hooks/useSessionData.ts` (Line 28)
+   - Query filter: `.gt('available_qty', 0)` (not `on_hand_qty`)
+
+**Data Repair:**
+- Created 6 ADJUSTMENT movements to correct doubled quantities
+- All affected packages (260119-MGM-001 through 006) now show correct quantities
+- Verification: `on_hand_qty = available_qty` (no reservations)
+
+#### Architecture Compliance Restored
+
+**Principles Enforced:**
+- ✅ Movements as single source of truth (INVENTORY-TRACKING.md)
+- ✅ on_hand_qty managed exclusively by movement triggers
+- ✅ available_qty as ATP (Available-To-Promise) field
+- ✅ Event-driven ledger pattern maintained
+
+**Why This Pattern is Correct:**
+```typescript
+// Create inventory item with zero quantity
+on_hand_qty: 0,           // Let movement trigger set this
+available_qty: quantity,  // ATP field - set directly
+
+// Record PRODUCE movement (source of truth)
+recordMovement({ movement_kind: 'PRODUCE', qty: quantity });
+// Trigger updates: on_hand_qty = 0 + quantity = quantity (correct!)
+```
+
+#### Verification Results
+
+**Database:**
+```sql
+-- All 6 packages now correct
+260119-MGM-001: 300g / 300g ✅
+260119-MGM-002: 300g / 300g ✅
+260119-MGM-003: 300g / 300g ✅
+260119-MGM-004: 500g / 500g ✅
+260119-MGM-005: 500g / 500g ✅
+260119-MGM-006: 500g / 500g ✅
+```
+
+**Build:**
+- ✅ TypeScript compilation successful
+- ✅ No errors or warnings
+- ✅ Production-ready
+
+**User Impact:**
+- ✅ Inventory table now shows correct available quantities
+- ✅ Trim session dropdown displays actual available amounts
+- ✅ Packages are now visible for use in sessions
+- ✅ Future conversions will create correct quantities
+
+#### Statistics
+
+- **Files Changed:** 3 code files + 1 documentation file
+- **Lines Modified:** 5 code lines
+- **Data Fixed:** 6 inventory packages
+- **Movements Created:** 6 ADJUSTMENT movements
+- **Build Time:** No increase
+- **Risk Level:** LOW (minimal changes, high impact)
+
+#### Prevention
+
+Documentation updated in INVENTORY-TRACKING.md and CONV-FIX-001-SUMMARY.md with:
+- Warning against direct `on_hand_qty` manipulation
+- Code examples showing correct vs incorrect patterns
+- Architectural principles reinforced
+
+---
+
 ## 2026-01-20 - Batch Number Consolidation & Auto-Population
 
 ### Implementation Changes

@@ -856,6 +856,52 @@ VALUES ('PRODUCTION', new_item_id, qty, session_id, 'session_finalization');
 **Priority:** HIGH - Without this, the finalization workflow is incomplete
 **See:** Plan B in AI-BUILD-SESSION-CHECKLIST.md for detailed fix plan
 
+### ⚠️ CRITICAL: Common Pitfall - Double-Counting in Conversions
+
+**Issue:** When creating inventory items from conversions, it's critical to follow the event-driven ledger pattern correctly.
+
+**Anti-Pattern (WRONG):**
+```typescript
+// ❌ Sets on_hand_qty directly, then records movement that adds to it again
+await supabase.from('inventory_items').insert({
+  package_id: 'PKG-001',
+  on_hand_qty: 300,      // ❌ Sets to 300g
+  available_qty: 300     // ✅ Correct
+});
+
+await recordMovement({
+  movement_kind: 'PRODUCE',
+  qty: 300               // ❌ Trigger adds ANOTHER 300g to on_hand_qty
+});
+
+// Result: on_hand_qty = 600g (doubled!), available_qty = 300g
+```
+
+**Correct Pattern:**
+```typescript
+// ✅ Let movement be the source of truth
+await supabase.from('inventory_items').insert({
+  package_id: 'PKG-001',
+  on_hand_qty: 0,        // ✅ Start at zero - let trigger set this
+  available_qty: 300     // ✅ ATP field set directly per architecture
+});
+
+await recordMovement({
+  movement_kind: 'PRODUCE',
+  qty: 300               // ✅ Trigger sets on_hand_qty = 0 + 300 = 300
+});
+
+// Result: on_hand_qty = 300g (correct!), available_qty = 300g
+```
+
+**Why This Matters:**
+- **Architectural Principle:** Movements are the source of truth for `on_hand_qty` (immutable ledger pattern)
+- **ATP Separation:** `available_qty` is managed separately by session triggers (ATP tracking)
+- **Trigger Behavior:** PRODUCE movements ADD to `on_hand_qty`, not SET it
+- **Consequence:** Setting `on_hand_qty` directly before recording movement causes double-counting
+
+**Fixed:** 2026-01-20 - See CONV-FIX-001-SUMMARY.md and CHANGELOG.md for details
+
 ### Stage-Specific Conversion Flows
 
 Each processing stage follows the same three-step pattern but with different inputs/outputs:

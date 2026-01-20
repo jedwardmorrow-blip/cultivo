@@ -25,7 +25,7 @@ export function useSessionData() {
           strain:strains(id, name, abbreviation)
         `)
         .ilike('product_name', '%bucked%')
-        .gt('on_hand_qty', 0)
+        .gt('available_qty', 0)
         .order('created_at', { ascending: false });
 
       if (error) {

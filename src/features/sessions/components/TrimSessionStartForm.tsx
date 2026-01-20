@@ -106,7 +106,7 @@ export function TrimSessionStartForm({
       pkg &&
       pkg.strain?.name === strain &&
       pkg.batch_id === batchId &&
-      pkg.on_hand_qty && pkg.on_hand_qty > 0
+      pkg.available_qty && pkg.available_qty > 0
     );
   };
 
@@ -192,7 +192,7 @@ export function TrimSessionStartForm({
                 const selectedPkg = packages.find((p: any) => p.package_id === e.target.value);
                 handleChange('package_id', e.target.value);
                 if (selectedPkg) {
-                  handleChange('pulled_weight', (selectedPkg as any).on_hand_qty || 0);
+                  handleChange('pulled_weight', (selectedPkg as any).available_qty || 0);
                 }
               }}
               required
@@ -202,7 +202,7 @@ export function TrimSessionStartForm({
               <option value="">Select package</option>
               {packages.map((pkg: any) => (
                 <option key={pkg.package_id} value={pkg.package_id}>
-                  {pkg.package_id} ({(pkg.on_hand_qty || 0).toFixed(0)}g)
+                  {pkg.package_id} ({(pkg.available_qty || 0).toFixed(0)}g)
                 </option>
               ))}
             </select>

@@ -331,8 +331,8 @@ export async function finalizeConversion(params: {
         strain: strainName,
         product_stage_id: correctStageId,
         product_name: productName,
-        on_hand_qty: quantity,
-        available_qty: quantity,
+        on_hand_qty: 0, // Let PRODUCE movement trigger set this (prevents double-counting)
+        available_qty: quantity, // ATP field - set directly per architecture
         unit: pkg.weight ? 'g' : 'unit',
         status: 'Available',
         package_date: new Date().toISOString().split('T')[0],
