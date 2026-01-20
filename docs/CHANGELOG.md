@@ -1,5 +1,55 @@
 # Changelog — CULT Seed-to-Sale System
 
+## 2026-01-21 - Batch Lifecycle Trigger System Implementation ⭐ CRITICAL
+
+### Core Architecture Completion
+**Type:** 🏗️ Critical Feature - Core Architecture
+**Priority:** CRITICAL
+**Impact:** Unblocks all trim/packaging operations, fixes 249kg stuck inventory
+
+#### Problem
+- Batch lifecycle triggers documented but never deployed
+- batch1_critical_integrity_fixes never applied (subfolder not auto-deployed)
+- batch1 incomplete anyway (missing bucking triggers, designed before bucking integration)
+- 5 batches with active inventory stuck in wrong states
+- User's trim session blocked with "Invalid lifecycle transition: created → bulk_available is not allowed"
+
+#### Solution
+**Migration 1: Complete Lifecycle Trigger System**
+- Created: `fn_update_batch_lifecycle_on_bucking_complete()` - handles created → bucked transition
+- Created: `fn_handle_bucking_session_cancellation()` - handles bucked → created rollback
+- Attached: 6 lifecycle triggers (2 per session type: bucking, trim, packaging)
+- All session completions now automatically update batch lifecycle_state
+
+**Migration 2: Historical Data Repair**
+- Repaired 45 batches with wrong lifecycle states based on session history
+- Critical repairs: 5 batches with 249kg inventory unblocked
+- All repairs logged to batch_lifecycle_events with full audit trail
+
+#### Files Changed
+**Migrations:**
+- `add_complete_session_lifecycle_trigger_system.sql` (NEW)
+- `repair_batch_lifecycle_states_from_session_history.sql` (NEW)
+
+**Documentation:**
+- `docs/SESSION-2026-01-21-LIFECYCLE-TRIGGER-ARCHITECTURE-FIX.md` (NEW)
+- `supabase/migrations/batch1_critical_integrity_fixes/README.md` (SUPERSEDED notice added)
+- `docs/CHANGELOG.md` (this file)
+
+#### Verification
+All 6 triggers now active (2 per session type), all critical batches show correct states
+
+#### Impact
+- ✅ User's Dog Walker trim session can now complete
+- ✅ All session types automatically update batch lifecycle
+- ✅ Cancellations properly rollback state changes
+- ✅ Full audit trail for all state transitions
+- ✅ State machine enforced at database level
+
+**Related:** Supersedes batch1_critical_integrity_fixes/20251107000003
+
+---
+
 ## 2026-01-20 - Conversion Double-Counting Bug Fix
 
 ### Bug Fix

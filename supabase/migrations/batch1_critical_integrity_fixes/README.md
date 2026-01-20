@@ -1,8 +1,20 @@
 # Batch 1: Critical Integrity Fixes
 
-**Target:** STAGING Database  
-**Status:** Ready for deployment  
-**Priority:** CRITICAL  
+> **⚠️ SUPERSEDED NOTICE**
+>
+> Migration `20251107000003_fix_lifecycle_state_timing.sql` from this batch has been **SUPERSEDED** by:
+> - `add_complete_session_lifecycle_trigger_system.sql` (deployed 2026-01-21)
+> - `repair_batch_lifecycle_states_from_session_history.sql` (deployed 2026-01-21)
+>
+> The lifecycle trigger system is now fully implemented with bucking session support.
+> See: `docs/SESSION-2026-01-21-LIFECYCLE-TRIGGER-ARCHITECTURE-FIX.md`
+>
+> **Other migrations in this batch remain valid but have NOT been deployed.**
+> They require review and update for current schema before deployment.
+
+**Target:** STAGING Database
+**Status:** ⚠️ Partially Superseded - Requires Review
+**Priority:** CRITICAL
 **Risk Level:** Low (additive-only, idempotent)
 
 ---
