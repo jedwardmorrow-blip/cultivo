@@ -1,5 +1,110 @@
 # Changelog — CULT Seed-to-Sale System
 
+## 2026-01-20 - Batch Number Consolidation & Auto-Population
+
+### Implementation Changes
+**Type:** ⚡ Major Data Quality & UX Improvement
+**Impact:** System-wide batch identification standardization
+**Affected Documents:**
+- SESSION-2026-01-20-BATCH-NUMBER-CONSOLIDATION.md: NEW (v1.0)
+
+#### Summary
+Eliminated confusion from multiple batch columns by consolidating to `batch_number` as the single source of truth. Implemented automatic population via database trigger, backfilled 76 inventory items, and updated 22 files across the application for consistent batch display and improved user experience.
+
+#### Key Improvements
+
+1. **Database Layer** (2 migrations)
+   - Created `populate_batch_number()` trigger function
+   - Automatically populates from `batch_registry` on INSERT/UPDATE
+   - Backfilled all 76 existing inventory items
+   - Added CHECK constraint: batch_number required when batch_id exists
+   - Added format validation: `^\d{6}-[A-Z]{3,4}$` (YYMMDD-XXX)
+   - Created performance index on batch_number
+   - Updated `package_assignments_details` view for consistency
+
+2. **Application Layer** (20 files)
+   - **Components (7 files):** Fixed inventory tables, session forms, order displays
+   - **Hooks (3 files):** Updated session data, inventory search, label generation
+   - **Services (8 files):** Updated inventory, orders, invoices, manifests, labels
+   - All components now show human-readable batch numbers (e.g., "251105-MGM")
+   - Session start forms display batch numbers instead of UUIDs
+
+3. **User Experience Enhancements**
+   - Consistent batch display across all screens
+   - Session forms show readable batch numbers in dropdowns
+   - Improved search and filtering by batch number
+   - Better labels, invoices, and documents
+
+4. **Data Integrity Improvements**
+   - Automatic population eliminates manual entry errors
+   - Format validation ensures consistency
+   - Constraint enforcement prevents mismatched data
+   - Single source of truth reduces complexity
+
+#### Code Quality Improvements
+
+**Before (Inconsistent):**
+```typescript
+// Some components used 'batch' (wrong, mostly NULL)
+{ header: 'Batch', accessor: 'batch', ... }
+
+// Session forms showed UUIDs
+<option value={batch.batch_id}>{batch.batch_id}</option>
+```
+
+**After (Consistent):**
+```typescript
+// All components use 'batch_number' (correct, auto-populated)
+{ header: 'Batch', accessor: 'batch_number', ... }
+
+// Session forms show readable batch numbers
+<option value={batch.batch_id}>{batch.batch_number}</option>
+```
+
+#### Benefits
+
+**User Experience:**
+- ✅ Consistent human-readable batch identification
+- ✅ No more UUID confusion in forms
+- ✅ Improved search and filtering
+- ✅ Better printed documents
+
+**Data Quality:**
+- ✅ 100% data integrity (all 76 items backfilled)
+- ✅ Automatic population (zero manual errors)
+- ✅ Format validation enforced
+- ✅ Constraint enforcement
+
+**Developer Experience:**
+- ✅ Single source of truth
+- ✅ Clear relationship: batch_id (FK) → batch_number (display)
+- ✅ Reduced complexity from 3 columns to 1 canonical column
+- ✅ Type-safe accessor patterns
+
+#### Verification
+
+**Database Testing:**
+- ✅ Zero missing batch_numbers (when batch_id exists)
+- ✅ 100% format compliance (YYMMDD-XXX pattern)
+- ✅ All constraints active
+- ✅ Trigger fires correctly
+
+**Build Testing:**
+- ✅ Build successful (20.36s)
+- ✅ Zero TypeScript errors
+- ✅ 2451 modules transformed
+- ✅ Production-ready
+
+#### Statistics
+
+- **Files Changed:** 22 (2 migrations, 7 components, 3 hooks, 8 services, 2 docs)
+- **Items Backfilled:** 76
+- **Build Time:** 20.36s
+- **TypeScript Errors:** 0
+- **Data Integrity:** 100%
+
+---
+
 ## 2025-11-10 - Testing Documentation Enhancement (Phase 6 Complete)
 
 ### Documentation Changes

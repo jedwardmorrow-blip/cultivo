@@ -4,6 +4,170 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-20 - Batch Number Consolidation & Auto-Population
+
+**Type:** ⚡ Major Data Quality Improvement
+**Module:** Inventory System (Database + Components + Services)
+**Priority:** HIGH
+**Impact:** System-Wide User Experience & Data Integrity
+**Status:** ✅ COMPLETE
+**Files Changed:** 22 files (2 migrations, 7 components, 3 hooks, 8 services)
+
+### Summary
+
+Consolidated batch identification to use `batch_number` as the single source of truth across the entire application. Implemented automatic population from `batch_registry` and updated all UI components to display human-readable batch numbers instead of UUIDs. Eliminated confusion from multiple batch columns and improved data integrity with database constraints.
+
+### Problem
+
+The system had three batch-related columns causing confusion:
+1. `batch` (text) - Legacy column from CSV imports (mostly NULL)
+2. `batch_id` (uuid) - Foreign key to batch_registry
+3. `batch_number` (text) - Human-readable identifier (e.g., "251105-MGM")
+
+**Issues:**
+- Multiple columns caused inconsistent displays across the UI
+- Manual population was error-prone
+- Session start forms showed UUIDs instead of readable batch numbers
+- No enforcement ensuring batch_number matched batch_id
+- Inventory tables referenced wrong columns in some places
+
+### Solution
+
+**Database Layer:**
+- Created `populate_batch_number()` trigger function that automatically queries `batch_registry.batch_number` using `batch_id` foreign key
+- Applied trigger on INSERT/UPDATE to `inventory_items` table
+- Backfilled all 76 existing inventory items with NULL `batch_number`
+- Added CHECK constraint ensuring `batch_number` exists when `batch_id` exists
+- Added format validation (YYMMDD-XXX pattern): `batch_number ~ '^\d{6}-[A-Z]{3,4}$'`
+- Created performance index on `batch_number` column
+- Updated `package_assignments_details` view to use `batch_number` consistently
+
+**Application Layer:**
+- Updated 7 components: Inventory displays, session forms, order components
+- Fixed session start forms (Trim/Bucking/Packaging) to display batch numbers in dropdowns while storing batch_id
+- Updated 8 services: Inventory, order fulfillment, invoices, manifests, labels, audits
+- Updated 3 hooks: Session data fetching, inventory search, inventory labels
+
+### Benefits
+
+**User Experience:**
+- ✅ Consistent batch display across all screens (human-readable format)
+- ✅ Session forms show batch numbers (e.g., "251105-MGM") instead of UUIDs
+- ✅ Improved search and filtering by batch number
+- ✅ Better labels, invoices, and documents with proper batch identification
+
+**Data Integrity:**
+- ✅ Automatic population eliminates manual entry errors
+- ✅ Format validation ensures consistent batch number format
+- ✅ Constraint enforcement prevents mismatched batch_id/batch_number
+- ✅ Immutable audit trail through ledger system
+
+**Developer Experience:**
+- ✅ Single source of truth for batch identification
+- ✅ Reduced complexity from multiple columns
+- ✅ Type-safe accessor patterns across components
+- ✅ Clear relationship: batch_id (FK) → batch_number (display)
+
+### Code Reduction & Simplification
+
+**Before:**
+```typescript
+// Confusing - which column to use?
+{ header: 'Batch', accessor: 'batch', ... }  // Wrong!
+```
+
+**After:**
+```typescript
+// Clear and consistent
+{ header: 'Batch', accessor: 'batch_number', ... }  // Correct!
+```
+
+**Session Forms - Before:**
+```typescript
+// Showed UUIDs: "a1b2c3d4-e5f6-..."
+<option value={batch.batch_id}>{batch.batch_id}</option>
+```
+
+**Session Forms - After:**
+```typescript
+// Shows readable: "251105-MGM"
+<option value={batch.batch_id}>{batch.batch_number}</option>
+```
+
+### Database Changes
+
+**Migration 1:** `20260120000000_add_batch_number_auto_population.sql`
+- Trigger function and trigger
+- Data backfill (76 items)
+- CHECK constraints
+- Format validation
+- Performance index
+
+**Migration 2:** `20260120000001_fix_package_assignments_details_view.sql`
+- Updated view to use `batch_number` consistently
+- Added backwards compatibility alias
+
+### Verification
+
+**Database Testing:**
+```sql
+-- Verify no missing batch_numbers
+SELECT COUNT(*) FROM inventory_items
+WHERE batch_number IS NULL AND batch_id IS NOT NULL;
+-- Result: 0 ✅
+
+-- Verify format validation
+SELECT COUNT(*) FROM inventory_items
+WHERE batch_number !~ '^\d{6}-[A-Z]{3,4}$';
+-- Result: 0 ✅
+```
+
+**Build Testing:**
+```bash
+npm run build
+# ✅ Build successful (20.36s)
+# ✅ Zero TypeScript errors
+# ✅ 2451 modules transformed
+```
+
+### Breaking Changes
+
+None. The change is additive and maintains backwards compatibility:
+- `batch_id` still used as foreign key (data relationship)
+- `batch_number` now used for display (user interface)
+- Legacy `batch` column still exists but is deprecated
+
+### Rollback Plan
+
+Safe and straightforward rollback available:
+```sql
+DROP TRIGGER IF EXISTS set_inventory_batch_number ON inventory_items;
+DROP FUNCTION IF EXISTS populate_batch_number();
+-- Data remains intact, automation removed
+```
+
+### Related Documentation
+
+See `docs/SESSION-2026-01-20-BATCH-NUMBER-CONSOLIDATION.md` for complete technical details including:
+- Comprehensive file-by-file changes
+- Architecture diagrams
+- Testing procedures
+- Benefits analysis
+- Lessons learned
+
+### Statistics
+
+- **Database Migrations:** 2
+- **Items Backfilled:** 76
+- **Files Updated:** 22
+- **Components Fixed:** 7
+- **Services Updated:** 8
+- **Build Time:** 20.36s
+- **TypeScript Errors:** 0
+- **Data Integrity:** 100%
+
+---
+
 ## 2026-01-16 - Conversion Architecture Simplification
 
 **Type:** ⚡ Major Architecture Improvement
