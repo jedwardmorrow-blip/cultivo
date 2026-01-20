@@ -1516,7 +1516,12 @@ export function useCombineWorkflow(packages: InventoryItem[]) {
 
 ### Core Tables
 - **`inventory_items`** - Current inventory state (materialized view)
-  - Fields: id, package_id, batch_id, product_stage_id, parent_item_id, on_hand_qty, unit
+  - Fields: id, package_id, batch_id, product_stage_id, parent_item_id, on_hand_qty, unit, **category** (required for UI)
+  - **category field:** REQUIRED for inventory UI visibility
+    - Values: 'Binned', 'Bucked', 'Bulk', 'Packaged'
+    - Purpose: UI filters inventory views by category to display items in stage-specific tabs
+    - Missing category → package invisible in UI (filters by `category` field)
+    - Mapping: Derived from product_name or product_stage during creation
   - Indexes: package_id (UNIQUE), batch_id, product_stage_id, parent_item_id
 
 - **`inventory_movements`** - Immutable ledger (source of truth)

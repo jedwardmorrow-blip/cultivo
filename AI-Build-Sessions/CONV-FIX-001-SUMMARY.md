@@ -375,3 +375,173 @@ Result: All 6 packages show status = 'OK'
 
 ### Prevention
 Documentation updated to warn against this pattern and provide correct examples for future development.
+
+---
+
+## UPDATE 2026-01-20 (Part 2): RPC Logic Bug & Category Field Fix
+
+**Status:** ✅ FIXED
+**Session Type:** Critical Bug Fix
+**Duration:** ~90 minutes
+
+### Root Causes Discovered
+
+**Issue 1: RPC Logic Bug**
+The `finalize_session_aggregated()` RPC function had nested IF statements with `OR p_product_name IS NULL` conditions that caused BOTH product types to finalize when only one was requested.
+
+**Evidence:**
+```sql
+-- Buggy logic executed BOTH branches when specific product requested:
+IF p_product_name = 'Bulk Flower (Trimmed)' OR p_product_name IS NULL THEN
+  -- Branch 1 executes ✓
+END IF;
+
+IF p_product_name = 'Bulk Smalls (Trimmed)' OR p_product_name IS NULL THEN
+  -- Branch 2 ALSO executes! ❌
+  -- Because when p_product_name = 'Bulk Flower (Trimmed)', the OR NULL is false,
+  -- but the condition still evaluates for the next IF statement
+END IF;
+```
+
+**Issue 2: Missing Category Field**
+The conversion finalization code didn't set the `category` field on `inventory_items`. The inventory UI filters by `category` to determine which tab to display items in, so items without a category were invisible.
+
+**Evidence:**
+- Package 260120-MGM-001 created successfully with correct quantities (400g/400g)
+- Database query showed package exists
+- BUT package invisible in all inventory UI tabs
+- Root cause: `inventory.service.ts` filters by `.gt('on_hand_qty', 0)` AND by `category` field
+- Missing category field → no match in any view filter → invisible
+
+### Fixes Applied
+
+**Fix 1: RPC Function Logic (Database Migration)**
+
+**File:** Migration `20260120_fix_finalization_rpc_logic_or_condition.sql`
+
+**Change:** IF-ELSIF-ELSE pattern prevents multiple branches executing
+```sql
+-- Fixed logic:
+WHEN 'trim' THEN
+  IF p_product_name IS NULL THEN
+    -- Explicitly finalize ALL trim products for this batch
+    -- (Execute both flower and smalls branches)
+  ELSIF p_product_name = 'Bulk Flower (Trimmed)' THEN
+    -- Finalize ONLY bigs
+  ELSIF p_product_name = 'Bulk Smalls (Trimmed)' THEN
+    -- Finalize ONLY smalls
+  ELSE
+    RAISE EXCEPTION 'Invalid product_name for trim: %', p_product_name;
+  END IF;
+```
+
+**Applied to:**
+- Trim sessions (flower + smalls)
+- Bucking sessions (flower + smalls)
+- Packaging sessions (already correct - single output)
+
+**Fix 2: Category Field Addition (Code)**
+
+**File:** `src/features/inventory/services/conversions.service.ts`
+
+**Added helper function:**
+```typescript
+export function getCategoryFromProductName(productName: string): string {
+  const lower = productName.toLowerCase();
+
+  if (lower.includes('binned')) return 'Binned';
+  if (lower.includes('bucked')) return 'Bucked';
+  if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454'))
+    return 'Packaged';
+  if (lower.includes('bulk') || lower.includes('trimmed')) return 'Bulk';
+
+  return 'Bulk'; // Safe default
+}
+```
+
+**Updated inventory creation (line ~377):**
+```typescript
+const category = getCategoryFromProductName(productName); // ADD THIS
+return {
+  // ... existing fields ...
+  category: category,  // Required for inventory UI filtering
+  // ... rest of fields ...
+};
+```
+
+**Fix 3: Data Repair (SQL)**
+
+Repaired the specific data corruption from today's bug:
+
+```sql
+-- Revert trim session to pending (only bigs should have been finalized)
+UPDATE trim_sessions
+SET finalization_status = 'pending'
+WHERE id = '823e992c-11d9-4872-8520-df71837f5171';
+
+-- Add category to invisible package
+UPDATE inventory_items
+SET category = 'Bulk'
+WHERE package_id = '260120-MGM-001';
+```
+
+**Results:**
+- ✅ Trim session now shows: 400g bigs (finalized), 50g smalls (pending for separate finalization)
+- ✅ Package 260120-MGM-001 now visible in Bulk inventory view
+- ✅ User can now create separate package for the 50g smalls
+
+### Files Modified
+
+1. **Database:**
+   - Migration: `20260120_fix_finalization_rpc_logic_or_condition.sql` (NEW)
+   - Data repair: 1 trim session + 1 inventory item updated
+
+2. **Code:**
+   - `src/features/inventory/services/conversions.service.ts`
+     - Added `getCategoryFromProductName()` helper function
+     - Updated inventory item creation to include category field
+
+3. **Documentation:**
+   - `docs/INVENTORY-TRACKING.md` - Added category field requirement to inventory_items section
+   - `AI-Build-Sessions/CONV-FIX-001-SUMMARY.md` - This update
+
+### Architecture Compliance
+
+**This fix maintains:**
+- ✅ Event-driven ledger pattern (movements as source of truth)
+- ✅ Product name simplification architecture (no product_id lookups)
+- ✅ Double-counting prevention (on_hand_qty starts at 0)
+- ✅ ATP field separation (available_qty managed independently)
+- ✅ Batch traceability (all items link to batch_id)
+
+**This fix adds:**
+- ✅ Category field requirement (previously undocumented but required)
+- ✅ IF-ELSIF-ELSE pattern for multi-product RPCs (best practice)
+- ✅ Explicit NULL handling (finalize all vs. finalize specific)
+
+**No architectural violations introduced.**
+
+### Testing Completed
+
+**RPC Logic:**
+- ✅ Call with 'Bulk Flower (Trimmed)' → only bigs finalized
+- ✅ Call with 'Bulk Smalls (Trimmed)' → only smalls finalized
+- ✅ Call with NULL → both finalized (explicit intent)
+- ✅ Invalid product name → clear error message
+
+**Category Field:**
+- ✅ New packages created with category populated
+- ✅ Package visible in correct inventory tab
+- ✅ Build passes with no TypeScript errors
+
+**Data Repair:**
+- ✅ Package 260120-MGM-001 visible in Bulk view
+- ✅ Trim session shows 50g smalls as pending
+- ✅ Can create separate package for smalls
+
+### Prevention
+
+1. **Documentation:** INVENTORY-TRACKING.md now explicitly documents category field requirement
+2. **Code Pattern:** Helper function ensures consistent category assignment
+3. **RPC Pattern:** IF-ELSIF-ELSE prevents OR condition bugs in future RPC functions
+4. **Session Summary:** This document provides complete context for future development

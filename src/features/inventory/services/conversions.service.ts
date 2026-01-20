@@ -68,6 +68,47 @@ export function getProductStageIdFromProductName(productName: string): string {
 }
 
 /**
+ * Map product name to category for inventory UI filtering
+ *
+ * The inventory UI uses the category field to determine which tab to display items in.
+ * This field is REQUIRED for packages to be visible in the inventory views.
+ *
+ * Category Mapping:
+ * - "Binned" products → 'Binned' category
+ * - "Bucked" products → 'Bucked' category
+ * - "Bulk" or "Trimmed" products → 'Bulk' category
+ * - "Packaged" products → 'Packaged' category
+ *
+ * @param productName - The product name from session output
+ * @returns Category string for inventory_items.category field
+ */
+export function getCategoryFromProductName(productName: string): string {
+  const lower = productName.toLowerCase();
+
+  // Check in order of specificity
+  if (lower.includes('binned')) {
+    return 'Binned';
+  }
+
+  if (lower.includes('bucked')) {
+    return 'Bucked';
+  }
+
+  // Packaged must be checked before Bulk to avoid "Bulk" false positives
+  if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) {
+    return 'Packaged';
+  }
+
+  // Bulk and Trimmed map to same category
+  if (lower.includes('bulk') || lower.includes('trimmed')) {
+    return 'Bulk';
+  }
+
+  // Default to Bulk (safest for visibility)
+  return 'Bulk';
+}
+
+/**
  * Calculate remaining weight/units for a batch + product combination
  * Original output (from sessions) - already packaged (from conversion_packages)
  * Supports partial finalization workflow
@@ -323,6 +364,8 @@ export async function finalizeConversion(params: {
       const quantity = pkg.weight || pkg.units || 0;
       // Use helper to map product name to correct stage
       const correctStageId = getProductStageIdFromProductName(productName);
+      // Use helper to map product name to category (required for UI visibility)
+      const category = getCategoryFromProductName(productName);
       return {
         package_id: pkg.package_id,
         batch_id: pkg.batch_id,
@@ -331,6 +374,7 @@ export async function finalizeConversion(params: {
         strain: strainName,
         product_stage_id: correctStageId,
         product_name: productName,
+        category: category, // Required for inventory UI filtering
         on_hand_qty: 0, // Let PRODUCE movement trigger set this (prevents double-counting)
         available_qty: quantity, // ATP field - set directly per architecture
         unit: pkg.weight ? 'g' : 'unit',

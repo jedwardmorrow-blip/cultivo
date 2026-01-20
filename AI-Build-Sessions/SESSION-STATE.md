@@ -124,6 +124,7 @@
 
 | Session ID | Name | Status | Date | Duration | Notes |
 |------------|------|--------|------|----------|-------|
+| CONV-FIX-001-P2 | RPC Logic & Category Field Fix | ✅ Complete | 2026-01-20 | 90 min | Fixed finalization RPC + added category field |
 | BATCH-DISPLAY-FIX-001 | Batch Display & Form Fix | ✅ Complete | 2026-01-20 | 30 min | Fixed UI to use batch_number - 5 files |
 | BATCH-NUM-CONSOL | Batch Number Consolidation | ✅ Complete | 2026-01-20 | 45 min | Auto-population + 22 files updated |
 | CONV-FIX-001 | Fix Conversion Finalization | ✅ Complete | 2026-01-19 | 45 min | Validation & error handling improved |
