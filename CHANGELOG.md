@@ -4,6 +4,226 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-20 - Batch Display & Trim Session Form Critical Bug Fix
+
+**Type:** 🔴 CRITICAL BUG FIX
+**Module:** Inventory & Session Management (UI Components)
+**Priority:** CRITICAL - Production Blocking
+**Impact:** Production Workflow Completely Blocked
+**Status:** ✅ COMPLETE
+**Files Changed:** 5 files (2 inventory components, 3 session forms)
+**Session ID:** BATCH-DISPLAY-FIX-001
+**Related To:** Batch Number Consolidation (see entry below)
+
+### Summary
+
+Fixed critical bugs preventing batch numbers from displaying in inventory screens and causing trim session forms to show UUIDs instead of readable batch numbers. This was a completion fix for the batch number consolidation work—the database layer was correctly implemented but the UI layer was never fully updated to use the new `batch_number` column.
+
+### Problem
+
+**Issue 1: Inventory Batch Column Empty**
+- All inventory views (Binned, Bucked, Bulk, Packaged) showed "-" in the Batch column
+- Components were accessing legacy `batch` column (NULL) instead of `batch_number`
+- User reported: "Batch does not display on the inventory screen"
+
+**Issue 2: Session Forms Unusable**
+- Trim/bucking/packaging session forms showed UUIDs like "98b8d486-56c7-4e0b..."
+- Package dropdown didn't populate after selecting batch
+- User reported: "Packages created from Bucking Sessions do not show up when trying to start trimming sessions"
+- **Production workflow completely blocked**
+
+**Root Cause:**
+- Documentation claimed these files were updated on Jan 20th during batch consolidation
+- Investigation revealed the actual code still referenced the old `batch` column
+- Database was correct (batch_number populated), but UI wasn't using it
+
+### Solution
+
+**Part 1: Inventory Components (2 files)**
+
+Updated `InventoryViews.tsx` - 4 table views:
+```typescript
+// BEFORE (Wrong - accessing NULL column)
+{ header: 'Batch', accessor: 'batch' }
+
+// AFTER (Correct - accessing populated column)
+{ header: 'Batch', accessor: 'batch_number', format: (val) => <span>{val || '-'}</span> }
+```
+
+Updated `AllInventoryView.tsx` - 2 locations:
+- Line 94: `batch_number: item.batch_number || 'Unknown'`
+- Line 337: `accessor: 'batch_number'`
+
+**Part 2: Session Forms (3 files)**
+
+Refactored all three session start forms with consistent pattern:
+- `TrimSessionStartForm.tsx`
+- `BuckingSessionStartForm.tsx`
+- `PackagingSessionStartForm.tsx`
+
+**Key Changes:**
+
+1. **Updated `getBatchesForStrain()` function:**
+```typescript
+// BEFORE: Returns array of UUID strings
+const batches = buckedPackages
+  .map(pkg => pkg.batch_id as string);
+
+// AFTER: Returns array of objects with both IDs
+const getBatchesForStrain = (strain: string) => {
+  const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
+
+  buckedPackages
+    .filter((pkg: any) => pkg && pkg.strain === strain && pkg.batch_id)
+    .forEach((pkg: any) => {
+      if (!batchMap.has(pkg.batch_id)) {
+        batchMap.set(pkg.batch_id, {
+          batch_id: pkg.batch_id,
+          batch_number: pkg.batch_number || pkg.batch_id
+        });
+      }
+    });
+
+  return Array.from(batchMap.values()).sort((a, b) =>
+    a.batch_number.localeCompare(b.batch_number)
+  );
+};
+```
+
+2. **Updated dropdown rendering:**
+```typescript
+// BEFORE: Shows UUID
+{batches.map(batch => (
+  <option value={batch}>{batch}</option>
+))}
+
+// AFTER: Shows batch_number, stores batch_id
+{batches.map(batch => (
+  <option key={batch.batch_id} value={batch.batch_id}>
+    {batch.batch_number}
+  </option>
+))}
+```
+
+3. **Added type declarations:**
+```typescript
+const batches: Array<{ batch_id: string; batch_number: string }> =
+  form.strain ? getBatchesForStrain(form.strain) : [];
+```
+
+**Bonus Fix: PackagingSessionStartForm.tsx**
+- Fixed COA validation to use batch_id directly (it's already UUID)
+- Removed incorrect conversion from batch_number to batch_id
+
+### Impact
+
+**Before Fix:**
+- ❌ Inventory batch column: "-" everywhere
+- ❌ Session forms: Cryptic UUIDs displayed
+- ❌ Package selection: Completely broken
+- ❌ Production workflow: **BLOCKED**
+- ❌ User frustration: High
+
+**After Fix:**
+- ✅ Inventory batch column: "251105-GAS", "251105-BLM" (readable)
+- ✅ Session forms: Clean batch numbers like "251105-MGM"
+- ✅ Package selection: Works perfectly
+- ✅ Production workflow: **FULLY OPERATIONAL**
+- ✅ User experience: Seamless
+
+### Verification
+
+**Build Testing:**
+```bash
+npm run build
+# ✅ SUCCESS
+# ✅ Built in 16.77s
+# ✅ 2451 modules transformed
+# ✅ Zero TypeScript errors
+# ✅ Zero compilation errors
+```
+
+**Database Verification:**
+```sql
+-- All bucked packages have valid batch_number
+SELECT COUNT(*) as total, COUNT(batch_number) as populated
+FROM inventory_items
+WHERE product_name ILIKE '%bucked%' AND on_hand_qty > 0;
+-- Result: 21 total, 21 populated ✅
+
+-- Trigger is active
+SELECT tgname, tgenabled FROM pg_trigger
+WHERE tgname = 'set_inventory_batch_number';
+-- Result: Enabled (status = 'O') ✅
+```
+
+**Manual Testing:**
+- ✅ Inventory → All views show batch numbers
+- ✅ Trim Sessions → Batch dropdown shows "251105-MGM"
+- ✅ Trim Sessions → Package dropdown populates
+- ✅ Bucking Sessions → Same workflow verified
+- ✅ Packaging Sessions → Same workflow verified + COA validation works
+
+### Files Modified
+
+1. `src/features/inventory/components/InventoryViews.tsx` (4 locations)
+2. `src/features/inventory/components/AllInventoryView.tsx` (2 locations)
+3. `src/features/sessions/components/TrimSessionStartForm.tsx` (complete refactor)
+4. `src/features/sessions/components/BuckingSessionStartForm.tsx` (complete refactor)
+5. `src/features/sessions/components/PackagingSessionStartForm.tsx` (complete refactor + COA fix)
+
+**Total:** 5 files, ~150 lines changed
+
+### Data Flow (Now Correct)
+
+```
+Database Layer: batch_id (UUID FK) + batch_number (readable)
+       ↓
+Query Layer: Fetches both fields
+       ↓
+Form Logic: Maps batch_id → batch_number
+       ↓
+Display Layer: Shows batch_number
+       ↓
+Storage Layer: Saves batch_id (FK integrity)
+       ↓
+Filtering: Uses batch_id for accuracy
+```
+
+### Lessons Learned
+
+1. **Documentation ≠ Implementation**
+   - Always verify with actual code inspection
+   - Documentation claimed updates were complete, but they weren't
+
+2. **Database + Code Must Match**
+   - Database was correctly set up with triggers and populated data
+   - UI code wasn't updated to use the new columns
+   - Both layers must be deployed together
+
+3. **Type Safety Limitations**
+   - TypeScript doesn't catch string accessor mismatches
+   - `accessor: 'batch'` vs `accessor: 'batch_number'` both compile
+   - Need runtime testing to catch these issues
+
+### Related Documentation
+
+- **Session Summary:** `AI-Build-Sessions/BATCH-DISPLAY-FIX-001-SUMMARY.md`
+- **Technical Details:** `docs/SESSION-2026-01-20-BATCH-DISPLAY-FIX.md`
+- **Related Work:** See "Batch Number Consolidation" entry below
+
+### Statistics
+
+- **Duration:** 30 minutes
+- **Files Modified:** 5
+- **Lines Changed:** ~150
+- **Database Migrations:** 0 (code-only fix)
+- **Build Time:** 16.77s
+- **TypeScript Errors:** 0
+- **User Impact:** Production workflow restored
+
+---
+
 ## 2026-01-20 - Batch Number Consolidation & Auto-Population
 
 **Type:** ⚡ Major Data Quality Improvement
