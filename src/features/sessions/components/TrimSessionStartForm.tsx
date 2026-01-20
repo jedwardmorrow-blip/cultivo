@@ -77,16 +77,17 @@ export function TrimSessionStartForm({
       return [];
     }
 
-    // Create a map to store unique batch_id -> batch_number mappings
+    // Create a map to store unique batch_number mappings
+    // Key by batch_number (text) so we send text format to database
     const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
 
     buckedPackages
-      .filter((pkg: any) => pkg && pkg.strain?.name === strain && pkg.batch_id)
+      .filter((pkg: any) => pkg && pkg.strain?.name === strain && pkg.batch_number)
       .forEach((pkg: any) => {
-        if (!batchMap.has(pkg.batch_id)) {
-          batchMap.set(pkg.batch_id, {
+        if (!batchMap.has(pkg.batch_number)) {
+          batchMap.set(pkg.batch_number, {
             batch_id: pkg.batch_id,
-            batch_number: pkg.batch_number || pkg.batch_id // Fallback to UUID if missing
+            batch_number: pkg.batch_number
           });
         }
       });
@@ -97,15 +98,15 @@ export function TrimSessionStartForm({
     );
   };
 
-  const getPackagesForBatch = (strain: string, batchId: string) => {
-    if (!strain || !batchId || !buckedPackages || buckedPackages.length === 0) {
+  const getPackagesForBatch = (strain: string, batchNumber: string) => {
+    if (!strain || !batchNumber || !buckedPackages || buckedPackages.length === 0) {
       return [];
     }
 
     return buckedPackages.filter((pkg: any) =>
       pkg &&
       pkg.strain?.name === strain &&
-      pkg.batch_id === batchId &&
+      pkg.batch_number === batchNumber &&
       pkg.available_qty && pkg.available_qty > 0
     );
   };
@@ -177,7 +178,7 @@ export function TrimSessionStartForm({
             >
               <option value="">Select batch</option>
               {batches.map(batch => (
-                <option key={batch.batch_id} value={batch.batch_id}>
+                <option key={batch.batch_number} value={batch.batch_number}>
                   {batch.batch_number}
                 </option>
               ))}
