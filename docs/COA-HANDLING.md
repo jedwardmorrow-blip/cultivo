@@ -212,5 +212,95 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
   - Added automatic terpene extraction (top 3 by volume)
   - Removed Settings > Certificates tab to consolidate to single upload path
   - All COA uploads now happen in Batch Management for better UX
+- **2026-01-22:** Storage network error diagnostics added (Session: COA-STORAGE-NETWORK-FIX)
+  - Enhanced error logging and diagnostics
+  - Added storage health check function
+  - Added pre-upload validation and auth verification
+  - See troubleshooting section below
 - **2026-01-21:** COA upload interface temporarily restored to Settings (later consolidated)
 - **2026-01-19:** Database trigger added to validate COA before packaging sessions (Session COA-VAL-001)
+
+---
+
+## Troubleshooting
+
+### COA Upload "Failed to Fetch" Error
+
+**Symptom:** Upload fails with "Network Error: Failed to fetch" or "Storage service unavailable"
+
+**Diagnostic Steps:**
+
+1. **Check Console Output**
+   - Open browser DevTools (F12) and go to Console tab
+   - Clear console before attempting upload
+   - Look for diagnostic messages showing:
+     - Storage health check result
+     - Auth session status
+     - File validation details
+     - Exact error location
+
+2. **Verify Authentication**
+   - Check console for: `uploadCOAPDF: Auth session: { hasSession: true, hasUser: true }`
+   - If false, log out and log back in
+   - Verify other authenticated features work (creating batches, etc.)
+
+3. **Check File Size and Type**
+   - Console shows: `uploadCOAPDF: File details: { size: ..., type: ... }`
+   - File must be < 10MB
+   - File should be `application/pdf` or have `.pdf` extension
+
+4. **Storage Health Check**
+   - Console shows: `COAUploadModal: Health check result: { ok: true }`
+   - If `ok: false`, check error message for specific issue
+
+**Common Solutions:**
+
+1. **Authentication Issues**
+   - **Problem:** "Not authenticated" in health check
+   - **Solution:** Log out and log back in to refresh session
+
+2. **File Size Issues**
+   - **Problem:** "File too large" error
+   - **Solution:** Compress PDF or use smaller file (< 10MB limit)
+
+3. **CORS / Network Issues**
+   - **Problem:** ERR_CONNECTION_CLOSED or CORS errors
+   - **Solution:**
+     - Verify Supabase project allows requests from your domain
+     - Check Supabase Dashboard > Settings > API > Allowed origins
+     - Add `http://localhost:5173` for local development
+     - Disable browser extensions that may block requests
+
+4. **Storage Service Issues**
+   - **Problem:** "Storage service unavailable"
+   - **Solution:**
+     - Verify in Supabase Dashboard > Storage that service is enabled
+     - Check `coa-pdfs` bucket exists
+     - Verify bucket policies are active
+
+**Still Not Working?**
+
+Check these in Supabase Dashboard:
+
+1. **Storage > Buckets**
+   - Verify `coa-pdfs` bucket exists
+   - Bucket should be marked as "Public" (for read access)
+   - Click bucket to verify policies exist
+
+2. **Storage > Policies**
+   - Should see policies for authenticated upload
+   - Should see policy for public read access
+
+3. **Settings > API**
+   - Verify project URL matches `.env` file
+   - Check API keys are correct
+   - Add local development URL to allowed origins
+
+**For Developers:**
+
+Enhanced logging added in:
+- `src/features/coa/services/coa.service.ts` - uploadCOAPDF() function
+- `src/lib/supabase.ts` - checkStorageHealth() function
+- `src/features/batches/components/COAUploadModal.tsx` - pre-upload checks
+
+See: [SESSION-2026-01-22-COA-STORAGE-NETWORK-FIX.md](./SESSION-2026-01-22-COA-STORAGE-NETWORK-FIX.md) for complete diagnostic implementation.

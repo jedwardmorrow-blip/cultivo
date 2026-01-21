@@ -98,22 +98,80 @@ export interface ParsedCOAData {
  * @description Uploads to 'coa-pdfs' bucket with timestamp prefix
  */
 export async function uploadCOAPDF(file: File): Promise<string> {
-  const fileName = `${Date.now()}-${file.name}`;
+  console.log('uploadCOAPDF: Starting upload...');
+  console.log('uploadCOAPDF: File details:', {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    lastModified: file.lastModified
+  });
 
-  const { data, error } = await supabase.storage
-    .from('coa-pdfs')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
+  // Check authentication status
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  console.log('uploadCOAPDF: Auth session:', {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    userId: session?.user?.id,
+    sessionError: sessionError?.message
+  });
 
-  if (error) {
-    console.error('uploadCOAPDF error:', error);
-    console.error('uploadCOAPDF fileName:', fileName);
-    throw new Error(`Failed to upload PDF: ${error.message}`);
+  if (sessionError || !session) {
+    const authError = 'Authentication required for file upload. Please log in again.';
+    console.error('uploadCOAPDF: Auth error:', authError);
+    throw new Error(authError);
   }
 
-  return data.path;
+  // Validate file
+  if (!file || file.size === 0) {
+    throw new Error('Invalid file: File is empty or missing');
+  }
+
+  if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB (max 10MB)`);
+  }
+
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    console.warn('uploadCOAPDF: File type may not be PDF:', file.type);
+  }
+
+  const fileName = `${Date.now()}-${file.name}`;
+  console.log('uploadCOAPDF: Uploading to coa-pdfs bucket:', fileName);
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('coa-pdfs')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('uploadCOAPDF: Storage API error:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        fileName: fileName,
+        fileSize: file.size
+      });
+      throw new Error(`Storage upload failed: ${error.message}`);
+    }
+
+    console.log('uploadCOAPDF: Upload successful:', data.path);
+    return data.path;
+  } catch (err: any) {
+    console.error('uploadCOAPDF: Unexpected error:', {
+      message: err.message,
+      name: err.name,
+      stack: err.stack
+    });
+
+    // Provide user-friendly error messages
+    if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+      throw new Error('Network error: Unable to reach storage service. Please check your internet connection and try again.');
+    }
+
+    throw err;
+  }
 }
 
 /**

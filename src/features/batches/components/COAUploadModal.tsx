@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { X, Upload, FileText, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { parseCOAPDF, uploadCOAPDF, createCOA, type ParsedCOAData, type COAData } from '@/features/coa/services/coa.service';
 import { notificationService, errorService } from '@/services';
+import { checkStorageHealth } from '@/lib/supabase';
 
 interface COAUploadModalProps {
   batchId: string | null;
@@ -89,8 +90,21 @@ export function COAUploadModal({
     setError(null);
 
     try {
+      // Pre-flight check: Verify storage service is accessible
+      console.log('COAUploadModal: Running storage health check...');
+      const healthCheck = await checkStorageHealth();
+      console.log('COAUploadModal: Health check result:', healthCheck);
+
+      if (!healthCheck.ok) {
+        const healthError = `Storage service unavailable: ${healthCheck.error}`;
+        console.error('COAUploadModal:', healthError);
+        throw new Error(healthError);
+      }
+
       // Step 1: Upload PDF file to storage
+      console.log('COAUploadModal: Initiating PDF upload...');
       const pdfFilePath = await uploadCOAPDF(file);
+      console.log('COAUploadModal: PDF uploaded successfully:', pdfFilePath);
 
       // Step 2: Extract terpenes (first 3)
       const terpenes = parsedData?.terpenes || [];
