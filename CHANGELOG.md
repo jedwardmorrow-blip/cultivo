@@ -4,6 +4,97 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-21 - COA Upload Interface Restored
+
+**Type:** 🐛 BUG FIX (UI Access)
+**Module:** Certificate of Analysis (COA) Management
+**Priority:** HIGH - Critical Feature Access
+**Impact:** Restores ability to upload and manage Certificates of Analysis
+**Status:** ✅ COMPLETE
+**Files Changed:** 1 file (Settings.tsx)
+**Session ID:** COA-ACCESS-RESTORE-001
+
+### Summary
+
+Restored the COA (Certificate of Analysis) upload interface to the Settings page. The COAManagement component was fully functional but inaccessible due to missing UI tab configuration.
+
+### Problem
+
+**User Report:**
+- Could not find where to upload/analyze COAs
+- COA upload option appeared to have been removed
+- COAManagement component was imported but not rendered
+
+**Root Cause:**
+- Component import existed but tab was never added to Settings navigation
+- No rendering logic for the COA management interface
+- Full COA functionality was present but unreachable via UI
+
+### Solution
+
+**File Modified:** `src/features/settings/components/Settings.tsx`
+
+**Changes Made:**
+1. Added FileCheck icon import for semantic appropriateness
+2. Added "Certificates (COA)" tab to Settings navigation (position 3)
+3. Added conditional rendering logic: `{activeTab === 'coa' && <COAManagement />}`
+
+**Access Path:** Settings > Certificates (COA) tab
+
+### Features Now Accessible
+
+- ✅ PDF upload (single and multiple files)
+- ✅ Auto-parsing with advanced regex extraction
+- ✅ Bulk upload wizard with review workflow
+- ✅ Batch selection and linkage
+- ✅ COA list with active/inactive status
+- ✅ Toggle COA visibility for public library
+- ✅ Delete COAs with storage cleanup
+- ✅ Preview public COA library pages
+
+### Technical Details
+
+**Icon Choice:** FileCheck (implies verification/certification)
+**Tab Position:** 3rd (after Branding, before Testing)
+**Pattern:** Follows existing Settings tab conventions
+**Build Status:** ✅ Successful (19.82s, no errors)
+
+### Related Systems (Unaffected)
+
+- Batch Management COA status badges (still functional)
+- Packaging session COA validation (still functional)
+- Database trigger preventing packaging without COA (still functional)
+- Public COA library at `/public/testing` (still functional)
+
+### Documentation Updated
+
+- Created: `docs/SESSION-2026-01-21-COA-UPLOAD-INTERFACE-RESTORED.md`
+- Updated: `docs/COA-HANDLING.md` (Implementation Status section)
+- Updated: `CHANGELOG.md` (this entry)
+
+### Testing
+
+**Manual Testing:**
+- ✅ Settings > Certificates tab loads COAManagement
+- ✅ COA upload workflow functional
+- ✅ Batch integration working
+- ✅ Public library links accessible
+
+**Build Verification:**
+- ✅ TypeScript compilation successful
+- ✅ No new warnings
+- ✅ All imports resolved
+
+### Impact
+
+**Before:** No UI access to COA upload
+**After:** Full COA management accessible via Settings > Certificates (COA) tab
+
+**Risk Level:** MINIMAL (UI-only change, no business logic modified)
+**User Impact:** HIGH (restores critical compliance feature)
+
+---
+
 ## 2026-01-21 - Real-Time Inventory Updates Implementation
 
 **Type:** ✨ ENHANCEMENT

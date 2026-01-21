@@ -165,9 +165,18 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 
 **Completed Features:**
 - ✅ COA upload and storage
-- ✅ Batch linkage via `coa_id` FK
-- ✅ Public COA library (read-only access)
+- ✅ COA management interface accessible via Settings > Certificates (COA) tab
+- ✅ Advanced PDF parsing with auto-extraction of cannabinoid data
+- ✅ Bulk upload wizard with review workflow
+- ✅ Batch linkage via `coa_id` FK (bidirectional)
+- ✅ Public COA library (read-only access at `/public/testing`)
 - ✅ COA display on coversheets
+- ✅ COA validation before packaging (UI + database trigger)
+
+**Access Path:**
+- Navigate to Settings page
+- Click "Certificates (COA)" tab
+- Upload, review, and manage COAs
 
 **Critical Gaps:**
 - **GAP-009:** Multiple active COAs per batch allowed
@@ -176,3 +185,7 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
   - Status: 🟡 Migration Batch 2 planned
 
 **See:** [DOCS-INTEGRATION-PROGRESS.md - Implementation Gaps Dashboard](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) for complete gap tracking.
+
+**Recent Updates:**
+- **2026-01-21:** COA upload interface restored to Settings > Certificates tab (was imported but not accessible)
+- **2026-01-19:** Database trigger added to validate COA before packaging sessions (Session COA-VAL-001)
