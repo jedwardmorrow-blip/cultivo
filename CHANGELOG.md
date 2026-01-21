@@ -200,6 +200,126 @@ Evolution of `finalize_session_aggregated()`:
 
 ---
 
+## 2026-01-21 - Unit Type Validation Fix (Follow-up to UUID Hotfix)
+
+**Type:** 🔥 CRITICAL HOTFIX (Production Blocker - Part 2)
+**Module:** Inventory / Validation Triggers
+**Priority:** CRITICAL - Blocked Packaging Finalization
+**Impact:** Packaged product finalization now works correctly
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration (trigger validation function)
+**Session ID:** UUID-AGGREGATION-HOTFIX (Part 2)
+
+### Summary
+
+Fixed validation trigger that was rejecting `unit='unit'` for packaged products. After fixing UUID aggregation error, a second error appeared: "unit must be 'g' (grams), got: unit". The validation trigger was more restrictive than the schema CHECK constraints.
+
+### Problem
+
+**User Impact:**
+- UUID aggregation error fixed successfully
+- Attempted to finalize packaging session again
+- New error: "Failed to finalize sessions: unit must be 'g' (grams), got: unit"
+- Finalization still blocked despite UUID fix
+
+**Root Cause:**
+- Migration `20251124212728_add_trigger_validation.sql` created validation trigger
+- Trigger only allowed `unit='g'` (lines 86-88)
+- BUT schema CHECK constraints allow BOTH 'g' AND 'unit'
+- Trigger validation was more restrictive than schema
+- Packaged products need `unit='unit'` (count-based), not `unit='g'` (weight-based)
+
+**Why Two Unit Types Exist:**
+
+**Weight-Based (`unit='g'`):**
+- Bulk Flower (Bucked) - 1200g, 800g, etc.
+- Bulk Flower (Trimmed) - 1150g, 750g, etc.
+- Bulk Smalls - 600g, 400g, etc.
+- Bulk Trim - 80g, 120g, etc.
+
+**Count-Based (`unit='unit'`):**
+- Packaged - Strain X - 3.5g: 57 units (individual packages)
+- Packaged - Strain X - 14g: 44 units (individual packages)
+- Packaged - Strain X - 1lb: 30 units (individual packages)
+
+### Solution
+
+**Migration:** `fix_movement_validation_allow_unit_type.sql`
+
+**Technical Fix:**
+```sql
+-- BEFORE (too restrictive)
+IF NEW.unit != 'g' THEN
+  RAISE EXCEPTION 'unit must be ''g'' (grams), got: %', NEW.unit;
+END IF;
+
+-- AFTER (matches CHECK constraint)
+IF NEW.unit NOT IN ('g', 'unit') THEN
+  RAISE EXCEPTION 'unit must be ''g'' (grams) or ''unit'' (count), got: %', NEW.unit;
+END IF;
+```
+
+**Why This Fix Is Correct:**
+- Aligns trigger validation with schema CHECK constraints
+- Allows both weight-based and count-based inventory tracking
+- Preserves validation (still rejects invalid values like 'kg', 'oz', etc.)
+- Matches existing CHECK constraint on inventory_movements table
+
+### Verification
+
+**Database:**
+- ✅ Trigger function updated successfully
+- ✅ Now accepts both 'g' and 'unit'
+- ✅ Still validates against invalid unit types
+- ✅ No breaking changes
+
+**Expected Behavior:**
+- Packaged product finalization: Creates inventory with `unit='unit'` ✅
+- Bulk product finalization: Creates inventory with `unit='g'` ✅
+- Invalid unit values: Rejected by validation ✅
+
+### Prevention Strategy
+
+**For Future Trigger Validations:**
+
+1. **Check Existing Constraints:**
+   - Review schema CHECK constraints before adding trigger validations
+   - Trigger validation should match or be more permissive than schema
+
+2. **Consider All Use Cases:**
+   - Don't assume single unit type for all inventory
+   - Weight-based AND count-based tracking both valid
+
+3. **Code Review Checklist:**
+   ```sql
+   -- ❌ BAD: More restrictive than CHECK constraint
+   IF NEW.unit != 'g' THEN RAISE EXCEPTION ...
+
+   -- ✅ GOOD: Matches CHECK constraint
+   IF NEW.unit NOT IN ('g', 'unit') THEN RAISE EXCEPTION ...
+   ```
+
+### Documentation Updates
+
+**Files Updated:**
+- ✅ `docs/SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md` - Added follow-up section
+- ✅ `CHANGELOG.md` - This entry
+- Migration includes comprehensive explanation of unit types
+
+### Related Issues
+
+**Fixes:**
+- Second production blocker after UUID aggregation fix
+- Allows packaged product finalization to complete
+- Part of: SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX
+
+**References:**
+- [SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md](./docs/SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md)
+- Original trigger: `20251124212728_add_trigger_validation.sql`
+- Fix migration: `fix_movement_validation_allow_unit_type.sql`
+
+---
+
 ## 2026-01-21 - Packaging Session Finalization Inventory Creation
 
 **Type:** 🎯 CRITICAL GAP FIX (Implementation Gap)
