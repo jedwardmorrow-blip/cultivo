@@ -603,3 +603,88 @@ export async function getBatchesByStrain(strain: string): Promise<BatchOption[]>
   }
   return (data || []) as BatchOption[];
 }
+
+/**
+ * Gets the active COA for a batch
+ *
+ * @param batchId - Batch UUID
+ * @returns Promise<COAData | null> - Active COA or null if none exists
+ */
+export async function getActiveCOAForBatch(batchId: string): Promise<COAData | null> {
+  const { data, error } = await supabase
+    .from('certificates_of_analysis')
+    .select('*')
+    .eq('batch_id', batchId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error) {
+    console.error('getActiveCOAForBatch error:', error);
+    throw new Error(`Failed to load COA for batch: ${error.message}`);
+  }
+
+  if (!data) return null;
+
+  return mapDatabaseCOAToApp(data, '', '', null, null);
+}
+
+/**
+ * Replaces an existing COA with a new one
+ * Deactivates old COA, deletes old PDF, uploads new PDF, creates new COA
+ *
+ * @param batchId - Batch UUID
+ * @param oldCOA - Existing active COA to replace
+ * @param newFile - New PDF file
+ * @param newCOAData - New COA data
+ * @returns Promise<COAData> - Newly created COA
+ */
+export async function replaceCOA(
+  batchId: string,
+  oldCOA: COAData,
+  newFile: File,
+  newCOAData: Omit<COAData, 'id' | 'created_at' | 'updated_at'>
+): Promise<COAData> {
+  console.log('replaceCOA: Starting replacement process...');
+  console.log('replaceCOA: Old COA ID:', oldCOA.id);
+
+  try {
+    // Step 1: Upload new PDF first (so we don't leave batch without COA if this fails)
+    console.log('replaceCOA: Uploading new PDF...');
+    const newPdfPath = await uploadCOAPDF(newFile);
+    console.log('replaceCOA: New PDF uploaded:', newPdfPath);
+
+    // Step 2: Deactivate old COA
+    console.log('replaceCOA: Deactivating old COA...');
+    await updateCOA(oldCOA.id!, { is_active: false });
+    console.log('replaceCOA: Old COA deactivated');
+
+    // Step 3: Delete old PDF from storage
+    if (oldCOA.pdf_file_path) {
+      console.log('replaceCOA: Deleting old PDF from storage:', oldCOA.pdf_file_path);
+      const { error: deleteError } = await supabase.storage
+        .from('coa-pdfs')
+        .remove([oldCOA.pdf_file_path]);
+
+      if (deleteError) {
+        console.warn('replaceCOA: Failed to delete old PDF (non-fatal):', deleteError.message);
+      } else {
+        console.log('replaceCOA: Old PDF deleted successfully');
+      }
+    }
+
+    // Step 4: Create new COA record with new PDF path
+    console.log('replaceCOA: Creating new COA record...');
+    const newCOA = await createCOA({
+      ...newCOAData,
+      pdf_file_path: newPdfPath,
+      batch_id: batchId,
+      is_active: true
+    });
+    console.log('replaceCOA: New COA created:', newCOA.id);
+
+    return newCOA;
+  } catch (error) {
+    console.error('replaceCOA: Error during replacement:', error);
+    throw error;
+  }
+}

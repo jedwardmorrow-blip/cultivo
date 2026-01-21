@@ -1155,7 +1155,7 @@ erDiagram
 | `batch_registry` | ~~Lifecycle timing wrong~~ | GAP-004 | ~~HIGH~~ | ~~HIGH~~ | ✅ Batch1-003 | ✅ **RESOLVED 2025-11-12** |
 | `batch_registry` | ~~No quarantine gate~~ | GAP-005 | ~~HIGH~~ | ~~HIGH~~ | ✅ Batch1-005 | ✅ **RESOLVED 2025-11-10** |
 | `pending_conversions` | ~~Missing auto-trigger~~ | GAP-006 | ~~CRITICAL~~ | ~~CRITICAL~~ | ✅ Batch1-006 | ✅ **RESOLVED 2025-10-24** |
-| `certificates_of_analysis` | ~~Multiple active per batch~~ | GAP-009 | ~~HIGH~~ | ~~HIGH~~ | ✅ Batch1-006 | ✅ **RESOLVED 2025-11-10** |
+| `certificates_of_analysis` | ~~Multiple active per batch~~ | GAP-009 | ~~HIGH~~ | ~~HIGH~~ | ✅ Batch1-006 | ✅ **RESOLVED 2026-01-22** |
 | `labels` | No COA validation | GAP-007 | CRITICAL - Invalid labels | CRITICAL | 🟡 Batch2 | 🔴 DESIGN PHASE |
 | `order_fulfillment_items` | No fulfillment movements | GAP-008 | HIGH - Inventory not deducted | HIGH | 🟡 Batch2 | 🔴 DESIGN PHASE |
 | `batch_allocations` | No strain validation | GAP-010 | HIGH - Wrong strain allocated | HIGH | 🟡 Batch2 | 🔴 DESIGN PHASE |

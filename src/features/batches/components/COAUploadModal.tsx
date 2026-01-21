@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { X, Upload, FileText, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
-import { parseCOAPDF, uploadCOAPDF, createCOA, type ParsedCOAData, type COAData } from '@/features/coa/services/coa.service';
+import { useState, useRef, useEffect } from 'react';
+import { X, Upload, FileText, AlertCircle, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { parseCOAPDF, uploadCOAPDF, createCOA, getActiveCOAForBatch, replaceCOA, type ParsedCOAData, type COAData } from '@/features/coa/services/coa.service';
 import { notificationService, errorService } from '@/services';
 import { checkStorageHealth } from '@/lib/supabase';
 
@@ -26,6 +26,8 @@ export function COAUploadModal({
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'select' | 'review' | 'confirm' | 'success'>('select');
   const [confirmedMismatch, setConfirmedMismatch] = useState(false);
+  const [existingCOA, setExistingCOA] = useState<COAData | null>(null);
+  const [checkingExisting, setCheckingExisting] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -37,6 +39,29 @@ export function COAUploadModal({
     total_cannabinoids_percentage: '',
     total_terpenes_mg_g: ''
   });
+
+  // Check for existing COA on mount
+  useEffect(() => {
+    async function checkExisting() {
+      if (!batchId) {
+        setCheckingExisting(false);
+        return;
+      }
+
+      try {
+        console.log('COAUploadModal: Checking for existing COA...');
+        const existing = await getActiveCOAForBatch(batchId);
+        setExistingCOA(existing);
+        console.log('COAUploadModal: Existing COA:', existing ? 'Found' : 'None');
+      } catch (err: any) {
+        console.error('COAUploadModal: Error checking existing COA:', err);
+      } finally {
+        setCheckingExisting(false);
+      }
+    }
+
+    checkExisting();
+  }, [batchId]);
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
@@ -137,17 +162,29 @@ export function COAUploadModal({
         is_active: true
       };
 
-      // Step 4: Create COA record
-      await createCOA(coaData);
+      // Step 4: Create or Replace COA record
+      if (existingCOA) {
+        console.log('COAUploadModal: Replacing existing COA...');
+        await replaceCOA(batchId, existingCOA, file, coaData);
+        notificationService.success(`COA replaced successfully for batch ${batchNumber}`);
+      } else {
+        console.log('COAUploadModal: Creating new COA...');
+        await createCOA(coaData);
+        notificationService.success(`COA uploaded successfully for batch ${batchNumber}`);
+      }
 
-      notificationService.success(`COA uploaded successfully for batch ${batchNumber}`);
       setStep('success');
       setTimeout(() => {
         onSuccess();
       }, 1500);
     } catch (err: any) {
+      // Check for unique constraint violation
+      if (err.message?.includes('duplicate key') || err.message?.includes('unique constraint')) {
+        setError('This batch already has an active COA. Please refresh the page and try again.');
+      } else {
+        setError(err.message || 'Failed to upload COA');
+      }
       errorService.handle(err, 'Upload COA');
-      setError(err.message || 'Failed to upload COA');
     } finally {
       setIsUploading(false);
     }
@@ -185,17 +222,40 @@ export function COAUploadModal({
         </div>
 
         <div className="p-6">
-          {error && (
-            <div className="mb-6 flex items-start gap-3 p-4 bg-red-900/20 border border-red-700">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-red-100 font-medium mb-1">Error</p>
-                <p className="text-sm text-red-200">{error}</p>
-              </div>
+          {checkingExisting ? (
+            <div className="py-12 text-center">
+              <RefreshCw className="w-8 h-8 text-cult-light-gray mx-auto mb-4 animate-spin" />
+              <p className="text-cult-light-gray">Checking for existing COA...</p>
             </div>
-          )}
+          ) : (
+            <>
+              {existingCOA && (
+                <div className="mb-6 flex items-start gap-3 p-4 bg-blue-900/20 border border-blue-700">
+                  <AlertTriangle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-blue-100 font-medium mb-1">Existing COA Detected</p>
+                    <p className="text-sm text-blue-200 mb-2">
+                      This batch already has an active COA. Uploading a new COA will replace the existing one.
+                    </p>
+                    <div className="text-xs text-blue-300 space-y-1">
+                      <p>Sample Date: {existingCOA.sample_date || 'N/A'}</p>
+                      <p>THC: {existingCOA.thc_percentage?.toFixed(2)}% | CBD: {existingCOA.cbd_percentage?.toFixed(2)}%</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {step === 'select' && (
+              {error && (
+                <div className="mb-6 flex items-start gap-3 p-4 bg-red-900/20 border border-red-700">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-red-100 font-medium mb-1">Error</p>
+                    <p className="text-sm text-red-200">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {step === 'select' && (
             <div className="space-y-6">
               <div>
                 <input
@@ -414,7 +474,7 @@ export function COAUploadModal({
                   disabled={isUploading}
                   className="flex-1 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isUploading ? 'Uploading...' : 'Upload COA'}
+                  {isUploading ? (existingCOA ? 'Replacing...' : 'Uploading...') : (existingCOA ? 'Replace COA' : 'Upload COA')}
                 </button>
                 <button
                   onClick={() => {
@@ -432,16 +492,18 @@ export function COAUploadModal({
             </div>
           )}
 
-          {step === 'success' && (
-            <div className="py-12 text-center">
-              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-2">
-                COA Uploaded Successfully
-              </h3>
-              <p className="text-cult-light-gray">
-                Closing...
-              </p>
-            </div>
+              {step === 'success' && (
+                <div className="py-12 text-center">
+                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-2">
+                    COA {existingCOA ? 'Replaced' : 'Uploaded'} Successfully
+                  </h3>
+                  <p className="text-cult-light-gray">
+                    Closing...
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

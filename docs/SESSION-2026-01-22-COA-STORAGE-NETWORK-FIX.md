@@ -372,3 +372,11 @@ All imports resolved correctly
 "Please try uploading a COA again and share the full console output. The enhanced logging will show us exactly where it's failing."
 
 ---
+
+## Follow-Up Session
+
+**Update 2026-01-22:** Storage issue was resolved. User successfully uploaded COA, but encountered a different error: unique constraint violation when batch already had active COA.
+
+**See:** `SESSION-2026-01-22-COA-REPLACE-WORKFLOW.md` for the complete fix implementing COA replacement workflow.
+
+---

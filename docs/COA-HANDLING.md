@@ -84,9 +84,10 @@ The COA-Handling module manages Certificates of Analysis (lab test results) thro
 - ✅ **Regulatory Compliance:** State law requires COA availability per batch
 
 **Current Gaps:**
-- **GAP-009:** Multiple active COAs per batch allowed
+- ~~**GAP-009:** Multiple active COAs per batch allowed~~ ✅ **RESOLVED 2026-01-22**
   - **Impact:** HIGH - Unclear which COA is current for batch
-  - **Resolution:** ✅ Migration Batch 1 adds unique partial index
+  - **Resolution:** ✅ Constraint implemented + UI replacement workflow complete
+  - **See:** `SESSION-2026-01-22-COA-REPLACE-WORKFLOW.md`
 
 See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATION-PROGRESS.md](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) for gap tracking.
 

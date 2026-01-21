@@ -1084,7 +1084,7 @@ These gaps compromise the batch-centric architecture - the foundation of the ent
 
 | Gap ID | Issue | Impact | Current State | Solution Status | Migration | Priority | Target Sprint |
 |--------|-------|--------|---------------|-----------------|-----------|----------|---------------|
-| **GAP-009** | Multiple active COAs per batch allowed | **HIGH** - Compliance risk. Unclear which lab test applies to batch. | 🔴 Open | ✅ Migration Ready | Batch1-006 | HIGH | 2025-11-2 (STAGING) |
+| ~~**GAP-009**~~ | ~~Multiple active COAs per batch allowed~~ | ~~**HIGH** - Compliance risk. Unclear which lab test applies to batch.~~ | ✅ **RESOLVED 2026-01-22** | ✅ Complete | Batch1-006 | ~~HIGH~~ | ✅ **COMPLETE** |
 | **GAP-010** | No strain validation on batch allocation | **HIGH** - Wrong strain can be allocated to orders (e.g., GSC order gets GDP batch). | 🔴 Open | 🔴 Not Started | Batch2 (planned) | HIGH | 2025-12-1 |
 | **GAP-011** | No ATP (Available To Promise) calculation | **HIGH** - Over-allocation possible if soft reserves ignored in availability checks. | 🔴 Open | ✅ Migration Ready | Batch1-004 | HIGH | 2025-11-2 (STAGING) |
 | **GAP-012** | No stage transition validation | **HIGH** - Invalid stage paths possible (e.g., BuckedSmalls → BulkFlower). | 🔴 Open | ✅ Migration Ready | Batch1-006 | HIGH | 2025-11-2 (STAGING) |
