@@ -1,7 +1,7 @@
 ---
 title: COA-HANDLING
 category: Sales & Fulfillment
-version: 1.3
+version: 1.4
 updated: 2026-01-22
 ---
 
@@ -118,22 +118,28 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 
 **Step 2: Upload PDF File**
 - Select single COA PDF file
-- File uploads to `coa-documents` storage bucket
 - System automatically parses PDF for cannabinoid data
-- `file_url` saved to database
+- Extracts: strain, batch number, dates, THC%, CBD%, cannabinoids%, terpenes
+- File uploads to `coa-pdfs` storage bucket
 
-**Step 3: Review & Confirm Extracted Data**
-- Review parsed data (THC%, CBD%, test date, terpenes)
-- Make adjustments if OCR misread values
-- Batch already pre-selected (cannot change)
-- Confirm accuracy
+**Step 3: Confirm Batch Match (if needed)**
+- If parsed strain/batch doesn't match selected batch, system shows warning
+- User must explicitly confirm mismatch before proceeding
+- Prevents accidental wrong COA assignments
 
-**Step 4: Save COA**
+**Step 4: Review & Edit Extracted Data**
+- Review all parsed data (harvest date, sample date, THC%, CBD%, total cannabinoids%, terpenes)
+- Top 3 terpenes automatically saved (ordered by volume)
+- Make adjustments if parsing misread values
+- Edit any cannabinoid percentages or dates as needed
+
+**Step 5: Save COA**
+- File path saved as `pdf_file_path` in database
 - Set `is_active = true`
-- Link COA to batch (`coa_id` → `batch_id`)
+- Link COA to batch (`batch_id` FK + `coa_id` bidirectional)
 - Batch now ready for packaging/shipment
 
-**Note:** COA upload is now located in Batch Management (as of 2026-01-22), not in Settings. This provides better workflow context and ensures batch is pre-selected, reducing user error.
+**Note:** COA upload consolidated into Batch Management (as of 2026-01-22). Previous Settings > Certificates interface removed. This provides better UX with batch context pre-selected.
 
 ---
 
@@ -169,20 +175,27 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 ## Implementation Status
 
 **Completed Features:**
-- ✅ COA upload and storage
-- ✅ COA management interface accessible via Batch Management
-- ✅ Advanced PDF parsing with auto-extraction of cannabinoid data
+- ✅ COA upload and storage to `coa-pdfs` bucket
+- ✅ COA management interface consolidated in Batch Management (Settings interface removed)
+- ✅ Advanced PDF parsing with auto-extraction of cannabinoid data and terpenes
+- ✅ Batch mismatch detection with required manual confirmation
+- ✅ Top 3 terpenes automatically extracted and saved
 - ✅ Single-COA upload per batch with pre-selection
-- ✅ Batch linkage via `coa_id` FK (bidirectional)
+- ✅ Batch linkage via `batch_id` FK (bidirectional)
 - ✅ Public COA library (read-only access at `/public/testing`)
-- ✅ COA display on coversheets
+- ✅ COA display on coversheets and manifests
 - ✅ COA validation before packaging (UI + database trigger)
 
 **Access Path:**
-- Navigate to Batch Management page
-- Click "Upload COA" button next to batch
-- Review parsed data and confirm
-- COA automatically linked to batch
+- Navigate to Settings > Batch Management tab
+- Click "Upload COA" button next to any batch
+- System parses PDF and validates batch match
+- Review/edit extracted data
+- COA automatically linked to selected batch
+
+**Removed Features (2026-01-22):**
+- ❌ Settings > Certificates (COA) tab - removed to consolidate workflow
+- ❌ Bulk COA upload interface - simplified to single-batch uploads
 
 **Critical Gaps:**
 - **GAP-009:** Multiple active COAs per batch allowed
@@ -193,6 +206,11 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 **See:** [DOCS-INTEGRATION-PROGRESS.md - Implementation Gaps Dashboard](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) for complete gap tracking.
 
 **Recent Updates:**
-- **2026-01-22:** COA upload moved to Batch Management (one-at-a-time per batch with pre-selection)
-- **2026-01-21:** COA upload interface restored to Settings > Certificates tab (was imported but not accessible)
+- **2026-01-22:** Complete COA workflow consolidation (Session: COA-UPLOAD-BATCH-MANAGEMENT-FIX)
+  - Fixed critical bugs: field mismatches, missing file upload, missing required fields
+  - Added batch mismatch detection with required confirmation
+  - Added automatic terpene extraction (top 3 by volume)
+  - Removed Settings > Certificates tab to consolidate to single upload path
+  - All COA uploads now happen in Batch Management for better UX
+- **2026-01-21:** COA upload interface temporarily restored to Settings (later consolidated)
 - **2026-01-19:** Database trigger added to validate COA before packaging sessions (Session COA-VAL-001)
