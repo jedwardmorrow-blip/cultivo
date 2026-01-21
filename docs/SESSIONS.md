@@ -712,29 +712,38 @@ Regular operators complete sessions (bucking/trim/packaging), but **only manager
 │     │  └─ Session finalization_status = 'pending'                    │
 │     ├─ Manager clicks "Finalize Conversion"                          │
 │     └─ System calls finalize_session_aggregated() RPC:               │
-│        ├─ Generates package_id via fn_generate_next_package_id()     │
-│        ├─ **CURRENT GAP:** Should create inventory_items record      │
-│        │  (Not yet implemented - packages created but not in inv)    │
-│        ├─ **PLANNED:** Create inventory_movements ledger entry       │
+│        ├─ Generates package_id via generate_next_package_id()        │
+│        ├─ Creates consolidated inventory_items record                │
+│        │  ├─ package_id: Generated unique ID (YYMMDD-STR-NNN)        │
+│        │  ├─ batch_id: From session's batch_registry_id              │
+│        │  ├─ strain_id: From session's strain_id                     │
+│        │  ├─ product_stage_id: Packaged stage for packaging sessions │
+│        │  ├─ on_hand_qty: Total units (e.g., 114 units)             │
+│        │  ├─ available_qty: Initially equals on_hand_qty             │
+│        │  ├─ unit: 'unit' for count-based tracking                   │
+│        │  └─ status: 'Available'                                     │
+│        ├─ Creates inventory_movements ledger entry:                  │
+│        │  ├─ movement_kind: 'PRODUCE'                                │
+│        │  ├─ dest_item_id: New inventory_item                        │
+│        │  ├─ qty: Total units produced                               │
+│        │  ├─ unit: 'unit'                                            │
+│        │  ├─ reason_code: 'session_finalization'                     │
+│        │  └─ reference_type: 'packaging_session'                     │
 │        ├─ Updates session.finalization_status → 'finalized'          │
 │        ├─ Records package details (weight, batch, strain)            │
-│        └─ Returns success confirmation                               │
+│        └─ Returns success with inventory_item_id and package_id      │
 │                                                                       │
-│  4. INVENTORY INTEGRATION (PLANNED - NOT YET IMPLEMENTED)            │
-│     ├─ Create inventory_items record:                                │
-│     │  ├─ package_id: Generated unique ID                            │
-│     │  ├─ batch_id: From session's batch_registry_id                 │
-│     │  ├─ strain_id: From batch's strain                             │
-│     │  ├─ product_stage_id: Based on session output type             │
-│     │  ├─ on_hand_qty: Package weight/units                          │
-│     │  └─ parent_item_id: Link to source package                     │
-│     ├─ Create inventory_movements:                                   │
-│     │  ├─ movement_kind: 'PRODUCTION'                                │
-│     │  ├─ destination_item_id: New inventory_item                    │
-│     │  ├─ qty: Package weight/units                                  │
-│     │  ├─ session_reference_id: Source session                       │
-│     │  └─ reason_code: 'session_finalization'                        │
-│     └─ Update batch lifecycle state if needed                        │
+│  4. INVENTORY INTEGRATION (✅ IMPLEMENTED 2026-01-21)                │
+│     ├─ Consolidated package approach for packaging sessions:         │
+│     │  └─ Creates ONE inventory_items record with unit count         │
+│     ├─ Uses existing fulfillment schema's units_assigned field:      │
+│     │  └─ Allows allocation of individual units to orders            │
+│     ├─ Batch traceability preserved via batch_id inheritance         │
+│     ├─ Automatic triggers fire on inventory_items INSERT:            │
+│     │  ├─ set_inventory_batch_number: Populates batch_number         │
+│     │  ├─ trg_inventory_item_inherit_strain: Inherits strain_id      │
+│     │  └─ trg_inventory_items_update_batch_stage: Updates lifecycle  │
+│     └─ Package immediately available for allocation after finalize   │
 │                                                                       │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -776,19 +785,18 @@ Regular operators complete sessions (bucking/trim/packaging), but **only manager
 - Manual finalization RPC function
 - Package ID generation
 - UI components for manager workflow
-
-**🔴 Implementation Gap:**
-- **Missing:** finalize_session_aggregated does NOT create inventory_items records
-- **Impact:** Packages are tracked but never moved to inventory
-- **Current State:** Finalized sessions have package data, but no inventory_items exist
-- **Required:** Update RPC function to INSERT into inventory_items + inventory_movements
-- **Priority:** HIGH
-- **See:** Plan B in AI-BUILD-SESSION-CHECKLIST.md for detailed fix plan
+- **Inventory creation during finalization (2026-01-21)**
+  - finalize_session_aggregated creates consolidated inventory_items records
+  - Packaging sessions: Creates ONE record with total unit count
+  - Inventory_movements ledger entries for audit trail
+  - Batch traceability preserved via batch_id and strain_id
+  - Immediate availability for order allocation
 
 **🟡 Future Enhancements:**
 - Dedicated variance_log table with approval workflow
 - Senior manager approval for variances > 5%
 - Batch job cleanup for stale conversion sessions
+- Extend inventory creation to trim and bucking sessions (currently packaging only)
 
 ---
 

@@ -4,6 +4,168 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-21 - Packaging Session Finalization Inventory Creation
+
+**Type:** 🎯 CRITICAL GAP FIX (Implementation Gap)
+**Module:** Sessions / Inventory / Conversions
+**Priority:** HIGH - Core Functionality Missing
+**Impact:** Finalized packaging sessions now create usable inventory items
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration, Documentation
+**Session ID:** PKG-FINALIZATION-INVENTORY-FIX
+
+### Summary
+
+Implemented consolidated inventory creation in packaging session finalization workflow. Manager-approved packaging sessions now automatically create inventory_items records with proper batch traceability, enabling immediate allocation to orders.
+
+### Problem
+
+**Implementation Gap:**
+- `finalize_session_aggregated()` RPC function updated finalization_status but never created inventory
+- Finalized packages tracked in sessions but never appeared in inventory_items table
+- Orders could not allocate finalized packages
+- System had no inventory_movements ledger entries for finalized conversions
+- Gap documented in SESSIONS.md Section 6 and DOCS-INTEGRATION-PROGRESS.md
+
+**User Impact:**
+- Operators completed packaging sessions successfully
+- Managers finalized conversions successfully
+- BUT: Packages never became available in inventory
+- Orders showed "insufficient inventory" despite finalized sessions existing
+
+### Solution
+
+**Migration:** `supabase/migrations/add_inventory_creation_to_finalization.sql`
+
+**Implementation Approach: Consolidated Package (Option B)**
+
+Creates ONE inventory_items record per aggregation with total unit count instead of individual records per unit. This approach aligns with existing fulfillment schema's `units_assigned` field.
+
+**Changes Made:**
+
+1. **Enhanced finalize_session_aggregated() RPC Function**
+   - Added inventory_items record creation for packaging sessions
+   - Generates unique package_id using existing `generate_next_package_id()` function
+   - Inherits batch_id and strain_id from packaging_sessions
+   - Sets product_stage_id to Packaged stage (323ee0fe-1342-4b26-9379-c373f3cabbb9)
+   - Sets on_hand_qty to total output_units from all sessions in aggregation
+   - Sets unit='unit' for count-based tracking
+   - Sets status='Available' for immediate allocation
+
+2. **Created Inventory Ledger Entry**
+   - Inserts inventory_movements record with movement_kind='PRODUCE'
+   - Links to newly created inventory_item via dest_item_id
+   - Records total units produced for audit trail
+   - Sets reason_code='session_finalization' and reference_type='packaging_session'
+
+3. **Automatic Trigger Integration**
+   - Existing triggers fire on inventory_items INSERT:
+     - `set_inventory_batch_number`: Populates batch_number for display
+     - `trg_inventory_item_inherit_strain`: Ensures strain_id inheritance
+     - `trg_inventory_items_update_batch_stage`: Updates batch lifecycle state
+   - Batch traceability preserved through trigger chain
+
+### Technical Details
+
+**Consolidated Package Approach:**
+- **Input:** Multiple packaging sessions (e.g., 3 sessions producing 30, 44, 40 units)
+- **Output:** ONE inventory_items record with on_hand_qty=114 units
+- **Allocation:** Uses order_fulfillment_items.units_assigned field
+- **Benefits:**
+  - Simplified inventory management
+  - Aligned with existing fulfillment schema
+  - Maintains batch traceability
+  - Reduces inventory table size
+
+**Example:**
+```sql
+-- Finalize 3 packaging sessions for Packaged - Strain X - 3.5g
+-- Sessions produced: 30, 44, 40 units = 114 total
+
+SELECT finalize_session_aggregated(
+  'batch-uuid',
+  'Packaged - Strain X - 3.5g',
+  'packaging'
+);
+
+-- Creates inventory_items record:
+-- package_id: '260121-STR-001'
+-- on_hand_qty: 114 (units)
+-- available_qty: 114 (units)
+-- unit: 'unit'
+```
+
+### Verification
+
+**Database Schema Verified:**
+- ✅ inventory_items table has required fields (package_id, batch_id, strain_id, product_stage_id, on_hand_qty, unit)
+- ✅ inventory_movements table supports PRODUCE movement with dest_item_id
+- ✅ generate_next_package_id() function generates unique IDs
+- ✅ Packaged stage exists in product_stages table
+- ✅ Existing triggers fire correctly on INSERT
+
+**Build Status:**
+- ✅ TypeScript compilation successful
+- ✅ No breaking changes to frontend
+- ✅ Existing UI components compatible with consolidated approach
+
+**Integration Tests:**
+- ✅ Function handles NULL cases gracefully (returns success with 0 sessions finalized)
+- ✅ Package ID generation works correctly (format: YYMMDD-STR-NNN)
+- ✅ Batch lifecycle triggers fire on inventory creation
+- ✅ Strain inheritance works via existing triggers
+
+### Documentation Updates
+
+**Files Updated:**
+- ✅ `docs/SESSIONS.md`: Removed "CURRENT GAP" markers, documented consolidated approach
+- ✅ `docs/INVENTORY-TRACKING.md`: Updated conversion workflow section
+- ✅ `CHANGELOG.md`: Added this entry
+
+**Key Documentation Changes:**
+- Section 6 "Conversion Workflow" in SESSIONS.md: Step 3 and 4 rewritten
+- "Current Implementation Status" section updated to mark gap as resolved
+- Mermaid diagrams updated to show inventory creation flow
+
+### Migration Path
+
+**Scope:** Packaging sessions only (trim and bucking remain weight-based for now)
+
+**Future Work:**
+- Extend inventory creation to trim sessions (bulk weight-based packages)
+- Extend inventory creation to bucking sessions (bulk weight-based packages)
+- Implement partial finalization workflow for bulk bag splitting
+
+### Related Issues
+
+**Resolves:**
+- Implementation gap documented in SESSIONS.md lines 716-720
+- Gap tracked in DOCS-INTEGRATION-PROGRESS.md
+- User-reported issue: "Finalized packages not showing in inventory"
+
+**References:**
+- Plan B in AI-BUILD-SESSION-CHECKLIST.md
+- SESSION-2026-01-21 build session
+- Related to: Conversion system hybrid architecture (2026-01-13)
+
+### Testing Recommendations
+
+**Before Production Deploy:**
+1. Create test packaging session with known output units
+2. Complete session and verify pending conversion appears
+3. Execute finalization through manager workflow
+4. Verify inventory_items record created with correct on_hand_qty
+5. Verify inventory_movements ledger entry exists
+6. Test order allocation using units_assigned field
+7. Verify finalization_status updates correctly
+
+**Rollback Plan:**
+- Function maintains backward compatibility
+- If issues occur, sessions can be manually finalized via SQL
+- No breaking changes to existing data
+
+---
+
 ## 2026-01-22 - Batch-COA View Relationship Fix
 
 **Type:** 🐛 BUG FIX (UI Display)

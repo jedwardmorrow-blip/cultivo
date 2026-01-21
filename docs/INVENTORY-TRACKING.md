@@ -806,7 +806,8 @@ ORDER BY lot_date DESC;
    - Generates sequential package IDs: `260113-DOG-001`, `260113-DOG-002`
    - Updates session `finalization_status` → 'finalized'
    - Records package details (weight, batch, strain)
-   - **CURRENT GAP:** Should create `inventory_items` records (not yet implemented)
+   - **Creates consolidated inventory_items record** (✅ Implemented 2026-01-21)
+   - Creates inventory_movements ledger entry for audit trail
 
 **For Unit Products (Count-Based):**
 1. Manager views packaged product conversions
@@ -820,41 +821,48 @@ ORDER BY lot_date DESC;
 - Session `finalization_status = 'pending'`
 - SUM(package weights) <= session.output_weight + 5% tolerance
 
-#### Step 4: Inventory Integration (PLANNED - NOT YET IMPLEMENTED)
+#### Step 4: Inventory Integration (✅ IMPLEMENTED 2026-01-21)
 
-**Current Implementation Gap:**
-The `finalize_session_aggregated()` RPC function does NOT create `inventory_items` records. This means:
-- ❌ Finalized packages tracked but never appear in inventory
-- ❌ No `inventory_movements` ledger entry for package creation
-- ❌ Orders cannot allocate finalized packages
+**Implementation Details:**
+The `finalize_session_aggregated()` RPC function now creates `inventory_items` records using the consolidated package approach:
+- ✅ Finalized packages immediately appear in inventory
+- ✅ `inventory_movements` ledger entry created for audit trail
+- ✅ Orders can allocate finalized packages using units_assigned field
+- ✅ Batch traceability preserved via batch_id and strain_id inheritance
 
-**Required Implementation:**
+**Consolidated Package Approach:**
+For packaging sessions, creates ONE `inventory_items` record with total unit count:
 ```sql
--- Must be added to finalize_session_aggregated() function
+-- Example: 114 units from multiple packaging sessions
 INSERT INTO inventory_items (
-  package_id,
-  batch_id,          -- From session.batch_registry_id
-  strain_id,         -- From batch.strain_id
-  product_stage_id,  -- Based on session output type
-  on_hand_qty,       -- Package weight/units
-  parent_item_id,    -- Link to source package
-  unit               -- 'g' or 'unit'
+  package_id,          -- Generated: '260121-DOG-001'
+  batch_id,           -- From session.batch_registry_id
+  batch_number,       -- From batch_registry.batch_number
+  strain_id,          -- From session.strain_id
+  product_name,       -- From session.output_product_name
+  product_stage_id,   -- Packaged stage UUID
+  on_hand_qty,        -- Total units: 114
+  available_qty,      -- Initially equals on_hand_qty
+  unit,               -- 'unit' for count-based tracking
+  status,             -- 'Available'
+  package_date        -- From session.completed_at
 )
-VALUES (generated_package_id, batch_id, strain_id, stage_id, qty, parent_id, unit);
+VALUES (...);
 
 -- Create inventory movement ledger entry
 INSERT INTO inventory_movements (
-  movement_kind,           -- 'PRODUCTION'
-  destination_item_id,     -- New inventory_item.id
-  qty,                     -- Package weight/units
-  session_reference_id,    -- Source session ID
-  reason_code             -- 'session_finalization'
+  movement_kind,      -- 'PRODUCE'
+  dest_item_id,       -- New inventory_item.id
+  qty,                -- Total units: 114
+  unit,               -- 'unit'
+  reason_code,        -- 'session_finalization'
+  reference_type,     -- 'packaging_session'
+  notes               -- Session details
 )
-VALUES ('PRODUCTION', new_item_id, qty, session_id, 'session_finalization');
+VALUES (...);
 ```
 
-**Priority:** HIGH - Without this, the finalization workflow is incomplete
-**See:** Plan B in AI-BUILD-SESSION-CHECKLIST.md for detailed fix plan
+**Migration:** `supabase/migrations/add_inventory_creation_to_finalization.sql` (2026-01-21)
 
 ### ⚠️ CRITICAL: Common Pitfall - Double-Counting in Conversions
 
@@ -1098,7 +1106,8 @@ sequenceDiagram
     participant View as conversion_summary_view
     participant Mgr as Manager
     participant RPC as finalize_session_aggregated()
-    participant Inv as inventory_items (PLANNED)
+    participant Inv as inventory_items
+    participant Mov as inventory_movements
 
     Op->>Sess: Complete session
     Sess->>Sess: Set finalization_status='pending'
@@ -1106,9 +1115,10 @@ sequenceDiagram
     Mgr->>RPC: Call finalize with package details
     RPC->>Sess: Update finalization_status='finalized'
     RPC->>RPC: Generate package IDs
-    Note over RPC,Inv: CURRENT GAP: Does not create inventory_items
-    RPC-->>Inv: Should create inventory_items (NOT YET IMPLEMENTED)
-    RPC-->>Inv: Should create PRODUCTION movement (NOT YET IMPLEMENTED)
+    Note over RPC,Inv: ✅ Consolidated Package Creation (2026-01-21)
+    RPC->>Inv: INSERT inventory_items (ONE record with unit count)
+    RPC->>Mov: INSERT PRODUCE movement (ledger entry)
+    Note over Inv,Mov: Package immediately available for allocation
 ```
 
 ### Audit → Variance → Reconciliation
