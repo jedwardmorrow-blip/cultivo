@@ -124,11 +124,11 @@ See `HOUSEKEEPING_PROGRESS.md` for details on this future enhancement.
 ## Custom Hooks
 
 ### Data Fetching
-- `useInventoryData` - Fetch inventory items with filters
+- `useInventoryData` - Fetch inventory items with filters and real-time updates
 - `useInventorySearch` - Search functionality
 - `useInventoryFilters` - Manage filter state
 - `useInventoryOversight` - Real-time oversight data
-- `useConversionLots` - Fetch available conversion lots
+- `useConversionLots` - Fetch available conversion lots with real-time updates
 
 ### Audit System
 - `useAudit` - Main audit workflow orchestration
@@ -288,7 +288,10 @@ inventory_variance_log
 ### Caching Strategy
 - Custom hooks cache data
 - Manual refetch after mutations
-- Real-time updates trigger refetch
+- Real-time updates via Supabase subscriptions
+  - **conversion_packages** table: Auto-refresh when conversions are finalized
+  - **inventory_items** table: Auto-refresh when inventory is directly modified
+  - Silent refresh pattern prevents UI flicker during updates
 
 ---
 
@@ -316,11 +319,12 @@ inventory_variance_log
 - Lazy loading of conversion lots
 - Debounced search inputs
 - Memoized calculations
+- Silent refresh pattern for real-time updates (no loading spinner flicker)
 
 ### Known Limitations
 - Large CSV imports can be slow (>1000 rows)
 - Complex audit calculations may take time
-- Real-time updates can cause UI flicker with rapid changes
+- Multiple rapid changes may trigger multiple silent refreshes (acceptable performance impact)
 
 ---
 
@@ -407,10 +411,61 @@ None specific to this feature (uses global Supabase config)
 
 ---
 
+---
+
+## Real-Time Updates
+
+### Supabase Subscriptions
+
+The inventory system uses Supabase real-time subscriptions to automatically refresh data when changes occur:
+
+**`useInventoryData` Hook:**
+- Subscribes to `conversion_packages` table for finalized conversion updates
+- Subscribes to `inventory_items` table for direct inventory modifications
+- Uses silent refresh pattern to prevent UI loading flicker
+- Automatically cleans up subscriptions on component unmount
+
+**Pattern Used:**
+```typescript
+const fetchInventory = useCallback(async (silent = false) => {
+  if (!silent) {
+    setLoading(true);  // Only show loading on initial/manual fetch
+  }
+  // ... fetch data
+  if (!silent) {
+    setLoading(false);
+  }
+}, [deps]);
+
+// Real-time subscription
+useEffect(() => {
+  const channel = supabase
+    .channel('unique-channel-name')
+    .on('postgres_changes', { event: '*', table: 'table_name' }, () => {
+      fetchInventory(true);  // Silent refresh - no loading spinner
+    })
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+}, [fetchInventory]);
+```
+
+**Benefits:**
+- Inventory views update automatically when conversions are finalized
+- No manual refresh needed after inventory changes
+- Seamless multi-user experience (changes by one user visible to all)
+- No UI flicker from loading states during background updates
+
+**Reference Implementation:**
+- Pattern established in `useConversionLots.ts` (October 2025)
+- Extended to `useInventoryData.ts` (January 2026)
+
+---
+
 ## Contacts & Ownership
 
 **Primary Maintainer:** TBD
-**Last Major Update:** 2025-10-27 (Housekeeping Phase 4)
+**Last Major Update:** 2026-01-21 (Real-time Updates Implementation)
 **Status:** ✅ Production-ready
 
 ---
