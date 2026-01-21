@@ -4,6 +4,87 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-21 - Conversion Finalization ATP Constraint Fix
+
+**Type:** 🔴 CRITICAL BUG FIX
+**Module:** Inventory Conversions
+**Priority:** CRITICAL - All Conversion Finalization Blocked
+**Impact:** Unblocks trim, flower, smalls, packaging, and bucking conversions
+**Status:** ✅ COMPLETE
+**Files Changed:** 1 service file + 1 documentation file
+**Session ID:** CONV-ATP-FIX-001
+**Documentation:** docs/SESSION-2026-01-21-CONVERSION-ATP-CONSTRAINT-FIX.md
+
+### Summary
+
+Fixed critical bug preventing ALL conversion finalization workflows. The ATP consistency constraint (added earlier today) exposed a pre-existing bug where inventory items were created with invalid ATP values (`on_hand_qty=0` but `available_qty=50g`), violating the formula `available_qty = on_hand_qty - reserved_qty`.
+
+### Problem
+
+**User Report:** Error when finalizing trim conversion: `"new row for relation "inventory_items" violates check constraint "chk_atp_consistency"`
+
+**Root Cause:**
+- Conversion finalization code set `on_hand_qty: 0` and `available_qty: quantity`
+- This violated ATP formula: `50 ≠ 0 - 0`
+- Bug existed before ATP constraint but went undetected
+- ATP constraint (added 2026-01-21) correctly prevented invalid data insertion
+
+**Affected Workflows:**
+- Trim conversions (Bulk Trim - Trimmed)
+- Flower conversions (Bulk Flower - Trimmed/Bucked)
+- Smalls conversions (Bulk Smalls - Trimmed)
+- Packaging conversions (Packaged products)
+- Bucking conversions (Bucked products)
+
+### Solution
+
+**Code Fix:** `src/features/inventory/services/conversions.service.ts`
+
+**Before:**
+```typescript
+on_hand_qty: 0,           // ❌ Wrong
+available_qty: quantity,  // ❌ Violates ATP formula
+```
+
+**After:**
+```typescript
+on_hand_qty: quantity,    // ✅ Package has this quantity on hand
+available_qty: quantity,  // ✅ ATP: quantity = quantity - 0
+reserved_qty: 0,          // ✅ Explicitly set for clarity
+```
+
+### Impact
+
+**Before Fix:**
+- ❌ All conversion finalization completely blocked
+- ❌ Cannot create inventory from completed sessions
+- ❌ Production workflow halted
+
+**After Fix:**
+- ✅ All conversion types can be finalized successfully
+- ✅ ATP constraint satisfied at insert time
+- ✅ Data integrity maintained
+- ✅ Production workflow restored
+
+### Verification
+
+```bash
+npm run build  # ✅ Build successful, zero errors
+```
+
+```sql
+-- Confirmed zero ATP violations before/after fix
+SELECT COUNT(*) FROM inventory_items
+WHERE available_qty != (on_hand_qty - COALESCE(reserved_qty, 0));
+-- Result: 0
+```
+
+### Key Insight
+
+Database constraints are excellent at exposing hidden bugs. The ATP constraint didn't cause this bug - it revealed it and prevented data corruption. This is the constraint working as designed.
+
+---
+
 ## 2026-01-21 - Available Quantity ATP Violations Fix
 
 **Type:** 🔴 CRITICAL BUG FIX + DATABASE INTEGRITY

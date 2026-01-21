@@ -306,7 +306,26 @@ The fix was implemented using the established unpivoting pattern and product nam
 
 ---
 
+## Post-Session Note: ATP Constraint Issue
+
+**2026-01-21 Later in Day:**
+
+User attempted to finalize trim conversion and encountered ATP constraint violation:
+```
+Failed to create inventory items: new row for relation "inventory_items"
+violates check constraint "chk_atp_consistency"
+```
+
+This revealed a **pre-existing bug** in the conversion finalization code (not related to trim fix). The bug affected ALL conversion types (trim, flower, smalls, packaging, bucking). The ATP constraint added earlier today exposed the bug by preventing invalid data insertion.
+
+**Resolution:** Fixed in separate session - see `SESSION-2026-01-21-CONVERSION-ATP-CONSTRAINT-FIX.md`
+
+**Key Insight:** The trim conversion workflow itself was correct. The ATP constraint issue was in the shared conversion finalization code and would have affected any conversion type attempted after the constraint was added.
+
+---
+
 **Session Completed:** 2026-01-21
 **Migrations Applied:** 5
 **Tests Passed:** ✅ All
 **Production Ready:** ✅ Yes
+**Follow-Up:** ATP constraint fix completed same day (see CONVERSION-ATP-CONSTRAINT-FIX)

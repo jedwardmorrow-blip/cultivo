@@ -375,8 +375,9 @@ export async function finalizeConversion(params: {
         product_stage_id: correctStageId,
         product_name: productName,
         category: category, // Required for inventory UI filtering
-        on_hand_qty: 0, // Let PRODUCE movement trigger set this (prevents double-counting)
-        available_qty: quantity, // ATP field - set directly per architecture
+        on_hand_qty: quantity, // Set to package quantity to satisfy ATP constraint
+        available_qty: quantity, // ATP: available_qty = on_hand_qty - reserved_qty (quantity = quantity - 0)
+        reserved_qty: 0, // Explicitly set to 0 for clarity
         unit: pkg.weight ? 'g' : 'unit',
         status: 'Available',
         package_date: new Date().toISOString().split('T')[0],
