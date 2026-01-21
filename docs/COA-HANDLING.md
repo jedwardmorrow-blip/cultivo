@@ -97,15 +97,27 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 
 **Database Tables:**
 - `certificates_of_analysis` - COA metadata and parsed test results
-- `batch_registry.coa_id` - FK linking batch to COA
-- Storage bucket: `coa-documents` - PDF file storage
+- `batch_registry` - Batch records with optional `coa_id` reference
+- Storage bucket: `coa-pdfs` - PDF file storage
+
+**Canonical Relationship (GAP-009):**
+- **Primary FK:** `certificates_of_analysis.batch_id → batch_registry.id`
+  - This is the "source of truth" enforced by unique constraint
+  - Ensures one active COA per batch
+  - All queries and validations use this direction
+- **Secondary FK:** `batch_registry.coa_id → certificates_of_analysis.id`
+  - Optional backward reference for legacy compatibility
+  - Synced by backfill but not required for system operation
+  - Views and services query via `batch_id`, not `coa_id`
 
 **Key Fields:**
-- `batch_id` - Which batch this COA tests
-- `test_date` - When lab performed analysis
-- `thc_percent`, `cbd_percent` - Primary cannabinoid levels
+- `batch_id` - Which batch this COA tests (canonical FK)
+- `sample_date` - When sample was taken for testing
+- `thc_percentage`, `cbd_percentage` - Primary cannabinoid levels
 - `is_active` - Whether COA is current (required true for shipment)
-- `file_url` - Public URL to PDF in storage bucket
+- `pdf_file_path` - Storage path to PDF in `coa-pdfs` bucket
+
+**Technical Note:** The `batch_with_coa_status` view joins on `coa.batch_id = br.id` (not `br.coa_id = coa.id`) to match the canonical relationship direction. See `SESSION-2026-01-22-BATCH-COA-VIEW-FIX.md` for details.
 
 ---
 
@@ -207,6 +219,11 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 **See:** [DOCS-INTEGRATION-PROGRESS.md - Implementation Gaps Dashboard](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) for complete gap tracking.
 
 **Recent Updates:**
+- **2026-01-22:** Fixed batch-COA view relationship (Session: BATCH-COA-VIEW-FIX)
+  - Updated `batch_with_coa_status` view to use canonical `batch_id` FK
+  - Backfilled `batch_registry.coa_id` for existing batches
+  - Fixed "NO COA" display bug for newly uploaded COAs
+  - View now matches GAP-009 constraint architecture
 - **2026-01-22:** Complete COA workflow consolidation (Session: COA-UPLOAD-BATCH-MANAGEMENT-FIX)
   - Fixed critical bugs: field mismatches, missing file upload, missing required fields
   - Added batch mismatch detection with required confirmation

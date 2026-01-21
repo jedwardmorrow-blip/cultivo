@@ -4,6 +4,87 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-22 - Batch-COA View Relationship Fix
+
+**Type:** 🐛 BUG FIX (UI Display)
+**Module:** Certificate of Analysis (COA) / Batch Management
+**Priority:** MEDIUM - UI Display Issue (Functionality Not Affected)
+**Impact:** Batch list now correctly shows "COA Active" for batches with uploaded COAs
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration
+**Session ID:** BATCH-COA-VIEW-FIX
+
+### Summary
+
+Fixed "NO COA" display issue where batches showed "NO COA" in the UI despite having valid, active COAs successfully uploaded to the database. The fix updates the database view to use the canonical relationship direction enforced by GAP-009.
+
+### Problem
+
+**User Report:**
+- User uploaded COA for batch 251105-SWF (Swamp Water Fumez) successfully
+- Batch list UI still showed "NO COA" badge
+- User concerned packaging would be blocked by validation
+
+**Root Cause:**
+- `batch_with_coa_status` view joined on `batch_registry.coa_id = coa.id` (backward reference)
+- COA upload functions only set `certificates_of_analysis.batch_id` (forward reference)
+- Backward reference `batch_registry.coa_id` was not populated
+- View join failed, returned `coa_status = 'missing'`
+
+**Why Packaging Still Worked:**
+- Packaging validation queries directly on `certificates_of_analysis.batch_id`
+- Bypassed the broken view entirely
+- Used correct relationship direction per GAP-009 constraint
+
+### Solution
+
+**Migration:** `20260122000000_fix_batch_coa_view_join.sql`
+
+**Changes Made:**
+
+1. **Updated View Join Logic**
+   ```sql
+   -- BEFORE (incorrect)
+   LEFT JOIN certificates_of_analysis coa ON br.coa_id = coa.id
+
+   -- AFTER (correct)
+   LEFT JOIN certificates_of_analysis coa
+     ON coa.batch_id = br.id
+     AND coa.is_active = true
+   ```
+
+2. **Data Backfill**
+   - Updated `batch_registry.coa_id` for all batches with active COAs
+   - Ensures backward compatibility with any legacy code
+   - Synced bidirectional references for existing data
+
+### Verification Results
+
+- ✅ Batch 251105-SWF: Now shows `coa_status = 'active'`, `thc_percentage = 25.38%`
+- ✅ All 13 batches with COAs: Verified correct display
+- ✅ Packaging validation: Continues to work correctly
+- ✅ Backfill: All existing batches synced successfully
+
+### Technical Details
+
+**Canonical Relationship (GAP-009):**
+- Primary FK: `certificates_of_analysis.batch_id → batch_registry.id` (enforced by unique constraint)
+- Secondary FK: `batch_registry.coa_id → certificates_of_analysis.id` (backward compatibility)
+- View now uses primary FK, matching packaging validation logic
+
+**Documentation Updated:**
+- `COA-HANDLING.md` - Added canonical relationship explanation
+- `SESSION-2026-01-22-BATCH-COA-VIEW-FIX.md` - Full technical details
+
+### Impact
+
+- **Severity:** LOW (UI display only, no functional impact)
+- **Batches Affected:** 1 batch had incorrect display, now fixed
+- **User Experience:** Restored confidence in COA upload workflow
+- **Technical Debt:** Eliminated view/query inconsistency
+
+---
+
 ## 2026-01-21 - COA Upload Interface Restored
 
 **Type:** 🐛 BUG FIX (UI Access)
