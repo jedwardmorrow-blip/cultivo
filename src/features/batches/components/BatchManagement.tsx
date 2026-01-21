@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Package, Plus, AlertTriangle, CheckCircle, XCircle, Upload } from 'lucide-react';
 import { batchService } from '../services/batch.service';
 import type {
   BatchAllocationSummary,
@@ -8,6 +8,7 @@ import type {
   CreateBatchInput
 } from '@/types/batch.types';
 import { notificationService, errorService } from '@/services';
+import { COAUploadModal } from './COAUploadModal';
 
 export function BatchManagement() {
   const [batches, setBatches] = useState<BatchWithCOAStatus[]>([]);
@@ -16,13 +17,24 @@ export function BatchManagement() {
   const [loading, setLoading] = useState(true);
   const [showNewBatchForm, setShowNewBatchForm] = useState(false);
   const [filterCOAStatus, setFilterCOAStatus] = useState<'all' | 'active' | 'missing'>('all');
+  const [coaUploadState, setCOAUploadState] = useState<{
+    isOpen: boolean;
+    batchId: string | null;
+    batchNumber: string | null;
+    strain: string | null;
+  }>({
+    isOpen: false,
+    batchId: null,
+    batchNumber: null,
+    strain: null
+  });
 
   const [newBatch, setNewBatch] = useState<CreateBatchInput>({
     batch_number: '',
     strain: '',
     harvest_date: '',
     room: '',
-    initial_weight_grams: 0,
+    initial_weight_grams: undefined,
     notes: ''
   });
 
@@ -50,7 +62,7 @@ export function BatchManagement() {
   }
 
   async function handleCreateBatch() {
-    if (!newBatch.batch_number || !newBatch.strain || newBatch.initial_weight_grams <= 0) {
+    if (!newBatch.batch_number || !newBatch.strain) {
       notificationService.warning('Please fill in all required fields');
       return;
     }
@@ -64,13 +76,22 @@ export function BatchManagement() {
         strain: '',
         harvest_date: '',
         room: '',
-        initial_weight_grams: 0,
+        initial_weight_grams: undefined,
         notes: ''
       });
       await loadData();
     } catch (error) {
       errorService.handle(error, 'Create Batch');
     }
+  }
+
+  function handleUploadCOA(batchId: string, batchNumber: string, strain: string) {
+    setCOAUploadState({
+      isOpen: true,
+      batchId,
+      batchNumber,
+      strain
+    });
   }
 
   function getCOAStatusBadge(status: string) {
@@ -190,14 +211,15 @@ export function BatchManagement() {
 
               <div>
                 <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
-                  Initial Weight (grams) *
+                  Initial Weight (grams) (Optional)
                 </label>
                 <input
                   type="number"
                   step="0.1"
                   value={newBatch.initial_weight_grams || ''}
-                  onChange={(e) => setNewBatch({ ...newBatch, initial_weight_grams: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setNewBatch({ ...newBatch, initial_weight_grams: e.target.value ? parseFloat(e.target.value) : undefined })}
                   className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  placeholder="Leave empty if not known"
                 />
               </div>
 
@@ -322,6 +344,9 @@ export function BatchManagement() {
                 <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
                   Status
                 </th>
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -346,7 +371,9 @@ export function BatchManagement() {
                     <td className="py-3 px-4 text-cult-lighter-gray text-sm">
                       {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString() : '-'}
                     </td>
-                    <td className="py-3 px-4 text-cult-white">{batch.initial_weight_grams.toFixed(1)}g</td>
+                    <td className="py-3 px-4 text-cult-white">
+                      {batch.initial_weight_grams ? `${batch.initial_weight_grams.toFixed(1)}g` : 'Not Set'}
+                    </td>
                     <td className="py-3 px-4">{getCOAStatusBadge(batch.coa_status)}</td>
                     <td className="py-3 px-4 text-cult-white font-medium">
                       {batch.thc_percentage ? `${batch.thc_percentage.toFixed(2)}%` : '-'}
@@ -381,6 +408,16 @@ export function BatchManagement() {
                         {batch.batch_status}
                       </span>
                     </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => handleUploadCOA(batch.batch_id, batch.batch_number, batch.strain)}
+                        className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={batch.coa_status === 'active'}
+                      >
+                        <Upload className="w-4 h-4" />
+                        {batch.coa_status === 'active' ? 'COA Active' : 'Upload COA'}
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -401,6 +438,19 @@ export function BatchManagement() {
           </div>
         )}
       </div>
+
+      {coaUploadState.isOpen && (
+        <COAUploadModal
+          batchId={coaUploadState.batchId}
+          batchNumber={coaUploadState.batchNumber}
+          strain={coaUploadState.strain}
+          onClose={() => setCOAUploadState({ isOpen: false, batchId: null, batchNumber: null, strain: null })}
+          onSuccess={async () => {
+            await loadData();
+            setCOAUploadState({ isOpen: false, batchId: null, batchNumber: null, strain: null });
+          }}
+        />
+      )}
     </div>
   );
 }

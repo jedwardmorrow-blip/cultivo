@@ -153,7 +153,7 @@ export interface CreateBatchInput {
   strain_id?: string;
   harvest_date?: string;
   room?: string;
-  initial_weight_grams: number;
+  initial_weight_grams?: number;
   notes?: string;
 }
 

@@ -1,8 +1,8 @@
 ---
 title: SETTINGS
 category: Platform, Settings & Safety
-version: 2.0
-updated: 2025-11-20
+version: 2.1
+updated: 2026-01-22
 ---
 
 # SETTINGS - System Configuration and Management
@@ -608,6 +608,8 @@ Settings
    └─ Test Data Cleanup
 ```
 
+Note: COA Management moved to Batch Management page (2026-01-22) for better workflow alignment.
+
 ### Navigation Pattern
 
 **Accordion-Style Expansion:**
@@ -736,3 +738,4 @@ This document is part of the CULT Seed-to-Sale system documentation. It follows 
 **Version History:**
 - 1.0 (2025-11-06): Initial stub documentation
 - 2.0 (2025-11-20): Complete documentation with all settings categories
+- 2.1 (2026-01-22): Removed COA management (moved to Batch Management)

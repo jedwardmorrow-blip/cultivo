@@ -96,11 +96,16 @@ export async function fetchBatchByNumber(batchNumber: string): Promise<BatchRegi
  *
  * @param input - Batch creation data
  * @returns Promise<BatchRegistry> - Created batch record
+ * @note initial_weight_grams is optional - may be added later during bucking
  */
 export async function createBatch(input: CreateBatchInput): Promise<BatchRegistry> {
   const { data, error } = await supabase
     .from('batch_registry')
-    .insert(input)
+    .insert({
+      ...input,
+      status: 'active',
+      lifecycle_state: 'created'
+    })
     .select()
     .single();
 

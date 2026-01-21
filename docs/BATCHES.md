@@ -93,7 +93,7 @@ A **batch** represents a specific harvest of cannabis material from a particular
 │     ├─ batch_number: YYMMDD-STRAIN-NN                                │
 │     ├─ strain_id: FK to strains table                                │
 │     ├─ harvest_date: Actual harvest date                             │
-│     ├─ initial_weight_grams: Wet weight                              │
+│     ├─ initial_weight_grams: Wet weight (optional)                   │
 │     └─ lifecycle_state: 'created'                                    │
 │                                                                       │
 │  BUCKED                                                              │
@@ -250,7 +250,7 @@ Once created, these fields **NEVER change**:
 │     │  ├─ strain_id: Select from strains table                       │
 │     │  ├─ harvest_date: Date material was harvested                  │
 │     │  ├─ room: Cultivation room identifier (optional)               │
-│     │  ├─ initial_weight_grams: Wet weight at binning                │
+│     │  ├─ initial_weight_grams: Wet weight at binning (optional)     │
 │     │  └─ is_quarantined: QC hold checkbox (default: false)          │
 │     ├─ System generates:                                             │
 │     │  ├─ batch_number: YYMMDD-STRAIN format                          │
@@ -262,8 +262,14 @@ Once created, these fields **NEVER change**:
 │     └─ Validation:                                                   │
 │        ├─ strain_id exists in strains table                          │
 │        ├─ batch_number unique (constraint enforced)                  │
-│        ├─ initial_weight_grams > 0                                   │
+│        ├─ initial_weight_grams > 0 (if provided)                     │
 │        └─ harvest_date <= current_date                               │
+│                                                                       │
+│     Note: initial_weight_grams is optional                           │
+│        - May not be known at batch creation time                     │
+│        - Can be added later during bucking session                   │
+│        - Some facilities skip wet weight measurement entirely        │
+│        - Field is informational only (does not affect workflow)      │
 │                                                                       │
 │  3. AUDIT TRAIL CREATION (Automatic)                                 │
 │     └─ Insert batch_production_history:                              │
@@ -1217,6 +1223,12 @@ ORDER BY bph.event_timestamp ASC;
 
 ## Document Version History
 
+### v2.3 (2026-01-22)
+- **Made initial_weight_grams optional** in batch creation workflow
+- **Updated validation** to reflect weight is no longer required
+- **Added guidance** on when weight is recorded (may be added later or omitted)
+- **Updated SQL examples** to show weight as optional field
+
 ### v2.2 (2026-01-13)
 - **Removed obsolete table references** from Foreign Key Architecture diagram
 - **Removed** `pending_conversions.batch_id` and `conversion_lots.batch_id` (tables removed in Jan 2026 hybrid architecture migration)
@@ -1254,8 +1266,8 @@ ORDER BY bph.event_timestamp ASC;
 
 ---
 
-**Document Version:** 2.1
-**Last Updated:** 2025-11-10
+**Document Version:** 2.3
+**Last Updated:** 2026-01-22
 **Status:** Authoritative Reference Documentation ⭐ PRIMARY REFERENCE FOR BATCH ARCHITECTURE
 **Maintainer:** System Architect
 **Review Cycle:** Post-migration deployments or monthly

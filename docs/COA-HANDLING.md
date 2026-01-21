@@ -1,8 +1,8 @@
 ---
 title: COA-HANDLING
 category: Sales & Fulfillment
-version: 1.2
-updated: 2025-11-10
+version: 1.3
+updated: 2026-01-22
 ---
 
 # COA-HANDLING - Certificate of Analysis Management
@@ -110,25 +110,30 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 
 ## COA Upload Workflow
 
-**Step 1: Upload PDF**
-- Manager uploads COA PDF via UI
-- File stored in `coa-documents` storage bucket
+**Step 1: Access COA Upload**
+- Navigate to Batch Management page
+- Locate the batch needing a COA
+- Click "Upload COA" button in the batch row
+- System opens COA upload wizard with batch pre-selected
+
+**Step 2: Upload PDF File**
+- Select single COA PDF file
+- File uploads to `coa-documents` storage bucket
+- System automatically parses PDF for cannabinoid data
 - `file_url` saved to database
 
-**Step 2: Link to Batch**
-- Manager selects batch number
-- System checks if batch already has active COA:
-  - If yes: Prompt to deactivate old COA or cancel
-  - If no: Proceed with linkage
+**Step 3: Review & Confirm Extracted Data**
+- Review parsed data (THC%, CBD%, test date, terpenes)
+- Make adjustments if OCR misread values
+- Batch already pre-selected (cannot change)
+- Confirm accuracy
 
-**Step 3: Parse & Validate**
-- Extract test_date, THC%, CBD% from PDF (manual entry or OCR)
-- Validate required fields present
+**Step 4: Save COA**
 - Set `is_active = true`
-
-**Step 4: Update Batch**
-- Set `batch_registry.coa_id = new_coa_id`
+- Link COA to batch (`coa_id` → `batch_id`)
 - Batch now ready for packaging/shipment
+
+**Note:** COA upload is now located in Batch Management (as of 2026-01-22), not in Settings. This provides better workflow context and ensures batch is pre-selected, reducing user error.
 
 ---
 
@@ -165,18 +170,19 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 
 **Completed Features:**
 - ✅ COA upload and storage
-- ✅ COA management interface accessible via Settings > Certificates (COA) tab
+- ✅ COA management interface accessible via Batch Management
 - ✅ Advanced PDF parsing with auto-extraction of cannabinoid data
-- ✅ Bulk upload wizard with review workflow
+- ✅ Single-COA upload per batch with pre-selection
 - ✅ Batch linkage via `coa_id` FK (bidirectional)
 - ✅ Public COA library (read-only access at `/public/testing`)
 - ✅ COA display on coversheets
 - ✅ COA validation before packaging (UI + database trigger)
 
 **Access Path:**
-- Navigate to Settings page
-- Click "Certificates (COA)" tab
-- Upload, review, and manage COAs
+- Navigate to Batch Management page
+- Click "Upload COA" button next to batch
+- Review parsed data and confirm
+- COA automatically linked to batch
 
 **Critical Gaps:**
 - **GAP-009:** Multiple active COAs per batch allowed
@@ -187,5 +193,6 @@ See: [BATCHES.md](./BATCHES.md) for complete batch architecture, [DOCS-INTEGRATI
 **See:** [DOCS-INTEGRATION-PROGRESS.md - Implementation Gaps Dashboard](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) for complete gap tracking.
 
 **Recent Updates:**
+- **2026-01-22:** COA upload moved to Batch Management (one-at-a-time per batch with pre-selection)
 - **2026-01-21:** COA upload interface restored to Settings > Certificates tab (was imported but not accessible)
 - **2026-01-19:** Database trigger added to validate COA before packaging sessions (Session COA-VAL-001)
