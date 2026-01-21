@@ -372,7 +372,11 @@ Trim sessions convert bucked material (flower or smalls) into bulk material read
 │     ├─ System calculates variance:                                   │
 │     │  └─ variance = input - (flower+smalls+trim+waste)              │
 │     ├─ Update session_status: 'completed'                            │
-│     └─ Trigger trg_trim_session_complete:                            │
+│     └─ Trigger set_trim_session_product_names:                       │
+│        ├─ Set product names for all outputs:                         │
+│        │  ├─ output_product_bigs_name = 'Bulk Flower (Trimmed)'      │
+│        │  ├─ output_product_smalls_name = 'Bulk Smalls (Trimmed)'    │
+│        │  └─ output_product_trim_name = 'Bulk Trim (Trimmed)'        │
 │        ├─ Create pending_conversions (3x: flower/smalls/trim)        │
 │        ├─ Create inventory_movements:                                │
 │        │  ├─ CONSUME_SESSION_INPUT (bucked package)                  │
@@ -413,7 +417,7 @@ Binned → Bucked → Trimmed → Packaged
 | "Bucked - [Strain] - Flower" | **Bucked** | varies | Stems removed, ready for trimming |
 | "Bulk - [Strain] - Flower" | **Trimmed** | 0g | Ready for packaging or bulk sale |
 | "Bulk - [Strain] - Smalls" | **Trimmed** | 0g | Ready for packaging or bulk sale |
-| "Bulk - [Strain] - Trim" | **Trimmed** | 0g | Trim byproduct |
+| "Bulk - [Strain] - Trim" | **Trimmed** | 0g | Trim byproduct (sellable) |
 | "Bulk - [Strain] - Flower" | **Packaged** | 454g | 1lb bulk package (consumer-ready) |
 | "1lb Flower - [Strain]" | **Packaged** | 454g | 1lb bulk package (consumer-ready) |
 | "Packaged - [Strain] - 3.5g Flower" | **Packaged** | 3.5g | Consumer unit |
@@ -459,6 +463,33 @@ Binned → Bucked → Trimmed → Packaged
   - Bulk Smalls package (product_stage_id = BulkSmalls)
   - Trim package (product_stage_id = Trim)
 - `batch_registry.lifecycle_state` → `'bulk_available'`
+
+### Trim Conversion Workflow
+
+> **CRITICAL:** Trim sessions create THREE separate conversion entries (2026-01-21)
+
+**Conversion Architecture:**
+- pending_conversion_sessions view uses UNION ALL to unpivot outputs
+- Each output type creates a separate row in conversions screen
+- Trim is NOT aggregated with flower/smalls
+
+**Example Output from Single Trim Session:**
+```
+Batch: 251105-DOG (Dog Walker)
+├─ Bulk Flower (Trimmed) - 450g (1 session)
+├─ Bulk Smalls (Trimmed) - 100g (1 session)
+└─ Bulk Trim (Trimmed) - 50g (1 session)  ← This was missing before fix
+```
+
+**Database Fields:**
+- `trim_sessions.output_product_bigs_name` = 'Bulk Flower (Trimmed)'
+- `trim_sessions.output_product_smalls_name` = 'Bulk Smalls (Trimmed)'
+- `trim_sessions.output_product_trim_name` = 'Bulk Trim (Trimmed)'  ← Added 2026-01-21
+
+**Finalization:**
+- Managers finalize each product type separately
+- Trim can be finalized to create inventory packages
+- Function: `finalize_session_aggregated(batch_id, 'Bulk Trim (Trimmed)', 'trim')`
 
 ### Known Issues
 
