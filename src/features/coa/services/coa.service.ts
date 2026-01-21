@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Load PDF.js worker from local file instead of CDN to avoid CORS/CSP issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 /**
  * COA Service
@@ -20,32 +21,31 @@ function mapDatabaseCOAToApp(
   harvestDate: string | null,
   manufactureDate: string | null
 ): COAData {
-  const terpeneProfile = dbRow.terpene_profile as any || {};
   return {
     id: dbRow.id,
-    strain_name: strainName,
-    batch_number: batchNumber,
+    strain_name: strainName || dbRow.strain_name,
+    batch_number: batchNumber || dbRow.batch_number,
     batch_id: dbRow.batch_id,
-    harvest_date: harvestDate,
-    manufacture_date: manufactureDate,
-    sample_date: dbRow.test_date,
+    harvest_date: harvestDate || dbRow.harvest_date,
+    manufacture_date: manufactureDate || dbRow.manufacture_date,
+    sample_date: dbRow.sample_date,
     thc_percentage: dbRow.thc_percentage,
     cbd_percentage: dbRow.cbd_percentage,
-    total_cannabinoids_percentage: (dbRow.thc_percentage || 0) + (dbRow.cbd_percentage || 0),
-    total_terpenes_mg_g: terpeneProfile.total_mg_g || null,
-    terpene_1_name: terpeneProfile.terpene_1?.name || null,
-    terpene_1_value: terpeneProfile.terpene_1?.value || null,
-    terpene_1_percentage: terpeneProfile.terpene_1?.percentage || null,
-    terpene_2_name: terpeneProfile.terpene_2?.name || null,
-    terpene_2_value: terpeneProfile.terpene_2?.value || null,
-    terpene_2_percentage: terpeneProfile.terpene_2?.percentage || null,
-    terpene_3_name: terpeneProfile.terpene_3?.name || null,
-    terpene_3_value: terpeneProfile.terpene_3?.value || null,
-    terpene_3_percentage: terpeneProfile.terpene_3?.percentage || null,
-    pdf_file_path: dbRow.file_path,
-    is_active: dbRow.status === 'active',
+    total_cannabinoids_percentage: dbRow.total_cannabinoids_percentage,
+    total_terpenes_mg_g: dbRow.total_terpenes_mg_g,
+    terpene_1_name: dbRow.terpene_1_name,
+    terpene_1_value: dbRow.terpene_1_value,
+    terpene_1_percentage: dbRow.terpene_1_percentage,
+    terpene_2_name: dbRow.terpene_2_name,
+    terpene_2_value: dbRow.terpene_2_value,
+    terpene_2_percentage: dbRow.terpene_2_percentage,
+    terpene_3_name: dbRow.terpene_3_name,
+    terpene_3_value: dbRow.terpene_3_value,
+    terpene_3_percentage: dbRow.terpene_3_percentage,
+    pdf_file_path: dbRow.pdf_file_path,
+    is_active: dbRow.is_active,
     created_at: dbRow.created_at,
-    updated_at: dbRow.created_at
+    updated_at: dbRow.updated_at
   };
 }
 
@@ -258,23 +258,29 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
  * @description Auto-links COA to batch if batch_id provided
  */
 export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updated_at'>): Promise<COAData> {
-  // Map COAData to database schema
+  // Map COAData to database schema (certificates_of_analysis table)
   const dbInsert = {
+    strain_name: data.strain_name,
+    batch_number: data.batch_number,
     batch_id: data.batch_id || null,
-    file_path: data.pdf_file_path || '',
-    file_name: `${data.batch_number}_COA.pdf`,
-    test_date: data.sample_date,
-    lab_name: null,
+    harvest_date: data.harvest_date,
+    manufacture_date: data.manufacture_date,
+    sample_date: data.sample_date,
     thc_percentage: data.thc_percentage,
     cbd_percentage: data.cbd_percentage,
-    terpene_profile: {
-      total_mg_g: data.total_terpenes_mg_g,
-      terpene_1: { name: data.terpene_1_name, value: data.terpene_1_value, percentage: data.terpene_1_percentage },
-      terpene_2: { name: data.terpene_2_name, value: data.terpene_2_value, percentage: data.terpene_2_percentage },
-      terpene_3: { name: data.terpene_3_name, value: data.terpene_3_value, percentage: data.terpene_3_percentage }
-    },
-    contaminants: null,
-    status: data.is_active ? 'active' : 'inactive'
+    total_cannabinoids_percentage: data.total_cannabinoids_percentage,
+    total_terpenes_mg_g: data.total_terpenes_mg_g,
+    terpene_1_name: data.terpene_1_name,
+    terpene_1_value: data.terpene_1_value,
+    terpene_1_percentage: data.terpene_1_percentage,
+    terpene_2_name: data.terpene_2_name,
+    terpene_2_value: data.terpene_2_value,
+    terpene_2_percentage: data.terpene_2_percentage,
+    terpene_3_name: data.terpene_3_name,
+    terpene_3_value: data.terpene_3_value,
+    terpene_3_percentage: data.terpene_3_percentage,
+    pdf_file_path: data.pdf_file_path,
+    is_active: data.is_active
   };
 
   const { data: coa, error } = await supabase
@@ -301,13 +307,19 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
  * @returns Promise<COAData> - Updated COA record
  */
 export async function updateCOA(id: string, data: Partial<COAData>): Promise<COAData> {
-  // Map partial COAData to database schema
+  // Map partial COAData to database schema (certificates_of_analysis table)
   const dbUpdate: any = {};
-  if (data.pdf_file_path !== undefined) dbUpdate.file_path = data.pdf_file_path;
-  if (data.sample_date !== undefined) dbUpdate.test_date = data.sample_date;
+  if (data.strain_name !== undefined) dbUpdate.strain_name = data.strain_name;
+  if (data.batch_number !== undefined) dbUpdate.batch_number = data.batch_number;
+  if (data.harvest_date !== undefined) dbUpdate.harvest_date = data.harvest_date;
+  if (data.manufacture_date !== undefined) dbUpdate.manufacture_date = data.manufacture_date;
+  if (data.sample_date !== undefined) dbUpdate.sample_date = data.sample_date;
   if (data.thc_percentage !== undefined) dbUpdate.thc_percentage = data.thc_percentage;
   if (data.cbd_percentage !== undefined) dbUpdate.cbd_percentage = data.cbd_percentage;
-  if (data.is_active !== undefined) dbUpdate.status = data.is_active ? 'active' : 'inactive';
+  if (data.total_cannabinoids_percentage !== undefined) dbUpdate.total_cannabinoids_percentage = data.total_cannabinoids_percentage;
+  if (data.total_terpenes_mg_g !== undefined) dbUpdate.total_terpenes_mg_g = data.total_terpenes_mg_g;
+  if (data.pdf_file_path !== undefined) dbUpdate.pdf_file_path = data.pdf_file_path;
+  if (data.is_active !== undefined) dbUpdate.is_active = data.is_active;
   if (data.batch_id !== undefined) dbUpdate.batch_id = data.batch_id;
 
   const { data: coa, error } = await supabase
@@ -369,14 +381,14 @@ export async function getAllCOAs(): Promise<COAData[]> {
   const { data, error } = await supabase
     .from('certificates_of_analysis')
     .select('*')
-    .order('test_date', { ascending: false });
+    .order('sample_date', { ascending: false });
 
   if (error) {
     console.error('getAllCOAs error:', error);
     throw new Error(`Failed to load COAs: ${error.message}`);
   }
 
-  // Map database rows to application type (without batch details since we don't have them)
+  // Map database rows to application type
   return (data || []).map(row => mapDatabaseCOAToApp(row, '', '', null, null));
 }
 
@@ -384,15 +396,15 @@ export async function getActiveCOAs(): Promise<COAData[]> {
   const { data, error } = await supabase
     .from('certificates_of_analysis')
     .select('*')
-    .eq('status', 'active')
-    .order('test_date', { ascending: false });
+    .eq('is_active', true)
+    .order('sample_date', { ascending: false });
 
   if (error) {
     console.error('getActiveCOAs error:', error);
     throw new Error(`Failed to load active COAs: ${error.message}`);
   }
 
-  // Map database rows to application type (without batch details since we don't have them)
+  // Map database rows to application type
   return (data || []).map(row => mapDatabaseCOAToApp(row, '', '', null, null));
 }
 
