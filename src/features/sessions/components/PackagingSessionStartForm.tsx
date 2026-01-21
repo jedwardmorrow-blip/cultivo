@@ -85,16 +85,17 @@ export function PackagingSessionStartForm({
       return [];
     }
 
-    // Create a map to store unique batch_id -> batch_number mappings
+    // Create a map to store unique batch_number mappings
+    // CRITICAL: Key by batch_number (text) NOT batch_id (UUID) to ensure correct database format
     const batchMap = new Map<string, { batch_id: string; batch_number: string }>();
 
     inventoryPackages
-      .filter((pkg: any) => pkg && pkg.strain === strain && pkg.batch_id)
+      .filter((pkg: any) => pkg && pkg.strain === strain && pkg.batch_number)
       .forEach((pkg: any) => {
-        if (!batchMap.has(pkg.batch_id)) {
-          batchMap.set(pkg.batch_id, {
+        if (!batchMap.has(pkg.batch_number)) {
+          batchMap.set(pkg.batch_number, {
             batch_id: pkg.batch_id,
-            batch_number: pkg.batch_number || pkg.batch_id // Fallback to UUID if missing
+            batch_number: pkg.batch_number
           });
         }
       });
@@ -105,10 +106,10 @@ export function PackagingSessionStartForm({
     );
   };
 
-  const getPackagesForBatch = (strain: string, batchId: string) => {
+  const getPackagesForBatch = (strain: string, batchNumber: string) => {
     return inventoryPackages.filter((pkg: any) =>
       pkg.strain === strain &&
-      pkg.batch_id === batchId &&
+      pkg.batch_number === batchNumber &&
       pkg.available_qty && pkg.available_qty > 0
     );
   };
@@ -241,7 +242,7 @@ export function PackagingSessionStartForm({
             >
               <option value="">{formData.strain ? 'Select Batch ID' : 'Select strain first'}</option>
               {getAvailableBatchesForStrain(formData.strain || '').map(batch => (
-                <option key={batch.batch_id} value={batch.batch_id}>
+                <option key={batch.batch_number} value={batch.batch_number}>
                   {batch.batch_number}
                 </option>
               ))}
