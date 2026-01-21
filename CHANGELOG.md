@@ -4,6 +4,202 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-21 - UUID Aggregation Hotfix (Packaging Finalization)
+
+**Type:** 🔥 CRITICAL HOTFIX (Production Blocker)
+**Module:** Sessions / Inventory / Conversions
+**Priority:** CRITICAL - Production Blocking
+**Impact:** Managers can now finalize packaging sessions and create inventory
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration
+**Session ID:** UUID-AGGREGATION-HOTFIX
+
+### Summary
+
+Fixed critical production-blocking error "function max(uuid) does not exist" that prevented managers from finalizing packaging sessions. The error occurred when attempting to aggregate packaging session data that included a UUID column (strain_id) alongside numeric aggregates.
+
+### Problem
+
+**User Impact:**
+- Manager attempted to finalize packaging session (Swamp Water Fumez, 57 units)
+- Error displayed: "Failed to finalize sessions: function max(uuid) does not exist"
+- Finalization workflow completely blocked
+- Inventory not created, packages unavailable for order allocation
+- No workaround available
+
+**Root Cause Chain:**
+
+1. **Initial Issue (Migration 20260121214818):**
+   - Added inventory creation logic to finalization
+   - Query mixed aggregated (SUM, MAX) and non-aggregated (strain_id) columns
+   - PostgreSQL error: "column must appear in the GROUP BY clause or be used in an aggregate function"
+
+2. **Failed Fix Attempt (Migration 20260121220602):**
+   - Attempted to wrap `strain_id` in `MAX()` function
+   - New error: "function max(uuid) does not exist"
+   - **Why it failed:** PostgreSQL has no MIN/MAX/AVG aggregate functions for UUID type because UUIDs are identifiers, not comparable values
+
+3. **Successful Fix (This Migration):**
+   - Used subquery pattern with LIMIT 1 to extract strain_id
+   - Safe because all sessions in aggregation share same strain_id (batch-centric architecture)
+
+### Solution
+
+**Migration:** `supabase/migrations/fix_uuid_aggregation_in_finalization.sql`
+
+**Technical Fix:**
+```sql
+-- BEFORE (broken)
+SELECT
+  MAX(strain_id),  -- ❌ PostgreSQL has no MAX() for UUID
+  SUM(units),
+  MAX(completed_at)::DATE
+INTO v_strain_id, v_total_units, v_package_date
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids);
+
+-- AFTER (fixed)
+SELECT
+  (SELECT strain_id FROM packaging_sessions WHERE id = ANY(v_session_ids) LIMIT 1),
+  SUM(COALESCE(units_3_5g, 0) + COALESCE(units_14g, 0) + COALESCE(units_454g, 0)),
+  MAX(completed_at)::DATE
+INTO v_strain_id, v_total_units, v_package_date
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids);
+```
+
+**Why Subquery Is Safe:**
+- All packaging sessions in `v_session_ids` are grouped by batch + product
+- Batch-centric architecture guarantees one strain per batch
+- All sessions have identical strain_id value
+- LIMIT 1 simply picks the (identical) value from any session
+- No risk of data inconsistency
+
+### PostgreSQL UUID Best Practices
+
+**Key Learning:**
+UUIDs are identifiers, not comparable values. PostgreSQL has NO aggregate functions for UUIDs.
+
+**❌ These DON'T work:**
+```sql
+MAX(uuid_column)        -- function does not exist
+MIN(uuid_column)        -- function does not exist
+AVG(uuid_column)        -- doesn't make sense for identifiers
+GREATEST(uuid_column)   -- comparison not supported
+```
+
+**✅ These DO work:**
+```sql
+(SELECT uuid_column FROM table WHERE ... LIMIT 1)  -- Get any one value
+(array_agg(uuid_column))[1]                        -- Array access
+DISTINCT uuid_column                                -- Distinct values
+COUNT(DISTINCT uuid_column)                        -- Count distinct
+uuid_column IN (SELECT ...)                        -- Set membership
+```
+
+**Recommended Pattern for "Any One UUID":**
+```sql
+-- When all values are identical (architectural guarantee):
+(SELECT uuid_column FROM table WHERE id = ANY(id_array) LIMIT 1)
+
+-- Always add comment explaining why LIMIT 1 is safe:
+-- COMMENT: Safe because all rows share same uuid_column due to [business logic]
+```
+
+### Alternative Patterns Considered
+
+**Option B: MIN() with Text Cast** (Rejected)
+```sql
+MIN(strain_id::text)::uuid  -- Works but obscures intent
+```
+- ✅ Would work technically
+- ❌ Less clear intent (why MIN? UUIDs aren't ordered)
+- ❌ Performance overhead from double cast
+- ❌ Obscures fact that all values are identical
+
+**Option C: GROUP BY Clause** (Rejected)
+```sql
+SELECT strain_id, SUM(...), MAX(...)
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids)
+GROUP BY strain_id;
+```
+- ✅ Would work technically
+- ❌ Implies multiple strain_id values might exist
+- ❌ Returns multiple rows if assumption violated
+- ❌ Requires additional multi-row handling
+
+### Verification
+
+**Database:**
+- ✅ Function compiles without errors
+- ✅ Subquery correctly extracts strain_id
+- ✅ No breaking changes to function signature
+- ✅ Frontend code unchanged
+
+**Testing:**
+- ✅ Finalization works with actual pending sessions
+- ✅ Inventory_items record created correctly
+- ✅ Strain_id populated from session data
+- ✅ Inventory_movements ledger entry created
+- ✅ Package appears in inventory UI
+
+### Documentation Updates
+
+**Files Created:**
+- ✅ `docs/SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md` - Comprehensive session documentation
+
+**Files Updated:**
+- ✅ `CHANGELOG.md` - This entry
+- ✅ `AI-Build-Sessions/CONV-FIX-001-SUMMARY.md` - Added UPDATE section
+- ✅ `docs/AI-BUILD-SESSION-CHECKLIST.md` - Added UUID best practices
+
+### Historical Context
+
+Evolution of `finalize_session_aggregated()`:
+1. **2026-01-13** - Initial implementation
+2. **2026-01-16** - Simplified to use product_name
+3. **2026-01-20** - Fixed OR condition logic
+4. **2026-01-21 AM** - Added per-output finalization
+5. **2026-01-21 PM** - Added inventory creation ← GROUP BY issue
+6. **2026-01-21 PM** - Attempted MAX(uuid) fix ← Failed
+7. **2026-01-21 PM** - Applied subquery pattern ← Success (this hotfix)
+
+### Prevention Strategy
+
+**For Future Development:**
+
+1. **UUID Aggregation Checklist:**
+   - Never use MAX/MIN on UUID columns
+   - Use subquery with LIMIT 1 for "any one value"
+   - Document why LIMIT 1 is safe (architectural assumption)
+   - Test query in SQL editor before migration
+
+2. **Code Review Red Flags:**
+   ```sql
+   MAX(uuid_column)     ❌ Will fail
+   MIN(uuid_column)     ❌ Will fail
+   ```
+
+3. **Code Review Green Lights:**
+   ```sql
+   (SELECT uuid_column FROM ... LIMIT 1)  ✅ Will work
+   (array_agg(uuid_column))[1]            ✅ Will work
+   ```
+
+### Related Issues
+
+**Fixes:**
+- Production blocking error: "function max(uuid) does not exist"
+- Completes fix from: SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX
+
+**References:**
+- [SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md](./docs/SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md)
+- [SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX.md](./docs/SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX.md)
+- [CONV-FIX-001-SUMMARY.md](./AI-Build-Sessions/CONV-FIX-001-SUMMARY.md)
+
+---
+
 ## 2026-01-21 - Packaging Session Finalization Inventory Creation
 
 **Type:** 🎯 CRITICAL GAP FIX (Implementation Gap)

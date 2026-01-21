@@ -545,3 +545,188 @@ WHERE package_id = '260120-MGM-001';
 2. **Code Pattern:** Helper function ensures consistent category assignment
 3. **RPC Pattern:** IF-ELSIF-ELSE prevents OR condition bugs in future RPC functions
 4. **Session Summary:** This document provides complete context for future development
+
+---
+
+## UPDATE 2026-01-21 (Part 3): UUID Aggregation Hotfix
+
+**Status:** ✅ FIXED
+**Session Type:** Critical Hotfix (Production Blocker)
+**Duration:** ~30 minutes
+
+### The Error
+
+When adding inventory creation to packaging finalization (migration 20260121214818), a GROUP BY error was introduced. The attempted fix (migration 20260121220602) used `MAX(strain_id)` but failed with:
+
+```
+Error: function max(uuid) does not exist
+```
+
+**User Impact:**
+- Manager attempted to finalize 57 units of Swamp Water Fumez
+- Finalization completely blocked
+- No workaround available
+- Inventory could not be created
+
+### Root Cause
+
+PostgreSQL does NOT support aggregate functions (MAX, MIN, AVG, SUM) on UUID data types because UUIDs are identifiers, not comparable values.
+
+**The Chain of Events:**
+
+1. **Query Mixed Aggregates and Non-Aggregates:**
+   ```sql
+   SELECT
+     strain_id,  -- ❌ NOT aggregated, NOT in GROUP BY
+     SUM(units),
+     MAX(completed_at)
+   ```
+
+2. **First Fix Attempt Failed:**
+   ```sql
+   SELECT
+     MAX(strain_id),  -- ❌ function max(uuid) does not exist
+     SUM(units),
+     MAX(completed_at)
+   ```
+
+3. **Correct Fix Applied:**
+   ```sql
+   SELECT
+     (SELECT strain_id FROM packaging_sessions WHERE id = ANY(v_session_ids) LIMIT 1),
+     SUM(COALESCE(units_3_5g, 0) + COALESCE(units_14g, 0) + COALESCE(units_454g, 0)),
+     MAX(completed_at)::DATE
+   ```
+
+### Why Subquery Is Safe
+
+All packaging sessions in the aggregation share the same `strain_id` because:
+- Sessions are grouped by batch + product in `pending_conversion_sessions` view
+- Batch-centric architecture guarantees one strain per batch
+- LIMIT 1 simply picks the (identical) strain_id from any session in the array
+
+### PostgreSQL UUID Limitations
+
+**❌ These DON'T Work:**
+```sql
+MAX(uuid_column)        -- function does not exist
+MIN(uuid_column)        -- function does not exist
+GREATEST(uuid_column)   -- comparison not supported
+LEAST(uuid_column)      -- comparison not supported
+```
+
+**✅ These DO Work:**
+```sql
+(SELECT uuid_column FROM table WHERE ... LIMIT 1)  -- Get any one value
+(array_agg(uuid_column))[1]                        -- Array access
+DISTINCT uuid_column                                -- Distinct values
+COUNT(DISTINCT uuid_column)                        -- Count distinct
+```
+
+### The Fix
+
+**Migration:** `fix_uuid_aggregation_in_finalization.sql`
+
+**Key Change (Line ~131):**
+```sql
+-- Get session details for inventory creation
+-- Use subquery for strain_id since UUIDs cannot be aggregated with MAX()
+-- This is safe because all sessions in array share same strain_id (grouped by batch+product)
+SELECT
+  (SELECT strain_id FROM packaging_sessions WHERE id = ANY(v_session_ids) LIMIT 1),
+  SUM(COALESCE(units_3_5g, 0) + COALESCE(units_14g, 0) + COALESCE(units_454g, 0)),
+  MAX(completed_at)::DATE
+INTO v_strain_id, v_total_units, v_package_date
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids);
+```
+
+### Files Modified
+
+1. **Database:**
+   - Migration: `fix_uuid_aggregation_in_finalization.sql` (NEW, supersedes broken fix)
+   - Function: `finalize_session_aggregated()` (v3 with corrected UUID handling)
+
+2. **Documentation:**
+   - `docs/SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md` (NEW - comprehensive session doc)
+   - `CHANGELOG.md` - Added critical hotfix entry with UUID best practices
+   - `AI-Build-Sessions/CONV-FIX-001-SUMMARY.md` - This update
+   - `docs/AI-BUILD-SESSION-CHECKLIST.md` - Added UUID aggregation patterns
+
+### Testing Results
+
+✅ Migration applied successfully
+✅ Function compiles without errors
+✅ Subquery correctly extracts strain_id
+✅ No breaking changes (function signature unchanged)
+✅ Frontend code unchanged
+✅ Build passes with no TypeScript errors
+
+### Best Practices Documented
+
+**Pattern Template for Future Use:**
+```sql
+-- When aggregating with UUIDs where all rows share same value:
+SELECT
+  -- For UUID columns (cannot use MAX/MIN):
+  (SELECT uuid_column FROM table WHERE id = ANY(id_array) LIMIT 1),
+
+  -- For aggregatable columns:
+  SUM(numeric_column),
+  MAX(date_column),
+  COUNT(*)
+INTO v_uuid_var, v_sum_var, v_max_var, v_count_var
+FROM table
+WHERE id = ANY(id_array);
+
+-- ALWAYS add comment explaining why LIMIT 1 is safe:
+-- Safe because all rows in id_array share same uuid_column due to [business logic]
+```
+
+### Prevention Strategy
+
+**Code Review Checklist:**
+```sql
+-- RED FLAGS (will fail):
+MAX(uuid_column)          ❌
+MIN(uuid_column)          ❌
+GREATEST(uuid_column)     ❌
+LEAST(uuid_column)        ❌
+
+-- GREEN LIGHTS (will work):
+(SELECT uuid_column FROM ... LIMIT 1)                  ✅
+(array_agg(uuid_column))[1]                           ✅
+DISTINCT uuid_column                                   ✅
+COUNT(DISTINCT uuid_column)                           ✅
+```
+
+**Development Workflow:**
+1. Never use MAX/MIN on UUID columns
+2. Use subquery with LIMIT 1 for "any one value" scenarios
+3. Document why LIMIT 1 is safe (architectural guarantee)
+4. Test query in SQL editor before applying migration
+5. Add explanatory comments in SQL
+
+### Related Sessions
+
+- **SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX** - Detailed technical analysis
+- **SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX** - Where GROUP BY issue originated
+- **SESSION-2026-01-21-PER-OUTPUT-FINALIZATION-TRACKING** - Per-output architecture
+- **SESSION-2026-01-16-CONVERSION-ARCHITECTURE-SIMPLIFICATION** - Product name simplification
+
+### Historical Record
+
+**Evolution of finalize_session_aggregated():**
+1. 2026-01-13: Initial implementation
+2. 2026-01-16: Simplified to use product_name
+3. 2026-01-20: Fixed OR condition logic
+4. 2026-01-21 AM: Added per-output finalization
+5. 2026-01-21 PM: Added inventory creation ← GROUP BY issue
+6. 2026-01-21 PM: Attempted MAX(uuid) fix ← Failed
+7. 2026-01-21 PM: Applied subquery pattern ← Success (this fix)
+
+---
+
+**Document Updated:** 2026-01-21
+**Total Updates:** 3 (Double-counting fix, OR condition fix, UUID aggregation fix)
+**Status:** All fixes validated and production-ready

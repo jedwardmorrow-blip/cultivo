@@ -2836,6 +2836,202 @@ Update `finalize_session_aggregated` to:
 
 ---
 
+## PostgreSQL Best Practices
+
+**Last Updated:** 2026-01-21 (UUID Aggregation Hotfix)
+
+### UUID Handling in Queries
+
+**Critical Rule:** PostgreSQL has NO aggregate functions for UUID data types.
+
+**❌ These Will FAIL:**
+```sql
+MAX(uuid_column)        -- ERROR: function max(uuid) does not exist
+MIN(uuid_column)        -- ERROR: function min(uuid) does not exist
+AVG(uuid_column)        -- Doesn't make sense for identifiers
+GREATEST(uuid_column)   -- Comparison not supported for aggregates
+LEAST(uuid_column)      -- Comparison not supported for aggregates
+```
+
+**✅ These Work Correctly:**
+```sql
+-- Get "any one UUID" from a set (when all values are identical):
+(SELECT uuid_column FROM table WHERE id = ANY(id_array) LIMIT 1)
+
+-- Array access pattern:
+(array_agg(uuid_column))[1]
+
+-- Distinct operations:
+DISTINCT uuid_column
+COUNT(DISTINCT uuid_column)
+
+-- Set membership:
+uuid_column IN (SELECT ...)
+uuid_column = ANY(ARRAY[...])
+```
+
+### The "Any One UUID" Pattern
+
+**Use Case:** When aggregating data where all rows share the same UUID value.
+
+**Pattern:**
+```sql
+SELECT
+  -- For UUID columns where all values are identical:
+  (SELECT uuid_column FROM table WHERE id = ANY(id_array) LIMIT 1),
+
+  -- For aggregatable columns:
+  SUM(numeric_column),
+  MAX(date_column),
+  COUNT(*)
+INTO v_uuid_var, v_sum_var, v_max_var, v_count_var
+FROM table
+WHERE id = ANY(id_array);
+```
+
+**Critical:** ALWAYS add a comment explaining why LIMIT 1 is safe:
+```sql
+-- Safe because all rows in id_array share same uuid_column value
+-- due to [explain business logic/architectural guarantee]
+```
+
+### UUID Aggregation Checklist
+
+Before writing queries with UUIDs:
+
+1. **Check for Mixed Aggregates:**
+   - Does query use SUM(), MAX(), MIN(), COUNT(), AVG()?
+   - Does query also select UUID columns?
+   - If YES to both → Use subquery pattern for UUIDs
+
+2. **Verify Architectural Guarantees:**
+   - Are you certain all rows have identical UUID value?
+   - Document the business logic that ensures this
+   - Add inline SQL comment explaining guarantee
+
+3. **Test Before Migration:**
+   - Run query in Supabase SQL editor
+   - Verify it returns expected results
+   - Check for any PostgreSQL errors
+   - Only then apply as migration
+
+4. **Alternative Patterns:**
+   - If UUID values might differ → Use GROUP BY clause
+   - If deterministic selection needed → Cast to text, MIN/MAX, cast back (but document why)
+   - If just checking existence → Use COUNT(DISTINCT uuid_column)
+
+### Real-World Example (2026-01-21 Hotfix)
+
+**Problem:** Packaging session finalization aggregated sessions but needed strain_id (UUID).
+
+**Failed Attempt:**
+```sql
+SELECT
+  MAX(strain_id),  -- ❌ ERROR: function max(uuid) does not exist
+  SUM(units),
+  MAX(completed_at)
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids);
+```
+
+**Correct Solution:**
+```sql
+SELECT
+  -- Use subquery for strain_id (UUID type cannot be aggregated)
+  -- Safe: all sessions share same strain_id (grouped by batch+product)
+  (SELECT strain_id FROM packaging_sessions WHERE id = ANY(v_session_ids) LIMIT 1),
+
+  SUM(COALESCE(units_3_5g, 0) + COALESCE(units_14g, 0) + COALESCE(units_454g, 0)),
+  MAX(completed_at)::DATE
+INTO v_strain_id, v_total_units, v_package_date
+FROM packaging_sessions
+WHERE id = ANY(v_session_ids);
+```
+
+**Why It's Safe:**
+- Batch-centric architecture guarantees one strain per batch
+- All packaging sessions are grouped by batch + product
+- Therefore all sessions in v_session_ids have identical strain_id
+- LIMIT 1 simply picks the (identical) value from any session
+
+### Group BY Requirement
+
+**PostgreSQL Rule:** When using aggregate functions, all non-aggregated columns must either:
+1. Appear in GROUP BY clause, OR
+2. Be wrapped in an aggregate function (or subquery)
+
+**Example Problem:**
+```sql
+-- ❌ ERROR: strain_id must appear in GROUP BY or aggregate
+SELECT
+  strain_id,      -- Not aggregated, not in GROUP BY
+  SUM(quantity),  -- Aggregated
+  MAX(date)       -- Aggregated
+FROM table;
+```
+
+**Solution Options:**
+
+**Option A: Subquery (Best for UUID)**
+```sql
+SELECT
+  (SELECT strain_id FROM table WHERE id = ANY(ids) LIMIT 1),
+  SUM(quantity),
+  MAX(date)
+FROM table
+WHERE id = ANY(ids);
+```
+
+**Option B: GROUP BY**
+```sql
+SELECT
+  strain_id,
+  SUM(quantity),
+  MAX(date)
+FROM table
+GROUP BY strain_id;  -- Now strain_id is grouped
+```
+
+**Option C: Cast UUID to Aggregate (Not Recommended)**
+```sql
+SELECT
+  MIN(strain_id::text)::uuid,  -- Works but obscures intent
+  SUM(quantity),
+  MAX(date)
+FROM table;
+```
+
+### Prevention Checklist
+
+**Before Applying Migration:**
+- [ ] Query tested in SQL editor
+- [ ] No MAX/MIN on UUID columns
+- [ ] All non-aggregated columns handled (GROUP BY or subquery)
+- [ ] Comments explain any LIMIT 1 usage
+- [ ] Architectural guarantees documented
+
+**Code Review Red Flags:**
+```sql
+MAX(uuid_column)          ❌ Will fail
+MIN(uuid_column)          ❌ Will fail
+SELECT uuid_col, SUM()    ❌ Missing GROUP BY
+```
+
+**Code Review Green Lights:**
+```sql
+(SELECT uuid_col ... LIMIT 1)     ✅ Subquery pattern
+GROUP BY uuid_column              ✅ Explicit grouping
+COUNT(DISTINCT uuid_column)       ✅ Distinct works
+```
+
+### Related Documentation
+
+- **SESSION-2026-01-21-UUID-AGGREGATION-HOTFIX.md** - Full technical analysis
+- **CONV-FIX-001-SUMMARY.md** - Update section with UUID fix
+- **CHANGELOG.md (2026-01-21)** - UUID Aggregation Hotfix entry
+
+---
+
 ## Workflow Example
 
 **User Request:** "Fix the navigation drawer close behavior on mobile"
