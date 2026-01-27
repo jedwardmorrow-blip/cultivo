@@ -4,6 +4,146 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-28 - Packaging Multi-Product Finalization (Feature Enhancement)
+
+**Type:** ✨ FEATURE ENHANCEMENT
+**Module:** Sessions / Inventory / Conversions / Packaging
+**Priority:** MEDIUM - Multi-Product Support
+**Impact:** Enables independent finalization of different packaging product types (3.5g, 14g, 1lb)
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migrations (4), view updates (1), RPC function, trigger function
+**Session ID:** PACKAGING-UNPIVOT-001
+
+### Summary
+
+Implemented per-product finalization tracking for packaging sessions, enabling independent finalization of different product types (3.5g, 14g, 1lb) from the same session. This matches the established unpivoting pattern used in trim and bucking sessions.
+
+### Problem
+
+**Aggregated Product Handling:**
+- Packaging sessions aggregated ALL product types together (3.5g + 14g + 1lb = one bucket)
+- Could not finalize 3.5g independently from 14g
+- Generic "Packaged Products" name didn't indicate specific type
+- Packaged inventory items invisible in Packaged view (NULL category field)
+- Violated unpivoting architectural pattern used elsewhere
+
+**Example Scenario:**
+- Session packages 32× 3.5g + 20× 14g = shown as ONE row with 52 total units
+- Manager wants to finalize 3.5g immediately but hold 14g for QC → NOT POSSIBLE
+
+### Solution
+
+**Architectural Alignment:**
+Applied established unpivoting pattern from trim/bucking to packaging sessions.
+
+**Migration 1:** `add_packaging_per_product_finalization_tracking.sql`
+- Added separate finalization status columns per product type:
+  - `finalization_status_3_5g`, `finalized_at_3_5g`, `finalized_by_3_5g`, `void_reason_3_5g`
+  - `finalization_status_14g`, `finalized_at_14g`, `finalized_by_14g`, `void_reason_14g`
+  - `finalization_status_1lb`, `finalized_at_1lb`, `finalized_by_1lb`, `void_reason_1lb`
+- Backfilled existing data from `finalization_status_packaged`
+- Added indexes for analytics performance
+
+**Migration 2:** `update_packaging_trigger_set_product_names_per_type.sql`
+- Updated `set_packaging_product_names()` trigger function
+- Generates specific product names per type:
+  - 3.5g: "Packaged - [Strain] - 3.5g Flower"
+  - 14g: "Packaged - [Strain] - 14g Flower"
+  - 1lb: "Packaged - [Strain] - 1lb Flower (454g)"
+- Queries strain name from strains table using strain_id
+
+**Migration 3:** `unpivot_packaging_products_in_pending_conversions.sql`
+- Split Branch 4 (Packaging) into THREE separate branches:
+  - Branch 4a: 3.5g products (check `finalization_status_3_5g = 'pending'`)
+  - Branch 4b: 14g products (check `finalization_status_14g = 'pending'`)
+  - Branch 4c: 1lb products (check `finalization_status_1lb = 'pending'`)
+- Each branch uses product-specific name column and units column
+- Creates unique aggregation_id per product type
+- Session with 3.5g + 14g now shows as TWO separate rows
+
+**Migration 4:** `update_finalization_rpc_per_product_packaging.sql`
+- Updated `finalize_session_aggregated()` function
+- Detects product type from product_name (3.5g, 14g, 1lb)
+- Uses product-specific finalization status fields for filtering/updating
+- Calculates units from only matching units column
+- Sets `category='packaged'` for proper inventory filtering
+
+**Migration 5:** `backfill_packaged_inventory_category.sql`
+- Backfilled `category='packaged'` for existing packaged inventory items
+- Created trigger to auto-populate category from product_stage_id
+- Ensures packaged items appear in Packaged Inventory view
+
+### Benefits
+
+**Workflow Flexibility:**
+- ✅ Multiple product types from same session finalized independently
+- ✅ Partial finalization workflows supported (finalize 3.5g, hold 14g)
+- ✅ Granular visibility into packaging inventory pipeline
+
+**Architectural Consistency:**
+- ✅ Matches unpivoting pattern from trim (bigs/smalls/trim) and bucking (flower/smalls)
+- ✅ Same 8-branch structure: 3 trim + 3 packaging + 2 bucking
+- ✅ Consistent per-output finalization tracking across all session types
+
+**User Experience:**
+- ✅ Specific product names displayed ("Packaged - Swamp Water Fumez - 3.5g Flower")
+- ✅ Clear visibility of which products are pending vs finalized
+- ✅ Packaged inventory properly filtered and displayed
+
+**Data Quality:**
+- ✅ Category field properly set for all packaged items
+- ✅ Product-specific analytics and reporting enabled
+- ✅ Granular performance tracking by product type
+
+### Example
+
+**Before (Aggregated):**
+```
+Conversions View:
+- Swamp Water Fumez - Packaged Products: 52 units pending
+  (Cannot differentiate 3.5g from 14g)
+```
+
+**After (Unpivoted):**
+```
+Conversions View:
+- Packaged - Swamp Water Fumez - 3.5g Flower: 32 units pending
+- Packaged - Swamp Water Fumez - 14g Flower: 20 units pending
+  (Each can be finalized independently)
+```
+
+### Technical Details
+
+**Database Schema:**
+- 12 new columns added to packaging_sessions (4 per product type)
+- 5 new indexes for analytics performance
+- 1 new trigger for auto-category population
+
+**View Updates:**
+- `pending_conversion_sessions`: 6 branches → 8 branches (added 2 packaging branches)
+
+**RPC Updates:**
+- Product type detection: `LIKE '%3.5g%'`, `LIKE '%14g%'`, `LIKE '%1lb%'`
+- Product-specific unit calculation and status updates
+
+### Testing
+
+- ✅ Build successful (npm run build)
+- ✅ Pending conversions view shows unpivoted packaging products
+- ✅ Category backfill successful (packaged items now visible)
+- ✅ Product names generated correctly per type
+- ✅ No breaking changes to trim or bucking workflows
+
+### Migration Files
+
+1. `20260128_add_packaging_per_product_finalization_tracking.sql`
+2. `20260128_update_packaging_trigger_set_product_names_per_type.sql`
+3. `20260128_unpivot_packaging_products_in_pending_conversions.sql`
+4. `20260128_update_finalization_rpc_per_product_packaging.sql`
+5. `20260128_backfill_packaged_inventory_category.sql`
+
+---
+
 ## 2026-01-28 - Finalization Simplification (Architectural Improvement)
 
 **Type:** ⚡ ARCHITECTURAL IMPROVEMENT
