@@ -1730,7 +1730,111 @@ SELECT COUNT(*) FROM inventory_qty_health WHERE health_status = 'MISMATCH';
 - Session: AVAIL-QTY-FIX-001 (2026-01-21)
 - Total Fixed: 14,459g across 12 packages
 - Migrations: `fix_broken_available_qty_bug`, `fix_atp_violations_bucking_sessions`
-- See: `docs/SESSION-2026-01-21-ATP-FIX.md` (when created)
+- See: `docs/SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX.md`
+
+---
+
+### Ghost Finalizations (Packaging Sessions)
+
+**Symptom:** Packaging session shows `finalization_status_packaged` = 'finalized' but no inventory exists
+
+**Root Cause:** Transaction atomicity failure in `finalize_session_aggregated()` RPC function
+
+**Impact:**
+- Packages invisible to order allocation system
+- Cannot re-finalize (already marked finalized)
+- Orders show "insufficient inventory" despite finalized sessions
+- Lost traceability from session to final package
+
+**Historical Context:**
+
+Ghost finalizations occurred during transition period (2026-01-21) when:
+1. ATP constraint was added to enforce `available_qty = on_hand_qty - reserved_qty`
+2. Inventory creation was added to finalization workflow
+3. But transaction atomicity was not implemented
+4. Result: When inventory INSERT failed (ATP errors), session status update persisted
+
+**Detection:**
+
+```sql
+-- Daily health check - should always return 0 rows
+SELECT * FROM ghost_finalized_sessions;
+
+-- Returns sessions marked finalized without corresponding inventory
+```
+
+**Fix Applied (2026-01-22):**
+
+Migration: `fix_ghost_finalization_with_transaction_control.sql`
+
+**Changes Made:**
+
+1. **Reset Ghost Sessions:** Changed finalization_status from 'finalized' to 'pending' for 4 affected sessions (256 units)
+
+2. **Fixed RPC Function:** Reordered operations with transaction control:
+
+```sql
+-- BEFORE (broken):
+UPDATE packaging_sessions SET status = 'finalized';  -- First
+INSERT INTO inventory_items;                         -- Fails → Ghost state
+
+-- AFTER (fixed):
+BEGIN
+  -- Validate data
+  -- Generate package_id
+  INSERT INTO inventory_items;                       -- FIRST
+  INSERT INTO inventory_movements;                   -- Second
+  UPDATE packaging_sessions SET status = 'finalized'; -- LAST (only after inventory succeeds)
+EXCEPTION
+  WHEN OTHERS THEN ROLLBACK;                        -- Session stays 'pending'
+END;
+```
+
+3. **Added Monitoring View:** `ghost_finalized_sessions` for daily health checks
+
+**Prevention:**
+
+- Transaction atomicity: Inventory created BEFORE status update
+- Explicit BEGIN/EXCEPTION/END block with automatic rollback
+- Comprehensive validation before inventory INSERT
+- Better error messages with stack trace
+- All-or-nothing behavior enforced
+
+**If Ghost Finalizations Detected:**
+
+1. **Reset Session to Pending:**
+```sql
+UPDATE packaging_sessions
+SET
+  finalization_status_packaged = 'pending',
+  finalized_at_packaged = NULL,
+  finalized_by_packaged = NULL
+WHERE id = 'ghost-session-id-here';
+```
+
+2. **Re-Finalize Through Manager Workflow:**
+   - Navigate to Conversions UI
+   - Session appears in pending list
+   - Complete finalization normally
+   - Verify inventory_items created
+
+3. **Verify Fix:**
+```sql
+-- Check inventory created
+SELECT package_id, on_hand_qty, available_qty, created_at
+FROM inventory_items
+WHERE batch_id = 'batch-id-here'
+ORDER BY created_at DESC;
+
+-- Verify no more ghosts
+SELECT COUNT(*) FROM ghost_finalized_sessions;  -- Should be 0
+```
+
+**Session Fixes:**
+- Session: PKG-FINALIZATION-GHOST-FIX (2026-01-22)
+- Ghost Sessions Reset: 4 sessions (256 units)
+- Migration: `fix_ghost_finalization_with_transaction_control.sql`
+- See: `docs/SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md`
 
 ---
 

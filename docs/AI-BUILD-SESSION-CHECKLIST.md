@@ -91,12 +91,92 @@ Binned → Bucked → Trimmed → Packaged
 
 ## Current Session
 
-**Date:** 2026-01-16
+**Date:** 2026-01-22
 **AI Assistant:** Claude (Sonnet 4.5)
-**Previous Session:** 2026-01-15 Part 6 - Remove Redundant getRemainingQuantity Call
-**Current Phase:** Critical Bug Fix - Conversion Finalization Failure
-**Session Goal:** Fix broken inventory_items creation during conversion finalization
+**Previous Session:** 2026-01-21 - Multiple ATP and Finalization Fixes
+**Current Phase:** Critical Bug Fix - Ghost Finalization State
+**Session Goal:** Fix ghost finalizations where sessions show finalized but no inventory exists
 **Status:** ✅ COMPLETE
+
+### Session Summary (2026-01-22) - GHOST FINALIZATION FIX ⚡
+
+**🎯 GOAL:** Fix critical bug where packaging sessions marked "finalized" without creating inventory, making 256 units unusable.
+
+**📍 ROOT CAUSE IDENTIFIED:**
+
+The `finalize_session_aggregated()` RPC function lacked transaction atomicity:
+
+1. **No Transaction Control:** Function updated session status BEFORE creating inventory
+2. **No Rollback on Error:** When inventory creation failed (ATP errors), status update persisted
+3. **Ghost State Created:** Session marked 'finalized' but no inventory exists
+4. **Permanent Ghost:** Future finalization attempts skip ghost sessions (filter: `status = 'pending'`)
+
+**Historical Context:**
+- 2026-01-21: ATP constraint added to enforce `available_qty = on_hand_qty - reserved_qty`
+- 2026-01-21: Inventory creation added to RPC (but without transaction control)
+- 2026-01-21: ATP fix applied (reserved_qty explicitly set)
+- Transition period: 4 sessions failed during ATP errors, became ghosts
+- 2026-01-22: This fix (transaction atomicity + ghost session reset)
+
+**🛠️ SOLUTION: Transaction Control + Ghost Session Reset**
+
+**IMPLEMENTATION (2 parts):**
+
+1. **Reset Ghost Sessions:** Changed 4 finalized sessions back to pending (256 units restored)
+2. **Fix RPC Function:** Reordered operations to create inventory BEFORE updating status
+
+**Critical Change:**
+```sql
+-- BEFORE (broken):
+UPDATE sessions SET status = 'finalized';  -- Happens first
+INSERT INTO inventory_items;               -- Fails → Ghost state
+
+-- AFTER (fixed):
+BEGIN
+  INSERT INTO inventory_items;             -- Create inventory FIRST
+  INSERT INTO inventory_movements;         -- Create ledger entry
+  UPDATE sessions SET status = 'finalized'; -- Only mark finalized if inventory succeeds
+EXCEPTION
+  WHEN OTHERS THEN ROLLBACK;              -- Session stays 'pending' on error
+END
+```
+
+**✅ RESULTS:**
+
+**Inventory Restored:**
+- 4 ghost sessions reset to pending
+- 256 units now available for finalization:
+  - Batch 251105-SWF: 228 units (2 sessions)
+  - Batch 250403HG: 28 units (1 session)
+  - Batch 250916-ASU: 0 units (cancelled session)
+
+**Prevention Measures:**
+- Transaction atomicity prevents future ghost states
+- Explicit BEGIN/EXCEPTION/END blocks
+- Error rollback on any failure
+- Monitoring view: `ghost_finalized_sessions`
+
+**Files Changed:**
+- Migration: `fix_ghost_finalization_with_transaction_control.sql`
+- Created monitoring view for daily health checks
+- Session doc: SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md
+
+**Build Status:** ✅ PENDING VERIFICATION (npm run build)
+
+**⚠️ KEY INSIGHT:**
+
+Previous fix (SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX) claimed to implement inventory creation but didn't add transaction control. Status updates and inventory creation were independent operations. When inventory INSERT failed, status UPDATE persisted = ghost state.
+
+**Architectural Lesson:** Always wrap multi-step database operations in explicit transactions when atomicity is required. PostgreSQL's implicit transactions don't prevent partial updates across multiple statements.
+
+**📚 RELATED SESSIONS:**
+- SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX: Initial implementation (incomplete)
+- SESSION-2026-01-21-CONVERSION-ATP-CONSTRAINT-FIX: ATP application fix
+- SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX: ATP data repair + constraint
+
+See `docs/SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md` for complete details.
+
+---
 
 ### Session Summary (2026-01-16) - CONVERSION ARCHITECTURE SIMPLIFICATION ⚡
 

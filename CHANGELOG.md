@@ -4,6 +4,159 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-01-22 - Ghost Finalization Fix (Transaction Atomicity)
+
+**Type:** 🔥 CRITICAL FIX (Data Integrity)
+**Module:** Sessions / Inventory / Conversions
+**Priority:** CRITICAL - Data Integrity + Workflow Blocker
+**Impact:** Restored 256 units of unusable inventory, prevents future ghost finalizations
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration, RPC function, monitoring view
+**Session ID:** PKG-FINALIZATION-GHOST-FIX
+
+### Summary
+
+Fixed critical bug where packaging sessions were marked as "finalized" without creating corresponding inventory records, making packages unusable for order allocation. The root cause was lack of transaction atomicity in the RPC function, allowing status updates to persist even when inventory creation failed.
+
+### Problem
+
+**User Impact:**
+- 4 packaging sessions showed as "finalized" but no inventory existed
+- 256 units invisible to order allocation system (114 + 114 + 28 + 0 units)
+- Cannot finalize sessions again because they already show "finalized"
+- Orders show "insufficient inventory" despite finalized sessions existing
+- Lost traceability from session to final package
+
+**Affected Sessions:**
+1. Batch 251105-SWF (Swamp Water Fumez): 2 sessions, 228 units
+2. Batch 250403HG (White Devil): 1 session, 28 units
+3. Batch 250916-ASU (Animal Tsunami): 1 session, 0 units (cancelled)
+
+**Root Cause:**
+The `finalize_session_aggregated()` RPC function lacked proper transaction control:
+1. Session status updated to 'finalized' BEFORE inventory was created
+2. When inventory INSERT failed (e.g., ATP constraint violations), status update persisted
+3. Result: "Ghost state" where session shows finalized but no inventory exists
+4. Future finalization attempts skip ghost sessions (they're not 'pending' anymore)
+
+**Historical Context:**
+- 2026-01-21: ATP constraint added to enforce formula: `available_qty = on_hand_qty - reserved_qty`
+- 2026-01-21: Inventory creation added to finalization workflow
+- Transition period: ATP errors occurred before all code paths were fixed
+- Status updates succeeded but inventory creation failed = ghost state
+
+### Solution
+
+**Migration:** `supabase/migrations/fix_ghost_finalization_with_transaction_control.sql`
+
+**Part 1: Reset Ghost Sessions**
+- Identified all 4 ghost sessions using SQL query
+- Reset `finalization_status_packaged` from 'finalized' to 'pending'
+- Cleared `finalized_at_packaged` and `finalized_by_packaged` timestamps
+- Preserved all session data (no data loss)
+- Created audit trail in migration logs
+
+**Part 2: Fix RPC Function with Transaction Control**
+
+Critical architecture change - reordered operations:
+
+```sql
+-- BEFORE (broken):
+UPDATE packaging_sessions SET status = 'finalized';  -- Happens first
+INSERT INTO inventory_items;                         -- Fails → Ghost state
+
+-- AFTER (fixed):
+BEGIN
+  -- Validate session data
+  IF v_strain_id IS NULL THEN
+    RAISE EXCEPTION 'Cannot finalize: strain_id is NULL';
+  END IF;
+
+  -- Create inventory FIRST (critical for atomicity)
+  INSERT INTO inventory_items (...) VALUES (...)
+  RETURNING id INTO v_inventory_item_id;
+
+  -- Create movement ledger
+  INSERT INTO inventory_movements (...) VALUES (...);
+
+  -- ONLY NOW update session status (after inventory succeeds)
+  UPDATE packaging_sessions
+  SET status = 'finalized', ...
+  WHERE id = ANY(v_session_ids);
+
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Transaction rolls back → Session stays 'pending'
+    RAISE EXCEPTION 'Failed to finalize: %', error_message;
+END;
+```
+
+**Key Improvements:**
+1. **Inventory Created Before Status Update:** If inventory fails, status doesn't change
+2. **Explicit BEGIN/EXCEPTION/END Block:** Automatic rollback on any error
+3. **Comprehensive Validation:** Check required fields before attempting INSERT
+4. **Better Error Messages:** Captures full error stack trace for debugging
+5. **All-or-Nothing Behavior:** Ensures atomic operation across all steps
+
+**Part 3: Add Monitoring View**
+
+Created `ghost_finalized_sessions` view for daily health checks:
+```sql
+SELECT * FROM ghost_finalized_sessions;
+-- Should always return 0 rows
+-- If rows appear, alert operations team immediately
+```
+
+### Results
+
+**Inventory Restored:**
+- 4 ghost sessions reset to pending status
+- 256 units now available for finalization
+- All sessions appear in pending conversions list
+- Ready for managers to re-finalize
+
+**Prevention Measures:**
+- Transaction atomicity prevents future ghost states
+- RPC function creates inventory BEFORE updating status
+- Error rollback ensures session stays 'pending' on failure
+- Monitoring view enables proactive detection
+
+**Operational Benefits:**
+- Managers can now re-finalize the 4 ghost sessions
+- Inventory will be created correctly on re-finalization
+- Order allocation will work once packages finalized
+- Full traceability chain restored
+
+### Testing Recommendations
+
+**Before Re-Finalizing Ghost Sessions:**
+1. Verify all 4 sessions show `finalization_status_packaged` = 'pending'
+2. Verify `ghost_finalized_sessions` view returns 0 rows
+3. Check sessions appear in Conversions > Pending list
+
+**After Re-Finalization:**
+1. Verify `inventory_items` records exist for each finalized session
+2. Verify `inventory_movements` ledger entries created
+3. Check packages show correct quantities in inventory
+4. Test order allocation using newly created inventory
+5. Verify `ghost_finalized_sessions` view still returns 0 rows
+
+**Daily Monitoring:**
+```sql
+-- Run this query daily to detect ghost finalizations
+SELECT * FROM ghost_finalized_sessions;
+```
+
+### Related Documentation
+
+- **Session Document:** `docs/SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md`
+- **Previous Sessions:**
+  - SESSION-2026-01-21-PKG-FINALIZATION-INVENTORY-FIX (initial implementation, incomplete)
+  - SESSION-2026-01-21-CONVERSION-ATP-CONSTRAINT-FIX (ATP application fix)
+  - SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX (ATP data repair + constraint)
+
+---
+
 ## 2026-01-21 - UUID Aggregation Hotfix (Packaging Finalization)
 
 **Type:** 🔥 CRITICAL HOTFIX (Production Blocker)

@@ -798,6 +798,92 @@ Regular operators complete sessions (bucking/trim/packaging), but **only manager
 - Batch job cleanup for stale conversion sessions
 - Extend inventory creation to trim and bucking sessions (currently packaging only)
 
+### Troubleshooting: Ghost Finalizations
+
+**What is a Ghost Finalization?**
+
+A "ghost finalization" occurs when a session shows `finalization_status_packaged` = 'finalized' but no corresponding `inventory_items` record exists. This makes the finalized package unusable for order allocation.
+
+**Symptoms:**
+- Session shows as finalized in database but not in inventory
+- Cannot re-finalize session (already marked finalized)
+- Packages missing from order allocation
+- Orders show "insufficient inventory" despite finalized sessions existing
+
+**Root Cause:**
+
+Ghost finalizations occurred when the `finalize_session_aggregated()` RPC function lacked transaction atomicity:
+1. Function updated session `finalization_status` to 'finalized' FIRST
+2. Then attempted to create `inventory_items` record
+3. If inventory INSERT failed (e.g., ATP constraint violation), status update persisted
+4. Result: Session marked finalized but no inventory created
+
+**Fixed:** 2026-01-22 via migration `fix_ghost_finalization_with_transaction_control.sql`
+- RPC function now creates inventory BEFORE updating session status
+- Proper BEGIN/EXCEPTION/END transaction control added
+- Error rollback ensures session stays 'pending' if inventory creation fails
+
+**Detection:**
+
+```sql
+-- Daily health check - should always return 0 rows
+SELECT * FROM ghost_finalized_sessions;
+```
+
+**If Ghost Finalizations Detected:**
+
+1. **Identify Affected Sessions:**
+   ```sql
+   SELECT
+     session_id,
+     batch_number,
+     product_name,
+     total_units,
+     finalized_at_packaged
+   FROM ghost_finalized_sessions;
+   ```
+
+2. **Reset to Pending:**
+   ```sql
+   UPDATE packaging_sessions
+   SET
+     finalization_status_packaged = 'pending',
+     finalized_at_packaged = NULL,
+     finalized_by_packaged = NULL
+   WHERE id = 'ghost-session-id-here';
+   ```
+
+3. **Re-Finalize Through Manager Workflow:**
+   - Navigate to Conversions UI
+   - Session will now appear in pending list
+   - Complete finalization process normally
+   - Verify inventory_items record created
+
+4. **Verify Fix:**
+   ```sql
+   -- Check inventory was created
+   SELECT package_id, on_hand_qty, available_qty
+   FROM inventory_items
+   WHERE batch_id = 'batch-id-here'
+   AND product_name = 'Packaged Products'
+   ORDER BY created_at DESC;
+
+   -- Should show ghost_finalized_sessions = 0
+   SELECT COUNT(*) FROM ghost_finalized_sessions;
+   ```
+
+**Prevention:**
+
+The 2026-01-22 fix prevents future ghost finalizations through:
+- Transaction atomicity (inventory created before status update)
+- Explicit error handling with transaction rollback
+- Comprehensive validation before inventory INSERT
+- Monitoring view for daily health checks
+
+**Related Documentation:**
+- SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md - Complete fix details
+- INVENTORY-TRACKING.md - ATP troubleshooting section
+
 ---
 
 ## Session Cancellation
