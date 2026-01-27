@@ -89,6 +89,59 @@ Binned → Bucked → Trimmed → Packaged
 
 ---
 
+## 🏗️ CRITICAL ARCHITECTURAL PATTERNS (READ BEFORE INVENTORY WORK!)
+
+**Last Updated:** 2026-01-28
+
+### Finalization Pattern: Creation vs. Transformation
+
+**Core Principle:** Session finalization is inventory **CREATION**, not **MOVEMENT**.
+
+**Two Distinct Patterns:**
+
+1. **Inventory Movements (Transformation):**
+   - Transform or adjust existing inventory
+   - Examples: CONSUME, FULFILL, ADJUST, RECONCILE
+   - Pattern: Trigger-based quantity updates
+   - Movement trigger processes the movement
+
+2. **Session Finalization (Creation):**
+   - Create NEW inventory from session outputs
+   - Examples: Packaging sessions, trim outputs, bucking outputs
+   - Pattern: Direct quantity setting
+   - Movement trigger bypasses (audit trail only)
+
+**Implementation:**
+```sql
+-- Finalization: Set quantities directly
+INSERT INTO inventory_items (
+  on_hand_qty = v_total_units,      -- Direct
+  available_qty = v_total_units,    -- ATP satisfied immediately
+  reserved_qty = 0
+);
+
+-- Movement for audit trail only (trigger bypasses)
+INSERT INTO inventory_movements (
+  reason_code = 'session_finalization'  -- Bypass flag
+);
+```
+
+**Key Distinction:**
+- ✅ **Creation:** Quantities set directly during INSERT
+- ✅ **Transformation:** Quantities updated via movement trigger
+- ❌ **Don't mix:** Finalization should never rely on trigger choreography
+
+**Reference Migration:** `simplify_finalization_treat_as_creation.sql` (2026-01-28)
+**Reference Session:** `docs/SESSION-2026-01-28-FINALIZATION-SIMPLIFICATION.md`
+
+**Why This Matters:**
+- Simpler: No complex trigger choreography
+- Faster: One operation instead of three
+- More reliable: No ATP constraint timing issues
+- Better architecture: Code matches mental model
+
+---
+
 ## Current Session
 
 **Date:** 2026-01-22
