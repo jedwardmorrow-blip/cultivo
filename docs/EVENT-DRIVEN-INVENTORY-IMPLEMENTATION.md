@@ -564,9 +564,9 @@ export class InventoryMovementService {
 
 ---
 
-## Phase 6: Database Triggers (COMPLETE - 2025-01-24)
+## Phase 6: Database Triggers (COMPLETE - 2026-01-27)
 
-**Status:** ✅ Complete and operational
+**Status:** ✅ Complete with constraint trigger implementation
 
 **Implementation Summary:**
 - Core movement trigger created (updates on_hand_qty automatically)
@@ -574,6 +574,12 @@ export class InventoryMovementService {
 - Validation trigger prevents invalid movements
 - Monitoring and error logging implemented
 - Testing utilities and rollback procedures documented
+
+**Key Update (2026-01-27):** ATP validation moved from CHECK constraint to CONSTRAINT TRIGGER
+- **Reason:** CHECK constraints cannot be DEFERRABLE in PostgreSQL
+- **Solution:** CONSTRAINT TRIGGER can be deferred to COMMIT time
+- **Benefit:** Supports immutable ledger pattern where movements update on_hand_qty via triggers
+- **Migration:** `20260127133321_fix_ghost_finalization_with_constraint_trigger.sql`
 
 **See:** [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) for complete documentation
 

@@ -559,6 +559,72 @@ AND ps.completed_at >= NOW() - INTERVAL '7 days';
 
 ---
 
+## Follow-Up (2026-01-27)
+
+### Issue Found: Architecture Violation
+
+**Problem:** The fix applied in this session violated the immutable ledger architecture by setting `on_hand_qty` directly during INSERT:
+
+```sql
+-- This fix (2026-01-22) violated ledger pattern:
+INSERT INTO inventory_items (
+  on_hand_qty, available_qty, reserved_qty, ...
+) VALUES (
+  v_total_units, v_total_units, 0, ...  -- ❌ Sets on_hand_qty directly
+);
+
+INSERT INTO inventory_movements (
+  movement_kind, dest_item_id, qty, ...
+) VALUES (
+  'PRODUCE', v_inventory_item_id, v_total_units, ...
+);
+-- Movement trigger ADDS v_total_units to on_hand_qty → Double-counting!
+```
+
+**ATP Constraint Violation:**
+- Initial INSERT: `on_hand_qty = 285`
+- Movement trigger: `on_hand_qty = 285 + 285 = 570` (double-counting)
+- ATP check: `available_qty (285) ≠ on_hand_qty (570) - reserved_qty (0)` ✗
+
+### Resolution
+
+**Session:** SESSION-2026-01-27-ATP-CONSTRAINT-TRIGGER-FIX.md
+
+**Changes Made:**
+
+1. **Replaced CHECK constraint with CONSTRAINT TRIGGER**
+   - Reason: CHECK constraints cannot be DEFERRABLE in PostgreSQL
+   - Solution: CONSTRAINT TRIGGER can defer validation to COMMIT time
+   - Benefit: Allows movement triggers to update on_hand_qty before ATP validation
+
+2. **Updated RPC to follow immutable ledger pattern:**
+   ```sql
+   -- Step 4: INSERT with on_hand_qty=0 (respects ledger)
+   INSERT INTO inventory_items (on_hand_qty, available_qty, reserved_qty, ...)
+   VALUES (0, 0, 0, ...);
+
+   -- Step 5: CREATE movement (trigger sets on_hand_qty=285)
+   INSERT INTO inventory_movements (PRODUCE, v_total_units, ...);
+
+   -- Step 6: UPDATE available_qty=285 (after trigger)
+   UPDATE inventory_items SET available_qty = on_hand_qty WHERE id = ...;
+
+   -- ATP constraint trigger validates at COMMIT: 285 = 285 - 0 ✓
+   ```
+
+**Architectural Integrity Restored:**
+- ✅ Movements are source of truth for `on_hand_qty`
+- ✅ ATP validation still enforced (just deferred to COMMIT)
+- ✅ Event-driven pattern works correctly
+- ✅ Zero breaking changes to existing code
+
+**Documentation Updated:**
+- EVENT-DRIVEN-INVENTORY-IMPLEMENTATION.md: Phase 6 status with constraint trigger note
+- INVENTORY-TRACKING.md: Constraint trigger explanation in troubleshooting
+- CHANGELOG.md: User-facing entry for packaging finalization fix
+
+---
+
 **Next Steps for Operations Team:**
 
 1. Re-finalize the 3 Swamp Water Fumez sessions (228 + 57 = 285 units total)

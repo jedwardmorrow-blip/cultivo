@@ -1709,12 +1709,23 @@ SELECT COUNT(*) FROM inventory_qty_health WHERE health_status = 'MISMATCH';
 
 **Prevention:**
 
-1. **Database Constraint (Added 2026-01-21):**
+1. **Database Constraint Trigger (Updated 2026-01-27):**
    ```sql
-   ALTER TABLE inventory_items
-   ADD CONSTRAINT chk_atp_consistency
-   CHECK (available_qty = on_hand_qty - COALESCE(reserved_qty, 0));
+   -- Replaced CHECK constraint with CONSTRAINT TRIGGER (can be deferred)
+   CREATE CONSTRAINT TRIGGER trg_validate_atp_consistency
+     AFTER INSERT OR UPDATE OF on_hand_qty, available_qty, reserved_qty
+     ON inventory_items
+     DEFERRABLE INITIALLY DEFERRED
+     FOR EACH ROW
+     EXECUTE FUNCTION fn_validate_atp_consistency();
    ```
+
+   **Why Constraint Trigger:**
+   - CHECK constraints cannot be DEFERRABLE in PostgreSQL
+   - Constraint triggers can be deferred to COMMIT time
+   - Enables immutable ledger pattern where movement triggers update on_hand_qty
+   - ATP validation happens after all triggers complete within transaction
+   - Added: 2026-01-21 (CHECK constraint), Updated: 2026-01-27 (constraint trigger)
 
 2. **Application Validation (Added 2026-01-21):**
    - `conversions.service.ts` validates ATP after inventory_items creation

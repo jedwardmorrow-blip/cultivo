@@ -1,5 +1,123 @@
 # Changelog — CULT Seed-to-Sale System
 
+## 2026-01-27 - ATP Constraint Trigger Fix ⭐ CRITICAL
+
+### Packaging Finalization Fixed with Architectural Improvement
+**Type:** 🐛 Critical Bug Fix + 🏗️ Architecture Enhancement
+**Priority:** CRITICAL
+**Impact:** Packaging sessions can now be finalized successfully
+**Session:** SESSION-2026-01-27-ATP-CONSTRAINT-TRIGGER-FIX.md
+
+#### Problem
+Packaging finalization was failing with ATP (Available-to-Promise) constraint violation:
+```
+Failed to finalize packaging sessions: new row for relation "inventory_items"
+violates check constraint "chk_atp_consistency"
+```
+
+**User Impact:** Unable to finalize any packaging sessions, blocking completion of 285 units of finished product.
+
+#### Root Cause
+Two conflicting requirements created an architectural deadlock:
+
+1. **Immutable Ledger Pattern** (correct architecture):
+   - INSERT inventory_items with `on_hand_qty = 0`
+   - CREATE PRODUCE movement for 285 units
+   - Movement trigger updates `on_hand_qty = 0 + 285 = 285`
+
+2. **ATP CHECK Constraint** (correct validation):
+   - Formula: `available_qty = on_hand_qty - reserved_qty`
+   - Validates IMMEDIATELY on every INSERT/UPDATE
+   - Problem: Checks BEFORE movement trigger runs
+
+**The Conflict:**
+- Step 1: INSERT with (0, 0, 0) → ATP: 0 = 0 - 0 ✓
+- Step 2: Movement trigger updates `on_hand_qty = 285` → ATP: 0 ≠ 285 - 0 ✗ FAILS
+- Step 3: UPDATE `available_qty = 285` (never reached)
+
+#### Solution: Constraint Trigger (Deferrable Validation)
+
+**Key Insight:** PostgreSQL CHECK constraints CANNOT be deferred, but CONSTRAINT TRIGGERs can.
+
+**Migration: `fix_ghost_finalization_with_constraint_trigger.sql`**
+
+1. **Removed:** CHECK constraint `chk_atp_consistency`
+2. **Created:** Constraint trigger function `fn_validate_atp_consistency()`
+3. **Added:** CONSTRAINT TRIGGER with `DEFERRABLE INITIALLY DEFERRED`
+4. **Updated:** `finalize_session_aggregated` RPC to use immutable ledger pattern
+
+**How It Works:**
+```sql
+BEGIN TRANSACTION
+  INSERT inventory_items (0, 0, 0)        -- ATP check queued
+  INSERT inventory_movements (PRODUCE 285) -- Trigger updates on_hand_qty
+  UPDATE available_qty = 285               -- ATP check queued
+COMMIT                                      -- ATP validates: 285 = 285 - 0 ✓
+```
+
+#### Files Changed
+
+**Database Migration (1 file):**
+- `supabase/migrations/20260127133321_fix_ghost_finalization_with_constraint_trigger.sql`
+  - Replaced CHECK constraint with CONSTRAINT TRIGGER
+  - Updated finalize_session_aggregated function
+  - Added deferrable ATP validation
+
+**Documentation (4 files):**
+- `docs/SESSION-2026-01-27-ATP-CONSTRAINT-TRIGGER-FIX.md` (NEW)
+- `docs/INVENTORY-TRACKING.md` (constraint trigger notes added)
+- `docs/EVENT-DRIVEN-INVENTORY-IMPLEMENTATION.md` (Phase 6 status updated)
+- `docs/SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md` (follow-up added)
+
+#### Benefits
+
+**Architectural Integrity ✅**
+- Immutable ledger pattern fully restored
+- Movements remain source of truth for `on_hand_qty`
+- ATP validation still enforced (just deferred to COMMIT)
+
+**Data Integrity ✅**
+- Same ATP formula validation
+- Same error codes and messages
+- Invalid data still cannot be committed
+
+**Technical Excellence ✅**
+- Follows PostgreSQL best practices for complex transactions
+- Enables proper event-driven patterns
+- Zero breaking changes to existing code
+
+#### Verification
+
+```bash
+# Test finalization
+npm run build
+# ✅ Build successful
+
+# Database check
+SELECT tgdeferrable FROM pg_trigger
+WHERE tgname = 'trg_validate_atp_consistency';
+# Result: true (deferrable enabled)
+
+# Functional test
+# ✅ 285 units of Swamp Water Fumez finalized successfully
+# ✅ Package ID: 260127-SWF-001
+# ✅ ATP: available_qty (285) = on_hand_qty (285) - reserved_qty (0)
+```
+
+#### Impact Summary
+
+- ✅ **Packaging finalization works** - All pending sessions can complete
+- ✅ **Architecture restored** - Immutable ledger pattern respected
+- ✅ **ATP integrity maintained** - Constraint trigger validates at COMMIT
+- ✅ **Zero breaking changes** - Backward compatible with all existing code
+
+**Related:**
+- Fixes issue introduced in SESSION-2026-01-22-PKG-FINALIZATION-GHOST-FIX.md
+- Aligns with EVENT-DRIVEN-INVENTORY-IMPLEMENTATION.md architecture
+- Extends SESSION-2026-01-21-AVAILABLE-QTY-ATP-FIX.md validation approach
+
+---
+
 ## 2026-01-21 - Batch Lifecycle Trigger System Implementation ⭐ CRITICAL
 
 ### Core Architecture Completion
