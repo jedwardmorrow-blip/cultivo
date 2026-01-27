@@ -636,29 +636,38 @@ The system migrated from table-based conversions (`pending_conversions`, `conver
 **Step 3: Manager Finalizes Conversion**
 1. Manager clicks "Finalize" on aggregated conversion
 2. System calls RPC: `finalize_session_aggregated(batch_id, product_id, session_type)`
-3. RPC function executes:
-   - Updates all matching sessions: finalization_status → `'finalized'`
+3. RPC function executes (SIMPLIFIED PATTERN - 2026-01-28):
+   - **Creates inventory_items record with quantities set directly**:
+     - package_id: Generated via `fn_generate_next_package_id()`
+     - batch_id: From session
+     - product_stage_id: Based on output type
+     - on_hand_qty: Set directly from session output (no trigger)
+     - available_qty: Set equal to on_hand_qty (ATP formula satisfied immediately)
+     - reserved_qty: 0 (no reservations yet)
+     - strain_id: Inherited from batch
+   - **Creates inventory_movements record for audit trail**:
+     - movement_kind: `'PRODUCE'`
+     - dest_item_id: New inventory_item ID
+     - qty: Package weight/units
+     - reason_code: `'session_finalization'` (trigger bypass flag)
+     - reference_type: `'packaging_session'` (or trim/bucking)
+   - **Updates all matching sessions**: finalization_status → `'finalized'`
    - Sets finalized_at: now()
    - Sets finalized_by: auth.uid()
-   - **CURRENT GAP:** Does NOT create inventory_items (Phase 7 work)
-4. Returns success confirmation
+4. Returns success confirmation with inventory_item_id
 
-**Step 4: Inventory Creation (NOT YET IMPLEMENTED)**
-**Current Gap:** finalize_session_aggregated() does NOT create inventory_items.
+**Step 4: Inventory Immediately Available**
+Finalized inventory items are immediately available for:
+- Order allocation (order management UI)
+- Package assignment (fulfillment workflow)
+- ATP calculations (on_hand_qty - reserved_qty)
 
-**Planned Implementation:**
-1. RPC should create `inventory_items` records:
-   - package_id: Generated via `fn_generate_next_package_id()`
-   - batch_id: From session
-   - product_stage_id: Based on output type
-   - on_hand_qty: From session output
-   - strain_id: Inherited from batch
-2. RPC should create `inventory_movements` ledger entries:
-   - movement_kind: `'PRODUCTION'`
-   - source_item_id: Session output reference
-   - destination_item_id: New inventory_item ID
-   - qty: Package weight/units
-   - reason_code: `'session_finalized'`
+**Architectural Note (2026-01-28):**
+Session finalization is treated as **CREATION**, not **MOVEMENT**:
+- Quantities set directly (no trigger choreography)
+- Movement created for audit trail only (trigger bypasses session_finalization)
+- ATP constraint validates immediately (simple CHECK, no deferral)
+- Simpler, faster, more reliable than previous trigger-based approach
 
 **Void Workflow:**
 1. Manager can void pending sessions via UI
@@ -696,12 +705,12 @@ The system migrated from table-based conversions (`pending_conversions`, `conver
 - (Future) Inventory items created
 - (Future) Batch lifecycle state updated
 
-**IMPLEMENTATION GAPS:**
-1. **CURRENT GAP:** finalize_session_aggregated() does NOT create inventory_items
-   - **Risk:** Manual inventory creation required, workflow incomplete
-   - **Fix:** Update RPC to INSERT inventory_items + inventory_movements
-   - **Priority:** HIGH
-   - **Tracked in:** Plan B (Implementation Gap Fix)
+**IMPLEMENTATION STATUS:**
+1. ✅ **RESOLVED (2026-01-28):** finalize_session_aggregated() now creates inventory_items
+   - **Implementation:** Simplified pattern treats finalization as creation
+   - **Migration:** `simplify_finalization_treat_as_creation.sql`
+   - **Approach:** Quantities set directly, movement for audit trail only
+   - **Benefits:** Simpler architecture, immediate ATP validation, no ghost finalizations
 
 **Removed Features (Jan 2026):**
 - ❌ `pending_conversions` table (replaced by session finalization_status)
