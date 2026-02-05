@@ -4,6 +4,143 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-05 - Conversion View Session Isolation Fix (Bug Fix)
+
+**Type:** 🐛 BUG FIX
+**Module:** Sessions / Inventory / Conversions
+**Priority:** HIGH - Data Accuracy
+**Impact:** Fixes negative remaining weights and restores visibility of conversion buckets
+**Status:** ✅ COMPLETE
+**Files Changed:** Database migration (1)
+**Session ID:** CONVERSION-SESSION-ISOLATION-001
+
+### Summary
+
+Fixed critical cross-session package contamination in the `pending_conversion_sessions` VIEW that caused negative remaining quantities and hidden conversion buckets. Added session-level package filtering to ensure packages are only counted against the sessions that created them.
+
+### Problem
+
+**Cross-Session Package Contamination:**
+The VIEW aggregates sessions by (batch_id + product_name) and LEFT JOINs to conversion_packages ONLY by aggregation_id. This caused packages from finalized sessions to be incorrectly subtracted from new pending sessions for the same batch + product combination.
+
+**Example Timeline:**
+1. Session A completes: 1820g output for Batch 251105-BLM → Bulk Flower Trimmed
+2. Session A finalized: Creates packages totaling 1820g
+3. Session B completes: 500g output for SAME batch + product
+4. **BUG:** View shows Session B remaining = -1320g (500 - 1820)
+   - Session A's packages incorrectly subtracted from Session B!
+   - HAVING clause filters out negatives → Bucket hidden from view
+
+**Impact:**
+- ❌ Negative remaining weights/units displayed
+- ❌ Conversion buckets hidden from Conversions screen
+- ❌ Cannot create bulk bags for new sessions
+- ❌ Data integrity issues in inventory tracking
+- ❌ Workflow blocked for active production
+
+**Root Cause:**
+```sql
+LEFT JOIN conversion_packages cp ON
+  cp.aggregation_id = md5(...)::uuid
+  AND cp.finalization_status IN ('pending', 'finalized')
+  -- ❌ MISSING: No filter to ensure packages came from THIS session
+```
+
+### Solution
+
+**Migration:** `fix_pending_conversions_filter_packages_by_session.sql`
+
+Added session-level package filtering to all 8 branches of the VIEW using the `source_session_ids` column:
+
+```sql
+LEFT JOIN conversion_packages cp ON
+  cp.aggregation_id = md5(...)::uuid
+  AND cp.finalization_status IN ('pending', 'finalized')
+  AND cp.source_session_ids @> to_jsonb(ARRAY[session_table.id])  -- ✅ NEW
+  -- ↑ Only count packages from THIS session
+```
+
+**Branches Updated:**
+- ✅ Branch 1: Trim Big Buds (trim_sessions.id)
+- ✅ Branch 2: Trim Small Buds (trim_sessions.id)
+- ✅ Branch 3: Trim Byproduct (trim_sessions.id)
+- ✅ Branch 4a: Packaging 3.5g (packaging_sessions.id)
+- ✅ Branch 4b: Packaging 14g (packaging_sessions.id)
+- ✅ Branch 4c: Packaging 1lb (packaging_sessions.id)
+- ✅ Branch 5: Bucking Flower (bucking_sessions.id)
+- ✅ Branch 6: Bucking Smalls (bucking_sessions.id)
+
+### Benefits
+
+**Data Integrity:**
+- ✅ Accurate remaining quantities per session
+- ✅ No negative weights displayed
+- ✅ All conversion buckets visible
+- ✅ Proper session isolation in aggregations
+- ✅ Reliable bulk bag creation workflow
+
+**Workflow Reliability:**
+- ✅ Multiple sessions for same batch+product work independently
+- ✅ Finalized sessions don't block new sessions
+- ✅ Partial finalization supported correctly
+- ✅ Clear visibility into conversion pipeline
+
+**System Integrity:**
+- ✅ Maintains audit trail with source_session_ids
+- ✅ Prevents data corruption from aggregation bugs
+- ✅ Consistent architecture across all 8 branches
+- ✅ Database-level enforcement of session isolation
+
+### Verification Results
+
+**Query Test:**
+```sql
+SELECT batch_name, product_name, output_weight
+FROM pending_conversion_sessions
+WHERE batch_name IN ('251105-BLM', '251105-SWF');
+```
+
+**Results:**
+- 251105-BLM Bulk Flower: 1000g ✅ (was negative before)
+- 251105-BLM Bulk Smalls: 190g ✅ (was negative before)
+- 251105-SWF Bulk Flower: 900g ✅ (was negative before)
+- 251105-SWF Bulk Smalls: 450g ✅ (was negative before)
+- 251105-SWF Bulk Trim: 80g ✅ (was negative before)
+
+All remaining quantities now positive and accurate!
+
+### Technical Details
+
+**Architecture Pattern:**
+Session-level package filtering using PostgreSQL's JSON containment operator (`@>`):
+```sql
+cp.source_session_ids @> to_jsonb(ARRAY[session_table.id])
+```
+
+**Performance Impact:**
+Minimal - `source_session_ids` column already indexed for JSON operations.
+
+**Migration Safety:**
+- ✅ Read-only operation (VIEW recreation)
+- ✅ No data changes to underlying tables
+- ✅ No breaking changes to VIEW schema
+- ✅ Existing queries continue to work
+- ✅ Zero downtime deployment
+
+### Testing
+
+- ✅ Database query validation (all positive quantities)
+- ✅ Package isolation verification (13 finalized packages properly filtered)
+- ✅ Frontend compatibility check (conversions service works correctly)
+- ✅ All session types tested (trim, bucking, packaging)
+
+### Documentation
+
+- Created: `docs/SESSION-2026-02-05-CONVERSION-SESSION-ISOLATION-FIX.md`
+- Includes: Diagnostic queries, verification steps, architectural rationale
+
+---
+
 ## 2026-01-28 - Packaging Multi-Product Finalization (Feature Enhancement)
 
 **Type:** ✨ FEATURE ENHANCEMENT
