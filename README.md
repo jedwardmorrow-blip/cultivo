@@ -79,6 +79,7 @@ See `/docs` for detailed implementation guides on:
 - Supabase (Database & Auth)
 - Tailwind CSS
 - Leaflet (Maps)
+- PDF.js (Certificate of Analysis viewing - auto-synced worker)
 
 ## Development
 
@@ -154,6 +155,35 @@ For detailed type generation procedures, verification steps, and deployment work
 - [TESTING-&-MIGRATION.md](./docs/TESTING-&-MIGRATION.md) - Database Type System section
 - [DOCS-INTEGRATION-PROGRESS.md](./docs/DOCS-INTEGRATION-PROGRESS.md) - Type generation strategy
 - [docs/README.md](./docs/README.md) - Full documentation index
+
+### PDF.js Worker Synchronization
+
+> **ℹ️ Automatic:** PDF.js worker file is automatically synced after `npm install`
+
+The project uses PDF.js for Certificate of Analysis (COA) viewing. The worker file must exactly match the library version to prevent "Incompatible worker version" errors.
+
+**What Happens Automatically:**
+- After `npm install`, the postinstall hook runs `scripts/sync-pdf-worker.sh`
+- Worker file (`public/pdf.worker.min.mjs`) is synced from `node_modules/pdfjs-dist`
+- Version lock in package.json prevents unexpected upgrades
+
+**Manual Sync (if needed):**
+```bash
+bash scripts/sync-pdf-worker.sh
+```
+
+**Troubleshooting COA Upload Errors:**
+```bash
+# Re-sync worker file
+bash scripts/sync-pdf-worker.sh
+
+# Verify versions match
+npm list pdfjs-dist
+ls -lh public/pdf.worker.min.mjs
+```
+
+For complete details, upgrading procedures, and troubleshooting:
+- [TESTING-&-MIGRATION.md](./docs/TESTING-&-MIGRATION.md) - PDF.js Worker Synchronization section
 
 ## Environment Variables
 

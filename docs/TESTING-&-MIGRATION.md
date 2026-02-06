@@ -238,6 +238,269 @@ npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/lib/databas
 
 ---
 
+## PDF.js Worker Synchronization
+
+### Strategy
+
+**Decision:** Lock pdfjs-dist version and auto-sync worker file to prevent version mismatches (established 2026-02-06)
+
+### The Problem
+
+PDF.js requires the worker file version to exactly match the library version. When npm installs a newer version of `pdfjs-dist` (due to the `^` caret in package.json), but the worker file in `public/` remains at the old version, COA uploads fail with errors like:
+
+```
+Incompatible worker version: 5.4.624 !== 5.4.530
+```
+
+This blocks critical workflows like Certificate of Analysis uploads for batch compliance.
+
+### Implementation
+
+**Step 1: Version Lock (One-time)**
+
+The package.json now locks pdfjs-dist to an exact version:
+
+```json
+"pdfjs-dist": "5.4.624"  // No caret (^) - exact version only
+```
+
+**Step 2: Automatic Sync (Automatic)**
+
+A postinstall hook automatically syncs the worker file after every `npm install`:
+
+```json
+"postinstall": "bash scripts/sync-pdf-worker.sh"
+```
+
+**Step 3: Manual Sync (If Needed)**
+
+You can manually run the sync script at any time:
+
+```bash
+npm run postinstall
+# Or directly:
+bash scripts/sync-pdf-worker.sh
+```
+
+### When Synchronization Runs
+
+**Automatically:**
+- ✅ After `npm install`
+- ✅ After `npm ci` (in CI/CD)
+- ✅ When onboarding new developers
+- ✅ When upgrading pdfjs-dist version
+
+**Manually (optional):**
+- 🔧 After manually updating worker file
+- 🔧 When debugging COA upload issues
+- 🔧 When verifying version match
+
+### Upgrading PDF.js
+
+When you need to upgrade to a newer PDF.js version:
+
+1. **Update package.json:**
+   ```bash
+   # Change version in package.json
+   "pdfjs-dist": "5.4.700"  # New exact version
+   ```
+
+2. **Install and sync:**
+   ```bash
+   npm install
+   # Postinstall hook automatically syncs worker file
+   ```
+
+3. **Verify version match:**
+   ```bash
+   # Check installed version
+   npm list pdfjs-dist
+
+   # Verify worker file was synced
+   ls -lh public/pdf.worker.min.mjs
+   # Should show recent timestamp
+   ```
+
+4. **Test COA uploads:**
+   - Upload a test COA PDF
+   - Verify no version mismatch errors
+   - Confirm PDF preview renders correctly
+
+### Verification Steps
+
+After installation or upgrade, verify synchronization:
+
+**1. Check Worker File Exists**
+```bash
+ls -lh public/pdf.worker.min.mjs
+# Should show ~1.1MB file with recent timestamp
+```
+
+**2. Verify Versions Match**
+```bash
+# Check package version
+npm list pdfjs-dist
+
+# Check worker was synced (file timestamp should be recent)
+stat public/pdf.worker.min.mjs
+```
+
+**3. Test in Application**
+```bash
+# Start dev server
+npm run dev
+
+# Navigate to COA Management → Upload COA
+# Should work without "Incompatible worker version" errors
+```
+
+### Troubleshooting
+
+#### Issue: "Incompatible worker version" error
+
+**Symptoms:**
+```
+Error: Incompatible worker version: 5.4.XXX !== 5.4.YYY
+COA upload fails
+PDF preview not loading
+```
+
+**Solution:**
+```bash
+# Re-sync worker file
+bash scripts/sync-pdf-worker.sh
+
+# If that doesn't work, reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+#### Issue: Worker file not found
+
+**Symptoms:**
+```
+Failed to load worker: /pdf.worker.min.mjs
+404 Not Found
+```
+
+**Solution:**
+```bash
+# Manually run sync script
+bash scripts/sync-pdf-worker.sh
+
+# Verify file exists
+ls -lh public/pdf.worker.min.mjs
+
+# Check Vite configuration includes public directory
+```
+
+#### Issue: Postinstall script doesn't run
+
+**Symptoms:**
+- npm install completes
+- No "Syncing PDF.js worker file..." message
+- Worker file not updated
+
+**Solutions:**
+1. **Check script permissions:**
+   ```bash
+   chmod +x scripts/sync-pdf-worker.sh
+   ```
+
+2. **Run manually:**
+   ```bash
+   bash scripts/sync-pdf-worker.sh
+   ```
+
+3. **Verify package.json:**
+   ```json
+   "postinstall": "bash scripts/sync-pdf-worker.sh"
+   ```
+
+4. **Check for npm install flags:**
+   ```bash
+   # Postinstall scripts are skipped with --ignore-scripts
+   npm install  # ✅ Runs postinstall
+   npm install --ignore-scripts  # ❌ Skips postinstall
+   ```
+
+#### Issue: Version mismatch persists after sync
+
+**Symptoms:**
+- Sync script ran successfully
+- Worker file updated
+- But error still shows old version number
+
+**Solutions:**
+1. **Clear browser cache:**
+   - Hard refresh: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
+   - Or clear cache in DevTools
+
+2. **Clear Vite cache:**
+   ```bash
+   rm -rf node_modules/.vite
+   npm run dev
+   ```
+
+3. **Verify file contents:**
+   ```bash
+   # Check file size (should be ~1.1MB for v5.4.624)
+   ls -lh public/pdf.worker.min.mjs
+
+   # Check it's not an old cached version
+   head -c 200 public/pdf.worker.min.mjs
+   ```
+
+### Script Details
+
+The sync script (`scripts/sync-pdf-worker.sh`) performs these actions:
+
+1. Detects installed pdfjs-dist version from package.json
+2. Locates worker file in node_modules
+3. Copies worker to public directory
+4. Verifies sync with file size check
+5. Reports version and file details
+
+**Script output:**
+```
+🔄 Syncing PDF.js worker file...
+✅ PDF.js worker synced successfully!
+📦 Version: 5.4.624
+📄 File: public/pdf.worker.min.mjs
+📊 Size: 1078612 bytes
+```
+
+### Why This Matters
+
+**Before Fix:**
+- COA uploads fail with version mismatch errors
+- Batch compliance workflows blocked
+- Packaging sessions cannot proceed
+- Manual intervention required after every npm install
+
+**After Fix:**
+- COA uploads work reliably
+- Version sync is automatic and transparent
+- Zero manual intervention required
+- New developers onboard without issues
+- CI/CD pipelines work correctly
+
+### Version Lock Rationale
+
+**Why lock to exact version:**
+1. **Predictability** - Same version across all environments
+2. **Stability** - Avoid unexpected breaking changes
+3. **Simplicity** - Easier to troubleshoot when versions don't change
+4. **Security** - Controlled, deliberate upgrades only
+
+**When to upgrade:**
+- Security patches (check npm audit)
+- Bug fixes affecting COA functionality
+- New features needed for PDF processing
+- Regular maintenance (quarterly review)
+
+---
+
 ## Migration Procedures
 
 ### Migration File Structure

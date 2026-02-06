@@ -4,6 +4,197 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-06 - PDF.js Worker Synchronization Automation (Infrastructure)
+
+**Type:** 🔧 INFRASTRUCTURE / MAINTENANCE
+**Module:** COA / Dependencies
+**Priority:** HIGH - Blocks COA uploads
+**Impact:** Fixes version mismatch errors blocking Certificate of Analysis uploads
+**Status:** ✅ COMPLETE
+**Files Changed:** Script (1), package.json (1), documentation (3)
+**Session ID:** PDF-WORKER-SYNC-001
+
+### Summary
+
+Automated PDF.js worker file synchronization to prevent "Incompatible worker version" errors that block COA uploads. Locked pdfjs-dist to exact version and added postinstall hook to automatically sync worker file after every npm install.
+
+### Problem
+
+**Version Mismatch Errors:**
+PDF.js requires the worker file version to exactly match the library version. When npm installs a newer version of `pdfjs-dist` (due to caret `^` in package.json), but the worker file in `public/` remains at the old version, COA uploads fail:
+
+```
+Error: Incompatible worker version: 5.4.624 !== 5.4.530
+```
+
+**Impact:**
+- ❌ COA upload failures block batch compliance
+- ❌ Packaging sessions cannot proceed without COAs
+- ❌ Manual intervention required after every npm install
+- ❌ New developer onboarding friction
+- ❌ CI/CD deployments potentially broken
+
+**Root Cause:**
+- Package.json used caret version: `"pdfjs-dist": "^5.4.530"`
+- npm automatically upgraded to 5.4.624
+- Worker file in public/ remained at 5.4.530
+- No automatic sync mechanism existed
+
+### Solution
+
+**1. Created Automatic Sync Script**
+
+Created `scripts/sync-pdf-worker.sh` (following `generate-types.sh` pattern):
+- Detects installed pdfjs-dist version from package.json
+- Copies worker file from node_modules to public directory
+- Verifies sync with file size and version reporting
+- Provides troubleshooting output on errors
+
+**2. Locked Package Version**
+
+Updated package.json:
+```json
+"pdfjs-dist": "5.4.624"  // Removed caret - exact version only
+```
+
+**3. Added Postinstall Hook**
+
+Updated package.json:
+```json
+"postinstall": "bash scripts/sync-pdf-worker.sh"
+```
+
+Runs automatically after:
+- `npm install`
+- `npm ci`
+- New developer setup
+- CI/CD builds
+
+### Benefits
+
+**Immediate:**
+- ✅ COA uploads working again (tested with batch 251105-BLM)
+- ✅ Version mismatch error resolved (5.4.624 === 5.4.624)
+- ✅ Packaging workflow unblocked
+- ✅ Worker file synced: 1,078,612 bytes
+
+**Long-term:**
+- ✅ Zero manual intervention required
+- ✅ New developers onboard without issues
+- ✅ CI/CD pipelines work correctly
+- ✅ Predictable versions across all environments
+- ✅ Controlled, deliberate upgrades only
+- ✅ Simplified troubleshooting
+
+**Automation:**
+- ✅ Runs automatically on every install
+- ✅ Self-documenting script output
+- ✅ Fail-fast error detection
+- ✅ Cross-platform compatible (macOS, Linux)
+
+### Files Changed
+
+**New Files:**
+- `scripts/sync-pdf-worker.sh` - Automatic worker sync script (executable)
+
+**Modified Files:**
+- `package.json` - Locked pdfjs-dist version, added postinstall hook
+- `docs/TESTING-&-MIGRATION.md` - Added PDF.js Worker Synchronization section
+- `README.md` - Updated Technology Stack, added PDF.js Worker Sync section
+- `CHANGELOG.md` - This entry
+
+### Technical Details
+
+**Script Output:**
+```bash
+🔄 Syncing PDF.js worker file...
+✅ PDF.js worker synced successfully!
+📦 Version: 5.4.624
+📄 File: public/pdf.worker.min.mjs
+📊 Size: 1078612 bytes
+```
+
+**Version Lock Rationale:**
+- Predictability: Same version across all environments
+- Stability: Avoid unexpected breaking changes
+- Simplicity: Easier to troubleshoot
+- Security: Controlled, deliberate upgrades only
+
+**Postinstall Pattern:**
+Follows established automation pattern from `types:generate` script:
+- Shell script in `scripts/` directory
+- npm script wrapper in package.json
+- Automatic execution on install
+- Manual execution available if needed
+
+### Testing
+
+- ✅ Verified worker file synced (1.1MB, recent timestamp)
+- ✅ Verified version match: npm list pdfjs-dist shows 5.4.624
+- ✅ Verified postinstall hook runs automatically
+- ✅ Verified script executable permissions
+- ✅ Manual test: `bash scripts/sync-pdf-worker.sh` works
+
+**COA Upload Testing:**
+- Navigate to COA Management → Upload COA
+- Select PDF file for batch 251105-BLM
+- Upload succeeds without version mismatch errors
+- PDF preview renders correctly
+
+### Documentation
+
+**Comprehensive Documentation Added:**
+- [TESTING-&-MIGRATION.md](./docs/TESTING-&-MIGRATION.md) - Complete section with:
+  - Strategy and rationale
+  - Implementation steps
+  - Upgrade procedures
+  - Troubleshooting guide
+  - Verification steps
+- [README.md](./README.md) - Quick reference:
+  - Technology stack updated
+  - Sync procedures
+  - Troubleshooting commands
+
+### Troubleshooting Reference
+
+**If COA uploads fail with version mismatch:**
+```bash
+# Re-sync worker file
+bash scripts/sync-pdf-worker.sh
+
+# Verify versions match
+npm list pdfjs-dist
+ls -lh public/pdf.worker.min.mjs
+```
+
+**If postinstall script doesn't run:**
+```bash
+# Check permissions
+chmod +x scripts/sync-pdf-worker.sh
+
+# Run manually
+bash scripts/sync-pdf-worker.sh
+```
+
+**Complete troubleshooting guide:**
+- See [TESTING-&-MIGRATION.md](./docs/TESTING-&-MIGRATION.md) - PDF.js Worker Synchronization section
+
+### Future Maintenance
+
+**When to Upgrade PDF.js:**
+- Security patches (check `npm audit`)
+- Bug fixes affecting COA functionality
+- New features needed for PDF processing
+- Regular maintenance (quarterly review)
+
+**Upgrade Procedure:**
+1. Update version in package.json (exact version, no caret)
+2. Run `npm install` (postinstall hook syncs automatically)
+3. Verify version match
+4. Test COA upload functionality
+
+---
+
 ## 2026-02-05 - Conversion View Session Isolation Fix (Bug Fix)
 
 **Type:** 🐛 BUG FIX
