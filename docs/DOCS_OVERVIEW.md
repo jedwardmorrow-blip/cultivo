@@ -1,76 +1,66 @@
-# DOCS_OVERVIEW.md
-
-A brief index for all CULT Seed-to-Sale v1.0 modules.
-
-## Documentation Categories
-
-### System Overview
-Core system architecture, data structures, and workflows.
-
-### Frontend Development
-UI components, patterns, and implementation guides.
-
-### Inventory & Production
-Material tracking, batch management, and production workflows.
-
-### Sales & Fulfillment
-Order processing, invoicing, labeling, and compliance documentation.
-
-### Analytics & Reporting
-Performance metrics and business intelligence.
-
-### Platform, Settings & Safety
-System configuration, error handling, and deployment procedures.
-
+---
+title: Documentation Overview
+updated: 2026-02-11
 ---
 
-## Documentation Index
+# Documentation Overview
 
-| File | Category | Summary |
-|------|-----------|----------|
-| **System Overview** |
-| SYSTEM-WORKFLOW.md | System Overview | Defines system flow from cultivation to sales |
-| DATASETS.md | System Overview | Describes all tables and relationships |
-| DEVELOPER_QUICK_REFERENCE.md | System Overview | Quick reference for developers |
-| **Frontend Development** |
-| UI-PATTERNS.md | Frontend Development | Common UI interaction patterns and navigation |
-| UI-COMPONENTS-REFERENCE.md | Frontend Development | Shared component library API documentation |
-| **Inventory & Production** |
-| INVENTORY-TRACKING.md | Inventory & Production | Manages material flow, batch states, conversions |
-| RECONCILIATION.md | Inventory & Production | Audit and variance management |
-| EXTERNAL-PROCESSING.md | Inventory & Production | Outbound/inbound vendor processing |
-| BATCHES.md | Inventory & Production | Batch lifecycle and management |
-| SESSIONS.md | Inventory & Production | Production sessions (trim, packaging, bucking) |
-| **Sales & Fulfillment** |
-| ORDERS.md | Sales & Fulfillment | Order entry and processing logic |
-| INVOICING-&-MANIFESTING.md | Sales & Fulfillment | Invoice and manifest creation workflows |
-| LABELS.md | Sales & Fulfillment | Internal and compliance label logic |
-| COA-HANDLING.md | Sales & Fulfillment | COA uploads, verification, and linkage |
-| COVER-SHEETS.md | Sales & Fulfillment | Order-level compliance documentation |
-| CUSTOMERS.md | Sales & Fulfillment | Customer management and licensing |
-| **Analytics & Reporting** |
-| ANALYTICS.md | Analytics & Reporting | Production metrics, sales forecasting, and conversion analysis |
-| **Platform, Settings & Safety** |
-| SETTINGS.md | Platform, Settings & Safety | System-level configurations and access |
-| ERROR-HANDLING.md | Platform, Settings & Safety | Error UX and validation responses |
-| TESTING-&-MIGRATION.md | Platform, Settings & Safety | Deployment and verification procedures |
+## Start Here (AI Sessions)
 
----
+| File | Purpose |
+|------|---------|
+| [AI-SESSION-BRIEF.md](./AI-SESSION-BRIEF.md) | System context, critical rules, current state |
+| [AI-BUILD-SESSION-CHECKLIST.md](./AI-BUILD-SESSION-CHECKLIST.md) | Session handoff and working checklist |
+| [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md) | Key design decisions (finalization, ledger, ATP) |
+| [PRODUCT-FLOW.md](./PRODUCT-FLOW.md) | Canonical product stages and conversion workflow |
 
-## Quick Navigation Guide
+## System Architecture
 
-**New to the project?** Start here:
-1. SYSTEM-WORKFLOW.md - Understand overall system flow
-2. DEVELOPER_QUICK_REFERENCE.md - Development setup and patterns
-3. UI-PATTERNS.md - Learn UI conventions and patterns
-4. DATASETS.md - Understand database structure
+| File | Purpose |
+|------|---------|
+| [SYSTEM-WORKFLOW.md](./SYSTEM-WORKFLOW.md) | End-to-end workflows from cultivation to sales |
+| [DATASETS.md](./DATASETS.md) | All tables and relationships |
+| [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) | Trigger system architecture |
+| [DEVELOPER_QUICK_REFERENCE.md](./DEVELOPER_QUICK_REFERENCE.md) | Code patterns, naming conventions, commands |
 
-**Implementing a feature?**
-- UI work → UI-PATTERNS.md + UI-COMPONENTS-REFERENCE.md
-- Backend work → Relevant feature doc (ORDERS.md, INVENTORY-TRACKING.md, etc.)
-- Database changes → DATASETS.md + TESTING-&-MIGRATION.md
+## Module Documentation
 
-**Navigation Updates (Latest):**
-- Hamburger menu with slide-out drawer pattern added to UI-PATTERNS.md
-- Tree navigation/accordion pattern documented
-- NavigationDrawer, HamburgerButton, TreeNavigation, and Breadcrumbs components added to UI-COMPONENTS-REFERENCE.md
+| File | Category |
+|------|----------|
+| [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md) | Event-driven inventory system |
+| [BATCHES.md](./BATCHES.md) | Batch lifecycle and management |
+| [SESSIONS.md](./SESSIONS.md) | Production sessions (trim, packaging, bucking) |
+| [ORDERS.md](./ORDERS.md) | Order entry and processing |
+| [PRODUCTS.md](./PRODUCTS.md) | Product catalog and conversions |
+| [CUSTOMERS.md](./CUSTOMERS.md) | Customer management and licensing |
+| [COA-HANDLING.md](./COA-HANDLING.md) | COA uploads, verification, linkage |
+| [COVER-SHEETS.md](./COVER-SHEETS.md) | Order-level compliance documentation |
+| [LABELS.md](./LABELS.md) | Internal and compliance labels |
+| [INVOICING-&-MANIFESTING.md](./INVOICING-&-MANIFESTING.md) | Invoice and manifest workflows |
+| [RECONCILIATION.md](./RECONCILIATION.md) | Audit and variance management |
+| [ANALYTICS.md](./ANALYTICS.md) | Production metrics and reporting |
+
+## Platform & Configuration
+
+| File | Purpose |
+|------|---------|
+| [SETTINGS.md](./SETTINGS.md) | System-level configurations |
+| [AUTH.md](./AUTH.md) | Authentication system |
+| [ERROR-HANDLING.md](./ERROR-HANDLING.md) | Error UX and validation |
+| [TEST-MODE.md](./TEST-MODE.md) | Test mode system |
+| [TESTING-&-MIGRATION.md](./TESTING-&-MIGRATION.md) | Deployment procedures |
+
+## Frontend
+
+| File | Purpose |
+|------|---------|
+| [UI-PATTERNS.md](./UI-PATTERNS.md) | Navigation, forms, modals, tables |
+| [UI-COMPONENTS-REFERENCE.md](./UI-COMPONENTS-REFERENCE.md) | Shared component library API |
+
+## Status & History
+
+| File | Purpose |
+|------|---------|
+| [MODULE-STATUS.md](./MODULE-STATUS.md) | Current status of all modules |
+| [CHANGELOG.md](../CHANGELOG.md) | Recent changes (2026) |
+| [archive/](./archive/) | Archived session summaries, milestones, historical docs |
