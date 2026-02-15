@@ -25,6 +25,11 @@ import { inventoryMovementService } from '@/services';
 // HELPER FUNCTIONS
 // =====================================================
 
+function parseNetWeightFromProductName(productName: string): number | null {
+  const match = productName.match(/(\d+\.?\d*)g/);
+  return match ? parseFloat(match[1]) : null;
+}
+
 /**
  * Map product name to correct product_stage_id
  *
@@ -370,14 +375,16 @@ export async function finalizeConversion(params: {
         package_id: pkg.package_id,
         batch_id: pkg.batch_id,
         batch_number: batchNumber,
+        batch: batchNumber,
         strain_id: batchData.strain_id,
         strain: strainName,
         product_stage_id: correctStageId,
         product_name: productName,
-        category: category, // Required for inventory UI filtering
-        on_hand_qty: quantity, // Set to package quantity to satisfy ATP constraint
-        available_qty: quantity, // ATP: available_qty = on_hand_qty - reserved_qty (quantity = quantity - 0)
-        reserved_qty: 0, // Explicitly set to 0 for clarity
+        category: category,
+        net_weight: parseNetWeightFromProductName(productName),
+        on_hand_qty: quantity,
+        available_qty: quantity,
+        reserved_qty: 0,
         unit: pkg.weight ? 'g' : 'unit',
         status: 'Available',
         package_date: new Date().toISOString().split('T')[0],
@@ -957,13 +964,16 @@ export async function finalizeConversionPackages(
           package_id: pkg.package_id,
           batch_id: pkg.batch_id,
           batch_number: batch.batch_number,
+          batch: batch.batch_number,
           strain_id: batch.strain_id,
+          strain: strainName,
           product_stage_id: product.stage_id,
           product_name: productName,
           category: category,
+          net_weight: parseNetWeightFromProductName(productName),
           sku: product.sku,
           on_hand_qty: quantity,
-          available_qty: quantity, // Immediately available after finalization
+          available_qty: quantity,
           unit: unit,
           package_date: new Date().toISOString().split('T')[0],
           status: 'Available',

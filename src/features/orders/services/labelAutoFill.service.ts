@@ -44,6 +44,11 @@ export interface GeneratedLabel {
   created_at: string;
 }
 
+function parseNetWeightFromName(productName: string): number | null {
+  const match = productName.match(/(\d+\.?\d*)g/);
+  return match ? parseFloat(match[1]) : null;
+}
+
 class LabelAutoFillServiceError extends Error {
   constructor(message: string, public originalError?: any, public code?: string) {
     super(message);
@@ -122,11 +127,11 @@ export const labelAutoFillService = {
       }
 
       const strainId = item.strain_id || batchData?.strain_id;
-      let strainData: { genetics_description: string | null; dominance_type: string | null } | null = null;
+      let strainData: { name: string | null; genetics_description: string | null; dominance_type: string | null } | null = null;
       if (strainId) {
         const { data: strain } = await supabase
           .from('strains')
-          .select('genetics_description, dominance_type')
+          .select('name, genetics_description, dominance_type')
           .eq('id', strainId)
           .maybeSingle();
         strainData = strain;
@@ -143,11 +148,14 @@ export const labelAutoFillService = {
         productData = product;
       }
 
+      const resolvedNetWeight = productData?.net_weight ?? item.net_weight
+        ?? (item.product_name ? parseNetWeightFromName(item.product_name) : null);
+
       const labelData: LabelAutoFillData = {
         package_id: item.package_id,
-        batch: item.batch,
+        batch: item.batch || item.batch_number || null,
         batch_number: item.batch_number,
-        strain: item.strain,
+        strain: item.strain || strainData?.name || null,
         product_name: item.product_name,
         package_date: item.package_date,
         available_qty: item.available_qty,
@@ -167,7 +175,7 @@ export const labelAutoFillService = {
 
         product_id: productData?.id ?? null,
         product_type: productData?.type ?? item.category ?? null,
-        net_weight: productData?.net_weight ?? item.net_weight ?? null,
+        net_weight: resolvedNetWeight,
         unit: item.unit,
 
         lineage: strainData?.genetics_description ?? null,
