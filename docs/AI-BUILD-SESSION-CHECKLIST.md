@@ -14,21 +14,24 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-05
-**Session:** Conversion Session Isolation Fix
+**Date:** 2026-02-15
+**Session:** Source Material Consumption Fix
 **Status:** Complete
 
 **What was done:**
-- Fixed cross-session package contamination in `pending_conversion_sessions` VIEW
-- Updated all 8 branches to filter by `source_session_ids`
-- Verified batches 251105-BLM and 251105-SWF show correct quantities
+- Identified missing CONSUME step in session reservation lifecycle (RESERVE existed, CONSUME was missing, PRODUCE existed)
+- Created `consume_source_on_session_complete()` trigger function that fires on session completion
+- Added triggers on all 3 session tables (trim, packaging, bucking)
+- Cleaned up 31 historically stuck items (on_hand_qty > 0, available_qty = 0) with proper audit trail
+- Added defense-in-depth UI: Status column shows "Reserved" (amber) for items where available_qty = 0 but on_hand_qty > 0
+- Uses `reason_code='session_finalization'` to prevent double-decrement (audit-only movement)
 
 **Known issues:** None active
 
 **Next recommendations:**
-1. Monitor conversion aggregations in production
-2. Consider automated tests for cross-session contamination
-3. Review other VIEWs using aggregation_id for similar issues
+1. Monitor that new sessions correctly consume source material on completion
+2. Consider automated tests for session lifecycle (reserve -> consume -> produce)
+3. Review other VIEWs using aggregation_id for cross-session contamination issues
 
 ---
 

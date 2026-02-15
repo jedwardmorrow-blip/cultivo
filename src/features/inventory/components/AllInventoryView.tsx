@@ -362,13 +362,19 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
           },
           {
             header: 'Status',
-            accessor: 'status',
+            accessor: (item) => item,
             align: 'center',
-            format: (val) => {
-              const status = val || 'Active';
+            format: (_, item) => {
+              if (item.available_qty === 0 && item.on_hand_qty > 0) {
+                return (
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                    Reserved
+                  </span>
+                );
+              }
               return (
                 <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
-                  {status}
+                  {item.status || 'Active'}
                 </span>
               );
             },

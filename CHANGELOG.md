@@ -4,6 +4,35 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-15 - Source Material Consumption on Session Completion (Bug Fix)
+
+**Type:** BUG FIX / DATABASE
+**Module:** Sessions / Inventory
+**Priority:** HIGH - Stale inventory visible to users
+**Impact:** Fixes 0.0g packages persisting in inventory after session completion
+**Status:** COMPLETE
+**Migrations:** 5 (add_source_consumption_on_session_complete, cleanup_stale_session_reservations, fix_consume_trigger_and_cleanup_stale_reservations_v2, fix_consume_trigger_and_cleanup_stale_reservations_v2 [retry], fix_consume_trigger_use_audit_only_movement)
+**Files Changed:** AllInventoryView.tsx (1), migrations (5)
+
+### Summary
+
+The session reservation lifecycle was missing its CONSUME step. When a session started, source material was correctly reserved (available_qty decreased, reserved_qty increased). But when the session completed, the reservation was never released and the source material was never consumed. This left packages stuck at 0.0g available but still visible in inventory.
+
+### Root Cause
+
+The three-step lifecycle (RESERVE on start, CONSUME on completion, PRODUCE on finalization) only had steps 1 and 3 implemented. Step 2 was completely missing, leaving source packages with `on_hand_qty > 0, available_qty = 0, reserved_qty > 0` after session completion.
+
+### Solution
+
+1. Created `consume_source_on_session_complete()` trigger function that fires when any session's status changes to 'completed'
+2. The function sets source material quantities to zero (on_hand_qty, reserved_qty, available_qty) and creates an audit-only CONSUME movement
+3. Uses `reason_code='session_finalization'` so the movement trigger treats the record as audit-only (prevents double-decrement)
+4. Added triggers on trim_sessions, packaging_sessions, and bucking_sessions
+5. Cleaned up 31 historically stuck items with proper audit trail
+6. Added defense-in-depth UI: Status column shows "Reserved" badge (amber) instead of "Active" when available_qty = 0 but on_hand_qty > 0
+
+---
+
 ## 2026-02-06 - PDF.js Worker Synchronization Automation (Infrastructure)
 
 **Type:** 🔧 INFRASTRUCTURE / MAINTENANCE
