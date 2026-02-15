@@ -406,4 +406,241 @@ export const labelAutoFillService = {
       throw error;
     }
   },
+
+  /**
+   * Generate labels for all package assignments in an order
+   * Returns array of generated labels and any errors encountered
+   */
+  async generateLabelsForOrder(orderId: string): Promise<{
+    success: GeneratedLabel[];
+    errors: Array<{ assignmentId: string; error: string }>;
+  }> {
+    errorService.debug('[labelAutoFillService] Generating labels for entire order', {
+      orderId
+    });
+
+    try {
+      // Get all package assignments for the order
+      const { data: assignments, error } = await supabase
+        .from('package_assignments')
+        .select('id, package_id, label_id')
+        .eq('order_id', orderId);
+
+      if (error) {
+        throw new LabelAutoFillServiceError(
+          'Failed to fetch package assignments',
+          error,
+          error.code
+        );
+      }
+
+      if (!assignments || assignments.length === 0) {
+        errorService.debug('[labelAutoFillService] No package assignments found for order');
+        return { success: [], errors: [] };
+      }
+
+      // Generate labels for each assignment
+      const success: GeneratedLabel[] = [];
+      const errors: Array<{ assignmentId: string; error: string }> = [];
+
+      for (const assignment of assignments) {
+        try {
+          // Skip if label already exists
+          if (assignment.label_id) {
+            const { data: existingLabel } = await supabase
+              .from('labels')
+              .select('id, label_number, package_id, qr_code_data, created_at')
+              .eq('id', assignment.label_id)
+              .maybeSingle();
+
+            if (existingLabel) {
+              success.push({
+                id: existingLabel.id,
+                label_number: existingLabel.label_number,
+                package_id: existingLabel.package_id,
+                barcode_data: existingLabel.qr_code_data,
+                created_at: existingLabel.created_at,
+              });
+              continue;
+            }
+          }
+
+          // Create new label
+          const label = await this.createAutoPopulatedLabel(
+            assignment.package_id,
+            assignment.id
+          );
+          success.push(label);
+        } catch (error: any) {
+          errors.push({
+            assignmentId: assignment.id,
+            error: error.message || 'Failed to generate label',
+          });
+        }
+      }
+
+      errorService.debug('[labelAutoFillService] Batch label generation complete', {
+        successCount: success.length,
+        errorCount: errors.length
+      });
+
+      return { success, errors };
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Generate Labels for Order',
+        metadata: { orderId },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Get all labels for an order (via package assignments)
+   */
+  async getLabelsForOrder(orderId: string): Promise<Array<GeneratedLabel & { assignment_id: string }>> {
+    errorService.debug('[labelAutoFillService] Fetching labels for order', {
+      orderId
+    });
+
+    try {
+      const { data: assignments, error } = await supabase
+        .from('package_assignments')
+        .select(`
+          id,
+          package_id,
+          label_id,
+          labels!inner (
+            id,
+            label_number,
+            package_id,
+            qr_code_data,
+            created_at,
+            printed_at,
+            voided_at
+          )
+        `)
+        .eq('order_id', orderId)
+        .not('label_id', 'is', null);
+
+      if (error) {
+        throw new LabelAutoFillServiceError(
+          'Failed to fetch labels',
+          error,
+          error.code
+        );
+      }
+
+      const labels = (assignments || []).map((assignment: any) => ({
+        assignment_id: assignment.id,
+        id: assignment.labels.id,
+        label_number: assignment.labels.label_number,
+        package_id: assignment.labels.package_id,
+        barcode_data: assignment.labels.qr_code_data,
+        created_at: assignment.labels.created_at,
+        printed_at: assignment.labels.printed_at,
+        voided_at: assignment.labels.voided_at,
+      }));
+
+      errorService.debug('[labelAutoFillService] Successfully fetched labels', {
+        count: labels.length
+      });
+
+      return labels;
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Get Labels for Order',
+        metadata: { orderId },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Void a label
+   * Marks label as voided with reason and timestamp
+   */
+  async voidLabel(
+    labelId: string,
+    reason: string = 'Label voided by user'
+  ): Promise<void> {
+    errorService.debug('[labelAutoFillService] Voiding label', {
+      labelId,
+      reason
+    });
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { error } = await supabase
+        .from('labels')
+        .update({
+          voided_at: new Date().toISOString(),
+          voided_by: user?.id || null,
+          void_reason: reason,
+        })
+        .eq('id', labelId)
+        .is('voided_at', null); // Only void if not already voided
+
+      if (error) {
+        throw new LabelAutoFillServiceError(
+          'Failed to void label',
+          error,
+          error.code
+        );
+      }
+
+      errorService.debug('[labelAutoFillService] Successfully voided label');
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Void Label',
+        metadata: { labelId, reason },
+      });
+      throw error;
+    }
+  },
+
+  /**
+   * Regenerate a label (void old one and create new)
+   * Useful when package data has been updated
+   */
+  async regenerateLabel(
+    assignmentId: string,
+    reason: string = 'Label regenerated due to data update'
+  ): Promise<GeneratedLabel> {
+    errorService.debug('[labelAutoFillService] Regenerating label', {
+      assignmentId,
+      reason
+    });
+
+    try {
+      // Get assignment details
+      const { data: assignment, error } = await supabase
+        .from('package_assignments')
+        .select('package_id, label_id')
+        .eq('id', assignmentId)
+        .single();
+
+      if (error || !assignment) {
+        throw new LabelAutoFillServiceError(
+          'Assignment not found',
+          error,
+          'ASSIGNMENT_NOT_FOUND'
+        );
+      }
+
+      // Void old label if it exists
+      if (assignment.label_id) {
+        await this.voidLabel(assignment.label_id, reason);
+      }
+
+      // Create new label
+      return await this.createAutoPopulatedLabel(assignment.package_id, assignmentId);
+    } catch (error) {
+      errorService.handle(error, {
+        operation: 'Regenerate Label',
+        metadata: { assignmentId, reason },
+      });
+      throw error;
+    }
+  },
 };

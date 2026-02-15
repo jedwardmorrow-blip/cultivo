@@ -350,3 +350,10 @@ export function useTotalAssignedQuantity(orderItemId: string) {
 
   return { totalAssigned, loading, refetch: fetchTotal };
 }
+
+/**
+ * Alias for useOrderPackageAssignments for convenience
+ */
+export function usePackageAssignments(orderId: string) {
+  return useOrderPackageAssignments(orderId);
+}

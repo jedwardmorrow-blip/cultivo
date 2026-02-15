@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { notificationService } from '@/services/notification.service';
 import { packageAssignmentService } from '../services/packageAssignment.service';
+import { labelAutoFillService } from '../services/labelAutoFill.service';
+import { errorService } from '@/services/error.service';
 
 export interface OrderLabel {
   id: string;
@@ -193,4 +195,102 @@ export function useOrderLabelStats(orderId: string) {
   };
 
   return { stats, loading };
+}
+
+/**
+ * Hook to generate labels for package assignments
+ */
+export function useGenerateLabels() {
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  /**
+   * Generate a single label for a package assignment
+   */
+  const generateLabel = useCallback(async (assignmentId: string): Promise<boolean> => {
+    setGenerating(true);
+    setError(null);
+
+    try {
+      const label = await labelAutoFillService.createLabelForAssignment(assignmentId);
+      notificationService.success(`Label ${label.label_number} generated successfully`);
+      return true;
+    } catch (err) {
+      console.error('[useGenerateLabels] Error generating label:', err);
+      errorService.handle(err, 'Generate label failed');
+      setError(err as Error);
+      notificationService.error((err as Error).message || 'Failed to generate label');
+      return false;
+    } finally {
+      setGenerating(false);
+    }
+  }, []);
+
+  /**
+   * Generate labels for all package assignments in an order
+   */
+  const generateAllLabels = useCallback(async (orderId: string) => {
+    setGenerating(true);
+    setError(null);
+
+    try {
+      const result = await labelAutoFillService.generateLabelsForOrder(orderId);
+
+      if (result.success.length > 0) {
+        notificationService.success(
+          `Generated ${result.success.length} label${result.success.length > 1 ? 's' : ''} successfully`
+        );
+      }
+
+      if (result.errors.length > 0) {
+        notificationService.error(
+          `Failed to generate ${result.errors.length} label${result.errors.length > 1 ? 's' : ''}`
+        );
+        errorService.debug('Label generation errors:', result.errors);
+      }
+
+      return result;
+    } catch (err) {
+      console.error('[useGenerateLabels] Error generating labels:', err);
+      errorService.handle(err, 'Batch label generation failed');
+      setError(err as Error);
+      notificationService.error((err as Error).message || 'Failed to generate labels');
+      return { success: [], errors: [] };
+    } finally {
+      setGenerating(false);
+    }
+  }, []);
+
+  /**
+   * Regenerate a label (void old one and create new)
+   */
+  const regenerateLabel = useCallback(async (
+    assignmentId: string,
+    reason?: string
+  ): Promise<boolean> => {
+    setGenerating(true);
+    setError(null);
+
+    try {
+      const label = await labelAutoFillService.regenerateLabel(assignmentId, reason);
+      notificationService.success(`Label ${label.label_number} regenerated successfully`);
+      return true;
+    } catch (err) {
+      console.error('[useGenerateLabels] Error regenerating label:', err);
+      errorService.handle(err, 'Regenerate label failed');
+      setError(err as Error);
+      notificationService.error((err as Error).message || 'Failed to regenerate label');
+      return false;
+    } finally {
+      setGenerating(false);
+    }
+  }, []);
+
+  return {
+    generateLabel,
+    generateAllLabels,
+    regenerateLabel,
+    generating,
+    error,
+  };
 }

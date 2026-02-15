@@ -4,6 +4,70 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-15 - Label-to-Coversheet Integration Complete
+
+**Type:** FEATURE / ORDERS & COMPLIANCE
+**Module:** Orders / Labels / Coversheets
+**Priority:** HIGH - Customer-facing feature
+**Impact:** Complete label lifecycle from package assignment to coversheet display
+**Status:** ✅ COMPLETE
+**Files Changed:** 7 (labelAutoFill.service.ts, useOrderLabels.ts, usePackageAssignments.ts, OrderLabelGenerator.tsx, PackageManifestSection.tsx, coversheet/index.ts, CHANGELOG.md)
+**Session ID:** LABEL-COVERSHEET-001
+
+### Summary
+
+Implemented complete label generation and management workflow integrated with package assignments and coversheet display. Users can now generate compliance labels for assigned packages and view them on distribution coversheets.
+
+### Added
+
+**Label Generation Service**
+- Extended `labelAutoFillService` with batch operations
+- `generateLabelsForOrder()` - Generate labels for all packages in an order
+- `getLabelsForOrder()` - Fetch all labels with assignment details
+- `voidLabel()` - Mark labels as voided with reason tracking
+- `regenerateLabel()` - Void old label and create new one
+- Auto-population with COA data, batch info, and compliance fields
+
+**Label Management UI**
+- Complete `OrderLabelGenerator` component with modal interface
+- Real-time statistics dashboard (Total/Pending/Printed/Voided)
+- Individual and bulk label generation actions
+- Status management: Mark Printed, Void, Regenerate
+- Visual status indicators with color coding
+- Unlabeled package detection and alerts
+
+**Label Generation Hooks**
+- Extended `useOrderLabels` with label fetching and real-time updates
+- Added `useGenerateLabels` for generation operations
+- Integrated existing `useMarkLabelPrinted` and `useVoidLabel` hooks
+- Automatic notifications for all operations
+
+**Coversheet Package Manifest**
+- New `PackageManifestSection` component for coversheet display
+- Complete package-level traceability with label numbers
+- Grouped display by product for organization
+- Label status indicators on coversheet
+- Summary footer with statistics
+- Print-friendly compliance formatting
+
+### Workflow
+
+1. **Package Assignment** → Packages assigned to order items
+2. **Label Generation** → Generate labels (individual or bulk)
+3. **Label Management** → Print, void, or regenerate as needed
+4. **Coversheet Display** → Complete manifest with label numbers
+5. **Distribution** → Print coversheet with full traceability
+
+### Technical Notes
+
+- Build passes: 2468.39 kB (main bundle)
+- No breaking changes
+- Follows existing service/hook/component patterns
+- Maintains compliance styling conventions
+- Real-time updates via Supabase subscriptions
+
+---
+
 ## 2026-02-15 - Source Material Consumption on Session Completion (Bug Fix)
 
 **Type:** BUG FIX / DATABASE

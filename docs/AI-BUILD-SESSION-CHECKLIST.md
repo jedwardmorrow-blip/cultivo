@@ -15,23 +15,27 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-15
-**Session:** Source Material Consumption Fix
-**Status:** Complete
+**Session:** Label-to-Coversheet Integration
+**Status:** ✅ Complete
 
 **What was done:**
-- Identified missing CONSUME step in session reservation lifecycle (RESERVE existed, CONSUME was missing, PRODUCE existed)
-- Created `consume_source_on_session_complete()` trigger function that fires on session completion
-- Added triggers on all 3 session tables (trim, packaging, bucking)
-- Cleaned up 31 historically stuck items (on_hand_qty > 0, available_qty = 0) with proper audit trail
-- Added defense-in-depth UI: Status column shows "Reserved" (amber) for items where available_qty = 0 but on_hand_qty > 0
-- Uses `reason_code='session_finalization'` to prevent double-decrement (audit-only movement)
+- Implemented complete label generation workflow from package assignments to coversheet display
+- Extended `labelAutoFillService` with batch operations (generateLabelsForOrder, getLabelsForOrder, voidLabel, regenerateLabel)
+- Built comprehensive `OrderLabelGenerator` component with modal UI, real-time statistics, and status management
+- Extended `useOrderLabels` hook with label fetching and generation capabilities
+- Added `useGenerateLabels` hook for label operations with automatic notifications
+- Created `PackageManifestSection` component for coversheet package manifest display
+- Added label status indicators, bulk operations, and print-friendly formatting
+- Build passes successfully (2468.39 kB main bundle)
 
 **Known issues:** None active
 
 **Next recommendations:**
-1. Monitor that new sessions correctly consume source material on completion
-2. Consider automated tests for session lifecycle (reserve -> consume -> produce)
-3. Review other VIEWs using aggregation_id for cross-session contamination issues
+1. Consider adding QR code generation integration for labels (currently stores barcode data only)
+2. Add print preview functionality for labels before physical printing
+3. Consider batch printing interface for multiple labels at once
+4. Add label reprint history tracking for audit purposes
+5. Test coversheet PDF generation with new PackageManifestSection included
 
 ---
 
