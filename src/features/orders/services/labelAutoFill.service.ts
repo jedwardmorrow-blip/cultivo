@@ -314,6 +314,8 @@ export const labelAutoFillService = {
           package_date: labelData.package_date,
           expiration_date: expirationDate,
           lineage: labelData.lineage,
+          dominance_type: labelData.dominance_type,
+          compliance_uid: '00000078DCBK00628996',
           warnings: ['Keep out of reach of children', 'For use only by adults 21 years of age and older'],
         })
         .select('id, label_number, package_id, qr_code_data, created_at')

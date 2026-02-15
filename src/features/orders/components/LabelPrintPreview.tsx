@@ -1,24 +1,8 @@
-/**
- * Label Print Preview Component
- *
- * Shows a print-ready preview of a cannabis product label with all compliance information.
- * Includes barcode/QR code, product details, cannabinoid content, and regulatory warnings.
- *
- * Features:
- * - Full compliance label preview
- * - Barcode/QR code display
- * - Print-optimized layout (2" x 3" standard label size)
- * - Batch printing support
- * - Real-time data loading
- *
- * @component
- * @example
- * <LabelPrintPreview labelId="uuid" onClose={() => {}} />
- */
-
 import { useState, useEffect, useRef } from 'react';
-import { X, Printer, Download } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { logoService } from '@/features/settings/services';
+import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 
 interface LabelData {
@@ -40,6 +24,39 @@ interface LabelData {
   lab_name: string | null;
   qr_code_data: string;
   warnings: string[] | null;
+  lineage: string | null;
+  dominance_type: string | null;
+  compliance_uid: string | null;
+}
+
+const DEFAULT_LICENSE = '00000078DCBK00628996';
+const DEFAULT_LICENSE_NAME = 'Kind Meds Inc';
+const ADDITIVES_TEXT = 'Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B';
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  } catch {
+    return 'N/A';
+  }
+}
+
+function formatCbd(val: number | null): string {
+  if (val === null || val === undefined) return 'ND%';
+  if (val === 0) return 'ND%';
+  return `${val}%`;
+}
+
+function formatThc(val: number | null): string {
+  if (val === null || val === undefined) return 'N/A';
+  return `${val}%`;
+}
+
+function formatDominance(val: string | null): string {
+  if (!val) return '';
+  return val.replace(/-/g, ' ');
 }
 
 interface LabelPrintPreviewProps {
@@ -52,57 +69,154 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
   const [label, setLabel] = useState<LabelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const barcodeRef = useRef<SVGSVGElement>(null);
+  const [logoDataUrl, setLogoDataUrl] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [barcodeUrl, setBarcodeUrl] = useState('');
+  const [imagesReady, setImagesReady] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadLabel();
   }, [labelId]);
 
   useEffect(() => {
-    if (label && barcodeRef.current) {
-      try {
-        JsBarcode(barcodeRef.current, label.package_id, {
-          format: 'CODE128',
-          width: 2,
-          height: 60,
-          displayValue: true,
-          fontSize: 14,
-          margin: 5,
-        });
-      } catch (err) {
-        console.error('[LabelPrintPreview] Barcode generation failed:', err);
-      }
-    }
+    if (!label) return;
+    setImagesReady(false);
+
+    Promise.all([
+      loadLogo(),
+      generateQrCode(label.qr_code_data),
+      generateBarcode(label.package_id),
+    ]).then(() => {
+      setTimeout(() => setImagesReady(true), 600);
+    }).catch(() => {
+      setImagesReady(true);
+    });
   }, [label]);
 
   async function loadLabel() {
     try {
       setLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from('labels')
         .select('*')
         .eq('id', labelId)
         .single();
-
       if (fetchError) throw fetchError;
-
       setLabel(data as LabelData);
     } catch (err: any) {
-      console.error('[LabelPrintPreview] Error loading label:', err);
       setError(err.message || 'Failed to load label');
     } finally {
       setLoading(false);
     }
   }
 
-  const handlePrint = () => {
-    window.print();
-    if (onPrintComplete) {
-      onPrintComplete();
+  async function loadLogo() {
+    try {
+      const url = await logoService.getLogoUrl('label');
+      if (!url) { setLogoDataUrl(''); return; }
+
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(); return; }
+          const cropTop = img.height * 0.25;
+          const cropBottom = img.height * 0.25;
+          const croppedH = img.height - cropTop - cropBottom;
+          canvas.width = img.width;
+          canvas.height = croppedH;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, cropTop, img.width, croppedH, 0, 0, img.width, croppedH);
+          setLogoDataUrl(canvas.toDataURL('image/png'));
+          resolve();
+        };
+        img.onerror = () => { setLogoDataUrl(''); resolve(); };
+        img.src = url;
+      });
+    } catch {
+      setLogoDataUrl('');
     }
-  };
+  }
+
+  async function generateQrCode(data: string) {
+    try {
+      const url = await QRCode.toDataURL(data, { width: 200, margin: 0, color: { dark: '#000000', light: '#FFFFFF' } });
+      setQrCodeUrl(url);
+    } catch {
+      setQrCodeUrl('');
+    }
+  }
+
+  function generateBarcode(data: string): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        const canvas = document.createElement('canvas');
+        JsBarcode(canvas, data, {
+          format: 'CODE128',
+          width: 3,
+          height: 90,
+          displayValue: true,
+          fontSize: 14,
+          margin: 0,
+          font: 'Arial',
+        });
+        setBarcodeUrl(canvas.toDataURL());
+        resolve();
+      } catch {
+        setBarcodeUrl('');
+        resolve();
+      }
+    });
+  }
+
+  function handlePrint() {
+    if (!printRef.current || !imagesReady) return;
+    setIsPrinting(true);
+
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) { setIsPrinting(false); return; }
+
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print Label</title>
+      <style>
+        @page { size: 1.5in 2in; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; width: 1.5in; height: 2in; }
+        body { font-family: Arial, Helvetica, sans-serif; }
+      </style>
+    </head><body>${printRef.current.innerHTML}</body></html>`);
+    doc.close();
+
+    const imgs = doc.getElementsByTagName('img');
+    const waits = Array.from(imgs).map((img) => {
+      if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+      return new Promise<void>((res) => {
+        const t = setTimeout(() => res(), 3000);
+        img.onload = () => { clearTimeout(t); res(); };
+        img.onerror = () => { clearTimeout(t); res(); };
+      });
+    });
+
+    Promise.all(waits).then(() => new Promise(r => setTimeout(r, 500))).then(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        setIsPrinting(false);
+        onPrintComplete?.();
+      }, 1000);
+    });
+  }
 
   if (loading) {
     return (
@@ -121,175 +235,141 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'Label not found'}</p>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded"
-            >
-              Close
-            </button>
+            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
           </div>
         </div>
       </div>
     );
   }
 
+  const license = label.compliance_uid || DEFAULT_LICENSE;
+  const dominance = formatDominance(label.dominance_type);
+
+  const labelContent = (
+    <div style={{
+      width: '1.5in',
+      height: '2in',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '0.06in',
+      boxSizing: 'border-box',
+      fontFamily: 'Arial, Helvetica, sans-serif',
+      fontSize: '6pt',
+      lineHeight: '1.15',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.01in' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {logoDataUrl && (
+            <img src={logoDataUrl} alt="Logo" style={{ width: '0.75in', height: 'auto', display: 'block', marginBottom: '0.01in' }} />
+          )}
+          <div style={{ fontSize: '6.5pt', fontWeight: 'bold', lineHeight: '1.15', marginBottom: '0.005in' }}>
+            {label.product_name}
+          </div>
+          {label.lineage && (
+            <div style={{ fontSize: '4.5pt', lineHeight: '1.2', marginBottom: '0.005in' }}>
+              <span style={{ fontWeight: 'bold' }}>Lineage - </span>{label.lineage}
+            </div>
+          )}
+        </div>
+        <div style={{ marginLeft: '0.04in', flexShrink: 0 }}>
+          {qrCodeUrl && (
+            <img src={qrCodeUrl} alt="QR" style={{ width: '0.5in', height: '0.5in', display: 'block' }} />
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '0.01in' }}>
+        {dominance && (
+          <div style={{ fontSize: '5.5pt', fontWeight: 'bold', marginBottom: '0.005in' }}>{dominance}</div>
+        )}
+        <div style={{ fontSize: '5pt' }}>
+          <span style={{ fontWeight: 'bold' }}>Package Date: </span>{formatDate(label.package_date)}
+        </div>
+        {label.harvest_date && (
+          <div style={{ fontSize: '5pt' }}>
+            <span style={{ fontWeight: 'bold' }}>Harvest Date: </span>{formatDate(label.harvest_date)}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>MMJ Net Weight: {label.net_weight_grams} Grams</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>Batch:</div>
+          <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{label.batch_id}</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>THC:</div>
+          <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{formatThc(label.thc_percentage)}</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>CBD:</div>
+          <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{formatCbd(label.cbd_percentage)}</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
+        <div><span style={{ fontWeight: 'bold' }}>Additives: </span>{ADDITIVES_TEXT}</div>
+      </div>
+
+      <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
+        <span style={{ fontWeight: 'bold' }}>License: </span>{DEFAULT_LICENSE_NAME} - {license}
+      </div>
+
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {barcodeUrl && (
+          <img src={barcodeUrl} alt="Barcode" style={{ width: '100%', maxWidth: '1.35in', height: 'auto', display: 'block' }} />
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      {/* Action Buttons - Hidden on print */}
-      <div className="print:hidden fixed top-4 right-4 z-60 flex gap-2">
-        <button
-          onClick={handlePrint}
-          className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
-        >
-          <Printer className="w-4 h-4" />
-          Print Label
-        </button>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
-        >
-          <X className="w-4 h-4" />
-          Close
-        </button>
-      </div>
-
-      {/* Label Preview Container */}
-      <div className="bg-white rounded-lg shadow-2xl overflow-hidden print:shadow-none print:rounded-none">
-        {/* Label Content - Standard 2" x 3" size */}
-        <div className="w-[3in] h-[2in] p-2 border-2 border-black print:border-black bg-white relative">
-
-          {/* Header Section */}
-          <div className="border-b border-black pb-1 mb-1">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="text-[8px] font-bold uppercase tracking-wide">
-                  {label.product_name}
-                </div>
-                <div className="text-[7px] text-gray-700">
-                  {label.strain}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[6px] font-mono font-bold">
-                  {label.label_number}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Barcode Section */}
-          <div className="flex items-center justify-center my-1">
-            <svg ref={barcodeRef} className="w-full h-auto max-h-[0.6in]"></svg>
-          </div>
-
-          {/* Cannabinoid Content */}
-          <div className="grid grid-cols-3 gap-1 text-center mb-1">
-            <div className="border border-gray-400 p-0.5">
-              <div className="text-[6px] text-gray-600 uppercase">THC</div>
-              <div className="text-[9px] font-bold">
-                {label.thc_percentage ? `${label.thc_percentage}%` : 'N/A'}
-              </div>
-            </div>
-            <div className="border border-gray-400 p-0.5">
-              <div className="text-[6px] text-gray-600 uppercase">CBD</div>
-              <div className="text-[9px] font-bold">
-                {label.cbd_percentage ? `${label.cbd_percentage}%` : 'N/A'}
-              </div>
-            </div>
-            <div className="border border-gray-400 p-0.5">
-              <div className="text-[6px] text-gray-600 uppercase">Total</div>
-              <div className="text-[9px] font-bold">
-                {label.total_cannabinoids ? `${label.total_cannabinoids}%` : 'N/A'}
-              </div>
-            </div>
-          </div>
-
-          {/* Product Details */}
-          <div className="border-t border-gray-300 pt-1 space-y-0.5">
-            <div className="flex justify-between text-[6px]">
-              <span className="text-gray-600">Net Weight:</span>
-              <span className="font-medium">{label.net_weight_grams}g</span>
-            </div>
-            <div className="flex justify-between text-[6px]">
-              <span className="text-gray-600">Batch:</span>
-              <span className="font-mono font-medium">{label.batch_id}</span>
-            </div>
-            {label.package_date && (
-              <div className="flex justify-between text-[6px]">
-                <span className="text-gray-600">Pkg Date:</span>
-                <span className="font-medium">
-                  {new Date(label.package_date).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-            {label.lab_name && (
-              <div className="flex justify-between text-[6px]">
-                <span className="text-gray-600">Tested By:</span>
-                <span className="font-medium truncate max-w-[1.5in]">{label.lab_name}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Footer - License */}
-          <div className="absolute bottom-1 left-1 right-1 text-center text-[5px] text-gray-600 border-t border-gray-300 pt-0.5">
-            Kind Meds Inc. - License: 00000078DCBK00628996
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+          <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrint}
+              disabled={!imagesReady || isPrinting}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Printer className="w-4 h-4" />
+              {isPrinting ? 'Printing...' : imagesReady ? 'Print Label' : 'Loading...'}
+            </button>
+            <button onClick={onClose} className="text-gray-400 hover:text-white px-3">
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
-
-        {/* Warning Text - Below label (not on actual label) */}
-        <div className="print:hidden p-4 bg-yellow-50 border-t-2 border-yellow-300 text-xs text-gray-700">
+        <div className="p-12 bg-gray-100 flex items-center justify-center" style={{ minHeight: '600px' }}>
+          <div style={{ transform: 'scale(2.8)', transformOrigin: 'center', margin: '80px' }}>
+            {labelContent}
+          </div>
+        </div>
+        <div className="p-4 bg-yellow-50 border-t-2 border-yellow-300 text-xs text-gray-700">
           <p className="font-semibold mb-1">Preview Mode - Not to Scale</p>
-          <p>This preview shows label content. Actual printed size: 2" × 3"</p>
+          <p>This preview shows label content. Actual printed size: 1.5" x 2"</p>
         </div>
       </div>
 
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-
-          .fixed, .fixed * {
-            visibility: visible;
-          }
-
-          .print\\:hidden {
-            display: none !important;
-          }
-
-          .print\\:shadow-none {
-            box-shadow: none !important;
-          }
-
-          .print\\:rounded-none {
-            border-radius: 0 !important;
-          }
-
-          .print\\:border-black {
-            border-color: black !important;
-          }
-
-          @page {
-            size: 3in 2in;
-            margin: 0;
-          }
-
-          /* Ensure black borders print */
-          [class*="border"] {
-            border-color: black !important;
-          }
-        }
-      `}</style>
+      <div style={{ display: 'none' }}>
+        <div ref={printRef}>
+          {labelContent}
+        </div>
+      </div>
     </div>
   );
 }
-
-/**
- * Batch Label Print Preview Component
- *
- * Shows preview for multiple labels with batch printing capability.
- */
 
 interface BatchLabelPrintPreviewProps {
   labelIds: string[];
@@ -297,11 +377,7 @@ interface BatchLabelPrintPreviewProps {
   onPrintComplete?: () => void;
 }
 
-export function BatchLabelPrintPreview({
-  labelIds,
-  onClose,
-  onPrintComplete
-}: BatchLabelPrintPreviewProps) {
+export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: BatchLabelPrintPreviewProps) {
   const [labels, setLabels] = useState<LabelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -314,29 +390,18 @@ export function BatchLabelPrintPreview({
     try {
       setLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from('labels')
         .select('*')
         .in('id', labelIds);
-
       if (fetchError) throw fetchError;
-
       setLabels(data as LabelData[]);
     } catch (err: any) {
-      console.error('[BatchLabelPrintPreview] Error loading labels:', err);
       setError(err.message || 'Failed to load labels');
     } finally {
       setLoading(false);
     }
   }
-
-  const handlePrint = () => {
-    window.print();
-    if (onPrintComplete) {
-      onPrintComplete();
-    }
-  };
 
   if (loading) {
     return (
@@ -355,12 +420,7 @@ export function BatchLabelPrintPreview({
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'No labels found'}</p>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded"
-            >
-              Close
-            </button>
+            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
           </div>
         </div>
       </div>
@@ -369,15 +429,7 @@ export function BatchLabelPrintPreview({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-      {/* Action Buttons - Hidden on print */}
       <div className="print:hidden sticky top-4 left-0 right-0 z-60 flex justify-center gap-2 mb-4">
-        <button
-          onClick={handlePrint}
-          className="px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
-        >
-          <Printer className="w-5 h-5" />
-          Print All {labels.length} Labels
-        </button>
         <button
           onClick={onClose}
           className="px-6 py-3 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
@@ -386,28 +438,17 @@ export function BatchLabelPrintPreview({
           Close
         </button>
       </div>
-
-      {/* Labels Grid */}
-      <div className="flex flex-wrap gap-4 p-4 justify-center print:gap-0 print:p-0">
-        {labels.map((labelData, index) => (
-          <div key={labelData.id} className="print:page-break-after-always">
+      <div className="flex flex-wrap gap-4 p-4 justify-center">
+        {labels.map((labelData) => (
+          <div key={labelData.id}>
             <LabelPrintPreview
               labelId={labelData.id}
               onClose={() => {}}
-              onPrintComplete={() => {}}
+              onPrintComplete={onPrintComplete}
             />
           </div>
         ))}
       </div>
-
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          .print\\:page-break-after-always {
-            page-break-after: always;
-          }
-        }
-      `}</style>
     </div>
   );
 }
