@@ -4,6 +4,42 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-15 - Fix Label Auto-Fill Data Fetching (Critical Bug)
+
+**Type:** BUGFIX / ORDERS & LABELS
+**Module:** Orders / Labels / labelAutoFill.service.ts
+**Priority:** CRITICAL - Label generation completely broken
+**Impact:** Fixes label auto-population from inventory, COA, batch, and strain data
+**Status:** COMPLETE
+**Files Changed:** 1 (labelAutoFill.service.ts)
+**Session ID:** LABEL-AUTOFILL-FIX-001
+
+### Summary
+
+Fixed `getCompleteLabelDataForPackage()` which was completely broken due to invalid Supabase embedded joins. No labels could be auto-populated from package data.
+
+### Root Causes
+
+1. **Invalid FK join:** `certificates_of_analysis!inner` on `inventory_items` - no direct FK exists. Correct path: `inventory_items.batch_id` -> `certificates_of_analysis.batch_id`.
+2. **Wrong table name:** `batches!inner` - table does not exist. Correct table: `batch_registry`.
+3. **Wrong table name:** `strain_catalog` - table does not exist. Correct table: `strains`.
+4. **Nonexistent column:** `lab_name` does not exist on `certificates_of_analysis`.
+5. **Missing column:** `batch_registry` has no `product_id` column.
+
+### Fix
+
+- Rewrote data fetching from broken 4-table embedded join to sequential queries:
+  1. `inventory_items` by package_id
+  2. `certificates_of_analysis` by batch_id + is_active
+  3. `batch_registry` by id (harvest_date, strain_id)
+  4. `strains` by id (lineage, dominance_type)
+  5. `products` by name match (product_id, type, net_weight)
+- Added explicit COA validation: throws descriptive error if no active COA exists for the batch
+- Fixed `harvest_date` fallback chain: batch_registry first, then COA
+- Product lookup now matches by `product_name` since no direct FK exists
+
+---
+
 ## 2026-02-15 - Label-to-Coversheet Integration Complete
 
 **Type:** FEATURE / ORDERS & COMPLIANCE

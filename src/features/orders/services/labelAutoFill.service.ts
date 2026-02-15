@@ -52,129 +52,126 @@ class LabelAutoFillServiceError extends Error {
 }
 
 export const labelAutoFillService = {
-  /**
-   * Fetch complete label data from 4-table JOIN
-   * Joins: inventory_items + certificates_of_analysis + products + strain_catalog
-   */
   async getCompleteLabelDataForPackage(packageId: string): Promise<LabelAutoFillData | null> {
     errorService.debug('[labelAutoFillService] Fetching complete label data for package', {
       packageId
     });
 
     try {
-      const { data, error } = await supabase
+      const { data: item, error: itemError } = await supabase
         .from('inventory_items')
-        .select(`
-          package_id,
-          batch,
-          batch_number,
-          strain,
-          product_name,
-          package_date,
-          available_qty,
-          thc_percentage,
-          cbd_percentage,
-          unit,
-          net_weight,
-          batch_id,
-          certificates_of_analysis!inner (
-            thc_percentage,
-            cbd_percentage,
-            total_cannabinoids_percentage,
-            harvest_date,
-            sample_date,
-            lab_name,
-            terpene_1_name,
-            terpene_1_value,
-            terpene_2_name,
-            terpene_2_value,
-            terpene_3_name,
-            terpene_3_value
-          ),
-          batches!inner (
-            product_id,
-            strain_id
-          )
-        `)
+        .select('package_id, batch, batch_number, strain, product_name, package_date, available_qty, thc_percentage, cbd_percentage, unit, net_weight, batch_id, strain_id, category')
         .eq('package_id', packageId)
         .maybeSingle();
 
-      if (error) {
-        throw new LabelAutoFillServiceError(
-          'Failed to fetch label data',
-          error,
-          error.code
-        );
+      if (itemError) {
+        throw new LabelAutoFillServiceError('Failed to fetch inventory item', itemError, itemError.code);
       }
 
-      if (!data) {
-        errorService.debug('[labelAutoFillService] No data found for package', { packageId });
+      if (!item) {
+        errorService.debug('[labelAutoFillService] No inventory item found for package', { packageId });
         return null;
       }
 
-      // Fetch product and strain details
-      const batch = Array.isArray(data.batches) ? data.batches[0] : data.batches;
-      const productId = batch?.product_id;
-      const strainId = batch?.strain_id;
+      let coaData: {
+        thc_percentage: number | null;
+        cbd_percentage: number | null;
+        total_cannabinoids_percentage: number | null;
+        harvest_date: string | null;
+        sample_date: string | null;
+        terpene_1_name: string | null;
+        terpene_1_value: number | null;
+        terpene_2_name: string | null;
+        terpene_2_value: number | null;
+        terpene_3_name: string | null;
+        terpene_3_value: number | null;
+      } | null = null;
 
-      let productData = null;
-      let strainData = null;
-
-      if (productId) {
-        const { data: product } = await supabase
-          .from('products')
-          .select('id, type, net_weight')
-          .eq('id', productId)
+      if (item.batch_id) {
+        const { data: coa, error: coaError } = await supabase
+          .from('certificates_of_analysis')
+          .select('thc_percentage, cbd_percentage, total_cannabinoids_percentage, harvest_date, sample_date, terpene_1_name, terpene_1_value, terpene_2_name, terpene_2_value, terpene_3_name, terpene_3_value')
+          .eq('batch_id', item.batch_id)
+          .eq('is_active', true)
           .maybeSingle();
-        productData = product;
+
+        if (coaError) {
+          errorService.debug('[labelAutoFillService] COA query error (non-fatal)', { error: coaError.message });
+        }
+
+        if (!coa) {
+          const batchLabel = item.batch_number || item.batch || 'unknown';
+          throw new LabelAutoFillServiceError(
+            `Cannot generate label: no active COA found for batch ${batchLabel}. Upload a COA in Batch Management before generating labels.`,
+            null,
+            'NO_ACTIVE_COA'
+          );
+        }
+
+        coaData = coa;
       }
 
+      let batchData: { harvest_date: string | null; strain_id: string | null } | null = null;
+      if (item.batch_id) {
+        const { data: batch } = await supabase
+          .from('batch_registry')
+          .select('harvest_date, strain_id')
+          .eq('id', item.batch_id)
+          .maybeSingle();
+        batchData = batch;
+      }
+
+      const strainId = item.strain_id || batchData?.strain_id;
+      let strainData: { genetics_description: string | null; dominance_type: string | null } | null = null;
       if (strainId) {
         const { data: strain } = await supabase
-          .from('strain_catalog')
+          .from('strains')
           .select('genetics_description, dominance_type')
           .eq('id', strainId)
           .maybeSingle();
         strainData = strain;
       }
 
-      const coa = Array.isArray(data.certificates_of_analysis)
-        ? data.certificates_of_analysis[0]
-        : data.certificates_of_analysis;
+      let productData: { id: string; type: string | null; net_weight: number | null } | null = null;
+      if (item.product_name) {
+        const { data: product } = await supabase
+          .from('products')
+          .select('id, type, net_weight')
+          .eq('name', item.product_name)
+          .eq('is_archived', false)
+          .maybeSingle();
+        productData = product;
+      }
 
       const labelData: LabelAutoFillData = {
-        // Inventory data
-        package_id: data.package_id,
-        batch: data.batch,
-        batch_number: data.batch_number,
-        strain: data.strain,
-        product_name: data.product_name,
-        package_date: data.package_date,
-        available_qty: data.available_qty,
+        package_id: item.package_id,
+        batch: item.batch,
+        batch_number: item.batch_number,
+        strain: item.strain,
+        product_name: item.product_name,
+        package_date: item.package_date,
+        available_qty: item.available_qty,
 
-        // COA data
-        thc_percentage: coa?.thc_percentage || data.thc_percentage || null,
-        cbd_percentage: coa?.cbd_percentage || data.cbd_percentage || null,
-        total_cannabinoids_percentage: coa?.total_cannabinoids_percentage || null,
-        harvest_date: coa?.harvest_date || null,
-        test_date: coa?.sample_date || null,
-        lab_name: coa?.lab_name || null,
-        terpene_1_name: coa?.terpene_1_name || null,
-        terpene_1_value: coa?.terpene_1_value || null,
-        terpene_2_name: coa?.terpene_2_name || null,
-        terpene_2_value: coa?.terpene_2_value || null,
-        terpene_3_name: coa?.terpene_3_name || null,
-        terpene_3_value: coa?.terpene_3_value || null,
+        thc_percentage: coaData?.thc_percentage ?? item.thc_percentage ?? null,
+        cbd_percentage: coaData?.cbd_percentage ?? item.cbd_percentage ?? null,
+        total_cannabinoids_percentage: coaData?.total_cannabinoids_percentage ?? null,
+        harvest_date: batchData?.harvest_date ?? coaData?.harvest_date ?? null,
+        test_date: coaData?.sample_date ?? null,
+        lab_name: null,
+        terpene_1_name: coaData?.terpene_1_name ?? null,
+        terpene_1_value: coaData?.terpene_1_value ?? null,
+        terpene_2_name: coaData?.terpene_2_name ?? null,
+        terpene_2_value: coaData?.terpene_2_value ?? null,
+        terpene_3_name: coaData?.terpene_3_name ?? null,
+        terpene_3_value: coaData?.terpene_3_value ?? null,
 
-        // Product data
-        product_id: productId || null,
-        product_type: productData?.type || null,
-        net_weight: productData?.net_weight || data.net_weight || null,
-        unit: data.unit,
+        product_id: productData?.id ?? null,
+        product_type: productData?.type ?? item.category ?? null,
+        net_weight: productData?.net_weight ?? item.net_weight ?? null,
+        unit: item.unit,
 
-        // Strain data
-        lineage: strainData?.genetics_description || null,
-        dominance_type: strainData?.dominance_type || null,
+        lineage: strainData?.genetics_description ?? null,
+        dominance_type: strainData?.dominance_type ?? null,
       };
 
       errorService.debug('[labelAutoFillService] Successfully fetched label data');
