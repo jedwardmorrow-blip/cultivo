@@ -4,6 +4,29 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-15 - Add Void Tracking Fields & Strain FK to Labels
+
+**Type:** ENHANCEMENT / DATABASE & LABELS
+**Module:** Labels / Orders
+**Priority:** HIGH - Void audit trail was incomplete; strain FK missing
+**Impact:** Label voiding now tracks who/why; strain data linked by FK
+**Status:** COMPLETE
+**Files Changed:** 4 (migration, useOrderLabels.ts, packageAssignment.service.ts, database.types.ts)
+
+### Summary
+
+Added `voided_by`, `void_reason`, and `strain_id` columns to the `labels` table. Backfilled `strain_id` for all 8 existing labels via exact match on strain name. Fixed `useVoidLabel` hook and `packageAssignment.service.ts` to properly record who voided a label and why. Updated TypeScript database types to match actual schema (was missing ~20 columns added by prior migrations).
+
+### Changes
+
+1. **Migration:** Added `voided_by` (uuid FK to auth.users), `void_reason` (text), `strain_id` (uuid FK to strains) to labels table
+2. **Backfill:** All existing labels matched to strains by name (100% match rate)
+3. **useVoidLabel hook:** Now delegates to `labelAutoFillService.voidLabel()` which sets all three void fields
+4. **packageAssignment.service.ts:** Void path now sets `voided_by`, `void_reason`, and guards against double-voiding
+5. **database.types.ts:** Labels type block updated to reflect actual schema (36 columns)
+
+---
+
 ## 2026-02-15 - Fix Label Auto-Fill Data Fetching (Critical Bug)
 
 **Type:** BUGFIX / ORDERS & LABELS

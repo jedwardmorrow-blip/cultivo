@@ -15,23 +15,23 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-15
-**Session:** Fix Label Auto-Fill Data Fetching (Critical Bug)
+**Session:** Add Void Tracking Fields & Strain FK to Labels
 **Status:** ✅ Complete
 
 **What was done:**
-- Fixed `getCompleteLabelDataForPackage()` in `labelAutoFill.service.ts` -- was completely broken
-- Root cause: invalid Supabase embedded joins (no FK between inventory_items and certificates_of_analysis; wrong table names `batches` and `strain_catalog`; nonexistent `lab_name` column on COA)
-- Rewrote to sequential queries: inventory_items -> certificates_of_analysis (via batch_id) -> batch_registry -> strains -> products (by name match)
-- Added explicit COA validation (GAP-007 safety net): throws descriptive error if no active COA for batch
-- Fixed harvest_date source: batch_registry first, then COA fallback
+- Added `voided_by`, `void_reason`, `strain_id` columns to labels table via migration
+- Backfilled `strain_id` for all 8 existing labels (100% exact match on strain name)
+- Fixed `useVoidLabel` hook to delegate to `labelAutoFillService.voidLabel()` (now records who/why)
+- Fixed `packageAssignment.service.ts` void path to set all three void fields + guard against double-void
+- Updated `database.types.ts` labels block to match actual schema (~20 missing columns added)
 
-**Build status:** ✅ Passes (2484.48 kB)
+**Build status:** ✅ Passes (2484.57 kB)
 
 **Known issues:** None active
 
 **Next recommendations:**
-1. Test label auto-fill end-to-end with a real package assignment workflow
-2. Test physical label printing with actual label printers (currently optimized for 2"x3" labels)
+1. Test label voiding end-to-end -- confirm voided_by and void_reason are populated in database
+2. Test label auto-fill end-to-end with a real package assignment workflow
 3. Consider adding QR code generation for labels (infrastructure exists, needs integration)
 4. Add label template customization (different sizes, layouts)
 

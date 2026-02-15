@@ -1704,72 +1704,141 @@ export type Database = {
       labels: {
         Row: {
           id: string
-          label_type_id: string | null
-          batch_number: string | null
-          product_name: string
+          label_number: string
+          product_id: string | null
+          package_id: string
+          batch_id: string
           strain: string
+          strain_id: string | null
+          product_name: string
+          product_type: string
+          net_weight_grams: number
+          unit_count: number | null
+          qr_code_data: string
+          qr_code_url: string | null
           thc_percentage: number | null
           cbd_percentage: number | null
-          net_weight: string
-          upc: string | null
-          barcode: string | null
-          lineage: string | null
+          total_cannabinoids: number | null
+          terpene_profile: Record<string, unknown> | null
+          test_date: string | null
+          lab_name: string | null
           harvest_date: string | null
           package_date: string | null
-          best_by_date: string | null
-          license_number: string | null
-          lot_number: string | null
-          uid: string | null
+          expiration_date: string | null
+          compliance_uid: string | null
           warnings: string[] | null
+          printed_at: string | null
           created_at: string | null
+          lineage: string | null
+          upc_code: string | null
+          barcode_url: string | null
+          barcode_format: string | null
+          label_type_id: string | null
+          batch_number: string | null
+          voided_at: string | null
+          voided_by: string | null
+          void_reason: string | null
+          print_count: number | null
+          last_printed_at: string | null
+          print_history: Record<string, unknown>[] | null
         }
         Insert: {
           id?: string
-          label_type_id?: string | null
-          batch_number?: string | null
-          product_name: string
+          label_number: string
+          product_id?: string | null
+          package_id: string
+          batch_id: string
           strain: string
+          strain_id?: string | null
+          product_name: string
+          product_type: string
+          net_weight_grams: number
+          unit_count?: number | null
+          qr_code_data: string
+          qr_code_url?: string | null
           thc_percentage?: number | null
           cbd_percentage?: number | null
-          net_weight: string
-          upc?: string | null
-          barcode?: string | null
-          lineage?: string | null
+          total_cannabinoids?: number | null
+          terpene_profile?: Record<string, unknown> | null
+          test_date?: string | null
+          lab_name?: string | null
           harvest_date?: string | null
           package_date?: string | null
-          best_by_date?: string | null
-          license_number?: string | null
-          lot_number?: string | null
-          uid?: string | null
+          expiration_date?: string | null
+          compliance_uid?: string | null
           warnings?: string[] | null
+          printed_at?: string | null
           created_at?: string | null
+          lineage?: string | null
+          upc_code?: string | null
+          barcode_url?: string | null
+          barcode_format?: string | null
+          label_type_id?: string | null
+          batch_number?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+          void_reason?: string | null
+          print_count?: number | null
+          last_printed_at?: string | null
+          print_history?: Record<string, unknown>[] | null
         }
         Update: {
           id?: string
-          label_type_id?: string | null
-          batch_number?: string | null
-          product_name?: string
+          label_number?: string
+          product_id?: string | null
+          package_id?: string
+          batch_id?: string
           strain?: string
+          strain_id?: string | null
+          product_name?: string
+          product_type?: string
+          net_weight_grams?: number
+          unit_count?: number | null
+          qr_code_data?: string
+          qr_code_url?: string | null
           thc_percentage?: number | null
           cbd_percentage?: number | null
-          net_weight?: string
-          upc?: string | null
-          barcode?: string | null
-          lineage?: string | null
+          total_cannabinoids?: number | null
+          terpene_profile?: Record<string, unknown> | null
+          test_date?: string | null
+          lab_name?: string | null
           harvest_date?: string | null
           package_date?: string | null
-          best_by_date?: string | null
-          license_number?: string | null
-          lot_number?: string | null
-          uid?: string | null
+          expiration_date?: string | null
+          compliance_uid?: string | null
           warnings?: string[] | null
+          printed_at?: string | null
           created_at?: string | null
+          lineage?: string | null
+          upc_code?: string | null
+          barcode_url?: string | null
+          barcode_format?: string | null
+          label_type_id?: string | null
+          batch_number?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+          void_reason?: string | null
+          print_count?: number | null
+          last_printed_at?: string | null
+          print_history?: Record<string, unknown>[] | null
         }
         Relationships: [
           {
             foreignKeyName: "labels_label_type_id_fkey"
             columns: ["label_type_id"]
             referencedRelation: "label_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labels_strain_id_fkey"
+            columns: ["strain_id"]
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labels_voided_by_fkey"
+            columns: ["voided_by"]
+            referencedRelation: "users"
             referencedColumns: ["id"]
           }
         ]

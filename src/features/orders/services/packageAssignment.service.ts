@@ -323,7 +323,6 @@ export const packageAssignmentService = {
     });
 
     try {
-      // If voiding label, get the label_id first
       if (voidLabel) {
         const { data: assignment } = await supabase
           .from('package_assignments')
@@ -332,10 +331,16 @@ export const packageAssignmentService = {
           .single();
 
         if (assignment?.label_id) {
+          const { data: { user } } = await supabase.auth.getUser();
           await supabase
             .from('labels')
-            .update({ voided_at: new Date().toISOString() })
-            .eq('id', assignment.label_id);
+            .update({
+              voided_at: new Date().toISOString(),
+              voided_by: user?.id || null,
+              void_reason: 'Package assignment removed',
+            })
+            .eq('id', assignment.label_id)
+            .is('voided_at', null);
         }
       }
 

@@ -152,18 +152,12 @@ export function useVoidLabel() {
   const [voiding, setVoiding] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const voidLabel = useCallback(async (labelId: string) => {
+  const voidLabel = useCallback(async (labelId: string, reason?: string) => {
     setVoiding(true);
     setError(null);
 
     try {
-      const { error: updateError } = await supabase
-        .from('labels')
-        .update({ voided_at: new Date().toISOString() })
-        .eq('id', labelId);
-
-      if (updateError) throw updateError;
-
+      await labelAutoFillService.voidLabel(labelId, reason || 'Label voided by user');
       notificationService.success('Label voided successfully');
     } catch (err) {
       console.error('[useVoidLabel] Error:', err);
