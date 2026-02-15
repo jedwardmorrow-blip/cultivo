@@ -55,7 +55,7 @@ Inventory moves through four distinct stages in the production pipeline:
 
 The system uses the `category` and `product_name` fields to determine which stage an item belongs to:
 
-- **Packaged**: Category contains "prepack" OR SKU contains "-000"
+- **Packaged**: Category contains "prepack" or "packaged" OR SKU contains "-000"
 - **Binned**: Category/product name contains "binned"
 - **Bucked**: Category/product name contains "bucked"
 - **Bulk**: Category/product name contains "bulk" (and not binned/bucked)

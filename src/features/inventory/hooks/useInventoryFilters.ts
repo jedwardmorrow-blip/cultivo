@@ -28,6 +28,7 @@ export function getItemStage(item: InventoryItem): 'binned' | 'bucked' | 'bulk' 
   // Check for packaged first (most specific)
   if (
     category.includes('prepack') ||
+    category.includes('packaged') ||
     sku.includes('-000')
   ) {
     return 'packaged';
@@ -96,6 +97,7 @@ export function useInventoryFilters(inventoryItems: InventoryItem[]) {
         const category = item.category?.toLowerCase() || '';
         return (
           category.includes('prepack') ||
+          category.includes('packaged') ||
           item.sku?.includes('-000')
         );
       }
