@@ -15,27 +15,37 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-15
-**Session:** Label-to-Coversheet Integration
-**Status:** ✅ Complete
+**Session:** Label-to-Coversheet Integration + Optional Enhancements
+**Status:** ✅ Complete (All Phases)
 
 **What was done:**
-- Implemented complete label generation workflow from package assignments to coversheet display
+
+**Phase 1 - Core Integration:**
 - Extended `labelAutoFillService` with batch operations (generateLabelsForOrder, getLabelsForOrder, voidLabel, regenerateLabel)
 - Built comprehensive `OrderLabelGenerator` component with modal UI, real-time statistics, and status management
 - Extended `useOrderLabels` hook with label fetching and generation capabilities
 - Added `useGenerateLabels` hook for label operations with automatic notifications
 - Created `PackageManifestSection` component for coversheet package manifest display
-- Added label status indicators, bulk operations, and print-friendly formatting
-- Build passes successfully (2468.39 kB main bundle)
+
+**Phase 2 - Optional Enhancements:**
+- Integrated `PackageManifestSection` into public coversheet display (`CoversheetPublic.tsx`)
+- Created `LabelPrintPreview` component with 2"×3" print-optimized layout and barcode generation
+- Implemented `BatchLabelPrintPreview` for multi-label printing with "Print All Labels" button
+- Added database migration `add_label_print_history` with print tracking columns and analytics view
+- Print history now tracks: print_count, last_printed_at, print_history (full audit trail)
+- Added preview buttons to label management UI for single label preview
+
+**Build status:** ✅ Passes (2484.36 kB, +16KB)
 
 **Known issues:** None active
 
 **Next recommendations:**
-1. Consider adding QR code generation integration for labels (currently stores barcode data only)
-2. Add print preview functionality for labels before physical printing
-3. Consider batch printing interface for multiple labels at once
-4. Add label reprint history tracking for audit purposes
-5. Test coversheet PDF generation with new PackageManifestSection included
+1. Test physical label printing with actual label printers (currently optimized for 2"×3" labels)
+2. Consider adding QR code generation for labels (infrastructure exists, needs integration)
+3. Add label template customization (different sizes, layouts)
+4. Implement label printer selection/configuration in settings
+5. Add print job queue management for high-volume printing
+6. Create print analytics dashboard using `label_print_analytics` view
 
 ---
 

@@ -9,7 +9,8 @@ import {
 import {
   ComplianceHeader,
   BatchComplianceTable,
-  DistributedToSection
+  DistributedToSection,
+  PackageManifestSection
 } from '../../features/orders/components/coversheet';
 import type { ComplianceHeader as ComplianceHeaderData, BatchComplianceInfo, DistributedToInfo } from '../../types';
 
@@ -173,6 +174,13 @@ export function CoversheetPublic() {
         {!loadingDetails && distributedTo && (
           <div className="mb-8 print:mb-6">
             <DistributedToSection data={distributedTo} />
+          </div>
+        )}
+
+        {/* Package Manifest Section */}
+        {!loadingDetails && coversheet.order_id && (
+          <div className="mb-8 print:mb-6">
+            <PackageManifestSection orderId={coversheet.order_id} showLabelStatus={true} />
           </div>
         )}
 

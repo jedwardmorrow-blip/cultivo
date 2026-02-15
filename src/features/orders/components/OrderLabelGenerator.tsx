@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { RefreshCw, Tag, Printer, X, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { RefreshCw, Tag, Printer, X, AlertTriangle, CheckCircle2, Clock, Eye } from 'lucide-react';
 import { useOrderLabels, useGenerateLabels, useMarkLabelPrinted, useVoidLabel } from '../hooks/useOrderLabels';
 import { usePackageAssignments } from '../hooks/usePackageAssignments';
+import { LabelPrintPreview, BatchLabelPrintPreview } from './LabelPrintPreview';
 
 interface OrderLabelGeneratorProps {
   orderId: string;
@@ -15,6 +16,8 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
   const { voidLabel, voiding } = useVoidLabel();
   const [expandedView, setExpandedView] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [previewLabelId, setPreviewLabelId] = useState<string | null>(null);
+  const [batchPrintLabelIds, setBatchPrintLabelIds] = useState<string[]>([]);
 
   const loading = loadingLabels || loadingAssignments || generating || marking || voiding;
 
@@ -148,6 +151,19 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                 Generate All ({unlabeledAssignments.length})
               </button>
             )}
+            {labels.filter(l => !l.voided_at).length > 0 && (
+              <button
+                onClick={() => {
+                  const printableLabels = labels.filter(l => !l.voided_at).map(l => l.id);
+                  setBatchPrintLabelIds(printableLabels);
+                }}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                Print All Labels ({labels.filter(l => !l.voided_at).length})
+              </button>
+            )}
             <button
               onClick={refetchLabels}
               disabled={loading}
@@ -251,15 +267,27 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        {!isVoided && !isPrinted && (
-                          <button
-                            onClick={() => handleMarkPrinted(label.id)}
-                            disabled={loading}
-                            className="px-3 py-1 bg-green-600 text-white hover:bg-green-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                          >
-                            <Printer className="w-3 h-3" />
-                            Mark Printed
-                          </button>
+                        {!isVoided && (
+                          <>
+                            <button
+                              onClick={() => setPreviewLabelId(label.id)}
+                              disabled={loading}
+                              className="px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            >
+                              <Eye className="w-3 h-3" />
+                              Preview
+                            </button>
+                            {!isPrinted && (
+                              <button
+                                onClick={() => handleMarkPrinted(label.id)}
+                                disabled={loading}
+                                className="px-3 py-1 bg-green-600 text-white hover:bg-green-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              >
+                                <Printer className="w-3 h-3" />
+                                Mark Printed
+                              </button>
+                            )}
+                          </>
                         )}
                         {!isVoided && assignment && (
                           <button
@@ -298,6 +326,33 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           )}
         </div>
       </div>
+
+      {/* Label Print Preview Modal */}
+      {previewLabelId && (
+        <LabelPrintPreview
+          labelId={previewLabelId}
+          onClose={() => setPreviewLabelId(null)}
+          onPrintComplete={() => {
+            handleMarkPrinted(previewLabelId);
+            setPreviewLabelId(null);
+          }}
+        />
+      )}
+
+      {/* Batch Print Preview Modal */}
+      {batchPrintLabelIds.length > 0 && (
+        <BatchLabelPrintPreview
+          labelIds={batchPrintLabelIds}
+          onClose={() => setBatchPrintLabelIds([])}
+          onPrintComplete={async () => {
+            // Mark all printed labels
+            for (const labelId of batchPrintLabelIds) {
+              await handleMarkPrinted(labelId);
+            }
+            setBatchPrintLabelIds([]);
+          }}
+        />
+      )}
     </div>
   );
 }

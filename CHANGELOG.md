@@ -58,13 +58,46 @@ Implemented complete label generation and management workflow integrated with pa
 4. **Coversheet Display** → Complete manifest with label numbers
 5. **Distribution** → Print coversheet with full traceability
 
+### Optional Enhancements (Phase 2)
+
+**Coversheet Integration**
+- Integrated `PackageManifestSection` into public coversheet display (`CoversheetPublic.tsx`)
+- Complete package manifest visible to customers with label numbers
+- Print-friendly table format with status indicators
+- Grouped by product type for clarity
+
+**Label Print Preview**
+- New `LabelPrintPreview` component with print-optimized 2"×3" layout
+- Barcode generation using JsBarcode library
+- Real-time cannabinoid content display (THC/CBD/Total)
+- Batch/harvest/package date information
+- Compliance warnings and license display
+- Preview button added to each label in management UI
+
+**Batch Printing**
+- `BatchLabelPrintPreview` component for multi-label printing
+- "Print All Labels" button in label management UI
+- Automatic print completion tracking for batch operations
+- Page break controls for physical printing
+- Handles multiple labels in single print job
+
+**Print History Tracking**
+- Database migration: `add_label_print_history`
+- New columns: `print_count`, `last_printed_at`, `print_history` (jsonb array)
+- Automatic trigger `track_label_print()` to record every print event
+- Print analytics view (`label_print_analytics`) for reporting
+- User ID tracking for audit trail
+- Tracks reprints and identifies potential waste
+
 ### Technical Notes
 
-- Build passes: 2468.39 kB (main bundle)
+- Build passes: 2484.36 kB (main bundle, +16KB for new features)
 - No breaking changes
 - Follows existing service/hook/component patterns
 - Maintains compliance styling conventions
 - Real-time updates via Supabase subscriptions
+- Database migration applied successfully
+- New files: LabelPrintPreview.tsx, PackageManifestSection.tsx
 
 ---
 
