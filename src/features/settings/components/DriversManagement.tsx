@@ -245,11 +245,9 @@ export function DriversManagement() {
       {showModal && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowModal(false)}
         >
           <div
             className="bg-cult-near-black border-2 border-cult-medium-gray max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-cult-medium-gray">
               <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">

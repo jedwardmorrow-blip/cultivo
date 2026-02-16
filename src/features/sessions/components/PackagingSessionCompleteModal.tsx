@@ -89,11 +89,9 @@ export function PackagingSessionCompleteModal({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-      onClick={onCancel}
     >
       <div
         className="bg-cult-near-black border border-cult-medium-gray shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4 text-cult-white uppercase tracking-wide">Complete Packaging Session</h2>

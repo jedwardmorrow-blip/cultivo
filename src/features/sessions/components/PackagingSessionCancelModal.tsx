@@ -34,11 +34,9 @@ export function PackagingSessionCancelModal({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-      onClick={onCancel}
     >
       <div
         className="bg-cult-near-black border-2 border-red-600 shadow-xl max-w-lg w-full"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">

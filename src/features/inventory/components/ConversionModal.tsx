@@ -125,7 +125,6 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={step === 'success' ? undefined : handleCloseModal}
       />
 
       {/* Modal */}

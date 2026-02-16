@@ -338,11 +338,9 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
     return (
       <div
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
       >
         <div
           className="bg-cult-near-black border-2 border-cult-medium-gray p-8"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="text-cult-white">Loading...</div>
         </div>
@@ -354,11 +352,9 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
     return (
       <div
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
       >
         <div
           className="bg-cult-near-black border-2 border-cult-medium-gray max-w-md w-full p-6"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
@@ -396,11 +392,9 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
   return (
     <div
       className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 overflow-y-auto"
-      onClick={onClose}
     >
       <div
         className="bg-cult-near-black border-2 border-cult-medium-gray max-w-6xl w-full my-8"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b border-cult-medium-gray flex items-center justify-between">
           <div className="flex items-center gap-3">

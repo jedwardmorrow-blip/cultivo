@@ -37,7 +37,6 @@ export function CombinePackagesModal({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={workflow.step === 'completing' || workflow.step === 'complete' ? undefined : onClose}
       />
 
       {/* Modal */}

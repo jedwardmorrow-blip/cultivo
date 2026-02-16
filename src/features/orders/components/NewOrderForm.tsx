@@ -195,11 +195,9 @@ export function NewOrderForm({ onClose, onSuccess }: {
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
     >
       <div
         className="bg-cult-near-black border-2 border-cult-medium-gray rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-cult-near-black border-b-2 border-cult-medium-gray px-6 py-5 flex items-center justify-between z-10 rounded-t-lg">
           <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wider">New Order</h2>
