@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Printer, AlertTriangle } from 'lucide-react';
+import { Printer, AlertTriangle, Calendar } from 'lucide-react';
 import {
   ComplianceHeader,
   BatchComplianceTable,
   DistributedToSection,
-  PackageManifestSection
 } from '../../features/orders/components/coversheet';
 import type { ComplianceHeader as ComplianceHeaderData, BatchComplianceInfo, DistributedToInfo } from '../../types';
 
@@ -25,7 +24,6 @@ interface CoversheetRecord {
   compliance_header: ComplianceHeaderData | null;
   batch_compliance_data: BatchComplianceInfo[] | null;
   distributed_to_data: DistributedToInfo | null;
-  package_manifest_data: any[] | null;
 }
 
 export function CoversheetPublic() {
@@ -107,7 +105,15 @@ export function CoversheetPublic() {
   const complianceHeader = coversheet.compliance_header;
   const batchCompliance = coversheet.batch_compliance_data || [];
   const distributedTo = coversheet.distributed_to_data;
-  const packageManifest = coversheet.package_manifest_data || [];
+
+  const formattedDeliveryDate = coversheet.delivery_date
+    ? new Date(coversheet.delivery_date + 'T00:00:00').toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : null;
 
   return (
     <div className="min-h-screen bg-white">
@@ -142,21 +148,31 @@ export function CoversheetPublic() {
           </div>
         )}
 
+        {formattedDeliveryDate && (
+          <div className="mb-8 print:mb-6 border-2 border-black bg-white p-6 compliance-section">
+            <div className="flex items-center justify-center gap-3">
+              <Calendar className="w-5 h-5 print:hidden" />
+              <p className="text-lg">
+                <span className="font-bold uppercase tracking-wide">Delivery Date:</span>{' '}
+                <span className="text-xl font-semibold">{formattedDeliveryDate}</span>
+              </p>
+            </div>
+          </div>
+        )}
+
         {batchCompliance.length > 0 && (
           <div className="mb-8 print:mb-6">
-            <BatchComplianceTable batches={batchCompliance} showCoaLinks={true} />
+            <BatchComplianceTable
+              batches={batchCompliance}
+              complianceHeader={complianceHeader}
+              showCoaLinks={true}
+            />
           </div>
         )}
 
         {distributedTo && (
           <div className="mb-8 print:mb-6">
             <DistributedToSection data={distributedTo} />
-          </div>
-        )}
-
-        {packageManifest.length > 0 && (
-          <div className="mb-8 print:mb-6">
-            <PackageManifestSection orderId={coversheet.order_id} packages={packageManifest} showLabelStatus={true} />
           </div>
         )}
 

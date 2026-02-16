@@ -27,24 +27,14 @@ export interface ComplianceHeader {
   pregnancy_warning: string;
 }
 
-/**
- * Batch Compliance Information
- *
- * Traceability data for each unique batch included in the order.
- * Required for Arizona seed-to-sale tracking and compliance audits.
- *
- * @property strain - Cannabis strain name (e.g., "Animal Tsunami")
- * @property batch_id - Unique batch identifier in format YYMMDD-XXX
- * @property harvest_date - Date product was harvested (MM/DD/YYYY)
- * @property manufacture_date - Date product was packaged/manufactured (MM/DD/YYYY)
- * @property coa_url - Optional URL to Certificate of Analysis for this batch
- */
 export interface BatchComplianceInfo {
   strain: string;
   batch_id: string;
   harvest_date: string;
   manufacture_date: string;
+  package_date: string;
   coa_url?: string;
+  coa_pdf_url?: string;
 }
 
 /**

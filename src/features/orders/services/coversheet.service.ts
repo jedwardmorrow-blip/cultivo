@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import QRCode from 'qrcode';
-import type { Coversheet, CoversheetInsert, CoversheetItemSummary, ComplianceHeader, BatchComplianceInfo, DistributedToInfo } from '@/types';
+import { getCOAPDFUrl } from '@/features/coa/services/coa.service';
+import type { Coversheet, ComplianceHeader, BatchComplianceInfo, DistributedToInfo } from '@/types';
 
 function generateSecureToken(): string {
   const array = new Uint8Array(32);
@@ -21,14 +22,19 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     }
   });
 
-  const [complianceHeader, batchCompliance, distributedTo, packageManifest] = await Promise.all([
+  const { data: orderData } = await supabase
+    .from('orders')
+    .select('order_number, customer_id, customers(name), scheduled_delivery_date')
+    .eq('id', orderId)
+    .single();
+
+  const [complianceHeader, batchCompliance, distributedTo] = await Promise.all([
     getComplianceHeaderData(),
     getBatchComplianceInfo(orderId),
     getDistributedToInfo(orderId).catch(() => ({
       customer_name: 'Unknown Customer',
       license_number: 'License Not Found',
     } as DistributedToInfo)),
-    getCoversheetPackageAssignments(orderId),
   ]);
 
   const { data: existing, error: checkError } = await supabase
@@ -41,11 +47,13 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     throw new Error(`Failed to check existing coversheet: ${checkError.message}`);
   }
 
+  const deliveryDate = orderData?.scheduled_delivery_date || null;
+
   const precomputedFields = {
     compliance_header: complianceHeader as any,
     batch_compliance_data: batchCompliance as any,
     distributed_to_data: distributedTo as any,
-    package_manifest_data: packageManifest as any,
+    package_manifest_data: [] as any,
   };
 
   if (existing) {
@@ -54,6 +62,7 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
       .update({
         access_token: accessToken,
         qr_code_data: qrCodeDataUrl,
+        delivery_date: deliveryDate,
         ...precomputedFields,
       })
       .eq('id', existing.id)
@@ -74,12 +83,6 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
 
     return data;
   } else {
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('order_number, customer_id, customers(name), scheduled_delivery_date')
-      .eq('id', orderId)
-      .single();
-
     const { data: itemsData } = await supabase
       .from('order_items')
       .select('product_id, quantity, products(name, type)')
@@ -103,7 +106,7 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
         access_token: accessToken,
         qr_code_data: qrCodeDataUrl,
         customer_name: customerName,
-        delivery_date: orderData?.scheduled_delivery_date || null,
+        delivery_date: deliveryDate,
         total_packages: itemsSummary.reduce((sum, item) => sum + item.quantity, 0),
         items_summary: itemsSummary as any,
         ...precomputedFields,
@@ -304,33 +307,6 @@ export async function getComplianceHeaderData(): Promise<ComplianceHeader> {
   };
 }
 
-/**
- * Get Batch Compliance Information
- *
- * Retrieves batch traceability data for all packages assigned to an order.
- * Includes strain, batch ID, harvest date, and manufacture date for compliance reporting.
- *
- * @param orderId - UUID of the order
- * @returns Array of BatchComplianceInfo with unique batches and their dates
- * @throws Error if batch data cannot be retrieved
- *
- * @example
- * const batches = await getBatchComplianceInfo(orderId);
- * // Returns:
- * // [
- * //   {
- * //     strain: "Animal Tsunami",
- * //     batch_id: "250916-ASU",
- * //     harvest_date: "09/16/2025",
- * //     manufacture_date: "09/25/2025",
- * //     coa_url: "/coa-library?batch=250916-ASU"
- * //   },
- * //   ...
- * // ]
- *
- * @note Dates are formatted as MM/DD/YYYY per Arizona compliance requirements
- * @note Only includes batches with assigned packages (excludes unallocated items)
- */
 export async function getBatchComplianceInfo(orderId: string): Promise<BatchComplianceInfo[]> {
   const { data: assignments, error: assignError } = await supabase
     .from('package_assignments_details')
@@ -351,14 +327,28 @@ export async function getBatchComplianceInfo(orderId: string): Promise<BatchComp
     assignments.map(a => a.batch).filter((b): b is string => b !== null)
   ));
 
-  const { data: batchRecords } = await supabase
-    .from('batch_registry')
-    .select('batch_number, harvest_date')
-    .in('batch_number', uniqueBatches);
+  const [{ data: batchRecords }, { data: coaRecords }] = await Promise.all([
+    supabase
+      .from('batch_registry')
+      .select('batch_number, harvest_date')
+      .in('batch_number', uniqueBatches),
+    supabase
+      .from('certificates_of_analysis')
+      .select('batch_number, pdf_file_path')
+      .in('batch_number', uniqueBatches)
+      .eq('is_active', true),
+  ]);
 
   const harvestMap = new Map<string, string | null>();
   for (const rec of batchRecords || []) {
     harvestMap.set(rec.batch_number, rec.harvest_date);
+  }
+
+  const coaPdfMap = new Map<string, string>();
+  for (const coa of coaRecords || []) {
+    if (coa.batch_number && coa.pdf_file_path) {
+      coaPdfMap.set(coa.batch_number, coa.pdf_file_path);
+    }
   }
 
   const batchMap = new Map<string, BatchComplianceInfo>();
@@ -371,16 +361,21 @@ export async function getBatchComplianceInfo(orderId: string): Promise<BatchComp
       ? new Date(rawHarvest).toLocaleDateString('en-US')
       : 'N/A';
 
-    const manufactureDate = assignment.package_date
+    const dateValue = assignment.package_date
       ? new Date(assignment.package_date).toLocaleDateString('en-US')
       : 'N/A';
+
+    const pdfPath = coaPdfMap.get(assignment.batch);
+    const coaPdfUrl = pdfPath ? getCOAPDFUrl(pdfPath) : undefined;
 
     batchMap.set(assignment.batch, {
       strain: assignment.strain || 'Unknown',
       batch_id: assignment.batch,
       harvest_date: harvestDate,
-      manufacture_date: manufactureDate,
-      coa_url: `/coa-library?batch=${assignment.batch}`
+      manufacture_date: dateValue,
+      package_date: dateValue,
+      coa_url: coaPdfUrl || `/coa-library?batch=${assignment.batch}`,
+      coa_pdf_url: coaPdfUrl,
     });
   }
 
