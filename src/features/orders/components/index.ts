@@ -1,5 +1,10 @@
 export { OrdersContainer } from './OrdersContainer';
 export { UnifiedOrders } from './UnifiedOrders';
+export { OrderTable } from './OrderTable';
+export { OrderDrawer } from './OrderDrawer';
+export { OrderFilterBar } from './OrderFilterBar';
+export { BulkActionBar } from './BulkActionBar';
+export { ConfirmDialog } from './ConfirmDialog';
 export { OrderMonthGroup } from './OrderMonthGroup';
 export { OrderStatusGroup } from './OrderStatusGroup';
 export { OrdersList } from './OrdersList';

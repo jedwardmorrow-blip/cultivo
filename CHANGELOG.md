@@ -4,6 +4,39 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Orders UX Overhaul
+
+**Type:** ENHANCEMENT / UX REDESIGN
+**Module:** Orders
+**Priority:** HIGH - Major usability improvements for order management
+**Impact:** Orders page completely redesigned for faster scanning and fewer clicks
+**Status:** COMPLETE
+**Files Changed:** 12 (7 new, 5 modified)
+
+### Summary
+
+Replaced the 3-level accordion layout (Month > Status > Order) with a flat, sortable table and a slide-out detail drawer. Added smart "Needs Attention" filtering that highlights overdue, awaiting acceptance, and delivery-soon orders. Added order cloning, bulk status updates, confirmation dialogs, and advanced filtering by customer, date range, and priority.
+
+### New Files
+
+1. **OrderTable.tsx** - Flat sortable table with columns for order number, status, customer, delivery date, items, total, and age. Attention flags displayed inline. Checkbox selection for bulk actions.
+2. **OrderDrawer.tsx** - Right-side slide-out panel with order timeline, customer info card, item details, and action buttons (clone, delete).
+3. **OrderFilterBar.tsx** - Status pill bar with counts, search input, and collapsible advanced filters (customer, priority, date range).
+4. **BulkActionBar.tsx** - Floating bottom bar for applying status changes to multiple selected orders.
+5. **ConfirmDialog.tsx** - Reusable confirmation modal with danger/warning/default variants.
+6. **orderAttention.ts** - Utility for computing attention flags (overdue, awaiting acceptance, delivery soon, needs fulfillment) and order age display.
+7. **useAdvancedFilteredOrders.ts** - Hook for filtering orders by search, status, customer, priority, and date range.
+
+### Modified Files
+
+1. **UnifiedOrders.tsx** - Complete rewrite using new components
+2. **OrdersContainer.tsx** - Updated prop types for clone support
+3. **App.tsx** - Added clone-from-order state management
+4. **NewOrderForm.tsx** - Added cloneFrom prop for pre-filling from existing orders
+5. **tailwind.config.js** - Added slide-in-right animation
+
+---
+
 ## 2026-02-15 - Add Void Tracking Fields & Strain FK to Labels
 
 **Type:** ENHANCEMENT / DATABASE & LABELS

@@ -29,6 +29,7 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
+  const [cloneFromOrder, setCloneFromOrder] = useState<any>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isStandaloneMode, setIsStandaloneMode] = useState(false);
   const [isResetPasswordMode, setIsResetPasswordMode] = useState(false);
@@ -89,12 +90,14 @@ function AppContent() {
     setSelectedOrderId(null);
   }
 
-  function handleCreateOrder() {
+  function handleCreateOrder(cloneFrom?: any) {
+    setCloneFromOrder(cloneFrom || null);
     setShowNewOrderForm(true);
   }
 
   function handleOrderCreated() {
     setShowNewOrderForm(false);
+    setCloneFromOrder(null);
     setCurrentView('orders');
   }
 
@@ -161,8 +164,9 @@ function AppContent() {
       </Layout>
       {showNewOrderForm && (
         <NewOrderForm
-          onClose={() => setShowNewOrderForm(false)}
+          onClose={() => { setShowNewOrderForm(false); setCloneFromOrder(null); }}
           onSuccess={handleOrderCreated}
+          cloneFrom={cloneFromOrder}
         />
       )}
     </>

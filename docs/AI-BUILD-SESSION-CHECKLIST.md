@@ -14,26 +14,31 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-15
-**Session:** Add Void Tracking Fields & Strain FK to Labels
+**Date:** 2026-02-16
+**Session:** Orders UX Overhaul
 **Status:** ✅ Complete
 
 **What was done:**
-- Added `voided_by`, `void_reason`, `strain_id` columns to labels table via migration
-- Backfilled `strain_id` for all 8 existing labels (100% exact match on strain name)
-- Fixed `useVoidLabel` hook to delegate to `labelAutoFillService.voidLabel()` (now records who/why)
-- Fixed `packageAssignment.service.ts` void path to set all three void fields + guard against double-void
-- Updated `database.types.ts` labels block to match actual schema (~20 missing columns added)
+- Replaced 3-level accordion (Month > Status > Order) with flat sortable OrderTable + slide-out OrderDrawer
+- Added "Needs Attention" smart filter (overdue, awaiting acceptance, delivery soon, unfulfilled)
+- Added status pill bar with live counts, search, and advanced filters (customer, priority, date range)
+- Added order cloning (pre-fills NewOrderForm with customer, items, notes from source order)
+- Added bulk status updates via floating action bar with checkbox selection
+- Added confirmation dialogs for delete and cancel actions
+- Added order timeline visualization and customer info card in drawer
 
-**Build status:** ✅ Passes (2484.57 kB)
+**Build status:** ✅ Passes (2465.75 kB)
 
 **Known issues:** None active
 
+**New files:** OrderTable.tsx, OrderDrawer.tsx, OrderFilterBar.tsx, BulkActionBar.tsx, ConfirmDialog.tsx, orderAttention.ts, useAdvancedFilteredOrders.ts
+**Modified files:** UnifiedOrders.tsx (rewrite), OrdersContainer.tsx, App.tsx, NewOrderForm.tsx, tailwind.config.js
+
 **Next recommendations:**
-1. Test label voiding end-to-end -- confirm voided_by and void_reason are populated in database
-2. Test label auto-fill end-to-end with a real package assignment workflow
-3. Consider adding QR code generation for labels (infrastructure exists, needs integration)
-4. Add label template customization (different sizes, layouts)
+1. Test order cloning end-to-end -- verify items and notes pre-fill correctly
+2. Test bulk status change with multiple selected orders
+3. Verify the "Needs Attention" flags trigger correctly for overdue and stale orders
+4. Old accordion components (OrderMonthGroup, OrderStatusGroup, OrdersList, OrderHeader, OrderFilters) are unused -- can be removed once new UI is validated
 
 ---
 

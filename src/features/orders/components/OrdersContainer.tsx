@@ -3,7 +3,7 @@ import { OrdersErrorBoundary } from './OrdersErrorBoundary';
 import { UnifiedOrders } from './UnifiedOrders';
 
 interface OrdersContainerProps {
-  onCreateOrder: () => void;
+  onCreateOrder: (cloneFrom?: any) => void;
   onSelectOrder: (orderId: string) => void;
   selectedOrderId?: string | null;
   includeArchived?: boolean;

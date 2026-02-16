@@ -25,9 +25,10 @@ interface OrderItem {
   notes?: string;
 }
 
-export function NewOrderForm({ onClose, onSuccess }: {
+export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
   onClose: () => void;
   onSuccess: () => void;
+  cloneFrom?: any;
 }) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { products, loading: productsLoading, error: productsError } = useOrderableProducts();
@@ -63,9 +64,35 @@ export function NewOrderForm({ onClose, onSuccess }: {
       .from('customers')
       .select('*')
       .order('name');
-    if (data) setCustomers(data);
+    if (data) {
+      setCustomers(data);
+      if (cloneFrom && data.length > 0) {
+        prefillFromClone(data);
+      }
+    }
   }
 
+  async function prefillFromClone(loadedCustomers: Customer[]) {
+    if (!cloneFrom?.id) return;
+    const matchingCustomer = loadedCustomers.find(c => c.name === cloneFrom.customer_name);
+    if (matchingCustomer) {
+      setSelectedCustomerId(matchingCustomer.id);
+    }
+    setPriority(cloneFrom.priority || 'normal');
+    setDeliveryNotes(cloneFrom.delivery_notes || '');
+    setInternalNotes(cloneFrom.internal_notes || '');
+    const { data: itemsData } = await supabase
+      .from('order_items')
+      .select('product_id, quantity, unit_price')
+      .eq('order_id', cloneFrom.id);
+    if (itemsData && itemsData.length > 0) {
+      setOrderItems(itemsData.map((item: any) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      })));
+    }
+  }
 
   function addOrderItem() {
     setOrderItems([...orderItems, {

@@ -1,17 +1,29 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { InvoiceModal } from './InvoiceModal';
-import { OrderFilters } from './OrderFilters';
-import { OrderMonthGroup } from './OrderMonthGroup';
-import { useOrderList, useOrderExpansion, useOrderActions, useProducts } from '../hooks';
-import { useFilteredOrders } from '../hooks/useFilteredOrders';
-import { groupOrdersByMonthAndStatus, getStatusColor, getFulfillmentColor } from '../utils/orderGrouping';
+import { OrderFilterBar, type OrderFilterState } from './OrderFilterBar';
+import { OrderTable } from './OrderTable';
+import { OrderDrawer } from './OrderDrawer';
+import { BulkActionBar } from './BulkActionBar';
+import { useOrderList, useOrderActions, useProducts } from '../hooks';
+import { useAdvancedFilteredOrders } from '../hooks/useAdvancedFilteredOrders';
+import { hasAttentionFlags } from '../utils/orderAttention';
+import type { Order } from '../types';
 
 interface UnifiedOrdersProps {
-  onCreateOrder: () => void;
+  onCreateOrder: (cloneFrom?: Order) => void;
   onSelectOrder: (orderId: string) => void;
   selectedOrderId?: string | null;
 }
+
+const DEFAULT_FILTERS: OrderFilterState = {
+  searchTerm: '',
+  status: 'all',
+  customerName: '',
+  priority: '',
+  dateFrom: '',
+  dateTo: '',
+};
 
 export function UnifiedOrders({
   onCreateOrder,
@@ -20,26 +32,86 @@ export function UnifiedOrders({
 }: UnifiedOrdersProps) {
   const { orders, loading, error } = useOrderList();
   const { products } = useProducts();
-  const expansion = useOrderExpansion();
   const actions = useOrderActions();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filters, setFilters] = useState<OrderFilterState>(DEFAULT_FILTERS);
+  const [drawerOrderId, setDrawerOrderId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<{ id: string; number: string } | null>(null);
 
-  const filteredOrders = useFilteredOrders(orders, searchTerm, filterStatus);
-  const monthGroups = groupOrdersByMonthAndStatus(filteredOrders);
+  const hasAttention = useMemo(() => orders.some(o => hasAttentionFlags(o)), [orders]);
 
-  const handleGenerateInvoice = (orderId: string, orderNumber: string) => {
+  const effectiveFilters = useMemo(() => {
+    if (filters.status === DEFAULT_FILTERS.status && hasAttention && filters === DEFAULT_FILTERS) {
+      return { ...filters, status: 'attention' };
+    }
+    return filters;
+  }, [filters, hasAttention]);
+
+  const filteredOrders = useAdvancedFilteredOrders(orders, effectiveFilters);
+
+  const drawerOrder = useMemo(
+    () => orders.find(o => o.id === drawerOrderId) || null,
+    [orders, drawerOrderId],
+  );
+
+  const handleSelectOrder = useCallback((orderId: string) => {
+    setDrawerOrderId(orderId);
+    onSelectOrder(orderId);
+    actions.loadOrderDetails(orderId);
+  }, [onSelectOrder, actions]);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOrderId(null);
+  }, []);
+
+  const handleToggleSelect = useCallback((orderId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === filteredOrders.length) {
+        return new Set();
+      }
+      return new Set(filteredOrders.map(o => o.id));
+    });
+  }, [filteredOrders]);
+
+  const handleBulkStatusChange = useCallback(async (newStatus: string) => {
+    const promises = Array.from(selectedIds).map(id =>
+      actions.updateOrderStatus(id, newStatus),
+    );
+    await Promise.all(promises);
+    setSelectedIds(new Set());
+  }, [selectedIds, actions]);
+
+  const handleGenerateInvoice = useCallback((orderId: string, orderNumber: string) => {
     setSelectedOrderForInvoice({ id: orderId, number: orderNumber });
     setShowInvoiceModal(true);
-  };
+  }, []);
+
+  const handleCloneOrder = useCallback((order: Order) => {
+    onCreateOrder(order);
+    setDrawerOrderId(null);
+  }, [onCreateOrder]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading orders...</div>
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-cult-green border-t-transparent rounded-full animate-spin" />
+          <span className="text-cult-silver text-sm">Loading orders...</span>
+        </div>
       </div>
     );
   }
@@ -47,17 +119,14 @@ export function UnifiedOrders({
   if (error) {
     return (
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Orders & Fulfillment</h1>
-            <p className="text-cult-light-gray mt-2">Manage orders, allocate inventory, and track fulfillment</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-cult-off-white tracking-wide">Orders</h1>
         </div>
-        <div className="bg-red-900/20 border-2 border-red-500 p-8 text-center">
-          <p className="text-red-400 text-lg mb-4">{error.message}</p>
+        <div className="bg-red-900/20 border border-red-800/50 rounded-cult p-8 text-center">
+          <p className="text-red-400 text-sm mb-4">{error.message}</p>
           <button
             onClick={() => actions.loadOrders(true)}
-            className="px-6 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray hover:text-cult-white transition-all font-medium uppercase tracking-wider text-sm"
+            className="px-5 py-2 bg-cult-off-white text-cult-black rounded-cult hover:bg-cult-silver transition-all text-sm font-semibold"
           >
             Retry
           </button>
@@ -68,61 +137,63 @@ export function UnifiedOrders({
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Orders & Fulfillment</h1>
-          <p className="text-cult-light-gray mt-2">Manage orders, allocate inventory, and track fulfillment</p>
+          <h1 className="text-3xl font-bold text-cult-off-white tracking-wide">Orders</h1>
+          <p className="text-cult-silver text-sm mt-1">
+            {orders.length} total orders
+          </p>
         </div>
         <button
-          onClick={onCreateOrder}
-          className="flex items-center px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray hover:text-cult-white transition-all font-medium uppercase tracking-wider text-sm"
+          onClick={() => onCreateOrder()}
+          className="flex items-center gap-2 px-4 py-2.5 bg-cult-green text-cult-black rounded-cult hover:bg-cult-green-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-green/20"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4" />
           New Order
         </button>
       </div>
 
-      <OrderFilters
-        searchTerm={searchTerm}
-        filterStatus={filterStatus}
-        onSearchChange={setSearchTerm}
-        onStatusChange={setFilterStatus}
+      <OrderFilterBar
+        orders={orders}
+        filters={effectiveFilters}
+        onFilterChange={setFilters}
       />
 
-      <div className="space-y-6">
-        {monthGroups.length === 0 ? (
-          <div className="bg-cult-near-black border-2 border-cult-medium-gray p-12 text-center text-cult-light-gray">
-            No orders found
-          </div>
-        ) : (
-          monthGroups.map((monthGroup) => (
-            <OrderMonthGroup
-              key={monthGroup.month}
-              monthGroup={monthGroup}
-              isExpanded={expansion.expandedMonths.has(monthGroup.month)}
-              expandedStatuses={expansion.expandedStatuses}
-              expandedOrders={expansion.expandedOrders}
-              products={products}
-              selectedOrderId={selectedOrderId}
-              onToggleMonth={expansion.toggleMonth}
-              onToggleStatus={expansion.toggleStatus}
-              onToggleOrder={expansion.toggleOrder}
-              onStatusUpdate={actions.updateOrderStatus}
-              onDeleteOrder={actions.deleteOrder}
-              onUpdateDeliveryDate={actions.updateDeliveryDate}
-              onItemStatusUpdate={actions.updateItemStatus}
-              onItemQuantityUpdate={actions.updateItemQuantity}
-              onItemPriceUpdate={actions.updateItemPrice}
-              onItemBatchUpdate={actions.updateItemBatch}
-              onItemDelete={actions.deleteOrderItem}
-              onAddItem={actions.addItemToOrder}
-              onGenerateInvoice={handleGenerateInvoice}
-              getStatusColor={getStatusColor}
-              getFulfillmentColor={getFulfillmentColor}
-            />
-          ))
-        )}
-      </div>
+      <OrderTable
+        orders={filteredOrders}
+        selectedOrderId={drawerOrderId}
+        selectedIds={selectedIds}
+        onSelectOrder={handleSelectOrder}
+        onToggleSelect={handleToggleSelect}
+        onToggleSelectAll={handleToggleSelectAll}
+      />
+
+      {drawerOrder && (
+        <OrderDrawer
+          order={drawerOrder}
+          products={products}
+          onClose={handleCloseDrawer}
+          onStatusUpdate={actions.updateOrderStatus}
+          onDeleteOrder={actions.deleteOrder}
+          onUpdateDeliveryDate={actions.updateDeliveryDate}
+          onItemStatusUpdate={actions.updateItemStatus}
+          onItemQuantityUpdate={actions.updateItemQuantity}
+          onItemPriceUpdate={actions.updateItemPrice}
+          onItemBatchUpdate={actions.updateItemBatch}
+          onItemDelete={actions.deleteOrderItem}
+          onAddItem={actions.addItemToOrder}
+          onGenerateInvoice={handleGenerateInvoice}
+          onCloneOrder={handleCloneOrder}
+        />
+      )}
+
+      {selectedIds.size > 0 && (
+        <BulkActionBar
+          selectedCount={selectedIds.size}
+          onBulkStatusChange={handleBulkStatusChange}
+          onClearSelection={() => setSelectedIds(new Set())}
+        />
+      )}
 
       {showInvoiceModal && selectedOrderForInvoice && (
         <InvoiceModal
