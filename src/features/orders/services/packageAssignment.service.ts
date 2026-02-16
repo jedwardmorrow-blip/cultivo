@@ -433,7 +433,7 @@ export const packageAssignmentService = {
       if (assignmentsError) throw assignmentsError;
 
       const labelIds = (assignments || []).map(a => a.label_id).filter(Boolean);
-      
+
       if (labelIds.length === 0) {
         return { data: [], error: null };
       }
@@ -464,6 +464,59 @@ export const packageAssignmentService = {
       return { data, error: null };
     } catch (error) {
       errorService.handle(error, 'Get labels for order');
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Get labels for package assignments by order item ID
+   */
+  async getLabelsByOrderItem(orderItemId: string) {
+    try {
+      // First get label IDs from assignments for this order item
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('package_assignments')
+        .select('label_id')
+        .eq('order_item_id', orderItemId)
+        .not('label_id', 'is', null);
+
+      if (assignmentsError) throw assignmentsError;
+
+      const labelIds = (assignments || []).map(a => a.label_id).filter(Boolean);
+
+      if (labelIds.length === 0) {
+        return { data: [], error: null };
+      }
+
+      // Fetch label details with additional fields
+      const { data, error } = await supabase
+        .from('labels')
+        .select(`
+          id,
+          label_number,
+          package_id,
+          product_name,
+          strain,
+          batch_id,
+          batch_number,
+          net_weight_grams,
+          thc_percentage,
+          cbd_percentage,
+          qr_code_data,
+          printed_at,
+          voided_at,
+          created_at,
+          last_printed_at,
+          print_count,
+          dominance_type
+        `)
+        .in('id', labelIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      errorService.handle(error, 'Get labels for order item');
       return { data: null, error };
     }
   },

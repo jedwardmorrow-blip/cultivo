@@ -23,3 +23,4 @@ export { InvoiceManagement } from './InvoiceManagement';
 export { LabelGenerator } from './LabelGenerator';
 export { PackageAssignmentModal } from './PackageAssignmentModal';
 export { AssignedPackagesDisplay } from './AssignedPackagesDisplay';
+export { OrderItemLabelPrintModal } from './OrderItemLabelPrintModal';

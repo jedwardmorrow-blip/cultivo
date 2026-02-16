@@ -22,3 +22,4 @@ export {
   useVoidLabel,
   useOrderLabelStats,
 } from './useOrderLabels';
+export { useOrderItemLabels } from './useOrderItemLabels';

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle } from 'lucide-react';
+import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle, Printer } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { PackageAssignmentModal } from './PackageAssignmentModal';
 import { AssignedPackagesDisplay } from './AssignedPackagesDisplay';
+import { OrderItemLabelPrintModal } from './OrderItemLabelPrintModal';
 import { useTotalAssignedQuantity } from '../hooks';
+import { useOrderItemLabels } from '../hooks/useOrderItemLabels';
 import { fulfillmentValidationService } from '../services/fulfillmentValidation.service';
 import type { FulfillmentStatus } from '../types';
 
@@ -65,8 +67,10 @@ export function OrderItemRow({
   const [batchesLoaded, setBatchesLoaded] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [showAssignedPackages, setShowAssignedPackages] = useState(false);
+  const [showLabelPrintModal, setShowLabelPrintModal] = useState(false);
 
   const { totalAssigned, loading: loadingAssigned } = useTotalAssignedQuantity(item.id);
+  const { labels, stats, loading: labelsLoading } = useOrderItemLabels(item.id);
 
   const remainingToAssign = item.quantity - totalAssigned;
   const isFullyAssigned = remainingToAssign === 0;
@@ -176,6 +180,27 @@ export function OrderItemRow({
                   <div
                     className={`h-full ${statusBadgeColor} transition-all`}
                     style={{ width: `${Math.min(fulfillmentPercentage, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {!labelsLoading && stats.total > 0 && (
+              <div className="flex items-center gap-2">
+                <span className={`text-xs flex items-center gap-1 ${
+                  stats.pending === 0 ? 'text-green-400' :
+                  stats.printed > 0 ? 'text-yellow-400' :
+                  'text-cult-lighter-gray'
+                }`}>
+                  {stats.printed} of {stats.total} labels printed
+                </span>
+                <div className="w-24 h-1.5 bg-cult-medium-gray rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all ${
+                      stats.pending === 0 ? 'bg-green-500' :
+                      stats.printed > 0 ? 'bg-yellow-500' :
+                      'bg-cult-lighter-gray'
+                    }`}
+                    style={{ width: `${stats.total > 0 ? (stats.printed / stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -308,6 +333,22 @@ export function OrderItemRow({
             )}
             {isFullyAssigned ? 'Assigned' : isPartiallyAssigned ? 'Partial' : 'Assign'}
           </button>
+          {!labelsLoading && stats.total > 0 && (
+            <button
+              onClick={() => setShowLabelPrintModal(true)}
+              className={`flex items-center gap-1 px-3 py-1 text-xs font-bold transition-colors rounded ${
+                stats.pending === 0
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : stats.printed > 0
+                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white'
+              }`}
+              title={`${stats.pending} label${stats.pending !== 1 ? 's' : ''} pending print`}
+            >
+              <Printer className="w-3 h-3" />
+              Print ({stats.total})
+            </button>
+          )}
           <button
             onClick={() => onDelete(item.id, orderId)}
             className="text-red-400 hover:text-red-300"
@@ -338,6 +379,13 @@ export function OrderItemRow({
         productName={item.product_name}
         orderItemQuantity={item.quantity}
         unit={item.pricing_unit || 'units'}
+      />
+
+      <OrderItemLabelPrintModal
+        isOpen={showLabelPrintModal}
+        onClose={() => setShowLabelPrintModal(false)}
+        orderItemId={item.id}
+        productName={item.product_name}
       />
     </>
   );

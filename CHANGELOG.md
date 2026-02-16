@@ -4,6 +4,55 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Order Item Label Printing
+
+**Type:** FEATURE ENHANCEMENT
+**Module:** Orders / Labels
+**Priority:** HIGH - Improves label printing workflow at the order item level
+**Impact:** Users can now print labels directly from order items with full visibility and status tracking
+**Status:** COMPLETE
+**Files Changed:** 5 (3 new, 2 modified)
+
+### Summary
+
+Added dedicated label printing functionality at the order item level. Users can now see exactly which labels are associated with each order item and print them individually or in bulk. The new interface shows real-time print status, label details, and provides filtering options for pending/printed labels.
+
+### New Files
+
+1. **useOrderItemLabels.ts** - Hook to fetch and subscribe to labels for a specific order item with real-time updates and stats calculation
+2. **OrderItemLabelPrintModal.tsx** - Modal component displaying all labels for an order item with filtering, status badges, and print actions
+3. **packageAssignment.service.getLabelsByOrderItem()** - Service method to fetch labels by order item ID with enhanced field selection
+
+### Modified Files
+
+1. **OrderItemRow.tsx** - Added print button with label count, status indicator below product name, and integration with new print modal
+2. **hooks/index.ts** - Exported new useOrderItemLabels hook
+
+### Features
+
+- Print button appears only when labels exist (clean interface)
+- Shows label count and print status: "X of Y labels printed"
+- Visual progress indicator (green=all printed, yellow=partial, gray=none)
+- Modal shows all labels with:
+  - Package ID, weight, strain, batch, THC/CBD
+  - Individual print buttons per label
+  - "Print All Unprinted" bulk action
+  - Filter tabs: All / Pending / Printed
+  - Print timestamp and count tracking
+- Real-time updates via Supabase subscriptions
+- Reuses existing LabelPrintPreview component
+- Automatic marking as printed after successful print
+- Voided labels displayed but not printable
+
+### Technical Notes
+
+- Follows existing label printing patterns from inventory module
+- No database changes required (uses existing label_print_history migration)
+- Real-time subscriptions to both labels and package_assignments tables
+- Statistics computed client-side for performance
+
+---
+
 ## 2026-02-16 - Orders UX Overhaul
 
 **Type:** ENHANCEMENT / UX REDESIGN
