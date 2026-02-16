@@ -14,16 +14,6 @@ export const deleteLogo = (variant: any) => importedLogoService.deleteLogo(varia
 export const getLogoUrl = (variant: any) => importedLogoService.getLogoUrl(variant);
 export const getLogoSettings = () => importedLogoService.getLogoSettings();
 export {
-  parseAndMergeInventoryData,
-  executeInventoryReset,
-  validateStrainNames,
-  extractStrainNames,
-  parseDutchieCSV,
-  parseGoogleSheetCSV
-} from './inventoryReset.service';
-export type { ParsedInventoryData, InventoryItem, StrainValidationResult } from './inventoryReset.service';
-
-export {
   generateCoversheet,
   getCoversheetByToken,
   getCoversheetByOrderId,
