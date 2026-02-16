@@ -36,7 +36,7 @@ export function Dashboard({
 
       {/* Pending Conversions Widget */}
       <div className="bg-cult-near-black border border-cult-medium-gray p-6">
-        <PendingConversionsWidget onNavigateToConversions={() => onViewChange('inventory')} />
+        <PendingConversionsWidget onNavigateToConversions={() => onViewChange('inventory-conversions')} />
       </div>
 
       {/* Active Production Sessions - Real-time Visibility */}

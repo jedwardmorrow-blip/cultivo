@@ -7,7 +7,6 @@ const SessionsUnified = lazy(() => import('./features/sessions').then(m => ({ de
 const TrimSessions = lazy(() => import('./features/sessions').then(m => ({ default: m.TrimSessionsRefactored })));
 const PackagingSessions = lazy(() => import('./features/sessions').then(m => ({ default: m.PackagingSessionsRefactored })));
 const BatchManagement = lazy(() => import('./features/batches').then(m => ({ default: m.BatchManagement })));
-const InventoryManagement = lazy(() => import('./features/inventory').then(m => ({ default: m.InventoryManagementSidebar })));
 const InventoryOversightDashboard = lazy(() => import('./features/inventory').then(m => ({ default: m.InventoryOversightDashboard })));
 const DistributionCalendar = lazy(() => import('./features/delivery').then(m => ({ default: m.DistributionCalendar })));
 const AnalyticsDashboard = lazy(() => import('./features/analytics').then(m => ({ default: m.AnalyticsDashboard })));
@@ -72,10 +71,6 @@ export const protectedRoutes: RouteObject[] = [
   {
     path: '/batches',
     element: <BatchManagement />,
-  },
-  {
-    path: '/inventory',
-    element: <InventoryManagement />,
   },
   {
     path: '/inventory-oversight',

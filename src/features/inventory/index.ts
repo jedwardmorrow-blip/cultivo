@@ -1,4 +1,3 @@
-export { InventoryManagementSidebar } from './components/InventoryManagementSidebar';
 export { InventoryOversightDashboard } from './components/InventoryOversightDashboard';
 export { useInventoryOversight } from './hooks/useInventoryOversight';
 export * from './types';

@@ -6,7 +6,6 @@ import { OrdersContainer, NewOrderForm } from './features/orders';
 import { DistributionCalendar } from './features/delivery';
 import { SessionsUnified, TrimSessionsRefactored, PackagingSessionsRefactored } from './features/sessions';
 import {
-  InventoryManagementSidebar,
   AllInventoryViewWrapper,
   BinnedInventoryViewWrapper,
   BuckedInventoryViewWrapper,
@@ -127,8 +126,6 @@ function AppContent() {
         return <PackagingSessionsRefactored />;
       case 'batches':
         return <BatchManagement />;
-      case 'inventory':
-        return <InventoryManagementSidebar />;
       case 'inventory-all':
         return <AllInventoryViewWrapper />;
       case 'inventory-binned':
