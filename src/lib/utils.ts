@@ -1,3 +1,9 @@
+export function getSiteUrl(): string {
+  const configured = import.meta.env.VITE_PUBLIC_SITE_URL;
+  if (configured) return configured.replace(/\/+$/, '');
+  return window.location.origin;
+}
+
 export function formatCurrency(amount: number): string {
   return '$' + amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import QRCode from 'qrcode';
 import { getCOAPDFUrl } from '@/features/coa/services/coa.service';
+import { getSiteUrl } from '@/lib/utils';
 import type { Coversheet, ComplianceHeader, BatchComplianceInfo, DistributedToInfo } from '@/types';
 
 function generateSecureToken(): string {
@@ -189,8 +190,7 @@ export async function toggleCoversheetActive(coversheetId: string, isActive: boo
 }
 
 export function getCoversheetPublicUrl(accessToken: string): string {
-  const baseUrl = window.location.origin;
-  return `${baseUrl}/coversheet?token=${accessToken}`;
+  return `${getSiteUrl()}/coversheet?token=${accessToken}`;
 }
 
 export async function getCoversheetPackageAssignments(orderId: string) {

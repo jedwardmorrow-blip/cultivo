@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
+import { getSiteUrl } from '@/lib/utils';
 import { Users, UserPlus, Shield, Check, X, AlertCircle, RotateCw } from 'lucide-react';
 import { Database } from '@/lib/database';
 import { settingsService } from '../services/settings.service';
@@ -120,7 +121,7 @@ export function UserManagement() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetPasswordUser.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${getSiteUrl()}/reset-password`,
       });
 
       if (error) throw error;
