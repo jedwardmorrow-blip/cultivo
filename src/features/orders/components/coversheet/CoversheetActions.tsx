@@ -22,7 +22,7 @@
 
 import { useState } from 'react';
 import { FileText, Link as LinkIcon, AlertTriangle, CheckCircle2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { generateCoversheet, regenerateCoversheet, getCoversheetPublicUrl } from '../../services/coversheet.service';
+import { generateCoversheet, regenerateCoversheet, getCoversheetPublicUrl, getCoversheetPath } from '../../services/coversheet.service';
 import type { Coversheet } from '@/types';
 
 interface CoversheetActionsProps {
@@ -86,6 +86,10 @@ export function CoversheetActions({
     ? getCoversheetPublicUrl(existingCoversheet.access_token)
     : null;
 
+  const coversheetViewPath = existingCoversheet
+    ? getCoversheetPath(existingCoversheet.access_token)
+    : null;
+
   /**
    * Handle coversheet generation (new or regeneration)
    */
@@ -131,8 +135,8 @@ export function CoversheetActions({
    * Open coversheet in new tab
    */
   const handleViewCoversheet = () => {
-    if (coversheetUrl) {
-      window.open(coversheetUrl, '_blank');
+    if (coversheetViewPath) {
+      window.open(coversheetViewPath, '_blank');
     }
   };
 

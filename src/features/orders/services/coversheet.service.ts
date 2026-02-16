@@ -189,6 +189,10 @@ export async function toggleCoversheetActive(coversheetId: string, isActive: boo
   }
 }
 
+export function getCoversheetPath(accessToken: string): string {
+  return `/coversheet?token=${accessToken}`;
+}
+
 export function getCoversheetPublicUrl(accessToken: string): string {
   return `${getSiteUrl()}/coversheet?token=${accessToken}`;
 }
