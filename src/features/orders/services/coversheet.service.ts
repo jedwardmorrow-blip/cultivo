@@ -21,6 +21,16 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     }
   });
 
+  const [complianceHeader, batchCompliance, distributedTo, packageManifest] = await Promise.all([
+    getComplianceHeaderData(),
+    getBatchComplianceInfo(orderId),
+    getDistributedToInfo(orderId).catch(() => ({
+      customer_name: 'Unknown Customer',
+      license_number: 'License Not Found',
+    } as DistributedToInfo)),
+    getCoversheetPackageAssignments(orderId),
+  ]);
+
   const { data: existing, error: checkError } = await supabase
     .from('coversheets')
     .select('id')
@@ -31,12 +41,20 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     throw new Error(`Failed to check existing coversheet: ${checkError.message}`);
   }
 
+  const precomputedFields = {
+    compliance_header: complianceHeader as any,
+    batch_compliance_data: batchCompliance as any,
+    distributed_to_data: distributedTo as any,
+    package_manifest_data: packageManifest as any,
+  };
+
   if (existing) {
     const { data, error } = await supabase
       .from('coversheets')
       .update({
         access_token: accessToken,
-        qr_code_data: qrCodeDataUrl
+        qr_code_data: qrCodeDataUrl,
+        ...precomputedFields,
       })
       .eq('id', existing.id)
       .select()
@@ -87,7 +105,8 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
         customer_name: customerName,
         delivery_date: orderData?.scheduled_delivery_date || null,
         total_packages: itemsSummary.reduce((sum, item) => sum + item.quantity, 0),
-        items_summary: itemsSummary as any
+        items_summary: itemsSummary as any,
+        ...precomputedFields,
       })
       .select()
       .single();
@@ -313,21 +332,9 @@ export async function getComplianceHeaderData(): Promise<ComplianceHeader> {
  * @note Only includes batches with assigned packages (excludes unallocated items)
  */
 export async function getBatchComplianceInfo(orderId: string): Promise<BatchComplianceInfo[]> {
-  // Query package assignments to get batch and strain information
   const { data: assignments, error: assignError } = await supabase
     .from('package_assignments_details')
-    .select(`
-      batch,
-      strain,
-      package_id,
-      inventory_items!inner(
-        package_date,
-        batches!inner(
-          batch_number,
-          harvest_date
-        )
-      )
-    `)
+    .select('batch, strain, package_date')
     .eq('order_id', orderId)
     .not('batch', 'is', null);
 
@@ -340,36 +347,43 @@ export async function getBatchComplianceInfo(orderId: string): Promise<BatchComp
     return [];
   }
 
-  // Group by unique batch and extract compliance data
+  const uniqueBatches = Array.from(new Set(
+    assignments.map(a => a.batch).filter((b): b is string => b !== null)
+  ));
+
+  const { data: batchRecords } = await supabase
+    .from('batch_registry')
+    .select('batch_number, harvest_date')
+    .in('batch_number', uniqueBatches);
+
+  const harvestMap = new Map<string, string | null>();
+  for (const rec of batchRecords || []) {
+    harvestMap.set(rec.batch_number, rec.harvest_date);
+  }
+
   const batchMap = new Map<string, BatchComplianceInfo>();
 
   for (const assignment of assignments) {
-    if (!assignment.batch) continue;
+    if (!assignment.batch || batchMap.has(assignment.batch)) continue;
 
-    if (!batchMap.has(assignment.batch)) {
-      const inventoryItem = assignment.inventory_items as any;
-      const batch = inventoryItem?.batches;
+    const rawHarvest = harvestMap.get(assignment.batch);
+    const harvestDate = rawHarvest
+      ? new Date(rawHarvest).toLocaleDateString('en-US')
+      : 'N/A';
 
-      // Format dates as MM/DD/YYYY per compliance standards
-      const harvestDate = batch?.harvest_date
-        ? new Date(batch.harvest_date).toLocaleDateString('en-US')
-        : 'N/A';
+    const manufactureDate = assignment.package_date
+      ? new Date(assignment.package_date).toLocaleDateString('en-US')
+      : 'N/A';
 
-      const manufactureDate = inventoryItem?.package_date
-        ? new Date(inventoryItem.package_date).toLocaleDateString('en-US')
-        : 'N/A';
-
-      batchMap.set(assignment.batch, {
-        strain: assignment.strain || 'Unknown',
-        batch_id: assignment.batch,
-        harvest_date: harvestDate,
-        manufacture_date: manufactureDate,
-        coa_url: `/coa-library?batch=${assignment.batch}`
-      });
-    }
+    batchMap.set(assignment.batch, {
+      strain: assignment.strain || 'Unknown',
+      batch_id: assignment.batch,
+      harvest_date: harvestDate,
+      manufacture_date: manufactureDate,
+      coa_url: `/coa-library?batch=${assignment.batch}`
+    });
   }
 
-  // Return sorted by strain name for consistency
   return Array.from(batchMap.values()).sort((a, b) =>
     a.strain.localeCompare(b.strain)
   );

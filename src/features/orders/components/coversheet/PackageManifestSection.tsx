@@ -36,15 +36,8 @@ interface PackageAssignmentDetail {
 }
 
 interface PackageManifestSectionProps {
-  /**
-   * Order ID to fetch package assignments for
-   */
   orderId: string;
-
-  /**
-   * Optional: Show label status indicators
-   * Default: true
-   */
+  packages?: PackageAssignmentDetail[];
   showLabelStatus?: boolean;
 }
 
@@ -72,19 +65,22 @@ interface PackageManifestSectionProps {
  */
 export function PackageManifestSection({
   orderId,
+  packages: preloadedPackages,
   showLabelStatus = true
 }: PackageManifestSectionProps) {
-  const [packages, setPackages] = useState<PackageAssignmentDetail[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetchedPackages, setFetchedPackages] = useState<PackageAssignmentDetail[]>([]);
+  const [loading, setLoading] = useState(!preloadedPackages);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (preloadedPackages) return;
+
     async function loadPackages() {
       try {
         setLoading(true);
         setError(null);
         const data = await getCoversheetPackageAssignments(orderId);
-        setPackages(data as PackageAssignmentDetail[]);
+        setFetchedPackages(data as PackageAssignmentDetail[]);
       } catch (err) {
         console.error('[PackageManifestSection] Error loading packages:', err);
         setError('Failed to load package manifest');
@@ -96,7 +92,9 @@ export function PackageManifestSection({
     if (orderId) {
       loadPackages();
     }
-  }, [orderId]);
+  }, [orderId, preloadedPackages]);
+
+  const packages = (preloadedPackages || fetchedPackages) as PackageAssignmentDetail[];
 
   if (loading) {
     return (
