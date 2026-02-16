@@ -4,6 +4,25 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Coversheet Token Stability Fix
+
+**Type:** BUG FIX
+**Module:** Orders / Coversheets
+**Priority:** HIGH - Previously shared QR codes and URLs broke on regeneration
+**Impact:** Regenerating a coversheet now preserves the original access token and QR code
+**Status:** COMPLETE
+**Files Changed:** 1
+
+### Summary
+
+Fixed a bug where regenerating a coversheet for an existing order would create a new access token and QR code, invalidating any previously shared links. The update path now only refreshes compliance data (batch info, header, distributed-to) while keeping the original token and QR code stable. New tokens and QR codes are only generated for first-time coversheet creation.
+
+### Modified Files
+
+1. **coversheet.service.ts** - Moved token/QR generation into the create-only branch; update branch now preserves existing credentials and refreshes compliance data only
+
+---
+
 ## 2026-02-16 - Order Item Label Printing
 
 **Type:** FEATURE ENHANCEMENT

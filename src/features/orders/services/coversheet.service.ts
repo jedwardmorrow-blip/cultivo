@@ -10,18 +10,6 @@ function generateSecureToken(): string {
 }
 
 export async function generateCoversheet(orderId: string): Promise<Coversheet> {
-  const accessToken = generateSecureToken();
-  const publicUrl = getCoversheetPublicUrl(accessToken);
-
-  const qrCodeDataUrl = await QRCode.toDataURL(publicUrl, {
-    width: 400,
-    margin: 2,
-    color: {
-      dark: '#000000',
-      light: '#FFFFFF'
-    }
-  });
-
   const { data: orderData } = await supabase
     .from('orders')
     .select('order_number, customer_id, customers(name), scheduled_delivery_date')
@@ -39,7 +27,7 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
 
   const { data: existing, error: checkError } = await supabase
     .from('coversheets')
-    .select('id')
+    .select('id, access_token')
     .eq('order_id', orderId)
     .maybeSingle();
 
@@ -60,8 +48,6 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     const { data, error } = await supabase
       .from('coversheets')
       .update({
-        access_token: accessToken,
-        qr_code_data: qrCodeDataUrl,
         delivery_date: deliveryDate,
         ...precomputedFields,
       })
@@ -73,16 +59,20 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
       throw new Error(`Failed to update coversheet: ${error.message}`);
     }
 
-    await supabase
-      .from('orders')
-      .update({
-        coversheet_url: publicUrl,
-        coversheet_id: existing.id
-      })
-      .eq('id', orderId);
-
     return data;
   } else {
+    const accessToken = generateSecureToken();
+    const publicUrl = getCoversheetPublicUrl(accessToken);
+
+    const qrCodeDataUrl = await QRCode.toDataURL(publicUrl, {
+      width: 400,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+
     const { data: itemsData } = await supabase
       .from('order_items')
       .select('product_id, quantity, products(name, type)')
