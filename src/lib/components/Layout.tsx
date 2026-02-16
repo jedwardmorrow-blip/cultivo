@@ -2,9 +2,6 @@ import { ReactNode, useState } from 'react';
 import { Menu, LogOut, ChevronDown, Home, Settings, TrendingUp } from 'lucide-react';
 import { useAuth } from '../auth';
 import { useLogos } from '../../hooks';
-import { PortalBanner } from '../../components/PortalBanner';
-import { PortalSwitcher } from '../../components/PortalSwitcher';
-import { useTestPortal } from '../../contexts/TestPortalContext';
 import { useNavigationMenu } from '../../hooks/useNavigationMenu';
 import { useBadgeCounts } from '../../hooks/useBadgeCounts';
 import { NavigationDrawer, menuStructure, SectionTabs, SubNavBar } from '../../shared/components/navigation';
@@ -20,7 +17,6 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
   const { profile, signOut, isAdmin } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { getLogoUrl } = useLogos();
-  const { isTestPortal } = useTestPortal();
 
   const eyeLogoUrl = getLogoUrl('eye');
   const lightLogoUrl = getLogoUrl('light') || '/cult-logo-cropped.svg';
@@ -49,13 +45,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-cult-black">
-      <PortalBanner />
-
-      <nav className={`border-b sticky top-0 z-40 shadow-glow ${
-        isTestPortal
-          ? 'bg-amber-900/20 border-amber-600/30'
-          : 'bg-cult-graphite border-cult-charcoal'
-      }`}>
+      <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-3">
@@ -93,10 +83,6 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <PortalSwitcher />
-
-              <div className="w-px h-8 bg-cult-charcoal mx-1 hidden sm:block" />
-
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => onViewChange('dashboard')}
@@ -197,7 +183,6 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
         expandedSections={expandedSections}
         onToggleSection={toggleSection}
         isAdmin={isAdmin}
-        isTestPortal={isTestPortal}
       />
 
       <main className="max-w-[1400px] mx-auto px-6 py-8 animate-fade-in">

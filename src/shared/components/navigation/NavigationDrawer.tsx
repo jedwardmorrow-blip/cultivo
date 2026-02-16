@@ -11,7 +11,6 @@ interface NavigationDrawerProps {
   expandedSections: Set<string>;
   onToggleSection: (sectionId: string) => void;
   isAdmin: boolean;
-  isTestPortal: boolean;
 }
 
 export function NavigationDrawer({
@@ -23,7 +22,6 @@ export function NavigationDrawer({
   expandedSections,
   onToggleSection,
   isAdmin,
-  isTestPortal,
 }: NavigationDrawerProps) {
   const handleNavigate = (viewId: string) => {
     onNavigate(viewId);
@@ -72,7 +70,6 @@ export function NavigationDrawer({
               currentView={currentView}
               onNavigate={handleNavigate}
               isAdmin={isAdmin}
-              isTestPortal={isTestPortal}
             />
           ))}
         </nav>

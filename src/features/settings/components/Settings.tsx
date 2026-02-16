@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
-import { Settings as SettingsIcon, Save, RotateCcw, Package, Users, Box, Leaf, Layers, Building2, Shield, Truck, Car, Navigation, Palette, FileText } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Package, Users, Box, Leaf, Layers, Building2, Shield, Truck, Car, Navigation, Palette } from 'lucide-react';
 import { ProductsManagement, StagesManagement, ProductTypesManagement, StrainsManagement, BrandingManagement } from '../../products';
 import { UserManagement } from './UserManagement';
 import { CustomersManagement } from '../../customers/components/CustomersManagement';
@@ -10,8 +10,6 @@ import { DriversManagement } from './DriversManagement';
 import { VehiclesManagement } from './VehiclesManagement';
 import { RouteTestingTool } from './RouteTestingTool';
 import { BatchManagement } from '../../batches';
-import { TestModeToggle } from '../../../components/TestModeToggle';
-import { TestModeAuditLog } from '../../../components/TestModeAuditLog';
 import type { AppSetting, SettingsFormData } from '../types';
 
 export function Settings() {
@@ -263,8 +261,7 @@ export function Settings() {
   const tabs = [
     { id: 'general', label: 'General', icon: SettingsIcon },
     { id: 'branding', label: 'Branding', icon: Palette },
-    { id: 'testing', label: 'Testing', icon: FileText },
-    { id: 'batches', label: 'Batch Management', icon: Package },
+{ id: 'batches', label: 'Batch Management', icon: Package },
     { id: 'routing', label: 'Routing', icon: Navigation },
     { id: 'customers', label: 'Customers', icon: Building2 },
     { id: 'drivers', label: 'Drivers', icon: Truck },
@@ -689,13 +686,6 @@ export function Settings() {
       )}
 
       {activeTab === 'branding' && <BrandingManagement />}
-
-      {activeTab === 'testing' && (
-        <div className="space-y-6">
-          <TestModeToggle />
-          <TestModeAuditLog />
-        </div>
-      )}
 
       {activeTab === 'batches' && <BatchManagement />}
 

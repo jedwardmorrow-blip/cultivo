@@ -12,8 +12,6 @@ const DistributionCalendar = lazy(() => import('./features/delivery').then(m => 
 const AnalyticsDashboard = lazy(() => import('./features/analytics').then(m => ({ default: m.AnalyticsDashboard })));
 const EODSummary = lazy(() => import('./features/analytics').then(m => ({ default: m.EODSummary })));
 const Settings = lazy(() => import('./features/settings').then(m => ({ default: m.Settings })));
-const TestModeDashboard = lazy(() => import('./pages/TestModeDashboard'));
-
 const StandaloneOrderForm = lazy(() => import('./features/order-form').then(m => ({ default: m.StandaloneOrderFormRefactored })));
 const CoversheetPublic = lazy(() => import('./pages/public/CoversheetPublic').then(m => ({ default: m.CoversheetPublic })));
 const CoversheetLibrary = lazy(() => import('./pages/public/CoversheetLibrary').then(m => ({ default: m.CoversheetLibrary })));
@@ -91,9 +89,5 @@ export const protectedRoutes: RouteObject[] = [
   {
     path: '/settings',
     element: <Settings />,
-  },
-  {
-    path: '/test-mode',
-    element: <TestModeDashboard />,
   },
 ];

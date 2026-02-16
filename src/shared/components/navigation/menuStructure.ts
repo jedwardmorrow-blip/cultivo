@@ -1,7 +1,6 @@
 import {
   Settings,
   TrendingUp,
-  Zap,
   Home,
 } from 'lucide-react';
 import type { MenuSection } from './types';
@@ -21,21 +20,6 @@ export const menuStructure: MenuSection[] = [
     icon: TrendingUp,
     items: [
       { id: 'analytics', label: 'Analytics Dashboard', icon: TrendingUp },
-    ],
-  },
-  {
-    id: 'admin',
-    label: 'Admin',
-    icon: Zap,
-    items: [
-      {
-        id: 'test-portal',
-        label: 'Test Portal',
-        icon: Zap,
-        adminOnly: true,
-        testPortalOnly: true,
-        badgeColor: 'warning',
-      },
     ],
   },
   {

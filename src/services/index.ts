@@ -1,7 +1,6 @@
 export { notificationService } from './notification.service';
 export type { NotificationOptions } from './notification.service';
 export { errorService } from './error.service';
-export { testModeService } from './testMode.service';
 export { inventoryMovementService } from './inventoryMovement.service';
 export * from './movementHandlers';
 

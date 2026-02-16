@@ -5,7 +5,6 @@ export interface MenuItem {
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
-  testPortalOnly?: boolean;
   badge?: number | string;
   badgeColor?: 'warning' | 'success' | 'error' | 'info' | 'default';
   children?: MenuItem[];

@@ -9,7 +9,6 @@ interface NavigationSectionProps {
   currentView: string;
   onNavigate: (viewId: string) => void;
   isAdmin: boolean;
-  isTestPortal: boolean;
 }
 
 export function NavigationSection({
@@ -19,14 +18,12 @@ export function NavigationSection({
   currentView,
   onNavigate,
   isAdmin,
-  isTestPortal,
 }: NavigationSectionProps) {
   const Icon = section.icon;
   const hasActiveItem = section.items.some((item) => item.id === currentView);
 
   const visibleItems = section.items.filter((item) => {
     if (item.adminOnly && !isAdmin) return false;
-    if (item.testPortalOnly && !isTestPortal) return false;
     return true;
   });
 

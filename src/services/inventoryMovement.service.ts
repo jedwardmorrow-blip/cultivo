@@ -40,28 +40,17 @@ class InventoryMovementService {
    * In the future, triggers will automatically update inventory_items.on_hand_qty.
    *
    * @param payload - Movement data
-   * @param isTestMode - If true, skip actual recording (for test mode bypass)
    * @returns Movement result with ID or error
    */
   async recordMovement(
-    payload: CreateMovementPayload,
-    isTestMode: boolean = false
+    payload: CreateMovementPayload
   ): Promise<MovementResult> {
     try {
-      // Validate movement
       const validation = this.validateMovement(payload);
       if (!validation.valid) {
         return {
           success: false,
           error: validation.error
-        };
-      }
-
-      // In test mode, skip actual recording (logged via test mode service)
-      if (isTestMode) {
-        return {
-          success: true,
-          movement_id: 'test-mode-skip'
         };
       }
 

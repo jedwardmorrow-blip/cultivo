@@ -24,9 +24,6 @@ import { CoversheetPublic } from './pages/public/CoversheetPublic';
 import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
 import { BatchManagement } from './features/batches';
-import { TestModeProvider } from './contexts/TestModeContext';
-import { TestPortalProvider } from './contexts/TestPortalContext';
-import { TestPortalDashboard } from './pages/TestPortalDashboard';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -150,8 +147,6 @@ function AppContent() {
         return <AnalyticsDashboard />;
       case 'eod-summary':
         return <EODSummary />;
-      case 'test-portal':
-        return <TestPortalDashboard />;
       case 'settings':
         return <Settings />;
       default:
@@ -178,11 +173,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <TestModeProvider>
-          <TestPortalProvider>
-            <AppContent />
-          </TestPortalProvider>
-        </TestModeProvider>
+        <AppContent />
       </AuthProvider>
     </ErrorBoundary>
   );
