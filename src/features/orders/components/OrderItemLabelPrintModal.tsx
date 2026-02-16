@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Printer, CheckCircle, Clock, Ban } from 'lucide-react';
 import { useOrderItemLabels } from '../hooks/useOrderItemLabels';
 import { useMarkLabelPrinted } from '../hooks/useOrderLabels';
@@ -27,6 +28,8 @@ export function OrderItemLabelPrintModal({
   const [printingAll, setPrintingAll] = useState(false);
 
   if (!isOpen) return null;
+
+  const portalRoot = document.body;
 
   const filteredLabels = labels.filter(label => {
     if (label.voided_at) return false;
@@ -106,9 +109,9 @@ export function OrderItemLabelPrintModal({
     );
   };
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
         <div className="bg-cult-dark-gray rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col border-2 border-cult-medium-gray">
           <div className="p-4 border-b border-cult-medium-gray flex items-center justify-between bg-cult-near-black">
             <div>
@@ -279,6 +282,7 @@ export function OrderItemLabelPrintModal({
           onPrintComplete={handlePrintComplete}
         />
       )}
-    </>
+    </>,
+    portalRoot
   );
 }
