@@ -288,21 +288,25 @@ export async function getCoversheetBatchInfo(orderId: string) {
  * // }
  */
 export async function getComplianceHeaderData(): Promise<ComplianceHeader> {
-  const { data: settings, error } = await supabase
+  const { data, error } = await supabase
     .from('app_settings')
-    .select('company_name, license_number, company_phone')
-    .maybeSingle();
+    .select('setting_key, setting_value')
+    .eq('category', 'company');
 
   if (error) {
     throw new Error(`Failed to fetch compliance settings: ${error.message}`);
   }
 
-  // Arizona-required pregnancy warning (mandated by state law)
+  const settings: Record<string, string> = {};
+  data?.forEach(item => {
+    settings[item.setting_key] = item.setting_value || '';
+  });
+
   const pregnancyWarning = '"Using marijuana during pregnancy could cause birth defects or other health issues to your unborn child."';
 
   return {
-    company_name: settings?.company_name || 'Kind Meds Inc.',
-    license_number: settings?.license_number || '00000078DCBK00628996',
+    company_name: settings.company_license_name || 'Kind Meds Inc.',
+    license_number: settings.company_license_number || '00000078DCBK00628996',
     pregnancy_warning: pregnancyWarning
   };
 }
