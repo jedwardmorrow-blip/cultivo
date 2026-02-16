@@ -7,7 +7,6 @@ import { OrderDrawer } from './OrderDrawer';
 import { BulkActionBar } from './BulkActionBar';
 import { useOrderList, useOrderActions, useProducts } from '../hooks';
 import { useAdvancedFilteredOrders } from '../hooks/useAdvancedFilteredOrders';
-import { hasAttentionFlags } from '../utils/orderAttention';
 import type { Order } from '../types';
 
 interface UnifiedOrdersProps {
@@ -40,16 +39,7 @@ export function UnifiedOrders({
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<{ id: string; number: string } | null>(null);
 
-  const hasAttention = useMemo(() => orders.some(o => hasAttentionFlags(o)), [orders]);
-
-  const effectiveFilters = useMemo(() => {
-    if (filters.status === DEFAULT_FILTERS.status && hasAttention && filters === DEFAULT_FILTERS) {
-      return { ...filters, status: 'attention' };
-    }
-    return filters;
-  }, [filters, hasAttention]);
-
-  const filteredOrders = useAdvancedFilteredOrders(orders, effectiveFilters);
+  const filteredOrders = useAdvancedFilteredOrders(orders, filters);
 
   const drawerOrder = useMemo(
     () => orders.find(o => o.id === drawerOrderId) || null,
@@ -155,7 +145,7 @@ export function UnifiedOrders({
 
       <OrderFilterBar
         orders={orders}
-        filters={effectiveFilters}
+        filters={filters}
         onFilterChange={setFilters}
       />
 

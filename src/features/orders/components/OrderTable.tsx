@@ -71,13 +71,6 @@ export function OrderTable({
   const sortedOrders = useMemo(() => {
     const sorted = [...orders];
     sorted.sort((a, b) => {
-      const flagsA = getAttentionFlags(a);
-      const flagsB = getAttentionFlags(b);
-      const hasHighA = flagsA.some(f => f.severity === 'high');
-      const hasHighB = flagsB.some(f => f.severity === 'high');
-      if (hasHighA && !hasHighB) return -1;
-      if (!hasHighA && hasHighB) return 1;
-
       let comparison = 0;
       switch (sortField) {
         case 'order_number':
