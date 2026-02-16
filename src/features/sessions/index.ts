@@ -1,3 +1,4 @@
+export { ProductionDashboard } from './components/ProductionDashboard';
 export { SessionsUnified } from './components/SessionsUnified';
 export { TrimSessionsRefactored } from './components/TrimSessionsRefactored';
 export { PackagingSessionsRefactored } from './components/PackagingSessionsRefactored';

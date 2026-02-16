@@ -4,7 +4,7 @@ import { ErrorBoundary, Layout } from './lib/components';
 import { Dashboard } from './features/dashboard';
 import { OrdersContainer, NewOrderForm } from './features/orders';
 import { DistributionCalendar } from './features/delivery';
-import { SessionsUnified, TrimSessionsRefactored, PackagingSessionsRefactored } from './features/sessions';
+import { ProductionDashboard, BuckingSessionsRefactored, TrimSessionsRefactored, PackagingSessionsRefactored } from './features/sessions';
 import {
   AllInventoryViewWrapper,
   BinnedInventoryViewWrapper,
@@ -118,8 +118,10 @@ function AppContent() {
             selectedOrderId={selectedOrderId}
           />
         );
-      case 'sessions':
-        return <SessionsUnified />;
+      case 'production-overview':
+        return <ProductionDashboard onViewChange={handleViewChange} />;
+      case 'bucking-sessions':
+        return <BuckingSessionsRefactored />;
       case 'trim-sessions':
         return <TrimSessionsRefactored />;
       case 'packaging-sessions':

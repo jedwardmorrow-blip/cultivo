@@ -12,6 +12,7 @@ import {
   FileText,
   Calendar,
   Layers,
+  LayoutDashboard,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -66,9 +67,10 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'production',
     label: 'Production',
     icon: Scissors,
-    defaultView: 'sessions',
+    defaultView: 'production-overview',
     items: [
-      { id: 'sessions', label: 'All Sessions', icon: Scissors, group: 'primary' },
+      { id: 'production-overview', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'bucking-sessions', label: 'Bucking', icon: Scissors, group: 'primary' },
       { id: 'trim-sessions', label: 'Trim', icon: Leaf, group: 'primary' },
       { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' },
     ],
