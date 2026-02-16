@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services/error.service';
+import { getCoversheetByOrderId, generateCoversheet, getCoversheetPublicUrl } from './coversheet.service';
 
 export interface LabelAutoFillData {
   // Inventory data
@@ -53,6 +54,23 @@ class LabelAutoFillServiceError extends Error {
   constructor(message: string, public originalError?: any, public code?: string) {
     super(message);
     this.name = 'LabelAutoFillServiceError';
+  }
+}
+
+async function getOrCreateCoversheetUrl(orderId: string): Promise<string | null> {
+  try {
+    const existing = await getCoversheetByOrderId(orderId);
+    if (existing?.access_token) {
+      return getCoversheetPublicUrl(existing.access_token);
+    }
+    const created = await generateCoversheet(orderId);
+    if (created?.access_token) {
+      return getCoversheetPublicUrl(created.access_token);
+    }
+    return null;
+  } catch (err) {
+    errorService.debug('[labelAutoFillService] Could not get coversheet URL for QR code', { orderId, error: err });
+    return null;
   }
 }
 
@@ -258,15 +276,16 @@ export const labelAutoFillService = {
    */
   async createAutoPopulatedLabel(
     packageId: string,
-    assignmentId?: string
+    assignmentId?: string,
+    orderId?: string
   ): Promise<GeneratedLabel> {
     errorService.debug('[labelAutoFillService] Creating auto-populated label', {
       packageId,
-      assignmentId
+      assignmentId,
+      orderId
     });
 
     try {
-      // Get complete label data
       const labelData = await this.getCompleteLabelDataForPackage(packageId);
 
       if (!labelData) {
@@ -277,10 +296,17 @@ export const labelAutoFillService = {
         );
       }
 
-      // Generate label number and barcode
       const labelNumber = await this.generateLabelNumber();
-      const barcodeData = this.formatBarcodeData(labelData.package_date, labelData.batch);
+      const fallbackBarcodeData = this.formatBarcodeData(labelData.package_date, labelData.batch);
       const terpeneProfile = this.buildTerpeneProfile(labelData);
+
+      let qrCodeData = fallbackBarcodeData;
+      if (orderId) {
+        const coversheetUrl = await getOrCreateCoversheetUrl(orderId);
+        if (coversheetUrl) {
+          qrCodeData = coversheetUrl;
+        }
+      }
 
       // Calculate expiration date (1 year from package date)
       let expirationDate = null;
@@ -303,7 +329,7 @@ export const labelAutoFillService = {
           product_name: labelData.product_name,
           product_type: labelData.product_type,
           net_weight_grams: labelData.net_weight,
-          qr_code_data: barcodeData,
+          qr_code_data: qrCodeData,
           thc_percentage: labelData.thc_percentage,
           cbd_percentage: labelData.cbd_percentage,
           total_cannabinoids: labelData.total_cannabinoids_percentage,
@@ -368,10 +394,9 @@ export const labelAutoFillService = {
     });
 
     try {
-      // Get assignment details
       const { data: assignment, error } = await supabase
         .from('package_assignments')
-        .select('package_id, label_id')
+        .select('package_id, label_id, order_id')
         .eq('id', assignmentId)
         .single();
 
@@ -383,7 +408,6 @@ export const labelAutoFillService = {
         );
       }
 
-      // Check if label already exists
       if (assignment.label_id) {
         const { data: existingLabel } = await supabase
           .from('labels')
@@ -403,8 +427,7 @@ export const labelAutoFillService = {
         }
       }
 
-      // Create new label
-      return await this.createAutoPopulatedLabel(assignment.package_id, assignmentId);
+      return await this.createAutoPopulatedLabel(assignment.package_id, assignmentId, assignment.order_id);
     } catch (error) {
       errorService.handle(error, {
         operation: 'Create Label for Assignment',
@@ -472,10 +495,10 @@ export const labelAutoFillService = {
             }
           }
 
-          // Create new label
           const label = await this.createAutoPopulatedLabel(
             assignment.package_id,
-            assignment.id
+            assignment.id,
+            orderId
           );
           success.push(label);
         } catch (error: any) {
@@ -620,10 +643,9 @@ export const labelAutoFillService = {
     });
 
     try {
-      // Get assignment details
       const { data: assignment, error } = await supabase
         .from('package_assignments')
-        .select('package_id, label_id')
+        .select('package_id, label_id, order_id')
         .eq('id', assignmentId)
         .single();
 
@@ -635,13 +657,11 @@ export const labelAutoFillService = {
         );
       }
 
-      // Void old label if it exists
       if (assignment.label_id) {
         await this.voidLabel(assignment.label_id, reason);
       }
 
-      // Create new label
-      return await this.createAutoPopulatedLabel(assignment.package_id, assignmentId);
+      return await this.createAutoPopulatedLabel(assignment.package_id, assignmentId, assignment.order_id);
     } catch (error) {
       errorService.handle(error, {
         operation: 'Regenerate Label',
