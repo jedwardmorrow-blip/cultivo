@@ -169,6 +169,18 @@ export function LabelGenerator() {
     }
   }, [selectedLabel, showPreview]);
 
+  useEffect(() => {
+    if (!showPreview) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowPreview(false);
+        setSelectedLabel(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showPreview]);
+
   async function generateQRCode(data: string): Promise<void> {
     try {
       const url = await QRCode.toDataURL(data, {
@@ -1021,9 +1033,9 @@ export function LabelGenerator() {
             }
           `}</style>
 
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 no-print">
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 no-print">
             <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-4 border-b border-gray-700 flex items-center justify-between no-print">
+              <div className="sticky top-0 p-4 border-b border-gray-700 flex items-center justify-between no-print bg-gray-900 z-10">
                 <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
                 <div className="flex gap-2">
                   <button
@@ -1046,7 +1058,7 @@ export function LabelGenerator() {
                 </div>
               </div>
 
-              <div className="p-16 bg-gray-100 flex items-center justify-center no-print" style={{ minHeight: '800px' }}>
+              <div className="p-16 bg-gray-100 flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
                 {imageError && (
                   <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
                     {imageError}

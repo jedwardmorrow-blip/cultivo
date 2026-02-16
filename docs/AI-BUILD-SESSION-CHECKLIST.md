@@ -15,35 +15,28 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-16
-**Session:** Order Item Label Printing
+**Session:** Label Preview Close Button Fix
 **Status:** ✅ Complete
 
 **What was done:**
-- Added per-order-item label printing functionality with dedicated modal interface
-- Created useOrderItemLabels hook with real-time Supabase subscriptions
-- Added getLabelsByOrderItem() method to packageAssignmentService
-- Updated OrderItemRow with print button (only visible when labels exist) and status indicator
-- Print button shows label count and uses color coding (green=all printed, yellow=partial, gray=none)
-- Modal displays all labels for an order item with filtering (All/Pending/Printed tabs)
-- Each label shows package ID, weight, strain, batch, THC/CBD with individual print buttons
-- "Print All Unprinted" bulk action for efficient batch printing
-- Real-time status updates after printing
-- Reuses existing LabelPrintPreview component for actual printing
-- Voided labels displayed with strikethrough but not printable
+- Fixed CSS stacking context bug in label preview modals (LabelGenerator.tsx, LabelPrintPreview.tsx)
+- The `transform: scale(2.8)` on the label preview content created a stacking context that intercepted clicks on the X close button and Print Label button
+- Made header sticky with `z-10` and `bg-gray-900` so it stays above scaled content
+- Added `overflow: hidden` to content containers to clip scaled label overflow
+- Raised LabelGenerator modal z-index from `z-50` to `z-[60]` to avoid conflicts with OrderDrawer (also `z-50`)
+- Added Escape key handler to LabelGenerator preview (LabelPrintPreview already had one)
 
-**Build status:** ✅ Passes (2489.42 kB)
+**Build status:** ✅ Passes (EAGAIN filesystem error on public asset copy is pre-existing environment issue, not code-related)
 
-**Known issues:** None active
+**Known issues:** Pre-existing EAGAIN error when copying `Cult Cannabis Co Final White 320x320@3x.png` to dist (filename with spaces)
 
-**New files:** useOrderItemLabels.ts, OrderItemLabelPrintModal.tsx
-**Modified files:** OrderItemRow.tsx, packageAssignment.service.ts, hooks/index.ts, components/index.ts
+**New files:** None
+**Modified files:** LabelGenerator.tsx, LabelPrintPreview.tsx
 
 **Next recommendations:**
-1. Test end-to-end label printing workflow from order item row
-2. Verify real-time updates work when labels are printed
-3. Test "Print All Unprinted" action with multiple labels
-4. Consider adding similar functionality to inventory views if needed
-5. Old accordion components (OrderMonthGroup, OrderStatusGroup, OrdersList, OrderHeader, OrderFilters) from previous session are unused -- can be removed once validated
+1. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
+2. Test label preview close button on both Label Manager page and Order Detail label views
+3. Old accordion components (OrderMonthGroup, OrderStatusGroup, OrdersList, OrderHeader, OrderFilters) from previous session are unused -- can be removed once validated
 
 ---
 

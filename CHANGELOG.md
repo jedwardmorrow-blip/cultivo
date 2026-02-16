@@ -4,6 +4,26 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Label Preview Close Button Fix
+
+**Type:** BUG FIX
+**Module:** Orders / Labels
+**Priority:** HIGH - Close button and Print button were unresponsive
+**Impact:** Label preview modal can now be closed and printed as expected
+**Status:** COMPLETE
+**Files Changed:** 2
+
+### Summary
+
+Fixed a CSS stacking context bug where the `transform: scale(2.8)` on the label preview content created a stacking context that painted on top of the modal header, intercepting clicks on the X close button and Print Label button. The header now uses `sticky` positioning with `z-10` to stay above the scaled content. Also added `overflow: hidden` to the content area, raised the LabelGenerator modal z-index from z-50 to z-[60] to avoid conflicts with the OrderDrawer, and added Escape key support to the LabelGenerator preview.
+
+### Modified Files
+
+1. **LabelGenerator.tsx** - Sticky header with z-10, overflow-hidden on content, z-[60] modal, Escape key handler
+2. **LabelPrintPreview.tsx** - Sticky header with z-10, overflow-hidden on content
+
+---
+
 ## 2026-02-16 - Coversheet Token Stability Fix
 
 **Type:** BUG FIX

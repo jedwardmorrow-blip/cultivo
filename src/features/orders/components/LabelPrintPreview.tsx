@@ -338,7 +338,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-[70] flex items-center justify-center p-4">
       <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div className="sticky top-0 p-4 border-b border-gray-700 flex items-center justify-between bg-gray-900 z-10">
           <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
           <div className="flex gap-2">
             <button
@@ -354,7 +354,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
             </button>
           </div>
         </div>
-        <div className="p-12 bg-gray-100 flex items-center justify-center" style={{ minHeight: '600px' }}>
+        <div className="p-12 bg-gray-100 flex items-center justify-center overflow-hidden" style={{ minHeight: '600px' }}>
           <div style={{ transform: 'scale(2.8)', transformOrigin: 'center', margin: '80px' }}>
             {labelContent}
           </div>
