@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Search, Calendar, Beaker, Leaf, ArrowLeft } from 'lucide-react';
 import { getActiveCOAs, getCOAPDFUrl, type COAData } from '../../features/coa/services/coa.service';
+import { getCoversheetPublicUrl } from '../../features/orders/services/coversheet.service';
 
 export function COALibrary() {
   const [coas, setCoas] = useState<COAData[]>([]);
@@ -84,7 +85,7 @@ export function COALibrary() {
           {fromCoversheet && coversheetToken && (
             <div className="mb-6">
               <a
-                href={`/coversheet?token=${coversheetToken}`}
+                href={getCoversheetPublicUrl(coversheetToken!)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-bold uppercase tracking-wider text-sm"
               >
                 <ArrowLeft className="w-4 h-4" />

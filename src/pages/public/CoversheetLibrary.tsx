@@ -23,6 +23,7 @@
 import { useState, useEffect } from 'react';
 import { Search, FileText, Calendar, Building2, Package, ExternalLink } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { getCoversheetPublicUrl } from '../../features/orders/services/coversheet.service';
 import type { Coversheet } from '../../types';
 
 export function CoversheetLibrary() {
@@ -79,11 +80,8 @@ export function CoversheetLibrary() {
     }
   }
 
-  /**
-   * Generate public URL for a coversheet
-   */
   function getCoversheetUrl(coversheet: Coversheet): string {
-    return `/coversheet?token=${coversheet.access_token}`;
+    return getCoversheetPublicUrl(coversheet.access_token);
   }
 
   if (loading) {
