@@ -4,6 +4,34 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Conversion VIEW Row Multiplication and Audit Trail Fix
+
+**Type:** BUG FIX
+**Module:** Inventory / Conversions / Database
+**Priority:** CRITICAL - Remaining output inflated, audit movements silently lost
+**Impact:** Conversion remaining quantities now display accurately; all conversion inventory items have audit trail
+**Status:** COMPLETE
+**Files Changed:** 1 (+ 4 migrations)
+
+### Summary
+
+Fixed three related bugs in the conversion system:
+
+1. **VIEW Row Multiplication**: The `pending_conversion_sessions` VIEW used a LEFT JOIN to `conversion_packages` which multiplied session rows when multiple packages matched via `source_session_ids @>`. This inflated remaining quantities (e.g., 1800g shown instead of 900g). Replaced with correlated scalar subqueries using `?|` operator for session-scoped package matching.
+
+2. **Missing Audit Movements**: The conversion service used `reason_code: 'finalized_conversion'` for PRODUCE movements. The `fn_update_inventory_on_hand` trigger only bypasses for `'session_finalization'`, so it attempted to increment `on_hand_qty` on top of the already-set value. The `chk_atp_consistency` CHECK constraint rejected the UPDATE, silently rolling back the movement. Changed to `'session_finalization'` per Architecture Decision #1.
+
+3. **Session 195fdd62 Over-Finalization**: A prior bug marked this SWF bucking session as finalized with only 200g of 600g packaged. Reset to pending, recovering 400g of lost output.
+
+### Migrations
+
+- **fix_pending_conversions_view_row_multiplication** - Initial scalar subquery conversion (superseded)
+- **fix_pending_conversions_view_session_scoped_packages** - Final VIEW fix with `source_session_ids ?|` filter
+- **repair_session_195fdd62_finalization_status** - Reset finalization_status_bucked to pending
+- **backfill_missing_produce_movements_for_conversion_items** - Inserted PRODUCE audit movements for all conversion items missing them
+
+---
+
 ## 2026-02-16 - Partial Conversion Support
 
 **Type:** BUG FIX

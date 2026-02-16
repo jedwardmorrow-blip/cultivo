@@ -494,7 +494,7 @@ export async function finalizeConversion(params: {
         dest_item_id: invItem.id,
         qty: pkg.weight || pkg.units || 0,
         unit: pkg.weight ? 'g' : 'unit',
-        reason_code: 'finalized_conversion',
+        reason_code: 'session_finalization',
         notes: `Finalized from ${params.session_ids.length} ${params.session_type} session(s)`,
       });
 

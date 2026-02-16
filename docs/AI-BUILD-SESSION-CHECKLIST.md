@@ -15,31 +15,33 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-16
-**Session:** Partial Conversion Support Fix
-**Status:** ✅ Complete
+**Session:** Conversion VIEW Row Multiplication and Audit Trail Fix
+**Status:** COMPLETE
 
 **What was done:**
-- Fixed bug where partially converting a conversion bucket (e.g., creating a 400g bag from 1700g output) caused the remaining output to disappear from the conversions view
-- Root cause: the `finalize_session_aggregated` RPC was called unconditionally, marking ALL sessions as finalized even when only a fraction of the output was packaged
-- Added conditional finalization logic to `conversions.service.ts` -- the RPC is now only called when packages account for all remaining weight (with 0.5g tolerance)
-- Fixed `source_session_ids` for partial packages to reference only one session, preventing double-counting in the VIEW's LEFT JOIN
-- Repaired two SWF bucking sessions (87e1699f, a40765a9) that were incorrectly marked as finalized
-- Added Architecture Decision #9 documenting partial conversion support rules
+- Fixed `pending_conversion_sessions` VIEW row multiplication bug: LEFT JOIN to `conversion_packages` multiplied session rows when multiple packages matched, inflating remaining quantities (e.g., 1800g shown instead of 900g)
+- Replaced LEFT JOIN with correlated scalar subqueries using `source_session_ids ?|` operator for session-scoped package matching -- only packages from pending sessions are subtracted
+- Fixed `reason_code` in `conversions.service.ts` from `'finalized_conversion'` to `'session_finalization'` -- the old code caused `chk_atp_consistency` CHECK constraint violations, silently dropping all audit PRODUCE movements
+- Repaired session 195fdd62 (SWF, 600g flower, only 200g packaged, incorrectly marked finalized) -- reset to pending, recovering 400g of lost output
+- Backfilled missing PRODUCE audit movements for all conversion inventory items (21 items)
 
-**Build status:** ✅ Passes
+**Build status:** Passes
 
 **Known issues:** Pre-existing EAGAIN error when copying `Cult Cannabis Co Final White 320x320@3x.png` to dist (filename with spaces)
 
 **New files:** None
-**Modified files:** conversions.service.ts, useFinalizationWorkflow.ts, ConversionModal.tsx, ARCHITECTURE-DECISIONS.md
-**Migration:** repair_swf_partial_finalization_status
+**Modified files:** conversions.service.ts (reason_code fix)
+**Migrations:** fix_pending_conversions_view_row_multiplication, fix_pending_conversions_view_session_scoped_packages, repair_session_195fdd62_finalization_status, backfill_missing_produce_movements_for_conversion_items
 
-**Architecture decision added:** #9 (Partial Conversion Support) -- future sessions MUST read this before touching the finalization flow. The conditional RPC call in conversions.service.ts is INTENTIONAL, not a bug.
+**Critical context for future sessions:**
+- The `pending_conversion_sessions` VIEW uses `?|` JSONB operator to match packages to pending sessions only -- do NOT replace with LEFT JOIN
+- `reason_code: 'session_finalization'` in conversion service is REQUIRED -- the trigger bypasses on_hand_qty updates for this code (Architecture Decision #1)
+- Partial conversion support (Decision #9) is working: sessions stay pending when only partially packaged
 
 **Next recommendations:**
-1. Session 195fdd62 (600g output, 200g packaged, marked finalized from 2026-01-21) may also need the same repair -- user should verify
-2. Test partial conversion workflow: create bags for part of a bucket, verify remaining shows correctly, then finalize the rest
-3. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
+1. Test full conversion workflow end-to-end: create bags, verify remaining updates, finalize all remaining
+2. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
+3. Console.log cleanup (103 instances across 22 files -- deferred)
 
 ---
 
