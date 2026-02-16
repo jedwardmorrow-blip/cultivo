@@ -56,8 +56,8 @@ export function OrderTable({
   onToggleSelect,
   onToggleSelectAll,
 }: OrderTableProps) {
-  const [sortField, setSortField] = useState<SortField>('delivery_date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const handleSort = useCallback((field: SortField) => {
     if (sortField === field) {
@@ -146,7 +146,7 @@ export function OrderTable({
               {thSortable('delivery_date', 'Delivery')}
               <th className={thClass}>Items</th>
               {thSortable('total_amount', 'Total', 'right')}
-              {thSortable('created_at', 'Age')}
+              {thSortable('created_at', 'Entered')}
               <th className={`${thClass} w-8`}></th>
             </tr>
           </thead>
@@ -237,7 +237,20 @@ export function OrderTable({
                     </span>
                   </td>
                   <td className="px-3 py-3">
-                    <span className={`text-xs ${ageColor}`}>{age}</span>
+                    {order.created_at ? (
+                      <div>
+                        <span className="text-sm text-cult-silver flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-cult-lighter-gray" />
+                          {new Date(order.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                        <span className={`text-[10px] ${ageColor} ml-4.5`}>{age}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-cult-lighter-gray">--</span>
+                    )}
                   </td>
                   <td className="px-3 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Copy className="w-3.5 h-3.5 text-cult-silver hover:text-cult-white cursor-pointer" title="Clone order" />
