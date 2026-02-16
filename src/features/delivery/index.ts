@@ -1,8 +1,7 @@
 export {
   DeliverySchedule,
   DistributionCalendar,
-  LeafletRouteMap,
-  RouteTestingTool
+  LeafletRouteMap
 } from './components';
 
 export {
