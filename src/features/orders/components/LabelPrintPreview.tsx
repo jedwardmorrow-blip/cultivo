@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Printer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logoService } from '@/features/settings/services';
@@ -219,18 +220,19 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
   }
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    return createPortal(
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
         <div className="bg-white rounded-lg p-8">
           <div className="text-center text-gray-700">Loading label preview...</div>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
   if (error || !label) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    return createPortal(
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
         <div className="bg-white rounded-lg p-8 max-w-md">
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
@@ -238,7 +240,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
             <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
@@ -332,8 +335,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
     </div>
   );
 
-  return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/70 z-[70] flex items-center justify-center p-4">
       <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
@@ -367,7 +370,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           {labelContent}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
