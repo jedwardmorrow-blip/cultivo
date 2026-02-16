@@ -16,6 +16,7 @@ export interface InvoiceLineItem {
   strain_dominance: string | null;
   strain_lineage: string | null;
   thc_percentage: number | null;
+  harvest_date: string | null;
 }
 
 export interface InvoiceData {
@@ -145,11 +146,13 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
         id,
         batch_number,
         strain,
+        harvest_date,
         coa_id,
         certificates_of_analysis:coa_id (
           thc_percentage,
           cbd_percentage,
-          total_cannabinoids_percentage
+          total_cannabinoids_percentage,
+          harvest_date
         )
       `)
       .in('id', batchIds);
@@ -216,15 +219,18 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
     let packageId = null;
     let batchNumber = null;
     let thcPercentage = null;
+    let harvestDate: string | null = null;
 
-    // Priority 1: Get batch information from order_item.batch_id (official source)
     if (item.batch_id) {
       const batch = batchMap.get(item.batch_id);
       if (batch) {
         batchNumber = batch.batch_number;
-        // Get THC from COA if available
+        harvestDate = batch.harvest_date || null;
         if (batch.certificates_of_analysis) {
           thcPercentage = batch.certificates_of_analysis.thc_percentage;
+          if (!harvestDate && batch.certificates_of_analysis.harvest_date) {
+            harvestDate = batch.certificates_of_analysis.harvest_date;
+          }
         }
       }
     }
@@ -273,7 +279,8 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
       product_category: product?.product_category || 'packaged',
       strain_dominance: strainMetadata?.type || null,
       strain_lineage: strainMetadata?.genetics || null,
-      thc_percentage: thcPercentage
+      thc_percentage: thcPercentage,
+      harvest_date: harvestDate
     };
   }));
 

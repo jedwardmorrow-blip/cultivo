@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -61,6 +61,7 @@ export function OrderItemRow({
   const [editingPrice, setEditingPrice] = useState(false);
   const [priceValue, setPriceValue] = useState('');
   const [availableBatches, setAvailableBatches] = useState<BatchInfo[]>([]);
+  const [batchesLoading, setBatchesLoading] = useState(false);
   const [batchesLoaded, setBatchesLoaded] = useState(false);
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [showAssignedPackages, setShowAssignedPackages] = useState(false);
@@ -83,35 +84,40 @@ export function OrderItemRow({
   const statusColor = fulfillmentValidationService.getFulfillmentStatusColor(fulfillmentStatus);
   const statusBadgeColor = fulfillmentValidationService.getFulfillmentStatusBadgeColor(fulfillmentStatus);
 
-  const loadAvailableBatches = async () => {
-    if (!item.strain || batchesLoaded) {
-      return;
-    }
+  useEffect(() => {
+    if (!item.strain) return;
 
-    setBatchesLoaded(true);
+    let cancelled = false;
+    setBatchesLoading(true);
 
-    try {
-      const { data, error } = await supabase
-        .rpc('get_batches_for_strain', { p_strain: item.strain });
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .rpc('get_batches_for_strain', { p_strain: item.strain });
 
-      if (error) {
-        console.error('[OrderItemRow] Error loading batches for strain:', item.strain, error);
-        setAvailableBatches([]);
-      } else {
-        console.log('[OrderItemRow] Loaded batches for strain:', item.strain, data?.length || 0);
-        setAvailableBatches(data || []);
+        if (cancelled) return;
+
+        if (error) {
+          console.error('[OrderItemRow] Error loading batches for strain:', item.strain, error);
+          setAvailableBatches([]);
+        } else {
+          setAvailableBatches(data || []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[OrderItemRow] Exception loading batches:', error);
+          setAvailableBatches([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setBatchesLoading(false);
+          setBatchesLoaded(true);
+        }
       }
-    } catch (error) {
-      console.error('[OrderItemRow] Exception loading batches:', error);
-      setAvailableBatches([]);
-    }
-  };
+    })();
 
-  const handleBatchDropdownFocus = () => {
-    if (!batchesLoaded && item.strain) {
-      loadAvailableBatches();
-    }
-  };
+    return () => { cancelled = true; };
+  }, [item.strain]);
 
   const startEditingQuantity = () => {
     setEditingQuantity(true);
@@ -183,13 +189,14 @@ export function OrderItemRow({
         <select
           value={item.batch_id || ''}
           onChange={(e) => onBatchUpdate(item.id, orderId, e.target.value || null, item.strain)}
-          onFocus={handleBatchDropdownFocus}
-          disabled={!item.strain}
+          disabled={!item.strain || batchesLoading}
           className={`px-2 py-1 text-xs border-2 bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-white font-medium w-full ${
             !item.batch_id ? 'border-yellow-600 text-yellow-400' : 'border-cult-medium-gray'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <option value="">{!item.strain ? 'No strain selected' : 'No Batch Assigned'}</option>
+          <option value="">
+            {!item.strain ? 'No strain selected' : batchesLoading ? 'Loading batches...' : 'No Batch Assigned'}
+          </option>
           {availableBatches.map(batch => (
             <option key={batch.batch_id} value={batch.batch_id}>
               {batch.batch_number}
@@ -197,12 +204,12 @@ export function OrderItemRow({
           ))}
         </select>
         {!item.strain && (
-          <p className="text-xs text-red-500 mt-1">⚠ Product missing strain</p>
+          <p className="text-xs text-red-500 mt-1">Product missing strain</p>
         )}
-        {item.strain && !item.batch_id && (
-          <p className="text-xs text-yellow-500 mt-1">⚠ Assign batch to track</p>
+        {item.strain && !item.batch_id && batchesLoaded && availableBatches.length > 0 && (
+          <p className="text-xs text-yellow-500 mt-1">Assign batch to track</p>
         )}
-        {item.strain && availableBatches.length === 0 && (
+        {item.strain && batchesLoaded && availableBatches.length === 0 && (
           <p className="text-xs text-orange-500 mt-1">No batches available for {item.strain}</p>
         )}
       </td>

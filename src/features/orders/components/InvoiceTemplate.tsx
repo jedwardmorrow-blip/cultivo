@@ -169,11 +169,12 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
               if (item.strain_lineage) strainDetails.push(`Lineage: ${item.strain_lineage}`);
               const strainInfo = strainDetails.length > 0 ? strainDetails.join(' | ') : '';
 
-              const batchTestingInfo = [];
-              if (item.batch_number) batchTestingInfo.push(`Batch: ${item.batch_number}`);
-              if (item.thc_percentage !== null) batchTestingInfo.push(`THC: ${item.thc_percentage.toFixed(2)}%`);
-              if (item.package_id) batchTestingInfo.push(`Package: ${item.package_id}`);
-              const batchInfo = batchTestingInfo.length > 0 ? batchTestingInfo.join(' | ') : '';
+              let batchInfo = '';
+              if (item.batch_number) {
+                const harvestDisplay = item.harvest_date ? formatDate(item.harvest_date) : '--';
+                const thcDisplay = item.thc_percentage !== null ? `${item.thc_percentage.toFixed(2)}%` : '--';
+                batchInfo = `Batch: ${item.batch_number} | Harvest: ${harvestDisplay} | THC: ${thcDisplay}`;
+              }
 
               return (
                 <tr key={item.id} className={index < invoiceData.line_items.length - 1 ? '' : ''}>
