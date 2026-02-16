@@ -21,6 +21,7 @@ import { StandaloneOrderFormRefactored } from './features/order-form';
 import { Login, ResetPassword } from './features/auth';
 import { AnalyticsDashboard, EODSummary } from './features/analytics';
 import { CoversheetPublic } from './pages/public/CoversheetPublic';
+import { CoversheetLibrary } from './pages/public/CoversheetLibrary';
 import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
 import { BatchManagement } from './features/batches';
@@ -46,6 +47,9 @@ function AppContent() {
     if (path === '/coversheet') {
       setCurrentView('public-coversheet');
     }
+    if (path === '/coversheet-library') {
+      setCurrentView('public-coversheet-library');
+    }
     if (path === '/coa-library') {
       setCurrentView('public-coa');
     }
@@ -68,6 +72,9 @@ function AppContent() {
 
   if (currentView === 'public-coversheet') {
     return <CoversheetPublic />;
+  }
+  if (currentView === 'public-coversheet-library') {
+    return <CoversheetLibrary />;
   }
   if (currentView === 'public-coa') {
     return <COALibrary />;
