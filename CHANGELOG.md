@@ -4,6 +4,32 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-16 - Partial Conversion Support
+
+**Type:** BUG FIX
+**Module:** Inventory / Conversions
+**Priority:** HIGH - Remaining output disappeared after partial finalization
+**Impact:** Users can now create bulk bags for a portion of a conversion bucket without losing the remaining output
+**Status:** COMPLETE
+**Files Changed:** 3 (+ 1 migration, + 1 architecture decision)
+
+### Summary
+
+Fixed a bug where partially converting a conversion bucket caused the remaining output to disappear from the pending conversions view. The finalization RPC was being called unconditionally, marking all source sessions as fully finalized even when only a fraction of the output was packaged. The service now compares total package weight against remaining output weight and only calls the RPC for full conversions. Partial conversion packages reference a single session ID to prevent double-counting in the database view. Two Swamp Water Fumez bucking sessions were repaired via migration.
+
+### Modified Files
+
+1. **conversions.service.ts** - Added conditional finalization logic (partial vs full detection), single-session source_session_ids for partial packages
+2. **useFinalizationWorkflow.ts** - Added output_weight/output_units params, partial-aware notification messages
+3. **ConversionModal.tsx** - Passes session output_weight and output_units to finalization call chain
+4. **ARCHITECTURE-DECISIONS.md** - Added Decision #9: Partial Conversion Support
+
+### Migration
+
+- **repair_swf_partial_finalization_status** - Reset two SWF bucking sessions to pending, fixed package source_session_ids
+
+---
+
 ## 2026-02-16 - Label Preview Close Button Fix
 
 **Type:** BUG FIX

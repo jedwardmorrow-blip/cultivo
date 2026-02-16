@@ -1,7 +1,7 @@
 ---
 title: Architecture Decisions Record
 category: Architecture Reference
-updated: 2026-02-11
+updated: 2026-02-16
 ---
 
 # Architecture Decisions Record
@@ -129,3 +129,43 @@ Safe when all rows share the same UUID value (guaranteed by batch-centric archit
 Conversion packages must be filtered by `source_session_ids` to prevent cross-session contamination. Filtering by `aggregation_id` or `batch_id` alone is insufficient.
 
 **Pattern:** `cp.source_session_ids @> to_jsonb(ARRAY[session.id])`
+
+---
+
+## 9. Partial Conversion Support (2026-02-16)
+
+The `finalize_session_aggregated` RPC must ONLY be called when ALL remaining weight/units are accounted for by packages. For partial conversions, skip the RPC so sessions remain in `'pending'` status.
+
+**Why:** The VIEW filters by `finalization_status_* = 'pending'`. If the RPC marks sessions as finalized after a partial conversion, the remaining unconverted output disappears from the VIEW permanently.
+
+**Implementation (in `conversions.service.ts`):**
+```typescript
+const isFullFinalization = (() => {
+  if (params.output_weight != null && params.output_weight > 0) {
+    return totalPackageWeight >= params.output_weight - 0.5;
+  }
+  if (params.output_units != null && params.output_units > 0) {
+    return totalPackageUnits >= params.output_units;
+  }
+  return true; // Default to full (backward compat for packaging path)
+})();
+
+if (isFullFinalization) {
+  // Call RPC to mark sessions as finalized
+} else {
+  // Skip RPC - sessions stay 'pending', VIEW shows reduced remaining
+}
+```
+
+**Critical: Single-Session Package References for Partial Conversions**
+
+When creating packages during partial finalization, `source_session_ids` must reference only ONE session (the first in the array). The VIEW's LEFT JOIN matches packages per-session via `cp.source_session_ids @> to_jsonb(ARRAY[bs.id])`. If a package references multiple pending sessions, its weight is counted once per session, inflating the subtracted amount.
+
+**Key Rules:**
+- The conditional is enforced at the SERVICE layer, not the RPC
+- The `pending_conversion_sessions` VIEW already handles subtraction of packaged amounts
+- `output_weight`/`output_units` from the VIEW represent REMAINING quantities
+- 0.5g tolerance prevents floating point edge cases
+- Packaging sessions (unit-based, non-bulk) do not pass `output_weight`/`output_units`, so they default to full finalization (backward compatible)
+
+**Reference:** `conversions.service.ts`, migration `repair_swf_partial_finalization_status`

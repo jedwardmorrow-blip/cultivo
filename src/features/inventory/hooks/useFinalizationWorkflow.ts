@@ -31,12 +31,14 @@ export interface UseFinalizationWorkflowReturn {
 
   handleFinalize: (params: {
     batch_id: string;
-    product_id: string | null;   // Kept for conversion_packages compatibility
-    product_name: string;          // NEW: Product name from session
+    product_id: string | null;
+    product_name: string;
     session_type: 'trim' | 'packaging' | 'bucking';
     session_ids: string[];
     packages: CreatePackageInput[];
     inventory_stage_id?: string;
+    output_weight?: number | null;
+    output_units?: number | null;
   }) => Promise<ConversionPackage[]>;
 
   handleVoid: (params: {
@@ -81,13 +83,15 @@ export function useFinalizationWorkflow(initialDate?: string): UseFinalizationWo
 
   const handleFinalize = useCallback(async (params: {
     batch_id: string;
-    product_id: string | null;   // Kept for conversion_packages compatibility
-    product_name: string;          // NEW: Product name from session
+    product_id: string | null;
+    product_name: string;
     session_type: 'trim' | 'packaging' | 'bucking';
     session_ids: string[];
-    aggregation_id: string;  // Added: stable ID for linking packages to aggregation
+    aggregation_id: string;
     packages: CreatePackageInput[];
     inventory_stage_id?: string;
+    output_weight?: number | null;
+    output_units?: number | null;
   }): Promise<ConversionPackage[]> => {
     try {
       setIsFinalizing(true);
@@ -98,9 +102,21 @@ export function useFinalizationWorkflow(initialDate?: string): UseFinalizationWo
       const sessionCount = params.session_ids.length;
       const packageCount = createdPackages.length;
 
-      notificationService.success(
-        `Successfully finalized ${sessionCount} session(s) into ${packageCount} package(s)`
-      );
+      const totalPkgWeight = params.packages.reduce((sum, pkg) => sum + (pkg.weight || 0), 0);
+      const isPartial = params.output_weight != null
+        && params.output_weight > 0
+        && totalPkgWeight < params.output_weight - 0.5;
+
+      if (isPartial) {
+        const remaining = (params.output_weight! - totalPkgWeight).toFixed(0);
+        notificationService.success(
+          `Created ${packageCount} package(s). ${remaining}g remaining to finalize.`
+        );
+      } else {
+        notificationService.success(
+          `Successfully finalized ${sessionCount} session(s) into ${packageCount} package(s)`
+        );
+      }
 
       await fetchPendingSessions(currentDate);
 

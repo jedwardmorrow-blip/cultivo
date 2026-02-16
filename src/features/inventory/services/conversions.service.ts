@@ -272,28 +272,59 @@ export async function getPendingConversions(date?: string): Promise<PendingConve
  */
 export async function finalizeConversion(params: {
   batch_id: string;
-  product_id: string | null;   // Kept for conversion_packages compatibility
-  product_name: string;          // NEW: Product name from session (e.g., "Bulk Flower (Bucked)")
+  product_id: string | null;
+  product_name: string;
   session_type: 'trim' | 'packaging' | 'bucking';
-  session_ids: string[];        // All session IDs being finalized
-  aggregation_id: string;       // Stable aggregation ID from pending_conversion_sessions
+  session_ids: string[];
+  aggregation_id: string;
   packages: CreatePackageInput[];
   inventory_stage_id?: string;
+  output_weight?: number | null;
+  output_units?: number | null;
 }): Promise<ConversionPackage[]> {
   const userId = (await supabase.auth.getUser()).data.user?.id;
   if (!userId) {
     throw new Error('User not authenticated');
   }
 
-  // Step 1: Call RPC to mark all sessions as finalized (using product_name)
-  const { data: rpcResult, error: rpcError } = await supabase.rpc('finalize_session_aggregated', {
-    p_batch_id: params.batch_id,
-    p_product_name: params.product_name,  // Changed from product_id to product_name
-    p_session_type: params.session_type,
+  // Architecture Decision #9: Partial Conversion Support
+  // Only call the finalization RPC when ALL remaining output is accounted for.
+  // For partial conversions, skip the RPC so sessions remain in 'pending' status
+  // and the VIEW continues to display them with reduced remaining weight.
+  // See: ARCHITECTURE-DECISIONS.md #9
+  const totalPackageWeight = params.packages.reduce((sum, pkg) => sum + (pkg.weight || 0), 0);
+  const totalPackageUnits = params.packages.reduce((sum, pkg) => sum + (pkg.units || 0), 0);
+
+  const isFullFinalization = (() => {
+    if (params.output_weight != null && params.output_weight > 0) {
+      return totalPackageWeight >= params.output_weight - 0.5;
+    }
+    if (params.output_units != null && params.output_units > 0) {
+      return totalPackageUnits >= params.output_units;
+    }
+    return true;
+  })();
+
+  console.log('[finalizeConversion] Partial detection:', {
+    totalPackageWeight,
+    totalPackageUnits,
+    outputWeight: params.output_weight,
+    outputUnits: params.output_units,
+    isFullFinalization,
   });
 
-  if (rpcError) {
-    throw new Error(`Failed to finalize sessions: ${rpcError.message}`);
+  // Step 1: Only mark sessions as finalized for FULL conversion
+  // For partial conversions, sessions stay in 'pending' so the VIEW keeps showing them
+  if (isFullFinalization) {
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('finalize_session_aggregated', {
+      p_batch_id: params.batch_id,
+      p_product_name: params.product_name,
+      p_session_type: params.session_type,
+    });
+
+    if (rpcError) {
+      throw new Error(`Failed to finalize sessions: ${rpcError.message}`);
+    }
   }
 
   // Step 2: Create packages with finalized status
@@ -308,7 +339,9 @@ export async function finalizeConversion(params: {
     weight: pkg.weight || null,
     units: pkg.units || null,
     inventory_stage_id: correctStageId,
-    source_session_ids: params.session_ids,  // All aggregated session IDs
+    source_session_ids: isFullFinalization
+      ? params.session_ids
+      : [params.session_ids[0]],
     finalization_status: 'finalized' as FinalizationStatus,
     finalized_at: new Date().toISOString(),
     finalized_by: userId,

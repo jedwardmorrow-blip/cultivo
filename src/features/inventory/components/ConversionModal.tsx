@@ -47,11 +47,13 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     const result = await handleFinalize({
       batch_id: session.batch_id,
       product_id: session.product_id,
-      product_name: session.product_name,  // Added: product name from session
+      product_name: session.product_name,
       session_type: session.session_type,
       session_ids: session.session_ids,
-      aggregation_id: session.aggregation_id,  // Added: link packages to aggregation
+      aggregation_id: session.aggregation_id,
       packages,
+      output_weight: session.output_weight,
+      output_units: session.output_units,
     });
 
     if (result && result.length > 0) {

@@ -15,28 +15,31 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-16
-**Session:** Label Preview Close Button Fix
+**Session:** Partial Conversion Support Fix
 **Status:** ✅ Complete
 
 **What was done:**
-- Fixed CSS stacking context bug in label preview modals (LabelGenerator.tsx, LabelPrintPreview.tsx)
-- The `transform: scale(2.8)` on the label preview content created a stacking context that intercepted clicks on the X close button and Print Label button
-- Made header sticky with `z-10` and `bg-gray-900` so it stays above scaled content
-- Added `overflow: hidden` to content containers to clip scaled label overflow
-- Raised LabelGenerator modal z-index from `z-50` to `z-[60]` to avoid conflicts with OrderDrawer (also `z-50`)
-- Added Escape key handler to LabelGenerator preview (LabelPrintPreview already had one)
+- Fixed bug where partially converting a conversion bucket (e.g., creating a 400g bag from 1700g output) caused the remaining output to disappear from the conversions view
+- Root cause: the `finalize_session_aggregated` RPC was called unconditionally, marking ALL sessions as finalized even when only a fraction of the output was packaged
+- Added conditional finalization logic to `conversions.service.ts` -- the RPC is now only called when packages account for all remaining weight (with 0.5g tolerance)
+- Fixed `source_session_ids` for partial packages to reference only one session, preventing double-counting in the VIEW's LEFT JOIN
+- Repaired two SWF bucking sessions (87e1699f, a40765a9) that were incorrectly marked as finalized
+- Added Architecture Decision #9 documenting partial conversion support rules
 
-**Build status:** ✅ Passes (EAGAIN filesystem error on public asset copy is pre-existing environment issue, not code-related)
+**Build status:** ✅ Passes
 
 **Known issues:** Pre-existing EAGAIN error when copying `Cult Cannabis Co Final White 320x320@3x.png` to dist (filename with spaces)
 
 **New files:** None
-**Modified files:** LabelGenerator.tsx, LabelPrintPreview.tsx
+**Modified files:** conversions.service.ts, useFinalizationWorkflow.ts, ConversionModal.tsx, ARCHITECTURE-DECISIONS.md
+**Migration:** repair_swf_partial_finalization_status
+
+**Architecture decision added:** #9 (Partial Conversion Support) -- future sessions MUST read this before touching the finalization flow. The conditional RPC call in conversions.service.ts is INTENTIONAL, not a bug.
 
 **Next recommendations:**
-1. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
-2. Test label preview close button on both Label Manager page and Order Detail label views
-3. Old accordion components (OrderMonthGroup, OrderStatusGroup, OrdersList, OrderHeader, OrderFilters) from previous session are unused -- can be removed once validated
+1. Session 195fdd62 (600g output, 200g packaged, marked finalized from 2026-01-21) may also need the same repair -- user should verify
+2. Test partial conversion workflow: create bags for part of a bucket, verify remaining shows correctly, then finalize the rest
+3. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
 
 ---
 
