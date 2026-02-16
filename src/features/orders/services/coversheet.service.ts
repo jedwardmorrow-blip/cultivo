@@ -46,10 +46,18 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
   };
 
   if (existing) {
+    const publicUrl = getCoversheetPublicUrl(existing.access_token);
+    const qrCodeDataUrl = await QRCode.toDataURL(publicUrl, {
+      width: 400,
+      margin: 2,
+      color: { dark: '#000000', light: '#FFFFFF' }
+    });
+
     const { data, error } = await supabase
       .from('coversheets')
       .update({
         delivery_date: deliveryDate,
+        qr_code_data: qrCodeDataUrl,
         ...precomputedFields,
       })
       .eq('id', existing.id)
@@ -59,6 +67,11 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     if (error) {
       throw new Error(`Failed to update coversheet: ${error.message}`);
     }
+
+    await supabase
+      .from('orders')
+      .update({ coversheet_url: publicUrl })
+      .eq('id', orderId);
 
     return data;
   } else {
