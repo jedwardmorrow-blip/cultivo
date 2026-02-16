@@ -145,6 +145,36 @@ export async function getOrderWorkflowStatus() {
 /**
  * Fetches sales overview from order pipeline
  */
+export interface PipelineRow {
+  batch_id: string;
+  batch_number: string;
+  strain: string;
+  stage: string | null;
+  sort_order: number | null;
+  weight_grams: number;
+  unit_count: number;
+  available_weight_grams: number;
+  item_count: number;
+}
+
+export async function getInventoryPipeline() {
+  try {
+    const { data, error } = await supabase
+      .from('v_batch_stage_balances')
+      .select('batch_id, batch_number, strain, stage, sort_order, weight_grams, unit_count, available_weight_grams, item_count')
+      .not('stage', 'is', null)
+      .order('strain')
+      .order('batch_number')
+      .order('sort_order');
+
+    if (error) throw error;
+    return { data: data as PipelineRow[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load inventory pipeline');
+    return { data: null, error };
+  }
+}
+
 export async function getSalesOverview() {
   try {
     const { data, error } = await supabase

@@ -3,6 +3,7 @@ export { ActiveProductionSessions } from './ActiveProductionSessions';
 export { AllocationHealth } from './AllocationHealth';
 export { BatchAllocationOverview } from './BatchAllocationOverview';
 export { BatchOverAllocationWidget } from './BatchOverAllocationWidget';
+export { InventoryPipelineWidget } from './InventoryPipelineWidget';
 export { OrderDemandWidget } from './OrderDemandWidget';
 export { OrderWorkflowStatus } from './OrderWorkflowStatus';
 export { PendingConversionsWidget } from './PendingConversionsWidget';

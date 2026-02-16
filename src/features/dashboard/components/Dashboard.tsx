@@ -2,7 +2,7 @@ import { OrderWorkflowStatus } from './OrderWorkflowStatus';
 import { ActiveProductionSessions } from './ActiveProductionSessions';
 import { UpcomingDeliveries } from './UpcomingDeliveries';
 import { SalesOverview } from './SalesOverview';
-import { BatchAllocationOverview } from './BatchAllocationOverview';
+import { InventoryPipelineWidget } from './InventoryPipelineWidget';
 import { PendingConversionsWidget } from './PendingConversionsWidget';
 
 export function Dashboard({
@@ -29,9 +29,9 @@ export function Dashboard({
         <OrderWorkflowStatus onSelectOrder={onSelectOrder} />
       </div>
 
-      {/* Batch Allocation Overview */}
+      {/* Inventory Pipeline */}
       <div className="bg-cult-near-black border border-cult-medium-gray p-6">
-        <BatchAllocationOverview />
+        <InventoryPipelineWidget onViewChange={onViewChange} />
       </div>
 
       {/* Pending Conversions Widget */}
