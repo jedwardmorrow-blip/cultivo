@@ -81,7 +81,7 @@ export function CoversheetLibrary() {
   }
 
   function getCoversheetUrl(coversheet: Coversheet): string {
-    return getCoversheetPath(coversheet.access_token);
+    return getCoversheetPath(coversheet.access_token) + '&from=library';
   }
 
   if (loading) {
@@ -152,8 +152,6 @@ export function CoversheetLibrary() {
               <a
                 key={coversheet.id}
                 href={getCoversheetUrl(coversheet)}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="bg-cult-near-black border-2 border-cult-medium-gray hover:border-cult-white transition-all p-6 group"
               >
                 {/* Coversheet Number */}

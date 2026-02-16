@@ -21,8 +21,9 @@
  */
 
 import { useState } from 'react';
-import { FileText, Link as LinkIcon, AlertTriangle, CheckCircle2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { generateCoversheet, regenerateCoversheet, getCoversheetPublicUrl, getCoversheetPath } from '../../services/coversheet.service';
+import { FileText, AlertTriangle, CheckCircle2, RefreshCw, Copy, Eye } from 'lucide-react';
+import { generateCoversheet, regenerateCoversheet, getCoversheetPublicUrl } from '../../services/coversheet.service';
+import { CoversheetSidePanel } from './CoversheetSidePanel';
 import type { Coversheet } from '@/types';
 
 interface CoversheetActionsProps {
@@ -81,13 +82,10 @@ export function CoversheetActions({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const coversheetUrl = existingCoversheet
     ? getCoversheetPublicUrl(existingCoversheet.access_token)
-    : null;
-
-  const coversheetViewPath = existingCoversheet
-    ? getCoversheetPath(existingCoversheet.access_token)
     : null;
 
   /**
@@ -131,13 +129,8 @@ export function CoversheetActions({
     }
   };
 
-  /**
-   * Open coversheet in new tab
-   */
   const handleViewCoversheet = () => {
-    if (coversheetViewPath) {
-      window.open(coversheetViewPath, '_blank');
-    }
+    setShowPreview(true);
   };
 
   return (
@@ -212,7 +205,7 @@ export function CoversheetActions({
               onClick={handleViewCoversheet}
               className="inline-flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-bold uppercase tracking-wider"
             >
-              <ExternalLink className="w-5 h-5" />
+              <Eye className="w-5 h-5" />
               View Coversheet
             </button>
 
@@ -257,6 +250,13 @@ export function CoversheetActions({
             </div>
           )}
         </div>
+      )}
+
+      {showPreview && existingCoversheet && (
+        <CoversheetSidePanel
+          accessToken={existingCoversheet.access_token}
+          onClose={() => setShowPreview(false)}
+        />
       )}
     </div>
   );

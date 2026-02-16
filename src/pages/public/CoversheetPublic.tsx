@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Printer, AlertTriangle, Calendar } from 'lucide-react';
+import { Printer, AlertTriangle, Calendar, ArrowLeft } from 'lucide-react';
 import {
   ComplianceHeader,
   BatchComplianceTable,
@@ -26,23 +26,30 @@ interface CoversheetRecord {
   distributed_to_data: DistributedToInfo | null;
 }
 
-export function CoversheetPublic() {
+interface CoversheetPublicProps {
+  token?: string;
+  onClose?: () => void;
+}
+
+export function CoversheetPublic({ token: tokenProp, onClose }: CoversheetPublicProps = {}) {
   const [coversheet, setCoversheet] = useState<CoversheetRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromLibrary = !tokenProp && urlParams.get('from') === 'library';
 
-    if (!token) {
+  useEffect(() => {
+    const resolvedToken = tokenProp || urlParams.get('token');
+
+    if (!resolvedToken) {
       setError('Invalid coversheet link');
       setLoading(false);
       return;
     }
 
-    loadCoversheet(token);
-  }, []);
+    loadCoversheet(resolvedToken);
+  }, [tokenProp]);
 
   async function loadCoversheet(token: string) {
     try {
@@ -117,17 +124,34 @@ export function CoversheetPublic() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <div className="print:hidden fixed top-4 right-4 z-50">
+      <div className="print:hidden fixed top-4 right-4 z-50 flex items-center gap-3">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors font-semibold rounded shadow-lg"
+          >
+            Close
+          </button>
+        )}
         <button
           onClick={handlePrint}
           className="flex items-center gap-2 px-6 py-3 bg-black text-white hover:bg-gray-800 transition-colors font-semibold rounded shadow-lg"
         >
           <Printer className="w-5 h-5" />
-          Print Coversheet
+          Print
         </button>
       </div>
 
       <div className="max-w-4xl mx-auto px-8 py-12 print:px-0 print:py-0">
+        {fromLibrary && (
+          <a
+            href="/coversheet-library"
+            className="print:hidden inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors mb-6 group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back to Library</span>
+          </a>
+        )}
 
         {coversheet.is_outdated && (
           <div className="print:hidden bg-yellow-50 border-2 border-yellow-500 rounded-lg p-6 mb-8 flex items-start gap-4">
