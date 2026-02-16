@@ -152,13 +152,13 @@ export function OrderItemRow({
   return (
     <>
       <tr className="hover:bg-cult-dark-gray transition-colors">
-        <td className="px-4 py-3 text-sm font-medium text-cult-white">
+        <td className="px-3 py-3 text-sm font-medium text-cult-white">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 max-w-[200px]">
               {item.product_category === 'bulk' && <span className="text-xs">🔲</span>}
               {item.product_category === 'preroll' && <span className="text-xs">🚬</span>}
               {item.product_category === 'packaged' && <span className="text-xs">📦</span>}
-              <span>{item.product_name}</span>
+              <span className="truncate" title={item.product_name}>{item.product_name}</span>
             </div>
             {!loadingAssigned && totalAssigned > 0 && (
               <div className="flex items-center gap-2">
@@ -207,15 +207,15 @@ export function OrderItemRow({
             )}
           </div>
         </td>
-      <td className="px-4 py-3 text-sm text-cult-light-gray">
+      <td className="px-3 py-3 text-sm text-cult-light-gray whitespace-nowrap">
         {item.strain || '-'}
       </td>
-      <td className="px-4 py-3 text-sm">
+      <td className="px-3 py-3 text-sm">
         <select
           value={item.batch_id || ''}
           onChange={(e) => onBatchUpdate(item.id, orderId, e.target.value || null, item.strain)}
           disabled={!item.strain || batchesLoading}
-          className={`px-2 py-1 text-xs border-2 bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-white font-medium w-full ${
+          className={`px-2 py-1 text-xs border-2 bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-white font-medium w-28 ${
             !item.batch_id ? 'border-yellow-600 text-yellow-400' : 'border-cult-medium-gray'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
@@ -238,7 +238,7 @@ export function OrderItemRow({
           <p className="text-xs text-orange-500 mt-1">No batches available for {item.strain}</p>
         )}
       </td>
-      <td className="px-4 py-3 text-sm font-bold text-cult-white text-right">
+      <td className="px-3 py-3 text-sm font-bold text-cult-white text-right whitespace-nowrap">
         {editingQuantity ? (
           <div className="flex items-center justify-end gap-2">
             <input
@@ -269,7 +269,7 @@ export function OrderItemRow({
           </div>
         )}
       </td>
-      <td className="px-4 py-3 text-sm text-cult-white text-right">
+      <td className="px-3 py-3 text-sm text-cult-white text-right whitespace-nowrap">
         {editingPrice ? (
           <div className="flex items-center justify-end gap-2">
             <input
@@ -302,10 +302,10 @@ export function OrderItemRow({
           </div>
         )}
       </td>
-      <td className="px-4 py-3 text-sm font-bold text-green-400 text-right">
+      <td className="px-3 py-3 text-sm font-bold text-green-400 text-right whitespace-nowrap">
         {formatCurrency(Number(item.subtotal))}
       </td>
-      <td className="px-4 py-3 text-sm text-right">
+      <td className="px-3 py-3 text-sm text-right sticky right-0 bg-cult-near-black border-l border-cult-medium-gray z-10">
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setShowAssignmentModal(true)}

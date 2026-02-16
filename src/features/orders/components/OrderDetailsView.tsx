@@ -88,29 +88,29 @@ export const OrderDetailsView = memo(function OrderDetailsView({
       ) : (
         <div className="mb-4">
           <h3 className="text-sm font-bold text-cult-white mb-4 uppercase tracking-wider border-b-2 border-cult-medium-gray pb-2">Order Items</h3>
-          <div className="bg-cult-near-black border-2 border-cult-medium-gray overflow-hidden">
+          <div className="bg-cult-near-black border-2 border-cult-medium-gray overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-cult-black border-b-2 border-cult-medium-gray">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Product
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Strain
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Batch
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Qty
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Unit Price
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
                     Subtotal
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap sticky right-0 bg-cult-black border-l border-cult-medium-gray z-10">
                     Actions
                   </th>
                 </tr>
