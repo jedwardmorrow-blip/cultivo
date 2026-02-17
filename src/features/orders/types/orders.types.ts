@@ -1,5 +1,3 @@
-import type { Database } from '@/lib/database/database.types';
-
 // Re-export Order types from canonical location (Phase 1: Type Consolidation)
 export type { Order, OrderInsert, OrderUpdate, OrderItem } from '@/types/order.types';
 

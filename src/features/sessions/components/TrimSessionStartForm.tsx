@@ -45,13 +45,6 @@ export function TrimSessionStartForm({
         started_at: new Date().toISOString(),
       };
 
-      console.log('=== TRIM SESSION DEBUG ===');
-      console.log('Form state:', form);
-      console.log('Session data being sent:', sessionData);
-      console.log('pulled_weight value:', form.pulled_weight);
-      console.log('pulled_weight type:', typeof form.pulled_weight);
-      console.log('=========================');
-
       const { data, error: createError } = await createTrimSession(sessionData);
 
       if (createError) {

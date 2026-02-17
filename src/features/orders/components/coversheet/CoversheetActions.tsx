@@ -102,9 +102,6 @@ export function CoversheetActions({
 
       const url = getCoversheetPublicUrl(result.access_token);
       onGenerated?.(url);
-
-      // Optional: Show success notification
-      console.log(`Coversheet ${regenerate ? 'regenerated' : 'generated'} successfully:`, url);
     } catch (err) {
       console.error('Failed to generate coversheet:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate coversheet');

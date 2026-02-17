@@ -30,7 +30,7 @@ interface AuditSheetTemplateProps {
 export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateProps>(
   ({ auditData, forPrint = false, onImagesLoaded }, ref) => {
     const [logoDataUrl, setLogoDataUrl] = useState<string>('');
-    const [logoLoaded, setLogoLoaded] = useState(false);
+    const [_logoLoaded, setLogoLoaded] = useState(false);
 
     useEffect(() => {
       const loadLogo = async () => {

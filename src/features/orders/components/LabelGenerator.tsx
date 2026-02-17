@@ -4,6 +4,7 @@ import { Printer, Plus, Eye } from 'lucide-react';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 import { logoService } from '@/features/settings/services';
+import { notificationService } from '@/services/notification.service';
 
 interface Label {
   id: string;
@@ -93,7 +94,6 @@ export function LabelGenerator() {
         try {
           const logoUrl = await logoService.getLogoUrl('label');
           if (!logoUrl) {
-            console.warn('No label logo configured, skipping logo');
             setLogoDataUrl('');
             return;
           }
@@ -156,10 +156,8 @@ export function LabelGenerator() {
         generateUPCBarcode(upcCode),
         createLogoDataUrl()
       ]).then(() => {
-        console.log('All codes and images generated successfully');
         setTimeout(() => {
           setImagesLoaded(true);
-          console.log('Images marked as loaded');
         }, 800);
       }).catch(err => {
         console.error('Error generating codes:', err);
@@ -211,7 +209,6 @@ export function LabelGenerator() {
           margin: 0
         });
         const dataUrl = canvas.toDataURL();
-        console.log('Generated package barcode:', data, dataUrl ? 'Success' : 'Failed');
         setBarcodeUrl(dataUrl);
         resolve();
       } catch (error) {
@@ -222,10 +219,9 @@ export function LabelGenerator() {
   }
 
   function generateUPCBarcode(upcCode: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       try {
         if (!upcCode || upcCode.length < 8) {
-          console.warn('UPC code is too short or missing, generating default');
           setUpcBarcodeUrl('');
           resolve();
           return;
@@ -243,7 +239,6 @@ export function LabelGenerator() {
           margin: 0
         });
         const dataUrl = canvas.toDataURL();
-        console.log('Generated UPC barcode:', format, upcCode, dataUrl ? 'Success' : 'Failed');
         setUpcBarcodeUrl(dataUrl);
         resolve();
       } catch (error) {
@@ -331,12 +326,12 @@ export function LabelGenerator() {
     try {
       const product = products.find(p => p.id === formData.product_id);
       if (!product) {
-        alert('Please select a product');
+        notificationService.warning('Please select a product');
         return;
       }
 
       if (!formData.package_id) {
-        alert('Please enter a package ID prefix');
+        notificationService.warning('Please enter a package ID prefix');
         return;
       }
 
@@ -412,7 +407,7 @@ export function LabelGenerator() {
       await loadLabels();
     } catch (error) {
       console.error('Error generating labels:', error);
-      alert('Failed to generate labels. Please try again.');
+      notificationService.error('Failed to generate labels. Please try again.');
     }
   }
 
@@ -431,29 +426,26 @@ export function LabelGenerator() {
   }
 
   async function handlePrint() {
-    console.log('Print button clicked');
-
     if (!printRef.current) {
-      alert('Print area not ready. Please try again.');
+      notificationService.warning('Print area not ready. Please try again.');
       return;
     }
 
     if (!imagesLoaded) {
-      alert('Please wait for the label to finish loading...');
+      notificationService.warning('Please wait for the label to finish loading...');
       return;
     }
 
     if (!qrCodeUrl || !barcodeUrl) {
-      alert('Barcodes are still generating. Please wait...');
+      notificationService.warning('Barcodes are still generating. Please wait...');
       return;
     }
 
     if (imageError) {
-      alert('There was an error generating the label: ' + imageError);
+      notificationService.error('There was an error generating the label: ' + imageError);
       return;
     }
 
-    console.log('Starting print process with iframe');
     setLoadingPrint(true);
 
     try {
@@ -534,7 +526,7 @@ export function LabelGenerator() {
       }
     } catch (error) {
       console.error('Print error:', error);
-      alert('An error occurred while printing. Please try again.');
+      notificationService.error('An error occurred while printing. Please try again.');
     } finally {
       setLoadingPrint(false);
     }

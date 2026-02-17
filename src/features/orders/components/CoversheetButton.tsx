@@ -45,7 +45,7 @@ interface CoversheetButtonProps {
  * - All UI logic delegated to CoversheetActions
  * - Handles data fetching and state management
  */
-export function CoversheetButton({ orderId, orderNumber }: CoversheetButtonProps) {
+export function CoversheetButton({ orderId }: CoversheetButtonProps) {
   const [coversheet, setCoversheet] = useState<Coversheet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,8 +79,7 @@ export function CoversheetButton({ orderId, orderNumber }: CoversheetButtonProps
    * Handle successful generation/regeneration
    * Refresh coversheet data to show updated state
    */
-  const handleGenerated = (url: string) => {
-    console.log('Coversheet generated:', url);
+  const handleGenerated = (_url: string) => {
     // Refresh data to show new coversheet state
     fetchCoversheet();
   };

@@ -15,7 +15,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
   const { markAsPrinted, marking } = useMarkLabelPrinted();
   const { voidLabel, voiding } = useVoidLabel();
   const [expandedView, setExpandedView] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [_selectedLabel, _setSelectedLabel] = useState<string | null>(null);
   const [previewLabelId, setPreviewLabelId] = useState<string | null>(null);
   const [batchPrintLabelIds, setBatchPrintLabelIds] = useState<string[]>([]);
 

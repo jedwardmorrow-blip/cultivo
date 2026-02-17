@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
-import { AdminSessionEditModal } from './AdminSessionEditModal';
-import { AdminSessionDeleteModal } from './AdminSessionDeleteModal';
 import type { TrimSession } from '../types';
 
 function getConversionStatus(session: TrimSession): 'none' | 'pending' | 'converted' {

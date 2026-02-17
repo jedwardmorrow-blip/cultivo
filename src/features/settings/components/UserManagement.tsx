@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/utils';
-import { Users, UserPlus, Shield, Check, X, AlertCircle, RotateCw } from 'lucide-react';
+import { Users, UserPlus, Check, X, AlertCircle, RotateCw } from 'lucide-react';
 import { Database } from '@/lib/database';
 import { settingsService } from '../services/settings.service';
 
@@ -24,9 +24,6 @@ export function UserManagement() {
   const [resetPasswordUser, setResetPasswordUser] = useState<UserProfile | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
-
-  console.log('UserManagement - profile:', profile);
-  console.log('UserManagement - isAdmin:', isAdmin);
 
   useEffect(() => {
     fetchUsers();

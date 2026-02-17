@@ -4,7 +4,7 @@ interface AdminSessionDeleteModalProps {
   onDelete: () => void;
 }
 
-export function AdminSessionDeleteModal({ sessionId, onClose, onDelete }: AdminSessionDeleteModalProps) {
+export function AdminSessionDeleteModal({ onClose, onDelete }: AdminSessionDeleteModalProps) {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
       <div className="bg-cult-near-black border-2 border-red-600 p-8 max-w-md w-full">

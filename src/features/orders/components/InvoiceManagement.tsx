@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FileText, Send, Plus, Eye } from 'lucide-react';
 import { getAllInvoices, getPendingInvoices, createInvoiceFromOrder } from '../services/invoiceService';
 import { supabase } from '@/lib/supabase';
+import { notificationService } from '@/services/notification.service';
 
 interface Invoice {
   id: string;
@@ -84,7 +85,7 @@ export function InvoiceManagement() {
       await loadPendingInvoices();
     } catch (error) {
       console.error('Error generating invoice:', error);
-      alert('Failed to generate invoice. Please try again.');
+      notificationService.error('Failed to generate invoice. Please try again.');
     }
   }
 
@@ -99,7 +100,7 @@ export function InvoiceManagement() {
       await loadInvoices();
     } catch (error) {
       console.error('Error updating invoice status:', error);
-      alert('Failed to update status. Please try again.');
+      notificationService.error('Failed to update status. Please try again.');
     }
   }
 

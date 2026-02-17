@@ -107,7 +107,7 @@ export function CoversheetLibrary() {
               </p>
             </div>
             <img
-              src="/Cult Cannabis Co Final White 320x320@3x.png"
+              src="/cult-logo-white-320.png"
               alt="Cult Cannabis Co"
               className="h-24 w-auto"
             />

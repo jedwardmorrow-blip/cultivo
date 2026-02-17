@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import type { InventoryItem } from '../types';
 import { getInventoryItems } from '@/features/inventory/services/inventory.service';
 

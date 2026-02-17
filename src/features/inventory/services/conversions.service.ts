@@ -16,7 +16,6 @@ import {
   ConsolidatedPackageInput,
   FinalizeConversionResult,
   PendingConversionSession,
-  VoidConversionInput,
   FinalizationStatus,
 } from '@/types';
 import { inventoryMovementService } from '@/services';
@@ -113,131 +112,6 @@ export function getCategoryFromProductName(productName: string): string {
   return 'Bulk';
 }
 
-/**
- * Calculate remaining weight/units for a batch + product combination
- * Original output (from sessions) - already packaged (from conversion_packages)
- * Supports partial finalization workflow
- *
- * @deprecated This function is redundant after the 2026-01-15 Part 4 fix.
- * The pending_conversion_sessions VIEW now calculates remaining quantities at the
- * database level: (SUM(session_output) - COALESCE(SUM(packaged), 0)).
- *
- * Components should use session.output_weight / session.output_units directly
- * from PendingConversionSession objects instead of calling this service function.
- *
- * This function is kept temporarily for backward compatibility but should be
- * removed in a future refactor. It performs redundant database queries and
- * can produce incorrect results due to aggregation_id mismatches.
- *
- * See: docs/AI-BUILD-SESSION-CHECKLIST.md Part 6 for details.
- *
- * @param batchId - Batch registry ID
- * @param productId - Product ID (may not match VIEW-generated product_id)
- * @param sessionType - Type of conversion session
- * @param aggregationId - PREFERRED: Stable aggregation_id from VIEW (batch+product+session_type)
- */
-export async function getRemainingQuantity(
-  batchId: string,
-  productId: string | null,
-  sessionType: 'trim' | 'packaging' | 'bucking',
-  aggregationId?: string
-): Promise<{ remaining_weight: number | null; remaining_units: number | null }> {
-  console.log('[getRemainingQuantity] Called with:', { batchId, productId, sessionType, aggregationId });
-
-  // Step 1: Get original output from pending_conversion_sessions view
-  // PREFER aggregation_id for reliable matching (product_id is dynamically generated in VIEW)
-  let pendingQuery = supabase
-    .from('pending_conversion_sessions')
-    .select('output_weight, output_units, aggregation_id, product_id, product_name')
-    .eq('batch_id', batchId)
-    .eq('session_type', sessionType);
-
-  // Use aggregation_id if available (most reliable)
-  if (aggregationId) {
-    pendingQuery = pendingQuery.eq('aggregation_id', aggregationId);
-    console.log('[getRemainingQuantity] Filtering by aggregation_id:', aggregationId);
-  }
-  // Fallback to product_id filtering (less reliable due to dynamic generation)
-  else if (productId !== null) {
-    pendingQuery = pendingQuery.eq('product_id', productId);
-    console.log('[getRemainingQuantity] Filtering by product_id:', productId);
-  } else {
-    pendingQuery = pendingQuery.is('product_id', null);
-    console.log('[getRemainingQuantity] Filtering by product_id IS NULL');
-  }
-
-  const { data: pending, error: pendingError } = await pendingQuery;
-
-  if (pendingError) {
-    console.error('[getRemainingQuantity] Error fetching pending conversions:', pendingError);
-    return { remaining_weight: null, remaining_units: null };
-  }
-
-  console.log('[getRemainingQuantity] Found pending conversions:', pending);
-
-  if (!pending || pending.length === 0) {
-    return { remaining_weight: null, remaining_units: null };
-  }
-
-  // Aggregate total original output
-  const originalWeight = pending.reduce((sum, p) => sum + (p.output_weight || 0), 0);
-  const originalUnits = pending.reduce((sum, p) => sum + (p.output_units || 0), 0);
-
-  // Step 2: Get already packaged amounts from conversion_packages
-  // Use aggregation_id for reliable matching (same as pending_conversion_sessions)
-  let packagesQuery = supabase
-    .from('conversion_packages')
-    .select('weight, units, aggregation_id, product_id')
-    .eq('batch_id', batchId)
-    .in('finalization_status', ['pending', 'finalized']);
-
-  // Use aggregation_id if available (most reliable)
-  if (aggregationId) {
-    packagesQuery = packagesQuery.eq('aggregation_id', aggregationId);
-    console.log('[getRemainingQuantity] Filtering packages by aggregation_id:', aggregationId);
-  }
-  // Fallback to product_id filtering
-  else if (productId !== null) {
-    packagesQuery = packagesQuery.eq('product_id', productId);
-    console.log('[getRemainingQuantity] Filtering packages by product_id:', productId);
-  } else {
-    packagesQuery = packagesQuery.is('product_id', null);
-    console.log('[getRemainingQuantity] Filtering packages by product_id IS NULL');
-  }
-
-  const { data: packages, error: packagesError } = await packagesQuery;
-
-  if (packagesError) {
-    console.error('[getRemainingQuantity] Error fetching conversion packages:', packagesError);
-    return {
-      remaining_weight: originalWeight > 0 ? originalWeight : null,
-      remaining_units: originalUnits > 0 ? originalUnits : null,
-    };
-  }
-
-  console.log('[getRemainingQuantity] Found packages:', packages);
-
-  // Sum already packaged amounts
-  const packagedWeight = (packages || []).reduce((sum, p) => sum + (p.weight || 0), 0);
-  const packagedUnits = (packages || []).reduce((sum, p) => sum + (p.units || 0), 0);
-
-  const remaining = {
-    remaining_weight: originalWeight > 0 ? originalWeight - packagedWeight : null,
-    remaining_units: originalUnits > 0 ? originalUnits - packagedUnits : null,
-  };
-
-  console.log('[getRemainingQuantity] Calculation:', {
-    originalWeight,
-    originalUnits,
-    packagedWeight,
-    packagedUnits,
-    remaining
-  });
-
-  // Calculate remaining
-  return remaining;
-}
-
 // =====================================================
 // MANUAL FINALIZATION WORKFLOW
 // =====================================================
@@ -248,7 +122,7 @@ export async function getRemainingQuantity(
  * Returns aggregated sessions grouped by batch + product
  * Multiple sessions with same batch+product appear as single row
  */
-export async function getPendingConversions(date?: string): Promise<PendingConversionSession[]> {
+export async function getPendingConversions(_date?: string): Promise<PendingConversionSession[]> {
   const { data, error } = await supabase
     .from('pending_conversion_sessions')
     .select('*')
@@ -305,18 +179,10 @@ export async function finalizeConversion(params: {
     return true;
   })();
 
-  console.log('[finalizeConversion] Partial detection:', {
-    totalPackageWeight,
-    totalPackageUnits,
-    outputWeight: params.output_weight,
-    outputUnits: params.output_units,
-    isFullFinalization,
-  });
-
   // Step 1: Only mark sessions as finalized for FULL conversion
   // For partial conversions, sessions stay in 'pending' so the VIEW keeps showing them
   if (isFullFinalization) {
-    const { data: rpcResult, error: rpcError } = await supabase.rpc('finalize_session_aggregated', {
+    const { error: rpcError } = await supabase.rpc('finalize_session_aggregated', {
       p_batch_id: params.batch_id,
       p_product_name: params.product_name,
       p_session_type: params.session_type,
@@ -389,14 +255,6 @@ export async function finalizeConversion(params: {
     const strainName = batchData?.strains?.name || 'Unknown Strain';
     const batchNumber = batchData.batch_number;
 
-    console.log('[finalizeConversion] Creating inventory items:', {
-      packageCount: createdPackages.length,
-      strainName,
-      batchNumber,
-      productName,
-      strainId: batchData.strain_id,
-    });
-
     // Create inventory_items for each package
     const inventoryItems = createdPackages.map((pkg) => {
       const quantity = pkg.weight || pkg.units || 0;
@@ -424,8 +282,6 @@ export async function finalizeConversion(params: {
       };
     });
 
-    console.log('[finalizeConversion] Inserting inventory items:', inventoryItems);
-
     const { error: inventoryError } = await supabase
       .from('inventory_items')
       .insert(inventoryItems);
@@ -434,11 +290,8 @@ export async function finalizeConversion(params: {
       throw new Error(`Failed to create inventory items: ${inventoryError.message}`);
     }
 
-    console.log('[finalizeConversion] Successfully created inventory items');
-
     // Step 3.5: Validate ATP consistency for all created items
     // After PRODUCE trigger runs, verify: available_qty = on_hand_qty - reserved_qty
-    console.log('[finalizeConversion] Validating ATP consistency...');
 
     for (const item of inventoryItems) {
       const { data: invItem, error: checkError } = await supabase
@@ -461,8 +314,6 @@ export async function finalizeConversion(params: {
         errorService.handle(new Error(atpError), 'ATP consistency check failed');
       }
     }
-
-    console.log('[finalizeConversion] ATP consistency validated');
 
     // Step 4: Create inventory movements for audit trail
     const movementErrors: string[] = [];
@@ -508,8 +359,7 @@ export async function finalizeConversion(params: {
     // If any movements failed, log warning but don't fail the entire operation
     // Inventory items were successfully created, movements are for audit trail
     if (movementErrors.length > 0) {
-      console.warn('[finalizeConversion] Some movements failed to create:', movementErrors);
-      console.warn('[finalizeConversion] Inventory items created successfully, but audit trail incomplete');
+      console.error('[finalizeConversion] Some movements failed to create:', movementErrors);
     }
   }
 
@@ -794,7 +644,7 @@ export async function createConversionPackages(
     .single();
 
   if (productError) {
-    console.warn('Could not fetch product stage_id:', productError);
+    console.error('Could not fetch product stage_id:', productError);
   }
 
   const finalizationStatus = metadata.finalization_status || 'pending';
@@ -849,7 +699,7 @@ export async function createConsolidatedPackage(
     .single();
 
   if (productError) {
-    console.warn('Could not fetch product stage_id:', productError);
+    console.error('Could not fetch product stage_id:', productError);
   }
 
   const finalizationStatus = input.finalization_status || 'pending';

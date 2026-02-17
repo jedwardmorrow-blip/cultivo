@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { InternalInventoryLabel, InventoryItem } from '../types';
 import { saveInternalLabel } from '../services/inventory.service';
-import { supabase } from '@/lib/supabase';
 import { logoService } from '@/features/settings/services';
 
 /**
@@ -56,7 +55,6 @@ export function useInventoryLabel() {
               const ctx = canvas.getContext('2d');
 
               if (!ctx) {
-                console.warn('Could not get canvas context for logo');
                 setLogoDataUrl('');
                 resolve();
                 return;
@@ -88,7 +86,6 @@ export function useInventoryLabel() {
             };
 
             img.onerror = () => {
-              console.warn('Failed to load logo, continuing without logo');
               setLogoDataUrl('');
               resolve();
             };
@@ -96,7 +93,6 @@ export function useInventoryLabel() {
             img.src = logoUrl;
           });
         } else {
-          console.warn('No label logo configured');
           setLogoDataUrl('');
         }
       } catch (logoError) {

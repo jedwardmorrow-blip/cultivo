@@ -49,10 +49,8 @@ export function COAUploadModal({
       }
 
       try {
-        console.log('COAUploadModal: Checking for existing COA...');
         const existing = await getActiveCOAForBatch(batchId);
         setExistingCOA(existing);
-        console.log('COAUploadModal: Existing COA:', existing ? 'Found' : 'None');
       } catch (err: any) {
         console.error('COAUploadModal: Error checking existing COA:', err);
       } finally {
@@ -116,9 +114,7 @@ export function COAUploadModal({
 
     try {
       // Pre-flight check: Verify storage service is accessible
-      console.log('COAUploadModal: Running storage health check...');
       const healthCheck = await checkStorageHealth();
-      console.log('COAUploadModal: Health check result:', healthCheck);
 
       if (!healthCheck.ok) {
         const healthError = `Storage service unavailable: ${healthCheck.error}`;
@@ -127,9 +123,7 @@ export function COAUploadModal({
       }
 
       // Step 1: Upload PDF file to storage
-      console.log('COAUploadModal: Initiating PDF upload...');
       const pdfFilePath = await uploadCOAPDF(file);
-      console.log('COAUploadModal: PDF uploaded successfully:', pdfFilePath);
 
       // Step 2: Extract terpenes (first 3)
       const terpenes = parsedData?.terpenes || [];
@@ -164,11 +158,9 @@ export function COAUploadModal({
 
       // Step 4: Create or Replace COA record
       if (existingCOA) {
-        console.log('COAUploadModal: Replacing existing COA...');
         await replaceCOA(batchId, existingCOA, file, coaData);
         notificationService.success(`COA replaced successfully for batch ${batchNumber}`);
       } else {
-        console.log('COAUploadModal: Creating new COA...');
         await createCOA(coaData);
         notificationService.success(`COA uploaded successfully for batch ${batchNumber}`);
       }

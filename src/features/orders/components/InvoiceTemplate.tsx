@@ -10,7 +10,7 @@ interface InvoiceTemplateProps {
 export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
   ({ invoiceData, forPrint = false, onImagesLoaded }, ref) => {
     const [logoDataUrl, setLogoDataUrl] = useState<string>('');
-    const [logoLoaded, setLogoLoaded] = useState(false);
+    const [_logoLoaded, setLogoLoaded] = useState(false);
 
     useEffect(() => {
       const loadLogo = async () => {

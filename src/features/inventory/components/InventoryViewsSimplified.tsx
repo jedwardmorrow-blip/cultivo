@@ -11,7 +11,6 @@ import {
 import { ConversionsView } from './ConversionsView';
 import { ConversionHistoryView } from './ConversionHistoryView';
 import { AuditManagement } from './AuditManagement';
-import type { StageFilter } from '../types';
 
 export function AllInventoryViewWrapper() {
   const { inventoryItems, loading } = useInventoryData();

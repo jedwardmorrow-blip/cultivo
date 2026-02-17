@@ -72,15 +72,12 @@ export function useInventoryData(options?: { includeEmpty?: boolean }) {
           schema: 'public',
           table: 'conversion_packages',
         },
-        (payload) => {
-          console.log('Conversion package change detected, refreshing inventory:', payload);
+        () => {
           fetchInventory(true);
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to conversion packages real-time updates');
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR') {
           console.error('Failed to subscribe to conversion packages updates');
         }
       });
@@ -102,15 +99,12 @@ export function useInventoryData(options?: { includeEmpty?: boolean }) {
           schema: 'public',
           table: 'inventory_items',
         },
-        (payload) => {
-          console.log('Inventory item change detected, refreshing inventory:', payload);
+        () => {
           fetchInventory(true);
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to inventory items real-time updates');
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR') {
           console.error('Failed to subscribe to inventory items updates');
         }
       });

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { formatElapsedTime } from '../utils';
 import type { BuckingSession, BuckingCompleteForm } from '../types';
 import { completeBuckingSession } from '../services/sessions.service';
+import { notificationService } from '@/services/notification.service';
 
 interface BuckingSessionCompleteModalProps {
   session: BuckingSession;
@@ -44,7 +44,7 @@ export function BuckingSessionCompleteModal({
 
     if (error) {
       console.error('Error completing session:', error);
-      alert('Error completing session: ' + error.message);
+      notificationService.error('Error completing session: ' + error.message);
     } else {
       onSuccess();
     }

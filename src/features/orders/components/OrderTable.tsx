@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, DollarSign } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';

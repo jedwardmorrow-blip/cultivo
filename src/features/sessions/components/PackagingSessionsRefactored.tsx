@@ -20,8 +20,8 @@ export function PackagingSessionsRefactored() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [completingSession, setCompletingSession] = useState<PackagingSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<PackagingSession | null>(null);
-  const [editingSession, setEditingSession] = useState<PackagingSession | null>(null);
-  const [deletingSession, setDeletingSession] = useState<PackagingSession | null>(null);
+  const [_editingSession, setEditingSession] = useState<PackagingSession | null>(null);
+  const [_deletingSession, setDeletingSession] = useState<PackagingSession | null>(null);
 
   const handleSessionStarted = () => {
     setShowStartForm(false);

@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabase';
 
-interface CrudServiceOptions<T, TInput = Partial<T>, TUpdate = Partial<T>> {
+interface CrudServiceOptions<T, _TInput = Partial<T>, _TUpdate = Partial<T>> {
   tableName: string;
   select?: string;
 }

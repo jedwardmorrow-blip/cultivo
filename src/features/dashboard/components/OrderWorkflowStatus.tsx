@@ -9,7 +9,7 @@ interface WorkflowStats {
   ready_for_delivery: number;
 }
 
-export function OrderWorkflowStatus({ onSelectOrder }: { onSelectOrder: (orderId: string) => void }) {
+export function OrderWorkflowStatus({}: { onSelectOrder: (orderId: string) => void }) {
   const [stats, setStats] = useState<WorkflowStats>({
     submitted: 0,
     accepted: 0,

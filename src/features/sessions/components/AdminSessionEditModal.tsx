@@ -4,7 +4,7 @@ interface AdminSessionEditModalProps {
   onUpdate: () => void;
 }
 
-export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessionEditModalProps) {
+export function AdminSessionEditModal({ onClose }: AdminSessionEditModalProps) {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
       <div className="bg-cult-near-black border-2 border-cult-white p-8 max-w-2xl w-full">

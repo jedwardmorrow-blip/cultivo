@@ -4,7 +4,7 @@ import { validateDate, getDateInputConstraints } from '@/lib/utils';
 import { useOrderableProducts } from '@/hooks';
 import { formatProductPrice } from '@/services';
 import { X, Plus, Trash2, Search, ChevronDown } from 'lucide-react';
-import type { OrderableProduct } from '@/types';
+import { notificationService } from '@/services/notification.service';
 // import { Calendar, SearchableSelect } from './common';
 
 interface Customer {
@@ -178,8 +178,6 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
     setLoading(true);
 
     try {
-      const customer = customers.find(c => c.id === selectedCustomerId);
-
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -213,7 +211,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
       onSuccess();
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
+      notificationService.error('Failed to create order. Please try again.');
     } finally {
       setLoading(false);
     }

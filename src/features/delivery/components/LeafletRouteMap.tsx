@@ -108,12 +108,6 @@ export function LeafletRouteMap({ origin, destination, routeGeometry, className 
     polyline.addTo(mapInstanceRef.current);
     layersRef.current.push(polyline);
 
-    console.log(`Route rendered with ${routeLatLngs.length} points`);
-    if (routeLatLngs.length > 0) {
-      console.log('First point:', routeLatLngs[0].lat.toFixed(6), routeLatLngs[0].lng.toFixed(6));
-      console.log('Last point:', routeLatLngs[routeLatLngs.length - 1].lat.toFixed(6), routeLatLngs[routeLatLngs.length - 1].lng.toFixed(6));
-    }
-
     const originIcon = L.divIcon({
       html: `<div style="background-color: #10B981; width: 32px; height: 32px; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">A</div>`,
       className: 'map-marker-icon',

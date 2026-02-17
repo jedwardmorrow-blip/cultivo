@@ -4,6 +4,7 @@ import { X, FileText, Printer } from 'lucide-react';
 import { generateManifestData, ManifestData, Driver, Vehicle } from '../services/manifestService';
 import { ManifestTemplate } from './ManifestTemplate';
 import { getAllLocations, Location } from '../../delivery/services/locations.service';
+import { notificationService } from '@/services/notification.service';
 
 interface ManifestModalProps {
   orderId: string;
@@ -124,19 +125,16 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
   }
 
   async function handlePrint() {
-    console.log('Print button clicked');
-
     if (!printRef.current) {
-      alert('Print area not ready. Please try again.');
+      notificationService.warning('Print area not ready. Please try again.');
       return;
     }
 
     if (!imagesLoaded) {
-      alert('Please wait for the manifest to finish loading...');
+      notificationService.warning('Please wait for the manifest to finish loading...');
       return;
     }
 
-    console.log('Starting print process with iframe');
     setLoadingPrint(true);
 
     try {
@@ -328,7 +326,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
       setTimeout(() => document.body.removeChild(iframe), 1000);
     } catch (error) {
       console.error('Print error:', error);
-      alert('An error occurred while printing. Please try again.');
+      notificationService.error('An error occurred while printing. Please try again.');
     } finally {
       setLoadingPrint(false);
     }

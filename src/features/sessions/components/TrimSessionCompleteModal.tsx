@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { formatElapsedTime } from '../utils';
 import type { TrimSession, TrimCompleteForm, InventoryItem } from '../types';
 import { completeTrimSession } from '../services/sessions.service';
+import { notificationService } from '@/services/notification.service';
 
 interface TrimSessionCompleteModalProps {
   session: TrimSession;
@@ -42,7 +43,7 @@ export function TrimSessionCompleteModal({
 
     if (error) {
       console.error('Error completing session:', error);
-      alert('Error completing session: ' + error.message);
+      notificationService.error('Error completing session: ' + error.message);
     } else {
       await fetchConsolidatedPackageIds();
       setTimeout(() => {

@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import { PendingConversionSession, CreatePackageInput } from '@/types';
 import { useFinalizationWorkflow } from '../hooks';
 import { BulkBagCreationModal } from './BulkBagCreationModal';
@@ -92,7 +93,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
 
   const handleVoidSession = async () => {
     if (!voidReason.trim()) {
-      alert('Please provide a reason for voiding');
+      notificationService.warning('Please provide a reason for voiding');
       return;
     }
 

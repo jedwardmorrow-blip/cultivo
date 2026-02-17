@@ -22,8 +22,6 @@ export function SalesOverview() {
     try {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
-      const todayStart = `${today}T00:00:00.000Z`;
-      const todayEnd = `${today}T23:59:59.999Z`;
       const currentMonth = now.toISOString().slice(0, 7);
 
       // Calculate start and end of current week (Sunday to Saturday)

@@ -93,7 +93,6 @@ export function useConversionLock(inventoryId: string | null) {
           .update({ status: 'cancelled' })
           .eq('id', lockId)
           .then(() => {
-            console.log('Conversion lock released on cleanup');
           });
       }
     };

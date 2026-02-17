@@ -15,33 +15,39 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-17
-**Session:** Invoice THC Percentage Fix
+**Session:** System Health Remediation
 **Status:** COMPLETE
 
 **What was done:**
-- Fixed invoice THC showing "--" for batches with active COAs (e.g., Black Maple 251105-BLM with THC 25.04%)
-- Root cause: `invoiceService.ts` joined COA via legacy `batch_registry.coa_id` field which was null for post-backfill COAs
-- Changed invoice service to query `certificates_of_analysis` directly via canonical `batch_id` FK with `is_active = true` filter
-- Added bidirectional sync in `createCOA()` to set `batch_registry.coa_id` after creating active COAs
+- Deleted 3 dead hook files (useOrders.ts, useOrdersWithDetails.ts, useSettings.ts) and fixed barrel exports
+- Removed 2 dead functions (getRemainingQuantity from conversions.service.ts, assignCOAToBatch from batch.service.ts)
+- Fixed all 65 TS6133 unused variable warnings across 48 files
+- Replaced all 60 browser alert() calls with notificationService across 21 files
+- Stripped ~170 console.log/warn/info/debug statements across 25 files
+- Removed unused npm packages (dom-to-image-more, @types/react-router-dom)
+- Renamed PNG files with spaces to fix EAGAIN build errors (cult-logo-white-320.png, cult-logo-eye.png)
+- Updated all image references in source files and index.html
 
-**Build status:** Passes (pre-existing EAGAIN on public asset copy)
+**Build status:** Passes clean (2411 modules, no EAGAIN errors)
 
-**Known issues:** Pre-existing EAGAIN error when copying `Cult Cannabis Co Final White 320x320@3x.png` to dist (filename with spaces)
+**Known issues:** None introduced. Pre-existing ~1000 TS errors from stale database.types.ts (needs CLI type regeneration).
 
-**New files:** None
-**Modified files:** invoiceService.ts (COA query direction fix), coa.service.ts (bidirectional coa_id sync)
+**New files:** None (renamed existing PNGs)
+**Modified files:** ~50 files across all feature modules
 **Migrations:** None
 
 **Critical context for future sessions:**
-- Invoice service now uses canonical `certificates_of_analysis.batch_id` direction per COA-HANDLING.md GAP-009
-- `createCOA()` now syncs `batch_registry.coa_id` for bidirectional consistency
+- All browser alerts now use notificationService (.warning/.error/.success/.info)
+- PNG logos renamed: `/cult-logo-white-320.png` (main), `/cult-logo-eye.png` (favicon)
+- PublicMenu.tsx references `/Cult Cannabis Co Final White Outline 320x320@3x.png` which does not exist (pre-existing issue)
 - The `pending_conversion_sessions` VIEW uses `?|` JSONB operator -- do NOT replace with LEFT JOIN
 - `reason_code: 'session_finalization'` in conversion service is REQUIRED (Architecture Decision #1)
 
 **Next recommendations:**
-1. Consider renaming public asset files to remove spaces (prevents EAGAIN build errors)
-2. Console.log cleanup (103 instances across 22 files -- deferred)
-3. Audit other queries that may still use legacy `batch_registry.coa_id` join direction
+1. Regenerate database.types.ts from live schema (needs Supabase CLI)
+2. Fix PublicMenu.tsx broken logo reference (outline variant PNG is missing)
+3. Extract hardcoded license/company details to app_settings (Phase 5.2 deferred)
+4. Extract hardcoded product stage UUIDs to DB lookup (Phase 5.3 deferred)
 
 ---
 

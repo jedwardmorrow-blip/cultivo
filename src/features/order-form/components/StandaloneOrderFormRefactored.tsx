@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Package, CheckCircle2, ArrowRight, Check, Save } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import * as orderFormService from '../services/orderForm.service';
 import { NewCustomerModal } from '../../customers/components/NewCustomerModal';
 import { useOrderFormState } from '../hooks/useOrderFormState';
@@ -61,13 +62,13 @@ export function StandaloneOrderFormRefactored() {
     if (e) e.preventDefault();
 
     if (!selectedCustomerId) {
-      alert('Please select a dispensary.');
+      notificationService.warning('Please select a dispensary.');
       setMobileView('details');
       return;
     }
 
     if (orderItems.length === 0) {
-      alert('Please add at least one item to the order.');
+      notificationService.warning('Please add at least one item to the order.');
       setMobileView('products');
       return;
     }
@@ -95,7 +96,7 @@ export function StandaloneOrderFormRefactored() {
       const { data: order, error } = await orderFormService.createOrder(orderData, itemsToSubmit);
 
       if (error || !order) {
-        alert('Failed to create order. Please try again.');
+        notificationService.error('Failed to create order. Please try again.');
         return;
       }
 
@@ -343,13 +344,13 @@ export function StandaloneOrderFormRefactored() {
               onClick={() => {
                 if (mobileView === 'details') {
                   if (!selectedCustomerId) {
-                    alert('Please select a dispensary first');
+                    notificationService.warning('Please select a dispensary first');
                     return;
                   }
                   setMobileView('products');
                 } else if (mobileView === 'products') {
                   if (orderItems.length === 0) {
-                    alert('Please add at least one item');
+                    notificationService.warning('Please add at least one item');
                     return;
                   }
                   setMobileView('cart');
@@ -357,7 +358,7 @@ export function StandaloneOrderFormRefactored() {
                   if (canProceedToReview()) {
                     setMobileView('review');
                   } else {
-                    alert('Please complete all required fields');
+                    notificationService.warning('Please complete all required fields');
                   }
                 }
               }}

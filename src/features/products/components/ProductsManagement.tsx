@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { productsService } from '../services/products.service';
 import { Database } from '@/lib/database';
 import { Package, Edit2, Save, X, Filter } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -67,7 +67,7 @@ export function ProductsManagement() {
 
     if (error) {
       console.error('Error updating product:', error);
-      alert('Failed to update product: ' + error.message);
+      notificationService.error('Failed to update product: ' + error.message);
     } else {
       fetchProducts();
       cancelEditing();

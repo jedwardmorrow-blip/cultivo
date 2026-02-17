@@ -116,7 +116,6 @@ export function useCombineWorkflow({
   }, [validation?.is_valid]);
 
   // Calculate variance from validation
-  const totalQty = validation?.summary?.total_qty || 0;
   const hasVariance = false; // Will be calculated during execution
   const varianceAmount = 0; // Will be known after actual measurement
   const variancePercentage = 0;

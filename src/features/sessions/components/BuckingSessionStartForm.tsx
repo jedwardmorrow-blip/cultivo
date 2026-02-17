@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { BuckingSessionInsert, InventoryItem } from '../types';
 import { createBuckingSession } from '../services/sessions.service';
 import { AVAILABLE_BUCKERS } from '../hooks/useBuckingData';
+import { notificationService } from '@/services/notification.service';
 
 interface BuckingSessionStartFormProps {
   binnedPackages: InventoryItem[];
@@ -73,7 +74,7 @@ export function BuckingSessionStartForm({
     // Validate binned_weight_grams against available inventory
     const selectedPackage = binnedPackages.find(p => p.package_id === form.binned_package_id);
     if (!selectedPackage) {
-      alert('Selected package not found. Please select a valid package.');
+      notificationService.warning('Selected package not found. Please select a valid package.');
       return;
     }
 
@@ -81,12 +82,12 @@ export function BuckingSessionStartForm({
     const availableQty = selectedPackage.available_qty || 0;
 
     if (pullWeight <= 0) {
-      alert('Binned weight must be greater than 0.');
+      notificationService.warning('Binned weight must be greater than 0.');
       return;
     }
 
     if (pullWeight > availableQty) {
-      alert(
+      notificationService.warning(
         `Insufficient inventory!\n\n` +
         `Package ${form.binned_package_id} has ${availableQty.toFixed(1)}g available.\n` +
         `You are trying to pull ${pullWeight.toFixed(1)}g.\n\n` +
@@ -114,21 +115,21 @@ export function BuckingSessionStartForm({
 
       // Parse error message for user-friendly display
       if (error.message.includes('Insufficient inventory')) {
-        alert(
+        notificationService.error(
           'Insufficient Inventory\n\n' +
           'The selected package does not have enough available inventory for this pull weight. ' +
           'Another session may have reserved inventory since you loaded this page.\n\n' +
           'Please refresh and try again with updated inventory levels.'
         );
       } else if (error.message.includes('not found')) {
-        alert(
+        notificationService.error(
           'Package Not Found\n\n' +
           'The selected package could not be found in inventory. ' +
           'It may have been consumed or removed.\n\n' +
           'Please refresh and select a different package.'
         );
       } else {
-        alert('Error starting session: ' + error.message);
+        notificationService.error('Error starting session: ' + error.message);
       }
     } else {
       onSuccess();

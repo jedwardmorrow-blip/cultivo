@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { XCircle } from 'lucide-react';
 import type { TrimSession, TrimSessionUpdate } from '../types';
 import { cancelTrimSession } from '../services/sessions.service';
+import { notificationService } from '@/services/notification.service';
 
 interface TrimSessionCancelModalProps {
   session: TrimSession;
@@ -25,7 +26,7 @@ export function TrimSessionCancelModal({
 
     if (error) {
       console.error('Error cancelling session:', error);
-      alert('Error cancelling session: ' + (error as Error).message);
+      notificationService.error('Error cancelling session: ' + (error as Error).message);
     } else {
       onSuccess();
     }

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
-import { AdminSessionEditModal } from './AdminSessionEditModal';
-import { AdminSessionDeleteModal } from './AdminSessionDeleteModal';
 import type { PackagingSession } from '../types';
 
 function getConversionStatus(session: PackagingSession): 'none' | 'pending' | 'converted' {

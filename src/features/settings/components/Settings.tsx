@@ -42,7 +42,7 @@ export function Settings() {
 
   async function checkDatabaseConnection() {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('app_settings')
         .select('id')
         .limit(1);
@@ -255,8 +255,6 @@ export function Settings() {
       </div>
     );
   }
-
-  console.log('Settings - isAdmin:', isAdmin);
 
   const tabs = [
     { id: 'general', label: 'General', icon: SettingsIcon },

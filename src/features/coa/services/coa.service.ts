@@ -98,22 +98,8 @@ export interface ParsedCOAData {
  * @description Uploads to 'coa-pdfs' bucket with timestamp prefix
  */
 export async function uploadCOAPDF(file: File): Promise<string> {
-  console.log('uploadCOAPDF: Starting upload...');
-  console.log('uploadCOAPDF: File details:', {
-    name: file.name,
-    size: file.size,
-    type: file.type,
-    lastModified: file.lastModified
-  });
-
   // Check authentication status
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  console.log('uploadCOAPDF: Auth session:', {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    userId: session?.user?.id,
-    sessionError: sessionError?.message
-  });
 
   if (sessionError || !session) {
     const authError = 'Authentication required for file upload. Please log in again.';
@@ -131,11 +117,9 @@ export async function uploadCOAPDF(file: File): Promise<string> {
   }
 
   if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-    console.warn('uploadCOAPDF: File type may not be PDF:', file.type);
   }
 
   const fileName = `${Date.now()}-${file.name}`;
-  console.log('uploadCOAPDF: Uploading to coa-pdfs bucket:', fileName);
 
   try {
     const { data, error } = await supabase.storage
@@ -156,7 +140,6 @@ export async function uploadCOAPDF(file: File): Promise<string> {
       throw new Error(`Storage upload failed: ${error.message}`);
     }
 
-    console.log('uploadCOAPDF: Upload successful:', data.path);
     return data.path;
   } catch (err: any) {
     console.error('uploadCOAPDF: Unexpected error:', {
@@ -193,8 +176,6 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
     const pageText = textContent.items.map((item: any) => item.str).join(' ');
     fullText += pageText + '\n';
   }
-
-  console.log('Extracted PDF text:', fullText);
 
   const parsed: ParsedCOAData = {
     strain_name: '',
@@ -650,43 +631,30 @@ export async function replaceCOA(
   newFile: File,
   newCOAData: Omit<COAData, 'id' | 'created_at' | 'updated_at'>
 ): Promise<COAData> {
-  console.log('replaceCOA: Starting replacement process...');
-  console.log('replaceCOA: Old COA ID:', oldCOA.id);
-
   try {
     // Step 1: Upload new PDF first (so we don't leave batch without COA if this fails)
-    console.log('replaceCOA: Uploading new PDF...');
     const newPdfPath = await uploadCOAPDF(newFile);
-    console.log('replaceCOA: New PDF uploaded:', newPdfPath);
 
     // Step 2: Deactivate old COA
-    console.log('replaceCOA: Deactivating old COA...');
     await updateCOA(oldCOA.id!, { is_active: false });
-    console.log('replaceCOA: Old COA deactivated');
 
     // Step 3: Delete old PDF from storage
     if (oldCOA.pdf_file_path) {
-      console.log('replaceCOA: Deleting old PDF from storage:', oldCOA.pdf_file_path);
       const { error: deleteError } = await supabase.storage
         .from('coa-pdfs')
         .remove([oldCOA.pdf_file_path]);
 
       if (deleteError) {
-        console.warn('replaceCOA: Failed to delete old PDF (non-fatal):', deleteError.message);
-      } else {
-        console.log('replaceCOA: Old PDF deleted successfully');
       }
     }
 
     // Step 4: Create new COA record with new PDF path
-    console.log('replaceCOA: Creating new COA record...');
     const newCOA = await createCOA({
       ...newCOAData,
       pdf_file_path: newPdfPath,
       batch_id: batchId,
       is_active: true
     });
-    console.log('replaceCOA: New COA created:', newCOA.id);
 
     return newCOA;
   } catch (error) {

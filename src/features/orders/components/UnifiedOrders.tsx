@@ -27,7 +27,6 @@ const DEFAULT_FILTERS: OrderFilterState = {
 export function UnifiedOrders({
   onCreateOrder,
   onSelectOrder,
-  selectedOrderId,
 }: UnifiedOrdersProps) {
   const { orders, loading, error } = useOrderList();
   const { products } = useProducts();

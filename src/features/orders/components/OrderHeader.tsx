@@ -37,7 +37,6 @@ export function OrderHeader({
   onDelete,
   onUpdateDeliveryDate,
   getStatusColor,
-  getFulfillmentColor,
 }: OrderHeaderProps) {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [tempDate, setTempDate] = useState('');

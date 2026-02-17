@@ -837,19 +837,6 @@ export async function fetchBatchesRequiringCOA(): Promise<BatchWithCOAStatus[]> 
   return batches.filter(b => b.coa_status === 'none' && b.batch_status === 'active');
 }
 
-/**
- * Assigns a COA to a batch
- *
- * @param batchId - Batch UUID
- * @param coaId - COA UUID
- * @returns Promise<BatchRegistry> - Updated batch record
- */
-export async function assignCOAToBatch(batchId: string, _coaId: string): Promise<BatchRegistry> {
-  // COA assignment is handled through the certificates_of_analysis table
-  // This is a legacy function that should be deprecated
-  return await fetchBatchById(batchId) as BatchRegistry;
-}
-
 export async function createBatchProjection(
   batchId: string,
   sourceStage: string,
@@ -951,7 +938,6 @@ export const batchService = {
   validateLabelCOARequirement,
   fetchOverAllocatedBatches,
   fetchBatchesRequiringCOA,
-  assignCOAToBatch,
   createBatchProjection,
   updateBatchProjectionActual,
   quarantineBatch,

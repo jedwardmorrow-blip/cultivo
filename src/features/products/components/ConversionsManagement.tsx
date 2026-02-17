@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus, Calculator, BarChart3, AlertCircle } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import { productsService } from '../services/products.service';
 
 interface ConversionStats {
@@ -96,7 +97,7 @@ export function ConversionsManagement() {
 
   async function calculateProjection() {
     if (!calcStrain) {
-      alert('Please select a strain');
+      notificationService.warning('Please select a strain');
       return;
     }
 
@@ -112,7 +113,7 @@ export function ConversionsManagement() {
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        alert('No conversion data available for this combination');
+        notificationService.info('No conversion data available for this combination');
         setProjection(null);
         return;
       }
@@ -127,7 +128,7 @@ export function ConversionsManagement() {
       if (calculatorMode === 'forward') {
         const inputWeight = parseFloat(calcInputWeight);
         if (!inputWeight || inputWeight <= 0) {
-          alert('Please enter a valid input weight');
+          notificationService.warning('Please enter a valid input weight');
           return;
         }
 
@@ -147,7 +148,7 @@ export function ConversionsManagement() {
       } else {
         const targetUnits = parseFloat(calcTargetUnits);
         if (!targetUnits || targetUnits <= 0) {
-          alert('Please enter a valid target units');
+          notificationService.warning('Please enter a valid target units');
           return;
         }
 
@@ -168,7 +169,7 @@ export function ConversionsManagement() {
       }
     } catch (error) {
       console.error('Error calculating projection:', error);
-      alert('Failed to calculate projection');
+      notificationService.error('Failed to calculate projection');
     }
   }
 

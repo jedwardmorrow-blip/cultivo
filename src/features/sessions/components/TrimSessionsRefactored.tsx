@@ -20,8 +20,8 @@ export function TrimSessionsRefactored() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [completingSession, setCompletingSession] = useState<TrimSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<TrimSession | null>(null);
-  const [editingSession, setEditingSession] = useState<TrimSession | null>(null);
-  const [deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
+  const [_editingSession, setEditingSession] = useState<TrimSession | null>(null);
+  const [_deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
 
   const handleSessionStarted = () => {
     setShowStartForm(false);

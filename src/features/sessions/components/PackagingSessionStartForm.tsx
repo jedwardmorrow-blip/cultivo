@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import type { PackagingSessionInsert, InventoryItem } from '../types';
 import { createPackagingSession } from '../services/sessions.service';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle2, AlertCircle, Upload } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 
 const AVAILABLE_PACKAGERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo', 'Mike', 'Josie'];
 
@@ -120,7 +121,7 @@ export function PackagingSessionStartForm({
     // Validate pull_weight against available inventory
     const selectedPackage = inventoryPackages.find(p => p.package_id === formData.package_id);
     if (!selectedPackage) {
-      alert('Selected package not found. Please select a valid package.');
+      notificationService.warning('Selected package not found. Please select a valid package.');
       return;
     }
 
@@ -128,12 +129,12 @@ export function PackagingSessionStartForm({
     const availableQty = selectedPackage.available_qty || 0;
 
     if (pullWeight <= 0) {
-      alert('Pull weight must be greater than 0.');
+      notificationService.warning('Pull weight must be greater than 0.');
       return;
     }
 
     if (pullWeight > availableQty) {
-      alert(
+      notificationService.warning(
         `Insufficient inventory!\n\n` +
         `Package ${formData.package_id} has ${availableQty.toFixed(1)}g available.\n` +
         `You are trying to pull ${pullWeight.toFixed(1)}g.\n\n` +
@@ -154,27 +155,27 @@ export function PackagingSessionStartForm({
 
       // Parse error message for user-friendly display
       if (error.message.includes('Insufficient inventory')) {
-        alert(
+        notificationService.error(
           'Insufficient Inventory\n\n' +
           'The selected package does not have enough available inventory for this pull weight. ' +
           'Another session may have reserved inventory since you loaded this page.\n\n' +
           'Please refresh and try again with updated inventory levels.'
         );
       } else if (error.message.includes('not found')) {
-        alert(
+        notificationService.error(
           'Package Not Found\n\n' +
           'The selected package could not be found in inventory. ' +
           'It may have been consumed or removed.\n\n' +
           'Please refresh and select a different package.'
         );
       } else if (error.message.includes('Certificate of Analysis') || error.message.includes('COA')) {
-        alert(
+        notificationService.error(
           'COA Required\n\n' +
           error.message + '\n\n' +
           'Please upload a Certificate of Analysis in the Batches section before packaging this batch.'
         );
       } else {
-        alert('Error starting session: ' + error.message);
+        notificationService.error('Error starting session: ' + error.message);
       }
     } else {
       onSuccess();

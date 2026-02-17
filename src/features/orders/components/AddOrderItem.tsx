@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { notificationService } from '@/services/notification.service';
 
 interface Product {
   id: string;
@@ -27,7 +28,7 @@ export function AddOrderItem({ orderId, products, onAdd }: AddOrderItemProps) {
 
   const handleAdd = async () => {
     if (!productId || quantity < 1) {
-      alert('Please select a product and enter a valid quantity.');
+      notificationService.warning('Please select a product and enter a valid quantity.');
       return;
     }
 

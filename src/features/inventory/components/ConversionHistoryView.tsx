@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { History, Search, Filter, Download, TrendingUp, Package } from 'lucide-react';
+import { History, Search, Filter, TrendingUp, Package } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { notificationService } from '@/services';
 import { LoadingSpinner } from '@/shared/components';

@@ -203,7 +203,7 @@ export function PackageManifestSection({
                 )}
 
                 {/* Package Rows */}
-                {productPackages.map((pkg, index) => {
+                {productPackages.map((pkg, _index) => {
                   const isVoided = !!pkg.voided_at;
                   const isPrinted = !!pkg.printed_at && !isVoided;
                   const hasLabel = !!pkg.label_number;

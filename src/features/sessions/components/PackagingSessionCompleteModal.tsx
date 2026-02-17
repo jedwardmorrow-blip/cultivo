@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { completePackagingSession } from '../services/sessions.service';
 import { formatElapsedTime } from '../utils';
 import type { PackagingSession, PackagingCompleteForm } from '../types';
+import { notificationService } from '@/services/notification.service';
 
 interface PackagingSessionCompleteModalProps {
   session: PackagingSession;
@@ -44,7 +45,7 @@ export function PackagingSessionCompleteModal({
 
     if (error) {
       console.error('Error completing session:', error);
-      alert('Error completing session: ' + error.message);
+      notificationService.error('Error completing session: ' + error.message);
     } else {
       await fetchConsolidatedPackageIds();
       setTimeout(() => {

@@ -43,7 +43,7 @@ export function Login() {
       <div className="bg-cult-graphite/95 backdrop-blur-sm border border-cult-charcoal rounded-cult shadow-glow-strong w-full max-w-md p-8 relative z-10 animate-slide-in">
         <div className="text-center mb-8">
           <img
-            src="/Cult Cannabis Co Final White 320x320@3x.png"
+            src="/cult-logo-white-320.png"
             alt="Cult Cannabis Logo"
             className="w-32 h-32 mx-auto hover:scale-105 transition-transform duration-300"
           />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Truck, MapPin } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import * as deliveryService from '../services/delivery.service';
 
 interface DeliveryScheduleItem {

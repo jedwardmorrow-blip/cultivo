@@ -29,7 +29,7 @@ export async function checkStorageHealth(): Promise<{ ok: boolean; error?: strin
     }
 
     // Try to list files in coa-pdfs bucket (should work even if empty)
-    const { data, error } = await supabase.storage
+    const { data: _data, error } = await supabase.storage
       .from('coa-pdfs')
       .list('', { limit: 1 });
 

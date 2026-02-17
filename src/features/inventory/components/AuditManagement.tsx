@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Clock, CheckCircle, XCircle, Download, Plus, Lock, Unlock } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import { useAudit, useAuditHistory, useAuditPDF } from '../hooks';
 import { AuditInitiationModal } from './AuditInitiationModal';
 import { AuditLineEditor } from './AuditLineEditor';
@@ -71,7 +72,7 @@ export function AuditManagement() {
 
     const summary = await completeAudit();
     if (summary) {
-      alert(
+      notificationService.success(
         `Audit completed successfully!\n\n` +
         `Adjustments Applied: ${summary.adjustments_applied}\n` +
         `Variances Logged: ${summary.variances_logged}\n` +
@@ -99,7 +100,7 @@ export function AuditManagement() {
     if (!audit) return;
     const success = await lockStages();
     if (success) {
-      alert('Stages locked successfully');
+      notificationService.success('Stages locked successfully');
       await refresh();
     }
   };
@@ -116,7 +117,7 @@ export function AuditManagement() {
 
     const success = await unlockStages();
     if (success) {
-      alert('Stages unlocked');
+      notificationService.info('Stages unlocked');
       await refresh();
     }
   };

@@ -52,7 +52,6 @@ interface OrderItemRowProps {
 export function OrderItemRow({
   item,
   orderId,
-  onStatusUpdate,
   onQuantityUpdate,
   onPriceUpdate,
   onBatchUpdate,
@@ -70,7 +69,7 @@ export function OrderItemRow({
   const [showLabelPrintModal, setShowLabelPrintModal] = useState(false);
 
   const { totalAssigned, loading: loadingAssigned } = useTotalAssignedQuantity(item.id);
-  const { labels, stats, loading: labelsLoading } = useOrderItemLabels(item.id);
+  const { stats, loading: labelsLoading } = useOrderItemLabels(item.id);
 
   const remainingToAssign = item.quantity - totalAssigned;
   const isFullyAssigned = remainingToAssign === 0;

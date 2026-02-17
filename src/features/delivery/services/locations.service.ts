@@ -14,9 +14,7 @@ export async function getAllLocations(): Promise<Location[]> {
   const locations: Location[] = [];
 
   try {
-    console.log('[Locations Service] Loading all locations...');
     const facilityCoords = await getFacilityCoordinates();
-    console.log('[Locations Service] Facility coordinates:', facilityCoords);
 
     const { data: settings, error: settingsError } = await supabase
       .from('app_settings')
@@ -50,10 +48,8 @@ export async function getAllLocations(): Promise<Location[]> {
         longitude: facilityCoords.longitude,
         type: 'facility' as const
       };
-      console.log('[Locations Service] Added facility location:', facilityLocation);
       locations.push(facilityLocation);
     } else {
-      console.warn('[Locations Service] No facility coordinates available, facility location not added');
     }
 
     const { data: customers, error } = await supabase
@@ -107,19 +103,11 @@ export async function getAllLocations(): Promise<Location[]> {
 }
 
 export async function getLocationById(locationId: string): Promise<Location | null> {
-  console.log(`[Locations Service] Looking up location by ID: ${locationId}`);
   const locations = await getAllLocations();
   const location = locations.find(loc => loc.id === locationId) || null;
 
   if (location) {
-    console.log(`[Locations Service] Found location:`, {
-      id: location.id,
-      name: location.name,
-      type: location.type,
-      hasCoordinates: !!(location.latitude && location.longitude)
-    });
   } else {
-    console.warn(`[Locations Service] Location not found for ID: ${locationId}`);
   }
 
   return location;

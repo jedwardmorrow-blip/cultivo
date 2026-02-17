@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Package, Edit2, Save, X, Plus } from 'lucide-react';
+import { Package, Edit2, Save, X } from 'lucide-react';
 import { productsService } from '../services/products.service';
 
 interface ProductStage {

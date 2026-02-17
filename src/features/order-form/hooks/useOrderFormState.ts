@@ -7,7 +7,7 @@ import type { OrderableProduct } from '@/types';
 
 export function useOrderFormState(sessionId: string) {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const { products, loading: productsLoading } = useOrderableProducts();
+  const { products } = useOrderableProducts();
   const [loading, setLoading] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);

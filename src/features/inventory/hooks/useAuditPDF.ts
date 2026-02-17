@@ -38,7 +38,7 @@ export function useAuditPDF() {
   }, []);
 
   const generateAuditReport = useCallback(
-    async (auditId: string) => {
+    async (_auditId: string) => {
       try {
         setGenerating(true);
         setError(null);

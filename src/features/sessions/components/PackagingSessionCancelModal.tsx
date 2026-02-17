@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { XCircle } from 'lucide-react';
 import type { PackagingSession, PackagingSessionUpdate } from '../types';
 import { cancelPackagingSession } from '../services/sessions.service';
+import { notificationService } from '@/services/notification.service';
 
 interface PackagingSessionCancelModalProps {
   session: PackagingSession;
@@ -25,7 +26,7 @@ export function PackagingSessionCancelModal({
 
     if (error) {
       console.error('Error cancelling session:', error);
-      alert('Error cancelling session: ' + error.message);
+      notificationService.error('Error cancelling session: ' + error.message);
     } else {
       onSuccess();
     }

@@ -4,6 +4,28 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-17 - System Health Remediation
+
+**Type:** CODE QUALITY
+**Module:** All
+**Priority:** MEDIUM - Technical debt reduction
+**Impact:** Cleaner codebase, zero TS6133 warnings, no browser alerts, minimal console noise
+**Status:** COMPLETE
+**Files Changed:** ~50
+
+### Summary
+
+Comprehensive code quality sweep across the entire codebase:
+
+1. **Dead code removal**: Deleted 3 unused hook files (`useOrders.ts`, `useOrdersWithDetails.ts`, `useSettings.ts`), removed 2 dead functions (`getRemainingQuantity`, `assignCOAToBatch`), fixed barrel exports.
+2. **Unused imports/variables**: Fixed all 65 TS6133 warnings across 48 files.
+3. **Alert replacement**: Replaced all 60 browser `alert()` calls with `notificationService` methods across 21 files.
+4. **Console cleanup**: Removed ~170 `console.log`/`warn`/`info`/`debug` statements across 25 files. Only intentional `console.error` calls in `error.service.ts` remain.
+5. **Unused packages**: Removed `dom-to-image-more` and `@types/react-router-dom`.
+6. **Build fix**: Renamed PNG files with spaces in filenames (`Cult Cannabis Co Final White 320x320@3x.png` -> `cult-logo-white-320.png`, eye logo similarly) to fix EAGAIN build errors.
+
+---
+
 ## 2026-02-17 - Invoice THC Percentage Missing for COA-Linked Batches
 
 **Type:** BUG FIX

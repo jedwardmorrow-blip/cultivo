@@ -79,26 +79,9 @@ function calculateBounds(points: [number, number][]): MapBounds {
   };
 }
 
-function calculateZoom(bounds: MapBounds): number {
-  const latDiff = bounds.maxLat - bounds.minLat;
-  const lonDiff = bounds.maxLon - bounds.minLon;
-
-  const maxDiff = Math.max(latDiff, lonDiff);
-
-  if (maxDiff > 10) return 6;
-  if (maxDiff > 5) return 8;
-  if (maxDiff > 2) return 9;
-  if (maxDiff > 1) return 10;
-  if (maxDiff > 0.5) return 11;
-  if (maxDiff > 0.2) return 12;
-  if (maxDiff > 0.1) return 13;
-  return 14;
-}
-
 export async function generateSimpleMapDataUrl(options: StaticMapOptions): Promise<string> {
   try {
     if (typeof document === 'undefined') {
-      console.warn('Document not available, cannot generate map');
       return '';
     }
 
@@ -120,7 +103,6 @@ export async function generateSimpleMapDataUrl(options: StaticMapOptions): Promi
     if (options.routeGeometry && typeof options.routeGeometry === 'string') {
       try {
         routeCoordinates = decodePolyline(options.routeGeometry);
-        console.log(`Decoded ${routeCoordinates.length} route points`);
       } catch (err) {
         console.error('Failed to decode route geometry:', err);
       }
@@ -209,36 +191,21 @@ export async function generateSimpleMapDataUrl(options: StaticMapOptions): Promi
 }
 
 export async function generateStaticMapDataUrl(options: StaticMapOptions): Promise<string> {
-  console.log('[Static Map Service] Generating map with options:', {
-    width: options.width,
-    height: options.height,
-    origin: options.origin,
-    destination: options.destination,
-    hasGeometry: !!options.routeGeometry,
-    geometryType: typeof options.routeGeometry,
-    geometryLength: options.routeGeometry ? (typeof options.routeGeometry === 'string' ? options.routeGeometry.length : 'not a string') : 0
-  });
-
   try {
-    console.log('[Static Map Service] Attempting to generate map with Leaflet...');
     const leafletMap = await generateLeafletMapDataUrl(options);
 
     if (leafletMap && leafletMap.startsWith('data:image')) {
-      console.log('[Static Map Service] Successfully generated Leaflet map, length:', leafletMap.length);
       return leafletMap;
     }
 
-    console.warn('[Static Map Service] Leaflet map generation returned invalid result, falling back to simple map');
     return await generateSimpleMapDataUrl(options);
 
   } catch (error) {
     console.error('[Static Map Service] Leaflet map generation failed:', error);
-    console.log('[Static Map Service] Falling back to simple canvas map');
 
     try {
       const simpleMap = await generateSimpleMapDataUrl(options);
       if (simpleMap && simpleMap.startsWith('data:image')) {
-        console.log('[Static Map Service] Successfully generated simple map, length:', simpleMap.length);
         return simpleMap;
       }
       console.error('[Static Map Service] Simple map generation returned invalid result');

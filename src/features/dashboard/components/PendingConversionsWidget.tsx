@@ -10,7 +10,7 @@
  */
 
 import { useEffect } from 'react';
-import { Package, Clock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Package, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useFinalizationWorkflow } from '@/features/inventory/hooks';
 
 interface PendingConversionsWidgetProps {

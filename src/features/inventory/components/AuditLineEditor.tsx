@@ -7,6 +7,7 @@
 
 import { useState, useMemo } from 'react';
 import { Check, X, Search, AlertTriangle } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import type { InventoryAuditLine, AuditLineUpdateRequest, VarianceReason } from '../types';
 
 interface AuditLineEditorProps {
@@ -85,14 +86,14 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
     const actualQty = parseFloat(editValues.actual_qty);
 
     if (isNaN(actualQty) || actualQty < 0) {
-      alert('Please enter a valid quantity');
+      notificationService.warning('Please enter a valid quantity');
       return;
     }
 
     const hasVariance = Math.abs(actualQty - line.expected_qty) > 0.01;
 
     if (hasVariance && !editValues.variance_reason) {
-      alert('Please select a variance reason');
+      notificationService.warning('Please select a variance reason');
       return;
     }
 

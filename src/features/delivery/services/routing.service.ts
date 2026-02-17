@@ -103,24 +103,11 @@ export async function calculateRouteFromAPI(
 
   const data = await response.json();
 
-  console.log('OpenRouteService API Response:', {
-    routes: data.routes?.length,
-    geometry: data.routes?.[0]?.geometry ? 'present' : 'missing',
-    geometryType: typeof data.routes?.[0]?.geometry,
-    segments: data.routes?.[0]?.segments?.length,
-    summary: data.routes?.[0]?.summary
-  });
-
   if (!data.routes || data.routes.length === 0) {
     throw new Error('No route found between these locations');
   }
 
   const route = data.routes[0];
-
-  if (route.geometry) {
-    const geomStr = typeof route.geometry === 'string' ? route.geometry : JSON.stringify(route.geometry);
-    console.log('Geometry sample (first 200 chars):', geomStr.substring(0, 200));
-  }
 
   const instructions: RouteInstruction[] = [];
 
@@ -153,13 +140,6 @@ export async function calculateRouteFromAPI(
     }
   }
 
-  console.log('Route API Response:', {
-    totalDistance: route.summary?.distance,
-    totalDuration: route.summary?.duration,
-    instructionCount: instructions.length,
-    sampleInstruction: instructions[0]
-  });
-
   return {
     distance_meters: route.summary?.distance || 0,
     duration_seconds: route.summary?.duration || 0,
@@ -181,13 +161,10 @@ export async function getCachedRoute(
   originId: string,
   destinationCustomerId: string
 ): Promise<CachedRoute | null> {
-  console.log(`[Routing Service] Looking for cached route from ${originId} to ${destinationCustomerId}`);
-
   const settings = await getRoutingSettings();
   const cacheDays = parseInt(settings.route_cache_days || '30');
 
   const isLocationOrigin = !originId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-  console.log(`[Routing Service] Origin is ${isLocationOrigin ? 'location' : 'customer'} (${originId})`);
 
   let query = supabase
     .from('delivery_routes')
@@ -210,10 +187,8 @@ export async function getCachedRoute(
     .eq('destination_customer_id', destinationCustomerId);
 
   if (isLocationOrigin) {
-    console.log(`[Routing Service] Querying with origin_location_id = '${originId}'`);
     query = query.eq('origin_location_id', originId);
   } else {
-    console.log(`[Routing Service] Querying with origin_customer_id = '${originId}'`);
     query = query.eq('origin_customer_id', originId);
   }
 
@@ -225,27 +200,16 @@ export async function getCachedRoute(
   }
 
   if (!data) {
-    console.log('[Routing Service] No cached route found');
     return null;
   }
-
-  console.log('[Routing Service] Found cached route:', {
-    id: data.id,
-    distance: data.distance_meters,
-    waypoints: data.route_waypoints?.length || 0,
-    lastCalculated: data.last_calculated_at
-  });
 
   const cacheDate = new Date(data.last_calculated_at);
   const now = new Date();
   const daysSinceCalculated = (now.getTime() - cacheDate.getTime()) / (1000 * 60 * 60 * 24);
 
   if (daysSinceCalculated > cacheDays) {
-    console.log(`[Routing Service] Cached route is stale (${daysSinceCalculated.toFixed(1)} days old, max ${cacheDays} days)`);
     return null;
   }
-
-  console.log(`[Routing Service] Using cached route (${daysSinceCalculated.toFixed(1)} days old)`);
 
   const waypoints = data.route_waypoints || [];
   const instructions: RouteInstruction[] = waypoints
@@ -320,7 +284,6 @@ export async function saveRouteToCache(
     if (updateError) throw updateError;
     routeRecord = data;
 
-    console.log(`[Routing Service] Updated existing cached route ${routeRecord.id}`);
   } else {
     const { data, error: insertError } = await supabase
       .from('delivery_routes')
@@ -331,7 +294,6 @@ export async function saveRouteToCache(
     if (insertError) throw insertError;
     routeRecord = data;
 
-    console.log(`[Routing Service] Created new cached route ${routeRecord.id}`);
   }
 
   await supabase
@@ -366,13 +328,6 @@ export async function getOrCalculateRoute(
   originCoords: Coordinate,
   destinationCoords: Coordinate
 ): Promise<RouteResult> {
-  console.log('[Routing Service] Getting or calculating route:', {
-    originId,
-    destinationCustomerId,
-    originCoords,
-    destinationCoords
-  });
-
   if (!originCoords.latitude || !originCoords.longitude) {
     throw new Error(`Invalid origin coordinates: lat=${originCoords.latitude}, lon=${originCoords.longitude}`);
   }
@@ -383,7 +338,6 @@ export async function getOrCalculateRoute(
   const cached = await getCachedRoute(originId, destinationCustomerId);
 
   if (cached) {
-    console.log('[Routing Service] Returning cached route');
     return {
       distance_meters: cached.distance_meters,
       duration_seconds: cached.duration_seconds,
@@ -393,21 +347,11 @@ export async function getOrCalculateRoute(
     };
   }
 
-  console.log('[Routing Service] No cached route, calculating from API...');
   const route = await calculateRouteFromAPI(originCoords, destinationCoords);
-  console.log('[Routing Service] Route calculated successfully:', {
-    distance: route.distance_meters,
-    duration: route.duration_seconds,
-    instructions: route.instructions.length,
-    hasGeometry: !!route.geometry
-  });
 
-  console.log('[Routing Service] Saving route to cache...');
   try {
     await saveRouteToCache(originId, destinationCustomerId, route);
-    console.log('[Routing Service] Route saved to cache successfully');
   } catch (cacheError) {
-    console.warn('[Routing Service] Failed to save route to cache, continuing with calculated route:', cacheError);
   }
 
   return route;
@@ -535,7 +479,6 @@ export async function refreshStaleRoutes(): Promise<number> {
           );
           refreshed++;
         } catch (cacheError) {
-          console.warn(`Failed to cache refreshed route ${route.id}:`, cacheError);
         }
       }
     } catch (err) {

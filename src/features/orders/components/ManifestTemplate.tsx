@@ -9,9 +9,9 @@ interface ManifestTemplateProps {
 }
 
 export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps>(
-  ({ manifestData, forPrint = false, onImagesLoaded }, ref) => {
+  ({ manifestData, onImagesLoaded }, ref) => {
     const [logoDataUrl, setLogoDataUrl] = useState<string>('');
-    const [imagesLoaded, setImagesLoaded] = useState(false);
+    const [_imagesLoaded, setImagesLoaded] = useState(false);
 
     useEffect(() => {
       async function loadLogos() {

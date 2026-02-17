@@ -120,7 +120,6 @@ export const ordersService = {
         .maybeSingle()
         .then(result => {
           if (result.error && (result.error.code === 'PGRST116' || result.error.code === '42P01')) {
-            console.warn('[ordersService] order_workflow_summary view not found - workflow tracking unavailable');
             return { data: null, error: null };
           }
           if (result.error) {
@@ -363,8 +362,6 @@ export const ordersService = {
    * @description Returns order items with product details and workflow status
    */
   async fetchOrderDetailsWithAllocations(orderId: string) {
-    console.log('[ordersService] Fetching order details for:', orderId);
-
     const [itemsResult, workflowResult] = await Promise.all([
       supabase
         .from('order_items')
@@ -373,8 +370,6 @@ export const ordersService = {
         .then(result => {
           if (result.error) {
             console.error('[ordersService] Error fetching order items:', result.error);
-          } else {
-            console.log('[ordersService] Successfully fetched order items:', result.data?.length || 0);
           }
           return result;
         }),
@@ -385,7 +380,6 @@ export const ordersService = {
         .maybeSingle()
         .then(result => {
           if (result.error && (result.error.code === 'PGRST116' || result.error.code === '42P01')) {
-            console.warn('[ordersService] order_workflow_summary view not found - workflow tracking unavailable');
             return { data: null, error: null };
           }
           if (result.error) {
@@ -399,7 +393,6 @@ export const ordersService = {
     if (itemsResult.error) throw itemsResult.error;
 
     if (!itemsResult.data || itemsResult.data.length === 0) {
-      console.log('[ordersService] No order items found for:', orderId);
       return {
         items: [],
         allocationsMap: new Map(),
@@ -408,7 +401,6 @@ export const ordersService = {
     }
 
     const productIds = itemsResult.data.map(item => item.product_id);
-    console.log('[ordersService] Fetching products for IDs:', productIds);
 
     const { data: productsData, error: productsError } = await supabase
       .from('products')
@@ -419,8 +411,6 @@ export const ordersService = {
       console.error('[ordersService] Error fetching products:', productsError);
       throw productsError;
     }
-
-    console.log('[ordersService] Successfully fetched products:', productsData?.length || 0);
 
     const productsMap = new Map(productsData?.map(p => [p.id, p]) || []);
 

@@ -53,14 +53,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
       throw new Error('Document not available - cannot generate map in server environment');
     }
 
-    console.log('[Leaflet Map Service] Starting map generation...', {
-      origin: options.origin,
-      destination: options.destination,
-      hasGeometry: !!options.routeGeometry,
-      geometryType: typeof options.routeGeometry,
-      geometryLength: options.routeGeometry?.length || 0
-    });
-
     mapContainer = document.createElement('div');
     mapContainer.style.width = `${options.width}px`;
     mapContainer.style.height = `${options.height}px`;
@@ -78,7 +70,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
     if (options.routeGeometry && typeof options.routeGeometry === 'string') {
       try {
         routeCoordinates = decodePolyline(options.routeGeometry);
-        console.log(`[Leaflet Map Service] Decoded ${routeCoordinates.length} route points from polyline geometry`);
       } catch (err) {
         console.error('[Leaflet Map Service] Failed to decode route geometry, falling back to straight line:', err);
         routeCoordinates = [
@@ -87,7 +78,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
         ];
       }
     } else {
-      console.log('[Leaflet Map Service] No valid route geometry provided, using straight line between origin and destination');
       routeCoordinates = [
         [options.origin.latitude, options.origin.longitude],
         [options.destination.latitude, options.destination.longitude]
@@ -145,7 +135,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
       maxZoom: 15
     });
 
-    console.log('[Leaflet Map Service] Map configured, waiting for tiles to load...');
     await new Promise<void>((resolve, reject) => {
       let tilesLoaded = 0;
       let tilesLoading = 0;
@@ -154,7 +143,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
       const checkComplete = () => {
         if (tilesLoading === 0 && tilesLoaded > 0) {
           clearTimeout(timeoutId);
-          console.log(`[Leaflet Map Service] All ${tilesLoaded} tiles loaded successfully`);
           setTimeout(() => resolve(), 1500);
         }
       };
@@ -179,7 +167,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
         if (tilesLoaded === 0) {
           reject(new Error('Timeout waiting for map tiles to load'));
         } else {
-          console.log(`[Leaflet Map Service] Timeout reached but ${tilesLoaded} tiles loaded - proceeding with export`);
           resolve();
         }
       }, 10000);
@@ -188,8 +175,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
         checkComplete();
       }, 500);
     });
-
-    console.log('[Leaflet Map Service] Capturing map as image using canvas export...');
 
     const canvas = document.createElement('canvas');
     canvas.width = options.width;
@@ -208,14 +193,11 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
 
     if (tilePane) {
       const tiles = tilePane.querySelectorAll('img.leaflet-tile');
-      console.log(`[Leaflet Map Service] Found ${tiles.length} map tiles to render on canvas`);
 
       const transform = tilePane.style.transform;
       const match = transform.match(/translate3d\((-?\d+(?:\.\d+)?)px,\s*(-?\d+(?:\.\d+)?)px/);
       tilePaneOffsetX = match ? parseFloat(match[1]) : 0;
       tilePaneOffsetY = match ? parseFloat(match[2]) : 0;
-
-      console.log(`Tile pane offset: (${tilePaneOffsetX}, ${tilePaneOffsetY})`);
 
       for (const tile of Array.from(tiles)) {
         const img = tile as HTMLImageElement;
@@ -230,7 +212,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
             try {
               ctx.drawImage(img, x, y);
             } catch (e) {
-              console.warn('Failed to draw tile:', e);
             }
           }
         }
@@ -238,7 +219,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
     }
 
     const svgElements = overlayPane ? overlayPane.querySelectorAll('svg') : mapContainer.querySelectorAll('svg');
-    console.log(`[Leaflet Map Service] Found ${svgElements.length} SVG elements (route lines) to render`);
 
     for (const svg of Array.from(svgElements)) {
       const parent = svg.parentElement;
@@ -251,7 +231,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
         if (parentMatch) {
           svgOffsetX = parseFloat(parentMatch[1]);
           svgOffsetY = parseFloat(parentMatch[2]);
-          console.log(`SVG parent offset: (${svgOffsetX}, ${svgOffsetY})`);
         }
       }
 
@@ -268,7 +247,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
           resolve();
         };
         img.onerror = () => {
-          console.warn('Failed to load SVG');
           URL.revokeObjectURL(url);
           resolve();
         };
@@ -277,7 +255,6 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
     }
 
     const markers = mapContainer.querySelectorAll('.leaflet-marker-icon');
-    console.log(`[Leaflet Map Service] Found ${markers.length} markers to render`);
 
     for (const marker of Array.from(markers)) {
       const markerEl = marker as HTMLElement;
@@ -288,19 +265,14 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
       const width = markerRect.width;
       const height = markerRect.height;
 
-      console.log(`Rendering marker at position (${x.toFixed(1)}, ${y.toFixed(1)}) with size ${width}x${height}`);
-
       const markerCanvas = await htmlToCanvas(markerEl);
       if (markerCanvas.width > 0 && markerCanvas.height > 0) {
         ctx.drawImage(markerCanvas, x, y, width, height);
-        console.log('Marker rendered successfully');
       } else {
-        console.warn('Marker canvas has zero dimensions');
       }
     }
 
     const dataUrl = canvas.toDataURL('image/png');
-    console.log('[Leaflet Map Service] ✓ Map image generated successfully, data URL length:', dataUrl.length);
 
     return dataUrl;
 
@@ -314,11 +286,9 @@ export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Pro
     try {
       if (map) {
         map.remove();
-        console.log('[Leaflet Map Service] Leaflet map instance destroyed');
       }
       if (mapContainer && mapContainer.parentNode) {
         mapContainer.parentNode.removeChild(mapContainer);
-        console.log('[Leaflet Map Service] Map container removed from DOM');
       }
     } catch (cleanupError) {
       console.error('Error during cleanup:', cleanupError);

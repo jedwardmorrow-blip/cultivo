@@ -75,15 +75,12 @@ export function useConversionLots(selectedDate?: string) {
           schema: 'public',
           table: 'conversion_packages',
         },
-        (payload) => {
-          console.log('Conversion package change detected:', payload);
+        () => {
           fetchLots(true);
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to conversion packages real-time updates');
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR') {
           console.error('Failed to subscribe to conversion packages updates');
         }
       });

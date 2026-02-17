@@ -28,7 +28,7 @@ import { inventoryMovementService } from '@/services';
  */
 export async function adjustInventoryItem(
   request: QuickAdjustmentRequest,
-  userId: string
+  _userId: string
 ): Promise<AdjustmentResult> {
   try {
     const { inventory_item_id, new_qty, variance_reason, notes } = request;

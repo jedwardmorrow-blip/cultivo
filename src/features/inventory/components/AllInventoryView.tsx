@@ -8,7 +8,6 @@ import { useInventoryLabel } from '../hooks';
 import { getItemStage } from '../hooks/useInventoryFilters';
 import type { InventoryItem, AllInventoryStats, StageFilter } from '../types';
 import type { SelectedPackage } from '../types/combine.types';
-import { notificationService } from '@/services/notification.service';
 
 interface AllInventoryViewProps {
   items: InventoryItem[];

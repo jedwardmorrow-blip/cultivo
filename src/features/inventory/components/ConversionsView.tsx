@@ -12,7 +12,6 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  XCircle,
   Clock
 } from 'lucide-react';
 import { ConversionModal } from './ConversionModal';

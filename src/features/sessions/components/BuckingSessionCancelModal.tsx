@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { BuckingSession } from '../types';
 import { cancelBuckingSession } from '../services/sessions.service';
+import { notificationService } from '@/services/notification.service';
 
 interface BuckingSessionCancelModalProps {
   session: BuckingSession;
@@ -26,7 +27,7 @@ export function BuckingSessionCancelModal({
 
     if (error) {
       console.error('Error cancelling session:', error);
-      alert('Error cancelling session: ' + error.message);
+      notificationService.error('Error cancelling session: ' + error.message);
     } else {
       onSuccess();
     }

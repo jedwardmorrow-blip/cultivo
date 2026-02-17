@@ -60,7 +60,7 @@ export function ComplianceHeader({
       {/* Company Logo */}
       <div className="flex justify-center mb-6">
         <img
-          src="/Cult Cannabis Co Final White 320x320@3x.png"
+          src="/cult-logo-white-320.png"
           alt="CULT Cannabis Co"
           className="h-32 w-auto"
         />

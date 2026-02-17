@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Package, Loader2, CheckCircle2, DollarSign, Search, Calendar } from 'lucide-react';
+import { notificationService } from '@/services/notification.service';
 import { validateDate, getDateInputConstraints } from '../../lib/utils';
 
 interface Product {
@@ -86,7 +87,7 @@ export function PublicMenu() {
 
   async function handleSubmit() {
     if (!selectedCustomer || !deliveryDate || orderItems.size === 0) {
-      alert('Please fill in all required fields and add at least one item');
+      notificationService.warning('Please fill in all required fields and add at least one item');
       return;
     }
 
@@ -159,7 +160,7 @@ export function PublicMenu() {
       }, 3000);
     } catch (error) {
       console.error('Error submitting order:', error);
-      alert('Failed to submit order. Please try again.');
+      notificationService.error('Failed to submit order. Please try again.');
     } finally {
       setSubmitting(false);
     }

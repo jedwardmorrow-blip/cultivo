@@ -3,6 +3,7 @@ import { X, Printer, Download, Loader2 } from 'lucide-react';
 import { generateInvoiceData, InvoiceData } from '../services/invoiceService';
 import { InvoiceTemplate } from './InvoiceTemplate';
 import { generatePDFFromElement, generateInvoiceFilename } from '../services/pdfGenerator.service';
+import { notificationService } from '@/services/notification.service';
 
 interface InvoiceModalProps {
   orderId: string;
@@ -48,19 +49,16 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
   }, [invoiceData, loading]);
 
   async function handlePrint() {
-    console.log('Print button clicked');
-
     if (!printRef.current) {
-      alert('Print area not ready. Please try again.');
+      notificationService.warning('Print area not ready. Please try again.');
       return;
     }
 
     if (!imagesLoaded) {
-      alert('Please wait for the invoice to finish loading...');
+      notificationService.warning('Please wait for the invoice to finish loading...');
       return;
     }
 
-    console.log('Starting print process with iframe');
     setLoadingPrint(true);
 
     try {
@@ -459,7 +457,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
       setTimeout(() => document.body.removeChild(iframe), 1000);
     } catch (error) {
       console.error('Print error:', error);
-      alert('An error occurred while printing. Please try again.');
+      notificationService.error('An error occurred while printing. Please try again.');
     } finally {
       setLoadingPrint(false);
     }
@@ -467,12 +465,12 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
 
   async function handleDownloadPDF() {
     if (!printRef.current || !invoiceData) {
-      alert('Invoice not ready. Please try again.');
+      notificationService.warning('Invoice not ready. Please try again.');
       return;
     }
 
     if (!imagesLoaded) {
-      alert('Please wait for the invoice to finish loading...');
+      notificationService.warning('Please wait for the invoice to finish loading...');
       return;
     }
 
@@ -491,7 +489,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
       });
     } catch (error) {
       console.error('PDF download error:', error);
-      alert('Failed to download PDF. Please try again or use the Print button.');
+      notificationService.error('Failed to download PDF. Please try again or use the Print button.');
     } finally {
       setLoadingDownload(false);
     }

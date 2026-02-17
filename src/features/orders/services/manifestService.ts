@@ -182,16 +182,6 @@ export async function generateManifestData(
   const vehicle = vehicleResult.data;
   const customer = order.customers;
 
-  console.log('[Manifest Service] Loaded order data:', {
-    orderNumber: order.order_number,
-    customerId: order.customer_id,
-    customerName: customer?.name,
-    customerLatitude: customer?.latitude,
-    customerLongitude: customer?.longitude,
-    customerHasDeliveryAddress: !!customer?.delivery_address,
-    customerHasAddress: !!customer?.address
-  });
-
   if (!customer) {
     throw new Error('Customer not found for this order');
   }
@@ -281,20 +271,11 @@ export async function generateManifestData(
   const deliveryState = customer?.delivery_state || customer?.state || '';
   const deliveryPostalCode = customer?.delivery_postal_code || customer?.postal_code || '';
 
-  console.log(`[Manifest Service] Looking up origin location: ${originLocationId}`);
   const originLocation = await getLocationById(originLocationId);
   if (!originLocation) {
     console.error(`[Manifest Service] Origin location not found: ${originLocationId}`);
     throw new Error(`Origin location not found: ${originLocationId}`);
   }
-
-  console.log('[Manifest Service] Origin location:', {
-    id: originLocation.id,
-    name: originLocation.name,
-    type: originLocation.type,
-    latitude: originLocation.latitude,
-    longitude: originLocation.longitude
-  });
 
   const originCoords: Coordinate = {
     latitude: originLocation.latitude,
@@ -312,7 +293,6 @@ export async function generateManifestData(
   let customerLon = customer?.longitude;
 
   if (customer && (!customerLat || !customerLon)) {
-    console.log(`[Manifest Service] Customer ${customer.name} missing coordinates, attempting to geocode...`);
     try {
       const address = formatAddressForGeocoding(
         customer.delivery_address,
@@ -338,10 +318,8 @@ export async function generateManifestData(
         if (updatedCustomer) {
           customerLat = updatedCustomer.latitude;
           customerLon = updatedCustomer.longitude;
-          console.log(`[Manifest Service] Successfully geocoded customer ${customer.name}`);
         }
       } else {
-        console.warn(`[Manifest Service] Customer ${customer.name} has incomplete address, cannot geocode`);
       }
     } catch (geocodeError) {
       console.error(`[Manifest Service] Failed to geocode customer ${customer.name}:`, geocodeError);
@@ -349,20 +327,11 @@ export async function generateManifestData(
   }
 
   if (customerLat && customerLon) {
-    console.log('[Manifest Service] Customer has valid coordinates, calculating route...');
-    console.log('[Manifest Service] Using origin location ID:', originLocationId);
     try {
       const destCoords: Coordinate = {
         latitude: customerLat,
         longitude: customerLon
       };
-
-      console.log('[Manifest Service] Route calculation parameters:', {
-        originLocationId,
-        destinationCustomerId: customer.id,
-        originCoords,
-        destCoords
-      });
 
       const route = await getOrCalculateRoute(
         originLocationId,
@@ -371,36 +340,19 @@ export async function generateManifestData(
         destCoords
       );
 
-      console.log('[Manifest Service] Route retrieved successfully:', {
-        distance: route.distance_meters,
-        duration: route.duration_seconds,
-        instructionsCount: route.instructions?.length || 0,
-        hasGeometry: !!route.geometry,
-        geometryType: typeof route.geometry,
-        geometryLength: route.geometry ? (typeof route.geometry === 'string' ? route.geometry.length : JSON.stringify(route.geometry).length) : 0
-      });
-
       routeInstructions = route.instructions;
       routeDistance = formatDistance(route.distance_meters);
       routeDuration = formatDuration(route.duration_seconds);
-
-      console.log('[Manifest Service] Formatted route info:', {
-        distance: routeDistance,
-        duration: routeDuration
-      });
 
       if (!routeDescription && route.instructions && route.instructions.length > 0) {
         finalRouteDescription = route.instructions
           .slice(0, 3)
           .map((inst, idx) => `${idx + 1}. ${inst.instruction_text}`)
           .join('\n');
-        console.log('[Manifest Service] Generated route description from instructions:', finalRouteDescription);
       } else if (!routeDescription) {
-        console.warn('[Manifest Service] No route instructions available to generate description');
       }
 
       try {
-        console.log('[Manifest Service] Generating static map...');
         routeMapUrl = await generateStaticMapDataUrl({
           width: 600,
           height: 400,
@@ -410,11 +362,8 @@ export async function generateManifestData(
         });
 
         if (routeMapUrl && routeMapUrl.startsWith('data:image')) {
-          console.log('[Manifest Service] ✓ Static map generated successfully, data URL length:', routeMapUrl.length);
         } else if (routeMapUrl) {
-          console.warn('[Manifest Service] ✗ Static map generation returned invalid result (not a data URL):', routeMapUrl?.substring(0, 100));
         } else {
-          console.warn('[Manifest Service] ✗ Static map generation returned empty result');
         }
       } catch (mapError) {
         console.error('[Manifest Service] Failed to generate map:', mapError);
@@ -432,15 +381,6 @@ export async function generateManifestData(
       });
     }
   } else {
-    console.warn(`[Manifest Service] Customer ${customer?.name || 'Unknown'} has no valid coordinates, skipping route generation`);
-    console.warn('[Manifest Service] Customer coordinate details:', {
-      customerName: customer?.name,
-      customerId: customer?.id,
-      customerLat,
-      customerLon,
-      hasCustomerObject: !!customer,
-      customerKeys: customer ? Object.keys(customer) : []
-    });
   }
 
   return {

@@ -74,12 +74,9 @@ export async function previewNamingTransformations() {
  * Normalize all inventory product names to match standard convention
  */
 export async function normalizeInventoryNames(): Promise<NamingNormalizationResult> {
-  console.log('Starting inventory name normalization...');
-
   const validations = await validateInventoryNaming();
 
   if (validations.length === 0) {
-    console.log('No items need updating');
     return {
       total_items: 0,
       updated_count: 0,
@@ -89,8 +86,6 @@ export async function normalizeInventoryNames(): Promise<NamingNormalizationResu
       errors: []
     };
   }
-
-  console.log(`Found ${validations.length} items that need name updates`);
 
   let updated = 0;
   let failed = 0;
@@ -122,8 +117,6 @@ export async function normalizeInventoryNames(): Promise<NamingNormalizationResu
       });
     }
   }
-
-  console.log(`Normalization complete: ${updated} updated, ${failed} failed`);
 
   return {
     total_items: validations.length,
