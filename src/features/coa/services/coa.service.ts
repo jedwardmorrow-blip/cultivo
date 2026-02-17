@@ -353,7 +353,13 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
     throw new Error(`Failed to create COA: ${error.message}`);
   }
 
-  // Map database row back to application type
+  if (data.batch_id && data.is_active && coa.id) {
+    await supabase
+      .from('batch_registry')
+      .update({ coa_id: coa.id })
+      .eq('id', data.batch_id);
+  }
+
   return mapDatabaseCOAToApp(coa, data.strain_name, data.batch_number, data.harvest_date, data.manufacture_date);
 }
 

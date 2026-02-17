@@ -4,6 +4,27 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-17 - Invoice THC Percentage Missing for COA-Linked Batches
+
+**Type:** BUG FIX
+**Module:** Orders / Invoicing / COA
+**Priority:** HIGH - Invoice compliance data incomplete
+**Impact:** Invoice now correctly displays THC % from COA for all batches
+**Status:** COMPLETE
+**Files Changed:** 2
+
+### Summary
+
+Fixed invoice THC percentage showing "--" for batches with active COAs (e.g., Black Maple batch 251105-BLM).
+
+1. **Root Cause**: The invoice service joined `batch_registry` to `certificates_of_analysis` via the legacy `coa_id` field on `batch_registry`. This field was null for batches whose COA was created after the one-time backfill migration (2026-01-22). The canonical relationship is `certificates_of_analysis.batch_id -> batch_registry.id`, as documented in COA-HANDLING.md GAP-009.
+
+2. **Invoice Fix**: Changed `invoiceService.ts` to query COA data separately using the canonical `batch_id` direction with `is_active = true` filter, matching how the rest of the system resolves COA data.
+
+3. **Bidirectional Sync**: Updated `createCOA()` in `coa.service.ts` to also set `batch_registry.coa_id` after creating a new active COA, keeping the legacy field in sync per documented intent.
+
+---
+
 ## 2026-02-16 - Conversion VIEW Row Multiplication and Audit Trail Fix
 
 **Type:** BUG FIX

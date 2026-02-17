@@ -139,26 +139,25 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
   ));
 
   const batchMap = new Map<string, any>();
+  const coaByBatchMap = new Map<string, any>();
   if (batchIds.length > 0) {
-    const { data: batchData } = await supabase
-      .from('batch_registry')
-      .select(`
-        id,
-        batch_number,
-        strain,
-        harvest_date,
-        coa_id,
-        certificates_of_analysis:coa_id (
-          thc_percentage,
-          cbd_percentage,
-          total_cannabinoids_percentage,
-          harvest_date
-        )
-      `)
-      .in('id', batchIds);
+    const [batchResult, coaResult] = await Promise.all([
+      supabase
+        .from('batch_registry')
+        .select('id, batch_number, strain, harvest_date')
+        .in('id', batchIds),
+      supabase
+        .from('certificates_of_analysis')
+        .select('batch_id, thc_percentage, cbd_percentage, total_cannabinoids_percentage, harvest_date')
+        .in('batch_id', batchIds)
+        .eq('is_active', true)
+    ]);
 
-    batchData?.forEach(batch => {
+    batchResult.data?.forEach(batch => {
       batchMap.set(batch.id, batch);
+    });
+    coaResult.data?.forEach(coa => {
+      if (coa.batch_id) coaByBatchMap.set(coa.batch_id, coa);
     });
   }
 
@@ -226,11 +225,12 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
       if (batch) {
         batchNumber = batch.batch_number;
         harvestDate = batch.harvest_date || null;
-        if (batch.certificates_of_analysis) {
-          thcPercentage = batch.certificates_of_analysis.thc_percentage;
-          if (!harvestDate && batch.certificates_of_analysis.harvest_date) {
-            harvestDate = batch.certificates_of_analysis.harvest_date;
-          }
+      }
+      const coa = coaByBatchMap.get(item.batch_id);
+      if (coa) {
+        thcPercentage = coa.thc_percentage;
+        if (!harvestDate && coa.harvest_date) {
+          harvestDate = coa.harvest_date;
         }
       }
     }
