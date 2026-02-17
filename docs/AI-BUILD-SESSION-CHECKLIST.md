@@ -108,6 +108,7 @@ priority: Working document - update every session
 - [PRODUCTS.md](./PRODUCTS.md) - Canonical product stages and conversions
 - [SYSTEM-WORKFLOW.md](./SYSTEM-WORKFLOW.md) - End-to-end workflows
 - [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) - Trigger system
+- [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) - Phased optimization plan (type safety, bundle, cleanup)
 
 **Modules:**
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)

@@ -53,11 +53,12 @@ The system is **feature-complete** and in **production use**. All core workflows
 5. 2026-02-05: Fixed cross-session package contamination in conversion views
 
 **Known deferred items:**
-- ~58 TypeScript strict errors (non-blocking, build passes)
-- Consolidate duplicate order services (ordersService, orders-data, orders-cache)
-- Extract hardcoded license number, stage UUIDs, and company details to settings
-- Bundle size optimization (post-launch)
-- UI/UX polish (command palette, table sorting, CSV export)
+- See [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) for the phased plan covering:
+  - Type safety (1,045 tsc errors, duplicate types, double-casts)
+  - Hardcoded values extraction (license numbers, stage UUIDs)
+  - Service consolidation (3 duplicate order services)
+  - Bundle size optimization (2,487 KB main chunk)
+- UI/UX polish (command palette, table sorting, CSV export) -- not yet scheduled
 
 ---
 
@@ -127,6 +128,7 @@ supabase/
 3. If touching inventory/sessions: read [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md)
 4. If touching conversions: read [PRODUCTS.md](./PRODUCTS.md)
 5. Scan last 3-5 entries in [CHANGELOG.md](../CHANGELOG.md)
+6. If doing optimization, cleanup, or type safety work: read [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md)
 
 **Module-specific docs when needed:**
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)

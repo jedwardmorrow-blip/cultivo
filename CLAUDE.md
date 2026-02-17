@@ -20,6 +20,7 @@ Feature-complete, production use. Last migration: 2026-02-16. Build: passing.
 2. Read Hand-Off section in `docs/AI-BUILD-SESSION-CHECKLIST.md` - what happened last session
 3. If touching inventory/sessions: read `docs/ARCHITECTURE-DECISIONS.md`
 4. If touching conversions: read `docs/PRODUCTS.md`
+5. If doing optimization, cleanup, type safety, or bundle work: read `docs/OPTIMIZATION-ROADMAP.md`
 
 ## File Structure
 
