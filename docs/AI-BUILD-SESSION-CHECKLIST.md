@@ -15,40 +15,38 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-17
-**Session:** Production Bug Fixes and Architecture Gap Remediation
+**Session:** Optimization Phase 1 -- Type System Regeneration
 **Status:** COMPLETE
 
 **What was done:**
-- Fixed cancel session bug: all 3 cancel functions (trim, bucking, packaging) were setting `completed_at` instead of `cancelled_at`
-- Added missing `errorService` import to `conversions.service.ts` (would crash at runtime on ATP violation)
-- Added `batch_id` lookup to `addPackageToAudit()` so audit-created inventory items have proper batch UUID
-- Completed COA bidirectional sync: `updateCOA()` and `deleteCOA()` now sync `batch_registry.coa_id`
-- Added finalization guard to `undoCompletedSession()` -- blocks undo if conversion packages exist
-- Fixed lifecycle order in docs (Buck before Trim), updated movement kinds to canonical 9
-- Updated dates, session list, and known deferred items across CLAUDE.md and AI-SESSION-BRIEF.md
-- Fixed dead PRODUCTS.md references to PRODUCTS.md
+- Regenerated `database.types.ts` from live DB via SQL introspection (2,586 -> 6,599 lines)
+- Added 85 foreign key Relationships across 40 tables for Supabase join type inference
+- tsc errors reduced from 1,045 to 500 (52% reduction)
+- Fixed PublicMenu.tsx broken logo reference (outline variant -> `cult-logo-white-320.png`)
+- Created `scripts/gen-types.mjs` for future type regeneration without access token
 
-**Build status:** Passes clean (2411 modules)
+**Build status:** Passes clean (2411 modules, 26s)
 
-**Known issues:** None introduced. Pre-existing ~1000 TS errors from stale database.types.ts (needs CLI type regeneration).
+**Known issues:** 500 remaining tsc errors (real code issues, not stale types). Top offenders:
+- `combine.service.ts` (73 errors) -- references non-existent `product_id` column on `inventory_items`
+- `manifestService.ts` (34), `invoiceService.ts` (30) -- type mismatches
+- `conversions.service.ts` (25), `AuditManagement.tsx` (25)
 
-**New files:** None
-**Modified files:** 7 source files + 4 documentation files
+**New files:** `scripts/gen-types.mjs`, `scripts/tables-data.json`, `scripts/views-data.json`
+**Modified files:** `src/lib/database/database.types.ts`, `src/pages/public/PublicMenu.tsx`
 **Migrations:** None
 
 **Critical context for future sessions:**
-- Cancel functions now set `cancelled_at` (not `completed_at`) -- do not regress
-- `undoCompletedSession()` checks `conversion_packages.source_session_ids` before allowing undo
-- COA create/update/delete all sync `batch_registry.coa_id` -- keep this pattern
-- The `pending_conversion_sessions` VIEW uses `?|` JSONB operator -- do NOT replace with LEFT JOIN
-- `reason_code: 'session_finalization'` in conversion service is REQUIRED (Architecture Decision #1)
+- `database.types.ts` was regenerated via `scripts/gen-types.mjs` (SQL introspection, no access token)
+- The `Relationships` arrays enable join type inference -- do NOT revert to empty arrays
+- Remaining 500 tsc errors are real code bugs, tracked for Phase 3 in `docs/OPTIMIZATION-ROADMAP.md`
+- All previous critical context still applies (cancel functions, undo guards, COA sync, etc.)
 
-**Next recommendations:**
-1. Regenerate database.types.ts from live schema (needs Supabase CLI)
-2. Fix PublicMenu.tsx broken logo reference (outline variant PNG is missing)
-3. Consolidate duplicate order services (ordersService, orders-data, orders-cache)
-4. Extract hardcoded license/company details to app_settings (Phase 5.2 deferred)
-5. Extract hardcoded product stage UUIDs to DB lookup (Phase 5.3 deferred)
+**Next recommendations (follow OPTIMIZATION-ROADMAP.md):**
+1. Phase 2: Extract hardcoded license numbers and stage UUIDs to app_settings
+2. Phase 3: Fix duplicate type definitions and double-casts
+3. Phase 4: Consolidate 3 duplicate order services
+4. Phase 5: Bundle size optimization (code splitting)
 
 ---
 

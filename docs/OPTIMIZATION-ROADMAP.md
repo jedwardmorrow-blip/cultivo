@@ -51,20 +51,18 @@ Captured before any optimization work begins. Use these numbers to measure progr
 
 ### Checklist
 
-- [ ] **1.1 Regenerate `database.types.ts` from live Supabase schema**
-  - Run `npm run types:generate` (uses `scripts/generate-types.sh`)
-  - This single action should eliminate the majority of the 1,045 tsc errors
-  - The current file is stale relative to the actual database schema
-  - After regeneration, run `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep "error TS" | wc -l` to get new error count
-  - Record the new error count here: ______
+- [x] **1.1 Regenerate `database.types.ts` from live Supabase schema** (2026-02-17)
+  - Regenerated via `scripts/gen-types.mjs` (SQL introspection, no access token needed)
+  - File grew from 2,586 to 6,599 lines (76 tables, 849 view columns, 85 FK relationships)
+  - tsc errors: 1,045 -> 500 (52% reduction)
 
-- [ ] **1.2 Fix PublicMenu.tsx broken logo reference**
-  - The outline variant PNG file is missing from `/public/`
-  - Verify by loading the public menu page and confirming the logo renders
+- [x] **1.2 Fix PublicMenu.tsx broken logo reference** (2026-02-17)
+  - Changed `/Cult Cannabis Co Final White Outline 320x320@3x.png` to `/cult-logo-white-320.png`
 
-- [ ] **1.3 Run full build and record baseline**
-  - `npm run build` must pass
-  - Record chunk sizes for comparison with later phases
+- [x] **1.3 Run full build and record baseline** (2026-02-17)
+  - `npm run build` passes (26s)
+  - Main JS chunk: 2,487 KB (645 KB gzip)
+  - tsc error count: 500
 
 ### Files Affected
 
@@ -406,7 +404,7 @@ Record phase completions here for quick reference.
 
 | Phase | Status | Date | Notes |
 |-------|--------|------|-------|
-| 1 - Critical Pre-Production | Not Started | | |
+| 1 - Critical Pre-Production | Complete | 2026-02-17 | tsc errors 1,045 -> 500; logo fix; types regenerated with 85 FK relationships |
 | 2 - Hardcoded Values | Not Started | | |
 | 3 - Type Safety | Not Started | | |
 | 4 - Service Consolidation | Not Started | | |

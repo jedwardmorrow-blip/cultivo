@@ -4,6 +4,22 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-17 - Optimization Phase 1: Type System Regeneration
+
+**Type:** OPTIMIZATION
+**Module:** Core Types, Public Menu
+**Priority:** HIGH - Pre-production type safety
+**Impact:** TypeScript errors reduced from 1,045 to 500 (52% reduction)
+**Status:** COMPLETE
+**Files Changed:** 2
+
+### Summary
+
+1. **database.types.ts regenerated**: Rebuilt from live database via SQL introspection (`scripts/gen-types.mjs`). File grew from 2,586 to 6,599 lines covering 76 tables, all views, all functions, and 85 foreign key relationships across 40 tables.
+2. **PublicMenu logo fix**: Changed broken reference to non-existent outline PNG to `cult-logo-white-320.png`.
+
+---
+
 ## 2026-02-17 - Production Bug Fixes and Architecture Gap Remediation
 
 **Type:** BUG FIX + ARCHITECTURE

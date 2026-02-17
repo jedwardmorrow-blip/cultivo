@@ -227,7 +227,7 @@ export function PublicMenu() {
         <div className="px-4 py-4">
           <div className="flex items-center gap-3 mb-4">
             <img
-              src="/Cult Cannabis Co Final White Outline 320x320@3x.png"
+              src="/cult-logo-white-320.png"
               alt="Cult Cannabis Co"
               className="h-12 w-auto"
             />
