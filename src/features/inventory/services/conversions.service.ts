@@ -419,6 +419,85 @@ export async function voidConversion(params: {
 }
 
 // =====================================================
+// SESSION CONTRIBUTION QUERIES
+// =====================================================
+
+export interface SessionContribution {
+  id: string;
+  completed_at: string;
+  operator_name: string;
+  output_weight: number | null;
+  output_units: number | null;
+}
+
+/**
+ * Fetch per-session contribution details for the breakdown panel.
+ * Queries the appropriate session table based on session_type.
+ */
+export async function getSessionContributions(
+  sessionIds: string[],
+  sessionType: 'trim' | 'packaging' | 'bucking'
+): Promise<SessionContribution[]> {
+  if (!sessionIds || sessionIds.length === 0) return [];
+
+  if (sessionType === 'trim') {
+    const { data, error } = await supabase
+      .from('trim_sessions')
+      .select('id, completed_at, trimmer_name, big_buds_grams, small_buds_grams')
+      .in('id', sessionIds)
+      .order('completed_at', { ascending: true });
+
+    if (error) throw new Error(`Failed to fetch trim contributions: ${error.message}`);
+
+    return (data || []).map((s) => ({
+      id: s.id,
+      completed_at: s.completed_at,
+      operator_name: s.trimmer_name,
+      output_weight: (s.big_buds_grams || 0) + (s.small_buds_grams || 0),
+      output_units: null,
+    }));
+  }
+
+  if (sessionType === 'bucking') {
+    const { data, error } = await supabase
+      .from('bucking_sessions')
+      .select('id, completed_at, bucker_name, output_weight_grams')
+      .in('id', sessionIds)
+      .order('completed_at', { ascending: true });
+
+    if (error) throw new Error(`Failed to fetch bucking contributions: ${error.message}`);
+
+    return (data || []).map((s) => ({
+      id: s.id,
+      completed_at: s.completed_at,
+      operator_name: s.bucker_name,
+      output_weight: s.output_weight_grams,
+      output_units: null,
+    }));
+  }
+
+  // packaging
+  const { data, error } = await supabase
+    .from('packaging_sessions')
+    .select('id, completed_at, packager_name, units_3_5g, units_14g, units_454g, ending_weight')
+    .in('id', sessionIds)
+    .order('completed_at', { ascending: true });
+
+  if (error) throw new Error(`Failed to fetch packaging contributions: ${error.message}`);
+
+  return (data || []).map((s) => {
+    const totalUnits = (s.units_3_5g || 0) + (s.units_14g || 0) + (s.units_454g || 0);
+    return {
+      id: s.id,
+      completed_at: s.completed_at,
+      operator_name: s.packager_name,
+      output_weight: totalUnits === 0 ? (s.ending_weight || null) : null,
+      output_units: totalUnits > 0 ? totalUnits : null,
+    };
+  });
+}
+
+// =====================================================
 // CONVERSION SUMMARY QUERIES
 // =====================================================
 

@@ -12,11 +12,15 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  Clock
+  Clock,
+  ChevronDown,
+  User,
+  CalendarDays,
 } from 'lucide-react';
 import { ConversionModal } from './ConversionModal';
 import { PendingConversionSession } from '@/types';
 import { useFinalizationWorkflow } from '../hooks';
+import { useSessionContributions } from '../hooks/useSessionContributions';
 
 export function ConversionsView() {
   const [selectedSession, setSelectedSession] = useState<PendingConversionSession | null>(null);
@@ -180,6 +184,8 @@ interface PendingSessionCardProps {
 }
 
 function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const isBulk = session.output_weight !== null && session.output_weight > 0;
   const sessionTypeLabel = session.session_type.charAt(0).toUpperCase() + session.session_type.slice(1);
   const isAggregated = session.session_count > 1;
@@ -189,82 +195,230 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
   );
   const isUrgent = daysSinceCompleted > 3;
 
+  const borderClass = isUrgent
+    ? 'border-amber-500'
+    : 'border-cult-medium-gray';
+
+  const bgClass = isUrgent
+    ? 'bg-amber-900/10'
+    : 'bg-cult-dark-gray';
+
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left border-2 rounded-lg p-4 transition-all hover:bg-opacity-30 ${
-        isUrgent
-          ? 'border-amber-500 bg-amber-900 bg-opacity-20 hover:bg-amber-900 hover:border-amber-400'
-          : 'border-cult-medium-gray bg-cult-dark-gray hover:bg-cult-medium-gray hover:border-cult-light-gray'
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        {/* Main info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-base font-semibold text-white truncate">
-              {session.strain_name}
-            </h3>
-            <span className="text-xs font-medium text-gray-400">
-              {session.batch_name}
-            </span>
-            {isAggregated && (
-              <span className="text-xs px-2 py-0.5 bg-purple-900 bg-opacity-40 border border-purple-700 rounded text-purple-300">
-                {session.session_count} sessions
-              </span>
-            )}
-          </div>
+    <div className={`border-2 rounded-lg overflow-hidden transition-all ${borderClass} ${bgClass}`}>
+      {/* Clickable header row */}
+      <div className="flex items-stretch">
+        {/* Main clickable area -> opens modal */}
+        <button
+          onClick={onClick}
+          className={`flex-1 text-left p-4 transition-colors ${
+            isUrgent
+              ? 'hover:bg-amber-900/20'
+              : 'hover:bg-cult-medium-gray/40'
+          }`}
+        >
+          <div className="flex items-start justify-between gap-4">
+            {/* Main info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-base font-semibold text-white truncate">
+                  {session.strain_name}
+                </h3>
+                <span className="text-xs font-medium text-gray-400">
+                  {session.batch_name}
+                </span>
+                {isAggregated && (
+                  <span className="text-xs px-2 py-0.5 bg-sky-900/40 border border-sky-700 rounded text-sky-300">
+                    {session.session_count} sessions
+                  </span>
+                )}
+              </div>
 
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-gray-300">{session.product_name}</span>
-            <span className="text-xs px-2 py-0.5 bg-blue-900 bg-opacity-40 border border-blue-700 rounded text-blue-300">
-              {sessionTypeLabel}
-            </span>
-          </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-gray-300">{session.product_name}</span>
+                <span className="text-xs px-2 py-0.5 bg-blue-900/40 border border-blue-700 rounded text-blue-300">
+                  {sessionTypeLabel}
+                </span>
+              </div>
 
-          <div className="flex items-center gap-4 text-xs text-gray-400">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>Last completed {daysSinceCompleted}d ago</span>
+              <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>Last completed {daysSinceCompleted}d ago</span>
+                </div>
+                {isUrgent && (
+                  <div className="flex items-center gap-1 text-amber-400">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>Needs attention</span>
+                  </div>
+                )}
+              </div>
             </div>
-            {isUrgent && (
-              <div className="flex items-center gap-1 text-amber-400">
-                <AlertTriangle className="w-3 h-3" />
-                <span>Needs attention</span>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Quantities */}
-        <div className="text-right">
-          {isBulk ? (
-            <>
-              <div className="text-2xl font-bold text-white">
-                {session.output_weight?.toFixed(0) || 0}
-                <span className="text-sm font-normal text-gray-400 ml-1">g</span>
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                {session.has_partial_packages
-                  ? 'remaining'
-                  : isAggregated ? 'total from sessions' : 'bulk weight'}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-2xl font-bold text-white">
-                {session.output_units || 0}
-                <span className="text-sm font-normal text-gray-400 ml-1">units</span>
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                {session.has_partial_packages
-                  ? 'remaining'
-                  : isAggregated ? 'total from sessions' : 'packaged'}
-              </div>
-            </>
-          )}
+            {/* Quantities */}
+            <div className="text-right shrink-0">
+              {isBulk ? (
+                <>
+                  <div className="text-2xl font-bold text-white">
+                    {session.output_weight?.toFixed(0) || 0}
+                    <span className="text-sm font-normal text-gray-400 ml-1">g</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {session.has_partial_packages
+                      ? 'remaining'
+                      : isAggregated ? 'total from sessions' : 'bulk weight'}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-white">
+                    {session.output_units || 0}
+                    <span className="text-sm font-normal text-gray-400 ml-1">units</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {session.has_partial_packages
+                      ? 'remaining'
+                      : isAggregated ? 'total from sessions' : 'packaged'}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </button>
+
+        {/* Chevron toggle — only visible when multiple sessions */}
+        {isAggregated && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded((v) => !v);
+            }}
+            className={`flex items-center justify-center w-12 border-l transition-colors ${
+              isUrgent
+                ? 'border-amber-700/50 hover:bg-amber-900/30'
+                : 'border-cult-medium-gray/50 hover:bg-cult-medium-gray/40'
+            }`}
+            aria-label={isExpanded ? 'Collapse session breakdown' : 'Expand session breakdown'}
+          >
+            <ChevronDown
+              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                isExpanded ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+        )}
+      </div>
+
+      {/* Expandable breakdown panel */}
+      {isAggregated && isExpanded && (
+        <SessionBreakdownPanel
+          sessionIds={session.session_ids}
+          sessionType={session.session_type}
+          isBulk={isBulk}
+          isUrgent={isUrgent}
+        />
+      )}
+    </div>
+  );
+}
+
+interface SessionBreakdownPanelProps {
+  sessionIds: string[];
+  sessionType: 'trim' | 'packaging' | 'bucking';
+  isBulk: boolean;
+  isUrgent: boolean;
+}
+
+function SessionBreakdownPanel({
+  sessionIds,
+  sessionType,
+  isBulk,
+  isUrgent,
+}: SessionBreakdownPanelProps) {
+  const { contributions, isLoading, error } = useSessionContributions(
+    sessionIds,
+    sessionType,
+    true
+  );
+
+  const borderTop = isUrgent ? 'border-amber-700/40' : 'border-cult-medium-gray/40';
+  const bg = isUrgent ? 'bg-amber-900/10' : 'bg-black/20';
+
+  if (isLoading) {
+    return (
+      <div className={`border-t ${borderTop} ${bg} px-4 py-3`}>
+        <div className="animate-pulse space-y-2">
+          {sessionIds.map((id) => (
+            <div key={id} className="h-8 bg-white/5 rounded" />
+          ))}
         </div>
       </div>
-    </button>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`border-t ${borderTop} ${bg} px-4 py-3`}>
+        <p className="text-xs text-red-400">{error}</p>
+      </div>
+    );
+  }
+
+  const total = isBulk
+    ? contributions.reduce((sum, c) => sum + (c.output_weight || 0), 0)
+    : contributions.reduce((sum, c) => sum + (c.output_units || 0), 0);
+
+  return (
+    <div className={`border-t ${borderTop} ${bg} px-4 py-3`}>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        Session Breakdown
+      </p>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-gray-500">
+            <th className="text-left pb-1.5 font-medium">Operator</th>
+            <th className="text-left pb-1.5 font-medium">Completed</th>
+            <th className="text-right pb-1.5 font-medium">{isBulk ? 'Weight' : 'Units'}</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {contributions.map((c) => (
+            <tr key={c.id} className="text-gray-300">
+              <td className="py-1.5">
+                <div className="flex items-center gap-1.5">
+                  <User className="w-3 h-3 text-gray-500 shrink-0" />
+                  <span className="truncate max-w-[140px]">{c.operator_name || '—'}</span>
+                </div>
+              </td>
+              <td className="py-1.5">
+                <div className="flex items-center gap-1.5 text-gray-400">
+                  <CalendarDays className="w-3 h-3 text-gray-500 shrink-0" />
+                  <span>
+                    {c.completed_at
+                      ? new Date(c.completed_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : '—'}
+                  </span>
+                </div>
+              </td>
+              <td className="py-1.5 text-right font-medium text-white">
+                {isBulk
+                  ? `${(c.output_weight || 0).toFixed(0)}g`
+                  : `${c.output_units || 0}`}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className={`border-t ${isUrgent ? 'border-amber-700/40' : 'border-white/10'}`}>
+            <td colSpan={2} className="pt-2 text-gray-400 font-medium">Total</td>
+            <td className="pt-2 text-right font-bold text-white">
+              {isBulk ? `${total.toFixed(0)}g` : `${total}`}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   );
 }
