@@ -71,7 +71,7 @@ All inventory quantity changes go through `inventory_movements` table. Database 
 
 Never directly update `on_hand_qty`, `available_qty`, or `reserved_qty`.
 
-**Movement Kinds:** PACKAGING, ADJUSTMENT, FULFILLMENT, AUDIT_VARIANCE, CONVERSION, CANCELLATION
+**Movement Kinds:** RECEIPT, CONSUME, PRODUCE, FULFILLMENT, RETURN, RESERVE, RELEASE, ADJUSTMENT, RECONCILIATION
 
 ---
 

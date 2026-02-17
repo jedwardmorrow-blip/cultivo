@@ -18,7 +18,7 @@ import {
   PendingConversionSession,
   FinalizationStatus,
 } from '@/types';
-import { inventoryMovementService } from '@/services';
+import { inventoryMovementService, errorService } from '@/services';
 
 // =====================================================
 // HELPER FUNCTIONS

@@ -4,7 +4,7 @@ Cannabis seed-to-sale tracking system. React 18 + TypeScript + Vite + Supabase +
 
 ## Current State (February 2026)
 
-Feature-complete, production use. Last migration: 2026-02-05. Build: passing.
+Feature-complete, production use. Last migration: 2026-02-16. Build: passing.
 
 ## Critical Rules
 
@@ -19,7 +19,7 @@ Feature-complete, production use. Last migration: 2026-02-05. Build: passing.
 1. Read `docs/AI-SESSION-BRIEF.md` - full system context and rules
 2. Read Hand-Off section in `docs/AI-BUILD-SESSION-CHECKLIST.md` - what happened last session
 3. If touching inventory/sessions: read `docs/ARCHITECTURE-DECISIONS.md`
-4. If touching conversions: read `docs/PRODUCT-FLOW.md`
+4. If touching conversions: read `docs/PRODUCTS.md`
 
 ## File Structure
 

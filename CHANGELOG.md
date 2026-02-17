@@ -4,6 +4,28 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-17 - Production Bug Fixes and Architecture Gap Remediation
+
+**Type:** BUG FIX + ARCHITECTURE
+**Module:** Sessions, Inventory, COA, Documentation
+**Priority:** HIGH - Production bugs + data integrity
+**Impact:** Session cancellation now works correctly, COA sync is complete, undo is safe
+**Status:** COMPLETE
+**Files Changed:** 7
+
+### Summary
+
+Fixed remaining items from the system health audit:
+
+1. **Cancel session bug**: All 3 cancel functions (trim, bucking, packaging) were setting `completed_at` instead of `cancelled_at`, making cancelled sessions appear completed. Fixed to set `cancelled_at`.
+2. **Missing import crash**: `conversions.service.ts` called `errorService.handle()` without importing `errorService`. Added the import.
+3. **Audit batch_id gap**: `addPackageToAudit()` created inventory items without `batch_id` UUID. Now looks up batch_id from `batch_registry` using the batch number.
+4. **COA bidirectional sync**: `updateCOA()` and `deleteCOA()` now sync `batch_registry.coa_id`, matching the pattern already in `createCOA()`.
+5. **Undo safety guard**: `undoCompletedSession()` now checks for existing conversion packages before allowing undo. Prevents inventory corruption from undoing finalized sessions.
+6. **Documentation fixes**: Corrected lifecycle order (Buck before Trim), updated movement kinds list to canonical 9, fixed dates and session list, removed dead PRODUCT-FLOW.md reference.
+
+---
+
 ## 2026-02-17 - System Health Remediation
 
 **Type:** CODE QUALITY

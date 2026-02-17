@@ -117,7 +117,7 @@ export async function cancelTrimSession(sessionId: string, notes?: string) {
       .update({
         session_status: 'cancelled',
         notes: notes,
-        completed_at: new Date().toISOString(),
+        cancelled_at: new Date().toISOString(),
       })
       .eq('id', sessionId);
 
@@ -236,7 +236,7 @@ export async function cancelBuckingSession(sessionId: string, notes?: string) {
       .update({
         session_status: 'cancelled',
         notes: notes,
-        completed_at: new Date().toISOString(),
+        cancelled_at: new Date().toISOString(),
       })
       .eq('id', sessionId);
 
@@ -355,7 +355,7 @@ export async function cancelPackagingSession(sessionId: string, notes?: string) 
       .update({
         session_status: 'cancelled',
         notes: notes,
-        completed_at: new Date().toISOString(),
+        cancelled_at: new Date().toISOString(),
       })
       .eq('id', sessionId);
 
@@ -382,6 +382,21 @@ export async function undoCompletedSession(
   sessionType: 'trim' | 'bucking' | 'packaging'
 ) {
   try {
+    const { data: existingPackages, error: pkgError } = await supabase
+      .from('conversion_packages')
+      .select('id')
+      .contains('source_session_ids', [sessionId])
+      .limit(1);
+
+    if (pkgError) throw pkgError;
+
+    if (existingPackages && existingPackages.length > 0) {
+      throw new Error(
+        'Cannot undo: this session has already been finalized into conversion packages. ' +
+        'Void the conversion first before undoing the session.'
+      );
+    }
+
     const tableName = `${sessionType}_sessions`;
 
     const { data, error } = await supabase

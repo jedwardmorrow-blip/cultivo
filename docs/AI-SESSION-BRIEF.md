@@ -2,15 +2,15 @@
 title: AI Session Brief
 category: AI Development
 version: 2.0
-updated: 2026-02-11
+updated: 2026-02-17
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-02-11
-> **Last Migration:** 2026-02-05 (fix_pending_conversions_filter_packages_by_session)
+> **Last Updated:** 2026-02-17
+> **Last Migration:** 2026-02-16 (backfill_missing_produce_movements_for_conversion_items)
 > **Build Status:** Passing
 
 ---
@@ -23,7 +23,7 @@ Cannabis seed-to-sale tracking and production management system.
 - **Batch-centric** - Everything links to batches (YYMMDD-STRAIN format)
 - **Event-driven inventory** - Immutable ledger with automatic balance updates
 - **Compliance-first** - COA tracking, AZDHS manifests, regulatory fields
-- **Full lifecycle** - Harvest -> Trim -> Buck -> Package -> Order -> Deliver
+- **Full lifecycle** - Harvest -> Buck -> Trim -> Package -> Order -> Deliver
 
 **Tech Stack:**
 - React 18 + TypeScript + Vite
@@ -46,15 +46,16 @@ The system is **feature-complete** and in **production use**. All core workflows
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-02-05: Fixed cross-session package contamination in conversion views
-2. 2026-01-28: Packaging multi-product unpivot (3.5g / 14g / 1lb independent finalization)
-3. 2026-01-28: Finalization simplification (treat as creation, not movement)
-4. 2026-01-21: Packaging finalization three-part hotfix (UUID/Unit/ATP)
-5. 2026-01-20: Batch number consolidation + display fix
+1. 2026-02-17: Remediation sweep (cancelled_at fix, errorService import, COA sync, undo guard, docs)
+2. 2026-02-17: Code quality sweep (dead code, alert replacement, console cleanup, unused imports)
+3. 2026-02-16: Conversion VIEW row multiplication fix + missing audit movements backfill
+4. 2026-02-16: Partial conversion support (SWF bucking session recovery)
+5. 2026-02-05: Fixed cross-session package contamination in conversion views
 
 **Known deferred items:**
 - ~58 TypeScript strict errors (non-blocking, build passes)
-- Console.log cleanup (103 instances across 22 files)
+- Consolidate duplicate order services (ordersService, orders-data, orders-cache)
+- Extract hardcoded license number, stage UUIDs, and company details to settings
 - Bundle size optimization (post-launch)
 - UI/UX polish (command palette, table sorting, CSV export)
 
@@ -124,7 +125,7 @@ supabase/
 1. Read this document
 2. Read the [Hand-Off section](./AI-BUILD-SESSION-CHECKLIST.md) in the checklist
 3. If touching inventory/sessions: read [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md)
-4. If touching conversions: read [PRODUCT-FLOW.md](./PRODUCT-FLOW.md)
+4. If touching conversions: read [PRODUCTS.md](./PRODUCTS.md)
 5. Scan last 3-5 entries in [CHANGELOG.md](../CHANGELOG.md)
 
 **Module-specific docs when needed:**

@@ -313,7 +313,6 @@ export async function addPackageToAudit(
 
     // Step 3: Create inventory item if doesn't exist
     if (!inventoryItemId) {
-      // Fetch stage ID
       const { data: stageData, error: stageError } = await supabase
         .from('product_stages')
         .select('id')
@@ -322,6 +321,17 @@ export async function addPackageToAudit(
 
       if (stageError) throw stageError;
 
+      let batchId: string | null = null;
+      if (request.batch) {
+        const { data: batchData } = await supabase
+          .from('batch_registry')
+          .select('id')
+          .eq('batch_number', request.batch)
+          .eq('status', 'active')
+          .maybeSingle();
+        batchId = batchData?.id || null;
+      }
+
       const { data: newItem, error: createError } = await supabase
         .from('inventory_items')
         .insert({
@@ -329,6 +339,7 @@ export async function addPackageToAudit(
           product_name: request.product_name,
           strain: request.strain,
           batch: request.batch,
+          batch_id: batchId,
           room: request.room,
           product_stage_id: stageData.id,
           on_hand_qty: request.actual_qty,

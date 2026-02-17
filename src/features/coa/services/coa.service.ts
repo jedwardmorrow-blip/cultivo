@@ -375,13 +375,16 @@ export async function updateCOA(id: string, data: Partial<COAData>): Promise<COA
     .single();
 
   if (error) {
-    console.error('updateCOA error:', error);
-    console.error('updateCOA id:', id);
-    console.error('updateCOA data:', data);
     throw new Error(`Failed to update COA: ${error.message}`);
   }
 
-  // Map database row back to application type
+  if (coa.batch_id && coa.is_active) {
+    await supabase
+      .from('batch_registry')
+      .update({ coa_id: id })
+      .eq('id', coa.batch_id);
+  }
+
   return mapDatabaseCOAToApp(
     coa,
     data.strain_name || '',
@@ -400,6 +403,20 @@ export async function updateCOA(id: string, data: Partial<COAData>): Promise<COA
  * @description Deletes PDF from storage then removes database record
  */
 export async function deleteCOA(id: string, pdfPath: string | null): Promise<void> {
+  const { data: coaRecord } = await supabase
+    .from('certificates_of_analysis')
+    .select('batch_id')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (coaRecord?.batch_id) {
+    await supabase
+      .from('batch_registry')
+      .update({ coa_id: null })
+      .eq('id', coaRecord.batch_id)
+      .eq('coa_id', id);
+  }
+
   if (pdfPath) {
     const { error: storageError } = await supabase.storage
       .from('coa-pdfs')
@@ -416,8 +433,6 @@ export async function deleteCOA(id: string, pdfPath: string | null): Promise<voi
     .eq('id', id);
 
   if (error) {
-    console.error('deleteCOA error:', error);
-    console.error('deleteCOA id:', id);
     throw new Error(`Failed to delete COA: ${error.message}`);
   }
 }
