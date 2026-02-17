@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 import { logoService } from '@/features/settings/services';
 import { notificationService } from '@/services/notification.service';
+import { DEFAULT_LICENSE_NUMBER } from '@/lib/constants';
 
 interface Label {
   id: string;
@@ -366,7 +367,7 @@ export function LabelGenerator() {
           package_date: formData.package_date,
           harvest_date: formData.harvest_date || null,
           expiration_date: null,
-          compliance_uid: formData.compliance_uid || '00000078DCBK00628996',
+          compliance_uid: formData.compliance_uid || DEFAULT_LICENSE_NUMBER,
           lineage: formData.lineage || '',
           upc_code: formData.upc_code || null,
           barcode_format: formData.upc_code ? (formData.upc_code.length === 12 ? 'UPC' : 'CODE128') : 'CODE128',
@@ -833,7 +834,7 @@ export function LabelGenerator() {
                 value={formData.compliance_uid}
                 onChange={(e) => setFormData({ ...formData, compliance_uid: e.target.value })}
                 className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
-                placeholder="00000078DCBK00628996"
+                placeholder={DEFAULT_LICENSE_NUMBER}
               />
             </div>
 

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Printer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logoService } from '@/features/settings/services';
+import { DEFAULT_LICENSE_NUMBER, DEFAULT_LICENSE_NAME } from '@/lib/constants';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 
@@ -30,8 +31,6 @@ interface LabelData {
   compliance_uid: string | null;
 }
 
-const DEFAULT_LICENSE = '00000078DCBK00628996';
-const DEFAULT_LICENSE_NAME = 'Kind Meds Inc';
 const ADDITIVES_TEXT = 'Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B';
 
 function formatDate(dateStr: string | null): string {
@@ -245,7 +244,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
     );
   }
 
-  const license = label.compliance_uid || DEFAULT_LICENSE;
+  const license = label.compliance_uid || DEFAULT_LICENSE_NUMBER;
   const dominance = formatDominance(label.dominance_type);
 
   const labelContent = (

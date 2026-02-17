@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-17 - Optimization Phase 2: Hardcoded Values Extraction
+
+**Type:** OPTIMIZATION
+**Module:** Constants, Labels, Coversheets, Invoices, Manifests, Conversions
+**Priority:** MEDIUM - Compliance output maintainability
+**Impact:** 12 scattered hardcoded strings centralized; 5 hardcoded UUIDs replaced with DB lookups
+**Status:** COMPLETE
+**Files Changed:** 11
+
+### Summary
+
+1. **Shared compliance constants**: Created `src/lib/constants/companySettings.ts` and added 9 compliance fallback constants to `src/lib/constants/index.ts`. All license numbers, company names, and addresses now have a single source of truth.
+2. **Deduplicated getCompanySettings()**: Removed 2 duplicate implementations from `invoiceService.ts` and `manifestService.ts`; both now import the shared version.
+3. **Stage UUID database lookup**: `getProductStageIdFromProductName()` in `conversions.service.ts` now queries the `product_stages` table (cached per session) instead of using 4 hardcoded UUIDs.
+4. **Updated 8 consumer files**: Coversheet components, label components, and document services all import from `@/lib/constants` instead of using inline strings.
+
+---
+
 ## 2026-02-17 - Optimization Phase 1: Type System Regeneration
 
 **Type:** OPTIMIZATION

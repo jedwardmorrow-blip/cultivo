@@ -1,4 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import {
+  getCompanySettings,
+  DEFAULT_BRAND_NAME, DEFAULT_ENTITY_NAME, DEFAULT_COMPANY_NAME,
+  DEFAULT_LICENSE_NAME, DEFAULT_COMPANY_ADDRESS, DEFAULT_COMPANY_CITY,
+  DEFAULT_COMPANY_STATE, DEFAULT_COMPANY_POSTAL_CODE, DEFAULT_LICENSE_NUMBER,
+} from '@/lib/constants';
 
 export interface InvoiceLineItem {
   id: string;
@@ -53,22 +59,6 @@ export interface InvoiceData {
   grand_total: number;
 
   notes: string | null;
-}
-
-async function getCompanySettings(): Promise<Record<string, string>> {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('setting_key, setting_value')
-    .in('category', ['company', 'branding']);
-
-  if (error) throw error;
-
-  const settings: Record<string, string> = {};
-  data?.forEach(item => {
-    settings[item.setting_key] = item.setting_value || '';
-  });
-
-  return settings;
 }
 
 export async function generateInvoiceData(orderId: string): Promise<InvoiceData> {
@@ -308,15 +298,15 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
     order_date: order.order_date,
     estimated_delivery_date: deliveryDate,
 
-    company_brand_name: companySettings.company_brand_name || 'CULT Cannabis',
-    company_entity_name: companySettings.company_entity_name || 'Syn-Ag Inc.',
-    company_name: companySettings.company_name || 'Cult Cannabis Cultivation',
-    company_license_name: companySettings.company_license_name || 'Kind Meds Inc',
-    company_address: companySettings.company_address || '3303 South 40th Street',
-    company_city: companySettings.company_city || 'Phoenix',
-    company_state: companySettings.company_state || 'AZ',
-    company_postal_code: companySettings.company_postal_code || '85040',
-    company_license_number: companySettings.company_license_number || '00000078DCBK00628996',
+    company_brand_name: companySettings.company_brand_name || DEFAULT_BRAND_NAME,
+    company_entity_name: companySettings.company_entity_name || DEFAULT_ENTITY_NAME,
+    company_name: companySettings.company_name || DEFAULT_COMPANY_NAME,
+    company_license_name: companySettings.company_license_name || DEFAULT_LICENSE_NAME,
+    company_address: companySettings.company_address || DEFAULT_COMPANY_ADDRESS,
+    company_city: companySettings.company_city || DEFAULT_COMPANY_CITY,
+    company_state: companySettings.company_state || DEFAULT_COMPANY_STATE,
+    company_postal_code: companySettings.company_postal_code || DEFAULT_COMPANY_POSTAL_CODE,
+    company_license_number: companySettings.company_license_number || DEFAULT_LICENSE_NUMBER,
     company_logo_path: companySettings.logo_invoice_url || companySettings.logo_dark_url || '',
 
     customer_name: customer?.name || 'Unknown Customer',

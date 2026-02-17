@@ -1,3 +1,15 @@
+export { getCompanySettings } from './companySettings';
+
+export const DEFAULT_LICENSE_NUMBER = '00000078DCBK00628996';
+export const DEFAULT_LICENSE_NAME = 'Kind Meds Inc';
+export const DEFAULT_COMPANY_NAME = 'Cult Cannabis Cultivation';
+export const DEFAULT_BRAND_NAME = 'CULT Cannabis';
+export const DEFAULT_ENTITY_NAME = 'Syn-Ag Inc.';
+export const DEFAULT_COMPANY_ADDRESS = '3303 South 40th Street';
+export const DEFAULT_COMPANY_CITY = 'Phoenix';
+export const DEFAULT_COMPANY_STATE = 'AZ';
+export const DEFAULT_COMPANY_POSTAL_CODE = '85040';
+
 export const ORDER_STATUSES = {
   SUBMITTED: 'submitted',
   ACCEPTED: 'accepted',

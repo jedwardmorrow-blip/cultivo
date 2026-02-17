@@ -98,32 +98,28 @@ Additionally, 5 hardcoded product stage UUIDs exist in `conversions.service.ts`.
 
 ### Checklist
 
-- [ ] **2.1 Create a shared compliance constants file or utility**
-  - Single source for the fallback license number (if a fallback is still needed at all)
-  - Or remove fallbacks entirely if `app_settings` is guaranteed populated
-  - Decision to record: keep fallback or require settings? ______
+- [x] **2.1 Create a shared compliance constants file or utility** (2026-02-17)
+  - Created constants in `src/lib/constants/index.ts` and shared `getCompanySettings()` in `src/lib/constants/companySettings.ts`
+  - Decision: keep fallbacks as safety net; zero cost, protects against empty settings
 
-- [ ] **2.2 Replace hardcoded license in coversheet components**
-  - `src/features/orders/components/coversheet/ComplianceHeader.tsx` (lines 16, 54)
-  - `src/features/orders/components/coversheet/BatchComplianceTable.tsx` (line 26)
+- [x] **2.2 Replace hardcoded license in coversheet components** (2026-02-17)
+  - `ComplianceHeader.tsx` and `BatchComplianceTable.tsx` now import from `@/lib/constants`
 
-- [ ] **2.3 Replace hardcoded license in label components**
-  - `src/features/orders/components/LabelGenerator.tsx` (lines 369, 836)
-  - `src/features/orders/components/LabelPrintPreview.tsx` (line 33)
+- [x] **2.3 Replace hardcoded license in label components** (2026-02-17)
+  - `LabelGenerator.tsx` and `LabelPrintPreview.tsx` now import from `@/lib/constants`
+  - Removed local `DEFAULT_LICENSE` / `DEFAULT_LICENSE_NAME` constants from LabelPrintPreview
 
-- [ ] **2.4 Replace hardcoded license in document services**
-  - `src/features/orders/services/invoiceService.ts` (line 319)
-  - `src/features/orders/services/manifestService.ts` (line 397)
-  - `src/features/orders/services/coversheet.service.ts` (lines 293, 316)
-  - `src/features/orders/services/labelAutoFill.service.ts` (line 344)
+- [x] **2.4 Replace hardcoded license in document services** (2026-02-17)
+  - All 4 services now import from `@/lib/constants`
+  - Removed duplicate `getCompanySettings()` from `invoiceService.ts` and `manifestService.ts`
 
-- [ ] **2.5 Replace hardcoded company brand name**
-  - `src/features/orders/services/invoiceService.ts` (line 311) -- `'CULT Cannabis'` fallback
+- [x] **2.5 Replace hardcoded company brand name** (2026-02-17)
+  - All company fallbacks (brand, entity, name, address, city, state, zip) extracted to constants
 
-- [ ] **2.6 Replace hardcoded stage UUIDs with database lookups**
-  - `src/features/inventory/services/conversions.service.ts` (lines 50-71)
-  - 4 unique UUIDs: Bucked, Binned, Packaged, Trimmed
-  - Use `product_stages` table lookup, cache result per session
+- [x] **2.6 Replace hardcoded stage UUIDs with database lookups** (2026-02-17)
+  - `getProductStageIdFromProductName()` now queries `product_stages` table (cached per session)
+  - Changed from sync to async; both internal call sites updated
+  - Zero hardcoded UUIDs remain in `src/`
 
 ### Files Affected
 
@@ -405,7 +401,7 @@ Record phase completions here for quick reference.
 | Phase | Status | Date | Notes |
 |-------|--------|------|-------|
 | 1 - Critical Pre-Production | Complete | 2026-02-17 | tsc errors 1,045 -> 500; logo fix; types regenerated with 85 FK relationships |
-| 2 - Hardcoded Values | Not Started | | |
+| 2 - Hardcoded Values | Complete | 2026-02-17 | 12 license occurrences -> 1 constant; 5 stage UUIDs -> DB lookup; 3 duplicate getCompanySettings -> 1 shared |
 | 3 - Type Safety | Not Started | | |
 | 4 - Service Consolidation | Not Started | | |
 | 5 - Bundle Optimization | Not Started | | |

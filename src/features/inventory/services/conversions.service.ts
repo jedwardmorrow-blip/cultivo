@@ -29,46 +29,61 @@ function parseNetWeightFromProductName(productName: string): number | null {
   return match ? parseFloat(match[1]) : null;
 }
 
+let stageIdCache: Record<string, string> | null = null;
+
+async function getStageIdMap(): Promise<Record<string, string>> {
+  if (stageIdCache) return stageIdCache;
+
+  const { data, error } = await supabase
+    .from('product_stages')
+    .select('id, name')
+    .eq('is_active', true);
+
+  if (error || !data || data.length === 0) {
+    throw new Error(`Failed to load product stages: ${error?.message || 'no data'}`);
+  }
+
+  stageIdCache = {};
+  for (const stage of data) {
+    stageIdCache[stage.name] = stage.id;
+  }
+  return stageIdCache;
+}
+
 /**
- * Map product name to correct product_stage_id
+ * Map product name to correct product_stage_id via database lookup (cached).
  *
- * Stage Progression: Binned → Bucked → Trimmed → Packaged
+ * Stage Progression: Binned -> Bucked -> Trimmed -> Packaged
  *
  * Product Stage Mapping:
- * - "Bulk Flower (Bucked)" → Bucked stage (temporary session output)
- * - "Bucked - [Strain] - Flower" → Bucked stage
- * - "Bulk - [Strain] - Flower" → Trimmed stage (ready for packaging/bulk sale)
- * - "Bulk - [Strain] - Smalls" → Trimmed stage (ready for packaging/bulk sale)
- * - "1lb Flower/Smalls - [Strain]" (454g) → Packaged stage (bulk packages)
- * - "Packaged - [Strain] - 3.5g/14g" → Packaged stage (consumer units)
+ * - "Bulk Flower (Bucked)" -> Bucked stage
+ * - "Bucked - [Strain] - Flower" -> Bucked stage
+ * - "Bulk - [Strain] - Flower" -> Trimmed stage
+ * - "Bulk - [Strain] - Smalls" -> Trimmed stage
+ * - "1lb Flower/Smalls - [Strain]" (454g) -> Packaged stage
+ * - "Packaged - [Strain] - 3.5g/14g" -> Packaged stage
  */
-export function getProductStageIdFromProductName(productName: string): string {
+export async function getProductStageIdFromProductName(productName: string): Promise<string> {
+  const stages = await getStageIdMap();
   const lower = productName.toLowerCase();
 
-  // Bucked stage (session output before trim)
-  if (lower.includes('bucked')) {
-    return '35d07a66-851d-4b2d-be18-290b03b91d2d'; // Bucked
+  if (lower.includes('bucked') && stages['Bucked']) {
+    return stages['Bucked'];
   }
 
-  // Binned stage
-  if (lower.includes('binned')) {
-    return 'c360e356-eb78-4512-8777-ee47c328157d'; // Binned
+  if (lower.includes('binned') && stages['Binned']) {
+    return stages['Binned'];
   }
 
-  // Packaged stage (includes 1lb/454g bulk packages AND consumer units)
-  // Must check this BEFORE Trimmed to avoid "Bulk" false positives
-  if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) {
-    return '323ee0fe-1342-4b26-9379-c373f3cabbb9'; // Packaged
+  if ((lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) && stages['Packaged']) {
+    return stages['Packaged'];
   }
 
-  // Trimmed stage (includes "Bulk" products)
-  // "Bulk - [Strain] - Flower" and "Bulk - [Strain] - Smalls"
-  if (lower.includes('bulk')) {
-    return '30be0d52-a3b2-482d-a462-1803054cf792'; // Trimmed
+  if (lower.includes('bulk') && stages['Trimmed']) {
+    return stages['Trimmed'];
   }
 
-  // Default to Trimmed if unclear
-  return '30be0d52-a3b2-482d-a462-1803054cf792'; // Trimmed
+  return stages['Trimmed'] || Object.values(stages)[0];
 }
 
 /**
@@ -195,7 +210,7 @@ export async function finalizeConversion(params: {
 
   // Step 2: Create packages with finalized status
   // Use helper to determine correct stage from product_name
-  const correctStageId = getProductStageIdFromProductName(params.product_name);
+  const correctStageId = await getProductStageIdFromProductName(params.product_name);
 
   const packagesToInsert = params.packages.map((pkg) => ({
     batch_id: params.batch_id,
@@ -255,13 +270,13 @@ export async function finalizeConversion(params: {
     const strainName = batchData?.strains?.name || 'Unknown Strain';
     const batchNumber = batchData.batch_number;
 
+    // Pre-resolve stage and category outside the map (stage lookup is async)
+    const inventoryStageId = await getProductStageIdFromProductName(productName);
+    const inventoryCategory = getCategoryFromProductName(productName);
+
     // Create inventory_items for each package
     const inventoryItems = createdPackages.map((pkg) => {
       const quantity = pkg.weight || pkg.units || 0;
-      // Use helper to map product name to correct stage
-      const correctStageId = getProductStageIdFromProductName(productName);
-      // Use helper to map product name to category (required for UI visibility)
-      const category = getCategoryFromProductName(productName);
       return {
         package_id: pkg.package_id,
         batch_id: pkg.batch_id,
@@ -269,9 +284,9 @@ export async function finalizeConversion(params: {
         batch: batchNumber,
         strain_id: batchData.strain_id,
         strain: strainName,
-        product_stage_id: correctStageId,
+        product_stage_id: inventoryStageId,
         product_name: productName,
-        category: category,
+        category: inventoryCategory,
         net_weight: parseNetWeightFromProductName(productName),
         on_hand_qty: quantity,
         available_qty: quantity,

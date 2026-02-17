@@ -1,5 +1,6 @@
 import { ExternalLink, FileText } from 'lucide-react';
 import type { BatchComplianceInfo, ComplianceHeader } from '@/types';
+import { DEFAULT_LICENSE_NUMBER, DEFAULT_LICENSE_NAME } from '@/lib/constants';
 
 interface BatchComplianceTableProps {
   batches: BatchComplianceInfo[];
@@ -22,8 +23,8 @@ export function BatchComplianceTable({
     );
   }
 
-  const companyName = complianceHeader?.company_name || 'Kind Meds Inc.';
-  const companyLicense = complianceHeader?.license_number || '00000078DCBK00628996';
+  const companyName = complianceHeader?.company_name || DEFAULT_LICENSE_NAME;
+  const companyLicense = complianceHeader?.license_number || DEFAULT_LICENSE_NUMBER;
 
   return (
     <div className="border-2 border-black bg-white compliance-section">

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import QRCode from 'qrcode';
 import { getCOAPDFUrl } from '@/features/coa/services/coa.service';
 import { getSiteUrl } from '@/lib/utils';
+import { DEFAULT_LICENSE_NUMBER, DEFAULT_LICENSE_NAME } from '@/lib/constants';
 import type { Coversheet, ComplianceHeader, BatchComplianceInfo, DistributedToInfo } from '@/types';
 
 function generateSecureToken(): string {
@@ -312,8 +313,8 @@ export async function getComplianceHeaderData(): Promise<ComplianceHeader> {
   const pregnancyWarning = '"Using marijuana during pregnancy could cause birth defects or other health issues to your unborn child."';
 
   return {
-    company_name: settings.company_license_name || 'Kind Meds Inc.',
-    license_number: settings.company_license_number || '00000078DCBK00628996',
+    company_name: settings.company_license_name || DEFAULT_LICENSE_NAME,
+    license_number: settings.company_license_number || DEFAULT_LICENSE_NUMBER,
     pregnancy_warning: pregnancyWarning
   };
 }

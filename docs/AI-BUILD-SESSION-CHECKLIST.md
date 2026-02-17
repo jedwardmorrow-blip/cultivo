@@ -15,38 +15,44 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-17
-**Session:** Optimization Phase 1 -- Type System Regeneration
+**Session:** Optimization Phase 2 -- Hardcoded Values Extraction
 **Status:** COMPLETE
 
 **What was done:**
-- Regenerated `database.types.ts` from live DB via SQL introspection (2,586 -> 6,599 lines)
-- Added 85 foreign key Relationships across 40 tables for Supabase join type inference
-- tsc errors reduced from 1,045 to 500 (52% reduction)
-- Fixed PublicMenu.tsx broken logo reference (outline variant -> `cult-logo-white-320.png`)
-- Created `scripts/gen-types.mjs` for future type regeneration without access token
+- Extracted 12 hardcoded license/company string occurrences to shared constants in `src/lib/constants/index.ts`
+- Created shared `getCompanySettings()` utility in `src/lib/constants/companySettings.ts`
+- Removed 2 duplicate `getCompanySettings()` functions from `invoiceService.ts` and `manifestService.ts`
+- Replaced 5 hardcoded stage UUIDs in `conversions.service.ts` with cached `product_stages` DB lookup
+- `getProductStageIdFromProductName()` is now async (both internal call sites updated)
 
-**Build status:** Passes clean (2411 modules, 26s)
+**Build status:** Passes clean (2413 modules, 24s)
 
-**Known issues:** 500 remaining tsc errors (real code issues, not stale types). Top offenders:
-- `combine.service.ts` (73 errors) -- references non-existent `product_id` column on `inventory_items`
-- `manifestService.ts` (34), `invoiceService.ts` (30) -- type mismatches
-- `conversions.service.ts` (25), `AuditManagement.tsx` (25)
+**Known issues:** 500 remaining tsc errors (unchanged from Phase 1 -- real code issues tracked for Phase 3)
 
-**New files:** `scripts/gen-types.mjs`, `scripts/tables-data.json`, `scripts/views-data.json`
-**Modified files:** `src/lib/database/database.types.ts`, `src/pages/public/PublicMenu.tsx`
+**New files:** `src/lib/constants/companySettings.ts`
+**Modified files:**
+- `src/lib/constants/index.ts` -- added compliance constants + re-export
+- `src/features/orders/components/coversheet/ComplianceHeader.tsx` -- imports shared constants
+- `src/features/orders/components/coversheet/BatchComplianceTable.tsx` -- imports shared constants
+- `src/features/orders/components/LabelGenerator.tsx` -- imports shared constants
+- `src/features/orders/components/LabelPrintPreview.tsx` -- removed local constants, imports shared
+- `src/features/orders/services/invoiceService.ts` -- removed local getCompanySettings, imports shared
+- `src/features/orders/services/manifestService.ts` -- removed local getCompanySettings, imports shared
+- `src/features/orders/services/coversheet.service.ts` -- imports shared constants for fallbacks
+- `src/features/orders/services/labelAutoFill.service.ts` -- imports shared constants
+- `src/features/inventory/services/conversions.service.ts` -- async stage lookup with cache
 **Migrations:** None
 
 **Critical context for future sessions:**
-- `database.types.ts` was regenerated via `scripts/gen-types.mjs` (SQL introspection, no access token)
-- The `Relationships` arrays enable join type inference -- do NOT revert to empty arrays
-- Remaining 500 tsc errors are real code bugs, tracked for Phase 3 in `docs/OPTIMIZATION-ROADMAP.md`
+- `getProductStageIdFromProductName()` is now async -- any new callers must await it
+- Stage ID cache (`stageIdCache`) lives in module scope, reset on page reload
+- Compliance fallback constants live in `src/lib/constants/index.ts` -- single source of truth
 - All previous critical context still applies (cancel functions, undo guards, COA sync, etc.)
 
 **Next recommendations (follow OPTIMIZATION-ROADMAP.md):**
-1. Phase 2: Extract hardcoded license numbers and stage UUIDs to app_settings
-2. Phase 3: Fix duplicate type definitions and double-casts
-3. Phase 4: Consolidate 3 duplicate order services
-4. Phase 5: Bundle size optimization (code splitting)
+1. Phase 3: Fix duplicate type definitions and double-casts
+2. Phase 4: Consolidate 3 duplicate order services
+3. Phase 5: Bundle size optimization (code splitting)
 
 ---
 

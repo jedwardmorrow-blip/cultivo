@@ -19,6 +19,7 @@
  */
 
 import type { ComplianceHeader as ComplianceHeaderData } from '@/types';
+import { DEFAULT_LICENSE_NUMBER, DEFAULT_LICENSE_NAME } from '@/lib/constants';
 
 interface ComplianceHeaderProps {
   companyName?: string;
@@ -50,8 +51,8 @@ export function ComplianceHeader({
   data
 }: ComplianceHeaderProps) {
   // Use data object if provided, otherwise use individual props
-  const displayName = data?.company_name || companyName || 'Kind Meds Inc.';
-  const displayLicense = data?.license_number || licenseNumber || '00000078DCBK00628996';
+  const displayName = data?.company_name || companyName || DEFAULT_LICENSE_NAME;
+  const displayLicense = data?.license_number || licenseNumber || DEFAULT_LICENSE_NUMBER;
   const displayWarning = data?.pregnancy_warning || pregnancyWarning ||
     '"Using marijuana during pregnancy could cause birth defects or other health issues to your unborn child."';
 

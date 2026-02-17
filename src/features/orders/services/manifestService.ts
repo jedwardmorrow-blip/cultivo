@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import {
+  getCompanySettings,
+  DEFAULT_COMPANY_NAME, DEFAULT_LICENSE_NUMBER, DEFAULT_COMPANY_ADDRESS,
+  DEFAULT_COMPANY_CITY, DEFAULT_COMPANY_STATE, DEFAULT_COMPANY_POSTAL_CODE,
+} from '@/lib/constants';
+import {
   getOrCalculateRoute,
   formatDistance,
   formatDuration,
@@ -81,22 +86,6 @@ export interface ManifestData {
 
   total_amount: number;
   notes: string | null;
-}
-
-async function getCompanySettings(): Promise<Record<string, string>> {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('setting_key, setting_value')
-    .eq('category', 'company');
-
-  if (error) throw error;
-
-  const settings: Record<string, string> = {};
-  data?.forEach(item => {
-    settings[item.setting_key] = item.setting_value || '';
-  });
-
-  return settings;
 }
 
 export async function generateManifestData(
@@ -393,12 +382,12 @@ export async function generateManifestData(
     origin_location_name: originLocation.name,
     origin_location_address: originLocation.address,
 
-    originating_entity_name: companySettings.company_name || 'Cult Cannabis Cultivation',
-    originating_entity_license: companySettings.company_license_number || '00000078DCBK00628996',
-    originating_entity_address: companySettings.company_address || '3303 South 40th Street',
-    originating_entity_city: companySettings.company_city || 'Phoenix',
-    originating_entity_state: companySettings.company_state || 'AZ',
-    originating_entity_postal_code: companySettings.company_postal_code || '85040',
+    originating_entity_name: companySettings.company_name || DEFAULT_COMPANY_NAME,
+    originating_entity_license: companySettings.company_license_number || DEFAULT_LICENSE_NUMBER,
+    originating_entity_address: companySettings.company_address || DEFAULT_COMPANY_ADDRESS,
+    originating_entity_city: companySettings.company_city || DEFAULT_COMPANY_CITY,
+    originating_entity_state: companySettings.company_state || DEFAULT_COMPANY_STATE,
+    originating_entity_postal_code: companySettings.company_postal_code || DEFAULT_COMPANY_POSTAL_CODE,
     originating_entity_phone: companySettings.company_phone || '',
 
     destination_entity_name: customer?.name || 'Unknown Customer',
