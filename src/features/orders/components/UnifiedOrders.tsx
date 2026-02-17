@@ -155,6 +155,7 @@ export function UnifiedOrders({
         onSelectOrder={handleSelectOrder}
         onToggleSelect={handleToggleSelect}
         onToggleSelectAll={handleToggleSelectAll}
+        onStatusChange={actions.updateOrderStatus}
       />
 
       {drawerOrder && (
