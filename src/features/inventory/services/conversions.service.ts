@@ -428,6 +428,7 @@ export interface SessionContribution {
   operator_name: string;
   output_weight: number | null;
   output_units: number | null;
+  source_package_id: string | null;
 }
 
 /**
@@ -443,7 +444,7 @@ export async function getSessionContributions(
   if (sessionType === 'trim') {
     const { data, error } = await supabase
       .from('trim_sessions')
-      .select('id, completed_at, trimmer_name, big_buds_grams, small_buds_grams')
+      .select('id, completed_at, trimmer_name, big_buds_grams, small_buds_grams, package_id')
       .in('id', sessionIds)
       .order('completed_at', { ascending: true });
 
@@ -455,13 +456,14 @@ export async function getSessionContributions(
       operator_name: s.trimmer_name,
       output_weight: (s.big_buds_grams || 0) + (s.small_buds_grams || 0),
       output_units: null,
+      source_package_id: s.package_id || null,
     }));
   }
 
   if (sessionType === 'bucking') {
     const { data, error } = await supabase
       .from('bucking_sessions')
-      .select('id, completed_at, bucker_name, output_weight_grams')
+      .select('id, completed_at, bucker_name, output_weight_grams, binned_package_id')
       .in('id', sessionIds)
       .order('completed_at', { ascending: true });
 
@@ -473,13 +475,14 @@ export async function getSessionContributions(
       operator_name: s.bucker_name,
       output_weight: s.output_weight_grams,
       output_units: null,
+      source_package_id: s.binned_package_id || null,
     }));
   }
 
   // packaging
   const { data, error } = await supabase
     .from('packaging_sessions')
-    .select('id, completed_at, packager_name, units_3_5g, units_14g, units_454g, ending_weight')
+    .select('id, completed_at, packager_name, units_3_5g, units_14g, units_454g, ending_weight, package_id')
     .in('id', sessionIds)
     .order('completed_at', { ascending: true });
 
@@ -493,6 +496,7 @@ export async function getSessionContributions(
       operator_name: s.packager_name,
       output_weight: totalUnits === 0 ? (s.ending_weight || null) : null,
       output_units: totalUnits > 0 ? totalUnits : null,
+      source_package_id: s.package_id || null,
     };
   });
 }

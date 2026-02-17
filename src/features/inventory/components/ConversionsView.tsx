@@ -377,6 +377,7 @@ function SessionBreakdownPanel({
           <tr className="text-gray-500">
             <th className="text-left pb-1.5 font-medium">Operator</th>
             <th className="text-left pb-1.5 font-medium">Completed</th>
+            <th className="text-left pb-1.5 font-medium">Source Pkg</th>
             <th className="text-right pb-1.5 font-medium">{isBulk ? 'Weight' : 'Units'}</th>
           </tr>
         </thead>
@@ -402,6 +403,11 @@ function SessionBreakdownPanel({
                   </span>
                 </div>
               </td>
+              <td className="py-1.5">
+                {c.source_package_id
+                  ? <span className="font-mono text-gray-400 text-[11px]">{c.source_package_id}</span>
+                  : <span className="text-gray-600">—</span>}
+              </td>
               <td className="py-1.5 text-right font-medium text-white">
                 {isBulk
                   ? `${(c.output_weight || 0).toFixed(0)}g`
@@ -412,7 +418,7 @@ function SessionBreakdownPanel({
         </tbody>
         <tfoot>
           <tr className={`border-t ${isUrgent ? 'border-amber-700/40' : 'border-white/10'}`}>
-            <td colSpan={2} className="pt-2 text-gray-400 font-medium">Total</td>
+            <td colSpan={3} className="pt-2 text-gray-400 font-medium">Total</td>
             <td className="pt-2 text-right font-bold text-white">
               {isBulk ? `${total.toFixed(0)}g` : `${total}`}
             </td>
