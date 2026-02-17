@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-11
+updated: 2026-02-17
 priority: Working document - update every session
 ---
 
@@ -15,39 +15,40 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-17
-**Session:** System Health Remediation
+**Session:** Production Bug Fixes and Architecture Gap Remediation
 **Status:** COMPLETE
 
 **What was done:**
-- Deleted 3 dead hook files (useOrders.ts, useOrdersWithDetails.ts, useSettings.ts) and fixed barrel exports
-- Removed 2 dead functions (getRemainingQuantity from conversions.service.ts, assignCOAToBatch from batch.service.ts)
-- Fixed all 65 TS6133 unused variable warnings across 48 files
-- Replaced all 60 browser alert() calls with notificationService across 21 files
-- Stripped ~170 console.log/warn/info/debug statements across 25 files
-- Removed unused npm packages (dom-to-image-more, @types/react-router-dom)
-- Renamed PNG files with spaces to fix EAGAIN build errors (cult-logo-white-320.png, cult-logo-eye.png)
-- Updated all image references in source files and index.html
+- Fixed cancel session bug: all 3 cancel functions (trim, bucking, packaging) were setting `completed_at` instead of `cancelled_at`
+- Added missing `errorService` import to `conversions.service.ts` (would crash at runtime on ATP violation)
+- Added `batch_id` lookup to `addPackageToAudit()` so audit-created inventory items have proper batch UUID
+- Completed COA bidirectional sync: `updateCOA()` and `deleteCOA()` now sync `batch_registry.coa_id`
+- Added finalization guard to `undoCompletedSession()` -- blocks undo if conversion packages exist
+- Fixed lifecycle order in docs (Buck before Trim), updated movement kinds to canonical 9
+- Updated dates, session list, and known deferred items across CLAUDE.md and AI-SESSION-BRIEF.md
+- Fixed dead PRODUCTS.md references to PRODUCTS.md
 
-**Build status:** Passes clean (2411 modules, no EAGAIN errors)
+**Build status:** Passes clean (2411 modules)
 
 **Known issues:** None introduced. Pre-existing ~1000 TS errors from stale database.types.ts (needs CLI type regeneration).
 
-**New files:** None (renamed existing PNGs)
-**Modified files:** ~50 files across all feature modules
+**New files:** None
+**Modified files:** 7 source files + 4 documentation files
 **Migrations:** None
 
 **Critical context for future sessions:**
-- All browser alerts now use notificationService (.warning/.error/.success/.info)
-- PNG logos renamed: `/cult-logo-white-320.png` (main), `/cult-logo-eye.png` (favicon)
-- PublicMenu.tsx references `/Cult Cannabis Co Final White Outline 320x320@3x.png` which does not exist (pre-existing issue)
+- Cancel functions now set `cancelled_at` (not `completed_at`) -- do not regress
+- `undoCompletedSession()` checks `conversion_packages.source_session_ids` before allowing undo
+- COA create/update/delete all sync `batch_registry.coa_id` -- keep this pattern
 - The `pending_conversion_sessions` VIEW uses `?|` JSONB operator -- do NOT replace with LEFT JOIN
 - `reason_code: 'session_finalization'` in conversion service is REQUIRED (Architecture Decision #1)
 
 **Next recommendations:**
 1. Regenerate database.types.ts from live schema (needs Supabase CLI)
 2. Fix PublicMenu.tsx broken logo reference (outline variant PNG is missing)
-3. Extract hardcoded license/company details to app_settings (Phase 5.2 deferred)
-4. Extract hardcoded product stage UUIDs to DB lookup (Phase 5.3 deferred)
+3. Consolidate duplicate order services (ordersService, orders-data, orders-cache)
+4. Extract hardcoded license/company details to app_settings (Phase 5.2 deferred)
+5. Extract hardcoded product stage UUIDs to DB lookup (Phase 5.3 deferred)
 
 ---
 
@@ -55,7 +56,7 @@ priority: Working document - update every session
 
 - [ ] Read [AI-SESSION-BRIEF.md](./AI-SESSION-BRIEF.md)
 - [ ] Read [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md) if touching inventory/sessions
-- [ ] Read [PRODUCT-FLOW.md](./PRODUCT-FLOW.md) if touching conversions
+- [ ] Read [PRODUCTS.md](./PRODUCTS.md) if touching conversions
 - [ ] Scan last 3-5 entries in [CHANGELOG.md](../CHANGELOG.md)
 - [ ] Read the Hand-Off section above
 
@@ -104,7 +105,7 @@ priority: Working document - update every session
 
 **Architecture:**
 - [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md) - Key design decisions
-- [PRODUCT-FLOW.md](./PRODUCT-FLOW.md) - Canonical product stages and conversions
+- [PRODUCTS.md](./PRODUCTS.md) - Canonical product stages and conversions
 - [SYSTEM-WORKFLOW.md](./SYSTEM-WORKFLOW.md) - End-to-end workflows
 - [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) - Trigger system
 
