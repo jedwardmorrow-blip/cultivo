@@ -1,4 +1,3 @@
-import L from 'leaflet';
 import { Coordinate } from './routing.service';
 
 export interface LeafletMapOptions {
@@ -45,6 +44,7 @@ function decodePolyline(encoded: string): [number, number][] {
 }
 
 export async function generateLeafletMapDataUrl(options: LeafletMapOptions): Promise<string> {
+  const L = (await import('leaflet')).default;
   let mapContainer: HTMLDivElement | null = null;
   let map: L.Map | null = null;
 

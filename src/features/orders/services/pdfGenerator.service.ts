@@ -1,5 +1,3 @@
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 export interface PDFGenerationOptions {
   filename?: string;
@@ -18,6 +16,12 @@ export async function generatePDFFromElement(
   } = options;
 
   try {
+    const [html2canvasModule, { jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
+    const html2canvas = html2canvasModule.default;
+
     const canvas = await html2canvas(element, {
       scale,
       useCORS: true,

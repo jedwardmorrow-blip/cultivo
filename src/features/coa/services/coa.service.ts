@@ -1,8 +1,14 @@
 import { supabase } from '@/lib/supabase';
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Load PDF.js worker from local file instead of CDN to avoid CORS/CSP issues
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+let _pdfjsLib: typeof import('pdfjs-dist') | null = null;
+
+async function getPdfjsLib() {
+  if (!_pdfjsLib) {
+    _pdfjsLib = await import('pdfjs-dist');
+    _pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  }
+  return _pdfjsLib;
+}
 
 /**
  * COA Service
@@ -165,6 +171,7 @@ export async function uploadCOAPDF(file: File): Promise<string> {
  * @description Uses pdfjs to extract text and parse cannabinoid/terpene data
  */
 export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
+  const pdfjsLib = await getPdfjsLib();
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 

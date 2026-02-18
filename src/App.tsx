@@ -1,30 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ErrorBoundary, Layout } from './lib/components';
-import { Dashboard } from './features/dashboard';
-import { OrdersContainer, NewOrderForm } from './features/orders';
-import { DistributionCalendar } from './features/delivery';
-import { ProductionDashboard, BuckingSessionsRefactored, TrimSessionsRefactored, PackagingSessionsRefactored } from './features/sessions';
-import {
-  AllInventoryViewWrapper,
-  BinnedInventoryViewWrapper,
-  BuckedInventoryViewWrapper,
-  BulkInventoryViewWrapper,
-  PackagedInventoryViewWrapper,
-  DailyActivityViewWrapper,
-  ConversionsViewWrapper,
-  ConversionHistoryViewWrapper,
-  AuditsViewWrapper,
-} from './features/inventory';
-import { Settings } from './features/settings';
-import { StandaloneOrderFormRefactored } from './features/order-form';
 import { Login, ResetPassword } from './features/auth';
-import { AnalyticsDashboard, EODSummary } from './features/analytics';
 import { CoversheetPublic } from './pages/public/CoversheetPublic';
 import { CoversheetLibrary } from './pages/public/CoversheetLibrary';
 import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
-import { BatchManagement } from './features/batches';
+import { StandaloneOrderFormRefactored } from './features/order-form';
+import { NewOrderForm } from './features/orders';
+
+const Dashboard = lazy(() => import('./features/dashboard').then((m) => ({ default: m.Dashboard })));
+const OrdersContainer = lazy(() => import('./features/orders').then((m) => ({ default: m.OrdersContainer })));
+const DistributionCalendar = lazy(() => import('./features/delivery').then((m) => ({ default: m.DistributionCalendar })));
+const ProductionDashboard = lazy(() => import('./features/sessions').then((m) => ({ default: m.ProductionDashboard })));
+const BuckingSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.BuckingSessionsRefactored })));
+const TrimSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.TrimSessionsRefactored })));
+const PackagingSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.PackagingSessionsRefactored })));
+const BatchManagement = lazy(() => import('./features/batches').then((m) => ({ default: m.BatchManagement })));
+const AllInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.AllInventoryViewWrapper })));
+const BinnedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BinnedInventoryViewWrapper })));
+const BuckedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BuckedInventoryViewWrapper })));
+const BulkInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BulkInventoryViewWrapper })));
+const PackagedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.PackagedInventoryViewWrapper })));
+const DailyActivityViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.DailyActivityViewWrapper })));
+const ConversionsViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.ConversionsViewWrapper })));
+const ConversionHistoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.ConversionHistoryViewWrapper })));
+const AuditsViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.AuditsViewWrapper })));
+const Settings = lazy(() => import('./features/settings').then((m) => ({ default: m.Settings })));
+const AnalyticsDashboard = lazy(() => import('./features/analytics').then((m) => ({ default: m.AnalyticsDashboard })));
+const EODSummary = lazy(() => import('./features/analytics').then((m) => ({ default: m.EODSummary })));
+
+function ViewFallback() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-white" />
+    </div>
+  );
+}
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -169,7 +181,9 @@ function AppContent() {
   return (
     <>
       <Layout currentView={currentView} onViewChange={handleViewChange}>
-        {renderView()}
+        <Suspense fallback={<ViewFallback />}>
+          {renderView()}
+        </Suspense>
       </Layout>
       {showNewOrderForm && (
         <NewOrderForm
