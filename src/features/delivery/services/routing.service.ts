@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { getLocationById } from './locations.service';
 
 export interface Coordinate {
   latitude: number;
@@ -439,7 +440,6 @@ export async function refreshStaleRoutes(): Promise<number> {
       let originId: string;
 
       if (route.origin_location_id) {
-        const { getLocationById } = await import('./locations.service');
         const location = await getLocationById(route.origin_location_id);
         if (location) {
           originCoords = { latitude: location.latitude, longitude: location.longitude };

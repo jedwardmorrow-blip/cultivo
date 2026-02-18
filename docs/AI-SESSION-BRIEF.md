@@ -157,6 +157,7 @@ npm run test             # Run tests
 
 Before finishing work:
 - [ ] `npm run build` passes
+- [ ] `npm run typecheck` run; error count not higher than session-start baseline (baseline: **501 errors** as of 2026-02-18)
 - [ ] Types imported from `@/types` (no duplicates created)
 - [ ] Inventory changes use movement service (never direct updates)
 - [ ] `batch_id` never null in inventory operations

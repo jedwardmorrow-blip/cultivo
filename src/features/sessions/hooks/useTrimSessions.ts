@@ -30,11 +30,11 @@ export function useTrimSessions() {
     ]);
 
     if (activeResult.data) {
-      setActiveSessions(activeResult.data.filter((s: any) => s.session_status === 'active') || []);
+      setActiveSessions(activeResult.data.filter((s) => s.session_status === 'active') || []);
     }
 
     if (allResult.data) {
-      setSessions(allResult.data.filter((s: any) => s.session_status === 'completed').slice(0, 50) || []);
+      setSessions(allResult.data.filter((s) => s.session_status === 'completed').slice(0, 50) || []);
     }
 
     setLoading(false);

@@ -343,33 +343,6 @@ export interface AuditStatistics {
 // =====================================================
 
 /**
- * Calculate variance severity based on percentage
- */
-export function getVarianceSeverity(percentage: number): 'low' | 'medium' | 'high' | 'critical' {
-  const abs = Math.abs(percentage);
-  if (abs < 1) return 'low';
-  if (abs < 3) return 'medium';
-  if (abs < 5) return 'high';
-  return 'critical';
-}
-
-/**
- * Get color class for variance severity
- */
-export function getVarianceColorClass(severity: 'low' | 'medium' | 'high' | 'critical'): string {
-  switch (severity) {
-    case 'low':
-      return 'text-green-600 bg-green-50';
-    case 'medium':
-      return 'text-yellow-600 bg-yellow-50';
-    case 'high':
-      return 'text-orange-600 bg-orange-50';
-    case 'critical':
-      return 'text-red-600 bg-red-50';
-  }
-}
-
-/**
  * Check if variance reason is required
  */
 export function requiresVarianceReason(varianceQty: number): boolean {

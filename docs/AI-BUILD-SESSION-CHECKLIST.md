@@ -15,22 +15,24 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** System Health Assessment + Pre-Cultivation Documentation
+**Session:** Phase A Type Hardening + Pre-Cultivation Documentation
 **Status:** COMPLETE
 
 **What was done:**
-- Ran full codebase health assessment across 10 dimensions (score: 8.1/10)
-- Created `docs/SYSTEM-HEALTH-ASSESSMENT.md` — scored baseline across architecture, type safety, compliance, performance, testing, and documentation; includes prioritized pre-cultivation work plan (Phases A-D)
-- Created `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md` — detailed risk breakdown for each Phase A type hardening item; includes safe execution steps, exact interfaces needed, and explicit "Do NOT" rules for each item
-- Updated `docs/AI-SESSION-BRIEF.md` to reference both new planning documents
+- Created all four Phase risk analysis docs (B, C, D) alongside previously created A; updated health assessment to reference all four
+- **A4:** Recorded tsc baseline (501 errors); added `npm run typecheck` to both verification checklists
+- **A1:** Removed duplicate `getVarianceSeverity` + `getVarianceColorClass` from `audit.types.ts`; canonical source is `conversions.types.ts`
+- **A2:** Converted dynamic `await import('./locations.service')` in `routing.service.ts` to static import; eliminates mixed-module Vite warning
+- **A3:** Replaced all 6 `any`-typed parameters in `sessions.service.ts` with DB-derived types (`TrimSessionInsert/Update`, `BuckingSessionInsert/Update`, `PackagingSessionInsert/Update`); removed `(s: any)` filter casts in `useTrimSessions.ts`
 
 **Verification results:**
-- `npm run build` passes (no code changes made; documentation session only)
+- `npm run build` passes clean
+- `npm run typecheck`: **500 errors** (down 1 from baseline of 501)
 - No migrations run
 
-**Build status:** Passes clean (unchanged from last session)
+**Build status:** Passes clean
 
-**Known issues:** ~500 remaining tsc errors (pre-existing baseline)
+**Known issues:** 500 tsc errors (down from 501 baseline); pre-existing, not blocking
 
 **New files:**
 - `docs/SYSTEM-HEALTH-ASSESSMENT.md`
@@ -40,22 +42,25 @@ priority: Working document - update every session
 - `docs/CULTIVATION-PHASE-D-RISK-ANALYSIS.md`
 
 **Modified files:**
-- `docs/AI-SESSION-BRIEF.md` (added cultivation planning doc links)
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
+- `src/features/inventory/types/audit.types.ts` (removed 2 duplicate functions)
+- `src/features/delivery/services/routing.service.ts` (static import for locations.service)
+- `src/features/sessions/services/sessions.service.ts` (typed 6 `any` parameters)
+- `src/features/sessions/hooks/useTrimSessions.ts` (removed 2 `(s: any)` casts)
+- `docs/AI-SESSION-BRIEF.md` (typecheck in verification checklist; cultivation planning links)
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` (typecheck in end-of-session checklist; updated hand-off)
 
 **Migrations:** None
 
 **Critical context for future sessions:**
 - All previous critical context still applies (getProductStageIdFromProductName async, stageIdCache, compliance constants, pdfjs singleton, lazy feature views)
-- Two duplicate variance utility exports exist: `getVarianceSeverity` and `getVarianceColorClass` appear in both `audit.types.ts` AND `conversions.types.ts`. The canonical source is `conversions.types.ts` (re-exported from `@/types`). Do NOT import these from `audit.types.ts` directly.
-- `sessions.service.ts` uses `any` for all session input parameters — this is a known gap, documented in Phase A Risk Analysis. Do NOT propagate this pattern to new cultivation session functions.
-- `locations.service.ts` has a mixed static/dynamic import pattern — documented in Phase A Risk Analysis. Avoid adding new dynamic imports of this service.
+- **Phase A is complete.** `audit.types.ts` no longer exports duplicate variance utilities; `sessions.service.ts` is fully typed; `routing.service.ts` uses static import for locations.service
+- `sessions.service.ts` now uses `TrimSessionInsert/Update`, `BuckingSessionInsert/Update`, `PackagingSessionInsert/Update` — new cultivation session functions MUST follow the same pattern (use `Pick` or the generated `Insert`/`Update` types from `database.types.ts`)
 
 **Next recommendations:**
-- Execute Phase A (type hardening) before cultivation module work begins — safe, focused, one session
-- Execution order for Phase A: A4 (tsc baseline) → A1 (remove duplicate variance exports) → A2 (fix locations.service import) → A3 (type sessions.service parameters)
-- After Phase A: begin cultivation module schema design (new tables, batch format extension, grow room structure)
-- Phase B (pagination) and Phase C (service refactoring) can run alongside early cultivation scaffolding
+- **Phase B** (pagination caps) — can be done in one session; read `CULTIVATION-PHASE-B-RISK-ANALYSIS.md` first; B1 → B2 → B3 order; B3 highest risk (run tsc --noEmit after each function)
+- **Phase C** (service refactoring) — `conversions.service.ts` split; read `CULTIVATION-PHASE-C-RISK-ANALYSIS.md` first; C2 → C1 → C3 order; do NOT start C1 without reading about stageIdCache hazard
+- **Phase D** (tests) — can start anytime; `inventoryMovement.service.ts` (D2) is highest value; read `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` first
+- **Cultivation scaffolding** — can begin now that Phase A is complete; schema design first (new tables, batch format extension); cultivation sessions MUST use same patterns as existing session types
 
 ---
 
@@ -98,6 +103,7 @@ priority: Working document - update every session
 ## End-of-Session Checklist
 
 - [ ] `npm run build` passes
+- [ ] `npm run typecheck` run; error count documented (baseline: **501 errors** as of 2026-02-18)
 - [ ] CHANGELOG.md updated (if significant changes)
 - [ ] Hand-Off section updated with what was done, known issues, next steps
 - [ ] Any new architectural decisions added to [ARCHITECTURE-DECISIONS.md](./ARCHITECTURE-DECISIONS.md)

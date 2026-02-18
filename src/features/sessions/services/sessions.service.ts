@@ -1,5 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
+import type {
+  TrimSessionInsert,
+  TrimSessionUpdate,
+  BuckingSessionInsert,
+  BuckingSessionUpdate,
+  PackagingSessionInsert,
+  PackagingSessionUpdate,
+} from '../types';
 
 /**
  * Sessions Service
@@ -58,7 +66,7 @@ export async function getActiveTrimSessions() {
  * @param sessionData - Trim session data
  * @returns Promise<{ data: TrimSession | null; error: any }>
  */
-export async function createTrimSession(sessionData: any) {
+export async function createTrimSession(sessionData: TrimSessionInsert) {
   try {
     const { data, error } = await supabase
       .from('trim_sessions')
@@ -82,7 +90,7 @@ export async function createTrimSession(sessionData: any) {
  * @returns Promise<{ data: TrimSession | null; error: any }>
  * @description Sets completed_at timestamp and updates session data
  */
-export async function completeTrimSession(sessionId: string, completionData: any) {
+export async function completeTrimSession(sessionId: string, completionData: TrimSessionUpdate) {
   try {
     const { data, error } = await supabase
       .from('trim_sessions')
@@ -178,7 +186,7 @@ export async function getActiveBuckingSessions() {
  * @param sessionData - Bucking session data
  * @returns Promise<{ data: BuckingSession | null; error: any }>
  */
-export async function createBuckingSession(sessionData: any) {
+export async function createBuckingSession(sessionData: BuckingSessionInsert) {
   try {
     const { data, error } = await supabase
       .from('bucking_sessions')
@@ -201,7 +209,7 @@ export async function createBuckingSession(sessionData: any) {
  * @param completionData - Completion data
  * @returns Promise<{ data: BuckingSession | null; error: any }>
  */
-export async function completeBuckingSession(sessionId: string, completionData: any) {
+export async function completeBuckingSession(sessionId: string, completionData: BuckingSessionUpdate) {
   try {
     const { data, error } = await supabase
       .from('bucking_sessions')
@@ -297,7 +305,7 @@ export async function getActivePackagingSessions() {
  * @param sessionData - Packaging session data
  * @returns Promise<{ data: PackagingSession | null; error: any }>
  */
-export async function createPackagingSession(sessionData: any) {
+export async function createPackagingSession(sessionData: PackagingSessionInsert) {
   try {
     const { data, error } = await supabase
       .from('packaging_sessions')
@@ -320,7 +328,7 @@ export async function createPackagingSession(sessionData: any) {
  * @param completionData - Completion data
  * @returns Promise<{ data: PackagingSession | null; error: any }>
  */
-export async function completePackagingSession(sessionId: string, completionData: any) {
+export async function completePackagingSession(sessionId: string, completionData: PackagingSessionUpdate) {
   try {
     const { data, error } = await supabase
       .from('packaging_sessions')
