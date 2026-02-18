@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { errorService, ErrorType } from './error.service';
 import type {
   InventoryMovement,
   CreateMovementPayload,
@@ -45,33 +46,58 @@ class InventoryMovementService {
   async recordMovement(
     payload: CreateMovementPayload
   ): Promise<MovementResult> {
+    const validation = this.validateMovement(payload);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: validation.error
+      };
+    }
+
+    const isRetryable = (err: unknown): boolean => {
+      const type = errorService.categorizeError(err);
+      return type === ErrorType.NETWORK || type === ErrorType.TIMEOUT || type === ErrorType.UNKNOWN;
+    };
+
     try {
-      const validation = this.validateMovement(payload);
-      if (!validation.valid) {
+      const { data, error } = await errorService.retryOperation(
+        () =>
+          supabase
+            .from('inventory_movements')
+            .insert({
+              movement_kind: payload.movement_kind,
+              source_item_id: payload.source_item_id || null,
+              dest_item_id: payload.dest_item_id || null,
+              qty: payload.qty,
+              unit: payload.unit,
+              reason_code: payload.reason_code || null,
+              reference_id: payload.reference_id || null,
+              reference_type: payload.reference_type || null,
+              notes: payload.notes || null
+            })
+            .select('id')
+            .single(),
+        {
+          maxRetries: 3,
+          delayMs: 500,
+          backoff: true,
+          onRetry: (attempt, err) => {
+            if (!isRetryable(err)) throw err;
+            console.warn(
+              `[inventoryMovement] Transient failure on attempt ${attempt}, retrying...`,
+              err
+            );
+          }
+        }
+      );
+
+      if (error) {
+        console.error('Failed to record movement:', error);
         return {
           success: false,
-          error: validation.error
+          error: error instanceof Error ? error.message : String(error)
         };
       }
-
-      // Insert movement
-      const { data, error } = await supabase
-        .from('inventory_movements')
-        .insert({
-          movement_kind: payload.movement_kind,
-          source_item_id: payload.source_item_id || null,
-          dest_item_id: payload.dest_item_id || null,
-          qty: payload.qty,
-          unit: payload.unit,
-          reason_code: payload.reason_code || null,
-          reference_id: payload.reference_id || null,
-          reference_type: payload.reference_type || null,
-          notes: payload.notes || null
-        })
-        .select('id')
-        .single();
-
-      if (error) throw error;
 
       return {
         success: true,

@@ -7,6 +7,7 @@ export enum ErrorType {
   VALIDATION = 'VALIDATION',
   NOT_FOUND = 'NOT_FOUND',
   TIMEOUT = 'TIMEOUT',
+  CONSTRAINT = 'CONSTRAINT',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -87,10 +88,23 @@ class ErrorService {
     }
   }
 
-  private categorizeError(error: unknown): ErrorType {
+  categorizeError(error: unknown): ErrorType {
     if (typeof error === 'object' && error !== null) {
       const err = error as any;
 
+      if (
+        err.code === '23514' ||
+        err.code === '23505' ||
+        err.code === '23503' ||
+        err.code === '23502' ||
+        err.message?.includes('violates check constraint') ||
+        err.message?.includes('violates unique constraint') ||
+        err.message?.includes('violates foreign key constraint') ||
+        err.message?.includes('violates not-null constraint') ||
+        err.message?.includes('new row violates')
+      ) {
+        return ErrorType.CONSTRAINT;
+      }
       if (err.code === 'PGRST200' || err.message?.includes('schema cache')) {
         return ErrorType.DATABASE;
       }
@@ -122,6 +136,7 @@ class ErrorService {
       [ErrorType.VALIDATION]: 'Validation Error',
       [ErrorType.NOT_FOUND]: 'Not Found',
       [ErrorType.TIMEOUT]: 'Request Timeout',
+      [ErrorType.CONSTRAINT]: 'Constraint Violation',
       [ErrorType.UNKNOWN]: 'Error',
     };
     return titles[type] || 'Error';

@@ -4,6 +4,36 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-18 - Phase C2: Automatic Retry for Inventory Movement Writes
+
+**Type:** RELIABILITY
+**Module:** Inventory Movement Service, Error Service
+**Priority:** HIGH — Prevents silent inventory loss on transient network failures
+**Impact:** `recordMovement()` now retries up to 3 times with exponential backoff on transient failures; constraint violations are never retried
+**Status:** COMPLETE
+**Files Changed:** 2
+
+### Summary
+
+1. **`error.service.ts`** — `categorizeError()` made `public` (was `private`). Added `ErrorType.CONSTRAINT` to cover PostgreSQL constraint violation codes `23514` (CHECK), `23505` (UNIQUE), `23503` (FK), `23502` (NOT NULL). The new type is also mapped in `getErrorTitle`. Retryable types remain `NETWORK`, `TIMEOUT`, and `UNKNOWN`.
+
+2. **`inventoryMovement.service.ts`** — `recordMovement()` now wraps the Supabase `.insert()` in `errorService.retryOperation()` with 3 retries and 500ms base delay (exponential backoff). The `onRetry` callback calls `isRetryable()` which checks `categorizeError()` — if a constraint violation or permission error is thrown during a retry, it re-throws immediately so no further attempts are made. Validation still runs before the retry loop (no wasted retries on bad input). The outer `try/catch` preserves the `{ success, error }` return shape that all callers rely on.
+
+### Retry Behavior
+
+| Error Type | Behavior | Example |
+|---|---|---|
+| NETWORK | Retry up to 3x | Network disconnect |
+| TIMEOUT | Retry up to 3x | Supabase cold start |
+| UNKNOWN | Retry up to 3x | Unrecognized transient error |
+| CONSTRAINT (23514) | Fail immediately | ATP check violation |
+| CONSTRAINT (23505) | Fail immediately | Duplicate package_id |
+| PERMISSION | Fail immediately | RLS policy block |
+| NOT_FOUND | Fail immediately | Missing table/column |
+| VALIDATION | Fail immediately | Bad input to validateMovement |
+
+---
+
 ## 2026-02-18 - Optimization Phase C3: Standardize Error Return Pattern
 
 **Type:** REFACTOR
