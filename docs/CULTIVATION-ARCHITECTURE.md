@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.0
+version: 1.1
 updated: 2026-02-18
 status: SPECIFICATION — not yet implemented
 ---
@@ -39,12 +39,16 @@ status: SPECIFICATION — not yet implemented
 │  grow_rooms                                                          │
 │  ├─ PK: id uuid                                                      │
 │  ├─ room_code text UNIQUE NOT NULL                                   │
+│  ├─ room_type: 'clone'|'veg'|'flower'|'mother'|'mixed'              │
 │  └─ is_active boolean DEFAULT true                                   │
 │                                                                      │
 │  plant_groups                                                        │
 │  ├─ PK: id uuid                                                      │
+│  ├─ group_number text UNIQUE NOT NULL  (auto-generated PG-YYMMDD-ABV)│
 │  ├─ FK: strain_id → strains(id)  [immutable]                        │
 │  ├─ FK: grow_room_id → grow_rooms(id)                               │
+│  ├─ FK: mother_plant_group_id → plant_groups(id)  [nullable]        │
+│  ├─ is_mother boolean DEFAULT false                                  │
 │  └─ growth_stage text  ['clone','veg','flower','harvested']         │
 │                                                                      │
 │  plant_group_stage_history                                           │
@@ -52,11 +56,20 @@ status: SPECIFICATION — not yet implemented
 │  ├─ FK: plant_group_id → plant_groups(id)                           │
 │  └─ immutable log (no UPDATE/DELETE allowed)                        │
 │                                                                      │
+│  plant_group_room_history                                            │
+│  ├─ PK: id uuid                                                      │
+│  ├─ FK: plant_group_id → plant_groups(id)                           │
+│  ├─ FK: from_room_id → grow_rooms(id)                               │
+│  ├─ FK: to_room_id → grow_rooms(id)                                 │
+│  └─ immutable log (no UPDATE/DELETE allowed)                        │
+│                                                                      │
 │  harvest_sessions                                                    │
 │  ├─ PK: id uuid                                                      │
 │  ├─ FK: plant_group_id → plant_groups(id)                           │
-│  ├─ FK: batch_registry_id → batch_registry(id)  [nullable, set on  │
-│  │     completion]                                                   │
+│  ├─ FK: batch_registry_id → batch_registry(id)  [nullable]         │
+│  ├─ wet_weight_grams numeric NOT NULL                                │
+│  ├─ adjusted_weight_grams numeric  [nullable, post-entry correction] │
+│  ├─ adjustment_reason text  [nullable, required when adjusted]       │
 │  └─ session_status text  ['active','completed','cancelled']         │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -74,7 +87,7 @@ CREATE TABLE IF NOT EXISTS grow_rooms (
   name          text NOT NULL,
   room_code     text NOT NULL,
   room_type     text NOT NULL DEFAULT 'flower'
-                  CHECK (room_type IN ('clone', 'veg', 'flower', 'mixed')),
+                  CHECK (room_type IN ('clone', 'veg', 'flower', 'mother', 'mixed')),
   capacity_plants integer,
   is_active     boolean NOT NULL DEFAULT true,
   created_at    timestamptz NOT NULL DEFAULT now(),
@@ -93,23 +106,28 @@ ALTER TABLE grow_rooms ENABLE ROW LEVEL SECURITY;
 
 ```sql
 CREATE TABLE IF NOT EXISTS plant_groups (
-  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name             text,
-  strain_id        uuid NOT NULL REFERENCES strains(id),
-  grow_room_id     uuid NOT NULL REFERENCES grow_rooms(id),
-  plant_count      integer NOT NULL CHECK (plant_count > 0),
-  growth_stage     text NOT NULL DEFAULT 'clone'
-                     CHECK (growth_stage IN ('clone', 'veg', 'flower', 'harvested')),
-  stage_entered_at timestamptz NOT NULL DEFAULT now(),
-  planted_date     date,
-  notes            text,
-  created_at       timestamptz NOT NULL DEFAULT now(),
-  created_by       uuid REFERENCES auth.users(id),
-  updated_at       timestamptz NOT NULL DEFAULT now()
+  id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_number           text UNIQUE NOT NULL,
+  name                   text,
+  strain_id              uuid NOT NULL REFERENCES strains(id),
+  grow_room_id           uuid NOT NULL REFERENCES grow_rooms(id),
+  mother_plant_group_id  uuid REFERENCES plant_groups(id),
+  is_mother              boolean NOT NULL DEFAULT false,
+  plant_count            integer NOT NULL CHECK (plant_count > 0),
+  growth_stage           text NOT NULL DEFAULT 'clone'
+                           CHECK (growth_stage IN ('clone', 'veg', 'flower', 'harvested')),
+  stage_entered_at       timestamptz NOT NULL DEFAULT now(),
+  planted_date           date,
+  notes                  text,
+  created_at             timestamptz NOT NULL DEFAULT now(),
+  created_by             uuid REFERENCES auth.users(id),
+  updated_at             timestamptz NOT NULL DEFAULT now()
 );
 
 ALTER TABLE plant_groups ENABLE ROW LEVEL SECURITY;
 ```
+
+**Note:** `group_number` is generated by trigger `trg_generate_plant_group_number` (BEFORE INSERT). It is declared NOT NULL but the trigger always sets it — no application code should populate this column.
 
 ### plant_group_stage_history
 
@@ -127,6 +145,22 @@ CREATE TABLE IF NOT EXISTS plant_group_stage_history (
 ALTER TABLE plant_group_stage_history ENABLE ROW LEVEL SECURITY;
 ```
 
+### plant_group_room_history
+
+```sql
+CREATE TABLE IF NOT EXISTS plant_group_room_history (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  plant_group_id   uuid NOT NULL REFERENCES plant_groups(id),
+  from_room_id     uuid NOT NULL REFERENCES grow_rooms(id),
+  to_room_id       uuid NOT NULL REFERENCES grow_rooms(id),
+  moved_at         timestamptz NOT NULL DEFAULT now(),
+  moved_by         uuid REFERENCES auth.users(id),
+  notes            text
+);
+
+ALTER TABLE plant_group_room_history ENABLE ROW LEVEL SECURITY;
+```
+
 ### harvest_sessions
 
 ```sql
@@ -135,6 +169,8 @@ CREATE TABLE IF NOT EXISTS harvest_sessions (
   plant_group_id        uuid NOT NULL REFERENCES plant_groups(id),
   harvest_date          date NOT NULL,
   wet_weight_grams      numeric(10, 2) NOT NULL CHECK (wet_weight_grams > 0),
+  adjusted_weight_grams numeric(10, 2),
+  adjustment_reason     text,
   plant_count_harvested integer NOT NULL CHECK (plant_count_harvested > 0),
   batch_registry_id     uuid REFERENCES batch_registry(id),
   session_status        text NOT NULL DEFAULT 'active'
@@ -155,6 +191,12 @@ CREATE TABLE IF NOT EXISTS harvest_sessions (
   ),
   CONSTRAINT harvest_sessions_cancelled_no_batch CHECK (
     session_status != 'cancelled' OR batch_registry_id IS NULL
+  ),
+  CONSTRAINT harvest_sessions_adjusted_weight_positive CHECK (
+    adjusted_weight_grams IS NULL OR adjusted_weight_grams > 0
+  ),
+  CONSTRAINT harvest_sessions_adjustment_reason_required CHECK (
+    adjusted_weight_grams IS NULL OR adjustment_reason IS NOT NULL
   )
 );
 
@@ -173,7 +215,7 @@ All tables use the standard authenticated-user pattern. The cultivation module d
 CREATE POLICY "Authenticated users can view grow rooms"
   ON grow_rooms FOR SELECT
   TO authenticated
-  USING (true);
+  USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Authenticated users can insert grow rooms"
   ON grow_rooms FOR INSERT
@@ -193,7 +235,7 @@ CREATE POLICY "Authenticated users can update grow rooms"
 CREATE POLICY "Authenticated users can view plant groups"
   ON plant_groups FOR SELECT
   TO authenticated
-  USING (true);
+  USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Authenticated users can insert plant groups"
   ON plant_groups FOR INSERT
@@ -213,7 +255,7 @@ CREATE POLICY "Authenticated users can update plant groups"
 CREATE POLICY "Authenticated users can view stage history"
   ON plant_group_stage_history FOR SELECT
   TO authenticated
-  USING (true);
+  USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Authenticated users can insert stage history"
   ON plant_group_stage_history FOR INSERT
@@ -223,13 +265,29 @@ CREATE POLICY "Authenticated users can insert stage history"
 
 Note: No UPDATE or DELETE policy on `plant_group_stage_history`. This table is an immutable audit log.
 
+### plant_group_room_history
+
+```sql
+CREATE POLICY "Authenticated users can view room history"
+  ON plant_group_room_history FOR SELECT
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can insert room history"
+  ON plant_group_room_history FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+```
+
+Note: No UPDATE or DELETE policy on `plant_group_room_history`. This table is an immutable audit log.
+
 ### harvest_sessions
 
 ```sql
 CREATE POLICY "Authenticated users can view harvest sessions"
   ON harvest_sessions FOR SELECT
   TO authenticated
-  USING (true);
+  USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Authenticated users can insert harvest sessions"
   ON harvest_sessions FOR INSERT
@@ -247,7 +305,41 @@ CREATE POLICY "Authenticated users can update harvest sessions"
 
 ## Triggers
 
-### 1. Validate Stage Transition
+### 1. Generate group_number on Plant Group Insert
+
+Fires BEFORE INSERT on `plant_groups`. Generates the human-readable `group_number`.
+
+**Important:** This trigger runs BEFORE the INSERT, so it validates that the strain has an abbreviation set before the row is created.
+
+```sql
+CREATE OR REPLACE FUNCTION fn_generate_plant_group_number()
+RETURNS trigger AS $$
+DECLARE
+  v_abbrev    text;
+  v_date_part text;
+BEGIN
+  SELECT abbreviation INTO v_abbrev
+  FROM strains WHERE id = NEW.strain_id;
+
+  IF v_abbrev IS NULL OR v_abbrev = '' THEN
+    RAISE EXCEPTION
+      'Cannot create plant group: strain has no abbreviation set. Set the abbreviation in Settings → Strains first.';
+  END IF;
+
+  v_date_part  := to_char(now(), 'YYMMDD');
+  NEW.group_number := 'PG-' || v_date_part || '-' || v_abbrev;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_generate_plant_group_number
+BEFORE INSERT ON plant_groups
+FOR EACH ROW
+EXECUTE FUNCTION fn_generate_plant_group_number();
+```
+
+### 2. Validate Stage Transition
 
 Fires BEFORE UPDATE on `plant_groups`. Blocks invalid stage transitions.
 
@@ -284,7 +376,7 @@ WHEN (OLD.growth_stage IS DISTINCT FROM NEW.growth_stage)
 EXECUTE FUNCTION fn_validate_plant_group_stage_transition();
 ```
 
-### 2. Log Stage History
+### 3. Log Stage History
 
 Fires AFTER UPDATE on `plant_groups` when `growth_stage` changes.
 
@@ -316,11 +408,46 @@ WHEN (OLD.growth_stage IS DISTINCT FROM NEW.growth_stage)
 EXECUTE FUNCTION fn_log_plant_group_stage_history();
 ```
 
-### 3. Harvest Session Completion → Create Batch
+### 4. Log Room Transfer History
+
+Fires AFTER UPDATE on `plant_groups` when `grow_room_id` changes.
+
+**Note:** This trigger fires automatically when the service updates `grow_room_id`. The service must NOT also insert into `plant_group_room_history` — the trigger owns that insert.
+
+```sql
+CREATE OR REPLACE FUNCTION fn_log_plant_group_room_history()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO plant_group_room_history (
+    plant_group_id,
+    from_room_id,
+    to_room_id,
+    moved_at,
+    moved_by
+  ) VALUES (
+    NEW.id,
+    OLD.grow_room_id,
+    NEW.grow_room_id,
+    now(),
+    auth.uid()
+  );
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_log_plant_group_room_history
+AFTER UPDATE ON plant_groups
+FOR EACH ROW
+WHEN (OLD.grow_room_id IS DISTINCT FROM NEW.grow_room_id)
+EXECUTE FUNCTION fn_log_plant_group_room_history();
+```
+
+### 5. Harvest Session Completion → Create Batch
 
 Fires BEFORE UPDATE on `harvest_sessions` when `session_status` changes to `'completed'`.
 
-This is the critical integration trigger.
+This is the critical integration trigger. The COALESCE fallback has been **removed** — if a strain has no abbreviation, the trigger raises a hard error.
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_complete_harvest_session()
@@ -347,8 +474,11 @@ BEGIN
   SELECT name, abbreviation INTO v_strain_name, v_strain_abbrev
   FROM strains WHERE id = v_strain_id;
 
-  -- Fallback if abbreviation is NULL: use first 3 chars of strain name uppercased
-  v_strain_abbrev := COALESCE(v_strain_abbrev, UPPER(LEFT(v_strain_name, 3)));
+  IF v_strain_abbrev IS NULL OR v_strain_abbrev = '' THEN
+    RAISE EXCEPTION
+      'Cannot complete harvest: strain "%" has no abbreviation set. Set the abbreviation in Settings → Strains first.',
+      v_strain_name;
+  END IF;
 
   v_date_prefix  := to_char(NEW.harvest_date, 'YYMMDD');
   v_batch_number := v_date_prefix || '-' || v_strain_abbrev;
@@ -414,15 +544,63 @@ EXECUTE FUNCTION fn_complete_harvest_session();
 ```
 
 **Design notes:**
+- No COALESCE fallback — abbreviation is required or trigger raises an exception.
 - `ON CONFLICT (batch_number) DO NOTHING` handles same-strain same-day harvest: the second harvest session links to the existing batch.
 - Trigger fires BEFORE UPDATE so it can set `NEW.batch_registry_id` and `NEW.completed_at` in one write.
 - The `batch_production_history` insert creates the required audit trail entry.
 - The `strain` text column (NOT NULL in batch_registry) is populated from `strains.name`.
 - `source_weight_grams` and `performed_by` match the actual batch_production_history column names.
 - `performed_by` is text type in batch_production_history, so `completed_by` (uuid) is cast to text.
-- `COALESCE` on abbreviation prevents NULL batch numbers if a strain has no abbreviation set.
 
-### 4. Block Harvest Cancellation if Batch Exists
+### 6. Sync Weight Adjustment to batch_registry
+
+Fires AFTER UPDATE on `harvest_sessions` when `adjusted_weight_grams` is set.
+
+```sql
+CREATE OR REPLACE FUNCTION fn_sync_harvest_weight_adjustment()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.adjusted_weight_grams IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF NEW.batch_registry_id IS NULL THEN
+    RAISE EXCEPTION 'Cannot adjust weight: no batch linked to this harvest session';
+  END IF;
+
+  IF NEW.adjusted_weight_grams <= 0 THEN
+    RAISE EXCEPTION 'Adjusted weight must be greater than zero';
+  END IF;
+
+  IF NEW.adjustment_reason IS NULL OR NEW.adjustment_reason = '' THEN
+    RAISE EXCEPTION 'Adjustment reason is required when adjusting harvest weight';
+  END IF;
+
+  UPDATE batch_registry
+  SET initial_weight_grams = NEW.adjusted_weight_grams,
+      updated_at = now()
+  WHERE id = NEW.batch_registry_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_sync_harvest_weight_adjustment
+AFTER UPDATE ON harvest_sessions
+FOR EACH ROW
+WHEN (
+  NEW.adjusted_weight_grams IS DISTINCT FROM OLD.adjusted_weight_grams
+  AND NEW.adjusted_weight_grams IS NOT NULL
+)
+EXECUTE FUNCTION fn_sync_harvest_weight_adjustment();
+```
+
+**Design notes:**
+- Trigger fires AFTER UPDATE because `batch_registry` is a separate table — no BEFORE/RETURNING mechanism needed.
+- The CHECK constraints on `harvest_sessions` (positive value, reason required) are a first line of defense; the trigger re-validates for trigger-bypass paths.
+- Original `wet_weight_grams` is never modified — it remains the historical record of the scale reading at harvest time.
+
+### 7. Block Harvest Cancellation if Batch Exists
 
 Fires BEFORE UPDATE on `harvest_sessions` when `session_status` changes to `'cancelled'`.
 
@@ -451,7 +629,7 @@ WHEN (NEW.session_status = 'cancelled' AND OLD.session_status = 'active')
 EXECUTE FUNCTION fn_validate_harvest_cancellation();
 ```
 
-### 5. Block room_code Changes After Creation
+### 8. Block room_code Changes After Creation
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_protect_room_code()
@@ -471,7 +649,7 @@ WHEN (OLD.room_code IS DISTINCT FROM NEW.room_code)
 EXECUTE FUNCTION fn_protect_room_code();
 ```
 
-### 6. Block strain_id Changes After Creation
+### 9. Block strain_id Changes After Creation
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_protect_plant_group_strain()
@@ -497,48 +675,52 @@ EXECUTE FUNCTION fn_protect_plant_group_strain();
 
 ### strains Table (existing)
 
-`plant_groups.strain_id` references the existing `strains` table. No changes to `strains` are needed. The strain abbreviation field (`strains.abbreviation`) is used in batch number generation — confirm this column exists before running migration C-2.
+`plant_groups.strain_id` references the existing `strains` table. No changes to `strains` are needed.
+
+`strains.abbreviation` (nullable text) must be set by the user before a plant group can be created or a harvest completed for that strain. Both the `fn_generate_plant_group_number` (BEFORE INSERT) and `fn_complete_harvest_session` (BEFORE UPDATE) triggers enforce this with a hard error — there is **no automatic fallback**.
 
 ```sql
 -- Verify before migration:
-SELECT column_name FROM information_schema.columns
+SELECT column_name, is_nullable FROM information_schema.columns
 WHERE table_name = 'strains' AND column_name = 'abbreviation';
+-- Expected: column_name='abbreviation', is_nullable='YES'
+-- The column exists. Nullability is expected — enforcement is in the triggers.
 ```
 
 ### batch_registry Table (existing)
 
-`harvest_sessions.batch_registry_id` references the existing `batch_registry` table. The `created_by` column was added by migration `add_created_by_to_batch_registry` (pre-C-2 scaffolding). The cultivation module only INSERTs new rows; it does not modify existing rows.
+`harvest_sessions.batch_registry_id` references the existing `batch_registry` table. The `created_by` column was added by migration `add_created_by_to_batch_registry` (pre-C-2 scaffolding). The cultivation module only INSERTs new rows; it does not modify existing rows except via the weight adjustment trigger.
 
 **Required columns used by the harvest trigger:**
-- `batch_number` (text, NOT NULL) -- auto-generated YYMMDD-ABBREV
-- `strain` (text, NOT NULL) -- strain name, populated from `strains.name`
-- `strain_id` (uuid) -- FK to strains table
+- `batch_number` (text, NOT NULL) — auto-generated YYMMDD-ABBREV
+- `strain` (text, NOT NULL) — strain name, populated from `strains.name`
+- `strain_id` (uuid) — FK to strains table
 - `harvest_date` (date)
-- `initial_weight_grams` (numeric) -- wet weight from harvest session
-- `room` (text) -- grow room code
-- `lifecycle_state` (text) -- set to `'created'`
-- `created_by` (uuid) -- the user who completed the harvest
+- `initial_weight_grams` (numeric) — wet weight from harvest session; overwritten by weight adjustment trigger if correction applied
+- `room` (text) — grow room code
+- `lifecycle_state` (text) — set to `'created'`
+- `created_by` (uuid) — the user who completed the harvest
 
 ### batch_production_history Table (existing)
 
 The completion trigger inserts a `batch_created` event into this existing table.
 
 **Required columns used by the harvest trigger:**
-- `batch_id` (uuid, NOT NULL) -- FK to batch_registry
-- `event_type` (text, NOT NULL) -- set to `'batch_created'`
-- `source_weight_grams` (numeric) -- the wet weight (note: NOT `input_weight`)
-- `performed_by` (text) -- the user uuid cast to text (note: NOT `created_by`, and text type not uuid)
-- `notes` (text) -- human-readable reference to the harvest session
+- `batch_id` (uuid, NOT NULL) — FK to batch_registry
+- `event_type` (text, NOT NULL) — set to `'batch_created'`
+- `source_weight_grams` (numeric) — the wet weight (note: NOT `input_weight`)
+- `performed_by` (text) — the user uuid cast to text (note: text type not uuid)
+- `notes` (text) — human-readable reference to the harvest session
 
-### fn_generate_batch_number (new, but consistent with existing docs)
+### fn_generate_batch_number — not used
 
-`BATCHES.md` documents this function as "NOT IMPLEMENTED" (GAP-017). The cultivation completion trigger implements it inline. If a standalone `fn_generate_batch_number` function is ever created separately, the trigger should be updated to call it instead of inlining the logic.
+The cultivation completion trigger implements batch number generation inline. There is no separate `fn_generate_batch_number` function in the existing schema (documented as GAP-017 in BATCHES.md). If one is created in the future, the trigger should be updated to call it.
 
 ### fn_populate_batch_registry_id — NOT used by harvest_sessions
 
 `harvest_sessions` does NOT use the existing `fn_populate_batch_registry_id` auto-population trigger. That trigger is designed for `trim_sessions` / `packaging_sessions` / `bucking_sessions`, which receive a `batch_id` text field from the UI and need it resolved to a `batch_registry_id` UUID FK.
 
-`harvest_sessions` takes a different path: it has no `batch_id` text column at all. The `batch_registry_id` UUID FK is set directly by the `fn_complete_harvest_session` BEFORE UPDATE trigger, which creates the batch_registry row and captures the returned id. This is intentional — the harvest session is the origin point of the batch, not a consumer of an existing one.
+`harvest_sessions` takes a different path: it has no `batch_id` text column at all. The `batch_registry_id` UUID FK is set directly by the `fn_complete_harvest_session` BEFORE UPDATE trigger, which creates the batch_registry row and captures the returned id.
 
 Do NOT apply `fn_populate_batch_registry_id` to `harvest_sessions`.
 
@@ -546,31 +728,33 @@ Do NOT apply `fn_populate_batch_registry_id` to `harvest_sessions`.
 
 ## Migration Plan
 
-Three migrations, in order:
+Four migrations, in order:
 
 ### Migration C-2-1: Create Cultivation Tables
 
 File: `YYYYMMDD_create_cultivation_schema.sql`
 
-Creates:
+Creates (five tables, all with RLS enabled and policies applied):
 - `grow_rooms`
-- `plant_groups`
+- `plant_groups` (includes `group_number`, `mother_plant_group_id`, `is_mother`)
 - `plant_group_stage_history`
-- `harvest_sessions`
-
-All four tables with RLS enabled and policies applied.
+- `plant_group_room_history`
+- `harvest_sessions` (includes `adjusted_weight_grams`, `adjustment_reason`)
 
 ### Migration C-2-2: Create Cultivation Triggers
 
 File: `YYYYMMDD_create_cultivation_triggers.sql`
 
-Creates (in order):
-1. `fn_validate_plant_group_stage_transition` + trigger
-2. `fn_log_plant_group_stage_history` + trigger
-3. `fn_complete_harvest_session` + trigger
-4. `fn_validate_harvest_cancellation` + trigger
-5. `fn_protect_room_code` + trigger
-6. `fn_protect_plant_group_strain` + trigger
+Creates (in order, dependencies respected):
+1. `fn_generate_plant_group_number` + `trg_generate_plant_group_number` (BEFORE INSERT on plant_groups)
+2. `fn_validate_plant_group_stage_transition` + `trg_validate_plant_group_stage` (BEFORE UPDATE on plant_groups)
+3. `fn_log_plant_group_stage_history` + `trg_log_plant_group_stage_history` (AFTER UPDATE on plant_groups)
+4. `fn_log_plant_group_room_history` + `trg_log_plant_group_room_history` (AFTER UPDATE on plant_groups)
+5. `fn_complete_harvest_session` + `trg_complete_harvest_session` (BEFORE UPDATE on harvest_sessions)
+6. `fn_sync_harvest_weight_adjustment` + `trg_sync_harvest_weight_adjustment` (AFTER UPDATE on harvest_sessions)
+7. `fn_validate_harvest_cancellation` + `trg_validate_harvest_cancellation` (BEFORE UPDATE on harvest_sessions)
+8. `fn_protect_room_code` + `trg_protect_room_code` (BEFORE UPDATE on grow_rooms)
+9. `fn_protect_plant_group_strain` + `trg_protect_plant_group_strain` (BEFORE UPDATE on plant_groups)
 
 ### Migration C-2-3: Seed Grow Rooms (optional)
 
@@ -587,24 +771,27 @@ Following the existing feature module pattern:
 ```
 src/features/cultivation/
   components/
-    GrowRoomForm.tsx          -- Create/edit grow room
-    GrowRoomsManagement.tsx   -- List + manage rooms (settings screen)
-    PlantGroupForm.tsx        -- Create/advance/view plant group
-    PlantGroupsList.tsx       -- Active plant groups table
-    HarvestSessionForm.tsx    -- Start/complete harvest
-    HarvestSessionsList.tsx   -- History of harvest sessions
-    CultivationDashboard.tsx  -- Top-level view with tabs
+    GrowRoomForm.tsx              -- Create/edit grow room
+    GrowRoomsManagement.tsx       -- List + manage rooms (settings screen)
+    PlantGroupForm.tsx            -- Create plant group (strain, room, mother selector)
+    PlantGroupsList.tsx           -- Active plant groups table
+    PlantGroupDetail.tsx          -- Stage history + room history inline view
+    MoveToRoomModal.tsx           -- Room transfer modal (independent of stage advance)
+    HarvestSessionForm.tsx        -- Start/complete harvest
+    HarvestSessionsList.tsx       -- History of harvest sessions
+    HarvestWeightAdjustModal.tsx  -- Post-completion weight correction modal
+    CultivationDashboard.tsx      -- Top-level view with tabs
     index.ts
   hooks/
-    useGrowRooms.ts           -- CRUD + realtime for grow_rooms
-    usePlantGroups.ts         -- CRUD + realtime for plant_groups
-    useHarvestSessions.ts     -- CRUD + realtime for harvest_sessions
+    useGrowRooms.ts               -- CRUD + realtime for grow_rooms
+    usePlantGroups.ts             -- CRUD + realtime for plant_groups
+    useHarvestSessions.ts         -- CRUD + realtime for harvest_sessions
     index.ts
   services/
-    cultivation.service.ts    -- All Supabase queries for cultivation
+    cultivation.service.ts        -- All Supabase queries for cultivation
     index.ts
   types/
-    cultivation.types.ts      -- CultivationRoom, PlantGroup, HarvestSession interfaces
+    cultivation.types.ts          -- All cultivation interfaces
     index.ts
   index.ts
 ```
@@ -629,15 +816,21 @@ export const cultivationService = {
   listPlantGroups(filter?: { stage?: GrowthStage }): Promise<PlantGroup[]>
   createPlantGroup(data: CreatePlantGroupInput): Promise<PlantGroup>
   advanceStage(id: string, toStage: GrowthStage): Promise<PlantGroup>
+  moveToRoom(id: string, toRoomId: string, notes?: string): Promise<PlantGroup>
+  setMotherStatus(id: string, isMother: boolean): Promise<PlantGroup>
   getStageHistory(id: string): Promise<PlantGroupStageHistory[]>
+  getRoomHistory(id: string): Promise<PlantGroupRoomHistory[]>
 
   // Harvest Sessions
   listHarvestSessions(filter?: { status?: HarvestSessionStatus }): Promise<HarvestSession[]>
   createHarvestSession(data: CreateHarvestSessionInput): Promise<HarvestSession>
   completeHarvestSession(id: string): Promise<HarvestSession>
   cancelHarvestSession(id: string): Promise<HarvestSession>
+  adjustHarvestWeight(id: string, adjustedWeight: number, reason: string): Promise<HarvestSession>
 }
 ```
+
+**`moveToRoom` implementation note:** This function updates only `grow_room_id` on `plant_groups`. The DB trigger `trg_log_plant_group_room_history` handles inserting into `plant_group_room_history` automatically. The service must NOT also insert into that table.
 
 ---
 
@@ -647,7 +840,7 @@ export const cultivationService = {
 // cultivation.types.ts
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
-export type RoomType = 'clone' | 'veg' | 'flower' | 'mixed';
+export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
 export type HarvestSessionStatus = 'active' | 'completed' | 'cancelled';
 
 export interface GrowRoom {
@@ -663,9 +856,12 @@ export interface GrowRoom {
 
 export interface PlantGroup {
   id: string;
+  group_number: string;
   name: string | null;
   strain_id: string;
   grow_room_id: string;
+  mother_plant_group_id: string | null;
+  is_mother: boolean;
   plant_count: number;
   growth_stage: GrowthStage;
   stage_entered_at: string;
@@ -675,8 +871,9 @@ export interface PlantGroup {
   created_by: string | null;
   updated_at: string;
   // Joins (when fetched with select)
-  strains?: { name: string; abbreviation: string };
+  strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
+  mother_group?: Pick<PlantGroup, 'id' | 'group_number' | 'growth_stage'>;
 }
 
 export interface PlantGroupStageHistory {
@@ -689,11 +886,26 @@ export interface PlantGroupStageHistory {
   notes: string | null;
 }
 
+export interface PlantGroupRoomHistory {
+  id: string;
+  plant_group_id: string;
+  from_room_id: string;
+  to_room_id: string;
+  moved_at: string;
+  moved_by: string | null;
+  notes: string | null;
+  // Joins
+  from_room?: { name: string; room_code: string };
+  to_room?: { name: string; room_code: string };
+}
+
 export interface HarvestSession {
   id: string;
   plant_group_id: string;
   harvest_date: string;
   wet_weight_grams: number;
+  adjusted_weight_grams: number | null;
+  adjustment_reason: string | null;
   plant_count_harvested: number;
   batch_registry_id: string | null;
   session_status: HarvestSessionStatus;
@@ -705,8 +917,8 @@ export interface HarvestSession {
   created_at: string;
   created_by: string | null;
   // Joins
-  plant_groups?: Pick<PlantGroup, 'strain_id' | 'grow_room_id'> & {
-    strains?: { name: string };
+  plant_groups?: Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'group_number'> & {
+    strains?: { name: string; abbreviation: string | null };
     grow_rooms?: { room_code: string };
   };
   batch_registry?: { batch_number: string };
@@ -718,7 +930,7 @@ export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_ty
 export type UpdateGrowRoomInput = Partial<Pick<GrowRoom, 'name' | 'room_type' | 'capacity_plants' | 'is_active'>>;
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
-  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes'>>;
+  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'mother_plant_group_id' | 'is_mother'>>;
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes'>>;
@@ -728,12 +940,23 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ## Document Version History
 
+### v1.1 (2026-02-18)
+- Added `plant_group_room_history` table definition, RLS policies, and trigger (fn_log_plant_group_room_history)
+- Added `mother_plant_group_id` and `is_mother` to `plant_groups` table definition
+- Added `group_number` to `plant_groups` and trigger `fn_generate_plant_group_number` (BEFORE INSERT)
+- Added `adjusted_weight_grams` and `adjustment_reason` to `harvest_sessions` table definition with CHECK constraints
+- Added trigger `fn_sync_harvest_weight_adjustment` (AFTER UPDATE on harvest_sessions)
+- Added `mother` to `room_type` CHECK constraint on `grow_rooms`
+- Removed COALESCE fallback from `fn_complete_harvest_session` — abbreviation is now required with hard error
+- Updated migration plan: C-2-1 now creates five tables (was four); C-2-2 now creates nine trigger+function pairs (was six)
+- Updated service layer design: added `moveToRoom`, `setMotherStatus`, `getRoomHistory`, `adjustHarvestWeight`
+- Updated type definitions: added `PlantGroupRoomHistory`, updated `PlantGroup` and `HarvestSession` interfaces
+
 ### v1.0 (2026-02-18)
 - Initial architecture specification written during Session C-1
-- Covers: full schema, RLS, all triggers, migration plan, module structure, service signatures, type definitions
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Last Updated:** 2026-02-18
 **Status:** SPECIFICATION — implementation pending Session C-2

@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.0
+version: 1.1
 updated: 2026-02-18
 status: SPECIFICATION — not yet implemented
 ---
@@ -32,6 +32,16 @@ status: SPECIFICATION — not yet implemented
 │ C-8.  wet_weight_grams must be > 0 to complete a harvest session    │
 │ C-9.  plant_count_harvested must be > 0                             │
 │ C-10. Grow rooms cannot be deleted — only archived (is_active=false)│
+│ C-11. strains.abbreviation must be set before creating a plant      │
+│        group or completing a harvest for that strain                 │
+│ C-12. plant_group_room_history is append-only (no UPDATE/DELETE)    │
+│ C-13. Room transfer and stage advance are independent actions       │
+│        (updating grow_room_id does not change growth_stage and      │
+│        vice versa)                                                   │
+│ C-14. adjusted_weight_grams must be > 0 if set                     │
+│ C-15. adjustment_reason is required when adjusted_weight_grams      │
+│        is set                                                        │
+│ C-16. group_number is immutable after creation                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -98,7 +108,7 @@ No other transitions are permitted. There is no backward movement.
 
 **DB constraint:** `CONSTRAINT harvest_sessions_completed_has_batch CHECK (session_status != 'completed' OR batch_registry_id IS NOT NULL)` — the constraint fires after the trigger, guaranteeing the trigger ran correctly.
 
-**Same-day same-strain rule:** If a batch already exists for `YYMMDD-STRAIN`, the `ON CONFLICT DO NOTHING` path in the trigger links the harvest session to the existing batch. Both harvest sessions (from different plant groups or different rooms) share one batch record.
+**Same-day same-strain rule:** If a batch already exists for `YYMMDD-ABBREV`, the `ON CONFLICT DO NOTHING` path in the trigger links the harvest session to the existing batch. Both harvest sessions (from different plant groups or different rooms) share one batch record.
 
 ---
 
@@ -144,6 +154,70 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-11: Strain Abbreviation is Required for Cultivation Operations
+
+**Rule:** `strains.abbreviation` must be a non-null, non-empty string before:
+1. A plant group can be created for that strain
+2. A harvest session for a plant group of that strain can be completed
+
+**Enforcement:**
+- Plant group creation: DB trigger `trg_generate_plant_group_number` (BEFORE INSERT) raises exception if abbreviation is null or empty.
+- Harvest completion: DB trigger `trg_complete_harvest_session` (BEFORE UPDATE) raises exception if abbreviation is null or empty.
+
+**Error message (plant group creation):** "Cannot create plant group: strain has no abbreviation set. Set the abbreviation in Settings → Strains first."
+
+**Error message (harvest completion):** `Cannot complete harvest: strain "{name}" has no abbreviation set. Set the abbreviation in Settings → Strains first.`
+
+**Rationale:** The batch number format `YYMMDD-ABBREV` requires a user-defined abbreviation. There is no safe automatic fallback — a silently wrong batch number would break traceability. The user must intentionally set the abbreviation in Settings → Strains (Products → Strains).
+
+**Implication:** The COALESCE fallback that was in the v1.0 trigger spec has been removed. Any strain that has never had an abbreviation set cannot participate in the cultivation workflow until the abbreviation is added.
+
+---
+
+### C-12: Room History is Append-Only
+
+**Rule:** Rows in `plant_group_room_history` cannot be updated or deleted.
+
+**Enforcement:** No UPDATE or DELETE RLS policy exists on this table.
+
+**Rationale:** Room transfer history is an operational audit trail. Mutability would allow falsification of movement records.
+
+---
+
+### C-13: Room Transfer and Stage Advance are Independent
+
+**Rule:** Updating `grow_room_id` on a plant group (room transfer) does not change `growth_stage`. Updating `growth_stage` (stage advance) does not change `grow_room_id`. These are two distinct actions.
+
+**Enforcement:** Application-layer: "Move to Room" and "Advance Stage" are separate UI buttons that call separate service functions (`moveToRoom` vs `advanceStage`). Neither function modifies the field owned by the other.
+
+**Rationale:** In real-world cultivation, plants may be moved to a new room before or after a stage change — sometimes days apart. Coupling them would force artificial simultaneity that doesn't reflect operations.
+
+---
+
+### C-14 and C-15: Weight Adjustment Constraints
+
+**Rule:** When `adjusted_weight_grams` is set on a harvest session:
+- It must be greater than zero
+- `adjustment_reason` must also be set (non-null, non-empty)
+
+**Enforcement:**
+- DB CHECK constraints: `harvest_sessions_adjusted_weight_positive` and `harvest_sessions_adjustment_reason_required`
+- DB trigger `trg_sync_harvest_weight_adjustment` re-validates and raises exception on violation (for trigger-bypass paths)
+
+**Rationale:** Weight adjustments are a correction mechanism for data entry errors. An adjustment without a reason provides no audit trail value and cannot be reviewed for legitimacy.
+
+---
+
+### C-16: group_number is Immutable After Creation
+
+**Rule:** `plant_groups.group_number` cannot be changed after the row is created.
+
+**Enforcement:** No explicit trigger is defined for this — group_number is set by the BEFORE INSERT trigger and the column has no update path in the service layer. If an explicit immutability trigger is desired, add `fn_protect_plant_group_number` in migration C-2-2.
+
+**Rationale:** The group_number is a human-readable identifier that may appear in physical records (printed labels, verbal references). Changing it retroactively would break that reference chain.
+
+---
+
 ## Decisions Made (and Why)
 
 ### Decision: Group-level tracking, not individual plant tracking
@@ -156,11 +230,47 @@ Individual plant RFID tag tracking (as required by some state compliance systems
 
 ### Decision: Batch number is auto-generated, not user-entered
 
-When a harvest session completes, the batch number is generated by the system as `YYMMDD-STRAIN`. The user never types a batch number.
+When a harvest session completes, the batch number is generated by the system as `YYMMDD-ABBREV`. The user never types a batch number.
 
 **Rationale:** Manual entry is the source of the typo and format errors documented in GAP-017. The trigger uses `strains.abbreviation` as the strain code component, which is already validated and consistent.
 
 **Implication:** The existing `BatchManagement.tsx` "Create Batch" form (manual entry) remains available for edge cases but is no longer the primary batch creation path.
+
+---
+
+### Decision: Strain abbreviation is user-defined and required
+
+The abbreviation used in batch number generation (`YYMMDD-ABBREV`) is set manually by operators in Settings → Strains. There is no system-generated fallback.
+
+**Rationale:** Abbreviations appear on physical labels, compliance documents, and batch records. They must be operator-chosen and consistent. A system-generated abbreviation (e.g., first 3 characters of strain name) would be unreliable and might conflict with existing naming conventions already in use.
+
+**Implication:** Before any cultivation operations can begin for a strain, an operator must set the abbreviation in Settings → Strains. The UI should surface a clear warning if a strain in use has no abbreviation.
+
+---
+
+### Decision: Mother plants are a flag, not a separate entity
+
+A plant group is designated as a mother by setting `is_mother = true`. There is no separate `mother_plants` table. Mother groups progress through the standard lifecycle and can be harvested.
+
+**Rationale:** Mothers are the same biological entity as any other plant group — they are just being used for a specific purpose (cutting clones). A flag is simpler than a separate entity and avoids duplicating all lifecycle fields.
+
+**Implication:** `is_mother` is mutable (can be toggled). The constraint is application-layer: when a mother is harvested, the UI sets `is_mother = false` as part of the harvest completion flow.
+
+---
+
+### Decision: Clone lineage is a simple optional FK
+
+`plant_groups.mother_plant_group_id` is a nullable self-referencing FK. It is set once at clone group creation and is not subsequently changed.
+
+**Rationale:** Lineage tracing is primarily a reporting/audit use case. A single FK per group (pointing to the direct mother) satisfies the core requirement. Multi-generational lineage can be resolved by traversing the FK chain.
+
+---
+
+### Decision: Room transfer logging is trigger-driven
+
+When the service calls `moveToRoom` (which updates `plant_groups.grow_room_id`), the DB trigger `trg_log_plant_group_room_history` automatically inserts the history record. The service does NOT insert directly into `plant_group_room_history`.
+
+**Rationale:** Keeps the audit log consistent regardless of how `grow_room_id` is updated. Any path that changes the room — service layer, direct SQL, admin tools — is automatically logged. This mirrors the pattern used for stage history.
 
 ---
 
@@ -176,9 +286,17 @@ The user fills in wet weight and plant count, then clicks "Save" (creates `sessi
 
 If two plant groups (e.g., Room A and Room B) of the same strain are harvested on the same day, their harvest sessions both link to the same `batch_registry` row.
 
-**Rationale:** This matches the existing batch number format (`YYMMDD-STRAIN`) and the existing documentation in `BATCHES.md`. Combined weight from both harvests accumulates in one batch, which is how the operation works physically.
+**Rationale:** This matches the existing batch number format (`YYMMDD-ABBREV`) and the existing documentation in `BATCHES.md`. Combined weight from both harvests accumulates in one batch, which is how the operation works physically.
 
 **Implication:** `harvest_sessions.batch_registry_id` is a many-to-one relationship (many harvest sessions can point to one batch). This is expected and handled by the trigger's `ON CONFLICT DO NOTHING` path.
+
+---
+
+### Decision: Weight adjustments overwrite batch_registry.initial_weight_grams
+
+When `adjusted_weight_grams` is set, the trigger updates `batch_registry.initial_weight_grams` to the adjusted value. The original `wet_weight_grams` on the harvest session remains unchanged as an audit record.
+
+**Rationale:** `batch_registry.initial_weight_grams` is a reference field used for yield analytics. Displaying the corrected weight there ensures analytics reflect accurate data. The uncorrected value is preserved on the source record for accountability.
 
 ---
 
@@ -209,6 +327,11 @@ Standard error messages the UI must handle from the API:
 | `Cannot cancel harvest session: batch % already created` | "Harvest cannot be cancelled — the batch {batch_number} has already been created. Use Batch Management to quarantine the batch if needed." |
 | `strain_id is immutable after plant group creation` | "The strain cannot be changed after a group is created." |
 | `room_code is immutable after creation` | "Room code cannot be changed after creation." |
+| `Cannot create plant group: strain has no abbreviation set` | "This strain does not have an abbreviation set. Go to Settings → Strains and add an abbreviation before creating a plant group." |
+| `Cannot complete harvest: strain "%" has no abbreviation set` | "Cannot complete harvest — the strain {name} has no abbreviation set. Go to Settings → Strains and add an abbreviation first." |
+| `Cannot adjust weight: no batch linked to this harvest session` | "Weight adjustment is not available — no batch is linked to this harvest session." |
+| `Adjusted weight must be greater than zero` | "Adjusted weight must be greater than zero." |
+| `Adjustment reason is required when adjusting harvest weight` | "Please provide a reason for the weight adjustment." |
 
 ---
 
@@ -226,9 +349,18 @@ The following scenarios must have test coverage before Session C-3 ships:
 | Cancel harvest session with batch: blocked | Integration (DB trigger) |
 | strain_id immutability | Integration (DB trigger) |
 | room_code immutability | Integration (DB trigger) |
+| Plant group creation blocked if strain has no abbreviation | Integration (DB trigger) |
+| Harvest completion blocked if strain has no abbreviation | Integration (DB trigger) |
+| Room transfer creates room history row | Integration (DB trigger) |
+| Room transfer does not change growth_stage | Unit (service) |
+| Stage advance does not change grow_room_id | Unit (service) |
+| Weight adjustment updates batch_registry.initial_weight_grams | Integration (DB trigger) |
+| Weight adjustment without reason is blocked | Integration (DB constraint) |
+| Mother group FK: clone group creation with valid mother | Unit (service) |
+| group_number auto-generated with correct format PG-YYMMDD-ABBREV | Integration (DB trigger) |
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 1.1
 **Last Updated:** 2026-02-18
 **Status:** SPECIFICATION — rules are locked. No changes without explicit discussion.
