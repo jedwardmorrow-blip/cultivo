@@ -1,7 +1,7 @@
 ---
 title: Optimization Roadmap
 category: Planning & Architecture
-updated: 2026-02-17
+updated: 2026-02-18
 priority: Read before any optimization, cleanup, type safety, or bundle work
 ---
 
@@ -393,6 +393,79 @@ When starting a new session to continue this roadmap:
 
 ---
 
+---
+
+## Phase 6: RLS Anon Policy Removal
+
+**Gate:** POST-CULTIVATION (schedule after Session C-6 or later)
+**Risk Level:** High — changes to security policies affect all unauthenticated access paths
+**Prerequisite:** Phases 1–5 complete, cultivation module live
+
+### Context
+
+An RLS audit (2026-02-18) confirmed that several tables still grant access to the Supabase `anon` role. Some of this is intentional (public-facing routes); some is legacy from early development before auth was added.
+
+See [ARCHITECTURE-DECISIONS.md ADR #12](./ARCHITECTURE-DECISIONS.md) for the full table-by-table breakdown.
+
+**App.tsx has no universal auth guard.** Authenticated screens individually check `if (!user) return <Login />`. Public routes are hardcoded exceptions in the router. This is architecturally intentional for the public order form, but means there is no central place to enforce auth — any new screen added to the router without a user check is implicitly public.
+
+### Tables with Intentional Anon Access (DO NOT REMOVE)
+
+| Table | Anon Access | Route |
+|-------|-------------|-------|
+| `orders` | SELECT, INSERT, UPDATE | `?order=new` public order form |
+| `order_items` | SELECT, INSERT, UPDATE | `?order=new` public order form |
+| `customers` | SELECT, INSERT | `?order=new` public order form |
+| `products` | SELECT | `?order=new` public order form |
+| `app_settings` | SELECT | `?order=new` company info display |
+| `coversheets` | SELECT (token-based) | `/coversheet` |
+| `coa_documents` | SELECT (is_public flag) | `/coa-library` |
+
+### Tables with Legacy Anon Access (CANDIDATES FOR REMOVAL)
+
+| Table | Anon Access | Risk if Removed |
+|-------|-------------|-----------------|
+| `trim_sessions` | ALL | Low — no public route reads trim sessions |
+| `packaging_sessions` | ALL | Low — no public route reads packaging sessions |
+| `bucked_inventory` | ALL | Low — no public route reads inventory |
+| `bulk_inventory` | ALL | Low — no public route reads inventory |
+| `app_settings` | UPDATE | Medium — investigate if public order form needs to write settings (unlikely) |
+| `strain_metadata` | ALL | Low — investigate if still used |
+| `order_forecasts` | SELECT | Low — investigate if still used |
+
+### Checklist
+
+- [ ] **6.1 Audit production logs for anon role access to legacy tables**
+  - Check Supabase logs for actual anon queries to: trim_sessions, packaging_sessions, bucked_inventory, bulk_inventory, strain_metadata
+  - If zero hits in 30 days: safe to remove
+  - If hits exist: trace which route is making the request
+
+- [ ] **6.2 Remove legacy anon policies from confirmed-unused tables**
+  - One migration per table group to allow easy rollback
+  - Verify app functionality after each removal
+
+- [ ] **6.3 Remove anon UPDATE from app_settings**
+  - Verify public order form only READS settings (not writes)
+  - Remove the UPDATE policy if confirmed read-only
+
+- [ ] **6.4 Add PrivateRoute wrapper to App.tsx (optional)**
+  - Wrap all non-public routes in a `<PrivateRoute>` component that redirects to `/login` if no session
+  - Public routes remain as explicit exceptions
+  - This provides defense-in-depth beyond RLS
+
+- [ ] **6.5 Add CHECK constraint to strains.abbreviation**
+  - `ALTER TABLE strains ADD CONSTRAINT strains_abbreviation_format CHECK (abbreviation ~ '^[A-Z]{3}$');`
+  - Requires data migration to update any existing abbreviations that don't match the pattern
+  - Run pre-flight query first: `SELECT name, abbreviation FROM strains WHERE abbreviation IS NOT NULL AND abbreviation !~ '^[A-Z]{3}$';`
+
+### Do NOT
+
+- Do NOT remove intentional anon access from the 7 tables above — public routes depend on them
+- Do NOT run this phase during cultivation build sessions (C-2 through C-6)
+- Do NOT combine multiple table removals in one migration — rollback granularity matters
+
+---
+
 ## Completion Log
 
 Record phase completions here for quick reference.
@@ -404,6 +477,7 @@ Record phase completions here for quick reference.
 | 3 - Type Safety | Complete | 2026-02-18 | All 6 shadow types renamed; 10 double-casts replaced with `.returns<T>()`; zero `as unknown as` in src/ |
 | 4 - Service Consolidation | Complete | 2026-02-18 | `orders-data.service.ts` never existed separately; `OrdersDataService` was already in `ordersService.ts`; single consumer; no changes needed |
 | 5 - Bundle Optimization | Complete | 2026-02-18 | Main chunk 2,487 KB -> 331 KB (87% reduction); all heavy deps deferred; visualizer enabled |
+| 6 - RLS Anon Policy Removal | Not Started | — | Scheduled post-cultivation (after C-6). Audit needed before any removals. |
 
 **Pre-Cultivation Phases (tracked in `SYSTEM-HEALTH-ASSESSMENT.md`):**
 

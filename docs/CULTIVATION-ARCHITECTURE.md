@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.1
+version: 1.2
 updated: 2026-02-18
 status: SPECIFICATION — not yet implemented
 ---
@@ -473,6 +473,7 @@ BEGIN
 
   SELECT name, abbreviation INTO v_strain_name, v_strain_abbrev
   FROM strains WHERE id = v_strain_id;
+  -- Note: uses strains.name (NOT strains.display_name) — verified correct field for batch_registry.strain
 
   IF v_strain_abbrev IS NULL OR v_strain_abbrev = '' THEN
     RAISE EXCEPTION
@@ -673,33 +674,46 @@ EXECUTE FUNCTION fn_protect_plant_group_strain();
 
 ## Integration with Existing Schema
 
-### strains Table (existing)
+### strains Table (existing) — VERIFIED AGAINST LIVE DB
 
-`plant_groups.strain_id` references the existing `strains` table. No changes to `strains` are needed.
+`plant_groups.strain_id` references the existing `strains` table. No changes to `strains` are needed for C-2.
 
-`strains.abbreviation` (nullable text) must be set by the user before a plant group can be created or a harvest completed for that strain. Both the `fn_generate_plant_group_number` (BEFORE INSERT) and `fn_complete_harvest_session` (BEFORE UPDATE) triggers enforce this with a hard error — there is **no automatic fallback**.
+**Live schema facts (verified 2026-02-18):**
+- `strains.abbreviation` — `text`, **nullable (YES)**, no NOT NULL constraint at the DB level
+- `strains.name` — `text NOT NULL` — the canonical strain name field
+- `strains.display_name` — `text NOT NULL` — a separate display label (may differ from `name`)
+- `strains.dominance_type` — `text`, nullable — replaces what docs called `type`; values are `'indica'`, `'sativa'`, `'hybrid'`
+
+`strains.abbreviation` being nullable is expected and intentional — enforcement is in the triggers, not the schema. Both the `fn_generate_plant_group_number` (BEFORE INSERT on plant_groups) and `fn_complete_harvest_session` (BEFORE UPDATE on harvest_sessions) triggers raise a hard exception if abbreviation is null or empty. There is **no automatic fallback**.
+
+**Important:** The trigger uses `strains.name` (not `strains.display_name`) to populate `batch_registry.strain`. Use `name` consistently.
 
 ```sql
--- Verify before migration:
+-- Verify before migration (should return is_nullable='YES'):
 SELECT column_name, is_nullable FROM information_schema.columns
 WHERE table_name = 'strains' AND column_name = 'abbreviation';
--- Expected: column_name='abbreviation', is_nullable='YES'
--- The column exists. Nullability is expected — enforcement is in the triggers.
 ```
 
-### batch_registry Table (existing)
+### batch_registry Table (existing) — VERIFIED AGAINST LIVE DB
 
 `harvest_sessions.batch_registry_id` references the existing `batch_registry` table. The `created_by` column was added by migration `add_created_by_to_batch_registry` (pre-C-2 scaffolding). The cultivation module only INSERTs new rows; it does not modify existing rows except via the weight adjustment trigger.
 
+**Live schema facts (verified 2026-02-18):**
+- `batch_registry.strain_id` — `uuid`, **nullable (YES)**, **no FK constraint to strains** — referential integrity is application-enforced only. The INSERT will succeed regardless of the value.
+- `batch_registry.initial_weight_grams` — `numeric`, **nullable (YES)** — the INSERT in the harvest trigger will succeed even with a NULL value, but the trigger always passes `NEW.wet_weight_grams` so it will never be null in practice.
+- `batch_registry.strain` — `text NOT NULL` — the strain name string; must always be populated.
+
 **Required columns used by the harvest trigger:**
 - `batch_number` (text, NOT NULL) — auto-generated YYMMDD-ABBREV
-- `strain` (text, NOT NULL) — strain name, populated from `strains.name`
-- `strain_id` (uuid) — FK to strains table
-- `harvest_date` (date)
-- `initial_weight_grams` (numeric) — wet weight from harvest session; overwritten by weight adjustment trigger if correction applied
-- `room` (text) — grow room code
-- `lifecycle_state` (text) — set to `'created'`
-- `created_by` (uuid) — the user who completed the harvest
+- `strain` (text, NOT NULL) — strain name string, populated from `strains.name` (NOT `display_name`)
+- `strain_id` (uuid, nullable, no FK) — the strain UUID; set for traceability but not enforced by DB
+- `harvest_date` (date, nullable)
+- `initial_weight_grams` (numeric, nullable) — wet weight from harvest session; overwritten by weight adjustment trigger if correction applied. **This stores the weight of the FIRST harvest session only** — see the same-day same-strain note below.
+- `room` (text, nullable) — grow room code
+- `lifecycle_state` (text, nullable, default `'created'`) — set to `'created'`
+- `created_by` (uuid, nullable) — the user who completed the harvest
+
+**Same-day same-strain note:** `initial_weight_grams` is set only on the first INSERT (via `ON CONFLICT DO NOTHING`). If a second harvest session for the same batch is completed the same day, `initial_weight_grams` retains the first session's weight. The second session's weight is preserved on the `harvest_sessions` row itself. For cumulative batch weight, use `SUM(wet_weight_grams) FROM harvest_sessions WHERE batch_registry_id = ?`.
 
 ### batch_production_history Table (existing)
 
@@ -709,7 +723,7 @@ The completion trigger inserts a `batch_created` event into this existing table.
 - `batch_id` (uuid, NOT NULL) — FK to batch_registry
 - `event_type` (text, NOT NULL) — set to `'batch_created'`
 - `source_weight_grams` (numeric) — the wet weight (note: NOT `input_weight`)
-- `performed_by` (text) — the user uuid cast to text (note: text type not uuid)
+- `performed_by` (text) — the user uuid cast to text (note: column is `text` type, not `uuid` — explicit `::text` cast required)
 - `notes` (text) — human-readable reference to the harvest session
 
 ### fn_generate_batch_number — not used
@@ -940,6 +954,17 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ## Document Version History
 
+### v1.2 (2026-02-18)
+- Live DB schema verification added to Integration section (verified against Supabase 2026-02-18)
+- Corrected `strains` field names: `dominance_type` (not `type`), confirmed `name` vs `display_name` distinction
+- Confirmed `strains.abbreviation` is nullable with no DB-level constraint — enforcement is trigger-only
+- Confirmed `batch_registry.strain_id` is nullable with no FK constraint to strains — noted referential integrity is application-enforced
+- Confirmed `batch_registry.initial_weight_grams` is nullable — trigger INSERT always provides value in practice
+- Added "same-day same-strain note" explaining that `initial_weight_grams` stores first-session weight only; cumulative weight requires `SUM()` over `harvest_sessions`
+- Added inline comment to `fn_complete_harvest_session` confirming `strains.name` (not `display_name`) is correct for `batch_registry.strain`
+- Added `::text` cast note for `performed_by` in batch_production_history
+- Added SQL verification query for `strains.abbreviation` nullability
+
 ### v1.1 (2026-02-18)
 - Added `plant_group_room_history` table definition, RLS policies, and trigger (fn_log_plant_group_room_history)
 - Added `mother_plant_group_id` and `is_mother` to `plant_groups` table definition
@@ -957,6 +982,6 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ---
 
-**Document Version:** 1.1
+**Document Version:** 1.2
 **Last Updated:** 2026-02-18
 **Status:** SPECIFICATION — implementation pending Session C-2

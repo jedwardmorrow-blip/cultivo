@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.1
+version: 1.2
 updated: 2026-02-18
 status: SPECIFICATION — not yet implemented
 ---
@@ -32,7 +32,8 @@ status: SPECIFICATION — not yet implemented
 13. [Compliance Fields](#compliance-fields)
 14. [UI Screens](#ui-screens)
 15. [Navigation Integration](#navigation-integration)
-16. [Open Questions & Deferred Items](#open-questions--deferred-items)
+16. [Strain Abbreviation — Mandatory System Requirement](#strain-abbreviation--mandatory-system-requirement)
+17. [Open Questions & Deferred Items](#open-questions--deferred-items)
 
 ---
 
@@ -436,11 +437,12 @@ batch_registry (existing)
 
 **Key invariants at handoff:**
 
-1. `batch_registry.strain_id` is copied from `plant_groups.strain_id` — never entered manually
-2. `batch_registry.initial_weight_grams` is the wet weight from harvest — not the dry/processed weight
+1. `batch_registry.strain_id` is copied from `plant_groups.strain_id` — never entered manually. Note: the DB has no FK constraint on this column; referential integrity is application-enforced.
+2. `batch_registry.initial_weight_grams` is the wet weight from the **first** harvest session — not the dry/processed weight, and not a sum across multiple same-day harvests. For total batch harvest weight across multiple sessions, query `SUM(wet_weight_grams)` from `harvest_sessions`.
 3. `batch_registry.room` is copied from `grow_rooms.room_code` — not a free-text field
-4. `batch_number` is auto-generated using `strains.abbreviation` — the abbreviation must be set by the user in Settings → Strains before harvest can complete
-5. The existing batch lifecycle trigger system picks up from `lifecycle_state = 'created'` with zero changes
+4. `batch_number` is auto-generated using `strains.abbreviation` — the abbreviation must be set by the user in Settings → Strains (Products → Strains) before harvest can complete. **Exactly 3 uppercase letters required.**
+5. `batch_registry.strain` (the name text column) is populated from `strains.name` — NOT `strains.display_name`. These may differ; use `name` consistently.
+6. The existing batch lifecycle trigger system picks up from `lifecycle_state = 'created'` with zero changes
 
 ---
 
@@ -532,6 +534,52 @@ Implementation note: the section navigation is driven by `src/shared/components/
 
 ---
 
+## Strain Abbreviation — Mandatory System Requirement
+
+### What It Is
+
+`strains.abbreviation` is a user-defined short code that forms the strain component of batch numbers (`YYMMDD-ABBREV`) and plant group IDs (`PG-YYMMDD-ABBREV`). It must be set in Settings → Strains (Products → Strains in the navigation) before any cultivation operations can proceed for that strain.
+
+### Enforcement
+
+This is enforced at two hard stops in the DB trigger layer — there is no fallback or workaround:
+
+| Trigger | Table | Fires | Blocks if abbreviation missing |
+|---------|-------|-------|-------------------------------|
+| `trg_generate_plant_group_number` | `plant_groups` | BEFORE INSERT | Plant group creation for that strain |
+| `trg_complete_harvest_session` | `harvest_sessions` | BEFORE UPDATE | Harvest completion for that strain |
+
+Both raise a named exception with a user-readable message pointing to Settings → Strains.
+
+### Format Requirements
+
+- Exactly **3 uppercase letters** (e.g., `OGK`, `SGA`, `GDP`)
+- The UI form at Settings → Strains must enforce this BEFORE saving:
+  - Real-time validation with visible error message
+  - Forced uppercase transform on input
+  - Save button disabled until exactly 3 characters, all letters
+  - Existing strains without a valid abbreviation must show a visible warning badge
+
+> The screenshot in the planning session confirms the format is already `SGA` (3 letters) for Strawguava — this is the correct format. Session C-3 will harden the UI validation to enforce this on save.
+
+### Pre-Flight Check Before C-2
+
+Run this query before starting migration C-2-1 to identify any strains currently missing abbreviations:
+
+```sql
+SELECT id, name, abbreviation
+FROM strains
+WHERE is_active = true AND (abbreviation IS NULL OR abbreviation = '');
+```
+
+Any strains returned here cannot be used in cultivation until their abbreviation is set. This is not a blocker for C-2 (migrations), but must be resolved before operators begin using the cultivation UI.
+
+### Downstream Impact
+
+`strains.abbreviation` also feeds the existing post-production package ID system (`consolidated_packages`) — it is not exclusive to cultivation. Any strain missing an abbreviation affects BOTH cultivation plant group creation AND post-production package ID generation for that strain.
+
+---
+
 ## Open Questions & Deferred Items
 
 | Item | Decision | Rationale |
@@ -545,6 +593,11 @@ Implementation note: the section navigation is driven by `src/shared/components/
 ---
 
 ## Document Version History
+
+### v1.2 (2026-02-18)
+- Added Strain Abbreviation section (section 16) — mandatory 3-letter format, DB enforcement points, pre-flight check query, downstream impact on package ID system
+- Corrected Harvest → Batch Handoff invariants: `initial_weight_grams` is first-session only (not cumulative); `batch_registry.strain` uses `strains.name` not `strains.display_name`; noted `strain_id` has no DB FK constraint
+- Updated TOC with new section 16
 
 ### v1.1 (2026-02-18)
 - Added mother plant tracking: `is_mother` flag, `mother_plant_group_id` self-referencing FK, Mother Plants section
@@ -562,7 +615,7 @@ Implementation note: the section navigation is driven by `src/shared/components/
 
 ---
 
-**Document Version:** 1.1
+**Document Version:** 1.2
 **Last Updated:** 2026-02-18
 **Status:** SPECIFICATION — implementation pending Session C-2
 **Review:** Required before Session C-2 begins

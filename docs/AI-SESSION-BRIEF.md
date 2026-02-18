@@ -1,8 +1,8 @@
 ---
 title: AI Session Brief
 category: AI Development
-version: 2.0
-updated: 2026-02-18 (C-1)
+version: 2.1
+updated: 2026-02-18 (C-1 docs + C-2 pre-build)
 priority: READ THIS FIRST
 ---
 
@@ -134,9 +134,34 @@ supabase/
 - [COA-HANDLING.md](./COA-HANDLING.md) | [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
 
 **Cultivation module docs:**
-- [CULTIVATION.md](./CULTIVATION.md) - **READ FIRST** — scope, entities, lifecycle, UI screens (Session C-1 complete)
-- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan (Session C-1 complete)
-- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements (Session C-1 complete)
+- [CULTIVATION.md](./CULTIVATION.md) - **READ FIRST** — scope, entities, lifecycle, UI screens (v1.2)
+- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan (v1.2 — live DB verified)
+- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements (v1.2 — invariant C-17 added)
+
+**Before Starting Session C-2 (migrations) — Pre-Build Checklist:**
+
+1. **Verify live DB schema** — run these two queries before writing any SQL:
+   ```sql
+   -- Confirm strains.abbreviation is nullable (expected: is_nullable='YES')
+   SELECT column_name, is_nullable FROM information_schema.columns
+   WHERE table_name = 'strains' AND column_name = 'abbreviation';
+
+   -- Find active strains with no abbreviation set (must be fixed before ops begin)
+   SELECT id, name, abbreviation FROM strains
+   WHERE is_active = true AND (abbreviation IS NULL OR abbreviation = '');
+   ```
+
+2. **strain_id on batch_registry has NO FK constraint** — the trigger INSERT will succeed but referential integrity is application-enforced only. Do not add a FK constraint in C-2 migrations; document this gap.
+
+3. **initial_weight_grams is nullable in live DB** — trigger INSERT will always succeed. The trigger always passes `NEW.wet_weight_grams` so it will never be null in practice.
+
+4. **Use `strains.name` (not `strains.display_name`)** — when populating `batch_registry.strain` in the trigger. The live schema has both columns; `name` is the correct one for batch records.
+
+5. **Update TypeScript types as FIRST action in C-2** — before migrations, update `src/features/cultivation/types/cultivation.types.ts` to add the 7 missing fields: `group_number`, `mother_plant_group_id`, `is_mother`, `RoomType 'mother'`, `adjusted_weight_grams`, `adjustment_reason`, `PlantGroupRoomHistory`.
+
+6. **Fix `strains.abbreviation` type in shared Strain interface** — `src/types/product.types.ts` likely has `abbreviation: string` — change to `abbreviation: string | null` to reflect live schema.
+
+7. **Five tables in C-2-1, nine trigger pairs in C-2-2** — do not proceed from memory; read CULTIVATION-ARCHITECTURE.md for the exact ordered lists.
 
 **Pre-cultivation preparation docs:**
 - [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Pre-cultivation readiness scores and work prioritization

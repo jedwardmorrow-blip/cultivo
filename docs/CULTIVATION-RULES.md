@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.1
+version: 1.2
 updated: 2026-02-18
 status: SPECIFICATION — not yet implemented
 ---
@@ -42,6 +42,13 @@ status: SPECIFICATION — not yet implemented
 │ C-15. adjustment_reason is required when adjusted_weight_grams      │
 │        is set                                                        │
 │ C-16. group_number is immutable after creation                      │
+│ C-17. batch_registry.initial_weight_grams is single-session weight, │
+│        not cumulative batch weight. The first harvest session's      │
+│        wet_weight_grams is stored there via ON CONFLICT DO NOTHING.  │
+│        Subsequent same-batch harvest sessions do not update it.      │
+│        For cumulative batch weight, always use:                      │
+│        SUM(wet_weight_grams) FROM harvest_sessions                   │
+│        WHERE batch_registry_id = ?                                   │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -218,6 +225,21 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-17: initial_weight_grams is Single-Session Weight, Not Cumulative Batch Weight
+
+**Rule:** `batch_registry.initial_weight_grams` stores the wet weight of the **first** harvest session that created the batch. For same-strain same-day harvests (multiple plant groups harvested the same day), only the first session's weight is stored there. Subsequent sessions sharing the same batch_registry row do NOT update `initial_weight_grams` — their weight is preserved only on their own `harvest_sessions.wet_weight_grams` column.
+
+**Enforcement:** DB-level: `ON CONFLICT (batch_number) DO NOTHING` in `fn_complete_harvest_session` — the INSERT is silently skipped for the second session. No exception is raised; the trigger proceeds to link `batch_registry_id` from the existing row.
+
+**Consumers must know:**
+- Any display of "total batch harvest weight" must query `SUM(wet_weight_grams) FROM harvest_sessions WHERE batch_registry_id = ?`
+- `initial_weight_grams` alone is insufficient for batches with multiple harvest sessions
+- The weight adjustment trigger (`trg_sync_harvest_weight_adjustment`) overwrites `initial_weight_grams` with the adjusted value for the first session only — this is expected
+
+**Rationale:** `initial_weight_grams` is reference/display data on the batch record. The authoritative weight ledger is the `harvest_sessions` rows themselves. This design is consistent with how `initial_weight_grams` is used downstream (yield analytics compares it against processed weights as an approximate reference, not a precise regulatory figure).
+
+---
+
 ## Decisions Made (and Why)
 
 ### Decision: Group-level tracking, not individual plant tracking
@@ -286,9 +308,22 @@ The user fills in wet weight and plant count, then clicks "Save" (creates `sessi
 
 If two plant groups (e.g., Room A and Room B) of the same strain are harvested on the same day, their harvest sessions both link to the same `batch_registry` row.
 
-**Rationale:** This matches the existing batch number format (`YYMMDD-ABBREV`) and the existing documentation in `BATCHES.md`. Combined weight from both harvests accumulates in one batch, which is how the operation works physically.
+**Rationale:** This matches the existing batch number format (`YYMMDD-ABBREV`) and the existing documentation in `BATCHES.md`. Both harvests contribute to one batch, which is how the operation works physically.
 
 **Implication:** `harvest_sessions.batch_registry_id` is a many-to-one relationship (many harvest sessions can point to one batch). This is expected and handled by the trigger's `ON CONFLICT DO NOTHING` path.
+
+**Weight accounting for same-batch harvests (Invariant C-17):**
+`batch_registry.initial_weight_grams` stores only the FIRST harvest session's `wet_weight_grams` — the `ON CONFLICT DO NOTHING` means the second session's weight is silently not written to that column. This is not data loss: the second session's weight lives on the `harvest_sessions` row itself.
+
+Consumers of `initial_weight_grams` (yield analytics, batch detail views) must understand that this field is "first harvest weight" not "total batch harvest weight." For total batch harvest weight, query:
+
+```sql
+SELECT SUM(wet_weight_grams)
+FROM harvest_sessions
+WHERE batch_registry_id = ? AND session_status = 'completed';
+```
+
+The weight adjustment trigger (`trg_sync_harvest_weight_adjustment`) also writes to `initial_weight_grams` when `adjusted_weight_grams` is set. For same-batch multi-harvest scenarios, this means adjusting the first session's weight overwrites `initial_weight_grams` with the corrected first-session value — it does not account for other sessions. This is acceptable because `initial_weight_grams` is display/reference data; actual inventory quantities are managed by the movement ledger independently.
 
 ---
 
@@ -361,6 +396,6 @@ The following scenarios must have test coverage before Session C-3 ships:
 
 ---
 
-**Document Version:** 1.1
+**Document Version:** 1.2
 **Last Updated:** 2026-02-18
 **Status:** SPECIFICATION — rules are locked. No changes without explicit discussion.

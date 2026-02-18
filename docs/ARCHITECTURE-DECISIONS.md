@@ -1,7 +1,7 @@
 ---
 title: Architecture Decisions Record
 category: Architecture Reference
-updated: 2026-02-16
+updated: 2026-02-18
 ---
 
 # Architecture Decisions Record
@@ -129,6 +129,81 @@ Safe when all rows share the same UUID value (guaranteed by batch-centric archit
 Conversion packages must be filtered by `source_session_ids` to prevent cross-session contamination. Filtering by `aggregation_id` or `batch_id` alone is insufficient.
 
 **Pattern:** `cp.source_session_ids @> to_jsonb(ARRAY[session.id])`
+
+---
+
+## 10. Strain Abbreviation is Mandatory and Validated to Exactly 3 Uppercase Letters (2026-02-18)
+
+**Context:** Batch numbers (`YYMMDD-ABBREV`) and plant group IDs (`PG-YYMMDD-ABBREV`) both require a strain abbreviation. The old schema allowed `strains.abbreviation` to be any non-null text (3–5 chars per old docs), and the v1.0 trigger spec had a COALESCE fallback.
+
+**Decision:** The abbreviation must be exactly 3 uppercase letters. No fallback.
+
+**Enforcement is at two layers:**
+1. **DB triggers** — `fn_generate_plant_group_number` (BEFORE INSERT on plant_groups) and `fn_complete_harvest_session` (BEFORE UPDATE on harvest_sessions) both raise a named exception if `strains.abbreviation` is null or empty. Neither has a COALESCE fallback.
+2. **UI layer** — The StrainsManagement form must enforce exactly 3 chars, uppercase, before allowing save. This is implemented in Session C-3.
+
+**Why trigger-layer, not schema-level CHECK constraint?**
+A CHECK constraint on `strains.abbreviation` (e.g., `~'^[A-Z]{3}$'`) was considered. It was deferred to migration C-2-3 rather than implemented as a schema constraint now because:
+- Existing strain rows may have NULL abbreviations and adding NOT NULL + CHECK would require a data migration
+- The trigger enforcement is sufficient for runtime safety; the schema constraint is a belt-and-suspenders improvement
+- Migration C-2-3 should add: `ALTER TABLE strains ADD CONSTRAINT strains_abbreviation_format CHECK (abbreviation ~ '^[A-Z]{3}$');`
+
+**Why 3 letters exactly (not 3–5 as old docs said)?**
+The live `SGA` badge in the UI and all existing batch numbers in production use exactly 3-letter abbreviations. Expanding to 5 would change existing batch number formats without benefit.
+
+**Reference:** CULTIVATION-RULES.md Invariant C-11, CULTIVATION-ARCHITECTURE.md Triggers section
+
+---
+
+## 11. batch_registry.initial_weight_grams Stores First-Harvest Weight Only (2026-02-18)
+
+**Context:** When same-strain same-day harvests occur (two plant groups harvested the same day), the `fn_complete_harvest_session` trigger uses `ON CONFLICT (batch_number) DO NOTHING`. The second session links to the existing batch but does not update `initial_weight_grams`.
+
+**Decision:** Accept this behavior deliberately. `initial_weight_grams` is a reference/display field, not the authoritative weight register.
+
+**Implication for consumers:**
+- Any feature displaying "total batch harvest weight" MUST query `SUM(wet_weight_grams) FROM harvest_sessions WHERE batch_registry_id = ?`
+- `initial_weight_grams` alone is unreliable for multi-harvest batches
+- The weight adjustment trigger (`trg_sync_harvest_weight_adjustment`) only updates `initial_weight_grams` for the adjusted session — it does not recalculate across all sessions for the batch
+
+**Why not accumulate on every insert?** An `ON CONFLICT DO UPDATE SET initial_weight_grams = initial_weight_grams + EXCLUDED.initial_weight_grams` approach was considered and rejected: it would change the semantics of the field from "wet weight at first harvest" (a useful point-in-time metric) to "running total" (which is already available via the harvest_sessions join), and it would introduce a more complex trigger that could interfere with the weight adjustment trigger.
+
+**Reference:** CULTIVATION-RULES.md Invariant C-17, CULTIVATION-ARCHITECTURE.md Integration section
+
+---
+
+## 12. Anon RLS Policies Exist Intentionally for Public-Facing Routes (2026-02-18)
+
+**Context:** An RLS audit (2026-02-18) found that several tables grant access to the Supabase `anon` role. This is not all accidental — some anon access is required for public-facing features.
+
+**Intentional anon access (must be preserved):**
+
+| Table | Anon Access | Required For |
+|-------|-------------|-------------|
+| `orders` | SELECT, INSERT, UPDATE | Public order form (`?order=new`) |
+| `order_items` | SELECT, INSERT, UPDATE | Public order form |
+| `customers` | SELECT, INSERT | Public order form customer lookup |
+| `products` | SELECT | Public order form product list |
+| `app_settings` | SELECT | Public order form company info |
+| `coversheets` | SELECT (token-based) | Public coversheet URL (`/coversheet`) |
+| `coa_documents` | SELECT (is_public flag) | Public COA library (`/coa-library`) |
+
+**Legacy anon access (candidates for removal in a future dedicated session):**
+
+| Table | Anon Access | Status |
+|-------|-------------|--------|
+| `trim_sessions` | ALL | Legacy — from early development before auth was added |
+| `packaging_sessions` | ALL | Legacy |
+| `bucked_inventory` | ALL | Legacy |
+| `bulk_inventory` | ALL | Legacy |
+| `app_settings` | UPDATE | Legacy — should be authenticated only |
+| `strain_metadata` | ALL | Legacy |
+
+**App-level auth gate:** `App.tsx` does NOT have a universal auth guard middleware. Authenticated screens each check `if (!user) return <Login />` individually. Public routes (`/coversheet`, `/coa-library`, `/menu`, `?order=new`, `/reset-password`) are hardcoded exceptions. This architecture is intentional for the public order form use case.
+
+**Plan:** Legacy anon policy removal is a standalone future session (see OPTIMIZATION-ROADMAP.md). It requires: (1) auditing each table's usage patterns in production, (2) removing legacy anon policies, (3) optionally adding a PrivateRoute wrapper to App.tsx. This must NOT be done during cultivation build sessions.
+
+**Reference:** OPTIMIZATION-ROADMAP.md RLS Anon Policy Removal section
 
 ---
 

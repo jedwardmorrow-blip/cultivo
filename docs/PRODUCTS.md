@@ -1,8 +1,8 @@
 ---
 title: PRODUCTS
 category: Catalog & Configuration
-version: 1.0
-updated: 2025-11-10
+version: 1.1
+updated: 2026-02-18
 ---
 
 # PRODUCTS - Product Catalog & Strain Management
@@ -142,29 +142,39 @@ CREATE TABLE products (
 
 **Purpose:** Genetic profiles with cannabinoid data
 
-**Schema:**
+**Schema (verified against live DB 2026-02-18):**
 ```sql
 CREATE TABLE strains (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text UNIQUE NOT NULL,               -- Full name (e.g., "Girl Scout Cookies")
-  abbreviation text UNIQUE NOT NULL,       -- 3-5 char code (e.g., "GSC")
-  type text,                                -- 'indica', 'sativa', 'hybrid'
-  thc_percentage numeric,                   -- Average THC %
-  cbd_percentage numeric,                   -- Average CBD %
-  description text,                         -- Strain characteristics
-  lineage text,                             -- Genetic lineage
-  created_at timestamptz DEFAULT now()
+  name text NOT NULL,                       -- Canonical strain name (used in batch records)
+  display_name text NOT NULL,               -- Display label (may differ from name)
+  abbreviation text,                        -- 3-letter uppercase code (e.g., "GSC") — NULLABLE in DB
+  dominance_type text,                      -- 'indica', 'sativa', 'hybrid' (was 'type' in old docs)
+  thc_range text,                           -- e.g., "22-25%" (text range, not numeric)
+  cbd_range text,                           -- e.g., "0.1-0.3%"
+  description text,
+  cultivation_notes text,
+  terpene_profile jsonb DEFAULT '{}',
+  is_active boolean NOT NULL DEFAULT true,
+  -- yield ratio fields (typical processing ratios for this strain)
+  typical_yield_percentage numeric DEFAULT 75.0,
+  bucked_to_bulk_ratio numeric DEFAULT 0.85,
+  -- ... additional ratio columns
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 ```
 
 **Key Fields:**
-- `abbreviation`: Used in batch numbers (YYMMDD-STRAIN format)
-- `type`: Indica/Sativa/Hybrid classification
-- `thc_percentage`, `cbd_percentage`: Expected cannabinoid profiles
+- `name`: Used in batch records (`batch_registry.strain`). Use this, not `display_name`.
+- `abbreviation`: **Nullable.** Must be set manually in Settings → Strains. Used in batch numbers (`YYMMDD-ABBREV`) and plant group IDs. Exactly 3 uppercase letters required — see Mandatory Abbreviation section below.
+- `dominance_type`: Indica/Sativa/Hybrid — field was renamed from `type` in early schema evolution
+- `thc_range`/`cbd_range`: Text ranges (e.g., "20-24%"), not numeric percentages
 
 **Evidence:**
 - File: `src/features/products/components/StrainsManagement.tsx`
 - Migration: `supabase/migrations/20251010034324_populate_strain_catalog.sql`
+- Live DB verified: 2026-02-18
 
 #### 3. product_types
 
@@ -237,30 +247,32 @@ Binned → Bucked → Bulk Available → Packaged
    // Strain creation includes genetic data
    {
      name: "Girl Scout Cookies",
-     abbreviation: "GSC",
-     type: "hybrid",
-     thc_percentage: 22.5,
-     cbd_percentage: 0.3,
-     lineage: "OG Kush x Durban Poison",
+     display_name: "Girl Scout Cookies",
+     abbreviation: "GSC",         // REQUIRED: exactly 3 uppercase letters
+     dominance_type: "hybrid",    // field is 'dominance_type', not 'type'
+     thc_range: "20-24%",         // text range, not numeric
+     cbd_range: "0.1-0.3%",
      description: "Sweet and earthy flavor profile"
    }
    ```
 
-2. **Strain Code Format**
-   - **Length:** 3-5 uppercase letters
+2. **Strain Abbreviation — MANDATORY SYSTEM REQUIREMENT**
+   - **Format:** Exactly **3 uppercase letters** (e.g., `GSC`, `GDP`, `SGA`)
    - **Uniqueness:** Must be unique across all strains
-   - **Usage:** Used in batch numbers (YYMMDD-STRAIN)
-   - **Examples:** GSC, GDP, MAC, LEMON, BLUE
+   - **Usage:** Used in batch numbers (`YYMMDD-ABBREV`) AND plant group IDs (`PG-YYMMDD-ABBREV`)
+   - **DB Enforcement:** Two DB triggers block all downstream operations if abbreviation is missing — `fn_generate_plant_group_number` blocks plant group creation and `fn_complete_harvest_session` blocks harvest completion for strains with no abbreviation
+   - **UI Enforcement (required in C-3):** The StrainsManagement form must validate exactly 3 uppercase letters before allowing save; force-uppercase the input; show error message; disable save button until valid; show warning badge on any existing strain card with a missing or invalid abbreviation
+   - **Pre-flight check:** Run `SELECT name, abbreviation FROM strains WHERE is_active = true AND (abbreviation IS NULL OR abbreviation = '');` before enabling cultivation to identify strains that need abbreviations set
 
 3. **Cannabinoid Profiles**
-   - THC and CBD percentages are **averages** across harvests
-   - Actual values vary per batch (measured via COA)
-   - Used for marketing and customer expectations
+   - THC and CBD are stored as text ranges (e.g., `"20-24%"`) not numeric percentages
+   - Actual values per batch are measured via COA documents
+   - Yield ratios per strain are stored on the strains row for planning estimates
 
 **Management Interface:**
 - Component: `StrainsManagement.tsx`
 - Operations: Create, Update, Archive
-- Validation: Abbreviation uniqueness, format constraints
+- Validation: Abbreviation uniqueness, format constraints (exactly 3 uppercase letters)
 
 ---
 
@@ -647,11 +659,12 @@ Products support flexible pricing based on unit of measure:
 
 ### GAP-017: Batch Number Format Validation (MEDIUM Priority)
 
-**Status:** 🔴 NOT IMPLEMENTED
+**Status:** 🟡 PARTIALLY ADDRESSED
 **Impact:** Inconsistent batch IDs break manifest/COA lookups
-**Current Mitigation:** UNIQUE constraint catches duplicates
-**Planned Solution:** CHECK constraint matching regex `^\d{6}-[A-Z]{3,5}$`
-**Priority:** MEDIUM (Batch 3 backlog)
+**Current Mitigation:** UNIQUE constraint catches duplicates; cultivation module generates batch numbers automatically from trigger (eliminating manual entry errors)
+**Planned Solution:** CHECK constraint matching regex `^\d{6}-[A-Z]{3}$` (3-letter abbreviation, per ADR #10)
+**Note:** The regex was updated from `{3,5}` to `{3}` — all production abbreviations use exactly 3 letters. The constraint is scheduled for Phase 6 of the Optimization Roadmap.
+**Priority:** MEDIUM (Phase 6 / post-cultivation)
 **See:** [BATCHES.md GAP-017](./BATCHES.md#gap-017-batch-number-auto-generation)
 
 ### Future Enhancements
@@ -697,6 +710,12 @@ Products support flexible pricing based on unit of measure:
 
 ## Document Version History
 
+### v1.1 (2026-02-18)
+- Updated `strains` schema to match live DB: `dominance_type` (not `type`), `thc_range`/`cbd_range` as text (not numeric), `display_name` added, `abbreviation` confirmed nullable
+- Expanded Strains Management section with mandatory abbreviation rule (exactly 3 uppercase letters), DB enforcement points, UI enforcement requirements for C-3, pre-flight check query
+- Updated GAP-017: regex changed from `{3,5}` to `{3}`; status updated to partially addressed; moved to Phase 6 scope
+- Added cross-reference to ARCHITECTURE-DECISIONS.md ADR #10 for abbreviation decisions
+
 ### v1.0 (2025-11-10)
 - **Initial comprehensive documentation**
 - Documented product catalog structure (products, strains, types, stages)
@@ -710,8 +729,7 @@ Products support flexible pricing based on unit of measure:
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-11-10
+**Document Version:** 1.1
+**Last Updated:** 2026-02-18
 **Status:** Comprehensive Reference Documentation
-**Maintainer:** Product Team
-**Evidence Review:** Complete - All features verified against codebase
+**Evidence Review:** Live DB schema verified 2026-02-18
