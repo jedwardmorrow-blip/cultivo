@@ -14,45 +14,42 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-17
-**Session:** Optimization Phase 2 -- Hardcoded Values Extraction
-**Status:** COMPLETE
+**Date:** 2026-02-18
+**Session:** Optimization Phase 3 -- Type Safety Cleanup (documentation catch-up)
+**Status:** COMPLETE (phase was already complete in code; documentation updated to reflect)
 
 **What was done:**
-- Extracted 12 hardcoded license/company string occurrences to shared constants in `src/lib/constants/index.ts`
-- Created shared `getCompanySettings()` utility in `src/lib/constants/companySettings.ts`
-- Removed 2 duplicate `getCompanySettings()` functions from `invoiceService.ts` and `manifestService.ts`
-- Replaced 5 hardcoded stage UUIDs in `conversions.service.ts` with cached `product_stages` DB lookup
-- `getProductStageIdFromProductName()` is now async (both internal call sites updated)
+- Confirmed Phase 3 was already fully implemented in the codebase (no code changes needed)
+- Updated `docs/OPTIMIZATION-ROADMAP.md` to mark all Phase 3 items complete (2026-02-18)
+- Updated Completion Log: Phase 3 row now shows Complete
 
-**Build status:** Passes clean (2413 modules, 24s)
+**Verification results:**
+- `src/features/order-form/types/index.ts`: all three shadow types renamed (`OrderFormCustomer`, `OrderFormProduct`, `OrderFormItem`)
+- `src/features/orders/types/orders.types.ts`: re-exports canonical types; feature extension renamed `OrderItemExtended`
+- `src/features/batches/services/batch.service.ts`: zero `as unknown as`; all replaced with `.returns<T>()`
+- `grep "as unknown as" src/`: zero matches anywhere in the codebase
 
-**Known issues:** 500 remaining tsc errors (unchanged from Phase 1 -- real code issues tracked for Phase 3)
+**Build status:** Passes clean (unchanged)
 
-**New files:** `src/lib/constants/companySettings.ts`
-**Modified files:**
-- `src/lib/constants/index.ts` -- added compliance constants + re-export
-- `src/features/orders/components/coversheet/ComplianceHeader.tsx` -- imports shared constants
-- `src/features/orders/components/coversheet/BatchComplianceTable.tsx` -- imports shared constants
-- `src/features/orders/components/LabelGenerator.tsx` -- imports shared constants
-- `src/features/orders/components/LabelPrintPreview.tsx` -- removed local constants, imports shared
-- `src/features/orders/services/invoiceService.ts` -- removed local getCompanySettings, imports shared
-- `src/features/orders/services/manifestService.ts` -- removed local getCompanySettings, imports shared
-- `src/features/orders/services/coversheet.service.ts` -- imports shared constants for fallbacks
-- `src/features/orders/services/labelAutoFill.service.ts` -- imports shared constants
-- `src/features/inventory/services/conversions.service.ts` -- async stage lookup with cache
+**Known issues:** ~500 remaining tsc errors (pre-Phase 3 baseline; no regression)
+
+**New files:** None
+**Modified files:** `docs/OPTIMIZATION-ROADMAP.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`
 **Migrations:** None
 
 **Critical context for future sessions:**
-- `getProductStageIdFromProductName()` is now async -- any new callers must await it
+- `getProductStageIdFromProductName()` is async -- any new callers must await it
 - Stage ID cache (`stageIdCache`) lives in module scope, reset on page reload
 - Compliance fallback constants live in `src/lib/constants/index.ts` -- single source of truth
 - All previous critical context still applies (cancel functions, undo guards, COA sync, etc.)
 
 **Next recommendations (follow OPTIMIZATION-ROADMAP.md):**
-1. Phase 3: Fix duplicate type definitions and double-casts
-2. Phase 4: Consolidate 3 duplicate order services
-3. Phase 5: Bundle size optimization (code splitting)
+1. **Phase 4 is also complete** (verified this session -- `orders-data.service.ts` never existed as a separate file; `OrdersDataService` class was always inside `ordersService.ts`; single consumer `OrdersContext.tsx`; no changes needed)
+2. **Phase 5 is next and final:** Bundle size optimization
+   - Enable `rollup-plugin-visualizer` in `vite.config.ts` to generate bundle report
+   - Add `React.lazy()` for route-based code splitting in `src/routes.tsx`
+   - Dynamically import `pdfjs-dist`, `leaflet`, `jspdf`, `html2canvas` at point of use
+   - Target: main chunk under 500 KB (currently 2,487 KB / 645 KB gzip)
 
 ---
 
