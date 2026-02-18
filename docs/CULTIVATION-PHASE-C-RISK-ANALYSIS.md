@@ -1,7 +1,7 @@
 ---
 title: Cultivation Pre-Work — Phase C Risk Analysis
 category: Planning & Architecture
-updated: 2026-02-18
+updated: 2026-02-18 (C1 + C3 complete)
 priority: Read before executing Phase C service refactoring
 ---
 
@@ -27,11 +27,11 @@ or broken finalization workflows.
 will surface exactly which parts of the session service are consumed and by what, giving Phase C
 the accurate dependency map it needs.
 
-| Item | File(s) | Risk Level | Behavior Change? |
-|------|---------|------------|-----------------|
-| C1 | `conversions.service.ts` (1,026 lines) | High | No (restructure only) |
-| C2 | `inventoryMovement.service.ts` | Low | No |
-| C3 | All services | Medium | No (return pattern only) |
+| Item | File(s) | Risk Level | Behavior Change? | Status |
+|------|---------|------------|-----------------|--------|
+| C1 | `conversions.service.ts` (1,026 lines) | High | No (restructure only) | **COMPLETE** (2026-02-18) |
+| C2 | `inventoryMovement.service.ts` | Low | No | Pending |
+| C3 | All services | Medium | No (return pattern only) | **COMPLETE** (2026-02-18) |
 
 ---
 
@@ -327,20 +327,41 @@ interface ServiceResult<T> {
 
 ```
 Phase A complete → Phase C can start
-C2 first         → Low-risk, isolated; wire retryOperation into recordMovement
-C1 second        → Split conversions.service.ts while it is clean; keep as barrel
-C3 last          → Standardize error patterns; depends on C1's split for safety
+C2 first         → Low-risk, isolated; wire retryOperation into recordMovement  [PENDING]
+C1 second        → Split conversions.service.ts while it is clean; keep as barrel  [COMPLETE 2026-02-18]
+C3 last          → Standardize error patterns; depends on C1's split for safety  [COMPLETE 2026-02-18]
 ```
+
+### C1 Implementation Notes (2026-02-18)
+
+Split into 5 files (not 4 as originally planned — analytics warranted its own module):
+- `conversions.helpers.ts` — stage ID cache, `getProductStageIdFromProductName`, `getCategoryFromProductName`, `parseNetWeightFromProductName`
+- `conversions.finalization.ts` — `getPendingConversions`, `finalizeConversion`, `voidConversion`
+- `conversions.packages.ts` — package CRUD and ID generation
+- `conversions.variance.ts` — variance logging, `getSessionContributions`
+- `conversions.analytics.ts` — `getConversionSummary`, `getConversionHistory`
+
+`conversions.service.ts` is now a thin barrel re-exporting all 5 modules. Zero changes to any consumer import paths.
+
+The `stageIdCache` hazard was handled correctly — cache and all consumers live in `conversions.helpers.ts`.
+
+### C3 Implementation Notes (2026-02-18)
+
+All 5 conversions.* modules converted from throw-based errors to `{ data, error }` return pattern.
+
+One exception preserved intentionally: `finalizeConversionPackages` retains `{ success, error }` shape (not `{ data, error }`) because its caller (`useConversionWorkflow`) checks `result.success`. This is correct behavior — do not change it.
+
+A barrel collision was discovered and fixed: `varianceLog.service.ts` had exported `logVariance` as an alias for `createVarianceLog`. This conflicted with the new `logVariance` in `conversions.variance.ts` when both were re-exported from the services barrel. The alias was removed; `adjustment.service.ts` now imports `createVarianceLog` directly.
 
 ---
 
 ## Risk Summary Table
 
-| Item | Existing Features at Risk | Risk Level | Rollback Difficulty |
-|------|--------------------------|------------|---------------------|
-| C1 | All conversion finalization flows | High | Medium: restore original conversions.service.ts |
-| C2 | Inventory movement recording | Low | Easy: remove retryOperation wrapper |
-| C3 | All conversion hook callers | High | Hard: revert multiple files; test all callers |
+| Item | Existing Features at Risk | Risk Level | Rollback Difficulty | Status |
+|------|--------------------------|------------|---------------------|--------|
+| C1 | All conversion finalization flows | High | Medium: restore original conversions.service.ts | **COMPLETE** |
+| C2 | Inventory movement recording | Low | Easy: remove retryOperation wrapper | Pending |
+| C3 | All conversion hook callers | High | Hard: revert multiple files; test all callers | **COMPLETE** |
 
 ---
 

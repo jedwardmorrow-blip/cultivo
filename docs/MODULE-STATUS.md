@@ -1,6 +1,6 @@
 ---
 title: Module Status
-updated: 2026-02-11
+updated: 2026-02-18
 ---
 
 # Module Status
@@ -33,7 +33,14 @@ Quick reference for the implementation status of each module.
 - Command palette (Cmd+K)
 - CSV export
 - Table sorting/filtering
-- Bundle size optimization
 - Dark mode
+- Phase D testing (critical path coverage — see `docs/CULTIVATION-PHASE-D-RISK-ANALYSIS.md`)
+
+**Completed optimization phases (2026-02-17/18):**
+- Bundle size optimization (main chunk 2,487 KB → 331 KB)
+- Hardcoded values extraction (license, stage UUIDs → constants/DB lookup)
+- Type safety cleanup (6 shadow types renamed, 10 double-casts removed)
+- Service consolidation verification (orders services already consolidated)
+- Pre-cultivation phases A, B, C (type hardening, pagination caps, service refactoring)
 
 > **Archive:** For detailed historical progress tracking, see [docs/archive/DOCS-INTEGRATION-PROGRESS.md](./archive/DOCS-INTEGRATION-PROGRESS.md)

@@ -1,7 +1,7 @@
 ---
 title: System Health Assessment — Pre-Cultivation Module
 category: Planning & Architecture
-updated: 2026-02-18
+updated: 2026-02-18 (Phase C complete)
 priority: Read before starting cultivation module work
 ---
 
@@ -21,12 +21,10 @@ priority: Read before starting cultivation module work
 **Overall Score: 8.1 / 10**
 
 The system is production-ready with a clean, well-documented architecture. All 5 optimization phases
-(Phases 1-5 from `OPTIMIZATION-ROADMAP.md`) are complete. The primary risks before cultivation are:
+(Phases 1-5 from `OPTIMIZATION-ROADMAP.md`) are complete, as are pre-cultivation phases A, B, and C.
+The primary remaining risk before cultivation is:
 
-1. No tests on any critical business logic paths (score: 3/10)
-2. No pagination — full dataset loads will become a performance cliff as plant tracking accumulates (score: 8.5/10 now, will degrade)
-3. `any`-typed session service parameters — the most central service in the upcoming cultivation workflow
-4. Two duplicate-export build warnings that produce unpredictable runtime behavior
+1. No tests on any critical business logic paths (score: 3/10) — **Phase D is the only remaining pre-cultivation work item**
 
 ---
 
@@ -37,11 +35,11 @@ The system is production-ready with a clean, well-documented architecture. All 5
 | 1 | Architecture & Code Structure | 8.5 | Duplicate variance utility exports |
 | 2 | Type Safety | 7.5 | 58 files with `: any`; session service untyped |
 | 3 | State Management & Data Flow | 8.0 | No global state for cross-feature data |
-| 4 | Service Layer & Business Logic | 9.0 | `conversions.service.ts` at 1,026 lines |
+| 4 | Service Layer & Business Logic | 9.5 | `conversions.service.ts` split into 5 focused modules; error patterns standardized |
 | 5 | Database & Supabase Patterns | 8.0 | Pagination nearly absent |
 | 6 | Compliance & Audit Trail | 9.0 | No compliance officer dashboard |
 | 7 | Performance | 8.5 | Bundle optimized; pagination not done |
-| 8 | Error Handling & Resilience | 8.0 | `retryOperation` not wired to service calls |
+| 8 | Error Handling & Resilience | 8.5 | Error return pattern standardized (conversions); `retryOperation` still not wired (C2 pending) |
 | 9 | Testing Coverage | 3.0 | Zero coverage of critical paths |
 | 10 | Documentation | 9.5 | Best-in-class; minor diagram gaps |
 
@@ -106,12 +104,12 @@ The system is production-ready with a clean, well-documented architecture. All 5
 - Single responsibility is generally followed — services are focused with clear scopes
 
 **Weaknesses:**
-- `conversions.service.ts` is 1,026 lines handling finalization, variance logging, package ID generation, AND history queries — multiple responsibilities
-- `retryOperation` is available in `errorService` but not wired into any service call — all operations are single-attempt
+- `retryOperation` is available in `errorService` but not wired into any service call — all operations are single-attempt (C2 pending)
 - 42 TODO/FIXME comments across 9 files indicate acknowledged-but-deferred work
-- Error handling consistency: some services return `{ data: null, error }`, some throw, some do both
 
-**Recommendation:** Split `conversions.service.ts` before cultivation adds more conversion types (harvest-to-trim, cultivation-to-harvest). See `OPTIMIZATION-ROADMAP.md` Phase 4 section for context on the existing service consolidation work.
+**Resolved (2026-02-18):**
+- `conversions.service.ts` split into 5 focused modules (`conversions.helpers`, `.finalization`, `.packages`, `.variance`, `.analytics`) — original filename kept as thin barrel re-export
+- Error handling pattern standardized: all conversions.* modules now return `{ data, error }` matching inventory/session service patterns
 
 ---
 
@@ -173,11 +171,13 @@ The system is production-ready with a clean, well-documented architecture. All 5
 - Feature-level `OrdersErrorBoundary` shows granular error isolation is already proven out
 
 **Weaknesses:**
-- `retryOperation` is not used in any service call — available but unadopted
+- `retryOperation` is not used in any service call — available but unadopted (Phase C2 pending)
 - No offline detection — network failures surface as errors after the fact, not proactive warnings
 - Some service error messages are generic (`'Failed to create trim session'`) without including the session type or identifier
 
-**Recommendation:** Wire `retryOperation` into at minimum the inventory movement service calls. These are the highest-stakes write operations and the ones most affected by transient Supabase network issues.
+**Resolved (2026-02-18):** All `conversions.*` modules now return `{ data, error }` — the two-pattern inconsistency that required separate error handling strategies is eliminated.
+
+**Recommendation:** Wire `retryOperation` into at minimum the inventory movement service calls (Phase C2). These are the highest-stakes write operations and the ones most affected by transient Supabase network issues.
 
 ---
 
@@ -240,15 +240,15 @@ See `docs/CULTIVATION-PHASE-B-RISK-ANALYSIS.md` for query-level analysis, the ri
 | B2: Add `.limit(100)` default to sessions history queries | Low | Prevents load degradation with grow sessions |
 | B3: Switch list views from `select('*')` to explicit columns | Low-Medium | Reduces data transfer significantly |
 
-### Phase C — Service Refactoring (Can Run Alongside Cultivation Scaffolding)
+### Phase C — Service Refactoring (COMPLETE except C2)
 
-See `docs/CULTIVATION-PHASE-C-RISK-ANALYSIS.md` for the proposed `conversions.service.ts` split plan, the `stageIdCache` module-scope hazard, and the error pattern standardization migration order.
+See `docs/CULTIVATION-PHASE-C-RISK-ANALYSIS.md` for implementation details.
 
-| Item | Risk | Impact |
-|------|------|--------|
-| C1: Split `conversions.service.ts` into 4 focused modules | High | Required before cultivation adds harvest-to-conversion flows |
-| C2: Wire `retryOperation` into inventory movement service | Low | Improves resilience of highest-stakes writes |
-| C3: Standardize error return pattern across all services | High | Required for consistent error handling in new cultivation services |
+| Item | Status | Risk | Impact |
+|------|--------|------|--------|
+| C1: Split `conversions.service.ts` into 5 focused modules | **COMPLETE** (2026-02-18) | High | Done; barrel re-export preserved |
+| C2: Wire `retryOperation` into inventory movement service | **PENDING** | Low | Can be done at any time; not a cultivation blocker |
+| C3: Standardize error return pattern across all services | **COMPLETE** (2026-02-18) | High | All conversions.* modules now use `{ data, error }` |
 
 ### Phase D — Testing (High Value, Can Start Anytime)
 
