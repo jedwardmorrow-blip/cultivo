@@ -1,6 +1,6 @@
 import { createContext, useReducer, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
-import { ordersDataService } from '../services/orders-data.service';
+import { ordersDataService } from '../services/ordersService';
 import { ordersCacheService } from '../services/orders-cache.service';
 import { ordersReducer, initialState, type OrdersState, type OrdersAction } from './orders.reducer';
 import type { Order, OrderItem, Product } from '../types';
