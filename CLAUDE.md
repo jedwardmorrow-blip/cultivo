@@ -5,6 +5,7 @@ Cannabis seed-to-sale tracking system. React 18 + TypeScript + Vite + Supabase +
 ## Current State (February 2026)
 
 Feature-complete, production use. Last migration: 2026-02-16. Build: passing.
+Cultivation module: documentation complete (Session C-1), migrations and UI pending (C-2, C-3).
 
 ## Critical Rules
 
@@ -21,6 +22,7 @@ Feature-complete, production use. Last migration: 2026-02-16. Build: passing.
 3. If touching inventory/sessions: read `docs/ARCHITECTURE-DECISIONS.md`
 4. If touching conversions: read `docs/PRODUCTS.md`
 5. If doing optimization, cleanup, type safety, or bundle work: read `docs/OPTIMIZATION-ROADMAP.md`
+6. If working on the Cultivation module: read `docs/CULTIVATION.md`, `docs/CULTIVATION-ARCHITECTURE.md`, and `docs/CULTIVATION-RULES.md` — all three, in order
 
 ## File Structure
 

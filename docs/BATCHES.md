@@ -1,17 +1,18 @@
 ---
 title: BATCHES
 category: Batch Management & Traceability
-version: 2.2
-updated: 2026-01-13
+version: 2.4
+updated: 2026-02-18
 ---
 
 # BATCHES - Batch Lifecycle & Traceability System
 
-> **Status:** Authoritative Reference Documentation (v2.0) ⭐ **PRIMARY REFERENCE FOR BATCH ARCHITECTURE**
+> **Status:** Authoritative Reference Documentation (v2.4) ⭐ **PRIMARY REFERENCE FOR BATCH ARCHITECTURE**
 > **Purpose:** Complete specification of batch-centric architecture, lifecycle management, and traceability infrastructure
 > **Foundation:** This system is batch-centric - batches are the architectural foundation, not an add-on feature
 > **Critical:** 5 batch-related integrity gaps exist (Migration Batch 1 ready for deployment)
-> **Cross-References:** [SYSTEM-WORKFLOW](./SYSTEM-WORKFLOW.md), [SESSIONS](./SESSIONS.md), [INVENTORY-TRACKING](./INVENTORY-TRACKING.md), [COA-HANDLING](./COA-HANDLING.md)
+> **Cultivation Integration:** Batches will be auto-created by harvest sessions once Session C-2 migrations run (see [CULTIVATION.md](./CULTIVATION.md))
+> **Cross-References:** [SYSTEM-WORKFLOW](./SYSTEM-WORKFLOW.md), [CULTIVATION](./CULTIVATION.md), [SESSIONS](./SESSIONS.md), [INVENTORY-TRACKING](./INVENTORY-TRACKING.md), [COA-HANDLING](./COA-HANDLING.md)
 
 ---
 
@@ -234,6 +235,9 @@ Once created, these fields **NEVER change**:
 ---
 
 ## Batch Creation
+
+> **Cultivation Module Note (Session C-1 complete):** Once the Cultivation module (Sessions C-2 and C-3) is deployed, batch records will be auto-created by harvest session completion triggers. The manual creation path below remains supported for edge cases and legacy data.
+> See [CULTIVATION.md](./CULTIVATION.md) and [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) for the full specification.
 
 ### Creation Workflow
 
@@ -1063,12 +1067,11 @@ See: [supabase/migrations/batch1_critical_integrity_fixes/README.md](../supabase
 ### Additional Gaps (Non-Critical)
 
 **GAP-017: Batch Number Auto-Generation**
-- **Status:** 🔴 NOT IMPLEMENTED
+- **Status:** 🟡 RESOLVED BY CULTIVATION MODULE (Session C-2 pending)
 - **Impact:** MEDIUM - Manual entry causes typos and duplicates
-- **Required:** `fn_generate_batch_number()` function with DEFAULT constraint
+- **Resolution:** The `trg_complete_harvest_session` trigger in CULTIVATION-ARCHITECTURE.md implements batch number generation inline as `YYMMDD-STRAIN`. When C-2 migrations are deployed, new batches created via harvest sessions will always have auto-generated, correctly formatted batch numbers.
 - **Format:** `YYMMDD-STRAIN` (simplified from previous `YYMMDD-STRAIN-NN`)
-- **Workaround:** Manual entry with UNIQUE constraint catching duplicates
-- **Priority:** MEDIUM (Batch 3 backlog)
+- **Workaround (until C-2):** Manual entry with UNIQUE constraint catching duplicates
 - **Gap ID:** GAP-017 in [Gaps Dashboard](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard)
 
 **GAP-010: Strain Mismatch Validation**
@@ -1187,6 +1190,11 @@ ORDER BY bph.event_timestamp ASC;
 - [DOCS-INTEGRATION-PROGRESS.md](./DOCS-INTEGRATION-PROGRESS.md#implementation-gaps-dashboard) - Implementation Gaps Dashboard with 18 tracked gaps
 - [DATASETS.md](./DATASETS.md) - Database schema and Tech-Debt Register
 
+**Cultivation Module (Batch Creation Source — Session C-2 pending):**
+- [CULTIVATION.md](./CULTIVATION.md) - Scope, entities, lifecycle, harvest→batch handoff
+- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Harvest trigger that auto-creates batch_registry rows
+- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants and decisions governing batch creation via harvest
+
 **Module Documentation:**
 - [SESSIONS.md](./SESSIONS.md) - Processing sessions that drive batch lifecycle transitions
 - [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md) - Inventory items linked to batches via batch_id FK
@@ -1222,6 +1230,12 @@ ORDER BY bph.event_timestamp ASC;
 ---
 
 ## Document Version History
+
+### v2.4 (2026-02-18)
+- **Added Cultivation Module note** to Batch Creation section
+- **Updated GAP-017** status to "Resolved by Cultivation Module (C-2 pending)"
+- **Added Cultivation cross-references** in Related Documentation section
+- **Updated header** with cultivation integration note
 
 ### v2.3 (2026-01-22)
 - **Made initial_weight_grams optional** in batch creation workflow

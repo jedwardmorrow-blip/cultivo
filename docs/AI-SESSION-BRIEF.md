@@ -2,14 +2,14 @@
 title: AI Session Brief
 category: AI Development
 version: 2.0
-updated: 2026-02-18
+updated: 2026-02-18 (C-1)
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-02-18
+> **Last Updated:** 2026-02-18 (Session C-1: cultivation documentation)
 > **Last Migration:** 2026-02-16 (backfill_missing_produce_movements_for_conversion_items)
 > **Build Status:** Passing
 
@@ -23,7 +23,7 @@ Cannabis seed-to-sale tracking and production management system.
 - **Batch-centric** - Everything links to batches (YYMMDD-STRAIN format)
 - **Event-driven inventory** - Immutable ledger with automatic balance updates
 - **Compliance-first** - COA tracking, AZDHS manifests, regulatory fields
-- **Full lifecycle** - Harvest -> Buck -> Trim -> Package -> Order -> Deliver
+- **Full lifecycle** - Grow → Harvest → Buck → Trim → Package → Order → Deliver
 
 **Tech Stack:**
 - React 18 + TypeScript + Vite
@@ -46,14 +46,15 @@ The system is **feature-complete** and in **production use**. All core workflows
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-02-18: Phase C3 — Standardize error return pattern across conversions service layer
-2. 2026-02-18: Phase A type hardening + pre-cultivation documentation (phases A, B, C1, C2 also complete)
-3. 2026-02-17: Remediation sweep (cancelled_at fix, errorService import, COA sync, undo guard, docs)
-4. 2026-02-17: Code quality sweep (dead code, alert replacement, console cleanup, unused imports)
-5. 2026-02-16: Conversion VIEW row multiplication fix + missing audit movements backfill
+1. 2026-02-18: Session C-1 — Cultivation module documentation (CULTIVATION.md, CULTIVATION-ARCHITECTURE.md, CULTIVATION-RULES.md + doc updates)
+2. 2026-02-18: Phase C3 — Standardize error return pattern across conversions service layer
+3. 2026-02-18: Phase A type hardening + pre-cultivation documentation (phases A, B, C1, C2 also complete)
+4. 2026-02-17: Remediation sweep (cancelled_at fix, errorService import, COA sync, undo guard, docs)
+5. 2026-02-17: Code quality sweep (dead code, alert replacement, console cleanup, unused imports)
 
 **Known deferred items:**
-- **Phase D** (testing): zero coverage of critical paths; see `CULTIVATION-PHASE-D-RISK-ANALYSIS.md`
+- **Cultivation module** (Session C-1 complete — docs only): Session C-2 = migrations, Session C-3 = UI
+- **Phase D** (testing): see `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` — 244 tests, 177/178 passing as of C-1
 - UI/UX polish (command palette, table sorting, CSV export) — not yet scheduled
 - See [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) — Phases 1–5 all complete; pre-cultivation phases A–C also complete
 
@@ -132,12 +133,17 @@ supabase/
 - [ORDERS.md](./ORDERS.md) | [PRODUCTS.md](./PRODUCTS.md) | [CUSTOMERS.md](./CUSTOMERS.md)
 - [COA-HANDLING.md](./COA-HANDLING.md) | [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
 
-**Cultivation module planning docs:**
+**Cultivation module docs:**
+- [CULTIVATION.md](./CULTIVATION.md) - **READ FIRST** — scope, entities, lifecycle, UI screens (Session C-1 complete)
+- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan (Session C-1 complete)
+- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements (Session C-1 complete)
+
+**Pre-cultivation preparation docs:**
 - [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Pre-cultivation readiness scores and work prioritization
 - [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Phase A: type hardening (COMPLETE)
 - [CULTIVATION-PHASE-B-RISK-ANALYSIS.md](./CULTIVATION-PHASE-B-RISK-ANALYSIS.md) - Phase B: pagination caps (COMPLETE)
-- [CULTIVATION-PHASE-C-RISK-ANALYSIS.md](./CULTIVATION-PHASE-C-RISK-ANALYSIS.md) - Phase C: service refactoring (C1 + C3 COMPLETE; C2 pending)
-- [CULTIVATION-PHASE-D-RISK-ANALYSIS.md](./CULTIVATION-PHASE-D-RISK-ANALYSIS.md) - Phase D: testing (NOT STARTED — highest remaining priority)
+- [CULTIVATION-PHASE-C-RISK-ANALYSIS.md](./CULTIVATION-PHASE-C-RISK-ANALYSIS.md) - Phase C: service refactoring (COMPLETE)
+- [CULTIVATION-PHASE-D-RISK-ANALYSIS.md](./CULTIVATION-PHASE-D-RISK-ANALYSIS.md) - Phase D: testing (244 tests, 177/178 passing)
 
 ---
 

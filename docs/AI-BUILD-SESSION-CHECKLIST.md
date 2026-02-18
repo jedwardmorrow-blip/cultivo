@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-17
+updated: 2026-02-18
 priority: Working document - update every session
 ---
 
@@ -15,51 +15,56 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** Documentation audit — Phase D re-assessment and health score update
+**Session:** C-1 — Cultivation module documentation
 **Status:** COMPLETE
 
 **What was done:**
-- Performed a thorough audit of all test files to verify Phase D completion claims
-- **Finding:** Phase D is fully complete. D4 and D5 were marked "pending" in docs but their test files already existed and passed. Total: 244 tests, 177/178 passing
-- **Finding:** `sessions.service.ts` parameters are already typed via DB-generated interfaces (`TrimSessionInsert`, `TrimSessionUpdate`, etc.). The health assessment's "8 untyped any instances" was inaccurate — those were JSDoc comment strings, not type annotations
-- **Finding:** C2 (`retryOperation` wired into `recordMovement`) was completed but not reflected in docs
-- Updated all documentation to reflect accurate state:
-  - `SYSTEM-HEALTH-ASSESSMENT.md` — overall score 8.1 → 8.7; testing 3.0 → 8.0; error handling 8.0 → 9.0; Phase D table corrected; Phase C marked complete
-  - `OPTIMIZATION-ROADMAP.md` — completion log updated with pre-cultivation phases
-  - `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` — D4/D5 marked complete with test counts; coverage table updated
+- Created `docs/CULTIVATION.md` — full scope, entity map, lifecycle diagram, grow rooms, plant groups, growth stages, harvest sessions, harvest→batch handoff, compliance fields, UI screens, navigation integration, open questions
+- Created `docs/CULTIVATION-ARCHITECTURE.md` — complete DB schema (4 tables), RLS policies, 6 triggers with full SQL, migration plan (3 migrations), frontend module structure, service layer signatures, TypeScript type definitions
+- Created `docs/CULTIVATION-RULES.md` — 10 invariants with rationale, 6 architectural decisions with rationale, error message table, testing requirements checklist
+- Updated `docs/AI-SESSION-BRIEF.md` — added cultivation docs section, updated lifecycle description, updated session log
+- Updated `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
+- Updated `docs/SYSTEM-WORKFLOW.md` — added Section 0 (cultivation) entry
+- Updated `docs/BATCHES.md` — added cultivation linkage note
+- Updated `CLAUDE.md` — added cultivation docs to Before You Code section
 
 **Verification results:**
-- No code changes made — documentation only
-- Build status: was passing clean (33s) as of last code session; no regressions possible from doc-only session
+- No code or migration changes — documentation only
+- Build status: unchanged (was passing clean as of last code session)
 
 **Build status:** Passes clean (unchanged from last code session)
 
-**Known issues:**
+**Known issues (carry-forward, unchanged):**
 - 492 tsc errors — pre-existing, not blocking
-- `customers.service.test.ts` — 1 pre-existing failure: test asserts `zip: '85001'` but service now uses `postal_code`. Fix: change `zip` to `postal_code` in line ~126 of that test file — trivial one-liner
-- `getProductStageIdFromProductName` error-path tests deferred: module-level `stageIdCache` prevents testing DB failures in same file. Needs a separate test file with `vi.resetModules` approach
+- `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
+- `getProductStageIdFromProductName` error-path tests deferred (module-level cache issue)
 
-**New files:** None
+**New files:**
+- `docs/CULTIVATION.md`
+- `docs/CULTIVATION-ARCHITECTURE.md`
+- `docs/CULTIVATION-RULES.md`
 
 **Modified files:**
-- `docs/SYSTEM-HEALTH-ASSESSMENT.md`
-- `docs/OPTIMIZATION-ROADMAP.md`
-- `docs/CULTIVATION-PHASE-D-RISK-ANALYSIS.md`
+- `docs/AI-SESSION-BRIEF.md`
 - `docs/AI-BUILD-SESSION-CHECKLIST.md`
+- `docs/SYSTEM-WORKFLOW.md`
+- `docs/BATCHES.md`
+- `CLAUDE.md`
 - `CHANGELOG.md`
 
 **Migrations:** None
 
-**Critical context for future sessions:**
-- **All pre-cultivation phases (A through D) are complete or have a clear low-risk plan**
-- `sessions.service.ts` parameters ARE typed — do not re-open this as a concern
-- The remaining `any` issue in sessions is in 3 hook filter callbacks only: `useBuckingData.ts:13,16`, `useSessionData.ts:40,49,59,86`, `usePackagingData.ts:24,30` — low risk, read-only filter ops
-- Phase A3 scope is revised: hook filter callbacks only, not the service layer
+**Critical context for next session (C-2: migrations):**
+- Read `CULTIVATION.md`, `CULTIVATION-ARCHITECTURE.md`, and `CULTIVATION-RULES.md` BEFORE writing any SQL
+- Verify `strains.abbreviation` column exists before writing the harvest trigger
+- Three migrations needed: C-2-1 (tables + RLS), C-2-2 (triggers), C-2-3 (optional seed data)
+- The harvest completion trigger uses `ON CONFLICT (batch_number) DO NOTHING` — this is intentional for same-strain same-day harvests
+- All 10 invariants in CULTIVATION-RULES.md are locked — no changes without discussion
 
 **Next recommendations:**
-- **Fix customers.service.test.ts** — change `zip` to `postal_code` on line ~126 (1 min fix)
-- **Phase A remaining items** — A1 (duplicate variance exports), A2 (locations.service import warning), A3 (3 hook `any` casts), A4 (tsc in pre-build) — single focused session, low risk
-- **Cultivation scaffolding** — system is fully ready; start with schema design (grow rooms, plant tracking, harvest sessions)
+- **Session C-2** — Run the three cultivation migrations (tables, triggers, seed rooms). No UI work yet.
+- **Session C-3** — Build the Cultivation UI: CultivationDashboard, PlantGroupsList, HarvestSessionForm, GrowRoomsManagement (in Settings)
+- **customers.service.test.ts fix** — still trivial, 1-liner when convenient
 
 ---
 
@@ -122,12 +127,17 @@ priority: Working document - update every session
 - [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) - Trigger system
 - [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) - Phased optimization plan (type safety, bundle, cleanup)
 
-**Cultivation Planning:**
+**Cultivation Module (C-1 complete — docs locked):**
+- [CULTIVATION.md](./CULTIVATION.md) - Scope, entities, lifecycle, UI screens (START HERE for C-2/C-3)
+- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan
+- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements
+
+**Pre-Cultivation Preparation:**
 - [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Readiness scores and Phase A-D work plan
-- [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Risk analysis: duplicate exports, mixed imports, session typing, tsc checklist
-- [CULTIVATION-PHASE-B-RISK-ANALYSIS.md](./CULTIVATION-PHASE-B-RISK-ANALYSIS.md) - Risk analysis: pagination caps, select('*') replacement, audit export path hazards
-- [CULTIVATION-PHASE-C-RISK-ANALYSIS.md](./CULTIVATION-PHASE-C-RISK-ANALYSIS.md) - Risk analysis: conversions.service split, retryOperation, error pattern standardization
-- [CULTIVATION-PHASE-D-RISK-ANALYSIS.md](./CULTIVATION-PHASE-D-RISK-ANALYSIS.md) - Risk analysis: test targets, test file locations, test writing rules
+- [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Phase A: type hardening (COMPLETE)
+- [CULTIVATION-PHASE-B-RISK-ANALYSIS.md](./CULTIVATION-PHASE-B-RISK-ANALYSIS.md) - Phase B: pagination caps (COMPLETE)
+- [CULTIVATION-PHASE-C-RISK-ANALYSIS.md](./CULTIVATION-PHASE-C-RISK-ANALYSIS.md) - Phase C: service refactoring (COMPLETE)
+- [CULTIVATION-PHASE-D-RISK-ANALYSIS.md](./CULTIVATION-PHASE-D-RISK-ANALYSIS.md) - Phase D: testing (244 tests, 177/178 passing)
 
 **Modules:**
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)

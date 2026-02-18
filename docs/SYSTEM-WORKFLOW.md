@@ -1,8 +1,8 @@
 ---
 title: SYSTEM-WORKFLOW
 category: System Overview
-version: 2.6
-updated: 2026-01-13
+version: 2.7
+updated: 2026-02-18
 ---
 
 # SYSTEM-WORKFLOW - End-to-End Process Map
@@ -94,13 +94,15 @@ When test mode is enabled (`app_settings.test_mode_enabled = true`), certain wor
 ### Traceability Chain
 
 ```
-Harvest → Batch Created → Processing Stages → Orders → Delivery
-   ↓          ↓                  ↓              ↓          ↓
- Binned    COA Link        All inventory    Batch      Customer
- Material  (Lab Test)      inherits         Tracking   Receives
-                           batch_id         on         Product +
-                           (immutable)      Manifest   COA
+[Cultivation] → Harvest → Batch Created → Processing Stages → Orders → Delivery
+    ↓              ↓          ↓                  ↓              ↓          ↓
+ Grow Room     Wet Weight  COA Link        All inventory    Batch      Customer
+ Plant Count   Captured    (Lab Test)      inherits         Tracking   Receives
+ Strain                                   batch_id         on         Product +
+ (PLANNED)                                (immutable)      Manifest   COA
 ```
+
+> **Note:** The [Cultivation] step is currently in SPECIFICATION state (Session C-1). When implemented, harvest sessions auto-create the batch_registry row. Until then, batches are created manually via BatchManagement.tsx.
 
 ### Non-Negotiable Batch Rules
 
@@ -161,6 +163,7 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 ## TABLE OF CONTENTS
 
 0. [Batch-Centric Architecture](#batch-centric-architecture) ⭐ **START HERE**
+0.5. [Cultivation Module](#05-cultivation-module) *(SPECIFICATION — not yet implemented; see [CULTIVATION.md](./CULTIVATION.md))*
 1. [Cultivation to Post-Production](#1-cultivation-to-post-production)
 2. [Post-Production Processing](#2-post-production-processing)
 3. [Sales & Fulfillment](#3-sales--fulfillment)
@@ -170,6 +173,29 @@ For detailed batch architecture, see [BATCHES.md](BATCHES.md).
 7. [State Machines](#7-state-machines)
 8. [Known Gaps](#81-known-gaps-implementation-incomplete)
 9. [Risks if Unchanged](#8-risks-if-unchanged)
+
+---
+
+## 0.5 CULTIVATION MODULE
+
+> **Status:** SPECIFICATION — database schema and UI are NOT YET BUILT (Session C-1 complete, C-2 = migrations, C-3 = UI).
+> **Full spec:** [CULTIVATION.md](./CULTIVATION.md) | [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) | [CULTIVATION-RULES.md](./CULTIVATION-RULES.md)
+
+The Cultivation module adds pre-harvest tracking. When implemented, the full lifecycle becomes:
+
+```
+Grow Rooms → Plant Groups → Growth Stages → Harvest Sessions → batch_registry (YYMMDD-STRAIN)
+                                                                      ↓
+                                                      Existing pipeline: Buck → Trim → Package → Orders → Deliver
+```
+
+**What it adds to the workflow:**
+- `grow_rooms` — physical rooms; `room_code` appears in `batch_registry.room`
+- `plant_groups` — sets of same-strain plants; tracks clone → veg → flower progression
+- `harvest_sessions` — captures wet weight; completion trigger auto-creates `batch_registry` row
+- Batch number auto-generation via trigger (resolves GAP-017 from BATCHES.md)
+
+**Integration invariant:** The harvest session completion trigger creates the `batch_registry` row. The existing pipeline picks it up at `lifecycle_state = 'created'` with zero changes to existing code.
 
 ---
 
