@@ -35,6 +35,9 @@ priority: Working document - update every session
 **New files:**
 - `docs/SYSTEM-HEALTH-ASSESSMENT.md`
 - `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md`
+- `docs/CULTIVATION-PHASE-B-RISK-ANALYSIS.md`
+- `docs/CULTIVATION-PHASE-C-RISK-ANALYSIS.md`
+- `docs/CULTIVATION-PHASE-D-RISK-ANALYSIS.md`
 
 **Modified files:**
 - `docs/AI-SESSION-BRIEF.md` (added cultivation planning doc links)
@@ -116,7 +119,10 @@ priority: Working document - update every session
 
 **Cultivation Planning:**
 - [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Readiness scores and Phase A-D work plan
-- [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Risk analysis for pre-cultivation type hardening
+- [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Risk analysis: duplicate exports, mixed imports, session typing, tsc checklist
+- [CULTIVATION-PHASE-B-RISK-ANALYSIS.md](./CULTIVATION-PHASE-B-RISK-ANALYSIS.md) - Risk analysis: pagination caps, select('*') replacement, audit export path hazards
+- [CULTIVATION-PHASE-C-RISK-ANALYSIS.md](./CULTIVATION-PHASE-C-RISK-ANALYSIS.md) - Risk analysis: conversions.service split, retryOperation, error pattern standardization
+- [CULTIVATION-PHASE-D-RISK-ANALYSIS.md](./CULTIVATION-PHASE-D-RISK-ANALYSIS.md) - Risk analysis: test targets, test file locations, test writing rules
 
 **Modules:**
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)

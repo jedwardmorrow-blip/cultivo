@@ -232,6 +232,8 @@ See `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md` for detailed risk assessment of 
 
 ### Phase B — Pagination (Recommended Before Cultivation Launch)
 
+See `docs/CULTIVATION-PHASE-B-RISK-ANALYSIS.md` for query-level analysis, the right limit values, and risks around audit export paths.
+
 | Item | Risk | Impact |
 |------|------|--------|
 | B1: Add `.limit(100)` default to inventory list queries | Low | Prevents load degradation with plant inventory |
@@ -240,19 +242,25 @@ See `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md` for detailed risk assessment of 
 
 ### Phase C — Service Refactoring (Can Run Alongside Cultivation Scaffolding)
 
+See `docs/CULTIVATION-PHASE-C-RISK-ANALYSIS.md` for the proposed `conversions.service.ts` split plan, the `stageIdCache` module-scope hazard, and the error pattern standardization migration order.
+
 | Item | Risk | Impact |
 |------|------|--------|
-| C1: Split `conversions.service.ts` into 4 focused modules | Medium | Required before cultivation adds harvest-to-conversion flows |
+| C1: Split `conversions.service.ts` into 4 focused modules | High | Required before cultivation adds harvest-to-conversion flows |
 | C2: Wire `retryOperation` into inventory movement service | Low | Improves resilience of highest-stakes writes |
-| C3: Standardize error return pattern across all services | Medium | Required for consistent error handling in new cultivation services |
+| C3: Standardize error return pattern across all services | High | Required for consistent error handling in new cultivation services |
 
 ### Phase D — Testing (High Value, Can Start Anytime)
 
+See `docs/CULTIVATION-PHASE-D-RISK-ANALYSIS.md` for exact functions to test, test file locations, and test writing rules for this codebase.
+
 | Item | Risk | Impact |
 |------|------|--------|
-| D1: Integration tests for session completion (all 3 types) | None | Baseline regression coverage before adding cultivation session types |
+| D1: Session completion tests (all 3 types) | None | Baseline regression coverage before adding cultivation session types |
 | D2: Unit tests for `inventoryMovement.service.ts` | None | Highest-risk service, zero coverage |
-| D3: Integration test for conversion finalization flow | None | Covers the most complex business logic path |
+| D3: Pure function tests for conversion finalization | None | Covers the most frequently broken business logic path |
+| D4: Order status transition tests | None | Guards against silent status machine regressions |
+| D5: Batch allocation and ATP tests | None | Guards against strain-matching and availability bugs |
 
 ---
 
