@@ -4,6 +4,35 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-18 - Optimization Phase C3: Standardize Error Return Pattern
+
+**Type:** REFACTOR
+**Module:** Inventory / Conversions Service Layer
+**Priority:** MEDIUM — Removes inconsistent throw-based error pattern from conversion services
+**Impact:** All conversions.* modules now use `{ data, error }` return pattern; callers updated; logVariance barrel collision resolved
+**Status:** COMPLETE
+**Files Changed:** 9
+
+### Summary
+
+1. **conversions.analytics.ts** — `getConversionSummary`, `getConversionHistory` now return `{ data, error }` instead of throwing
+2. **conversions.variance.ts** — `getSessionContributions`, `logVariance`, `getVariances` converted; `calculateVariance` (pure function) unchanged
+3. **conversions.packages.ts** — `generateNextPackageId`, `generatePackageIds`, `createConversionPackages`, `createConsolidatedPackage`, `getPackages` converted; `finalizeConversionPackages` retains its `{ success, error }` shape (used by `useConversionWorkflow`)
+4. **conversions.finalization.ts** — `getPendingConversions`, `finalizeConversion`, `voidConversion` converted
+5. **Callers updated:** `useConversionLots`, `useSessionContributions`, `useConversionWorkflow`, `useFinalizationWorkflow` — all now destructure `{ data, error }` from service calls and re-throw for hook-level error handling
+6. **logVariance barrel collision fixed** — `varianceLog.service.ts` exported an alias `logVariance = createVarianceLog` that collided with the new `logVariance` in `conversions.variance.ts` when both are re-exported from `services/index.ts`. Removed the alias; `adjustment.service.ts` updated to use `createVarianceLog` directly.
+
+### Type Error Delta
+
+| Phase | tsc errors |
+|-------|-----------|
+| Baseline (Phase A end) | 501 |
+| After Phase B | 500 |
+| After Phase C (C2+C1) | 492 |
+| After Phase C3 | **492** (stable) |
+
+---
+
 ## 2026-02-18 - Optimization Phase 5: Bundle Size Optimization
 
 **Type:** OPTIMIZATION
