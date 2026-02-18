@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { validateDate } from '@/lib/utils';
 import { useOrderableProducts } from '@/hooks';
 import * as orderFormService from '../services/orderForm.service';
-import type { Customer, OrderItem, OrderFormState } from '../types';
+import type { OrderFormCustomer, OrderFormItem } from '../types';
 import type { OrderableProduct } from '@/types';
 
 export function useOrderFormState(sessionId: string) {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<OrderFormCustomer[]>([]);
   const { products } = useOrderableProducts();
   const [loading, setLoading] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function useOrderFormState(sessionId: string) {
   const [requestedDeliveryDate, setRequestedDeliveryDate] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderFormItem[]>([]);
   const [dateError, setDateError] = useState<string | null>(null);
 
   const draftTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -60,7 +60,7 @@ export function useOrderFormState(sessionId: string) {
       setRequestedDeliveryDate(data.requested_delivery_date || '');
       setDeliveryNotes(data.delivery_notes || '');
       setInternalNotes(data.internal_notes || '');
-      setOrderItems((data.order_items as OrderItem[]) || []);
+      setOrderItems((data.order_items as OrderFormItem[]) || []);
     }
   }
 
@@ -103,7 +103,7 @@ export function useOrderFormState(sessionId: string) {
       updated[existingIndex].quantity += (product.allows_fractional_quantity ? 0.25 : 1);
       setOrderItems(updated);
     } else {
-      const newItem: OrderItem = {
+      const newItem: OrderFormItem = {
         product_id: product.id,
         product_name: product.name,
         quantity: product.allows_fractional_quantity ? 0.25 : 1,
@@ -114,7 +114,7 @@ export function useOrderFormState(sessionId: string) {
     }
   }
 
-  function updateOrderItem(index: number, field: keyof OrderItem, value: any) {
+  function updateOrderItem(index: number, field: keyof OrderFormItem, value: any) {
     const updated = [...orderItems];
     updated[index] = { ...updated[index], [field]: value };
     setOrderItems(updated);

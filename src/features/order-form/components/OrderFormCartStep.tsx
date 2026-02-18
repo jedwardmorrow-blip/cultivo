@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { ShoppingCart, Edit3, Trash2, Minus, Plus, DollarSign, RotateCcw, Lock, Unlock, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
-import type { Product, OrderItem } from '../types';
+import type { OrderFormProduct, OrderFormItem } from '../types';
 
 interface OrderFormCartStepProps {
-  products: Product[];
-  orderItems: OrderItem[];
+  products: OrderFormProduct[];
+  orderItems: OrderFormItem[];
   totalAmount: number;
   totalUnits: number;
   canProceedToReview: boolean;
-  onUpdateItem: (index: number, field: keyof OrderItem, value: any) => void;
+  onUpdateItem: (index: number, field: keyof OrderFormItem, value: any) => void;
   onAdjustQuantity: (index: number, delta: number) => void;
   onResetToDefaultPrice: (index: number) => void;
   onTogglePriceLock: (index: number) => void;

@@ -1,8 +1,6 @@
 import type { OrderableProduct } from '@/types';
 
-// Feature-specific Customer type (simplified for order form)
-// Uses subset of fields from canonical Customer type
-export interface Customer {
+export interface OrderFormCustomer {
   id: string;
   name: string;
   email: string | null;
@@ -11,9 +9,9 @@ export interface Customer {
   dispensary_code?: string;
 }
 
-export type Product = OrderableProduct;
+export type OrderFormProduct = OrderableProduct;
 
-export interface OrderItem {
+export interface OrderFormItem {
   product_id: string;
   product_name?: string;
   quantity: number;
@@ -30,6 +28,6 @@ export interface OrderFormState {
   requestedDeliveryDate: string;
   deliveryNotes: string;
   internalNotes: string;
-  orderItems: OrderItem[];
+  orderItems: OrderFormItem[];
   dateError: string | null;
 }

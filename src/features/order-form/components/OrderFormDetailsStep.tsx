@@ -1,9 +1,9 @@
 import { List, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
 import { getDateInputConstraints } from '@/lib/utils';
-import type { Customer } from '../types';
+import type { OrderFormCustomer } from '../types';
 
 interface OrderFormDetailsStepProps {
-  customers: Customer[];
+  customers: OrderFormCustomer[];
   selectedCustomerId: string;
   onCustomerChange: (id: string) => void;
   priority: string;

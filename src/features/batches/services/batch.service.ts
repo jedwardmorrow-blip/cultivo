@@ -256,10 +256,11 @@ export async function fetchBatchAllocationSummary(): Promise<BatchAllocationSumm
   const { data, error } = await supabase
     .from('batch_allocation_summary')
     .select('*')
-    .order('batch_number');
+    .order('batch_number')
+    .returns<BatchAllocationSummary[]>();
 
   if (error) throw error;
-  return (data as unknown as BatchAllocationSummary[]) || [];
+  return data || [];
 }
 
 /**
@@ -275,10 +276,11 @@ export async function fetchBatchAllocationSummaryById(
     .from('batch_allocation_summary')
     .select('*')
     .eq('batch_id', batchId)
+    .returns<BatchAllocationSummary>()
     .maybeSingle();
 
   if (error) throw error;
-  return data as unknown as BatchAllocationSummary | null;
+  return data;
 }
 
 /**
@@ -290,10 +292,11 @@ export async function fetchBatchWithCOAStatus(): Promise<BatchWithCOAStatus[]> {
   const { data, error } = await supabase
     .from('batch_with_coa_status')
     .select('*')
-    .order('batch_number');
+    .order('batch_number')
+    .returns<BatchWithCOAStatus[]>();
 
   if (error) throw error;
-  return (data as unknown as BatchWithCOAStatus[]) || [];
+  return data || [];
 }
 
 /**
@@ -309,10 +312,11 @@ export async function fetchBatchWithCOAStatusByNumber(
     .from('batch_with_coa_status')
     .select('*')
     .eq('batch_number', batchNumber)
+    .returns<BatchWithCOAStatus>()
     .maybeSingle();
 
   if (error) throw error;
-  return data as unknown as BatchWithCOAStatus | null;
+  return data;
 }
 
 /**
@@ -324,10 +328,11 @@ export async function fetchBatchStageAllocationStatus(): Promise<BatchStageAlloc
   const { data, error } = await supabase
     .from('batch_stage_allocation_status')
     .select('*')
-    .order('batch_number');
+    .order('batch_number')
+    .returns<BatchStageAllocationStatus[]>();
 
   if (error) throw error;
-  return (data as unknown as BatchStageAllocationStatus[]) || [];
+  return data || [];
 }
 
 /**
@@ -343,10 +348,11 @@ export async function fetchBatchStageAllocationStatusByBatch(
     .from('batch_stage_allocation_status')
     .select('*')
     .eq('batch_id', batchId)
-    .order('stage');
+    .order('stage')
+    .returns<BatchStageAllocationStatus[]>();
 
   if (error) throw error;
-  return (data as unknown as BatchStageAllocationStatus[]) || [];
+  return data || [];
 }
 
 /**
@@ -512,10 +518,11 @@ export async function fetchBatchAllocationsByOrderItem(
       )
     `)
     .eq('order_item_id', orderItemId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .returns<BatchAllocationWithDetails[]>();
 
   if (error) throw error;
-  return (data as unknown as BatchAllocationWithDetails[]) || [];
+  return data || [];
 }
 
 export async function fetchBatchAllocationsByBatch(batchId: string): Promise<BatchAllocation[]> {
@@ -856,12 +863,12 @@ export async function createBatchProjection(
       notes
     })
     .select()
+    .returns<BatchProjection>()
     .single();
 
   if (error) throw error;
 
-  // Map to application type
-  return data as unknown as BatchProjection;
+  return data as BatchProjection;
 }
 
 export async function updateBatchProjectionActual(
@@ -886,12 +893,12 @@ export async function updateBatchProjectionActual(
     })
     .eq('id', projectionId)
     .select()
+    .returns<BatchProjection>()
     .single();
 
   if (error) throw error;
 
-  // Map to application type
-  return data as unknown as BatchProjection;
+  return data as BatchProjection;
 }
 
 async function fetchBatchProjectionById(id: string): Promise<BatchProjection | null> {
@@ -899,10 +906,11 @@ async function fetchBatchProjectionById(id: string): Promise<BatchProjection | n
     .from('batch_projections')
     .select('*')
     .eq('id', id)
+    .returns<BatchProjection>()
     .maybeSingle();
 
   if (error) throw error;
-  return data as unknown as BatchProjection | null;
+  return data;
 }
 
 export const batchService = {

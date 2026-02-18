@@ -51,6 +51,7 @@ export interface Allocation {
 }
 
 export interface WorkflowSummary {
+  order_id: string;
   total_quantity: number;
   allocated_quantity: number;
   trimming_quantity: number;
@@ -61,12 +62,15 @@ export interface WorkflowSummary {
 
 export interface StatusGroup {
   status: string;
+  statusName: string;
   orders: Order[];
   count: number;
 }
 
 export interface MonthGroup {
   month: string;
+  monthName: string;
   statusGroups: StatusGroup[];
   totalOrders: number;
+  totalAmount: number;
 }

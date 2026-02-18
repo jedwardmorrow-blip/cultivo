@@ -1,14 +1,14 @@
 import { Edit3, AlertCircle } from 'lucide-react';
-import type { Customer, Product, OrderItem } from '../types';
+import type { OrderFormCustomer, OrderFormProduct, OrderFormItem } from '../types';
 
 interface OrderFormReviewStepProps {
-  selectedCustomer: Customer | undefined;
+  selectedCustomer: OrderFormCustomer | undefined;
   priority: string;
   requestedDeliveryDate: string;
   deliveryNotes: string;
   internalNotes: string;
-  products: Product[];
-  orderItems: OrderItem[];
+  products: OrderFormProduct[];
+  orderItems: OrderFormItem[];
   totalAmount: number;
   totalUnits: number;
   dateError: string | null;

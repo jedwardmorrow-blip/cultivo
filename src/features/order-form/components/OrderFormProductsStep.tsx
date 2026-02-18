@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Search, X, Plus, Minus } from 'lucide-react';
 import { formatProductPrice, getCategoryBadge } from '@/services';
-import type { Product, OrderItem } from '../types';
+import type { OrderFormProduct, OrderFormItem } from '../types';
 
 interface OrderFormProductsStepProps {
-  products: Product[];
-  orderItems: OrderItem[];
-  onAddProduct: (product: Product) => void;
+  products: OrderFormProduct[];
+  orderItems: OrderFormItem[];
+  onAddProduct: (product: OrderFormProduct) => void;
   onAdjustQuantity: (index: number, delta: number) => void;
 }
 

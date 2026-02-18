@@ -1,5 +1,5 @@
 // Re-export Order types from canonical location (Phase 1: Type Consolidation)
-export type { Order, OrderInsert, OrderUpdate, OrderItem } from '@/types/order.types';
+export type { Order, OrderInsert, OrderUpdate, OrderItem, WorkflowSummary, StatusGroup, MonthGroup } from '@/types/order.types';
 
 // Feature-specific OrderItem extension for orders feature
 // Extends canonical OrderItem with additional display fields
@@ -33,35 +33,10 @@ export interface OrderProduct {
   allows_fractional_quantity: boolean;
 }
 
-export interface WorkflowSummary {
-  order_id: string;
-  total_quantity: number;
-  allocated_quantity: number;
-  trimming_quantity: number;
-  packaging_quantity: number;
-  ready_quantity: number;
-  unallocated_quantity: number;
-}
-
 export interface OrderDetailsCache {
   items: OrderItem[];
   workflowSummary: WorkflowSummary | null;
   loadedAt: number;
-}
-
-export interface MonthGroup {
-  month: string;
-  monthName: string;
-  statusGroups: StatusGroup[];
-  totalOrders: number;
-  totalAmount: number;
-}
-
-export interface StatusGroup {
-  status: string;
-  statusName: string;
-  orders: Order[];
-  count: number;
 }
 
 export type OrderStatus =
