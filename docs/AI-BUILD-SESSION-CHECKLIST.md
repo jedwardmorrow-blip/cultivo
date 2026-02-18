@@ -15,45 +15,44 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** Optimization Phase 5 -- Bundle Size Optimization
+**Session:** System Health Assessment + Pre-Cultivation Documentation
 **Status:** COMPLETE
 
 **What was done:**
-- Converted all 21 feature component imports in `src/App.tsx` to `React.lazy()` with a `<Suspense>` spinner fallback
-- Added `rollup-plugin-visualizer` to `vite.config.ts` (outputs `stats.html` on every build)
-- Added `manualChunks` config in `vite.config.ts` splitting vendors into 9 named chunks
-- Dynamically imported `jspdf` + `html2canvas` inside `pdfGenerator.service.ts` and `auditPDF.service.ts`
-- Dynamically imported `pdfjs-dist` inside `coa.service.ts` using a singleton cache pattern
-- Dynamically imported `leaflet` inside `LeafletRouteMap.tsx` (useEffect) and `leafletMap.service.ts` (async fn)
-- Updated `docs/OPTIMIZATION-ROADMAP.md`: all Phase 5 checklist items marked complete; Completion Log updated
-- Updated `CHANGELOG.md` with Phase 5 entry
+- Ran full codebase health assessment across 10 dimensions (score: 8.1/10)
+- Created `docs/SYSTEM-HEALTH-ASSESSMENT.md` — scored baseline across architecture, type safety, compliance, performance, testing, and documentation; includes prioritized pre-cultivation work plan (Phases A-D)
+- Created `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md` — detailed risk breakdown for each Phase A type hardening item; includes safe execution steps, exact interfaces needed, and explicit "Do NOT" rules for each item
+- Updated `docs/AI-SESSION-BRIEF.md` to reference both new planning documents
 
 **Verification results:**
-- `npm run build` passes cleanly (38.5s)
-- Main app entry chunk: 331 KB (down from 2,487 KB -- 87% reduction)
-- `vendor-pdfjs`: 445 KB (deferred), `vendor-jspdf`: 341 KB (deferred), `vendor-html2canvas`: 201 KB (deferred), `vendor-leaflet`: 149 KB (deferred)
-- All feature modules lazy-loaded (split into individual chunks)
+- `npm run build` passes (no code changes made; documentation session only)
+- No migrations run
 
-**Build status:** Passes clean
+**Build status:** Passes clean (unchanged from last session)
 
-**Known issues:** ~500 remaining tsc errors (pre-existing baseline; no regression from this session)
+**Known issues:** ~500 remaining tsc errors (pre-existing baseline)
 
-**New files:** None
-**Modified files:** `src/App.tsx`, `vite.config.ts`, `src/features/orders/services/pdfGenerator.service.ts`, `src/features/inventory/services/auditPDF.service.ts`, `src/features/coa/services/coa.service.ts`, `src/features/delivery/components/LeafletRouteMap.tsx`, `src/features/delivery/services/leafletMap.service.ts`, `docs/OPTIMIZATION-ROADMAP.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`, `CHANGELOG.md`
+**New files:**
+- `docs/SYSTEM-HEALTH-ASSESSMENT.md`
+- `docs/CULTIVATION-PHASE-A-RISK-ANALYSIS.md`
+
+**Modified files:**
+- `docs/AI-SESSION-BRIEF.md` (added cultivation planning doc links)
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
+
 **Migrations:** None
 
 **Critical context for future sessions:**
-- `getProductStageIdFromProductName()` is async -- any new callers must await it
-- Stage ID cache (`stageIdCache`) lives in module scope, reset on page reload
-- Compliance fallback constants live in `src/lib/constants/index.ts` -- single source of truth
-- `pdfjs-dist` has a singleton lazy-load cache in `coa.service.ts` (`_pdfjsLib` module-level var)
-- All feature views in `App.tsx` are now lazy -- errors in a single feature won't block the rest
-- All previous critical context still applies (cancel functions, undo guards, COA sync, etc.)
+- All previous critical context still applies (getProductStageIdFromProductName async, stageIdCache, compliance constants, pdfjs singleton, lazy feature views)
+- Two duplicate variance utility exports exist: `getVarianceSeverity` and `getVarianceColorClass` appear in both `audit.types.ts` AND `conversions.types.ts`. The canonical source is `conversions.types.ts` (re-exported from `@/types`). Do NOT import these from `audit.types.ts` directly.
+- `sessions.service.ts` uses `any` for all session input parameters — this is a known gap, documented in Phase A Risk Analysis. Do NOT propagate this pattern to new cultivation session functions.
+- `locations.service.ts` has a mixed static/dynamic import pattern — documented in Phase A Risk Analysis. Avoid adding new dynamic imports of this service.
 
 **Next recommendations:**
-- All 5 optimization phases are now complete
-- Next major work: cultivation module (new feature development)
-- Remaining ~500 tsc errors are non-blocking but could be addressed before cultivation module work begins
+- Execute Phase A (type hardening) before cultivation module work begins — safe, focused, one session
+- Execution order for Phase A: A4 (tsc baseline) → A1 (remove duplicate variance exports) → A2 (fix locations.service import) → A3 (type sessions.service parameters)
+- After Phase A: begin cultivation module schema design (new tables, batch format extension, grow room structure)
+- Phase B (pagination) and Phase C (service refactoring) can run alongside early cultivation scaffolding
 
 ---
 
@@ -114,6 +113,10 @@ priority: Working document - update every session
 - [SYSTEM-WORKFLOW.md](./SYSTEM-WORKFLOW.md) - End-to-end workflows
 - [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md) - Trigger system
 - [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) - Phased optimization plan (type safety, bundle, cleanup)
+
+**Cultivation Planning:**
+- [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Readiness scores and Phase A-D work plan
+- [CULTIVATION-PHASE-A-RISK-ANALYSIS.md](./CULTIVATION-PHASE-A-RISK-ANALYSIS.md) - Risk analysis for pre-cultivation type hardening
 
 **Modules:**
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)
