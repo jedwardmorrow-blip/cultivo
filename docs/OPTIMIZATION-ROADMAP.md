@@ -300,38 +300,43 @@ The main JS chunk is 2,487 KB (645 KB gzip). Vite warns about chunks over 500 KB
 
 ### Checklist
 
-- [ ] **5.1 Add route-based code splitting**
-  - Convert route imports in `src/routes.tsx` to use `React.lazy()`
-  - Add `<Suspense>` boundaries with loading fallbacks
-  - Target: each feature module loads only when its route is visited
+- [x] **5.1 Add route-based code splitting** (2026-02-18)
+  - All 21 feature component imports in `src/App.tsx` converted to `React.lazy()`
+  - `<Suspense>` boundary wraps `renderView()` with a spinner fallback
+  - Each feature module now loads only when its view is first navigated to
 
-- [ ] **5.2 Analyze bundle composition**
-  - The project already has `rollup-plugin-visualizer` in devDependencies
-  - Enable it in `vite.config.ts` to generate a bundle analysis report
-  - Identify the largest dependencies and evaluate splitting or lazy-loading them
+- [x] **5.2 Analyze bundle composition** (2026-02-18)
+  - `rollup-plugin-visualizer` enabled in `vite.config.ts` (outputs `stats.html`)
+  - Bundle composition fully mapped; heavy vendors identified
 
-- [ ] **5.3 Evaluate heavy dependency lazy loading**
-  - `pdfjs-dist` (PDF rendering for COA) -- only needed on COA pages
-  - `leaflet` (maps) -- only needed on delivery/routing pages
-  - `jspdf` / `html2canvas` (PDF generation) -- only needed when generating documents
-  - These can be dynamically imported at the point of use
+- [x] **5.3 Evaluate heavy dependency lazy loading** (2026-02-18)
+  - `pdfjs-dist`: dynamically imported inside `parseCOAPDF()` in `coa.service.ts` (singleton cache pattern)
+  - `leaflet`: dynamically imported inside `useEffect` in `LeafletRouteMap.tsx` and inside `generateLeafletMapDataUrl()` in `leafletMap.service.ts`
+  - `jspdf` / `html2canvas`: dynamically imported inside async functions in `pdfGenerator.service.ts` and `auditPDF.service.ts`
 
-- [ ] **5.4 Configure manual chunks if needed**
-  - Use `build.rollupOptions.output.manualChunks` in `vite.config.ts`
-  - Separate vendor chunks: supabase, pdf libs, map libs, react core
+- [x] **5.4 Configure manual chunks** (2026-02-18)
+  - `vite.config.ts` `manualChunks` function: `vendor-pdfjs`, `vendor-jspdf`, `vendor-html2canvas`, `vendor-leaflet`, `vendor-supabase`, `vendor-react-dom`, `vendor-router`, `vendor-lucide`, `vendor-misc`
 
-- [ ] **5.5 Measure improvement**
-  - Record new chunk sizes after optimization
-  - Target: main chunk under 500 KB, total under 2 MB
-  - Record actual results here: ______
+- [x] **5.5 Measure improvement** (2026-02-18)
+  - Main app entry chunk: ~331 KB (down from 2,487 KB -- **87% reduction**)
+  - `vendor-pdfjs`: 445 KB (deferred -- loaded only when COA PDF is parsed)
+  - `vendor-jspdf`: 341 KB (deferred -- loaded only when generating PDFs)
+  - `vendor-html2canvas`: 201 KB (deferred)
+  - `vendor-leaflet`: 149 KB (deferred -- loaded only when delivery map renders)
+  - `vendor-supabase`: 166 KB (separate cached chunk)
+  - All feature modules split into their own lazy chunks
 
 ### Files Affected
 
 | File | Change |
 |------|--------|
-| `src/routes.tsx` | Lazy imports |
-| `src/App.tsx` | Suspense boundaries |
-| `vite.config.ts` | Manual chunks, visualizer |
+| `src/App.tsx` | 21 feature imports converted to `React.lazy()`; `<Suspense>` boundary added |
+| `vite.config.ts` | `manualChunks` for 9 vendor groups; `rollup-plugin-visualizer` enabled |
+| `src/features/orders/services/pdfGenerator.service.ts` | `jspdf` + `html2canvas` dynamically imported inside async function |
+| `src/features/inventory/services/auditPDF.service.ts` | `jspdf` + `html2canvas` dynamically imported inside async function |
+| `src/features/coa/services/coa.service.ts` | `pdfjs-dist` dynamically imported with singleton cache |
+| `src/features/delivery/components/LeafletRouteMap.tsx` | `leaflet` dynamically imported inside `useEffect` |
+| `src/features/delivery/services/leafletMap.service.ts` | `leaflet` dynamically imported inside async function |
 
 ### Verification
 
@@ -398,4 +403,4 @@ Record phase completions here for quick reference.
 | 2 - Hardcoded Values | Complete | 2026-02-17 | 12 license occurrences -> 1 constant; 5 stage UUIDs -> DB lookup; 3 duplicate getCompanySettings -> 1 shared |
 | 3 - Type Safety | Complete | 2026-02-18 | All 6 shadow types renamed; 10 double-casts replaced with `.returns<T>()`; zero `as unknown as` in src/ |
 | 4 - Service Consolidation | Complete | 2026-02-18 | `orders-data.service.ts` never existed separately; `OrdersDataService` was already in `ordersService.ts`; single consumer; no changes needed |
-| 5 - Bundle Optimization | Not Started | | |
+| 5 - Bundle Optimization | Complete | 2026-02-18 | Main chunk 2,487 KB -> 331 KB (87% reduction); all heavy deps deferred; visualizer enabled |

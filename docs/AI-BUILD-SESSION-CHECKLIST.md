@@ -15,41 +15,45 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** Optimization Phase 3 -- Type Safety Cleanup (documentation catch-up)
-**Status:** COMPLETE (phase was already complete in code; documentation updated to reflect)
+**Session:** Optimization Phase 5 -- Bundle Size Optimization
+**Status:** COMPLETE
 
 **What was done:**
-- Confirmed Phase 3 was already fully implemented in the codebase (no code changes needed)
-- Updated `docs/OPTIMIZATION-ROADMAP.md` to mark all Phase 3 items complete (2026-02-18)
-- Updated Completion Log: Phase 3 row now shows Complete
+- Converted all 21 feature component imports in `src/App.tsx` to `React.lazy()` with a `<Suspense>` spinner fallback
+- Added `rollup-plugin-visualizer` to `vite.config.ts` (outputs `stats.html` on every build)
+- Added `manualChunks` config in `vite.config.ts` splitting vendors into 9 named chunks
+- Dynamically imported `jspdf` + `html2canvas` inside `pdfGenerator.service.ts` and `auditPDF.service.ts`
+- Dynamically imported `pdfjs-dist` inside `coa.service.ts` using a singleton cache pattern
+- Dynamically imported `leaflet` inside `LeafletRouteMap.tsx` (useEffect) and `leafletMap.service.ts` (async fn)
+- Updated `docs/OPTIMIZATION-ROADMAP.md`: all Phase 5 checklist items marked complete; Completion Log updated
+- Updated `CHANGELOG.md` with Phase 5 entry
 
 **Verification results:**
-- `src/features/order-form/types/index.ts`: all three shadow types renamed (`OrderFormCustomer`, `OrderFormProduct`, `OrderFormItem`)
-- `src/features/orders/types/orders.types.ts`: re-exports canonical types; feature extension renamed `OrderItemExtended`
-- `src/features/batches/services/batch.service.ts`: zero `as unknown as`; all replaced with `.returns<T>()`
-- `grep "as unknown as" src/`: zero matches anywhere in the codebase
+- `npm run build` passes cleanly (38.5s)
+- Main app entry chunk: 331 KB (down from 2,487 KB -- 87% reduction)
+- `vendor-pdfjs`: 445 KB (deferred), `vendor-jspdf`: 341 KB (deferred), `vendor-html2canvas`: 201 KB (deferred), `vendor-leaflet`: 149 KB (deferred)
+- All feature modules lazy-loaded (split into individual chunks)
 
-**Build status:** Passes clean (unchanged)
+**Build status:** Passes clean
 
-**Known issues:** ~500 remaining tsc errors (pre-Phase 3 baseline; no regression)
+**Known issues:** ~500 remaining tsc errors (pre-existing baseline; no regression from this session)
 
 **New files:** None
-**Modified files:** `docs/OPTIMIZATION-ROADMAP.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`
+**Modified files:** `src/App.tsx`, `vite.config.ts`, `src/features/orders/services/pdfGenerator.service.ts`, `src/features/inventory/services/auditPDF.service.ts`, `src/features/coa/services/coa.service.ts`, `src/features/delivery/components/LeafletRouteMap.tsx`, `src/features/delivery/services/leafletMap.service.ts`, `docs/OPTIMIZATION-ROADMAP.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`, `CHANGELOG.md`
 **Migrations:** None
 
 **Critical context for future sessions:**
 - `getProductStageIdFromProductName()` is async -- any new callers must await it
 - Stage ID cache (`stageIdCache`) lives in module scope, reset on page reload
 - Compliance fallback constants live in `src/lib/constants/index.ts` -- single source of truth
+- `pdfjs-dist` has a singleton lazy-load cache in `coa.service.ts` (`_pdfjsLib` module-level var)
+- All feature views in `App.tsx` are now lazy -- errors in a single feature won't block the rest
 - All previous critical context still applies (cancel functions, undo guards, COA sync, etc.)
 
-**Next recommendations (follow OPTIMIZATION-ROADMAP.md):**
-1. **Phase 4 is also complete** (verified this session -- `orders-data.service.ts` never existed as a separate file; `OrdersDataService` class was always inside `ordersService.ts`; single consumer `OrdersContext.tsx`; no changes needed)
-2. **Phase 5 is next and final:** Bundle size optimization
-   - Enable `rollup-plugin-visualizer` in `vite.config.ts` to generate bundle report
-   - Add `React.lazy()` for route-based code splitting in `src/routes.tsx`
-   - Dynamically import `pdfjs-dist`, `leaflet`, `jspdf`, `html2canvas` at point of use
-   - Target: main chunk under 500 KB (currently 2,487 KB / 645 KB gzip)
+**Next recommendations:**
+- All 5 optimization phases are now complete
+- Next major work: cultivation module (new feature development)
+- Remaining ~500 tsc errors are non-blocking but could be addressed before cultivation module work begins
 
 ---
 

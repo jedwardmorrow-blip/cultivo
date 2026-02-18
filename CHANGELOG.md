@@ -4,6 +4,37 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-18 - Optimization Phase 5: Bundle Size Optimization
+
+**Type:** OPTIMIZATION
+**Module:** Build Config, App Entry, PDF Services, Map Services
+**Priority:** LOW-MEDIUM - Initial load performance
+**Impact:** Main JS chunk reduced from 2,487 KB to 331 KB (87% reduction); all heavy deps deferred
+**Status:** COMPLETE
+**Files Changed:** 7
+
+### Summary
+
+1. **Route-based code splitting:** All 21 feature component imports in `src/App.tsx` converted to `React.lazy()`. A `<Suspense>` spinner boundary wraps `renderView()`. Each feature module now loads only when first navigated to.
+2. **Vendor chunk splitting:** `vite.config.ts` `manualChunks` splits dependencies into 9 named vendor chunks (`vendor-pdfjs`, `vendor-jspdf`, `vendor-html2canvas`, `vendor-leaflet`, `vendor-supabase`, `vendor-react-dom`, `vendor-router`, `vendor-lucide`, `vendor-misc`). Each chunk is independently browser-cached.
+3. **`pdfjs-dist` deferred (445 KB):** Dynamically imported inside `parseCOAPDF()` in `coa.service.ts` using a module-level singleton cache pattern. Only loaded when a user opens a COA PDF for parsing.
+4. **`jspdf` + `html2canvas` deferred (341 KB + 201 KB):** Dynamically imported inside the async PDF generation functions in `pdfGenerator.service.ts` and `auditPDF.service.ts`. Only loaded when a user generates a PDF document.
+5. **`leaflet` deferred (149 KB):** Dynamically imported inside `useEffect` in `LeafletRouteMap.tsx` and inside the async function in `leafletMap.service.ts`. Only loaded when the delivery route map is rendered.
+6. **Bundle visualizer:** `rollup-plugin-visualizer` enabled in `vite.config.ts`; generates `stats.html` on every build.
+
+### Bundle Size Results
+
+| Chunk | Size | Loaded |
+|-------|------|--------|
+| Main entry (app) | 331 KB | Always (initial load) |
+| vendor-pdfjs | 445 KB | On demand (COA parse) |
+| vendor-jspdf | 341 KB | On demand (PDF generation) |
+| vendor-html2canvas | 201 KB | On demand (PDF generation) |
+| vendor-supabase | 166 KB | Cached vendor chunk |
+| vendor-leaflet | 149 KB | On demand (delivery map) |
+
+---
+
 ## 2026-02-17 - Optimization Phase 2: Hardcoded Values Extraction
 
 **Type:** OPTIMIZATION
