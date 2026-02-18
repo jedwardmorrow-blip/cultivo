@@ -15,55 +15,53 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** Phase C3 — Standardize Error Return Pattern (Conversions Service Layer)
+**Session:** Phase D — Test Coverage for Critical Paths (D1, D2, D3)
 **Status:** COMPLETE
 
 **What was done:**
-- **C3:** Converted all 5 `conversions.*` modules from throw-based errors to `{ data, error }` return pattern
-  - `conversions.analytics.ts` — `getConversionSummary`, `getConversionHistory`
-  - `conversions.variance.ts` — `getSessionContributions`, `logVariance`, `getVariances`
-  - `conversions.packages.ts` — `generateNextPackageId`, `generatePackageIds`, `createConversionPackages`, `createConsolidatedPackage`, `getPackages`; `finalizeConversionPackages` retains `{ success, error }` shape (used by `useConversionWorkflow` which checks `result.success`)
-  - `conversions.finalization.ts` — `getPendingConversions`, `finalizeConversion`, `voidConversion`
-- **Callers updated:** `useConversionLots`, `useSessionContributions`, `useConversionWorkflow`, `useFinalizationWorkflow`
-- **logVariance barrel collision fixed:** Removed `logVariance` alias from `varianceLog.service.ts`; updated `adjustment.service.ts` to import `createVarianceLog` directly
+- **D2:** `src/__tests__/unit/services/inventoryMovement.service.test.ts` — 32 tests
+  - `validateMovement`: all 9 movement kinds, zero/negative quantity, missing unit
+  - `recordMovement`: happy path, `reason_code=session_finalization` trigger bypass, null defaults, DB error handling, validation short-circuit (no DB call on invalid input)
+  - `calculateOnHandFromMovements`: PRODUCE sum, CONSUME deduct, ADJUSTMENT absolute set, negative floor
+- **D1:** `src/__tests__/unit/features/sessions/sessions.service.test.ts` — 26 tests
+  - `completeTrimSession`, `completeBuckingSession`, `completePackagingSession`: correct table, `completed_at` set, output payload, success/error shape
+  - `cancelTrimSession`, `cancelBuckingSession`, `cancelPackagingSession`: `session_status=cancelled`, `cancelled_at`, notes, success/error shape
+- **D3:** `src/__tests__/unit/features/inventory/conversions.service.test.ts` — 19 tests
+  - `getCategoryFromProductName`: Binned, Bucked, Bulk, Packaged, ordering, case-insensitivity, unknown fallback
+  - `getProductStageIdFromProductName`: all 5 stage mappings via mocked `product_stages` query
 
 **Verification results:**
-- `npm run build` passes clean
-- `npm run typecheck`: **492 errors** (stable from C1/C2; no regression)
-- `npm run test:run`: 113/114 pass (1 pre-existing failure in `customers.service.test.ts`, unrelated)
+- `npm run build` passes clean (33s)
+- `npm run test:run`: **177/178 pass** (1 pre-existing failure in `customers.service.test.ts` — `zip` vs `postal_code` field name; unrelated to this session)
 - No migrations run
 
 **Build status:** Passes clean
 
-**Known issues:** 492 tsc errors — pre-existing Supabase inferred type mismatches, not blocking
+**Known issues:**
+- 492 tsc errors — pre-existing, not blocking (documented in optimization roadmap)
+- `customers.service.test.ts` has 1 pre-existing failure (`zip` field name mismatch) — was failing before this session
+- `getProductStageIdFromProductName` error-path tests deferred: the module-level `stageIdCache` prevents testing DB failures after a successful call in the same test file. `vi.isolateModules` is not available in this vitest version. Deferred until a separate test file approach is implemented.
 
-**New files:** None
+**New files:**
+- `src/__tests__/unit/services/inventoryMovement.service.test.ts`
+- `src/__tests__/unit/features/sessions/sessions.service.test.ts`
+- `src/__tests__/unit/features/inventory/conversions.service.test.ts`
 
 **Modified files:**
-- `src/features/inventory/services/conversions.analytics.ts`
-- `src/features/inventory/services/conversions.variance.ts`
-- `src/features/inventory/services/conversions.packages.ts`
-- `src/features/inventory/services/conversions.finalization.ts`
-- `src/features/inventory/services/varianceLog.service.ts` (removed logVariance alias)
-- `src/features/inventory/services/adjustment.service.ts` (createVarianceLog direct import)
-- `src/features/inventory/hooks/useConversionLots.ts`
-- `src/features/inventory/hooks/useSessionContributions.ts`
-- `src/features/inventory/hooks/useConversionWorkflow.ts`
-- `src/features/inventory/hooks/useFinalizationWorkflow.ts`
 - `CHANGELOG.md`
+- `docs/AI-BUILD-SESSION-CHECKLIST.md`
 
 **Migrations:** None
 
 **Critical context for future sessions:**
 - All previous critical context still applies
-- **Phases A, B, C (C1, C2, C3) are ALL complete.** The conversions service layer is fully split and uses a consistent `{ data, error }` pattern throughout
-- `finalizeConversionPackages` intentionally retains `{ success, error }` (not `{ data, error }`) — its caller checks `result.success` and this is NOT a bug
-- `calculateVariance` in `conversions.variance.ts` is a pure synchronous helper — it correctly has no `{ data, error }` wrapper
-- `logVariance` now exclusively refers to the function in `conversions.variance.ts`; the old alias in `varianceLog.service.ts` has been removed. `adjustment.service.ts` uses `createVarianceLog` from `varianceLog.service.ts`
+- **Phases A, B, C, D (D1, D2, D3) are complete.** D4 (order status transitions) and D5 (batch allocation) remain — medium priority
+- The 1 `customers.service.test.ts` failure is pre-existing. The `createCustomer` test expects `zip` but the service now uses `postal_code`. Fix is to update that test's assertion from `zip: '85001'` to `postal_code: '85001'` — trivial one-liner
 
 **Next recommendations:**
-- **Phase D** (tests) — `inventoryMovement.service.ts` (D2) is highest value; read `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` first; test files go in `src/__tests__/unit/services/`
-- **Cultivation scaffolding** — Phases A–C complete; system is ready for cultivation module work; schema design first (new tables, batch format extension)
+- **D4** — `src/__tests__/unit/features/orders/orders.service.test.ts` — order status transitions
+- **D5** — `src/__tests__/unit/features/batches/batchAllocation.service.test.ts` — ATP and strain matching
+- **Cultivation scaffolding** — system is ready; start with schema design (new tables, batch format extension for grow cycles)
 
 ---
 

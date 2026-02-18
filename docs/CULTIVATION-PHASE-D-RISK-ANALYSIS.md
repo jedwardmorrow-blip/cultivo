@@ -26,13 +26,13 @@ Phase D can run in parallel with cultivation scaffolding. The tests described he
 **existing** post-production features. Cultivation-specific tests should be written alongside
 the cultivation code, not here.
 
-| Item | Target | Risk Level | Priority |
-|------|--------|------------|----------|
-| D1 | Session completion (all 3 types) | None | Highest |
-| D2 | `inventoryMovement.service.ts` | None | Highest |
-| D3 | Conversion finalization flow | None | High |
-| D4 | Order fulfillment and status transitions | None | Medium |
-| D5 | Batch allocation and ATP checks | None | Medium |
+| Item | Target | Risk Level | Priority | Status |
+|------|--------|------------|----------|--------|
+| D1 | Session completion (all 3 types) | None | Highest | **Complete (2026-02-18)** |
+| D2 | `inventoryMovement.service.ts` | None | Highest | **Complete (2026-02-18)** |
+| D3 | Conversion finalization flow | None | High | **Partial (2026-02-18) — pure functions only** |
+| D4 | Order fulfillment and status transitions | None | Medium | Pending |
+| D5 | Batch allocation and ATP checks | None | Medium | Pending |
 
 ---
 

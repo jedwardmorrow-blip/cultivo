@@ -4,6 +4,42 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-18 - Phase D: Test Coverage for Critical Paths (D1, D2, D3)
+
+**Type:** TESTS
+**Module:** Inventory Movement Service, Sessions Service, Conversions Service
+**Priority:** HIGH — Regression guard for the most consequential write paths in the system
+**Impact:** 64 new test cases added; 177/178 tests passing (1 pre-existing failure unchanged)
+**Status:** COMPLETE
+**Files Changed:** 3 new test files
+
+### Summary
+
+Phase D adds automated unit test coverage to the three highest-risk service paths in the system.
+
+**D2 — `inventoryMovementService` (32 tests)**
+- `src/__tests__/unit/services/inventoryMovement.service.test.ts`
+- Tests `validateMovement` for all movement kinds (CONSUME, FULFILLMENT, RESERVE, PRODUCE, RECEIPT, ADJUSTMENT), zero/negative quantity, missing unit
+- Tests `recordMovement` happy path, `reason_code=session_finalization` pass-through (Architecture Decision #1 trigger bypass), optional field null-defaulting, DB error handling, validation short-circuit
+- Tests `calculateOnHandFromMovements` ledger replay for PRODUCE, CONSUME, ADJUSTMENT (absolute), negative floor
+
+**D1 — `sessions.service` (26 tests)**
+- `src/__tests__/unit/features/sessions/sessions.service.test.ts`
+- Tests `completeTrimSession`, `completeBuckingSession`, `completePackagingSession`: correct table target, `completed_at` timestamp, output weight payload, success/error shape
+- Tests `cancelTrimSession`, `cancelBuckingSession`, `cancelPackagingSession`: `session_status=cancelled`, `cancelled_at` timestamp, notes pass-through, success/error shape
+
+**D3 — `conversions.service` pure functions (19 tests)**
+- `src/__tests__/unit/features/inventory/conversions.service.test.ts`
+- Tests `getCategoryFromProductName` for all categories (Binned, Bucked, Bulk, Packaged), ordering (Packaged before Bulk), case-insensitivity, unknown fallback
+- Tests `getProductStageIdFromProductName` for all stage mappings via mocked `product_stages` DB query
+
+### What is NOT tested (by design)
+- Database triggers (`on_trim_complete`, etc.) — server-side only
+- `finalizeConversion` RPC call — requires integration test setup
+- `getProductStageIdFromProductName` error paths — module-level cache requires isolated module loading; deferred
+
+---
+
 ## 2026-02-18 - Phase C2: Automatic Retry for Inventory Movement Writes
 
 **Type:** RELIABILITY
