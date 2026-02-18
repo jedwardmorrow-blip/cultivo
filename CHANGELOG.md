@@ -4,6 +4,34 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-18 - Pre-C-2 Scaffolding: Schema Fix + Navigation + Skeleton
+
+**Type:** SCAFFOLDING + DATABASE FIX
+**Module:** Cultivation (pre-build preparation)
+**Priority:** High — fixes schema gaps that would crash the harvest trigger
+**Impact:** 1 migration, navigation wired, feature skeleton in place
+**Status:** COMPLETE
+
+### Database
+
+- Added `created_by` (uuid, nullable) column to `batch_registry` with backfill from `batch_production_history`
+
+### Documentation Fixes
+
+- Fixed harvest completion trigger spec in `CULTIVATION-ARCHITECTURE.md`: added missing `strain` column, corrected `source_weight_grams` and `performed_by` column names, added `COALESCE` null safety for strain abbreviation
+- Corrected navigation file reference in `CULTIVATION.md` (was `menuStructure.ts`, now `sectionNavigation.ts`)
+- Added `fn_populate_batch_registry_id` non-applicability note to prevent misuse on harvest_sessions
+
+### Frontend
+
+- Added Cultivation section to `sectionNavigation.ts` with three views: Overview, Plant Groups, Harvest Sessions
+- Added route cases in `App.tsx` for all three cultivation views
+- Created `src/features/cultivation/` directory with placeholder components, types, and barrel exports
+- Added Grow Rooms tab to Settings page
+- All cultivation types defined in `src/features/cultivation/types/cultivation.types.ts` and re-exported from `src/types/index.ts`
+
+---
+
 ## 2026-02-18 - Session C-1: Cultivation Module Documentation
 
 **Type:** DOCUMENTATION

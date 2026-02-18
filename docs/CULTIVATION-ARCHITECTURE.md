@@ -318,7 +318,7 @@ EXECUTE FUNCTION fn_log_plant_group_stage_history();
 
 ### 3. Harvest Session Completion → Create Batch
 
-Fires AFTER UPDATE on `harvest_sessions` when `session_status` changes to `'completed'`.
+Fires BEFORE UPDATE on `harvest_sessions` when `session_status` changes to `'completed'`.
 
 This is the critical integration trigger.
 
@@ -327,11 +327,12 @@ CREATE OR REPLACE FUNCTION fn_complete_harvest_session()
 RETURNS trigger AS $$
 DECLARE
   v_strain_id      uuid;
+  v_strain_name    text;
+  v_strain_abbrev  text;
   v_room_code      text;
   v_batch_number   text;
   v_batch_id       uuid;
   v_date_prefix    text;
-  v_strain_abbrev  text;
 BEGIN
   IF NEW.session_status != 'completed' THEN
     RETURN NEW;
@@ -343,14 +344,18 @@ BEGIN
   JOIN grow_rooms gr ON gr.id = pg.grow_room_id
   WHERE pg.id = NEW.plant_group_id;
 
-  SELECT abbreviation INTO v_strain_abbrev
+  SELECT name, abbreviation INTO v_strain_name, v_strain_abbrev
   FROM strains WHERE id = v_strain_id;
+
+  -- Fallback if abbreviation is NULL: use first 3 chars of strain name uppercased
+  v_strain_abbrev := COALESCE(v_strain_abbrev, UPPER(LEFT(v_strain_name, 3)));
 
   v_date_prefix  := to_char(NEW.harvest_date, 'YYMMDD');
   v_batch_number := v_date_prefix || '-' || v_strain_abbrev;
 
   INSERT INTO batch_registry (
     batch_number,
+    strain,
     strain_id,
     harvest_date,
     initial_weight_grams,
@@ -359,6 +364,7 @@ BEGIN
     created_by
   ) VALUES (
     v_batch_number,
+    v_strain_name,
     v_strain_id,
     NEW.harvest_date,
     NEW.wet_weight_grams,
@@ -385,15 +391,15 @@ BEGIN
   INSERT INTO batch_production_history (
     batch_id,
     event_type,
-    input_weight,
+    source_weight_grams,
     notes,
-    created_by
+    performed_by
   ) VALUES (
     v_batch_id,
     'batch_created',
     NEW.wet_weight_grams,
     'Batch created from harvest session ' || NEW.id,
-    NEW.completed_by
+    NEW.completed_by::text
   );
 
   RETURN NEW;
@@ -411,6 +417,10 @@ EXECUTE FUNCTION fn_complete_harvest_session();
 - `ON CONFLICT (batch_number) DO NOTHING` handles same-strain same-day harvest: the second harvest session links to the existing batch.
 - Trigger fires BEFORE UPDATE so it can set `NEW.batch_registry_id` and `NEW.completed_at` in one write.
 - The `batch_production_history` insert creates the required audit trail entry.
+- The `strain` text column (NOT NULL in batch_registry) is populated from `strains.name`.
+- `source_weight_grams` and `performed_by` match the actual batch_production_history column names.
+- `performed_by` is text type in batch_production_history, so `completed_by` (uuid) is cast to text.
+- `COALESCE` on abbreviation prevents NULL batch numbers if a strain has no abbreviation set.
 
 ### 4. Block Harvest Cancellation if Batch Exists
 
@@ -497,15 +507,40 @@ WHERE table_name = 'strains' AND column_name = 'abbreviation';
 
 ### batch_registry Table (existing)
 
-`harvest_sessions.batch_registry_id` references the existing `batch_registry` table. No schema changes to `batch_registry` are required. The cultivation module only INSERTs new rows; it does not modify existing rows.
+`harvest_sessions.batch_registry_id` references the existing `batch_registry` table. The `created_by` column was added by migration `add_created_by_to_batch_registry` (pre-C-2 scaffolding). The cultivation module only INSERTs new rows; it does not modify existing rows.
+
+**Required columns used by the harvest trigger:**
+- `batch_number` (text, NOT NULL) -- auto-generated YYMMDD-ABBREV
+- `strain` (text, NOT NULL) -- strain name, populated from `strains.name`
+- `strain_id` (uuid) -- FK to strains table
+- `harvest_date` (date)
+- `initial_weight_grams` (numeric) -- wet weight from harvest session
+- `room` (text) -- grow room code
+- `lifecycle_state` (text) -- set to `'created'`
+- `created_by` (uuid) -- the user who completed the harvest
 
 ### batch_production_history Table (existing)
 
-The completion trigger inserts a `batch_created` event into this existing table. The schema is already correct.
+The completion trigger inserts a `batch_created` event into this existing table.
+
+**Required columns used by the harvest trigger:**
+- `batch_id` (uuid, NOT NULL) -- FK to batch_registry
+- `event_type` (text, NOT NULL) -- set to `'batch_created'`
+- `source_weight_grams` (numeric) -- the wet weight (note: NOT `input_weight`)
+- `performed_by` (text) -- the user uuid cast to text (note: NOT `created_by`, and text type not uuid)
+- `notes` (text) -- human-readable reference to the harvest session
 
 ### fn_generate_batch_number (new, but consistent with existing docs)
 
 `BATCHES.md` documents this function as "NOT IMPLEMENTED" (GAP-017). The cultivation completion trigger implements it inline. If a standalone `fn_generate_batch_number` function is ever created separately, the trigger should be updated to call it instead of inlining the logic.
+
+### fn_populate_batch_registry_id — NOT used by harvest_sessions
+
+`harvest_sessions` does NOT use the existing `fn_populate_batch_registry_id` auto-population trigger. That trigger is designed for `trim_sessions` / `packaging_sessions` / `bucking_sessions`, which receive a `batch_id` text field from the UI and need it resolved to a `batch_registry_id` UUID FK.
+
+`harvest_sessions` takes a different path: it has no `batch_id` text column at all. The `batch_registry_id` UUID FK is set directly by the `fn_complete_harvest_session` BEFORE UPDATE trigger, which creates the batch_registry row and captures the returned id. This is intentional — the harvest session is the origin point of the batch, not a consumer of an existing one.
+
+Do NOT apply `fn_populate_batch_registry_id` to `harvest_sessions`.
 
 ---
 

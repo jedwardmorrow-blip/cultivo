@@ -13,6 +13,8 @@ import {
   Calendar,
   Layers,
   LayoutDashboard,
+  Sprout,
+  Warehouse,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -34,6 +36,17 @@ export interface SectionDefinition {
 }
 
 export const sectionDefinitions: SectionDefinition[] = [
+  {
+    id: 'cultivation',
+    label: 'Cultivation',
+    icon: Sprout,
+    defaultView: 'cultivation-dashboard',
+    items: [
+      { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'primary' },
+      { id: 'cultivation-harvest', label: 'Harvest Sessions', icon: Warehouse, group: 'primary' },
+    ],
+  },
   {
     id: 'sales',
     label: 'Sales & Distribution',

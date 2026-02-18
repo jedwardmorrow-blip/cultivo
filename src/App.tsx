@@ -29,6 +29,9 @@ const AuditsViewWrapper = lazy(() => import('./features/inventory').then((m) => 
 const Settings = lazy(() => import('./features/settings').then((m) => ({ default: m.Settings })));
 const AnalyticsDashboard = lazy(() => import('./features/analytics').then((m) => ({ default: m.AnalyticsDashboard })));
 const EODSummary = lazy(() => import('./features/analytics').then((m) => ({ default: m.EODSummary })));
+const CultivationDashboard = lazy(() => import('./features/cultivation').then((m) => ({ default: m.CultivationDashboard })));
+const PlantGroupsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.PlantGroupsList })));
+const HarvestSessionsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.HarvestSessionsList })));
 
 function ViewFallback() {
   return (
@@ -137,6 +140,12 @@ function AppContent() {
             selectedOrderId={selectedOrderId}
           />
         );
+      case 'cultivation-dashboard':
+        return <CultivationDashboard />;
+      case 'cultivation-plants':
+        return <PlantGroupsList />;
+      case 'cultivation-harvest':
+        return <HarvestSessionsList />;
       case 'production-overview':
         return <ProductionDashboard onViewChange={handleViewChange} />;
       case 'bucking-sessions':

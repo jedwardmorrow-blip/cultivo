@@ -395,7 +395,7 @@ Inventory
 ...
 ```
 
-Implementation note: the sidebar menu is driven by `src/shared/components/navigation/menuStructure.ts`. One new entry with two children is all that is required.
+Implementation note: the section navigation is driven by `src/shared/components/navigation/sectionNavigation.ts` (the `sectionDefinitions` array). A new section entry with sub-items is added there. Each view ID must also have a corresponding `case` in `App.tsx`'s `renderView()` switch. Note: `menuStructure.ts` is a legacy hamburger-drawer menu file and is NOT where the cultivation entry goes.
 
 ---
 

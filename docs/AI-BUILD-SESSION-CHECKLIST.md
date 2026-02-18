@@ -15,24 +15,21 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-18
-**Session:** C-1 — Cultivation module documentation
+**Session:** Pre-C-2 scaffolding — schema fix, navigation wiring, feature skeleton
 **Status:** COMPLETE
 
 **What was done:**
-- Created `docs/CULTIVATION.md` — full scope, entity map, lifecycle diagram, grow rooms, plant groups, growth stages, harvest sessions, harvest→batch handoff, compliance fields, UI screens, navigation integration, open questions
-- Created `docs/CULTIVATION-ARCHITECTURE.md` — complete DB schema (4 tables), RLS policies, 6 triggers with full SQL, migration plan (3 migrations), frontend module structure, service layer signatures, TypeScript type definitions
-- Created `docs/CULTIVATION-RULES.md` — 10 invariants with rationale, 6 architectural decisions with rationale, error message table, testing requirements checklist
-- Updated `docs/AI-SESSION-BRIEF.md` — added cultivation docs section, updated lifecycle description, updated session log
-- Updated `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
-- Updated `docs/SYSTEM-WORKFLOW.md` — added Section 0 (cultivation) entry
-- Updated `docs/BATCHES.md` — added cultivation linkage note
-- Updated `CLAUDE.md` — added cultivation docs to Before You Code section
+- Added `created_by` column to `batch_registry` (migration: `add_created_by_to_batch_registry`) with backfill from batch_production_history
+- Fixed 4 errors in `CULTIVATION-ARCHITECTURE.md` harvest trigger spec: missing `strain` column, wrong `input_weight`/`created_by` column names, added COALESCE for null abbreviation safety
+- Corrected navigation file reference in `CULTIVATION.md` (was `menuStructure.ts`, fixed to `sectionNavigation.ts`)
+- Added `fn_populate_batch_registry_id` non-applicability note to architecture doc
+- Wired Cultivation section into `sectionNavigation.ts` (3 views: Overview, Plant Groups, Harvest Sessions)
+- Added 3 route cases in `App.tsx` with lazy imports
+- Created `src/features/cultivation/` directory skeleton (components, hooks, services, types, barrel exports)
+- Added Grow Rooms tab to Settings page
+- Created interim TypeScript types in `src/features/cultivation/types/cultivation.types.ts`, re-exported from `src/types/index.ts`
 
-**Verification results:**
-- No code or migration changes — documentation only
-- Build status: unchanged (was passing clean as of last code session)
-
-**Build status:** Passes clean (unchanged from last code session)
+**Build status:** Passes clean
 
 **Known issues (carry-forward, unchanged):**
 - 492 tsc errors — pre-existing, not blocking
@@ -40,30 +37,41 @@ priority: Working document - update every session
 - `getProductStageIdFromProductName` error-path tests deferred (module-level cache issue)
 
 **New files:**
-- `docs/CULTIVATION.md`
-- `docs/CULTIVATION-ARCHITECTURE.md`
-- `docs/CULTIVATION-RULES.md`
+- `src/features/cultivation/components/CultivationDashboard.tsx`
+- `src/features/cultivation/components/PlantGroupsList.tsx`
+- `src/features/cultivation/components/HarvestSessionsList.tsx`
+- `src/features/cultivation/components/GrowRoomsManagement.tsx`
+- `src/features/cultivation/components/index.ts`
+- `src/features/cultivation/types/cultivation.types.ts`
+- `src/features/cultivation/types/index.ts`
+- `src/features/cultivation/hooks/index.ts`
+- `src/features/cultivation/services/index.ts`
+- `src/features/cultivation/index.ts`
 
 **Modified files:**
-- `docs/AI-SESSION-BRIEF.md`
+- `src/shared/components/navigation/sectionNavigation.ts`
+- `src/App.tsx`
+- `src/features/settings/components/Settings.tsx`
+- `src/types/index.ts`
+- `docs/CULTIVATION-ARCHITECTURE.md`
+- `docs/CULTIVATION.md`
 - `docs/AI-BUILD-SESSION-CHECKLIST.md`
-- `docs/SYSTEM-WORKFLOW.md`
-- `docs/BATCHES.md`
-- `CLAUDE.md`
 - `CHANGELOG.md`
 
-**Migrations:** None
+**Migrations:** `add_created_by_to_batch_registry` — adds `created_by uuid` to batch_registry with backfill
 
 **Critical context for next session (C-2: migrations):**
 - Read `CULTIVATION.md`, `CULTIVATION-ARCHITECTURE.md`, and `CULTIVATION-RULES.md` BEFORE writing any SQL
-- Verify `strains.abbreviation` column exists before writing the harvest trigger
+- The `batch_registry.created_by` column now exists (added this session) — the harvest trigger can safely reference it
+- The trigger spec in `CULTIVATION-ARCHITECTURE.md` has been corrected — use it as-is for C-2-2
+- `strains.abbreviation` exists but is nullable — the trigger spec now includes COALESCE fallback
 - Three migrations needed: C-2-1 (tables + RLS), C-2-2 (triggers), C-2-3 (optional seed data)
-- The harvest completion trigger uses `ON CONFLICT (batch_number) DO NOTHING` — this is intentional for same-strain same-day harvests
-- All 10 invariants in CULTIVATION-RULES.md are locked — no changes without discussion
+- Navigation and route cases are already wired — C-3 replaces placeholder components with real ones
+- Interim types in `src/features/cultivation/types/cultivation.types.ts` should be regenerated from database.types.ts after C-2 runs
 
 **Next recommendations:**
 - **Session C-2** — Run the three cultivation migrations (tables, triggers, seed rooms). No UI work yet.
-- **Session C-3** — Build the Cultivation UI: CultivationDashboard, PlantGroupsList, HarvestSessionForm, GrowRoomsManagement (in Settings)
+- **Session C-3** — Replace placeholder components with real Cultivation UI (the navigation shell is ready)
 - **customers.service.test.ts fix** — still trivial, 1-liner when convenient
 
 ---

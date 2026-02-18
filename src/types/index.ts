@@ -38,3 +38,4 @@ export * from './movement.types';
 // Feature-specific types that are widely used
 export * from '../features/settings/types';
 export * from '../features/inventory/types/conversions.types';
+export * from '../features/cultivation/types';
