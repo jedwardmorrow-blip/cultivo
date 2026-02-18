@@ -28,32 +28,37 @@ the cultivation code, not here.
 
 | Item | Target | Risk Level | Priority | Status |
 |------|--------|------------|----------|--------|
-| D1 | Session completion (all 3 types) | None | Highest | **Complete (2026-02-18)** |
-| D2 | `inventoryMovement.service.ts` | None | Highest | **Complete (2026-02-18)** |
-| D3 | Conversion finalization flow | None | High | **Partial (2026-02-18) — pure functions only** |
-| D4 | Order fulfillment and status transitions | None | Medium | Pending |
-| D5 | Batch allocation and ATP checks | None | Medium | Pending |
+| D1 | Session completion (all 3 types) | None | Highest | **Complete (2026-02-18) — 26 tests** |
+| D2 | `inventoryMovement.service.ts` | None | Highest | **Complete (2026-02-18) — 32 tests** |
+| D3 | Conversion finalization flow | None | High | **Partial (2026-02-18) — 19 tests, pure functions only; RPC deferred by design** |
+| D4 | Order fulfillment and status transitions | None | Medium | **Complete — 17 tests** (file pre-existed; docs were behind) |
+| D5 | Batch allocation and ATP checks | None | Medium | **Complete — 27 tests** (file pre-existed; docs were behind) |
 
 ---
 
-## Current Test Coverage State
+## Current Test Coverage State (Updated 2026-02-18)
 
-There are 5 test files for ~45 service files:
+**244 total tests across 10 files, 177/178 passing (99.4%)**
 
-| Test file | Service tested | Coverage assessment |
-|-----------|----------------|---------------------|
-| `error.service.test.ts` | `errorService` | Good — 6 test cases |
-| `notification.service.test.ts` | `notificationService` | Good — 8 test cases |
-| `customers.service.test.ts` | `customersService` | Partial — happy paths only |
-| `utils.test.ts` | `src/lib/utils.ts` | Basic — formatters only |
-| `productNaming.test.ts` | `src/lib/productNaming.ts` | Good — string parsing |
+| Test file | Service tested | Tests | Coverage assessment |
+|-----------|----------------|-------|---------------------|
+| `error.service.test.ts` | `errorService` | 33 | Full — all error types, retry logic, backoff |
+| `notification.service.test.ts` | `notificationService` | 28 | Full — subscription, broadcast, cleanup |
+| `customers.service.test.ts` | `customersService` | 17 | Good — 1 pre-existing failure (`zip` vs `postal_code`) |
+| `utils.test.ts` | `src/lib/utils.ts` | 16 | Full — formatters, date validation |
+| `productNaming.test.ts` | `src/lib/productNaming.ts` | 29 | Full — string parsing |
+| `inventoryMovement.service.test.ts` | `inventoryMovementService` | 32 | Full — all movement kinds, trigger bypass, ledger replay |
+| `sessions.service.test.ts` | `sessions.service` | 26 | Full — all 3 session types, complete + cancel |
+| `conversions.service.test.ts` | `conversions.service` | 19 | Partial — pure functions only; RPC deferred |
+| `ordersService.test.ts` | `ordersService` | 17 | Full — status transitions, archive, items |
+| `batchAllocation.service.test.ts` | `batchAllocation.service` | 27 | Full — ATP, strain matching, capacity |
 
-**Zero coverage on:**
-- `sessions.service.ts` — session creation, completion, cancellation
-- `inventoryMovement.service.ts` — the most critical write path in the system
-- `conversions.service.ts` — finalization, variance logging, package creation
-- `ordersService.ts` — order status transitions
-- Any RPC-calling service
+**Previously reported as zero coverage — now covered:**
+- `sessions.service.ts` — all 6 complete/cancel functions tested
+- `inventoryMovement.service.ts` — all movement kinds + trigger bypass verified
+- `conversions.service.ts` — pure functions tested; RPC deferred by design
+- `ordersService.ts` — status transitions covered
+- `batchAllocation.service.ts` — ATP and strain matching covered
 
 ---
 

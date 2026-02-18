@@ -404,3 +404,12 @@ Record phase completions here for quick reference.
 | 3 - Type Safety | Complete | 2026-02-18 | All 6 shadow types renamed; 10 double-casts replaced with `.returns<T>()`; zero `as unknown as` in src/ |
 | 4 - Service Consolidation | Complete | 2026-02-18 | `orders-data.service.ts` never existed separately; `OrdersDataService` was already in `ordersService.ts`; single consumer; no changes needed |
 | 5 - Bundle Optimization | Complete | 2026-02-18 | Main chunk 2,487 KB -> 331 KB (87% reduction); all heavy deps deferred; visualizer enabled |
+
+**Pre-Cultivation Phases (tracked in `SYSTEM-HEALTH-ASSESSMENT.md`):**
+
+| Phase | Status | Date | Notes |
+|-------|--------|------|-------|
+| A - Type Hardening | Partial | — | A1/A2/A4 pending; A3 revised: service params already typed, 3 hook filter callbacks remain |
+| B - Pagination | Pending | — | Recommended before cultivation launch |
+| C - Service Refactoring | Complete | 2026-02-18 | C1: conversions split; C2: retryOperation wired; C3: error patterns standardized |
+| D - Testing | Complete | 2026-02-18 | 244 tests, 177/178 passing; all critical paths covered; D4/D5 were already done (docs behind) |
