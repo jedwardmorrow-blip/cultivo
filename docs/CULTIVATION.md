@@ -1,16 +1,16 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.2
-updated: 2026-02-18
-status: SPECIFICATION — not yet implemented
+version: 1.3
+updated: 2026-02-19
+status: IMPLEMENTED — fully operational in production
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** SPECIFICATION — database schema, API, and UI are NOT YET BUILT.
-> **Session:** C-1 (documentation). Session C-2 will produce migrations. Session C-3 will produce the UI.
-> **Purpose:** Complete specification for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
+> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live.
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI) — all complete.
+> **Purpose:** Complete reference for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
 ---
@@ -56,17 +56,17 @@ The Cultivation module closes this gap by:
 
 ## Scope
 
-### In Scope (Session C-2 + C-3)
+### Implemented (Sessions C-2 + C-3 — complete)
 
-- Grow room management (create, edit, archive)
-- Plant group tracking (strain, count, stage, room)
+- Grow room management (create, edit, archive) — Settings → Grow Rooms
+- Plant group tracking (strain, count, stage, room) — Cultivation → Plant Groups
 - Mother plant designation and clone lineage (mother_plant_group_id FK)
 - Growth stage transitions with timestamps
 - Room transfer logging as an independent action
-- Harvest session (weighing, batch creation trigger)
+- Harvest session (weighing, batch creation trigger) — Cultivation → Harvest Sessions
 - Post-harvest weight adjustment (for data entry corrections)
 - Basic compliance fields (AZDHS-required: room ID, plant count, harvest date)
-- Navigation entry under a new "Cultivation" section
+- Navigation entry under "Cultivation" section in sidebar
 
 ### Out of Scope (explicitly deferred)
 
@@ -594,6 +594,11 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.3 (2026-02-19)
+- Updated status from SPECIFICATION to IMPLEMENTED — sessions C-2 and C-3 complete
+- Updated Scope section to reflect implemented features
+- Updated footer version and status
+
 ### v1.2 (2026-02-18)
 - Added Strain Abbreviation section (section 16) — mandatory 3-letter format, DB enforcement points, pre-flight check query, downstream impact on package ID system
 - Corrected Harvest → Batch Handoff invariants: `initial_weight_grams` is first-session only (not cumulative); `batch_registry.strain` uses `strains.name` not `strains.display_name`; noted `strain_id` has no DB FK constraint
@@ -615,7 +620,6 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.2
-**Last Updated:** 2026-02-18
-**Status:** SPECIFICATION — implementation pending Session C-2
-**Review:** Required before Session C-2 begins
+**Document Version:** 1.3
+**Last Updated:** 2026-02-19
+**Status:** IMPLEMENTED — fully operational in production

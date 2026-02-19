@@ -1,15 +1,15 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.2
-updated: 2026-02-18
-status: SPECIFICATION — not yet implemented
+version: 1.3
+updated: 2026-02-19
+status: IMPLEMENTED — rules active in production
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
 
-> **Status:** SPECIFICATION — rules are locked before implementation begins.
-> **Purpose:** Authoritative list of every constraint, invariant, and design decision for the cultivation module. Read this before writing any migration or UI code.
+> **Status:** IMPLEMENTED — all invariants are enforced by live DB triggers and application-layer validation.
+> **Purpose:** Authoritative list of every constraint, invariant, and design decision for the cultivation module. Read before modifying any cultivation code.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md)
 
 ---
@@ -372,7 +372,7 @@ Standard error messages the UI must handle from the API:
 
 ## Testing Requirements (Phase D)
 
-The following scenarios must have test coverage before Session C-3 ships:
+The following scenarios should have test coverage. Sessions C-2 and C-3 are complete; these tests remain as recommended additions:
 
 | Scenario | Type |
 |----------|------|
@@ -396,6 +396,25 @@ The following scenarios must have test coverage before Session C-3 ships:
 
 ---
 
-**Document Version:** 1.2
-**Last Updated:** 2026-02-18
-**Status:** SPECIFICATION — rules are locked. No changes without explicit discussion.
+## Document Version History
+
+### v1.3 (2026-02-19)
+- Updated status from SPECIFICATION to IMPLEMENTED
+- Updated Testing Requirements preamble to reflect C-2/C-3 completion
+
+### v1.2 (2026-02-18)
+- Invariants C-1 through C-17 finalized (C-17 added: initial_weight_grams is single-session weight)
+- Error messages table added
+- Testing requirements (Phase D) added
+
+### v1.1 (2026-02-18)
+- Added invariants C-12 through C-16 (room history, independent actions, weight adjustment constraints, group_number immutability)
+
+### v1.0 (2026-02-18)
+- Initial invariant set (C-1 through C-11) written during Session C-1
+
+---
+
+**Document Version:** 1.3
+**Last Updated:** 2026-02-19
+**Status:** IMPLEMENTED — rules enforced by live DB triggers and application validation.

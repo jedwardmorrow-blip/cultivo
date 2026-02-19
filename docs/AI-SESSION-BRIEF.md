@@ -1,16 +1,16 @@
 ---
 title: AI Session Brief
 category: AI Development
-version: 2.1
-updated: 2026-02-18 (C-1 docs + C-2 pre-build)
+version: 2.2
+updated: 2026-02-19 (C-2/C-3 complete — docs updated)
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-02-18 (Session C-1: cultivation documentation)
-> **Last Migration:** 2026-02-16 (backfill_missing_produce_movements_for_conversion_items)
+> **Last Updated:** 2026-02-19 (Session: cultivation doc pass — C-2/C-3 complete)
+> **Last Migration:** 2026-02-19 (create_cultivation_schema + create_cultivation_triggers)
 > **Build Status:** Passing
 
 ---
@@ -46,17 +46,18 @@ The system is **feature-complete** and in **production use**. All core workflows
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-02-18: Session C-1 — Cultivation module documentation (CULTIVATION.md, CULTIVATION-ARCHITECTURE.md, CULTIVATION-RULES.md + doc updates)
-2. 2026-02-18: Phase C3 — Standardize error return pattern across conversions service layer
-3. 2026-02-18: Phase A type hardening + pre-cultivation documentation (phases A, B, C1, C2 also complete)
-4. 2026-02-17: Remediation sweep (cancelled_at fix, errorService import, COA sync, undo guard, docs)
-5. 2026-02-17: Code quality sweep (dead code, alert replacement, console cleanup, unused imports)
+1. 2026-02-19: Cultivation doc pass — updated all cultivation docs to reflect C-2/C-3 complete; committed migration SQL files to version control
+2. 2026-02-19: Session C-2/C-3 — Cultivation module full implementation (5 tables, 9 triggers, 7 UI components, 3 hooks, service layer, StrainsManagement hardening)
+3. 2026-02-18: Session C-1 — Cultivation module documentation (CULTIVATION.md, CULTIVATION-ARCHITECTURE.md, CULTIVATION-RULES.md + doc updates)
+4. 2026-02-18: Phase C3 — Standardize error return pattern across conversions service layer
+5. 2026-02-18: Phase A type hardening + pre-cultivation documentation
 
 **Known deferred items:**
-- **Cultivation module** (Session C-1 complete — docs only): Session C-2 = migrations, Session C-3 = UI
-- **Phase D** (testing): see `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` — 244 tests, 177/178 passing as of C-1
+- **Cultivation module** — Sessions C-1/C-2/C-3 all COMPLETE. Fully operational.
+- **Phase D** (testing): see `CULTIVATION-PHASE-D-RISK-ANALYSIS.md` — 244 tests, 177/178 passing; cultivation-specific tests not yet written
 - UI/UX polish (command palette, table sorting, CSV export) — not yet scheduled
-- See [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) — Phases 1–5 all complete; pre-cultivation phases A–C also complete
+- Phase 6 (RLS anon policy removal) — post-cultivation, see [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md)
+- See [OPTIMIZATION-ROADMAP.md](./OPTIMIZATION-ROADMAP.md) — Phases 1–6 documented; Phases 1–5 complete
 
 ---
 
@@ -134,34 +135,19 @@ supabase/
 - [COA-HANDLING.md](./COA-HANDLING.md) | [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
 
 **Cultivation module docs:**
-- [CULTIVATION.md](./CULTIVATION.md) - **READ FIRST** — scope, entities, lifecycle, UI screens (v1.2)
-- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan (v1.2 — live DB verified)
-- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements (v1.2 — invariant C-17 added)
+- [CULTIVATION.md](./CULTIVATION.md) - Scope, entities, lifecycle, UI screens (v1.3 — IMPLEMENTED)
+- [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) - Full schema, RLS, triggers, migration plan (v1.3 — live DB + migration files committed)
+- [CULTIVATION-RULES.md](./CULTIVATION-RULES.md) - Invariants, decisions, error messages, test requirements (v1.3 — IMPLEMENTED)
 
-**Before Starting Session C-2 (migrations) — Pre-Build Checklist:**
+**Cultivation Status (as of 2026-02-19):**
 
-1. **Verify live DB schema** — run these two queries before writing any SQL:
-   ```sql
-   -- Confirm strains.abbreviation is nullable (expected: is_nullable='YES')
-   SELECT column_name, is_nullable FROM information_schema.columns
-   WHERE table_name = 'strains' AND column_name = 'abbreviation';
-
-   -- Find active strains with no abbreviation set (must be fixed before ops begin)
-   SELECT id, name, abbreviation FROM strains
-   WHERE is_active = true AND (abbreviation IS NULL OR abbreviation = '');
-   ```
-
-2. **strain_id on batch_registry has NO FK constraint** — the trigger INSERT will succeed but referential integrity is application-enforced only. Do not add a FK constraint in C-2 migrations; document this gap.
-
-3. **initial_weight_grams is nullable in live DB** — trigger INSERT will always succeed. The trigger always passes `NEW.wet_weight_grams` so it will never be null in practice.
-
-4. **Use `strains.name` (not `strains.display_name`)** — when populating `batch_registry.strain` in the trigger. The live schema has both columns; `name` is the correct one for batch records.
-
-5. **Update TypeScript types as FIRST action in C-2** — before migrations, update `src/features/cultivation/types/cultivation.types.ts` to add the 7 missing fields: `group_number`, `mother_plant_group_id`, `is_mother`, `RoomType 'mother'`, `adjusted_weight_grams`, `adjustment_reason`, `PlantGroupRoomHistory`.
-
-6. **Fix `strains.abbreviation` type in shared Strain interface** — `src/types/product.types.ts` likely has `abbreviation: string` — change to `abbreviation: string | null` to reflect live schema.
-
-7. **Five tables in C-2-1, nine trigger pairs in C-2-2** — do not proceed from memory; read CULTIVATION-ARCHITECTURE.md for the exact ordered lists.
+- ✅ C-1 (documentation) — complete
+- ✅ C-2 (migrations: 5 tables + 9 triggers) — complete; migration SQL committed to `supabase/migrations/`
+- ✅ C-3 (UI: 7 components, 3 hooks, service layer, StrainsManagement hardening) — complete
+- ⏳ C-4 (operator testing + type generation) — recommended next steps:
+  1. Create a grow room, plant group, advance to flower, complete a harvest — verify batch appears in Batches module
+  2. Run `npm run types:generate` to pull in cultivation table types, then update `cultivation.types.ts` to derive from generated `database.types.ts`
+  3. Fix `customers.service.test.ts` — 1 pre-existing failure (`zip` vs `postal_code`, line ~126)
 
 **Pre-cultivation preparation docs:**
 - [SYSTEM-HEALTH-ASSESSMENT.md](./SYSTEM-HEALTH-ASSESSMENT.md) - Pre-cultivation readiness scores and work prioritization

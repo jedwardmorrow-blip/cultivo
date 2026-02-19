@@ -1,16 +1,16 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.2
-updated: 2026-02-18
-status: SPECIFICATION — not yet implemented
+version: 1.3
+updated: 2026-02-19
+status: IMPLEMENTED — live in production database
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** SPECIFICATION — no migrations have been run yet.
-> **Audience:** AI building Session C-2 (migrations) and Session C-3 (UI).
-> **Purpose:** Complete, unambiguous database schema, RLS, triggers, and integration design.
+> **Status:** IMPLEMENTED — all 5 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations) and C-3 (UI) are complete.
+> **Audience:** AI maintaining or extending the cultivation module.
+> **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
 
 ---
@@ -740,26 +740,26 @@ Do NOT apply `fn_populate_batch_registry_id` to `harvest_sessions`.
 
 ---
 
-## Migration Plan
+## Migration Plan (COMPLETED)
 
-Four migrations, in order:
+All migrations have been run against the live database. The SQL files are committed to `supabase/migrations/` for version control and environment reproducibility.
 
-### Migration C-2-1: Create Cultivation Tables
+### Migration C-2-1: Create Cultivation Tables ✅ COMPLETE
 
-File: `YYYYMMDD_create_cultivation_schema.sql`
+File: `supabase/migrations/20260219000000_create_cultivation_schema.sql`
 
-Creates (five tables, all with RLS enabled and policies applied):
+Created (five tables, all with RLS enabled and policies applied):
 - `grow_rooms`
 - `plant_groups` (includes `group_number`, `mother_plant_group_id`, `is_mother`)
 - `plant_group_stage_history`
 - `plant_group_room_history`
 - `harvest_sessions` (includes `adjusted_weight_grams`, `adjustment_reason`)
 
-### Migration C-2-2: Create Cultivation Triggers
+### Migration C-2-2: Create Cultivation Triggers ✅ COMPLETE
 
-File: `YYYYMMDD_create_cultivation_triggers.sql`
+File: `supabase/migrations/20260219000100_create_cultivation_triggers.sql`
 
-Creates (in order, dependencies respected):
+Created (in order, dependencies respected):
 1. `fn_generate_plant_group_number` + `trg_generate_plant_group_number` (BEFORE INSERT on plant_groups)
 2. `fn_validate_plant_group_stage_transition` + `trg_validate_plant_group_stage` (BEFORE UPDATE on plant_groups)
 3. `fn_log_plant_group_stage_history` + `trg_log_plant_group_stage_history` (AFTER UPDATE on plant_groups)
@@ -772,66 +772,64 @@ Creates (in order, dependencies respected):
 
 ### Migration C-2-3: Seed Grow Rooms (optional)
 
-File: `YYYYMMDD_seed_cultivation_rooms.sql`
-
-Seeds the initial grow rooms based on the facility's actual room layout. This is data, not schema — consult the operator before running.
+Consult operator before seeding room data. This is data, not schema.
 
 ---
 
-## Frontend Module Structure
+## Frontend Module Structure (IMPLEMENTED)
 
-Following the existing feature module pattern:
+The frontend module is fully implemented at `src/features/cultivation/`:
 
 ```
 src/features/cultivation/
   components/
-    GrowRoomForm.tsx              -- Create/edit grow room
-    GrowRoomsManagement.tsx       -- List + manage rooms (settings screen)
-    PlantGroupForm.tsx            -- Create plant group (strain, room, mother selector)
-    PlantGroupsList.tsx           -- Active plant groups table
-    PlantGroupDetail.tsx          -- Stage history + room history inline view
+    CultivationDashboard.tsx      -- Top-level dashboard with stats and stage overview
+    GrowRoomsManagement.tsx       -- List + manage rooms (Settings → Grow Rooms)
+    PlantGroupsList.tsx           -- Active plant groups table with actions
+    PlantGroupDetailPanel.tsx     -- Side panel: stage history + room history
+    NewPlantGroupModal.tsx        -- Create plant group (strain, room, mother selector)
     MoveToRoomModal.tsx           -- Room transfer modal (independent of stage advance)
-    HarvestSessionForm.tsx        -- Start/complete harvest
-    HarvestSessionsList.tsx       -- History of harvest sessions
-    HarvestWeightAdjustModal.tsx  -- Post-completion weight correction modal
-    CultivationDashboard.tsx      -- Top-level view with tabs
+    HarvestSessionsList.tsx       -- Harvest sessions with tabs (Active/Completed/Cancelled)
     index.ts
   hooks/
-    useGrowRooms.ts               -- CRUD + realtime for grow_rooms
-    usePlantGroups.ts             -- CRUD + realtime for plant_groups
-    useHarvestSessions.ts         -- CRUD + realtime for harvest_sessions
+    useGrowRooms.ts               -- State + CRUD for grow_rooms
+    usePlantGroups.ts             -- State + CRUD for plant_groups with filter support
+    useHarvestSessions.ts         -- State + CRUD for harvest_sessions with filter support
     index.ts
   services/
-    cultivation.service.ts        -- All Supabase queries for cultivation
+    cultivation.service.ts        -- 18 Supabase operations across all three entities
     index.ts
   types/
-    cultivation.types.ts          -- All cultivation interfaces
+    cultivation.types.ts          -- Interim type definitions (hand-authored; regenerate after schema changes)
     index.ts
   index.ts
 ```
 
-**Naming conventions:** Follow the exact pattern of `src/features/sessions/` (the closest analogue). Services export typed async functions. Hooks wrap services with loading/error state.
+**Navigation:** Three routes wired in `App.tsx` (`cultivation-dashboard`, `cultivation-plants`, `cultivation-harvest`). Sidebar navigation entry added in `sectionNavigation.ts`. Grow Rooms tab added to Settings.
 
 ---
 
-## Service Layer Design
+## Service Layer Design (IMPLEMENTED)
+
+The service is fully implemented in `src/features/cultivation/services/cultivation.service.ts` (18 operations):
 
 ```typescript
-// cultivation.service.ts — exported function signatures (not yet implemented)
-
 export const cultivationService = {
   // Grow Rooms
   listGrowRooms(): Promise<GrowRoom[]>
   createGrowRoom(data: CreateGrowRoomInput): Promise<GrowRoom>
   updateGrowRoom(id: string, data: UpdateGrowRoomInput): Promise<GrowRoom>
-  archiveGrowRoom(id: string): Promise<void>
+  archiveGrowRoom(id: string): Promise<GrowRoom>
 
   // Plant Groups
-  listPlantGroups(filter?: { stage?: GrowthStage }): Promise<PlantGroup[]>
+  listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]>
+  getPlantGroup(id: string): Promise<PlantGroup>
   createPlantGroup(data: CreatePlantGroupInput): Promise<PlantGroup>
   advanceStage(id: string, toStage: GrowthStage): Promise<PlantGroup>
-  moveToRoom(id: string, toRoomId: string, notes?: string): Promise<PlantGroup>
+  moveToRoom(id: string, toRoomId: string): Promise<PlantGroup>
   setMotherStatus(id: string, isMother: boolean): Promise<PlantGroup>
+  updatePlantGroupNotes(id: string, notes: string): Promise<PlantGroup>
+  listMotherGroups(): Promise<PlantGroup[]>
   getStageHistory(id: string): Promise<PlantGroupStageHistory[]>
   getRoomHistory(id: string): Promise<PlantGroupRoomHistory[]>
 
@@ -844,7 +842,9 @@ export const cultivationService = {
 }
 ```
 
-**`moveToRoom` implementation note:** This function updates only `grow_room_id` on `plant_groups`. The DB trigger `trg_log_plant_group_room_history` handles inserting into `plant_group_room_history` automatically. The service must NOT also insert into that table.
+**`moveToRoom` implementation note:** Updates only `grow_room_id`. The DB trigger `trg_log_plant_group_room_history` auto-inserts into `plant_group_room_history`. The service does NOT insert into that table.
+
+**`createPlantGroup` implementation note:** Passes `group_number: 'PENDING'` on INSERT — the `trg_generate_plant_group_number` BEFORE INSERT trigger immediately replaces this with the correct `PG-YYMMDD-ABBREV` value before the row is committed.
 
 ---
 
@@ -954,6 +954,14 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ## Document Version History
 
+### v1.3 (2026-02-19)
+- Updated status from SPECIFICATION to IMPLEMENTED — all 5 tables and 9 triggers confirmed live
+- Updated Migration Plan section: marked C-2-1 and C-2-2 as complete with actual migration filenames
+- Updated Frontend Module Structure to reflect actual implemented component/hook/service files
+- Updated Service Layer Design to reflect actual implemented function signatures (18 operations)
+- Added `createPlantGroup` implementation note about `group_number: 'PENDING'` placeholder
+- Updated document footer status
+
 ### v1.2 (2026-02-18)
 - Live DB schema verification added to Integration section (verified against Supabase 2026-02-18)
 - Corrected `strains` field names: `dominance_type` (not `type`), confirmed `name` vs `display_name` distinction
@@ -982,6 +990,6 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ---
 
-**Document Version:** 1.2
-**Last Updated:** 2026-02-18
-**Status:** SPECIFICATION — implementation pending Session C-2
+**Document Version:** 1.3
+**Last Updated:** 2026-02-19
+**Status:** IMPLEMENTED — database live, UI complete, migrations committed
