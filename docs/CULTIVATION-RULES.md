@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.5
+version: 1.7
 updated: 2026-02-19
-status: IMPLEMENTED — rules active in production
+status: IMPLEMENTED (C-29) + SPECIFIED (C-30 to C-37 — D-2/D-3 pending)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
 
-> **Status:** IMPLEMENTED — all invariants are enforced by live DB triggers and application-layer validation.
+> **Status:** Invariants C-1 through C-29 are enforced by live DB triggers and application-layer validation. Invariants C-30 through C-37 are specified for D-2/D-3 (dry rooms and binning sessions).
 > **Purpose:** Authoritative list of every constraint, invariant, and design decision for the cultivation module. Read before modifying any cultivation code.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md)
 
@@ -94,6 +94,28 @@ status: IMPLEMENTED — rules active in production
 │        family in cultivationService; never invented ad-hoc in       │
 │        component code. All actions that change growth_stage must    │
 │        go through advanceStage() or the action-specific method.     │
+│ C-30. dry_rooms.room_code is immutable after creation. [D-2]       │
+│        Binning session records reference it. Enforced by trigger    │
+│        trg_protect_dry_room_code.                                   │
+│ C-31. Dry rooms cannot be deleted — only archived (is_active=false).│
+│        [D-2] No DELETE RLS policy on dry_rooms.                     │
+│ C-32. A binning session may only be created for a harvest session   │
+│        with session_status = 'completed'. Enforced by DB trigger    │
+│        trg_validate_binning_session (BEFORE INSERT). Application    │
+│        must also validate before showing the creation form.         │
+│ C-33. One binning session per harvest session (1:1). Enforced by   │
+│        UNIQUE(harvest_session_id) on binning_sessions. [D-2]        │
+│ C-34. binning_sessions.batch_registry_id must match the linked      │
+│        harvest_sessions.batch_registry_id. Application derives it   │
+│        from the harvest session; DB trigger validates the match.    │
+│        Never accept a user-supplied batch_registry_id directly.     │
+│ C-35. dry_weight_grams must be > 0 (DB CHECK constraint). [D-2]   │
+│ C-36. Binning session cancellation after completion is blocked.     │
+│        [D-2] If data was entered incorrectly, the notes field is    │
+│        the correction mechanism. No "re-open completed" workflow.   │
+│ C-37. Binning sessions do not create or modify inventory. [D-2]    │
+│        They are data-capture records only. All inventory creation   │
+│        continues through the existing processing session pipeline.  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -430,6 +452,88 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-30: dry_room_code is Immutable After Creation [D-2]
+
+**Rule:** `dry_rooms.room_code` cannot be changed after creation.
+
+**Enforcement:** DB trigger `trg_protect_dry_room_code` (to be created in migration D-2-1). Mirrors the `trg_protect_room_code` pattern on `grow_rooms`.
+
+**Rationale:** Room codes appear in binning session records and any compliance exports derived from them. Changing the code retroactively would corrupt historical records.
+
+---
+
+### C-31: Dry Rooms Cannot Be Deleted [D-2]
+
+**Rule:** `dry_rooms` rows are never deleted. To retire a dry room, set `is_active = false`.
+
+**Enforcement:** No DELETE RLS policy on `dry_rooms`. Application does not expose a delete action.
+
+**Rationale:** Binning sessions reference dry room IDs. Hard deletion would break foreign key references and audit trails.
+
+---
+
+### C-32: Binning Session Requires a Completed Harvest Session [D-2]
+
+**Rule:** A `binning_session` can only be created for a `harvest_session` with `session_status = 'completed'`. A harvest session that is still `active` (not yet completed) has no batch yet — there is no batch to bin against. A `cancelled` harvest session produced no material to dry.
+
+**Enforcement:** DB trigger `trg_validate_binning_session` (BEFORE INSERT on `binning_sessions`) raises an exception if the linked harvest session is not `completed`. Application-layer validation must also prevent showing the binning session creation form for non-completed harvest sessions.
+
+**Error message:** "Cannot create binning session: harvest session is not completed (status: {status})"
+
+---
+
+### C-33: One Binning Session Per Harvest Session (1:1) [D-2]
+
+**Rule:** Each `harvest_session` may have at most one `binning_session`. A second attempt to create a binning session for the same harvest session is blocked.
+
+**Enforcement:** `UNIQUE (harvest_session_id)` constraint on `binning_sessions`.
+
+**Rationale:** A harvest session produces one physical batch of dried material. There is no workflow where the same harvest material is binned twice. If a binning session was entered incorrectly, cancel it and create a new one (if still active), or add a correction note (if completed).
+
+**Same-batch total dry weight:** Multiple harvest sessions may share a `batch_registry` row (same-strain same-day). Each has its own binning session with its own dry weight. Total batch dry weight = `SUM(dry_weight_grams) FROM binning_sessions WHERE batch_registry_id = ? AND session_status = 'completed'`.
+
+---
+
+### C-34: batch_registry_id on Binning Sessions is Derived, Not User-Supplied [D-2]
+
+**Rule:** The application must read `harvest_sessions.batch_registry_id` and pass it as `batch_registry_id` when creating a binning session. The DB trigger validates this match on INSERT. A user-supplied batch ID that differs from the harvest session's linked batch is rejected.
+
+**Enforcement:** DB trigger `trg_validate_binning_session` (BEFORE INSERT) compares `NEW.batch_registry_id` with `harvest_sessions.batch_registry_id` and raises an exception if they differ.
+
+**Rationale:** The batch association must be consistent with the harvest session. Allowing operators to select a batch independently would create orphaned or incorrectly linked binning records.
+
+---
+
+### C-35: dry_weight_grams Must Be Greater Than Zero [D-2]
+
+**Rule:** `binning_sessions.dry_weight_grams` must be > 0.
+
+**Enforcement:** DB CHECK constraint on `binning_sessions`.
+
+**Rationale:** A zero dry weight is a data entry error. Binning sessions represent real physical material that has been weighed.
+
+---
+
+### C-36: Completed Binning Sessions Cannot Be Cancelled [D-2]
+
+**Rule:** Once a binning session has `session_status = 'completed'`, it cannot be cancelled or re-opened. If the dry weight was entered incorrectly, the operator must add a correction note.
+
+**Enforcement:** DB CHECK constraint `binning_sessions_cancelled_no_completion` blocks any row where both `session_status = 'cancelled'` AND `completed_at IS NOT NULL`. Application must not offer a cancel action on completed sessions.
+
+**Rationale:** Completed binning sessions are the authoritative dry weight record for a harvest. Cancelling them post-completion would create ambiguity in the batch history.
+
+---
+
+### C-37: Binning Sessions Do Not Create or Modify Inventory [D-2]
+
+**Rule:** Completing a binning session does not trigger any inventory creation, inventory movement, or batch lifecycle state change. Binning is a data-capture milestone only.
+
+**Enforcement:** No completion trigger on `binning_sessions` (by design). The existing batch pipeline handles inventory creation when processing sessions are finalized.
+
+**Rationale:** The batch already exists when binning occurs. The dry weight recorded in the binning session is a reference figure that operators use when starting a bucking session. Actual inventory quantities are managed by the movement ledger independently. Adding an inventory trigger here would duplicate creation and violate the "Finalization = Creation" pattern (Architecture Decision 1).
+
+---
+
 ## Decisions Made (and Why)
 
 ### Decision: Group-level tracking, not individual plant tracking
@@ -541,6 +645,32 @@ Grow rooms change infrequently and are configured by admins. The Cultivation mai
 
 ---
 
+### Decision: Dry Rooms managed in Settings, not Cultivation [D-1]
+
+Dry rooms are reference data that change infrequently. They follow the same pattern as grow rooms — configured in Settings by admins, referenced by operational records (binning sessions) in the Cultivation view.
+
+**Rationale:** Consistent with grow rooms, drivers, and vehicles. Operators do not create dry rooms during daily operation.
+
+---
+
+### Decision: Binning is Data-Capture Only, Not Inventory Creation [D-1]
+
+The binning session records dry weight after drying. It does not trigger any inventory creation or modification. The batch already exists (created by the harvest session completion trigger). Inventory is created later, during processing session finalization, through the existing pipeline.
+
+**Rationale:** Respects the "Finalization = Creation" principle (Architecture Decision 1). Dry weight at binning is a reference figure for operators, not the point at which material enters the inventory ledger. The inventory ledger is managed exclusively by the processing session pipeline. Coupling dry weight recording to inventory creation would introduce a second inventory creation path, which would conflict with the existing system and create reconciliation problems.
+
+**Implication:** Completing a binning session has no effect on `inventory_items`, `inventory_movements`, or `batch_registry.lifecycle_state`. The batch continues through its lifecycle (bucking queue, trim, packaging) as if binning never happened — because from the pipeline's perspective, binning is not a pipeline event.
+
+---
+
+### Decision: batch_registry_id is Denormalized on binning_sessions [D-1]
+
+`binning_sessions.batch_registry_id` is a copy of `harvest_sessions.batch_registry_id`. It is set by the application on INSERT and validated by a DB trigger.
+
+**Rationale:** Avoids a JOIN through `harvest_sessions` on every binning session query. The value is derived data (not independently set), but the query convenience is significant — most binning session views need the batch number for display. The trigger validation ensures this field stays consistent with the source harvest session.
+
+---
+
 ## Error Messages
 
 Standard error messages the UI must handle from the API:
@@ -552,11 +682,16 @@ Standard error messages the UI must handle from the API:
 | `Cannot cancel harvest session: batch % already created` | "Harvest cannot be cancelled — the batch {batch_number} has already been created. Use Batch Management to quarantine the batch if needed." |
 | `strain_id is immutable after plant group creation` | "The strain cannot be changed after a group is created." |
 | `room_code is immutable after creation` | "Room code cannot be changed after creation." |
+| `dry room room_code is immutable after creation` | "Dry room code cannot be changed after creation." |
 | `Cannot create plant group: strain has no abbreviation set` | "This strain does not have an abbreviation set. Go to Settings → Strains and add an abbreviation before creating a plant group." |
 | `Cannot complete harvest: strain "%" has no abbreviation set` | "Cannot complete harvest — the strain {name} has no abbreviation set. Go to Settings → Strains and add an abbreviation first." |
 | `Cannot adjust weight: no batch linked to this harvest session` | "Weight adjustment is not available — no batch is linked to this harvest session." |
 | `Adjusted weight must be greater than zero` | "Adjusted weight must be greater than zero." |
 | `Adjustment reason is required when adjusting harvest weight` | "Please provide a reason for the weight adjustment." |
+| `Binning session error: harvest session not found` | "The selected harvest session could not be found. Please refresh and try again." |
+| `Cannot create binning session: harvest session is not completed (status: %)` | "Binning sessions can only be created for completed harvest sessions." |
+| `Cannot create binning session: harvest session has no linked batch` | "The harvest session has no linked batch. Complete the harvest session first." |
+| `Binning session error: batch_registry_id does not match the harvest session's batch` | "Internal error: batch mismatch. Please refresh and try again." |
 
 ---
 
@@ -583,10 +718,25 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 | Weight adjustment without reason is blocked | Integration (DB constraint) |
 | Mother group FK: clone group creation with valid mother | Unit (service) |
 | group_number auto-generated with correct format PG-YYMMDD-ABBREV | Integration (DB trigger) |
+| Binning session blocked for non-completed harvest session | Integration (DB trigger, D-2) |
+| Binning session blocked if harvest session already has one | Integration (DB constraint, D-2) |
+| batch_registry_id mismatch rejected on binning session insert | Integration (DB trigger, D-2) |
+| dry_weight_grams = 0 rejected | Integration (DB constraint, D-2) |
+| Completed binning session cannot be cancelled | Integration (DB constraint, D-2) |
+| dry_room_code immutability | Integration (DB trigger, D-2) |
+| Total batch dry weight = SUM across binning_sessions | Unit (service query, D-3) |
 
 ---
 
 ## Document Version History
+
+### v1.7 (2026-02-19)
+- Added invariants C-30 through C-37 (dry room code immutability, dry room no-delete, binning session requires completed harvest, 1:1 constraint, derived batch_registry_id, dry weight > 0, no cancellation after completion, no inventory creation)
+- Added rule detail sections for C-30 through C-37
+- Added binning-related error messages to Error Messages table
+- Added binning-related test scenarios to Testing Requirements
+- Added a new Decisions section entry for "Binning is data-capture only, not inventory creation"
+- Updated header version and status
 
 ### v1.6 (2026-02-19)
 - Added invariants C-23 through C-29 (flip action, harvest date ownership, placement storage, Settings/Cultivation separation, bulk flip semantics, action family)
@@ -620,6 +770,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 1.6
+**Document Version:** 1.7
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED (C-23–C-29 pending C-5B implementation)
+**Status:** IMPLEMENTED (C-1–C-29 live) + SPECIFIED (C-30–C-37 pending D-2 migration)

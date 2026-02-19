@@ -244,3 +244,31 @@ When creating packages during partial finalization, `source_session_ids` must re
 - Packaging sessions (unit-based, non-bulk) do not pass `output_weight`/`output_units`, so they default to full finalization (backward compatible)
 
 **Reference:** `conversions.service.ts`, migration `repair_swf_partial_finalization_status`
+
+---
+
+## 13. Binning Session is a Data-Capture Milestone, Not an Inventory Event (2026-02-19)
+
+**Context:** After harvest sessions complete, the wet material is moved to a dry room for a drying period. Once dried, operators record the post-drying weight (dry weight in grams) and the date the material was binned. This data is needed for compliance reporting and yield analysis.
+
+**Decision:** Completing a binning session does NOT create inventory, does NOT trigger any batch lifecycle change, and does NOT insert any `inventory_movements` records. Dry weight is a reference figure only.
+
+**Rationale:**
+- Respects Architecture Decision 1 (Finalization = Creation). The batch already exists (created by harvest completion in `fn_complete_harvest_session`). Coupling dry weight recording to a second inventory creation path would conflict with the existing pipeline.
+- Inventory is created downstream when processing sessions (bucking, trim, packaging) are finalized. Dry weight informs those sessions but does not drive them.
+- Keeping binning as pure data-capture makes the trigger simple (validation only) and eliminates the risk of double-inventory or ATP violations.
+
+**Implementation:**
+- `trg_validate_binning_session` (BEFORE INSERT on `binning_sessions`) — validates that the referenced harvest session is `completed` and that `batch_registry_id` matches `harvest_sessions.batch_registry_id`. Does nothing else.
+- No AFTER trigger on `binning_sessions`.
+- `batch_registry_id` is denormalized onto `binning_sessions` for query convenience; the trigger ensures it is always consistent with the harvest session.
+
+**Querying same-batch total dry weight:**
+```sql
+SELECT SUM(dry_weight_grams)
+FROM binning_sessions
+WHERE batch_registry_id = ? AND session_status = 'completed';
+```
+Mirrors the same-batch wet weight pattern (see Decision 11).
+
+**Reference:** CULTIVATION-RULES.md Invariant C-37, CULTIVATION-ARCHITECTURE.md Triggers section (Trigger 13)

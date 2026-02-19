@@ -1,16 +1,16 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.6
+version: 1.7
 updated: 2026-02-19
-status: IMPLEMENTED — fully operational in production
+status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Binning + Dry Room)
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4. Run dates (flip_date, projected_harvest_date) on room_sections added in C-5A. Plant group placement FKs, Layout Builder, Flip Room action, and Room Map grid added in C-5B.
-> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections), C-5B (plant placement + flip + room map) — all complete.
-> **Purpose:** Complete reference for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
+> **Status:** C-1 through C-5B IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. D-1 (this document update) adds the Binning Session and Dry Room specification for Sessions D-2 (migration) and D-3 (UI).
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections), C-5B (plant placement + flip + room map) — complete. D-1 (binning + dry room spec) — complete.
+> **Purpose:** Complete reference for tracking plants from clone/seed through harvest and drying, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
 ---
@@ -28,12 +28,14 @@ status: IMPLEMENTED — fully operational in production
 9. [Room Transfers](#room-transfers)
 10. [Harvest Sessions](#harvest-sessions)
 11. [Harvest Weight Adjustments](#harvest-weight-adjustments)
-12. [Harvest → Batch Handoff](#harvest--batch-handoff)
-13. [Compliance Fields](#compliance-fields)
-14. [UI Screens](#ui-screens)
-15. [Navigation Integration](#navigation-integration)
-16. [Strain Abbreviation — Mandatory System Requirement](#strain-abbreviation--mandatory-system-requirement)
-17. [Open Questions & Deferred Items](#open-questions--deferred-items)
+12. [Dry Rooms](#dry-rooms)
+13. [Binning Sessions](#binning-sessions)
+14. [Harvest → Batch Handoff](#harvest--batch-handoff)
+15. [Compliance Fields](#compliance-fields)
+16. [UI Screens](#ui-screens)
+17. [Navigation Integration](#navigation-integration)
+18. [Strain Abbreviation — Mandatory System Requirement](#strain-abbreviation--mandatory-system-requirement)
+19. [Open Questions & Deferred Items](#open-questions--deferred-items)
 
 ---
 
@@ -74,6 +76,12 @@ The Cultivation module closes this gap by:
 - Basic compliance fields (AZDHS-required: room ID, plant count, harvest date)
 - Navigation entry under "Cultivation" section in sidebar
 
+### Specified (Session D-1 — pending D-2 migration + D-3 UI)
+
+- Dry room management (create, edit, archive) — Settings → Dry Rooms
+- Binning session (dry weight entry after drying, links to completed harvest session, records the dry weight that feeds the batch processing pipeline)
+- Transfer of harvested material from wet (harvest) to dry (binning) with dry weight recorded per strain per batch
+
 ### Out of Scope (explicitly deferred)
 
 - Individual plant-level RFID/tag tracking
@@ -101,7 +109,7 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  ├─ room_type: 'clone' | 'veg' | 'flower' | 'mother' | 'mixed'      │
 │  └─ is_active, created_at                                            │
 │                                                                       │
-│  room_tables  [C-4 — DB schema only; UI pending C-5+]                │
+│  room_tables  [C-4]                                                   │
 │  ├─ id, grow_room_id → grow_rooms.id                                 │
 │  ├─ table_number (integer, unique per room, required)                │
 │  ├─ table_name (text, optional human label)                          │
@@ -152,6 +160,20 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  ├─ session_status: 'active' | 'completed' | 'cancelled'            │
 │  ├─ completed_at, completed_by                                       │
 │  └─ notes                                                            │
+│                                                                       │
+│  dry_rooms  [D-2 — PENDING MIGRATION]                                │
+│  ├─ id, name, room_code (unique), capacity_lbs                       │
+│  └─ is_active, created_at, created_by                                │
+│                                                                       │
+│  binning_sessions  [D-2 — PENDING MIGRATION]                         │
+│  ├─ id, harvest_session_id → harvest_sessions.id (1:1)               │
+│  ├─ dry_room_id → dry_rooms.id (FK, where material was dried)        │
+│  ├─ batch_registry_id → batch_registry.id (copied from harvest)      │
+│  ├─ dry_weight_grams (numeric, required — the actual binned weight)  │
+│  ├─ bin_date (date, required — date material was binned)             │
+│  ├─ session_status: 'active' | 'completed' | 'cancelled'            │
+│  ├─ completed_at, completed_by                                       │
+│  └─ notes, created_at, created_by                                    │
 │                                                                       │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -211,7 +233,22 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │     ├─ adjustment_reason required                                    │
 │     └─ DB trigger updates batch_registry.initial_weight_grams       │
 │                                                                       │
-│  9. BATCH ENTERS EXISTING PIPELINE                                   │
+│  9. DRY ROOM (material hangs and dries — days to weeks)             │
+│     └─ dry_rooms: Dry Room 1, Dry Room 2, etc. (admin creates once) │
+│                                                                       │
+│  10. BINNING SESSION CREATED (manager, when material is dry)        │
+│     ├─ harvest_session_id = completed harvest session                │
+│     ├─ dry_room_id = room where material was dried                   │
+│     ├─ dry_weight_grams entered                                      │
+│     ├─ bin_date set                                                  │
+│     └─ session_status = 'active'                                     │
+│                                                                       │
+│  11. BINNING SESSION COMPLETED (manager confirms)                    │
+│     └─ session_status = 'completed' (no downstream trigger)         │
+│        The batch already exists — binning records the dry weight     │
+│        only. The existing batch pipeline is unaffected.              │
+│                                                                       │
+│  12. BATCH ENTERS EXISTING PIPELINE                                  │
 │     └─ batch_registry.lifecycle_state = 'created'                   │
 │        └─ Batch appears in bucking queue (existing workflow)         │
 │                                                                       │
@@ -461,6 +498,90 @@ After a harvest session is completed, the wet weight may need to be corrected if
 
 ---
 
+## Dry Rooms
+
+### Purpose
+
+After harvest, material is hung in a dedicated dry room for several days to weeks until it reaches target moisture content. Dry rooms are separate physical spaces from grow rooms. They are referenced by binning sessions to record where material was dried.
+
+### Fields
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | uuid | auto | Primary key |
+| `name` | text | yes | Human-readable name ("Dry Room 1") |
+| `room_code` | text | yes | Short code, unique ("DR1", "DR2") |
+| `capacity_lbs` | numeric | no | Maximum dry weight capacity (informational) |
+| `is_active` | boolean | yes | Default true; archive instead of delete |
+| `created_at` | timestamptz | auto | |
+| `created_by` | uuid | auto | FK → auth.users |
+
+### Rules
+
+- `room_code` is unique and **immutable after creation** (binning records reference it — changing it would corrupt the audit trail)
+- Dry rooms cannot be deleted; set `is_active = false` to retire
+- Dry rooms have no structural sub-division (no tables or sections) — they are simple container identifiers for binning session records
+- Dry rooms appear in Settings → Dry Rooms (alongside Settings → Grow Rooms)
+
+---
+
+## Binning Sessions
+
+### Purpose
+
+A binning session is the event of taking dried material from a dry room and recording its dry weight before it enters processing (bucking). It links back to the harvest session that produced the material and records the final dry weight that operators use as a reference when starting processing sessions.
+
+A binning session is a data-capture milestone, not an inventory event. It does not create or move inventory — it simply records the dry weight on the harvest/batch record so operators have an accurate dry weight reference when entering the batch into bucking.
+
+### Fields
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | uuid | auto | |
+| `harvest_session_id` | uuid | yes | FK → harvest_sessions; must be a completed session. One binning session per harvest session (1:1). |
+| `dry_room_id` | uuid | yes | FK → dry_rooms; where the material was dried |
+| `batch_registry_id` | uuid | yes | Copied from the linked harvest_session.batch_registry_id for query convenience |
+| `dry_weight_grams` | numeric | yes | Actual dry weight at time of binning; must be > 0 |
+| `bin_date` | date | yes | Date material was binned |
+| `session_status` | text | yes | `active`, `completed`, `cancelled` |
+| `completed_at` | timestamptz | no | Set on completion |
+| `completed_by` | uuid | no | FK → auth.users |
+| `cancelled_at` | timestamptz | no | Set on cancellation |
+| `cancelled_by` | uuid | no | FK → auth.users |
+| `notes` | text | no | |
+| `created_at` | timestamptz | auto | |
+| `created_by` | uuid | auto | FK → auth.users |
+
+### Completion
+
+When `session_status` is set to `'completed'`:
+- No batch creation occurs (batch already exists from harvest session completion)
+- No inventory is created (inventory is created when the batch is finalized through processing sessions in the existing pipeline)
+- The binning session record stands as the dry weight reference for this batch
+
+The dry weight recorded here (`dry_weight_grams`) is **informational** — it is the operator's reference weight when starting a bucking session. The processing pipeline manages actual inventory quantities independently through the movement ledger.
+
+### Constraints
+
+- A harvest session may have **at most one** binning session (1:1 enforced by DB UNIQUE constraint on `harvest_session_id`)
+- A binning session may only be created for a harvest session with `session_status = 'completed'` (application-layer validation)
+- `dry_weight_grams` must be > 0
+- Cancellation after completion is **blocked** (no undo — record is the historical dry weight; if data entry error, adjust via notes)
+- `batch_registry_id` is denormalized from the harvest session and must match `harvest_sessions.batch_registry_id` (set by application code on creation; validated by DB trigger)
+
+### Why 1:1 (not 1:many per batch)?
+
+A harvest session produces one physical batch of material from one plant group. That material goes into one dry room and comes out at one dry weight. If multiple plant groups are harvested the same day for the same strain (sharing a `batch_registry` row), each harvest session has its own binning session with its own dry weight. Total batch dry weight is the sum across all binning sessions for that batch.
+
+For same-batch total dry weight:
+```sql
+SELECT SUM(dry_weight_grams)
+FROM binning_sessions
+WHERE batch_registry_id = ? AND session_status = 'completed';
+```
+
+---
+
 ## Harvest → Batch Handoff
 
 This is the critical integration point between the Cultivation module and the existing pipeline.
@@ -501,6 +622,14 @@ AZDHS (Arizona Department of Health Services) requires the following information
 | Grow room identifier | `grow_rooms.room_code` |
 | Wet weight | `harvest_sessions.wet_weight_grams` (or `adjusted_weight_grams` if set) |
 | Responsible employee | `harvest_sessions.completed_by` |
+
+Additional fields tracked post-harvest (binning, D-2+):
+
+| Requirement | Source in System |
+|-------------|-----------------|
+| Dry room identifier | `dry_rooms.room_code` via `binning_sessions.dry_room_id` |
+| Bin date | `binning_sessions.bin_date` |
+| Dry weight | `binning_sessions.dry_weight_grams` |
 
 All required fields are enforced as NOT NULL at the DB level.
 
@@ -612,6 +741,50 @@ Location: Cultivation → Harvest Sessions (tab or sub-nav)
 | Cancel | Only available if no batch yet created |
 | Adjust Weight | Available on completed sessions — prompts for corrected weight and reason |
 
+### 4. Dry Rooms (Settings sub-section) [D-3 — PENDING]
+
+Location: Settings → Dry Rooms
+
+| Action | Description |
+|--------|-------------|
+| List | Cards per room: name, code, capacity, status |
+| Create | Modal form: name, room_code, optional capacity_lbs |
+| Edit | Same fields, except room_code is read-only |
+| Archive | Toggle is_active; removes from binning session selects |
+
+### 5. Binning Sessions [D-3 — PENDING]
+
+Location: Cultivation → Binning Sessions (new nav item)
+
+| View | Description |
+|------|-------------|
+| Pending | Completed harvest sessions that have no binning session yet |
+| Active | Binning sessions with status = 'active' |
+| Completed | Binning sessions with status = 'completed', showing dry_weight_grams and batch_number |
+
+| Action | Description |
+|--------|-------------|
+| Start | Harvest session selector (shows batch_number for context), dry_room_id, dry_weight_grams, bin_date |
+| Complete | Confirmation step showing batch_number and dry weight to be recorded |
+| Cancel | Available while status = 'active' (no undo on completed sessions) |
+
+**"Pending" view — finding harvest sessions without a binning session:**
+
+The pending view shows all completed harvest sessions that have no corresponding row in `binning_sessions`. This gives operators a clear worklist of material that still needs to be binned. Query pattern:
+
+```sql
+SELECT hs.*
+FROM harvest_sessions hs
+LEFT JOIN binning_sessions bs ON bs.harvest_session_id = hs.id
+WHERE hs.session_status = 'completed'
+  AND bs.id IS NULL
+ORDER BY hs.harvest_date DESC;
+```
+
+**Harvest session selector in the Start form:**
+
+The harvest session selector shows the batch_number, strain name, harvest date, and wet weight for each available session. This gives operators full context when selecting which material they are binning.
+
 ---
 
 ## Navigation Integration
@@ -623,6 +796,7 @@ Dashboard
 Cultivation          ← NEW
   Plant Groups
   Harvest Sessions
+  Binning Sessions   ← D-3 (pending)
 Sessions
   Trim
   Bucking
@@ -695,6 +869,17 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.7 (2026-02-19)
+- Added Dry Rooms and Binning Sessions to Scope → Specified section
+- Added `dry_rooms` and `binning_sessions` to Module Entities (marked D-2 pending)
+- Updated Lifecycle Overview to include steps 9–11 (dry room, binning session create/complete)
+- Added Dry Rooms section (purpose, fields, rules)
+- Added Binning Sessions section (purpose, fields, completion semantics, 1:1 constraint rationale, same-batch total dry weight query)
+- Updated Compliance Fields table to include post-harvest binning fields
+- Updated UI Screens: added Section 4 (Dry Rooms in Settings) and Section 5 (Binning Sessions view)
+- Updated Navigation Integration sidebar diagram to show Binning Sessions nav item (D-3 pending)
+- Updated TOC with new sections 12–13
+
 ### v1.6 (2026-02-19)
 - Updated session history to include C-5B
 - Updated Scope → Implemented to include placement FKs, Layout Builder, Room Map, Flip Room action, section-aware Move flow
@@ -742,6 +927,6 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.6
+**Document Version:** 1.7
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — 7 tables + placement FKs live (C-5B); Layout Builder, Room Map, and Flip Room action live
+**Status:** IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions — pending D-2 migration + D-3 UI)

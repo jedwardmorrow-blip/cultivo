@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.6
+version: 1.7
 updated: 2026-02-19
-status: IMPLEMENTED — live in production database
+status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions)
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** IMPLEMENTED — 7 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), C-4 (room layout schema), C-5A (run dates on room_sections), and C-5B (plant placement FKs + flip action + Room Map UI) are complete.
+> **Status:** IMPLEMENTED — 7 tables and 11 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), C-4 (room layout schema), C-5A (run dates on room_sections), and C-5B (plant placement FKs + flip action + Room Map UI) are complete. D-1 adds the Dry Rooms and Binning Sessions specification (9 tables total when D-2 is applied).
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
@@ -90,6 +90,23 @@ status: IMPLEMENTED — live in production database
 │  ├─ adjusted_weight_grams numeric  [nullable, post-entry correction] │
 │  ├─ adjustment_reason text  [nullable, required when adjusted]       │
 │  └─ session_status text  ['active','completed','cancelled']         │
+│       │                                                              │
+│       ▼  (D-2 — PENDING MIGRATION)                                   │
+│  binning_sessions                                                    │
+│  ├─ PK: id uuid                                                      │
+│  ├─ FK: harvest_session_id → harvest_sessions(id)  [UNIQUE — 1:1]  │
+│  ├─ FK: dry_room_id → dry_rooms(id)                                 │
+│  ├─ FK: batch_registry_id → batch_registry(id)  [denormalized]     │
+│  ├─ dry_weight_grams numeric NOT NULL > 0                            │
+│  ├─ bin_date date NOT NULL                                           │
+│  └─ session_status text  ['active','completed','cancelled']         │
+│                                                                      │
+│  dry_rooms  (D-2 — PENDING MIGRATION)                               │
+│  ├─ PK: id uuid                                                      │
+│  ├─ room_code text UNIQUE NOT NULL  [immutable after creation]       │
+│  ├─ name text NOT NULL                                               │
+│  ├─ capacity_lbs numeric  [nullable, informational]                  │
+│  └─ is_active boolean DEFAULT true                                   │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -297,6 +314,81 @@ CREATE TABLE IF NOT EXISTS harvest_sessions (
 ALTER TABLE harvest_sessions ENABLE ROW LEVEL SECURITY;
 ```
 
+### dry_rooms [D-2 — PENDING MIGRATION]
+
+Physical rooms where harvested material is dried. Simple container identifiers — no table/section sub-structure.
+
+```sql
+CREATE TABLE IF NOT EXISTS dry_rooms (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          text        NOT NULL,
+  room_code     text        NOT NULL,
+  capacity_lbs  numeric(8,2),
+  is_active     boolean     NOT NULL DEFAULT true,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  created_by    uuid        REFERENCES auth.users(id),
+
+  CONSTRAINT dry_rooms_room_code_unique UNIQUE (room_code),
+  CONSTRAINT dry_rooms_capacity_positive CHECK (
+    capacity_lbs IS NULL OR capacity_lbs > 0
+  )
+);
+
+ALTER TABLE dry_rooms ENABLE ROW LEVEL SECURITY;
+```
+
+**Notes:**
+- `room_code` is unique and **immutable after creation** — enforced by trigger `trg_protect_dry_room_code` (mirrors the grow_rooms pattern).
+- No tables or sections — dry rooms are simple identifiers.
+- `capacity_lbs` is informational; not enforced by any constraint against binning session weights.
+- Archive via `is_active = false`; no DELETE policy.
+
+### binning_sessions [D-2 — PENDING MIGRATION]
+
+Records the dry weight of harvested material after drying. One binning session per harvest session (1:1).
+
+```sql
+CREATE TABLE IF NOT EXISTS binning_sessions (
+  id                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  harvest_session_id  uuid        NOT NULL REFERENCES harvest_sessions(id),
+  dry_room_id         uuid        NOT NULL REFERENCES dry_rooms(id),
+  batch_registry_id   uuid        NOT NULL REFERENCES batch_registry(id),
+  dry_weight_grams    numeric(10,2) NOT NULL CHECK (dry_weight_grams > 0),
+  bin_date            date        NOT NULL,
+  session_status      text        NOT NULL DEFAULT 'active'
+                        CHECK (session_status IN ('active', 'completed', 'cancelled')),
+  completed_at        timestamptz,
+  completed_by        uuid        REFERENCES auth.users(id),
+  cancelled_at        timestamptz,
+  cancelled_by        uuid        REFERENCES auth.users(id),
+  notes               text,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  created_by          uuid        REFERENCES auth.users(id),
+
+  CONSTRAINT binning_sessions_one_per_harvest UNIQUE (harvest_session_id),
+  CONSTRAINT binning_sessions_completed_has_timestamp CHECK (
+    session_status != 'completed' OR completed_at IS NOT NULL
+  ),
+  CONSTRAINT binning_sessions_cancelled_no_completion CHECK (
+    NOT (session_status = 'cancelled' AND completed_at IS NOT NULL)
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_binning_sessions_harvest_session_id
+  ON binning_sessions(harvest_session_id);
+CREATE INDEX IF NOT EXISTS idx_binning_sessions_batch_registry_id
+  ON binning_sessions(batch_registry_id);
+
+ALTER TABLE binning_sessions ENABLE ROW LEVEL SECURITY;
+```
+
+**Notes:**
+- `UNIQUE (harvest_session_id)` — enforces the 1:1 constraint. A second binning session for the same harvest session is blocked at the DB level.
+- `batch_registry_id` is denormalized from the linked harvest session. The application sets this on INSERT by reading `harvest_sessions.batch_registry_id`. This avoids a JOIN in every binning query and mirrors the pattern used in other session tables.
+- A DB trigger (`trg_validate_binning_session_harvest`) validates on INSERT that the linked harvest session is `completed` and that the provided `batch_registry_id` matches `harvest_sessions.batch_registry_id`.
+- No downstream trigger fires on completion — binning records dry weight only; no batch or inventory rows are created.
+- Cancellation after completion is blocked (application-layer validation; `cancelled_no_completion` constraint is a DB backstop).
+
 ---
 
 ## RLS Policies
@@ -438,6 +530,50 @@ CREATE POLICY "Authenticated users can update harvest sessions"
   USING (auth.uid() IS NOT NULL)
   WITH CHECK (auth.uid() IS NOT NULL);
 ```
+
+### dry_rooms [D-2 — PENDING MIGRATION]
+
+```sql
+CREATE POLICY "Authenticated users can view dry rooms"
+  ON dry_rooms FOR SELECT
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can insert dry rooms"
+  ON dry_rooms FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can update dry rooms"
+  ON dry_rooms FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL)
+  WITH CHECK (auth.uid() IS NOT NULL);
+```
+
+Note: No DELETE policy on `dry_rooms`. Archive via `is_active = false`.
+
+### binning_sessions [D-2 — PENDING MIGRATION]
+
+```sql
+CREATE POLICY "Authenticated users can view binning sessions"
+  ON binning_sessions FOR SELECT
+  TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can insert binning sessions"
+  ON binning_sessions FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated users can update binning sessions"
+  ON binning_sessions FOR UPDATE
+  TO authenticated
+  USING (auth.uid() IS NOT NULL)
+  WITH CHECK (auth.uid() IS NOT NULL);
+```
+
+Note: No DELETE policy on `binning_sessions`. Once created, a binning session is a permanent record. Cancel instead of delete.
 
 ---
 
@@ -867,6 +1003,81 @@ WHEN (OLD.strain_id IS DISTINCT FROM NEW.strain_id)
 EXECUTE FUNCTION fn_protect_plant_group_strain();
 ```
 
+### 12. Block dry_room_code Changes After Creation [D-2 — PENDING MIGRATION]
+
+Mirrors trigger 8. Fires BEFORE UPDATE on `dry_rooms` when `room_code` changes.
+
+```sql
+CREATE OR REPLACE FUNCTION fn_protect_dry_room_code()
+RETURNS trigger AS $$
+BEGIN
+  IF OLD.room_code IS DISTINCT FROM NEW.room_code THEN
+    RAISE EXCEPTION 'dry room room_code is immutable after creation';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_protect_dry_room_code
+BEFORE UPDATE ON dry_rooms
+FOR EACH ROW
+WHEN (OLD.room_code IS DISTINCT FROM NEW.room_code)
+EXECUTE FUNCTION fn_protect_dry_room_code();
+```
+
+### 13. Validate Binning Session on Insert [D-2 — PENDING MIGRATION]
+
+Fires BEFORE INSERT on `binning_sessions`. Validates two things:
+1. The linked harvest session is `completed` (not still active or cancelled)
+2. The provided `batch_registry_id` matches `harvest_sessions.batch_registry_id`
+
+```sql
+CREATE OR REPLACE FUNCTION fn_validate_binning_session()
+RETURNS trigger AS $$
+DECLARE
+  v_harvest_status       text;
+  v_harvest_batch_id     uuid;
+BEGIN
+  SELECT session_status, batch_registry_id
+  INTO v_harvest_status, v_harvest_batch_id
+  FROM harvest_sessions
+  WHERE id = NEW.harvest_session_id;
+
+  IF v_harvest_status IS NULL THEN
+    RAISE EXCEPTION 'Binning session error: harvest session not found';
+  END IF;
+
+  IF v_harvest_status != 'completed' THEN
+    RAISE EXCEPTION
+      'Cannot create binning session: harvest session is not completed (status: %)',
+      v_harvest_status;
+  END IF;
+
+  IF v_harvest_batch_id IS NULL THEN
+    RAISE EXCEPTION
+      'Cannot create binning session: harvest session has no linked batch';
+  END IF;
+
+  IF NEW.batch_registry_id IS DISTINCT FROM v_harvest_batch_id THEN
+    RAISE EXCEPTION
+      'Binning session error: batch_registry_id does not match the harvest session''s batch';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validate_binning_session
+BEFORE INSERT ON binning_sessions
+FOR EACH ROW
+EXECUTE FUNCTION fn_validate_binning_session();
+```
+
+**Design notes:**
+- Trigger fires on INSERT only — the application sets `batch_registry_id` from the harvest session before inserting.
+- The trigger is the final gate; the application should also validate the harvest session status before even showing the binning session form.
+- No trigger fires on completion — completion just sets `session_status = 'completed'` and `completed_at`. No batch or inventory creation occurs.
+
 ---
 
 ## Integration with Existing Schema
@@ -1015,6 +1226,26 @@ New triggers:
 
 No new RLS policies — existing authenticated UPDATE policy on `plant_groups` covers the new columns.
 
+### Migration D-2-1: Create dry_rooms and binning_sessions ⏳ PENDING
+
+File: `supabase/migrations/YYYYMMDD_create_dry_rooms_and_binning_sessions.sql`
+
+Creates two new tables (both with RLS enabled and authenticated-user policies applied):
+- `dry_rooms` — simple container identifier for drying locations
+- `binning_sessions` — dry weight records, 1:1 with harvest_sessions
+
+New triggers:
+- `fn_protect_dry_room_code` + `trg_protect_dry_room_code` (BEFORE UPDATE on dry_rooms when room_code changes — blocks immutability violation)
+- `fn_validate_binning_session` + `trg_validate_binning_session` (BEFORE INSERT on binning_sessions — validates harvest session is completed and batch_registry_id matches)
+
+Constraints:
+- `dry_rooms`: UNIQUE(room_code), CHECK(capacity_lbs > 0 OR NULL)
+- `binning_sessions`: UNIQUE(harvest_session_id), CHECK(dry_weight_grams > 0), completed_has_timestamp, cancelled_no_completion
+
+Indexes: `idx_binning_sessions_harvest_session_id`, `idx_binning_sessions_batch_registry_id`
+
+**No changes to existing tables.** All new schema.
+
 ---
 
 ## Frontend Module Structure (IMPLEMENTED)
@@ -1100,12 +1331,29 @@ export const cultivationService = {
   completeHarvestSession(id: string): Promise<HarvestSession>
   cancelHarvestSession(id: string): Promise<HarvestSession>
   adjustHarvestWeight(id: string, adjustedWeight: number, reason: string): Promise<HarvestSession>
+
+  // Dry Rooms [D-3 — PENDING]
+  listDryRooms(): Promise<DryRoom[]>
+  createDryRoom(data: CreateDryRoomInput): Promise<DryRoom>
+  updateDryRoom(id: string, data: UpdateDryRoomInput): Promise<DryRoom>
+  archiveDryRoom(id: string): Promise<DryRoom>
+
+  // Binning Sessions [D-3 — PENDING]
+  listBinningSessions(filter?: { status?: BinningSessionStatus }): Promise<BinningSession[]>
+  listUnbinnedHarvestSessions(): Promise<HarvestSession[]>
+  createBinningSession(data: CreateBinningSessionInput): Promise<BinningSession>
+  completeBinningSession(id: string): Promise<BinningSession>
+  cancelBinningSession(id: string): Promise<BinningSession>
 }
 ```
 
 **`moveToRoom` implementation note:** Updates only `grow_room_id`. The DB trigger `trg_log_plant_group_room_history` auto-inserts into `plant_group_room_history`. The service does NOT insert into that table.
 
 **`createPlantGroup` implementation note:** Passes `group_number: 'PENDING'` on INSERT — the `trg_generate_plant_group_number` BEFORE INSERT trigger immediately replaces this with the correct `PG-YYMMDD-ABBREV` value before the row is committed.
+
+**`createBinningSession` implementation note [D-3]:** The application reads `harvest_sessions.batch_registry_id` and passes it as `batch_registry_id` in the insert payload. The DB trigger validates this matches the harvest session's batch. Never pass a user-supplied `batch_registry_id`; always derive it from the harvest session.
+
+**`listUnbinnedHarvestSessions` implementation note [D-3]:** Returns completed harvest sessions that have no corresponding `binning_sessions` row. Uses a LEFT JOIN / IS NULL pattern (see CULTIVATION.md UI Screens § 5).
 
 ---
 
@@ -1268,11 +1516,68 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes'>>;
+
+// [D-3 — PENDING: add to cultivation.types.ts when D-2 migration is applied]
+
+export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
+
+export interface DryRoom {
+  id: string;
+  name: string;
+  room_code: string;
+  capacity_lbs: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface BinningSession {
+  id: string;
+  harvest_session_id: string;
+  dry_room_id: string;
+  batch_registry_id: string;
+  dry_weight_grams: number;
+  bin_date: string;
+  session_status: BinningSessionStatus;
+  completed_at: string | null;
+  completed_by: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+  // Joins
+  harvest_sessions?: Pick<HarvestSession, 'harvest_date' | 'wet_weight_grams' | 'adjusted_weight_grams'> & {
+    plant_groups?: Pick<PlantGroup, 'group_number'> & {
+      strains?: { name: string; abbreviation: string | null };
+    };
+  };
+  dry_rooms?: { name: string; room_code: string };
+  batch_registry?: { batch_number: string };
+}
+
+export type CreateDryRoomInput = Pick<DryRoom, 'name' | 'room_code'> &
+  Partial<Pick<DryRoom, 'capacity_lbs'>>;
+
+export type UpdateDryRoomInput = Partial<Pick<DryRoom, 'name' | 'capacity_lbs' | 'is_active'>>;
+
+export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'dry_weight_grams' | 'bin_date'> &
+  Partial<Pick<BinningSession, 'notes'>>;
 ```
 
 ---
 
 ## Document Version History
+
+### v1.7 (2026-02-19)
+- Updated document header: D-1 specification added; 9 tables total when D-2 applied
+- Added `dry_rooms` and `binning_sessions` to Schema Overview ER diagram (marked D-2 pending)
+- Added Table Definitions for `dry_rooms` and `binning_sessions` (marked D-2 pending)
+- Added RLS Policies for `dry_rooms` and `binning_sessions` (marked D-2 pending)
+- Added Triggers 12 and 13: `trg_protect_dry_room_code` and `trg_validate_binning_session` (marked D-2 pending)
+- Added Migration D-2-1 entry to Migration Plan (marked pending)
+- Updated Service Layer Design: added Dry Rooms (4 ops) and Binning Sessions (5 ops) with D-3 pending notes
+- Updated Type Definitions: added `BinningSessionStatus`, `DryRoom`, `BinningSession`, `CreateDryRoomInput`, `UpdateDryRoomInput`, `CreateBinningSessionInput` (marked D-3 pending)
 
 ### v1.6 (2026-02-19)
 - Added `room_table_id` and `room_section_id` FK columns to `plant_groups` table definition (C-5B)
@@ -1335,6 +1640,6 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ---
 
-**Document Version:** 1.6
+**Document Version:** 1.7
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — 7 tables + placement FKs live (C-5B); 11 triggers live; Layout Builder + Room Map UI live (C-5B)
+**Status:** IMPLEMENTED (C-5B) + SPECIFIED (D-1: dry_rooms + binning_sessions — pending D-2 migration + D-3 UI)
