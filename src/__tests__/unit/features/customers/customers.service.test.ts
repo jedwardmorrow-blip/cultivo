@@ -123,7 +123,7 @@ describe('customersService', () => {
           address: '456 Test Ave',
           city: 'Phoenix',
           state: 'AZ',
-          zip: '85001',
+          postal_code: '85001',
         })
       ]);
     });
