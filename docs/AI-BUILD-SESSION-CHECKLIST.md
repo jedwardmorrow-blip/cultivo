@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-18
+updated: 2026-02-19
 priority: Working document - update every session
 ---
 
@@ -14,47 +14,54 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-18
-**Session:** C-1b — Documentation pass: mother plants, room transfers, weight adjustments, abbreviation hardening
+**Date:** 2026-02-19
+**Session:** C-2/C-3 — Cultivation Module Full Implementation
 **Status:** COMPLETE
 
 **What was done:**
-- Updated `CULTIVATION.md` to v1.1: added Mother Plants section, Room Transfers section, Harvest Weight Adjustments section, updated entity map, lifecycle diagram, UI screens, scope, version history
-- Updated `CULTIVATION-ARCHITECTURE.md` to v1.1: added `plant_group_room_history` table + RLS + trigger, added `mother_plant_group_id`/`is_mother`/`group_number` to `plant_groups`, added `adjusted_weight_grams`/`adjustment_reason` to `harvest_sessions`, added `mother` room type, added `fn_generate_plant_group_number` trigger, added `fn_log_plant_group_room_history` trigger, added `fn_sync_harvest_weight_adjustment` trigger, removed COALESCE fallback from `fn_complete_harvest_session`, updated migration plan (5 tables, 9 trigger pairs), updated service signatures and type definitions
-- Updated `CULTIVATION-RULES.md` to v1.1: added invariants C-11 through C-16, added rule detail sections for each, added new decisions (mother flag, clone lineage FK, room transfer trigger-driven, abbreviation required, weight adjustment), added new error messages, expanded testing requirements to 17 scenarios
+- **C-2-1 (tables):** All 5 cultivation tables confirmed in DB — `grow_rooms`, `plant_groups`, `plant_group_stage_history`, `plant_group_room_history`, `harvest_sessions` — with RLS enabled and full authenticated-user policies
+- **C-2-2 (triggers):** All 9 triggers confirmed in DB — group number generation, stage history log, room history log, forward-only stage validation, strain immutability, room_code immutability, harvest completion (creates batch_registry entry), cancellation guard, weight adjustment validation
+- **Service layer:** `src/features/cultivation/services/cultivation.service.ts` — 18 operations across grow rooms, plant groups, and harvest sessions
+- **Hooks:** `useGrowRooms`, `usePlantGroups`, `useHarvestSessions` — all three fully implemented with reactive state and service wrappers
+- **UI components (7):** `CultivationDashboard`, `GrowRoomsManagement`, `PlantGroupsList`, `HarvestSessionsList`, `NewPlantGroupModal`, `MoveToRoomModal`, `PlantGroupDetailPanel` — all fully implemented, none are placeholder "Coming Soon" stubs
+- **StrainsManagement hardening:** Force-uppercase abbreviation input, max 3 chars, save disabled until exactly 3 uppercase letters, amber warning inline, "No abbreviation — harvest blocked" badge on existing strain cards with missing/invalid abbreviation
+- **Build:** Passes clean
 
-**Build status:** Passes clean (no code changes this session)
+**Build status:** Passes clean
 
 **Known issues (carry-forward, unchanged):**
 - 492 tsc errors — pre-existing, not blocking
 - `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
-- `getProductStageIdFromProductName` error-path tests deferred (module-level cache issue)
 
-**Modified files (docs only):**
-- `docs/CULTIVATION.md` — v1.0 → v1.1
-- `docs/CULTIVATION-ARCHITECTURE.md` — v1.0 → v1.1
-- `docs/CULTIVATION-RULES.md` — v1.0 → v1.1
-- `docs/AI-BUILD-SESSION-CHECKLIST.md`
+**Modified files:**
+- `src/features/products/components/StrainsManagement.tsx` — abbreviation hardening
+- `src/features/cultivation/types/cultivation.types.ts` — complete interim type definitions
+- `src/features/cultivation/services/cultivation.service.ts` — full service layer (new)
+- `src/features/cultivation/services/index.ts` — barrel export
+- `src/features/cultivation/hooks/useGrowRooms.ts` — new
+- `src/features/cultivation/hooks/usePlantGroups.ts` — new
+- `src/features/cultivation/hooks/useHarvestSessions.ts` — new
+- `src/features/cultivation/hooks/index.ts` — barrel export
+- `src/features/cultivation/components/CultivationDashboard.tsx` — full implementation
+- `src/features/cultivation/components/GrowRoomsManagement.tsx` — full implementation
+- `src/features/cultivation/components/PlantGroupsList.tsx` — full implementation
+- `src/features/cultivation/components/HarvestSessionsList.tsx` — full implementation
+- `src/features/cultivation/components/NewPlantGroupModal.tsx` — new
+- `src/features/cultivation/components/MoveToRoomModal.tsx` — new
+- `src/features/cultivation/components/PlantGroupDetailPanel.tsx` — new
+- `src/features/cultivation/components/index.ts` — full barrel export
+- `CHANGELOG.md`
 
-**No migrations, no code changes this session.**
-
-**Critical context for next session (C-2: migrations):**
-- Read `CULTIVATION.md`, `CULTIVATION-ARCHITECTURE.md`, and `CULTIVATION-RULES.md` BEFORE writing any SQL — all three are now v1.1
-- The schema now has FIVE tables (not four): grow_rooms, plant_groups, plant_group_stage_history, **plant_group_room_history**, harvest_sessions
-- `plant_groups` now has: `group_number` (auto-generated, UNIQUE NOT NULL), `mother_plant_group_id` (nullable self-ref FK), `is_mother` (boolean, default false)
-- `harvest_sessions` now has: `adjusted_weight_grams` (nullable numeric), `adjustment_reason` (nullable text), two new CHECK constraints
-- Migration C-2-2 now creates NINE trigger+function pairs (not six) — see architecture doc for full ordered list
-- COALESCE fallback is GONE — `fn_generate_plant_group_number` AND `fn_complete_harvest_session` both raise hard errors if `strains.abbreviation` is null
-- `batch_registry.created_by` column exists (added pre-C-1b)
-- Navigation shell, route cases, and interim TypeScript types are already wired from pre-C-1b session
-- Interim types in `src/features/cultivation/types/cultivation.types.ts` must be updated after C-2 runs to add: `group_number`, `mother_plant_group_id`, `is_mother`, `PlantGroupRoomHistory`, `adjusted_weight_grams`, `adjustment_reason`
+**Critical context for next session:**
+- The Cultivation module is fully functional end-to-end — database, service, hooks, UI all wired
+- Strains without a valid 3-letter abbreviation will be blocked at the DB level on harvest creation (trigger raises error)
+- `cultivation.types.ts` is interim (hand-authored) — after any schema changes, regenerate `database.types.ts` via `npm run types:generate` and migrate the types to derive from `Database['public']['Tables']`
+- The `group_number` field is set to `'PENDING'` on INSERT and immediately replaced by `trg_generate_plant_group_number` — do not rely on the value between INSERT and trigger execution
+- Grow Rooms tab already exists in Settings (`src/features/settings/components/Settings.tsx`) — no further routing needed
 
 **Next recommendations:**
-- **Session C-2** — Run the cultivation migrations (tables, triggers, optional seed rooms). No UI work yet.
-- **Session C-3** — Settings: Grow Rooms UI
-- **Session C-4** — Plant Groups UI (list, create with mother selector, advance stage, move to room, toggle mother)
-- **Session C-5** — Harvest Sessions UI (start, complete, cancel, adjust weight)
-- **Session C-6** — Integration verification + cleanup
+- **Operator testing** — create a grow room, create a plant group, advance through stages, harvest, verify batch_registry entry appears in Batches module
+- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema, then update `cultivation.types.ts` to derive from generated types (optional but good hygiene)
 - **customers.service.test.ts fix** — still trivial, 1-liner when convenient
 
 ---

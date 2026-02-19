@@ -4,6 +4,66 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session C-2/C-3: Cultivation Module — Full Implementation
+
+**Type:** FEATURE
+**Module:** Cultivation (new module)
+**Priority:** High
+**Impact:** 5 database tables, 9 triggers, full service layer, all UI components
+**Status:** COMPLETE
+
+### Database (C-2-1: Tables + RLS)
+
+- Created `grow_rooms` table with room_code unique constraint, room_type check, capacity, is_active
+- Created `plant_groups` table with self-referential mother FK, growth_stage check, stage_entered_at
+- Created `plant_group_stage_history` — immutable stage transition audit log
+- Created `plant_group_room_history` — immutable room transfer audit log
+- Created `harvest_sessions` table with session_status check, weight adjustment fields, batch_registry FK
+- RLS enabled on all 5 tables; authenticated-read, authenticated-write policies on all
+
+### Database (C-2-2: Triggers + Functions)
+
+- `trg_generate_plant_group_number` — auto-generates PG-YYYYMM-NNN group numbers on INSERT
+- `trg_log_plant_group_stage_history` — writes to stage history on every growth_stage UPDATE
+- `trg_log_plant_group_room_history` — writes to room history on every grow_room_id UPDATE
+- `trg_validate_plant_group_stage` — enforces forward-only stage progression (C-14)
+- `trg_protect_plant_group_strain` — blocks strain_id changes after creation (C-11)
+- `trg_protect_room_code` — blocks room_code changes after creation
+- `trg_complete_harvest_session` — on session → completed: sets plant group to harvested, creates batch_registry entry using strain abbreviation, links batch_registry_id
+- `trg_validate_harvest_cancellation` — blocks cancellation of completed sessions
+- `trg_sync_harvest_weight_adjustment` — validates adjusted_weight > 0 with reason present
+
+### Service Layer
+
+- Created `src/features/cultivation/services/cultivation.service.ts` with all CRUD and business operations for grow rooms, plant groups, and harvest sessions
+- Exports: `listGrowRooms`, `createGrowRoom`, `updateGrowRoom`, `archiveGrowRoom`, `listPlantGroups`, `getPlantGroup`, `createPlantGroup`, `advanceStage`, `moveToRoom`, `setMotherStatus`, `getStageHistory`, `getRoomHistory`, `listMotherGroups`, `listHarvestSessions`, `createHarvestSession`, `completeHarvestSession`, `cancelHarvestSession`, `adjustHarvestWeight`
+
+### Hooks
+
+- `useGrowRooms` — room list with active/archived split, CRUD wrappers
+- `usePlantGroups` — filterable by stage or 'active', supports all lifecycle operations
+- `useHarvestSessions` — filterable by status, supports full session workflow
+
+### UI Components
+
+- `CultivationDashboard` — stat cards (rooms, groups, harvests, mothers), stage breakdown, abbreviation warning banner, active harvest list, room grid
+- `GrowRoomsManagement` — full CRUD with room cards, room type color coding, archive/restore, inline form
+- `PlantGroupsList` — row-based list with stage badges, advance-stage controls, move-room button, mother toggle, detail panel trigger, abbreviation warnings
+- `HarvestSessionsList` — tabbed (active/completed/cancelled), start harvest form with abbreviation guard, complete/cancel confirm modals, adjust weight modal
+- `NewPlantGroupModal` — strain selector (blocks strains without valid abbreviation), room selector, mother group linkage
+- `MoveToRoomModal` — filtered room selector excluding current room
+- `PlantGroupDetailPanel` — slide-out panel with stage history and room history timelines
+
+### Products
+
+- Hardened `StrainsManagement.tsx` abbreviation field:
+  - Force-uppercase, max 3 characters on all abbreviation inputs
+  - Add/Edit save button disabled until abbreviation is exactly 3 uppercase letters
+  - Amber warning inline below field if value is non-empty but invalid
+  - "No abbreviation — harvest blocked" warning badge on existing strain cards missing a valid abbreviation
+
+---
+
 ## 2026-02-18 - Pre-C-2 Scaffolding: Schema Fix + Navigation + Skeleton
 
 **Type:** SCAFFOLDING + DATABASE FIX

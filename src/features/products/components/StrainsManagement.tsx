@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Leaf, Edit2, Save, X, Plus, Trash2, Search } from 'lucide-react';
+import { Leaf, Edit2, Save, X, Plus, Trash2, Search, AlertTriangle } from 'lucide-react';
+
+function isValidAbbreviation(v: string | null | undefined): boolean {
+  return !!v && /^[A-Z]{3}$/.test(v);
+}
 import { productsService } from '../services/products.service';
 
 interface Strain {
@@ -254,15 +258,29 @@ export function StrainsManagement() {
 
                 <div>
                   <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
-                    Abbreviation
+                    Abbreviation *
                   </label>
                   <input
                     type="text"
                     value={editForm.abbreviation || ''}
-                    onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
+                    className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
+                      editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
+                        ? 'border-amber-600'
+                        : 'border-cult-medium-gray'
+                    }`}
                     placeholder="e.g., BLP"
+                    maxLength={3}
                   />
+                  {editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation) && (
+                    <p className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      Must be exactly 3 uppercase letters (A–Z)
+                    </p>
+                  )}
+                  {!editForm.abbreviation && (
+                    <p className="text-cult-medium-gray text-xs mt-1">Required for harvest batch IDs</p>
+                  )}
                 </div>
 
                 <div>
@@ -306,7 +324,7 @@ export function StrainsManagement() {
                 </button>
                 <button
                   onClick={() => handleSave()}
-                  disabled={!editForm.name}
+                  disabled={!editForm.name || !isValidAbbreviation(editForm.abbreviation)}
                   className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4" />
@@ -344,14 +362,26 @@ export function StrainsManagement() {
 
                     <div>
                       <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
-                        Abbreviation
+                        Abbreviation *
                       </label>
                       <input
                         type="text"
                         value={editForm.abbreviation || ''}
-                        onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value })}
-                        className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                        onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
+                        className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
+                          editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
+                            ? 'border-amber-600'
+                            : 'border-cult-medium-gray'
+                        }`}
+                        maxLength={3}
+                        placeholder="e.g., BLP"
                       />
+                      {editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation) && (
+                        <p className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          Must be exactly 3 uppercase letters
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -394,7 +424,8 @@ export function StrainsManagement() {
                     </button>
                     <button
                       onClick={() => handleSave(strain.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                      disabled={!editForm.name || !isValidAbbreviation(editForm.abbreviation)}
+                      className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Save className="w-4 h-4" />
                       Save
@@ -404,13 +435,18 @@ export function StrainsManagement() {
               ) : (
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
                         {strain.name}
                       </h3>
-                      {strain.abbreviation && (
+                      {isValidAbbreviation(strain.abbreviation) ? (
                         <span className="px-2 py-1 bg-cult-near-black border border-cult-medium-gray text-cult-lighter-gray text-xs font-mono uppercase">
                           {strain.abbreviation}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-2 py-1 bg-amber-950 border border-amber-700 text-amber-400 text-xs uppercase tracking-wider">
+                          <AlertTriangle className="w-3 h-3" />
+                          No abbreviation — harvest blocked
                         </span>
                       )}
                       {strain.dominance_type && (
