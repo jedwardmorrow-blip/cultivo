@@ -395,7 +395,10 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
 
   return (
     <div className={`border ${room.is_active ? typeCls : 'border-cult-medium-gray text-cult-medium-gray bg-cult-near-black opacity-60'}`}>
-      <div className="p-4">
+      <div
+        className={`p-4 ${isFlower && room.is_active ? 'cursor-pointer select-none' : ''}`}
+        onClick={isFlower && room.is_active ? () => setExpanded((v) => !v) : undefined}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -413,18 +416,20 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
             {room.capacity_plants && (
               <span className="text-xs opacity-70">{room.capacity_plants} plant capacity</span>
             )}
+            {isFlower && room.is_active && (
+              <div className="flex items-center gap-1 mt-1">
+                {expanded
+                  ? <ChevronDown className="w-3 h-3 text-rose-400" />
+                  : <ChevronRight className="w-3 h-3 text-rose-400" />
+                }
+                <span className="text-xs text-rose-400 uppercase tracking-wider">
+                  {expanded ? 'Hide sections' : 'View sections & run dates'}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {isFlower && room.is_active && (
-              <button
-                onClick={() => setExpanded((v) => !v)}
-                className="p-1.5 text-cult-medium-gray hover:text-rose-400 transition-colors"
-                title={expanded ? 'Hide section dates' : 'Show section dates'}
-              >
-                {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-            )}
+          <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
             {room.is_active && (
               <>
                 <button

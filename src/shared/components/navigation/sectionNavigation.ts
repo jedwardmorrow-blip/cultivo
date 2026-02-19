@@ -45,6 +45,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'primary' },
       { id: 'cultivation-harvest', label: 'Harvest Sessions', icon: Warehouse, group: 'primary' },
+      { id: 'cultivation-rooms', label: 'Grow Rooms', icon: Sprout, group: 'primary' },
     ],
   },
   {
