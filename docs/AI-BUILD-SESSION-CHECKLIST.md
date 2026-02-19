@@ -15,17 +15,18 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** C-2/C-3 — Cultivation Module Full Implementation
+**Session:** C-4 — Room Layout Schema Validation
 **Status:** COMPLETE
 
 **What was done:**
-- **C-2-1 (tables):** All 5 cultivation tables confirmed in DB — `grow_rooms`, `plant_groups`, `plant_group_stage_history`, `plant_group_room_history`, `harvest_sessions` — with RLS enabled and full authenticated-user policies
-- **C-2-2 (triggers):** All 9 triggers confirmed in DB — group number generation, stage history log, room history log, forward-only stage validation, strain immutability, room_code immutability, harvest completion (creates batch_registry entry), cancellation guard, weight adjustment validation
-- **Service layer:** `src/features/cultivation/services/cultivation.service.ts` — 18 operations across grow rooms, plant groups, and harvest sessions
-- **Hooks:** `useGrowRooms`, `usePlantGroups`, `useHarvestSessions` — all three fully implemented with reactive state and service wrappers
-- **UI components (7):** `CultivationDashboard`, `GrowRoomsManagement`, `PlantGroupsList`, `HarvestSessionsList`, `NewPlantGroupModal`, `MoveToRoomModal`, `PlantGroupDetailPanel` — all fully implemented, none are placeholder "Coming Soon" stubs
-- **StrainsManagement hardening:** Force-uppercase abbreviation input, max 3 chars, save disabled until exactly 3 uppercase letters, amber warning inline, "No abbreviation — harvest blocked" badge on existing strain cards with missing/invalid abbreviation
-- **Build:** Passes clean
+- **C-4-1 (migration):** Applied `supabase/migrations/20260219040000_create_room_tables_and_sections.sql`
+  - Created `room_tables` (grow_room_id FK, table_number + UNIQUE constraint, table_name, total_sqft, is_active, CHECK table_number > 0)
+  - Created `room_sections` (room_table_id FK, section_label + UNIQUE constraint, section_sqft, is_active)
+  - RLS enabled on both tables with authenticated SELECT/INSERT/UPDATE policies; no DELETE policy (archive pattern)
+  - Performance indexes: `idx_room_tables_grow_room_id`, `idx_room_sections_room_table_id`
+- **Documentation:** All three cultivation docs updated to v1.4 — schema overview, table definitions, RLS policies, migration plan, invariants C-18 through C-21, Room Layout subsection
+- **No TypeScript changes** — C-4 is DB-only; no service, hook, or UI code touches these tables yet
+- **Build:** Passes clean (no TS changes to break anything)
 
 **Build status:** Passes clean
 
@@ -33,35 +34,29 @@ priority: Working document - update every session
 - 492 tsc errors — pre-existing, not blocking
 - `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
 
-**Modified files:**
-- `src/features/products/components/StrainsManagement.tsx` — abbreviation hardening
-- `src/features/cultivation/types/cultivation.types.ts` — complete interim type definitions
-- `src/features/cultivation/services/cultivation.service.ts` — full service layer (new)
-- `src/features/cultivation/services/index.ts` — barrel export
-- `src/features/cultivation/hooks/useGrowRooms.ts` — new
-- `src/features/cultivation/hooks/usePlantGroups.ts` — new
-- `src/features/cultivation/hooks/useHarvestSessions.ts` — new
-- `src/features/cultivation/hooks/index.ts` — barrel export
-- `src/features/cultivation/components/CultivationDashboard.tsx` — full implementation
-- `src/features/cultivation/components/GrowRoomsManagement.tsx` — full implementation
-- `src/features/cultivation/components/PlantGroupsList.tsx` — full implementation
-- `src/features/cultivation/components/HarvestSessionsList.tsx` — full implementation
-- `src/features/cultivation/components/NewPlantGroupModal.tsx` — new
-- `src/features/cultivation/components/MoveToRoomModal.tsx` — new
-- `src/features/cultivation/components/PlantGroupDetailPanel.tsx` — new
-- `src/features/cultivation/components/index.ts` — full barrel export
-- `CHANGELOG.md`
+**Modified files (this session):**
+- `supabase/migrations/20260219040000_create_room_tables_and_sections.sql` — new migration
+- `docs/CULTIVATION-ARCHITECTURE.md` — v1.4: added room_tables/room_sections schema, RLS, C-4 migration entry
+- `docs/CULTIVATION-RULES.md` — v1.4: added invariants C-18 through C-21
+- `docs/CULTIVATION.md` — v1.4: updated scope, module entities, Room Layout subsection
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
 
-**Critical context for next session:**
-- The Cultivation module is fully functional end-to-end — database, service, hooks, UI all wired
-- Strains without a valid 3-letter abbreviation will be blocked at the DB level on harvest creation (trigger raises error)
-- `cultivation.types.ts` is interim (hand-authored) — after any schema changes, regenerate `database.types.ts` via `npm run types:generate` and migrate the types to derive from `Database['public']['Tables']`
-- The `group_number` field is set to `'PENDING'` on INSERT and immediately replaced by `trg_generate_plant_group_number` — do not rely on the value between INSERT and trigger execution
-- Grow Rooms tab already exists in Settings (`src/features/settings/components/Settings.tsx`) — no further routing needed
+**Critical context for next session (C-5):**
+- `room_tables` and `room_sections` are live in the DB with RLS — no UI or service layer exists yet
+- C-5 should add FK columns `room_table_id` (uuid, nullable) and `room_section_id` (uuid, nullable) to `plant_groups` to wire plant placement
+- `cultivation.types.ts` must be updated when C-5 adds placement FK columns — add `RoomTable`, `RoomSection` types and update `PlantGroup` interface
+- The Cultivation module (C-2/C-3) is still fully functional — no regressions from C-4
+
+**Previous session context (C-2/C-3 — still relevant):**
+- All 5 core cultivation tables + 9 triggers live: `grow_rooms`, `plant_groups`, `plant_group_stage_history`, `plant_group_room_history`, `harvest_sessions`
+- Strains without a valid 3-letter abbreviation are blocked at the DB level on harvest creation
+- The `group_number` field is set to `'PENDING'` on INSERT — replaced immediately by `trg_generate_plant_group_number`
+- Grow Rooms tab already exists in Settings (`src/features/settings/components/Settings.tsx`)
 
 **Next recommendations:**
+- **C-5: Plant Placement** — add `room_table_id` and `room_section_id` FK columns to `plant_groups`, add table/section management UI to Settings → Grow Rooms, add placement selector to NewPlantGroupModal and PlantGroupDetailPanel
 - **Operator testing** — create a grow room, create a plant group, advance through stages, harvest, verify batch_registry entry appears in Batches module
-- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema, then update `cultivation.types.ts` to derive from generated types (optional but good hygiene)
+- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema (now includes room_tables and room_sections)
 - **customers.service.test.ts fix** — still trivial, 1-liner when convenient
 
 ---

@@ -1,15 +1,15 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.3
+version: 1.4
 updated: 2026-02-19
 status: IMPLEMENTED — fully operational in production
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live.
-> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI) — all complete.
+> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4.
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema) — all complete.
 > **Purpose:** Complete reference for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
@@ -56,9 +56,10 @@ The Cultivation module closes this gap by:
 
 ## Scope
 
-### Implemented (Sessions C-2 + C-3 — complete)
+### Implemented (Sessions C-2 + C-3 + C-4 — complete)
 
 - Grow room management (create, edit, archive) — Settings → Grow Rooms
+- Room table and section structure (table count, section labels, sqft tracking) — DB schema only; UI pending C-5+
 - Plant group tracking (strain, count, stage, room) — Cultivation → Plant Groups
 - Mother plant designation and clone lineage (mother_plant_group_id FK)
 - Growth stage transitions with timestamps
@@ -94,6 +95,19 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  ├─ id, name, room_code (unique), capacity_plants                    │
 │  ├─ room_type: 'clone' | 'veg' | 'flower' | 'mother' | 'mixed'      │
 │  └─ is_active, created_at                                            │
+│                                                                       │
+│  room_tables  [C-4 — DB schema only; UI pending C-5+]                │
+│  ├─ id, grow_room_id → grow_rooms.id                                 │
+│  ├─ table_number (integer, unique per room, required)                │
+│  ├─ table_name (text, optional human label)                          │
+│  ├─ total_sqft (numeric, optional)                                   │
+│  └─ is_active, created_at, created_by                                │
+│                                                                       │
+│  room_sections  [C-4 — DB schema only; UI pending C-5+]              │
+│  ├─ id, room_table_id → room_tables.id                               │
+│  ├─ section_label (text, unique per table, required)                 │
+│  ├─ section_sqft (numeric, optional)                                 │
+│  └─ is_active, created_at, created_by                                │
 │                                                                       │
 │  plant_groups                                                         │
 │  ├─ id, group_number (human-readable, auto-generated)                │
@@ -221,6 +235,25 @@ Grow rooms are the physical spaces where plants live. They are referenced by pla
 - Rooms cannot be deleted; set `is_active = false` to retire
 - A room can hold plant groups of any stage (room_type is informational only)
 - `mother` room type added to support dedicated mother plant rooms
+
+### Room Layout (Tables and Sections)
+
+Each grow room can be subdivided into numbered tables, and each table can be further subdivided into labeled sections. This structure was added in Session C-4.
+
+**room_tables** — a physical table inside a grow room:
+- Identified by `table_number` (positive integer, unique within the room)
+- Optional `table_name` for a human-readable label (e.g., "Back Wall Left")
+- Optional `total_sqft` for space tracking
+- Soft-delete via `is_active = false`
+
+**room_sections** — a labeled subdivision of a table:
+- Identified by `section_label` (e.g., "A", "B", "01", "Left"), unique within the table
+- Optional `section_sqft` for section-level space tracking
+- Soft-delete via `is_active = false`
+
+**Current status (C-4):** The `room_tables` and `room_sections` tables are live in the database with RLS enabled. No UI management screen exists yet — that is planned for Session C-5 alongside plant group placement. No plant group columns reference these tables yet; those FK columns (`room_table_id`, `room_section_id`) will be added to `plant_groups` in C-5.
+
+**Square footage:** Total room sqft is derived by summing `room_tables.total_sqft` (no denormalized total on `grow_rooms`). Section totals are not required to sum to table totals — these are informational fields only.
 
 ---
 
@@ -594,6 +627,13 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.4 (2026-02-19)
+- Updated session history to include C-4
+- Updated Scope → Implemented to include room table and section structure
+- Added `room_tables` and `room_sections` to Module Entities section
+- Added Room Layout subsection under Grow Rooms (tables, sections, current status, sqft notes)
+- Updated header version and status
+
 ### v1.3 (2026-02-19)
 - Updated status from SPECIFICATION to IMPLEMENTED — sessions C-2 and C-3 complete
 - Updated Scope section to reflect implemented features
@@ -620,6 +660,6 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — fully operational in production
+**Status:** IMPLEMENTED — 7 tables live; room_tables/room_sections schema validated (C-4); UI pending C-5+

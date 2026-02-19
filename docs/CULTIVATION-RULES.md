@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.3
+version: 1.4
 updated: 2026-02-19
 status: IMPLEMENTED — rules active in production
 ---
@@ -49,6 +49,18 @@ status: IMPLEMENTED — rules active in production
 │        For cumulative batch weight, always use:                      │
 │        SUM(wet_weight_grams) FROM harvest_sessions                   │
 │        WHERE batch_registry_id = ?                                   │
+│ C-18. room_tables rows are never hard-deleted — archive via         │
+│        is_active = false. Application must prevent archiving a       │
+│        table that has active plant groups assigned to it (C-5+).    │
+│ C-19. room_sections rows are never hard-deleted — archive via       │
+│        is_active = false. section_label uniqueness per table is      │
+│        enforced by DB constraint (UNIQUE room_table_id, label).      │
+│ C-20. room_table.total_sqft and room_section.section_sqft are both  │
+│        optional. No denormalized sqft total is stored on grow_rooms; │
+│        room-level area is derived by summing room_tables.total_sqft. │
+│ C-21. table_number must be a positive integer (DB CHECK > 0).       │
+│        table_number values are unique per room (UNIQUE constraint)   │
+│        but do not need to be sequential.                             │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -240,6 +252,46 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-18: room_tables Cannot Be Hard-Deleted
+
+**Rule:** `room_tables` rows are never deleted. To retire a table, set `is_active = false`.
+
+**Enforcement:** No DELETE RLS policy on `room_tables`. When plant group placement is implemented (C-5), the application must additionally block archiving a table that has active plant groups assigned to it.
+
+**Rationale:** Mirrors the `grow_rooms` soft-delete pattern. Tables may be referenced by historical plant group placement records once C-5 is implemented — hard deletion would break those references.
+
+---
+
+### C-19: room_sections Cannot Be Hard-Deleted
+
+**Rule:** `room_sections` rows are never deleted. To retire a section, set `is_active = false`.
+
+**Enforcement:** No DELETE RLS policy on `room_sections`. `section_label` uniqueness per table is enforced by the DB UNIQUE constraint `(room_table_id, section_label)`.
+
+**Rationale:** Section records will be referenced by plant group placements once C-5 is implemented. Deletion would break historical placement records.
+
+---
+
+### C-20: Square Footage is Optional and Not Denormalized
+
+**Rule:** `room_tables.total_sqft` and `room_sections.section_sqft` are both nullable. No sqft total is stored on `grow_rooms`. Room-level area must be calculated by summing `room_tables.total_sqft` for active tables in that room.
+
+**Enforcement:** Both columns are nullable at the DB level. No trigger enforces section totals summing to table total — these are informational fields, not ledger quantities.
+
+**Rationale:** Sqft data is for space utilization reporting only. Not all operators track it. Forcing it as required would block basic table setup for operators who don't use it.
+
+---
+
+### C-21: table_number Must Be a Positive Integer, Unique Per Room
+
+**Rule:** `table_number` must be > 0 (DB CHECK constraint). Within a room, each table number must be unique (UNIQUE constraint on `grow_room_id, table_number`). Table numbers do not need to be sequential or start at 1.
+
+**Enforcement:** DB CHECK `room_tables_number_positive` and UNIQUE constraint `room_tables_unique_number_per_room`.
+
+**Rationale:** Operators may label tables as they exist physically (e.g., skip numbers for removed tables, start at arbitrary values). Enforcing sequence would require renumbering when tables are added or removed.
+
+---
+
 ## Decisions Made (and Why)
 
 ### Decision: Group-level tracking, not individual plant tracking
@@ -398,6 +450,11 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v1.4 (2026-02-19)
+- Added invariants C-18 through C-21 (room_tables/room_sections soft-delete, sqft optionality, table_number uniqueness)
+- Added rule detail sections for C-18, C-19, C-20, C-21
+- Updated header version
+
 ### v1.3 (2026-02-19)
 - Updated status from SPECIFICATION to IMPLEMENTED
 - Updated Testing Requirements preamble to reflect C-2/C-3 completion
@@ -415,6 +472,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Last Updated:** 2026-02-19
 **Status:** IMPLEMENTED — rules enforced by live DB triggers and application validation.

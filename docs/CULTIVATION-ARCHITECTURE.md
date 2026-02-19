@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.3
+version: 1.4
 updated: 2026-02-19
 status: IMPLEMENTED — live in production database
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** IMPLEMENTED — all 5 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations) and C-3 (UI) are complete.
+> **Status:** IMPLEMENTED — 7 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), and C-4 (room layout schema) are complete.
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
@@ -40,6 +40,23 @@ status: IMPLEMENTED — live in production database
 │  ├─ PK: id uuid                                                      │
 │  ├─ room_code text UNIQUE NOT NULL                                   │
 │  ├─ room_type: 'clone'|'veg'|'flower'|'mother'|'mixed'              │
+│  └─ is_active boolean DEFAULT true                                   │
+│       │                                                              │
+│       ▼  (C-4)                                                       │
+│  room_tables                                                         │
+│  ├─ PK: id uuid                                                      │
+│  ├─ FK: grow_room_id → grow_rooms(id)  [CASCADE DELETE]             │
+│  ├─ table_number integer NOT NULL > 0                                │
+│  ├─ table_name text  [nullable, optional label]                      │
+│  ├─ total_sqft numeric  [nullable]                                   │
+│  └─ is_active boolean DEFAULT true                                   │
+│       │                                                              │
+│       ▼  (C-4)                                                       │
+│  room_sections                                                       │
+│  ├─ PK: id uuid                                                      │
+│  ├─ FK: room_table_id → room_tables(id)  [CASCADE DELETE]           │
+│  ├─ section_label text NOT NULL  [e.g. "A", "B", "01"]              │
+│  ├─ section_sqft numeric  [nullable]                                 │
 │  └─ is_active boolean DEFAULT true                                   │
 │                                                                      │
 │  plant_groups                                                        │
@@ -161,6 +178,65 @@ CREATE TABLE IF NOT EXISTS plant_group_room_history (
 ALTER TABLE plant_group_room_history ENABLE ROW LEVEL SECURITY;
 ```
 
+### room_tables
+
+Added in Session C-4 to represent physical cultivation tables within a grow room.
+
+```sql
+CREATE TABLE IF NOT EXISTS room_tables (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  grow_room_id  uuid        NOT NULL REFERENCES grow_rooms(id) ON DELETE CASCADE,
+  table_number  integer     NOT NULL,
+  table_name    text,
+  total_sqft    numeric(8,2),
+  is_active     boolean     NOT NULL DEFAULT true,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  created_by    uuid        REFERENCES auth.users(id),
+
+  CONSTRAINT room_tables_number_positive CHECK (table_number > 0),
+  CONSTRAINT room_tables_unique_number_per_room UNIQUE (grow_room_id, table_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_room_tables_grow_room_id ON room_tables(grow_room_id);
+
+ALTER TABLE room_tables ENABLE ROW LEVEL SECURITY;
+```
+
+**Notes:**
+- `table_number` must be a positive integer, unique per room. Numbers do not need to be sequential.
+- `table_name` is an optional human-friendly label (e.g., "Back Wall Left"). The `table_number` is the canonical identifier.
+- `total_sqft` is optional — tracks surface area for space utilization reporting.
+- `is_active` is the soft-delete flag. Tables with active plant groups should not be archived (application-layer enforcement; no DB constraint).
+- Cascade delete from `grow_rooms` removes all associated tables and their sections if the room is hard-deleted (rooms are normally archived via `is_active`, not deleted).
+
+### room_sections
+
+Added in Session C-4 to represent labeled subdivisions within a room table.
+
+```sql
+CREATE TABLE IF NOT EXISTS room_sections (
+  id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_table_id  uuid        NOT NULL REFERENCES room_tables(id) ON DELETE CASCADE,
+  section_label  text        NOT NULL,
+  section_sqft   numeric(8,2),
+  is_active      boolean     NOT NULL DEFAULT true,
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  created_by     uuid        REFERENCES auth.users(id),
+
+  CONSTRAINT room_sections_unique_label_per_table UNIQUE (room_table_id, section_label)
+);
+
+CREATE INDEX IF NOT EXISTS idx_room_sections_room_table_id ON room_sections(room_table_id);
+
+ALTER TABLE room_sections ENABLE ROW LEVEL SECURITY;
+```
+
+**Notes:**
+- `section_label` is a short operator-defined label (e.g., "A", "B", "01", "Left"). Unique per table.
+- `section_sqft` is optional — for space utilization tracking at the section level.
+- `is_active` is the soft-delete flag. Archive instead of hard-delete.
+- Plant group placement at section level is planned for Session C-5 — two FK columns (`room_table_id` and `room_section_id`) will be added to `plant_groups` at that time.
+
 ### harvest_sessions
 
 ```sql
@@ -280,6 +356,50 @@ CREATE POLICY "Authenticated users can insert room history"
 ```
 
 Note: No UPDATE or DELETE policy on `plant_group_room_history`. This table is an immutable audit log.
+
+### room_tables
+
+```sql
+CREATE POLICY "Authenticated users can view room tables"
+  ON room_tables FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert room tables"
+  ON room_tables FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Authenticated users can update room tables"
+  ON room_tables FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+```
+
+Note: No DELETE policy on `room_tables`. Archive via `is_active = false`.
+
+### room_sections
+
+```sql
+CREATE POLICY "Authenticated users can view room sections"
+  ON room_sections FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert room sections"
+  ON room_sections FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = created_by);
+
+CREATE POLICY "Authenticated users can update room sections"
+  ON room_sections FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+```
+
+Note: No DELETE policy on `room_sections`. Archive via `is_active = false`.
 
 ### harvest_sessions
 
@@ -774,6 +894,24 @@ Created (in order, dependencies respected):
 
 Consult operator before seeding room data. This is data, not schema.
 
+### Migration C-4-1: Create room_tables and room_sections ✅ COMPLETE
+
+File: `supabase/migrations/20260219040000_create_room_tables_and_sections.sql`
+
+Created (two tables, both with RLS enabled and authenticated-user policies applied):
+- `room_tables` — physical tables inside grow rooms (table_number, table_name, total_sqft, is_active)
+- `room_sections` — labeled subdivisions of a table (section_label, section_sqft, is_active)
+
+Constraints:
+- `room_tables`: UNIQUE(grow_room_id, table_number), CHECK(table_number > 0)
+- `room_sections`: UNIQUE(room_table_id, section_label)
+
+Indexes: `idx_room_tables_grow_room_id`, `idx_room_sections_room_table_id`
+
+No new triggers — these tables are purely structural. Trigger work (if any) deferred to C-5 when plant group placement is wired.
+
+**Purpose:** Validates the room layout data model before building the UI. Session C-5 will add FK columns to `plant_groups` to reference `room_tables` and `room_sections`.
+
 ---
 
 ## Frontend Module Structure (IMPLEMENTED)
@@ -954,6 +1092,13 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ## Document Version History
 
+### v1.4 (2026-02-19)
+- Added `room_tables` and `room_sections` to Schema Overview ER diagram
+- Added full table definitions for `room_tables` and `room_sections` (C-4)
+- Added RLS policies for `room_tables` and `room_sections`
+- Added Migration C-4-1 entry to Migration Plan (marked complete)
+- Updated document header: 7 tables, sessions C-2/C-3/C-4 noted as complete
+
 ### v1.3 (2026-02-19)
 - Updated status from SPECIFICATION to IMPLEMENTED — all 5 tables and 9 triggers confirmed live
 - Updated Migration Plan section: marked C-2-1 and C-2-2 as complete with actual migration filenames
@@ -990,6 +1135,6 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — database live, UI complete, migrations committed
+**Status:** IMPLEMENTED — 7 tables live in DB (C-4 schema validated); UI for room_tables/room_sections pending (C-5+)
