@@ -25,18 +25,22 @@ import type {
   CreateDryRoomInput,
   UpdateDryRoomInput,
   CreateBinningSessionInput,
+  IndividualPlant,
+  AddIndividualPlantInput,
+  BulkImportPlantResult,
 } from '../types';
 
 const PLANT_GROUP_SELECT = `
   id, group_number, name, strain_id, grow_room_id, mother_plant_group_id,
-  room_table_id, room_section_id,
+  room_table_id, room_section_id, batch_registry_id,
   is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   grow_rooms (name, room_code),
   mother_group:plant_groups!mother_plant_group_id (id, group_number, growth_stage),
   room_tables (table_number, table_name),
-  room_sections (section_label)
+  room_sections (section_label),
+  batch_registry (batch_number, clone_date)
 `;
 
 const HARVEST_SESSION_SELECT = `
@@ -562,5 +566,81 @@ export const cultivationService = {
       .single();
     if (error) throwError(error, 'cancelBinningSession');
     return data as unknown as BinningSession;
+  },
+
+  async listIndividualPlants(plantGroupId: string): Promise<IndividualPlant[]> {
+    const { data, error } = await supabase
+      .from('individual_plants')
+      .select('id, plant_group_id, state_plant_id, is_active, notes, created_at, created_by')
+      .eq('plant_group_id', plantGroupId)
+      .order('state_plant_id');
+    if (error) throwError(error, 'listIndividualPlants');
+    return data as IndividualPlant[];
+  },
+
+  async addIndividualPlant(input: AddIndividualPlantInput): Promise<IndividualPlant> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('individual_plants')
+      .insert({
+        plant_group_id: input.plant_group_id,
+        state_plant_id: input.state_plant_id,
+        notes: input.notes ?? null,
+        created_by: user?.id ?? null,
+      })
+      .select('id, plant_group_id, state_plant_id, is_active, notes, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'addIndividualPlant');
+    return data as IndividualPlant;
+  },
+
+  async bulkImportIndividualPlants(plantGroupId: string, statePlantIds: string[]): Promise<BulkImportPlantResult> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const result: BulkImportPlantResult = { imported: 0, skipped: [], errors: [] };
+
+    const FORMAT_RE = /^[0-9]{12}$/;
+
+    const rows = statePlantIds
+      .map((id) => id.trim())
+      .filter((id) => {
+        if (!FORMAT_RE.test(id)) {
+          result.errors.push({ state_plant_id: id, reason: 'Must be exactly 12 digits' });
+          return false;
+        }
+        return true;
+      })
+      .map((state_plant_id) => ({
+        plant_group_id: plantGroupId,
+        state_plant_id,
+        created_by: user?.id ?? null,
+      }));
+
+    if (rows.length === 0) return result;
+
+    const { data, error } = await supabase
+      .from('individual_plants')
+      .upsert(rows, { onConflict: 'state_plant_id', ignoreDuplicates: true })
+      .select('state_plant_id');
+
+    if (error) throwError(error, 'bulkImportIndividualPlants');
+
+    const insertedIds = new Set((data ?? []).map((r: { state_plant_id: string }) => r.state_plant_id));
+    result.imported = insertedIds.size;
+    rows.forEach((r) => {
+      if (!insertedIds.has(r.state_plant_id)) result.skipped.push(r.state_plant_id);
+    });
+
+    return result;
+  },
+
+  async deactivateIndividualPlant(id: string): Promise<IndividualPlant> {
+    const { data, error } = await supabase
+      .from('individual_plants')
+      .update({ is_active: false })
+      .eq('id', id)
+      .select('id, plant_group_id, state_plant_id, is_active, notes, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'deactivateIndividualPlant');
+    return data as IndividualPlant;
   },
 };

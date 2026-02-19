@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.8
+version: 1.9
 updated: 2026-02-19
-status: FULLY IMPLEMENTED — all 9 tables and 13 triggers are live
+status: FULLY IMPLEMENTED — 10 tables and 13 triggers live; E-1 (individual plants + batch-at-clone-time) added
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** FULLY IMPLEMENTED — all 9 tables (7 grow + 2 dry/binning) and 13 triggers are live in the Supabase database. Sessions C-2 through C-5B and D-2 are all complete. The entire cultivation pipeline from plant group creation through harvest and dry-weight binning is operational.
+> **Status:** FULLY IMPLEMENTED — 10 tables (7 grow + 2 dry/binning + 1 individual plants) and 13 triggers are live. E-1 adds individual_plants table, batch_registry_id on plant_groups, clone_date on batch_registry, and updates fn_generate_plant_group_number + fn_complete_harvest_session for batch-at-clone-time tracking.
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)

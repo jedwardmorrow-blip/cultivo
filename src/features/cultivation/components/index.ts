@@ -10,3 +10,4 @@ export { RoomMapCard } from './RoomMapCard';
 export { LayoutBuilder } from './LayoutBuilder';
 export { DryRoomsManagement } from './DryRoomsManagement';
 export { BinningSessionsView } from './BinningSessionsView';
+export { IndividualPlantsTab } from './IndividualPlantsTab';

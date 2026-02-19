@@ -12,6 +12,8 @@
  *        FlipRoomInput new service types.
  * D-2/D-3: Added BinningSessionStatus, DryRoom, BinningSession, CreateDryRoomInput,
  *           UpdateDryRoomInput, CreateBinningSessionInput.
+ * E-1: Added IndividualPlant, AddIndividualPlantInput, BulkImportPlantResult;
+ *      added batch_registry_id to PlantGroup.
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
@@ -38,6 +40,7 @@ export interface PlantGroup {
   mother_plant_group_id: string | null;
   room_table_id: string | null;
   room_section_id: string | null;
+  batch_registry_id: string | null;
   is_mother: boolean;
   plant_count: number;
   growth_stage: GrowthStage;
@@ -52,6 +55,7 @@ export interface PlantGroup {
   mother_group?: Pick<PlantGroup, 'id' | 'group_number' | 'growth_stage'>;
   room_tables?: { table_number: number; table_name: string | null } | null;
   room_sections?: { section_label: string } | null;
+  batch_registry?: { batch_number: string; clone_date: string | null } | null;
 }
 
 export interface PlantGroupStageHistory {
@@ -212,3 +216,25 @@ export type UpdateDryRoomInput = Partial<Pick<DryRoom, 'name' | 'capacity_lbs' |
 
 export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'dry_weight_grams' | 'bin_date'> &
   Partial<Pick<BinningSession, 'notes'>>;
+
+export interface IndividualPlant {
+  id: string;
+  plant_group_id: string;
+  state_plant_id: string;
+  is_active: boolean;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export type AddIndividualPlantInput = {
+  plant_group_id: string;
+  state_plant_id: string;
+  notes?: string;
+};
+
+export type BulkImportPlantResult = {
+  imported: number;
+  skipped: string[];
+  errors: { state_plant_id: string; reason: string }[];
+};

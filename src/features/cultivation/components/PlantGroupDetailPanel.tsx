@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Hash } from 'lucide-react';
 import { cultivationService } from '../services';
+import { IndividualPlantsTab } from './IndividualPlantsTab';
 import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory } from '../types';
 
 interface PlantGroupDetailPanelProps {
   group: PlantGroup;
   onClose: () => void;
 }
+
+type Tab = 'history' | 'plants';
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -25,6 +28,7 @@ export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelP
   const [stageHistory, setStageHistory] = useState<PlantGroupStageHistory[]>([]);
   const [roomHistory, setRoomHistory] = useState<PlantGroupRoomHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>('history');
 
   useEffect(() => {
     async function load() {
@@ -46,6 +50,8 @@ export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelP
     (Date.now() - new Date(group.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
   );
 
+  const batchNumber = group.batch_registry?.batch_number ?? null;
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
       <div className="bg-cult-near-black border-l border-cult-medium-gray w-full max-w-sm h-full overflow-y-auto">
@@ -53,6 +59,12 @@ export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelP
           <div>
             <div className="font-mono text-sm font-bold text-cult-white">{group.group_number}</div>
             <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>
+            {batchNumber && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <Hash className="w-3 h-3 text-cult-medium-gray" />
+                <span className="font-mono text-xs text-cult-medium-gray">{batchNumber}</span>
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -79,46 +91,75 @@ export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelP
             </div>
           )}
 
-          {loading ? (
-            <p className="text-cult-medium-gray text-sm">Loading history...</p>
-          ) : (
-            <>
-              <div>
-                <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Stage History</h4>
-                {stageHistory.length === 0 ? (
-                  <p className="text-cult-medium-gray text-xs">No transitions yet</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {stageHistory.map((h) => (
-                      <div key={h.id} className="flex items-center gap-2 text-xs">
-                        <span className="text-cult-medium-gray">{h.from_stage ?? 'start'}</span>
-                        <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
-                        <span className="text-cult-white font-semibold">{h.to_stage}</span>
-                        <span className="text-cult-medium-gray ml-auto">{formatDate(h.transitioned_at)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <div className="flex border-b border-cult-medium-gray">
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-colors ${
+                activeTab === 'history'
+                  ? 'text-cult-white border-b-2 border-white -mb-px'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray'
+              }`}
+            >
+              History
+            </button>
+            <button
+              onClick={() => setActiveTab('plants')}
+              className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-colors ${
+                activeTab === 'plants'
+                  ? 'text-cult-white border-b-2 border-white -mb-px'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray'
+              }`}
+            >
+              Plant IDs
+            </button>
+          </div>
 
-              <div>
-                <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Room History</h4>
-                {roomHistory.length === 0 ? (
-                  <p className="text-cult-medium-gray text-xs">No room transfers</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {roomHistory.map((h) => (
-                      <div key={h.id} className="flex items-center gap-2 text-xs">
-                        <span className="text-cult-medium-gray">{h.from_room?.room_code ?? h.from_room_id.slice(0, 6)}</span>
-                        <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
-                        <span className="text-cult-white font-semibold">{h.to_room?.room_code ?? h.to_room_id.slice(0, 6)}</span>
-                        <span className="text-cult-medium-gray ml-auto">{formatDate(h.moved_at)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
+          {activeTab === 'plants' && (
+            <IndividualPlantsTab plantGroupId={group.id} plantCount={group.plant_count} />
+          )}
+
+          {activeTab === 'history' && (
+            loading ? (
+              <p className="text-cult-medium-gray text-sm">Loading history...</p>
+            ) : (
+              <>
+                <div>
+                  <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Stage History</h4>
+                  {stageHistory.length === 0 ? (
+                    <p className="text-cult-medium-gray text-xs">No transitions yet</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {stageHistory.map((h) => (
+                        <div key={h.id} className="flex items-center gap-2 text-xs">
+                          <span className="text-cult-medium-gray">{h.from_stage ?? 'start'}</span>
+                          <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
+                          <span className="text-cult-white font-semibold">{h.to_stage}</span>
+                          <span className="text-cult-medium-gray ml-auto">{formatDate(h.transitioned_at)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Room History</h4>
+                  {roomHistory.length === 0 ? (
+                    <p className="text-cult-medium-gray text-xs">No room transfers</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {roomHistory.map((h) => (
+                        <div key={h.id} className="flex items-center gap-2 text-xs">
+                          <span className="text-cult-medium-gray">{h.from_room?.room_code ?? h.from_room_id.slice(0, 6)}</span>
+                          <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
+                          <span className="text-cult-white font-semibold">{h.to_room?.room_code ?? h.to_room_id.slice(0, 6)}</span>
+                          <span className="text-cult-medium-gray ml-auto">{formatDate(h.moved_at)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )
           )}
         </div>
       </div>

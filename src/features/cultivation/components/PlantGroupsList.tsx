@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, ArrowRight, Home, Star, Info, AlertTriangle } from 'lucide-react';
+import { Plus, ArrowRight, Home, Star, Info, AlertTriangle, Hash } from 'lucide-react';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
@@ -60,7 +60,7 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-0.5">
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             <span className="text-cult-light-gray text-xs truncate">{group.strains?.name ?? 'Unknown'}</span>
             <span className="text-cult-medium-gray text-xs">·</span>
             <span className="text-cult-light-gray text-xs">{group.plant_count} plants</span>
@@ -68,6 +68,15 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
             <span className="text-cult-light-gray text-xs">{group.grow_rooms?.room_code ?? '—'}</span>
             <span className="text-cult-medium-gray text-xs">·</span>
             <span className="text-cult-medium-gray text-xs">{daysInStage}d in stage</span>
+            {group.batch_registry?.batch_number && (
+              <>
+                <span className="text-cult-medium-gray text-xs">·</span>
+                <span className="flex items-center gap-0.5 text-cult-medium-gray text-xs font-mono">
+                  <Hash className="w-2.5 h-2.5" />
+                  {group.batch_registry.batch_number}
+                </span>
+              </>
+            )}
           </div>
         </div>
 

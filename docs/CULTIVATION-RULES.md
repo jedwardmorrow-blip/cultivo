@@ -1,9 +1,9 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.7
+version: 1.8
 updated: 2026-02-19
-status: IMPLEMENTED (C-29) + SPECIFIED (C-30 to C-37 — D-2/D-3 pending)
+status: IMPLEMENTED (C-37) + NEW (C-38 to C-42 — E-1 individual plants)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -116,6 +116,25 @@ status: IMPLEMENTED (C-29) + SPECIFIED (C-30 to C-37 — D-2/D-3 pending)
 │ C-37. Binning sessions do not create or modify inventory. [D-2]    │
 │        They are data-capture records only. All inventory creation   │
 │        continues through the existing processing session pipeline.  │
+│ C-38. Individual plant IDs are stored on individual_plants.        │
+│        state_plant_id is a 12-digit numeric string (text, not int) │
+│        matching the AZ seed-to-sale import format. UNIQUE across   │
+│        the entire system. Format enforced by DB CHECK constraint.  │
+│ C-39. A batch_registry row is created when a plant group is        │
+│        created (lifecycle_state = 'pre_harvest'). The batch number │
+│        uses the planted_date (or today if not set) + abbreviation. │
+│        plant_groups.batch_registry_id is set by the trigger.       │
+│ C-40. Harvest completion updates the existing pre_harvest batch    │
+│        row (sets harvest_date, initial_weight_grams, room,         │
+│        lifecycle_state='created'). If no existing batch row is     │
+│        linked (legacy group), fall-back INSERT is used.            │
+│ C-41. individual_plants.is_active = false marks dead/removed       │
+│        plants. Rows are never hard-deleted. Deactivated plants     │
+│        are shown crossed-out in the UI.                            │
+│ C-42. Individual plant IDs may be bulk-imported via               │
+│        cultivationService.bulkImportIndividualPlants(). Duplicate  │
+│        state_plant_ids are silently skipped (ignoreDuplicates).    │
+│        Invalid-format IDs are returned in the errors list.        │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
