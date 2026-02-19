@@ -4,6 +4,42 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session D-5: Type Regeneration — Cultivation Tables Added to database.types.ts
+
+**Type:** Infrastructure / Type Safety
+**Module:** Cultivation, Database Types
+**Priority:** Medium
+**Impact:** 9 new tables typed in `database.types.ts`; `gen-types.mjs` FK list updated for future regenerations
+**Status:** COMPLETE
+
+### Changes
+
+- Added 9 cultivation tables to `src/lib/database/database.types.ts` (Row/Insert/Update/Relationships for each):
+  - `binning_sessions` — dry weight records, links to harvest_sessions + dry_rooms + batch_registry
+  - `dry_rooms` — physical drying rooms
+  - `grow_rooms` — grow rooms with room_type and capacity
+  - `harvest_sessions` — harvest records linking plant_groups to batch_registry
+  - `plant_group_room_history` — audit log of room moves (from_room, to_room)
+  - `plant_group_stage_history` — audit log of stage transitions
+  - `plant_groups` — core cultivation entity with placement (room_table_id, room_section_id)
+  - `room_sections` — sections within tables, with flip_date / projected_harvest_date
+  - `room_tables` — tables within grow rooms
+- Updated `scripts/gen-types.mjs` FKS array with all 13 cultivation foreign key relationships
+
+### Files Changed
+
+- `src/lib/database/database.types.ts`
+- `scripts/gen-types.mjs`
+- `docs/AI-BUILD-SESSION-CHECKLIST.md`
+- `CHANGELOG.md`
+
+### Testing
+
+- Build passes: built in 42.70s
+- Test suite: 308/308 passing (14 test files)
+
+---
+
 ## 2026-02-19 - Session D-4: Cultivation Module Testing + Pre-Existing Test Fix
 
 **Type:** Testing / Bug Fix

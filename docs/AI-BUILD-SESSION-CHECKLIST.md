@@ -15,36 +15,29 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** D-4 — Cultivation Module Testing + customers.service Fix
+**Session:** D-5 — Type Regeneration (Cultivation Tables)
 **Status:** COMPLETE
 
 **What was done:**
-- Fixed pre-existing `customers.service.test.ts` failure: `zip` → `postal_code` in `createCustomer` assertion (line ~126)
-- Created 4 new cultivation test files covering all 28 scenarios from CULTIVATION-RULES.md:
-  - `cultivation.service.grow-rooms.test.ts` — grow room CRUD, dry room CRUD, room_code/dry_room_code uniqueness (Scenarios 8, 23)
-  - `cultivation.service.plant-groups.test.ts` — plant group lifecycle, stage filtering, backward transition guard (Scenarios 1, 2, 7, 9, 11, 12, 13, 16)
-  - `cultivation.service.harvest-sessions.test.ts` — create/complete/cancel/adjust, batch creation trigger, same-day batch linking, cancellation guard (Scenarios 3, 4, 5, 6, 10, 14, 15)
-  - `cultivation.service.binning-sessions.test.ts` — create/complete/cancel, non-completed harvest guard, duplicate guard, batch mismatch guard, zero weight guard (Scenarios 17–24)
-- Test count: **114 → 308** (+194 tests, 14 test files all passing)
+- Added 9 cultivation tables to `database.types.ts` with full Row/Insert/Update/Relationships blocks:
+  `binning_sessions`, `dry_rooms`, `grow_rooms`, `harvest_sessions`, `plant_group_room_history`, `plant_group_stage_history`, `plant_groups`, `room_sections`, `room_tables`
+- Updated `scripts/gen-types.mjs` FKS array with all 13 cultivation FK relationships (so future `npm run types:generate` runs produce correct output)
+- The Supabase client now has full type coverage for all cultivation operations — `from('grow_rooms')`, `from('plant_groups')`, etc. are now fully typed
 
-**Build status:** PASSES — ✓ built in 45.33s, 308/308 tests pass
+**Build status:** PASSES — built in 42.70s, 308/308 tests pass
 
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
-- Type regeneration still pending (run `npm run types:generate` when convenient)
 
 **Modified files (this session):**
-- `src/__tests__/unit/features/customers/customers.service.test.ts` — fixed zip→postal_code
-- `src/__tests__/unit/features/cultivation/cultivation.service.grow-rooms.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/cultivation.service.plant-groups.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/cultivation.service.harvest-sessions.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/cultivation.service.binning-sessions.test.ts` — NEW
+- `src/lib/database/database.types.ts` — 9 cultivation table blocks added
+- `scripts/gen-types.mjs` — 13 cultivation FK entries added to FKS array
 - `CHANGELOG.md`
 
 **Next recommendations (in order):**
-1. **Type regeneration** — run `npm run types:generate` to sync database.types.ts with live schema (includes all 9 cultivation tables)
-2. **Cultivation UI polish** — any remaining C-3 UI items identified during D-2/D-3
-3. **Integration tests** — if live DB testing infrastructure is added in future, cultivation trigger behavior (stage machine, batch creation, binning validation) is the highest-value target
+1. **Cultivation UI polish** — any remaining C-3 UI items: harvest session detail view, binning session form with dry room selector, batch linkage display
+2. **Integration tests** — if live DB testing infrastructure is added in future, cultivation trigger behavior (stage machine, batch creation, binning validation) is the highest-value target
+3. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete" once all C-3 UI work is done
 
 ---
 

@@ -472,6 +472,79 @@ export type Database = {
           },
         ]
       }
+      binning_sessions: {
+        Row: {
+          id: string
+          harvest_session_id: string
+          dry_room_id: string
+          batch_registry_id: string
+          dry_weight_grams: number
+          bin_date: string
+          session_status: string
+          completed_at: string | null
+          completed_by: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          notes: string | null
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          harvest_session_id: string
+          dry_room_id: string
+          batch_registry_id: string
+          dry_weight_grams: number
+          bin_date: string
+          session_status?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          harvest_session_id?: string
+          dry_room_id?: string
+          batch_registry_id?: string
+          dry_weight_grams?: number
+          bin_date?: string
+          session_status?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binning_sessions_harvest_session_id_fkey"
+            columns: ["harvest_session_id"]
+            isOneToOne: false
+            referencedRelation: "harvest_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_dry_room_id_fkey"
+            columns: ["dry_room_id"]
+            isOneToOne: false
+            referencedRelation: "dry_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bucked_inventory: {
         Row: {
           id: string
@@ -1597,6 +1670,141 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dry_rooms: {
+        Row: {
+          id: string
+          name: string
+          room_code: string
+          capacity_lbs: number | null
+          is_active: boolean
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          room_code: string
+          capacity_lbs?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          room_code?: string
+          capacity_lbs?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: []
+      }
+      grow_rooms: {
+        Row: {
+          id: string
+          name: string
+          room_code: string
+          room_type: string
+          capacity_plants: number | null
+          is_active: boolean
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          room_code: string
+          room_type?: string
+          capacity_plants?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          room_code?: string
+          room_type?: string
+          capacity_plants?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: []
+      }
+      harvest_sessions: {
+        Row: {
+          id: string
+          plant_group_id: string
+          harvest_date: string
+          wet_weight_grams: number
+          adjusted_weight_grams: number | null
+          adjustment_reason: string | null
+          plant_count_harvested: number
+          batch_registry_id: string | null
+          session_status: string
+          completed_at: string | null
+          completed_by: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          notes: string | null
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          plant_group_id: string
+          harvest_date: string
+          wet_weight_grams: number
+          adjusted_weight_grams?: number | null
+          adjustment_reason?: string | null
+          plant_count_harvested: number
+          batch_registry_id?: string | null
+          session_status?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          plant_group_id?: string
+          harvest_date?: string
+          wet_weight_grams?: number
+          adjusted_weight_grams?: number | null
+          adjustment_reason?: string | null
+          plant_count_harvested?: number
+          batch_registry_id?: string | null
+          session_status?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "harvest_sessions_plant_group_id_fkey"
+            columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "harvest_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
             referencedColumns: ["id"]
           },
         ]
@@ -3743,6 +3951,277 @@ export type Database = {
             columns: ["packaging_session_id"]
             isOneToOne: false
             referencedRelation: "packaging_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plant_group_room_history: {
+        Row: {
+          id: string
+          plant_group_id: string
+          from_room_id: string
+          to_room_id: string
+          moved_at: string
+          moved_by: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          plant_group_id: string
+          from_room_id: string
+          to_room_id: string
+          moved_at?: string
+          moved_by?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          plant_group_id?: string
+          from_room_id?: string
+          to_room_id?: string
+          moved_at?: string
+          moved_by?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_group_room_history_plant_group_id_fkey"
+            columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_from_room_id_fkey"
+            columns: ["from_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_to_room_id_fkey"
+            columns: ["to_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plant_group_stage_history: {
+        Row: {
+          id: string
+          plant_group_id: string
+          from_stage: string | null
+          to_stage: string
+          transitioned_at: string
+          transitioned_by: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          plant_group_id: string
+          from_stage?: string | null
+          to_stage: string
+          transitioned_at?: string
+          transitioned_by?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          plant_group_id?: string
+          from_stage?: string | null
+          to_stage?: string
+          transitioned_at?: string
+          transitioned_by?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_group_stage_history_plant_group_id_fkey"
+            columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plant_groups: {
+        Row: {
+          id: string
+          group_number: string
+          name: string | null
+          strain_id: string
+          grow_room_id: string
+          mother_plant_group_id: string | null
+          is_mother: boolean
+          plant_count: number
+          growth_stage: string
+          stage_entered_at: string
+          planted_date: string | null
+          notes: string | null
+          created_at: string
+          created_by: string | null
+          updated_at: string
+          room_table_id: string | null
+          room_section_id: string | null
+        }
+        Insert: {
+          id?: string
+          group_number: string
+          name?: string | null
+          strain_id: string
+          grow_room_id: string
+          mother_plant_group_id?: string | null
+          is_mother?: boolean
+          plant_count: number
+          growth_stage?: string
+          stage_entered_at?: string
+          planted_date?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+          room_table_id?: string | null
+          room_section_id?: string | null
+        }
+        Update: {
+          id?: string
+          group_number?: string
+          name?: string | null
+          strain_id?: string
+          grow_room_id?: string
+          mother_plant_group_id?: string | null
+          is_mother?: boolean
+          plant_count?: number
+          growth_stage?: string
+          stage_entered_at?: string
+          planted_date?: string | null
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+          room_table_id?: string | null
+          room_section_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_groups_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_groups_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_groups_mother_plant_group_id_fkey"
+            columns: ["mother_plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_groups_room_table_id_fkey"
+            columns: ["room_table_id"]
+            isOneToOne: false
+            referencedRelation: "room_tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_groups_room_section_id_fkey"
+            columns: ["room_section_id"]
+            isOneToOne: false
+            referencedRelation: "room_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_sections: {
+        Row: {
+          id: string
+          room_table_id: string
+          section_label: string
+          section_sqft: number | null
+          is_active: boolean
+          created_at: string
+          created_by: string | null
+          flip_date: string | null
+          projected_harvest_date: string | null
+        }
+        Insert: {
+          id?: string
+          room_table_id: string
+          section_label: string
+          section_sqft?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+          flip_date?: string | null
+          projected_harvest_date?: string | null
+        }
+        Update: {
+          id?: string
+          room_table_id?: string
+          section_label?: string
+          section_sqft?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+          flip_date?: string | null
+          projected_harvest_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_sections_room_table_id_fkey"
+            columns: ["room_table_id"]
+            isOneToOne: false
+            referencedRelation: "room_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_tables: {
+        Row: {
+          id: string
+          grow_room_id: string
+          table_number: number
+          table_name: string | null
+          total_sqft: number | null
+          is_active: boolean
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          grow_room_id: string
+          table_number: number
+          table_name?: string | null
+          total_sqft?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          grow_room_id?: string
+          table_number?: number
+          table_name?: string | null
+          total_sqft?: number | null
+          is_active?: boolean
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_tables_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
             referencedColumns: ["id"]
           },
         ]
