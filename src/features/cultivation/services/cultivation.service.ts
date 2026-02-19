@@ -11,6 +11,9 @@ import type {
   UpdateGrowRoomInput,
   CreatePlantGroupInput,
   CreateHarvestSessionInput,
+  RoomTable,
+  RoomSection,
+  UpdateRoomSectionInput,
 } from '../types';
 
 const PLANT_GROUP_SELECT = `
@@ -244,5 +247,39 @@ export const cultivationService = {
       .single();
     if (error) throwError(error, 'adjustHarvestWeight');
     return data as unknown as HarvestSession;
+  },
+
+  async listRoomTables(growRoomId: string): Promise<RoomTable[]> {
+    const { data, error } = await supabase
+      .from('room_tables')
+      .select(`
+        id, grow_room_id, table_number, table_name, total_sqft, is_active, created_at, created_by,
+        sections:room_sections (
+          id, room_table_id, section_label, section_sqft, is_active, created_at, created_by,
+          flip_date, projected_harvest_date
+        )
+      `)
+      .eq('grow_room_id', growRoomId)
+      .eq('is_active', true)
+      .order('table_number');
+    if (error) throwError(error, 'listRoomTables');
+    const tables = (data as unknown as RoomTable[]).map((t) => ({
+      ...t,
+      sections: (t.sections ?? [])
+        .filter((s: RoomSection) => s.is_active)
+        .sort((a: RoomSection, b: RoomSection) => a.section_label.localeCompare(b.section_label)),
+    }));
+    return tables;
+  },
+
+  async updateRoomSection(id: string, input: UpdateRoomSectionInput): Promise<RoomSection> {
+    const { data, error } = await supabase
+      .from('room_sections')
+      .update(input)
+      .eq('id', id)
+      .select('id, room_table_id, section_label, section_sqft, is_active, created_at, created_by, flip_date, projected_harvest_date')
+      .single();
+    if (error) throwError(error, 'updateRoomSection');
+    return data as unknown as RoomSection;
   },
 };

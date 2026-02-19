@@ -15,48 +15,68 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** C-4 — Room Layout Schema Validation
+**Session:** C-5A — Section Run Dates (Flip Date + Projected Harvest Date)
 **Status:** COMPLETE
 
 **What was done:**
-- **C-4-1 (migration):** Applied `supabase/migrations/20260219040000_create_room_tables_and_sections.sql`
-  - Created `room_tables` (grow_room_id FK, table_number + UNIQUE constraint, table_name, total_sqft, is_active, CHECK table_number > 0)
-  - Created `room_sections` (room_table_id FK, section_label + UNIQUE constraint, section_sqft, is_active)
-  - RLS enabled on both tables with authenticated SELECT/INSERT/UPDATE policies; no DELETE policy (archive pattern)
-  - Performance indexes: `idx_room_tables_grow_room_id`, `idx_room_sections_room_table_id`
-- **Documentation:** All three cultivation docs updated to v1.4 — schema overview, table definitions, RLS policies, migration plan, invariants C-18 through C-21, Room Layout subsection
-- **No TypeScript changes** — C-4 is DB-only; no service, hook, or UI code touches these tables yet
-- **Build:** Passes clean (no TS changes to break anything)
+- **C-5A-1 (migration):** Applied `supabase/migrations/20260219050000_add_run_dates_to_room_sections.sql`
+  - Added `flip_date` (date, nullable) to `room_sections`
+  - Added `projected_harvest_date` (date, nullable) to `room_sections`
+  - No new triggers or RLS policies needed — existing authenticated UPDATE policy covers new columns
+- **Types updated:** `src/features/cultivation/types/cultivation.types.ts`
+  - Added `RoomSection` interface (includes flip_date, projected_harvest_date)
+  - Added `RoomTable` interface (with nested `sections: RoomSection[]`)
+  - Added `UpdateRoomSectionInput` type
+- **Service extended:** `src/features/cultivation/services/cultivation.service.ts`
+  - Added `listRoomTables(growRoomId)` — fetches tables + nested sections for a room
+  - Added `updateRoomSection(id, input)` — updates section fields including run dates
+- **New hook:** `src/features/cultivation/hooks/useRoomSections.ts`
+  - `useRoomSections(growRoomId)` — loads tables/sections on mount, exposes `updateSection()`
+  - Exported from `hooks/index.ts`
+- **UI updated:** `src/features/cultivation/components/GrowRoomsManagement.tsx`
+  - Flower room cards now have a chevron expand button revealing "Section Run Dates" panel
+  - Each section shows flip date, "Day N" badge, projected harvest date, run length, countdown
+  - Dates edited inline (click to edit, Enter/blur to save, Escape to cancel, X to clear)
+  - Non-flower rooms: no expand button, no dates shown
+- **Documentation:** All three cultivation docs + checklist updated to v1.5
+  - `CULTIVATION-ARCHITECTURE.md` — updated room_sections schema, added C-5A migration, updated types/service/hooks sections
+  - `CULTIVATION-RULES.md` — added invariant C-22 (run dates are mutable operational notes)
+  - `CULTIVATION.md` — updated scope, module entities, UI Screens → Grow Rooms section with full date panel description
 
-**Build status:** Passes clean
+**Build status:** Clean (verify with `npm run build`)
 
 **Known issues (carry-forward, unchanged):**
-- 492 tsc errors — pre-existing, not blocking
+- Pre-existing tsc errors — not blocking
 - `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
 
 **Modified files (this session):**
-- `supabase/migrations/20260219040000_create_room_tables_and_sections.sql` — new migration
-- `docs/CULTIVATION-ARCHITECTURE.md` — v1.4: added room_tables/room_sections schema, RLS, C-4 migration entry
-- `docs/CULTIVATION-RULES.md` — v1.4: added invariants C-18 through C-21
-- `docs/CULTIVATION.md` — v1.4: updated scope, module entities, Room Layout subsection
+- `supabase/migrations/20260219050000_add_run_dates_to_room_sections.sql` — new migration
+- `src/features/cultivation/types/cultivation.types.ts` — added RoomSection, RoomTable, UpdateRoomSectionInput
+- `src/features/cultivation/services/cultivation.service.ts` — added listRoomTables, updateRoomSection
+- `src/features/cultivation/hooks/useRoomSections.ts` — new hook
+- `src/features/cultivation/hooks/index.ts` — added useRoomSections export
+- `src/features/cultivation/components/GrowRoomsManagement.tsx` — full rewrite with section panel
+- `docs/CULTIVATION-ARCHITECTURE.md` — v1.5
+- `docs/CULTIVATION-RULES.md` — v1.5
+- `docs/CULTIVATION.md` — v1.5
 - `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
 
-**Critical context for next session (C-5):**
-- `room_tables` and `room_sections` are live in the DB with RLS — no UI or service layer exists yet
-- C-5 should add FK columns `room_table_id` (uuid, nullable) and `room_section_id` (uuid, nullable) to `plant_groups` to wire plant placement
-- `cultivation.types.ts` must be updated when C-5 adds placement FK columns — add `RoomTable`, `RoomSection` types and update `PlantGroup` interface
-- The Cultivation module (C-2/C-3) is still fully functional — no regressions from C-4
+**Critical context for next session (C-5B):**
+- `RoomSection` and `RoomTable` types are now defined in `cultivation.types.ts` — do NOT duplicate them
+- `listRoomTables` returns sections sorted by `section_label` alphabetically, filtered to `is_active = true`
+- Run dates are **section-level** (not room-level) — a room can have different flip dates per section to support mixed batch runs
+- The `RunDates` component uses local state for flip/harvest values; it reads from `section.flip_date` / `section.projected_harvest_date` as props — after an `updateSection` call the hook reloads and passes fresh props down
+- C-5B should add `room_table_id` (uuid, nullable) and `room_section_id` (uuid, nullable) FK columns to `plant_groups` to wire plant placement to specific sections
 
-**Previous session context (C-2/C-3 — still relevant):**
+**Previous session context (C-2/C-3/C-4 — still relevant):**
 - All 5 core cultivation tables + 9 triggers live: `grow_rooms`, `plant_groups`, `plant_group_stage_history`, `plant_group_room_history`, `harvest_sessions`
-- Strains without a valid 3-letter abbreviation are blocked at the DB level on harvest creation
-- The `group_number` field is set to `'PENDING'` on INSERT — replaced immediately by `trg_generate_plant_group_number`
 - Grow Rooms tab already exists in Settings (`src/features/settings/components/Settings.tsx`)
+- `room_tables` and `room_sections` are live in DB with RLS; run dates columns are live (C-5A)
 
 **Next recommendations:**
-- **C-5: Plant Placement** — add `room_table_id` and `room_section_id` FK columns to `plant_groups`, add table/section management UI to Settings → Grow Rooms, add placement selector to NewPlantGroupModal and PlantGroupDetailPanel
-- **Operator testing** — create a grow room, create a plant group, advance through stages, harvest, verify batch_registry entry appears in Batches module
-- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema (now includes room_tables and room_sections)
+- **C-5B: Plant Placement** — add `room_table_id` and `room_section_id` FK columns to `plant_groups`, add table/section management UI to Settings → Grow Rooms, add placement selector to NewPlantGroupModal and PlantGroupDetailPanel
+- **Operator testing** — open a flower room card, click the chevron, set a flip date on a section, verify Day N badge and countdown appear correctly
+- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema
 - **customers.service.test.ts fix** — still trivial, 1-liner when convenient
 
 ---

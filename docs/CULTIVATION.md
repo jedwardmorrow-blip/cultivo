@@ -1,15 +1,15 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.4
+version: 1.5
 updated: 2026-02-19
 status: IMPLEMENTED — fully operational in production
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4.
-> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema) — all complete.
+> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4. Run dates (flip_date, projected_harvest_date) on room_sections added in C-5A.
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections) — all complete.
 > **Purpose:** Complete reference for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
@@ -56,10 +56,11 @@ The Cultivation module closes this gap by:
 
 ## Scope
 
-### Implemented (Sessions C-2 + C-3 + C-4 — complete)
+### Implemented (Sessions C-2 + C-3 + C-4 + C-5A — complete)
 
 - Grow room management (create, edit, archive) — Settings → Grow Rooms
-- Room table and section structure (table count, section labels, sqft tracking) — DB schema only; UI pending C-5+
+- Room table and section structure (table count, section labels, sqft tracking) — DB schema only; UI pending C-5B
+- Run date tracking per section (flip date, projected harvest date, Day N counter, run length, countdown) — C-5A
 - Plant group tracking (strain, count, stage, room) — Cultivation → Plant Groups
 - Mother plant designation and clone lineage (mother_plant_group_id FK)
 - Growth stage transitions with timestamps
@@ -103,10 +104,12 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  ├─ total_sqft (numeric, optional)                                   │
 │  └─ is_active, created_at, created_by                                │
 │                                                                       │
-│  room_sections  [C-4 — DB schema only; UI pending C-5+]              │
+│  room_sections  [C-4 schema; C-5A adds run date fields]              │
 │  ├─ id, room_table_id → room_tables.id                               │
 │  ├─ section_label (text, unique per table, required)                 │
 │  ├─ section_sqft (numeric, optional)                                 │
+│  ├─ flip_date (date, nullable) — date section's batch flipped to FLW│
+│  ├─ projected_harvest_date (date, nullable) — expected harvest date  │
 │  └─ is_active, created_at, created_by                                │
 │                                                                       │
 │  plant_groups                                                         │
@@ -505,10 +508,28 @@ Location: Settings → Grow Rooms
 
 | Action | Description |
 |--------|-------------|
-| List | Table of rooms: name, code, type, capacity, status |
+| List | Cards per room: name, code, type, capacity, status |
 | Create | Modal form: name, room_code, room_type, capacity_plants |
 | Edit | Same fields, except room_code is read-only |
 | Archive | Toggle is_active; removes from plant group selects |
+| Expand (flower rooms only) | Chevron toggle reveals Section Run Dates panel |
+
+#### Section Run Dates Panel (flower rooms only)
+
+Flower room cards have an expandable panel listing all active sections for that room, organized by table. Each section row shows:
+
+| Display | Source | Notes |
+|---------|--------|-------|
+| Section label | `room_sections.section_label` | e.g. "A", "B" |
+| Flip Date | `room_sections.flip_date` | Click to edit inline; shows "Set flip date" placeholder if null |
+| "Day N" badge | `(today - flip_date) + 1` | Only shown when flip_date is set |
+| Projected Harvest | `room_sections.projected_harvest_date` | Click to edit inline; shows "Set harvest date" placeholder if null |
+| Run length | `projected_harvest_date - flip_date` in days | e.g. "63-day run"; shown when both dates set |
+| Countdown | `projected_harvest_date - today` | "in N days" (gray), "N days overdue" (red), amber when ≤ 7 days |
+
+Dates are edited by clicking the date field inline — no modal required. Enter or blur saves; Escape cancels. An X button clears a set date back to null.
+
+These dates are tracked per section because a single room can hold multiple simultaneous batch runs across different sections (each on its own flip/harvest schedule). See Invariant C-22.
 
 ### 2. Plant Groups (Cultivation main screen)
 
@@ -627,6 +648,13 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.5 (2026-02-19)
+- Updated session history to include C-5A
+- Updated Scope → Implemented to include run date tracking on sections
+- Updated `room_sections` in Module Entities to show flip_date and projected_harvest_date fields
+- Updated UI Screens — Grow Rooms section: added Section Run Dates Panel description with full display table
+- Updated footer version and status
+
 ### v1.4 (2026-02-19)
 - Updated session history to include C-4
 - Updated Scope → Implemented to include room table and section structure
@@ -660,6 +688,6 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — 7 tables live; room_tables/room_sections schema validated (C-4); UI pending C-5+
+**Status:** IMPLEMENTED — 7 tables live; run dates on sections live (C-5A); plant group placement FKs pending (C-5B)

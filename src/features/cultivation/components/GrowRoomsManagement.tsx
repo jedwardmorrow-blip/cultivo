@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, Pencil, Archive, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Archive, RotateCcw, AlertTriangle, ChevronDown, ChevronRight, Calendar, X } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
-import type { GrowRoom, RoomType, CreateGrowRoomInput, UpdateGrowRoomInput } from '../types';
+import { useRoomSections } from '../hooks/useRoomSections';
+import type { GrowRoom, RoomType, RoomTable, RoomSection, CreateGrowRoomInput, UpdateGrowRoomInput } from '../types';
 
 const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
   { value: 'clone', label: 'Clone' },
@@ -18,6 +19,242 @@ const ROOM_TYPE_COLORS: Record<RoomType, string> = {
   mother: 'bg-amber-950 border-amber-700 text-amber-400',
   mixed: 'bg-cult-black border-cult-medium-gray text-cult-light-gray',
 };
+
+function formatDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function daysBetween(a: string, b: string): number {
+  const msA = new Date(a + 'T00:00:00').getTime();
+  const msB = new Date(b + 'T00:00:00').getTime();
+  return Math.round((msB - msA) / 86400000);
+}
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+interface RunDatesProps {
+  section: RoomSection;
+  onUpdate: (id: string, flip: string | null, harvest: string | null) => Promise<void>;
+}
+
+function RunDates({ section, onUpdate }: RunDatesProps) {
+  const [editingFlip, setEditingFlip] = useState(false);
+  const [editingHarvest, setEditingHarvest] = useState(false);
+  const [flipVal, setFlipVal] = useState(section.flip_date ?? '');
+  const [harvestVal, setHarvestVal] = useState(section.projected_harvest_date ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const today = todayIso();
+
+  const flipDate = section.flip_date;
+  const harvestDate = section.projected_harvest_date;
+
+  const dayOfRun = flipDate ? daysBetween(flipDate, today) + 1 : null;
+  const runLength = (flipDate && harvestDate) ? daysBetween(flipDate, harvestDate) : null;
+  const daysToHarvest = harvestDate ? daysBetween(today, harvestDate) : null;
+
+  async function saveFlip(val: string) {
+    setSaving(true);
+    try {
+      await onUpdate(section.id, val || null, section.projected_harvest_date);
+    } finally {
+      setSaving(false);
+      setEditingFlip(false);
+    }
+  }
+
+  async function saveHarvest(val: string) {
+    setSaving(true);
+    try {
+      await onUpdate(section.id, section.flip_date, val || null);
+    } finally {
+      setSaving(false);
+      setEditingHarvest(false);
+    }
+  }
+
+  function countdownColor(): string {
+    if (daysToHarvest === null) return 'text-cult-medium-gray';
+    if (daysToHarvest < 0) return 'text-red-400';
+    if (daysToHarvest <= 7) return 'text-amber-400';
+    return 'text-cult-light-gray';
+  }
+
+  function countdownText(): string {
+    if (daysToHarvest === null) return '';
+    if (daysToHarvest === 0) return 'harvest today';
+    if (daysToHarvest < 0) return `${Math.abs(daysToHarvest)} day${Math.abs(daysToHarvest) !== 1 ? 's' : ''} overdue`;
+    return `in ${daysToHarvest} day${daysToHarvest !== 1 ? 's' : ''}`;
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-cult-medium-gray uppercase tracking-wider w-20 flex-shrink-0">Flip</span>
+        {editingFlip ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={flipVal}
+              onChange={(e) => setFlipVal(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveFlip(flipVal);
+                if (e.key === 'Escape') setEditingFlip(false);
+              }}
+              autoFocus
+              disabled={saving}
+              className="bg-cult-black border border-rose-700 text-cult-white px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
+            />
+            <button
+              onClick={() => saveFlip(flipVal)}
+              disabled={saving}
+              className="text-xs text-rose-400 hover:text-rose-300 px-1 disabled:opacity-40"
+            >
+              {saving ? '...' : 'Save'}
+            </button>
+            <button onClick={() => setEditingFlip(false)} className="text-xs text-cult-medium-gray hover:text-cult-light-gray px-1">Cancel</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => { setFlipVal(flipDate ?? ''); setEditingFlip(true); }}
+              className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+            >
+              <Calendar className="w-3 h-3 opacity-60" />
+              {flipDate ? formatDate(flipDate) : <span className="text-cult-medium-gray italic">Set flip date</span>}
+            </button>
+            {flipDate && (
+              <button
+                onClick={() => onUpdate(section.id, null, section.projected_harvest_date)}
+                className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                title="Clear flip date"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            {dayOfRun !== null && (
+              <span className="text-xs font-bold text-rose-400 border border-rose-800 px-1.5 py-0.5 bg-rose-950">
+                Day {dayOfRun}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-cult-medium-gray uppercase tracking-wider w-20 flex-shrink-0">Harvest</span>
+        {editingHarvest ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={harvestVal}
+              onChange={(e) => setHarvestVal(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveHarvest(harvestVal);
+                if (e.key === 'Escape') setEditingHarvest(false);
+              }}
+              autoFocus
+              disabled={saving}
+              className="bg-cult-black border border-rose-700 text-cult-white px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
+            />
+            <button
+              onClick={() => saveHarvest(harvestVal)}
+              disabled={saving}
+              className="text-xs text-rose-400 hover:text-rose-300 px-1 disabled:opacity-40"
+            >
+              {saving ? '...' : 'Save'}
+            </button>
+            <button onClick={() => setEditingHarvest(false)} className="text-xs text-cult-medium-gray hover:text-cult-light-gray px-1">Cancel</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => { setHarvestVal(harvestDate ?? ''); setEditingHarvest(true); }}
+              className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+            >
+              <Calendar className="w-3 h-3 opacity-60" />
+              {harvestDate ? formatDate(harvestDate) : <span className="text-cult-medium-gray italic">Set harvest date</span>}
+            </button>
+            {harvestDate && (
+              <button
+                onClick={() => onUpdate(section.id, section.flip_date, null)}
+                className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                title="Clear harvest date"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            {runLength !== null && (
+              <span className="text-xs text-cult-medium-gray">{runLength}-day run</span>
+            )}
+            {countdownText() && (
+              <span className={`text-xs font-medium ${countdownColor()}`}>{countdownText()}</span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface FlowerSectionPanelProps {
+  roomId: string;
+}
+
+function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
+  const { tables, loading, error, hasSections, updateSection } = useRoomSections(roomId);
+
+  async function handleUpdate(sectionId: string, flip: string | null, harvest: string | null) {
+    await updateSection(sectionId, {
+      flip_date: flip,
+      projected_harvest_date: harvest,
+    });
+  }
+
+  if (loading) {
+    return <p className="text-xs text-cult-medium-gray px-1 py-2">Loading sections...</p>;
+  }
+
+  if (error) {
+    return <p className="text-xs text-red-400 px-1 py-2">{error}</p>;
+  }
+
+  if (!hasSections) {
+    return (
+      <p className="text-xs text-cult-medium-gray italic px-1 py-2">
+        No sections configured. Add tables and sections in the room layout settings.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {tables.map((table: RoomTable) => (
+        <div key={table.id}>
+          <p className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2">
+            Table {table.table_number}{table.table_name ? ` — ${table.table_name}` : ''}
+          </p>
+          <div className="space-y-3">
+            {table.sections.map((section: RoomSection) => (
+              <div key={section.id} className="border border-rose-900 bg-rose-950/20 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-rose-300 font-mono">Section {section.section_label}</span>
+                  {section.section_sqft && (
+                    <span className="text-xs text-cult-medium-gray">{section.section_sqft} sqft</span>
+                  )}
+                </div>
+                <RunDates section={section} onUpdate={handleUpdate} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface RoomFormState {
   name: string;
@@ -153,58 +390,78 @@ interface RoomCardProps {
 
 function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
   const typeCls = ROOM_TYPE_COLORS[room.room_type] ?? ROOM_TYPE_COLORS.mixed;
+  const isFlower = room.room_type === 'flower';
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className={`border p-4 ${room.is_active ? typeCls : 'border-cult-medium-gray text-cult-medium-gray bg-cult-near-black opacity-60'}`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-bold">{room.room_code}</span>
-            <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${typeCls}`}>
-              {room.room_type}
-            </span>
-            {!room.is_active && (
-              <span className="text-xs border border-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider text-cult-medium-gray">
-                Archived
+    <div className={`border ${room.is_active ? typeCls : 'border-cult-medium-gray text-cult-medium-gray bg-cult-near-black opacity-60'}`}>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-sm font-bold">{room.room_code}</span>
+              <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${typeCls}`}>
+                {room.room_type}
               </span>
+              {!room.is_active && (
+                <span className="text-xs border border-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider text-cult-medium-gray">
+                  Archived
+                </span>
+              )}
+            </div>
+            <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
+            {room.capacity_plants && (
+              <span className="text-xs opacity-70">{room.capacity_plants} plant capacity</span>
             )}
           </div>
-          <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
-          {room.capacity_plants && (
-            <span className="text-xs opacity-70">{room.capacity_plants} plant capacity</span>
-          )}
-        </div>
 
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {room.is_active && (
-            <>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {isFlower && room.is_active && (
               <button
-                onClick={() => onEdit(room)}
-                className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
-                title="Edit room"
+                onClick={() => setExpanded((v) => !v)}
+                className="p-1.5 text-cult-medium-gray hover:text-rose-400 transition-colors"
+                title={expanded ? 'Hide section dates' : 'Show section dates'}
               >
-                <Pencil className="w-3.5 h-3.5" />
+                {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </button>
+            )}
+            {room.is_active && (
+              <>
+                <button
+                  onClick={() => onEdit(room)}
+                  className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+                  title="Edit room"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onArchive(room)}
+                  className="p-1.5 text-cult-medium-gray hover:text-red-400 transition-colors"
+                  title="Archive room"
+                >
+                  <Archive className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+            {!room.is_active && (
               <button
-                onClick={() => onArchive(room)}
-                className="p-1.5 text-cult-medium-gray hover:text-red-400 transition-colors"
-                title="Archive room"
+                onClick={() => onRestore(room)}
+                className="p-1.5 text-cult-medium-gray hover:text-green-400 transition-colors"
+                title="Restore room"
               >
-                <Archive className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
-            </>
-          )}
-          {!room.is_active && (
-            <button
-              onClick={() => onRestore(room)}
-              className="p-1.5 text-cult-medium-gray hover:text-green-400 transition-colors"
-              title="Restore room"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {isFlower && room.is_active && expanded && (
+        <div className="border-t border-rose-900 px-4 pb-4 pt-3">
+          <p className="text-xs text-rose-400 uppercase tracking-wider mb-3 font-semibold">Section Run Dates</p>
+          <FlowerSectionPanel roomId={room.id} />
+        </div>
+      )}
     </div>
   );
 }

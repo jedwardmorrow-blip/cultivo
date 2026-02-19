@@ -5,6 +5,8 @@
  * After C-2 migration runs and creates the cultivation tables, regenerate database.types.ts
  * via `npm run types:generate` and convert these to derive from Database['public']['Tables']
  * following the pattern in batch.types.ts.
+ *
+ * C-5A: Added RoomSection, RoomTable, UpdateRoomSectionInput for run date tracking.
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
@@ -92,10 +94,36 @@ export interface HarvestSession {
   batch_registry?: { batch_number: string };
 }
 
+export interface RoomSection {
+  id: string;
+  room_table_id: string;
+  section_label: string;
+  section_sqft: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  flip_date: string | null;
+  projected_harvest_date: string | null;
+}
+
+export interface RoomTable {
+  id: string;
+  grow_room_id: string;
+  table_number: number;
+  table_name: string | null;
+  total_sqft: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  sections: RoomSection[];
+}
+
 export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_type'> &
   Partial<Pick<GrowRoom, 'capacity_plants'>>;
 
 export type UpdateGrowRoomInput = Partial<Pick<GrowRoom, 'name' | 'room_type' | 'capacity_plants' | 'is_active'>>;
+
+export type UpdateRoomSectionInput = Partial<Pick<RoomSection, 'flip_date' | 'projected_harvest_date' | 'section_sqft' | 'is_active'>>;
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
   Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id'>>;

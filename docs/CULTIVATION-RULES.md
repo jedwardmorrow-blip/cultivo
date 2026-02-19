@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.4
+version: 1.5
 updated: 2026-02-19
 status: IMPLEMENTED — rules active in production
 ---
@@ -61,6 +61,10 @@ status: IMPLEMENTED — rules active in production
 │ C-21. table_number must be a positive integer (DB CHECK > 0).       │
 │        table_number values are unique per room (UNIQUE constraint)   │
 │        but do not need to be sequential.                             │
+│ C-22. flip_date and projected_harvest_date on room_sections are     │
+│        nullable, mutable operational notes. They change with every  │
+│        run. No trigger tracks changes; no audit log is maintained.  │
+│        Both may be null at any time without constraint violations.  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -282,6 +286,25 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-22: flip_date and projected_harvest_date are Mutable Operational Notes
+
+**Rule:** `room_sections.flip_date` and `room_sections.projected_harvest_date` are nullable date columns that may be freely set, updated, or cleared by any authenticated user at any time. They are not audit records and are not subject to immutability constraints.
+
+**Enforcement:** No triggers. No audit log. The existing authenticated UPDATE policy on `room_sections` is sufficient.
+
+**Why section-level (not room-level):** A single grow room can contain multiple simultaneous batch runs across different sections (e.g., VEG-01 feeding two different FLW room batches). Tracking dates at the room level would require a single date for the whole room, which is incorrect when sections are on different flip/harvest schedules. Sections are the correct unit of granularity.
+
+**UI computed values from these dates:**
+- "Day N of flower" — `(today - flip_date) + 1` (shown when flip_date is set)
+- "Run length" — `projected_harvest_date - flip_date` total days (shown when both dates are set)
+- "Days to harvest" countdown — `projected_harvest_date - today` (shown when projected_harvest_date is set)
+  - Amber when ≤ 7 days remaining
+  - Red when overdue (projected_harvest_date is in the past)
+
+**Rationale:** These dates change with every cultivation run. Logging every update would produce noise with no compliance value. The original wet weight, batch number, and stage history are the compliance-critical audit records — not operational scheduling dates.
+
+---
+
 ### C-21: table_number Must Be a Positive Integer, Unique Per Room
 
 **Rule:** `table_number` must be > 0 (DB CHECK constraint). Within a room, each table number must be unique (UNIQUE constraint on `grow_room_id, table_number`). Table numbers do not need to be sequential or start at 1.
@@ -450,6 +473,11 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v1.5 (2026-02-19)
+- Added invariant C-22 (flip_date/projected_harvest_date are mutable operational notes, not audit records)
+- Added rule detail section for C-22 including UI computed value definitions
+- Updated header version
+
 ### v1.4 (2026-02-19)
 - Added invariants C-18 through C-21 (room_tables/room_sections soft-delete, sqft optionality, table_number uniqueness)
 - Added rule detail sections for C-18, C-19, C-20, C-21
@@ -472,6 +500,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Last Updated:** 2026-02-19
 **Status:** IMPLEMENTED — rules enforced by live DB triggers and application validation.

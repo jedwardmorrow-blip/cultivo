@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.4
+version: 1.5
 updated: 2026-02-19
 status: IMPLEMENTED — live in production database
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** IMPLEMENTED — 7 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), and C-4 (room layout schema) are complete.
+> **Status:** IMPLEMENTED — 7 tables and 9 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), C-4 (room layout schema), and C-5A (run dates on room_sections) are complete.
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
@@ -211,17 +211,19 @@ ALTER TABLE room_tables ENABLE ROW LEVEL SECURITY;
 
 ### room_sections
 
-Added in Session C-4 to represent labeled subdivisions within a room table.
+Added in Session C-4. Columns `flip_date` and `projected_harvest_date` added in Session C-5A.
 
 ```sql
 CREATE TABLE IF NOT EXISTS room_sections (
-  id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  room_table_id  uuid        NOT NULL REFERENCES room_tables(id) ON DELETE CASCADE,
-  section_label  text        NOT NULL,
-  section_sqft   numeric(8,2),
-  is_active      boolean     NOT NULL DEFAULT true,
-  created_at     timestamptz NOT NULL DEFAULT now(),
-  created_by     uuid        REFERENCES auth.users(id),
+  id                      uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_table_id           uuid        NOT NULL REFERENCES room_tables(id) ON DELETE CASCADE,
+  section_label           text        NOT NULL,
+  section_sqft            numeric(8,2),
+  is_active               boolean     NOT NULL DEFAULT true,
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  created_by              uuid        REFERENCES auth.users(id),
+  flip_date               date,
+  projected_harvest_date  date,
 
   CONSTRAINT room_sections_unique_label_per_table UNIQUE (room_table_id, section_label)
 );
@@ -235,7 +237,10 @@ ALTER TABLE room_sections ENABLE ROW LEVEL SECURITY;
 - `section_label` is a short operator-defined label (e.g., "A", "B", "01", "Left"). Unique per table.
 - `section_sqft` is optional — for space utilization tracking at the section level.
 - `is_active` is the soft-delete flag. Archive instead of hard-delete.
-- Plant group placement at section level is planned for Session C-5 — two FK columns (`room_table_id` and `room_section_id`) will be added to `plant_groups` at that time.
+- `flip_date` — the date the batch occupying this section was flipped from Veg to Flower. Nullable and mutable; changes every run. Used to compute "Day N of flower" on the room card UI.
+- `projected_harvest_date` — the expected harvest date for the current run in this section. Nullable and mutable. Used to compute run length (flip → harvest days) and days-remaining countdown.
+- These dates belong on sections (not rooms) because a single room can hold mixed batches across different sections, each on different flip/harvest schedules.
+- Plant group placement at section level is planned for Session C-5B — two FK columns (`room_table_id` and `room_section_id`) will be added to `plant_groups` at that time.
 
 ### harvest_sessions
 
@@ -912,6 +917,16 @@ No new triggers — these tables are purely structural. Trigger work (if any) de
 
 **Purpose:** Validates the room layout data model before building the UI. Session C-5 will add FK columns to `plant_groups` to reference `room_tables` and `room_sections`.
 
+### Migration C-5A-1: Add run dates to room_sections ✅ COMPLETE
+
+File: `supabase/migrations/20260219050000_add_run_dates_to_room_sections.sql`
+
+Added two nullable date columns to `room_sections`:
+- `flip_date` (date, nullable) — date the section's current batch was flipped Veg → Flower
+- `projected_harvest_date` (date, nullable) — expected harvest date for the current run
+
+No new triggers or RLS policies — existing authenticated UPDATE policy covers the new columns. Both columns use `IF NOT EXISTS` guards for idempotency.
+
 ---
 
 ## Frontend Module Structure (IMPLEMENTED)
@@ -933,6 +948,7 @@ src/features/cultivation/
     useGrowRooms.ts               -- State + CRUD for grow_rooms
     usePlantGroups.ts             -- State + CRUD for plant_groups with filter support
     useHarvestSessions.ts         -- State + CRUD for harvest_sessions with filter support
+    useRoomSections.ts            -- State + update for room_sections (C-5A: run dates)
     index.ts
   services/
     cultivation.service.ts        -- 18 Supabase operations across all three entities
@@ -958,6 +974,10 @@ export const cultivationService = {
   createGrowRoom(data: CreateGrowRoomInput): Promise<GrowRoom>
   updateGrowRoom(id: string, data: UpdateGrowRoomInput): Promise<GrowRoom>
   archiveGrowRoom(id: string): Promise<GrowRoom>
+
+  // Room Layout (C-5A)
+  listRoomTables(growRoomId: string): Promise<RoomTable[]>  // includes nested sections
+  updateRoomSection(id: string, data: UpdateRoomSectionInput): Promise<RoomSection>
 
   // Plant Groups
   listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]>
@@ -1076,10 +1096,36 @@ export interface HarvestSession {
   batch_registry?: { batch_number: string };
 }
 
+export interface RoomSection {
+  id: string;
+  room_table_id: string;
+  section_label: string;
+  section_sqft: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  flip_date: string | null;               // C-5A
+  projected_harvest_date: string | null;  // C-5A
+}
+
+export interface RoomTable {
+  id: string;
+  grow_room_id: string;
+  table_number: number;
+  table_name: string | null;
+  total_sqft: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  sections: RoomSection[];
+}
+
 export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_type'> &
   Partial<Pick<GrowRoom, 'capacity_plants'>>;
 
 export type UpdateGrowRoomInput = Partial<Pick<GrowRoom, 'name' | 'room_type' | 'capacity_plants' | 'is_active'>>;
+
+export type UpdateRoomSectionInput = Partial<Pick<RoomSection, 'flip_date' | 'projected_harvest_date' | 'section_sqft' | 'is_active'>>;
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
   Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'mother_plant_group_id' | 'is_mother'>>;
@@ -1091,6 +1137,14 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 ---
 
 ## Document Version History
+
+### v1.5 (2026-02-19)
+- Added `flip_date` and `projected_harvest_date` columns to `room_sections` table definition (C-5A)
+- Added Migration C-5A-1 entry to Migration Plan (marked complete)
+- Added `RoomSection`, `RoomTable`, `UpdateRoomSectionInput` to Type Definitions section
+- Added `listRoomTables` and `updateRoomSection` to Service Layer Design section
+- Added `useRoomSections` hook to Frontend Module Structure
+- Updated document header: sessions C-5A noted as complete
 
 ### v1.4 (2026-02-19)
 - Added `room_tables` and `room_sections` to Schema Overview ER diagram
@@ -1135,6 +1189,6 @@ export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 
 
 ---
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — 7 tables live in DB (C-4 schema validated); UI for room_tables/room_sections pending (C-5+)
+**Status:** IMPLEMENTED — 7 tables live in DB; run dates on room_sections live (C-5A); plant group placement FKs pending (C-5B)
