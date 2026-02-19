@@ -65,6 +65,35 @@ status: IMPLEMENTED — rules active in production
 │        nullable, mutable operational notes. They change with every  │
 │        run. No trigger tracks changes; no audit log is maintained.  │
 │        Both may be null at any time without constraint violations.  │
+│ C-23. Flip date is set by the explicit "Flip Room" action, not by   │
+│        direct manual date entry. Re-triggering the action with a    │
+│        corrected date overwrites the flip date on all sections in   │
+│        the room. The flip date is stored on room_sections (per      │
+│        C-22) and advanced to all active plant groups in the room.   │
+│ C-24. projected_harvest_date is a mutable planning note, separately │
+│        editable per section in the operational view. It is never    │
+│        set by the Flip Room action.                                 │
+│ C-25. Actual harvest date is individual to a harvest_session, not   │
+│        to the room or section. harvest_sessions.harvest_date is the │
+│        authoritative record. Section dates (flip, projected) are    │
+│        planning aids; harvest_session.harvest_date is compliance.   │
+│ C-26. Plant placement (room_table_id, room_section_id) is stored    │
+│        directly on plant_groups (not a separate placement table).   │
+│        It reflects current operational position, not audit history. │
+│        Room transfer history remains in plant_group_room_history.   │
+│ C-27. Settings owns room/table/section structure (create, archive,  │
+│        rename). The Cultivation view owns plant actions only (flip, │
+│        harvest, move, kill). These surfaces are strictly separated. │
+│ C-28. The "Flip Room" action is a bulk action. All active plant     │
+│        groups in the room (growth_stage != 'harvested') are         │
+│        advanced to 'flower' stage in a single service call. The     │
+│        flip_date is written to all active sections in the room.     │
+│        Groups already at 'flower' or 'harvested' are not affected.  │
+│ C-29. Plant group actions (flip, harvest, kill, move) form a        │
+│        defined family. New plant actions must be added to this      │
+│        family in cultivationService; never invented ad-hoc in       │
+│        component code. All actions that change growth_stage must    │
+│        go through advanceStage() or the action-specific method.     │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -286,6 +315,92 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-23: Flip Date is Set by Explicit Action, Not Manual Entry
+
+**Rule:** The flip date is written to `room_sections.flip_date` by the "Flip Room" service action (`cultivationService.flipRoom()`). It is not a directly-editable field in the Cultivation view. If the wrong date is accidentally selected, the operator re-triggers the "Flip Room" action with the corrected date — this overwrites the flip date on all sections in the room.
+
+**When sections already have flip dates:** The modal shows the current date for reference and re-labels as "Update Flip Date." This is the correction path (addresses Q3 from planning).
+
+**What the action does:**
+1. Writes `flip_date` to all `room_sections` belonging to the room (via all active `room_tables`)
+2. Calls `advanceStage()` for each plant group in the room whose `growth_stage` is NOT already `flower` or `harvested`
+3. Groups already at `flower` or `harvested` are skipped silently (not an error)
+
+**Error case:** If no groups in the room are eligible for advancement, the action still writes the flip date to sections — the operator may be recording a date retroactively.
+
+---
+
+### C-24: projected_harvest_date is Separately Editable
+
+**Rule:** `room_sections.projected_harvest_date` is edited independently, per section, in the operational view. It is NOT set by the Flip Room action. It can be updated at any time by clicking the date field in the Section Run Dates panel (Settings view) or the Room Map card (Cultivation view).
+
+**Rationale:** Projected harvest date is a planning estimate that operators adjust as the run progresses. It is semantically different from the flip date (which is a historical fact) and should not be coupled to the flip action.
+
+---
+
+### C-25: Harvest Date is Per-Session, Not Per-Room
+
+**Rule:** The authoritative harvest date for compliance purposes is `harvest_sessions.harvest_date`. The section's `projected_harvest_date` is a planning estimate and is never automatically set from harvest session data.
+
+**Rationale:** A room may have multiple harvest sessions on different days (partial harvests across sections, different plant groups harvested at different times). There is no single room-level harvest date that would be accurate across all scenarios.
+
+---
+
+### C-26: Placement is Stored Directly on plant_groups
+
+**Rule:** `plant_groups.room_table_id` (uuid, nullable, FK → `room_tables`) and `plant_groups.room_section_id` (uuid, nullable, FK → `room_sections`) store the plant group's current physical position. These are the only placement fields. There is no separate `plant_placements` table.
+
+**DB-level enforcement:**
+- Trigger `trg_clear_placement_on_room_transfer`: fires AFTER UPDATE on `plant_groups` when `grow_room_id` changes; automatically sets `room_table_id = NULL` and `room_section_id = NULL` so the placement is never left pointing to a table in the old room.
+- Trigger `trg_validate_placement_room`: fires BEFORE UPDATE/INSERT on `plant_groups` when `room_table_id` is set; raises exception if `room_table_id.grow_room_id != plant_groups.grow_room_id`.
+
+**CHECK constraint:** `room_section_requires_table` — if `room_section_id` is set, `room_table_id` must also be set (section without table is invalid).
+
+---
+
+### C-27: Settings and Cultivation Views Are Strictly Separated
+
+**Rule:** Settings → Grow Rooms is the only surface for creating, archiving, or renaming rooms, tables, and sections. The Cultivation view (Plant Groups, Room Map) contains only plant-focused actions. No room structural CRUD appears in the Cultivation view.
+
+**Rationale:** This follows the existing pattern (drivers and vehicles live in Settings; strains live in Products; grow rooms live in Settings). Mixing structural admin UI into operational screens creates confusion about where to go.
+
+**Implication for Room Map:** If a room has no tables/sections configured, the Room Map card shows an empty state message directing the operator to Settings → Grow Rooms to configure layout. It does not offer inline layout creation.
+
+---
+
+### C-28: Flip Room is a Bulk Stage Advance
+
+**Rule:** The "Flip Room" action operates on all non-harvested, non-flower plant groups in a room simultaneously. The service method `cultivationService.flipRoom({ grow_room_id, flip_date })`:
+1. Fetches all `room_sections` for the room (via all active `room_tables`)
+2. Sets `flip_date` on each section
+3. Fetches all `plant_groups` in the room with `growth_stage` NOT IN `('flower', 'harvested')`
+4. Calls `advanceStage(id, 'flower')` for each eligible group sequentially
+
+**Partial eligibility is fine:** A room may have a mix of veg, clone, and already-flower groups. Only veg and clone groups are advanced. Already-flower groups are unaffected.
+
+**Error handling:** If a single group fails to advance (e.g., invalid stage transition trigger rejects it), the service propagates the error and the caller shows it. Partial flips are NOT silently accepted — the operator should review and retry.
+
+---
+
+### C-29: Plant Actions Form a Defined Family
+
+**Rule:** The following are the defined plant group actions. All must be implemented in `cultivationService` and called from UI components via the service. No ad-hoc direct Supabase queries for stage or placement changes in component code.
+
+| Action | Service method | Changes |
+|--------|---------------|---------|
+| Advance stage | `advanceStage(id, toStage)` | `growth_stage` |
+| Move to room | `moveToRoom(id, toRoomId)` | `grow_room_id` (triggers clear placement) |
+| Update placement | `updatePlantGroupPlacement(id, input)` | `room_table_id`, `room_section_id` |
+| Flip room (bulk) | `flipRoom(input)` | `growth_stage` on eligible groups + `flip_date` on sections |
+| Toggle mother | `setMotherStatus(id, bool)` | `is_mother` |
+| Update notes | `updatePlantGroupNotes(id, notes)` | `notes` |
+| Start harvest | `createHarvestSession(input)` | creates `harvest_sessions` row |
+| Complete harvest | `completeHarvestSession(id)` | triggers batch creation, sets `growth_stage = harvested` |
+
+**Extensibility:** When adding a new plant action, add it to this table in the documentation before adding the service method.
+
+---
+
 ### C-22: flip_date and projected_harvest_date are Mutable Operational Notes
 
 **Rule:** `room_sections.flip_date` and `room_sections.projected_harvest_date` are nullable date columns that may be freely set, updated, or cleared by any authenticated user at any time. They are not audit records and are not subject to immutability constraints.
@@ -473,6 +588,11 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v1.6 (2026-02-19)
+- Added invariants C-23 through C-29 (flip action, harvest date ownership, placement storage, Settings/Cultivation separation, bulk flip semantics, action family)
+- Added rule detail sections for C-23 through C-29
+- Updated header version
+
 ### v1.5 (2026-02-19)
 - Added invariant C-22 (flip_date/projected_harvest_date are mutable operational notes, not audit records)
 - Added rule detail section for C-22 including UI computed value definitions
@@ -500,6 +620,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 1.5
+**Document Version:** 1.6
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — rules enforced by live DB triggers and application validation.
+**Status:** IMPLEMENTED (C-23–C-29 pending C-5B implementation)

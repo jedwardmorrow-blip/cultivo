@@ -14,15 +14,23 @@ import type {
   RoomTable,
   RoomSection,
   UpdateRoomSectionInput,
+  CreateRoomTableInput,
+  UpdateRoomTableInput,
+  CreateRoomSectionInput,
+  UpdatePlantGroupPlacementInput,
+  FlipRoomInput,
 } from '../types';
 
 const PLANT_GROUP_SELECT = `
   id, group_number, name, strain_id, grow_room_id, mother_plant_group_id,
+  room_table_id, room_section_id,
   is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   grow_rooms (name, room_code),
-  mother_group:plant_groups!mother_plant_group_id (id, group_number, growth_stage)
+  mother_group:plant_groups!mother_plant_group_id (id, group_number, growth_stage),
+  room_tables (table_number, table_name),
+  room_sections (section_label)
 `;
 
 const HARVEST_SESSION_SELECT = `
@@ -36,6 +44,8 @@ const HARVEST_SESSION_SELECT = `
   ),
   batch_registry (batch_number)
 `;
+
+const ROOM_SECTION_SELECT = 'id, room_table_id, section_label, section_sqft, is_active, created_at, created_by, flip_date, projected_harvest_date';
 
 function throwError(error: { message: string } | null, context: string): never {
   throw new Error(error?.message ?? `Unknown error in ${context}`);
@@ -76,6 +86,124 @@ export const cultivationService = {
     return cultivationService.updateGrowRoom(id, { is_active: false });
   },
 
+  async listRoomTables(growRoomId: string, opts?: { includeArchived?: boolean }): Promise<RoomTable[]> {
+    let query = supabase
+      .from('room_tables')
+      .select(`
+        id, grow_room_id, table_number, table_name, total_sqft, is_active, created_at, created_by,
+        sections:room_sections (
+          ${ROOM_SECTION_SELECT}
+        )
+      `)
+      .eq('grow_room_id', growRoomId)
+      .order('table_number');
+
+    if (!opts?.includeArchived) {
+      query = query.eq('is_active', true);
+    }
+
+    const { data, error } = await query;
+    if (error) throwError(error, 'listRoomTables');
+
+    const tables = (data as unknown as RoomTable[]).map((t) => ({
+      ...t,
+      sections: (t.sections ?? [])
+        .filter((s: RoomSection) => opts?.includeArchived ? true : s.is_active)
+        .sort((a: RoomSection, b: RoomSection) => a.section_label.localeCompare(b.section_label)),
+    }));
+    return tables;
+  },
+
+  async createRoomTable(input: CreateRoomTableInput): Promise<RoomTable> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('room_tables')
+      .insert({ ...input, is_active: true, created_by: user?.id ?? null })
+      .select('id, grow_room_id, table_number, table_name, total_sqft, is_active, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'createRoomTable');
+    return { ...(data as unknown as RoomTable), sections: [] };
+  },
+
+  async updateRoomTable(id: string, input: UpdateRoomTableInput): Promise<RoomTable> {
+    const { data, error } = await supabase
+      .from('room_tables')
+      .update(input)
+      .eq('id', id)
+      .select('id, grow_room_id, table_number, table_name, total_sqft, is_active, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'updateRoomTable');
+    return { ...(data as unknown as RoomTable), sections: [] };
+  },
+
+  async archiveRoomTable(id: string): Promise<RoomTable> {
+    return cultivationService.updateRoomTable(id, { is_active: false });
+  },
+
+  async createRoomSection(input: CreateRoomSectionInput): Promise<RoomSection> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('room_sections')
+      .insert({ ...input, is_active: true, created_by: user?.id ?? null })
+      .select(ROOM_SECTION_SELECT)
+      .single();
+    if (error) throwError(error, 'createRoomSection');
+    return data as unknown as RoomSection;
+  },
+
+  async updateRoomSection(id: string, input: UpdateRoomSectionInput): Promise<RoomSection> {
+    const { data, error } = await supabase
+      .from('room_sections')
+      .update(input)
+      .eq('id', id)
+      .select(ROOM_SECTION_SELECT)
+      .single();
+    if (error) throwError(error, 'updateRoomSection');
+    return data as unknown as RoomSection;
+  },
+
+  async archiveRoomSection(id: string): Promise<RoomSection> {
+    return cultivationService.updateRoomSection(id, { is_active: false });
+  },
+
+  async flipRoom(input: FlipRoomInput): Promise<void> {
+    const { grow_room_id, flip_date } = input;
+
+    const { data: tables, error: tableErr } = await supabase
+      .from('room_tables')
+      .select('id')
+      .eq('grow_room_id', grow_room_id)
+      .eq('is_active', true);
+    if (tableErr) throwError(tableErr, 'flipRoom:listTables');
+
+    if (tables && tables.length > 0) {
+      const tableIds = tables.map((t: { id: string }) => t.id);
+      const { error: sectionErr } = await supabase
+        .from('room_sections')
+        .update({ flip_date })
+        .in('room_table_id', tableIds)
+        .eq('is_active', true);
+      if (sectionErr) throwError(sectionErr, 'flipRoom:updateSections');
+    }
+
+    const { data: groups, error: groupErr } = await supabase
+      .from('plant_groups')
+      .select('id, growth_stage')
+      .eq('grow_room_id', grow_room_id)
+      .not('growth_stage', 'in', '("flower","harvested")');
+    if (groupErr) throwError(groupErr, 'flipRoom:listGroups');
+
+    if (groups && groups.length > 0) {
+      for (const group of groups as Array<{ id: string; growth_stage: string }>) {
+        const { error: advErr } = await supabase
+          .from('plant_groups')
+          .update({ growth_stage: 'flower' })
+          .eq('id', group.id);
+        if (advErr) throwError(advErr, `flipRoom:advanceGroup:${group.id}`);
+      }
+    }
+  },
+
   async listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]> {
     let query = supabase.from('plant_groups').select(PLANT_GROUP_SELECT);
 
@@ -87,6 +215,16 @@ export const cultivationService = {
 
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throwError(error, 'listPlantGroups');
+    return data as unknown as PlantGroup[];
+  },
+
+  async listPlantGroupsByRoom(growRoomId: string): Promise<PlantGroup[]> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .select(PLANT_GROUP_SELECT)
+      .eq('grow_room_id', growRoomId)
+      .order('created_at', { ascending: false });
+    if (error) throwError(error, 'listPlantGroupsByRoom');
     return data as unknown as PlantGroup[];
   },
 
@@ -134,6 +272,17 @@ export const cultivationService = {
       .select(PLANT_GROUP_SELECT)
       .single();
     if (error) throwError(error, 'moveToRoom');
+    return data as unknown as PlantGroup;
+  },
+
+  async updatePlantGroupPlacement(id: string, input: UpdatePlantGroupPlacementInput): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .update({ room_table_id: input.room_table_id, room_section_id: input.room_section_id })
+      .eq('id', id)
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'updatePlantGroupPlacement');
     return data as unknown as PlantGroup;
   },
 
@@ -247,39 +396,5 @@ export const cultivationService = {
       .single();
     if (error) throwError(error, 'adjustHarvestWeight');
     return data as unknown as HarvestSession;
-  },
-
-  async listRoomTables(growRoomId: string): Promise<RoomTable[]> {
-    const { data, error } = await supabase
-      .from('room_tables')
-      .select(`
-        id, grow_room_id, table_number, table_name, total_sqft, is_active, created_at, created_by,
-        sections:room_sections (
-          id, room_table_id, section_label, section_sqft, is_active, created_at, created_by,
-          flip_date, projected_harvest_date
-        )
-      `)
-      .eq('grow_room_id', growRoomId)
-      .eq('is_active', true)
-      .order('table_number');
-    if (error) throwError(error, 'listRoomTables');
-    const tables = (data as unknown as RoomTable[]).map((t) => ({
-      ...t,
-      sections: (t.sections ?? [])
-        .filter((s: RoomSection) => s.is_active)
-        .sort((a: RoomSection, b: RoomSection) => a.section_label.localeCompare(b.section_label)),
-    }));
-    return tables;
-  },
-
-  async updateRoomSection(id: string, input: UpdateRoomSectionInput): Promise<RoomSection> {
-    const { data, error } = await supabase
-      .from('room_sections')
-      .update(input)
-      .eq('id', id)
-      .select('id, room_table_id, section_label, section_sqft, is_active, created_at, created_by, flip_date, projected_harvest_date')
-      .single();
-    if (error) throwError(error, 'updateRoomSection');
-    return data as unknown as RoomSection;
   },
 };

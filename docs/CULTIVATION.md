@@ -1,15 +1,15 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.5
+version: 1.6
 updated: 2026-02-19
 status: IMPLEMENTED — fully operational in production
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4. Run dates (flip_date, projected_harvest_date) on room_sections added in C-5A.
-> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections) — all complete.
+> **Status:** IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. Room layout tables (room_tables, room_sections) added in C-4. Run dates (flip_date, projected_harvest_date) on room_sections added in C-5A. Plant group placement FKs, Layout Builder, Flip Room action, and Room Map grid added in C-5B.
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections), C-5B (plant placement + flip + room map) — all complete.
 > **Purpose:** Complete reference for tracking plants from clone/seed through harvest, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
@@ -56,11 +56,15 @@ The Cultivation module closes this gap by:
 
 ## Scope
 
-### Implemented (Sessions C-2 + C-3 + C-4 + C-5A — complete)
+### Implemented (Sessions C-2 + C-3 + C-4 + C-5A + C-5B — complete)
 
 - Grow room management (create, edit, archive) — Settings → Grow Rooms
-- Room table and section structure (table count, section labels, sqft tracking) — DB schema only; UI pending C-5B
+- Room table and section structure — DB schema (C-4) + Layout Builder UI in Settings → Grow Rooms (C-5B)
 - Run date tracking per section (flip date, projected harvest date, Day N counter, run length, countdown) — C-5A
+- Plant group placement (room_table_id, room_section_id FKs on plant_groups) — C-5B
+- Room Map grid in Cultivation view (tables × sections grid, plant group occupancy per cell) — C-5B
+- Flip Room action (bulk stage advance to flower + set flip date on all sections in room) — C-5B
+- Section-aware Move to Room flow (optional section assignment after room transfer) — C-5B
 - Plant group tracking (strain, count, stage, room) — Cultivation → Plant Groups
 - Mother plant designation and clone lineage (mother_plant_group_id FK)
 - Growth stage transitions with timestamps
@@ -118,6 +122,8 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  ├─ strain_id → strains.id (FK, immutable after creation)            │
 │  ├─ grow_room_id → grow_rooms.id (mutable — plants move rooms)       │
 │  ├─ mother_plant_group_id → plant_groups.id (nullable self-ref FK)   │
+│  ├─ room_table_id → room_tables.id (nullable — current placement)    │
+│  ├─ room_section_id → room_sections.id (nullable — current placement)│
 │  ├─ is_mother (boolean — designates as a source mother plant)        │
 │  ├─ plant_count (integer, required)                                  │
 │  ├─ growth_stage: 'clone'|'veg'|'flower'|'harvested'                 │
@@ -513,6 +519,7 @@ Location: Settings → Grow Rooms
 | Edit | Same fields, except room_code is read-only |
 | Archive | Toggle is_active; removes from plant group selects |
 | Expand (flower rooms only) | Chevron toggle reveals Section Run Dates panel |
+| Configure Layout | Accordion per room card — opens Layout Builder |
 
 #### Section Run Dates Panel (flower rooms only)
 
@@ -530,6 +537,46 @@ Flower room cards have an expandable panel listing all active sections for that 
 Dates are edited by clicking the date field inline — no modal required. Enter or blur saves; Escape cancels. An X button clears a set date back to null.
 
 These dates are tracked per section because a single room can hold multiple simultaneous batch runs across different sections (each on its own flip/harvest schedule). See Invariant C-22.
+
+#### Layout Builder (C-5B — all room types)
+
+Each room card has a "Configure Layout" accordion at the bottom. When expanded:
+
+- Table list: each active table shows its number, optional name, optional sqft, and an Archive button
+- Under each table: list of active sections with section label, optional sqft, Archive button
+- "Add Section" form per table: section label (required) + optional sqft; Enter or Save button to commit
+- "Add Table" form at the bottom of the list: table number (required, positive integer), optional name and sqft
+- "Show archived" toggle per room: unhides archived tables and sections with Restore buttons
+- Validation: table number must be a positive integer; duplicate table number within the room is blocked client-side before submit
+
+Actions call `cultivationService.createRoomTable`, `updateRoomTable`, `archiveRoomTable`, `createRoomSection`, `archiveRoomSection` and reload via `useRoomSections`.
+
+### 1a. Room Map (Cultivation view — per room)
+
+The Room Map is a new view surface in the Cultivation Dashboard showing a grid visualization of plant placements per room. It uses the `RoomMapCard` component.
+
+**Collapsed state (per room card):** room code badge, room type, room name, live Day N badge if flip date is set on any section, harvest countdown if projected harvest date is set.
+
+**Expanded state:**
+- Flip date displayed read-only with Day N count (e.g., "Day 32 of flower")
+- "Flip Room" button → opens `FlipRoomModal`
+- Room Map grid: tables as columns, sections as rows; occupied cells show strain abbreviation badge + plant count from the group's `room_table_id`/`room_section_id`; empty cells are dim placeholders
+- Strain legend below the grid: abbreviation, full strain name, total plant count, group numbers
+- If no tables/sections configured: message directing user to Settings → Grow Rooms to configure layout
+- Non-flower rooms: simplified list of groups with stage, count; no flip/harvest dates; no grid unless tables configured
+
+### 1b. Flip Room Action (C-5B)
+
+The "Flip Room" button in the Room Map opens `FlipRoomModal`:
+
+- Header: "Flip [Room Name]" — or "Update Flip Date for [Room Name]" if sections already have flip dates
+- Current flip date shown for reference (if set)
+- Date picker defaulting to today (editable)
+- Summary: "N plant groups will advance to flower stage"
+- List of eligible groups (group number, strain abbreviation, current stage)
+- Groups already at flower/harvested shown separately as "N groups already in flower — not affected"
+- Confirm button calls `cultivationService.flipRoom({ grow_room_id, flip_date })`
+- This satisfies the correction path: re-triggering with a corrected date simply overwrites the stored date (Invariant C-23)
 
 ### 2. Plant Groups (Cultivation main screen)
 
@@ -648,6 +695,13 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.6 (2026-02-19)
+- Updated session history to include C-5B
+- Updated Scope → Implemented to include placement FKs, Layout Builder, Room Map, Flip Room action, section-aware Move flow
+- Added `room_table_id` and `room_section_id` to `plant_groups` in Module Entities section
+- Updated UI Screens → Grow Rooms: added "Configure Layout" action, Layout Builder section (1a), Room Map section (1b), Flip Room Action section
+- Updated footer version and status
+
 ### v1.5 (2026-02-19)
 - Updated session history to include C-5A
 - Updated Scope → Implemented to include run date tracking on sections
@@ -688,6 +742,6 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.5
+**Document Version:** 1.6
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED — 7 tables live; run dates on sections live (C-5A); plant group placement FKs pending (C-5B)
+**Status:** IMPLEMENTED — 7 tables + placement FKs live (C-5B); Layout Builder, Room Map, and Flip Room action live

@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { Sprout, Leaf, Scissors, Package, AlertTriangle, Flower } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
+import { RoomMapCard } from './RoomMapCard';
+import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+import type { PlantGroup } from '../types';
 
 interface StatCardProps {
   label: string;
@@ -50,6 +54,7 @@ export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
   const { groups, loading: groupsLoading } = usePlantGroups({ stage: 'active' });
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
+  const [selectedGroup, setSelectedGroup] = useState<PlantGroup | null>(null);
 
   const loading = roomsLoading || groupsLoading || sessionsLoading;
 
@@ -166,34 +171,25 @@ export function CultivationDashboard() {
       </div>
 
       {activeRooms.length > 0 && (
-        <div className="bg-cult-near-black border border-cult-medium-gray p-5">
-          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Grow Rooms</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {activeRooms.map((room) => {
-              const roomGroups = groups.filter((g) => g.grow_room_id === room.id);
-              const typeColors: Record<string, string> = {
-                clone: 'border-sky-700 text-sky-400',
-                veg: 'border-green-700 text-green-400',
-                flower: 'border-rose-700 text-rose-400',
-                mother: 'border-amber-700 text-amber-400',
-                mixed: 'border-cult-medium-gray text-cult-light-gray',
-              };
-              const cls = typeColors[room.room_type] ?? 'border-cult-medium-gray text-cult-light-gray';
-              return (
-                <div key={room.id} className={`border p-3 ${cls}`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-xs font-semibold">{room.room_code}</span>
-                    <span className="text-xs opacity-70 uppercase">{room.room_type}</span>
-                  </div>
-                  <p className="text-cult-white text-sm truncate">{room.name}</p>
-                  <p className="text-xs opacity-60 mt-1">
-                    {roomGroups.length} group{roomGroups.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              );
-            })}
+        <div>
+          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-3">Grow Rooms</h2>
+          <div className="space-y-2">
+            {activeRooms.map((room) => (
+              <RoomMapCard
+                key={room.id}
+                room={room}
+                onGroupSelect={setSelectedGroup}
+              />
+            ))}
           </div>
         </div>
+      )}
+
+      {selectedGroup && (
+        <PlantGroupDetailPanel
+          group={selectedGroup}
+          onClose={() => setSelectedGroup(null)}
+        />
       )}
     </div>
   );

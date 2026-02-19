@@ -15,69 +15,83 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** C-5A — Section Run Dates (Flip Date + Projected Harvest Date)
+**Session:** C-5B — Plant Group Placement + Flip Room + Layout Builder + Room Map
 **Status:** COMPLETE
 
 **What was done:**
-- **C-5A-1 (migration):** Applied `supabase/migrations/20260219050000_add_run_dates_to_room_sections.sql`
-  - Added `flip_date` (date, nullable) to `room_sections`
-  - Added `projected_harvest_date` (date, nullable) to `room_sections`
-  - No new triggers or RLS policies needed — existing authenticated UPDATE policy covers new columns
-- **Types updated:** `src/features/cultivation/types/cultivation.types.ts`
-  - Added `RoomSection` interface (includes flip_date, projected_harvest_date)
-  - Added `RoomTable` interface (with nested `sections: RoomSection[]`)
-  - Added `UpdateRoomSectionInput` type
-- **Service extended:** `src/features/cultivation/services/cultivation.service.ts`
-  - Added `listRoomTables(growRoomId)` — fetches tables + nested sections for a room
-  - Added `updateRoomSection(id, input)` — updates section fields including run dates
-- **New hook:** `src/features/cultivation/hooks/useRoomSections.ts`
-  - `useRoomSections(growRoomId)` — loads tables/sections on mount, exposes `updateSection()`
+- **C-5B-1 (migration):** Applied `supabase/migrations/20260219060000_add_plant_group_placement_columns.sql`
+  - Added `room_table_id` (uuid, nullable, FK → room_tables) to `plant_groups`
+  - Added `room_section_id` (uuid, nullable, FK → room_sections) to `plant_groups`
+  - Added CHECK constraint `room_section_requires_table`
+  - Added partial indexes on both FK columns
+  - Trigger `trg_clear_placement_on_room_transfer` (BEFORE UPDATE) — NULLs placement when grow_room_id changes
+  - Trigger `trg_validate_placement_room` (BEFORE INSERT OR UPDATE) — validates table belongs to same room as group
+- **Types updated:** `cultivation.types.ts`
+  - `PlantGroup` — added `room_table_id`, `room_section_id`, join types `room_tables`, `room_sections`
+  - New input types: `CreateRoomTableInput`, `UpdateRoomTableInput`, `CreateRoomSectionInput`, `UpdatePlantGroupPlacementInput`, `FlipRoomInput`
+- **Service extended:** `cultivation.service.ts`
+  - `listRoomTables` extended with `includeArchived` option
+  - Added: `createRoomTable`, `updateRoomTable`, `archiveRoomTable`
+  - Added: `createRoomSection`, `archiveRoomSection`
+  - Added: `flipRoom(input)` — sets flip_date on all active sections, advances eligible groups to flower
+  - Added: `listPlantGroupsByRoom(growRoomId)`, `updatePlantGroupPlacement(id, input)`
+  - `PLANT_GROUP_SELECT` updated to include placement fields and joins
+- **Hooks extended:**
+  - `useRoomSections` — added `createTable`, `updateTable`, `archiveTable`, `createSection`, `archiveSection`, `allSections`, `includeArchived` option
+  - New hook: `usePlantGroupPlacement` — wraps `updatePlantGroupPlacement` with loading/error state
   - Exported from `hooks/index.ts`
-- **UI updated:** `src/features/cultivation/components/GrowRoomsManagement.tsx`
-  - Flower room cards now have a chevron expand button revealing "Section Run Dates" panel
-  - Each section shows flip date, "Day N" badge, projected harvest date, run length, countdown
-  - Dates edited inline (click to edit, Enter/blur to save, Escape to cancel, X to clear)
-  - Non-flower rooms: no expand button, no dates shown
-- **Documentation:** All three cultivation docs + checklist updated to v1.5
-  - `CULTIVATION-ARCHITECTURE.md` — updated room_sections schema, added C-5A migration, updated types/service/hooks sections
-  - `CULTIVATION-RULES.md` — added invariant C-22 (run dates are mutable operational notes)
-  - `CULTIVATION.md` — updated scope, module entities, UI Screens → Grow Rooms section with full date panel description
+- **New components:**
+  - `LayoutBuilder.tsx` — Settings-only surface; Tables + Sections CRUD with archive/restore, show/hide archived toggle
+  - `FlipRoomModal.tsx` — bulk Flip Room action; detects isUpdate from existing flower groups; date picker; before/after stage badges
+  - `RoomMapCard.tsx` — Cultivation view; expandable room card; table×section grid; strain legend; unplaced groups list; integrated FlipRoomModal
+- **UI updated:**
+  - `GrowRoomsManagement.tsx` — added "Configure Layout" accordion to each active room card (renders `LayoutBuilder`)
+  - `MoveToRoomModal.tsx` — two-step flow: room selection → optional section assignment; DB trigger clears old placement on room transfer
+  - `CultivationDashboard.tsx` — Grow Rooms section now renders `RoomMapCard` per room instead of static tiles; group click opens `PlantGroupDetailPanel`
+  - `components/index.ts` — exported `FlipRoomModal`, `RoomMapCard`, `LayoutBuilder`
+- **Documentation:** All three cultivation docs updated to v1.6
+  - `CULTIVATION-RULES.md` — added invariants C-23 through C-29
+  - `CULTIVATION-ARCHITECTURE.md` — updated plant_groups schema, triggers 10-11, migration plan, service/types/hooks
+  - `CULTIVATION.md` — updated scope, entities, UI Screens
 
-**Build status:** Clean (verify with `npm run build`)
+**Build status:** Verify with `npm run build`
 
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 - `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
 
 **Modified files (this session):**
-- `supabase/migrations/20260219050000_add_run_dates_to_room_sections.sql` — new migration
-- `src/features/cultivation/types/cultivation.types.ts` — added RoomSection, RoomTable, UpdateRoomSectionInput
-- `src/features/cultivation/services/cultivation.service.ts` — added listRoomTables, updateRoomSection
-- `src/features/cultivation/hooks/useRoomSections.ts` — new hook
-- `src/features/cultivation/hooks/index.ts` — added useRoomSections export
-- `src/features/cultivation/components/GrowRoomsManagement.tsx` — full rewrite with section panel
-- `docs/CULTIVATION-ARCHITECTURE.md` — v1.5
-- `docs/CULTIVATION-RULES.md` — v1.5
-- `docs/CULTIVATION.md` — v1.5
+- `supabase/migrations/20260219060000_add_plant_group_placement_columns.sql` — new migration (applied)
+- `src/features/cultivation/types/cultivation.types.ts` — placement fields + new input types
+- `src/features/cultivation/services/cultivation.service.ts` — table/section CRUD, flipRoom, placement, listPlantGroupsByRoom
+- `src/features/cultivation/hooks/useRoomSections.ts` — full CRUD + includeArchived + allSections
+- `src/features/cultivation/hooks/usePlantGroupPlacement.ts` — new hook
+- `src/features/cultivation/hooks/index.ts` — added usePlantGroupPlacement export
+- `src/features/cultivation/components/LayoutBuilder.tsx` — new component
+- `src/features/cultivation/components/FlipRoomModal.tsx` — new component
+- `src/features/cultivation/components/RoomMapCard.tsx` — new component
+- `src/features/cultivation/components/GrowRoomsManagement.tsx` — added LayoutBuilder accordion
+- `src/features/cultivation/components/MoveToRoomModal.tsx` — two-step section-aware flow
+- `src/features/cultivation/components/CultivationDashboard.tsx` — RoomMapCard integration
+- `src/features/cultivation/components/index.ts` — exports for new components
+- `docs/CULTIVATION-RULES.md` — v1.6
+- `docs/CULTIVATION-ARCHITECTURE.md` — v1.6
+- `docs/CULTIVATION.md` — v1.6
 - `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
 
-**Critical context for next session (C-5B):**
-- `RoomSection` and `RoomTable` types are now defined in `cultivation.types.ts` — do NOT duplicate them
-- `listRoomTables` returns sections sorted by `section_label` alphabetically, filtered to `is_active = true`
-- Run dates are **section-level** (not room-level) — a room can have different flip dates per section to support mixed batch runs
-- The `RunDates` component uses local state for flip/harvest values; it reads from `section.flip_date` / `section.projected_harvest_date` as props — after an `updateSection` call the hook reloads and passes fresh props down
-- C-5B should add `room_table_id` (uuid, nullable) and `room_section_id` (uuid, nullable) FK columns to `plant_groups` to wire plant placement to specific sections
-
-**Previous session context (C-2/C-3/C-4 — still relevant):**
-- All 5 core cultivation tables + 9 triggers live: `grow_rooms`, `plant_groups`, `plant_group_stage_history`, `plant_group_room_history`, `harvest_sessions`
-- Grow Rooms tab already exists in Settings (`src/features/settings/components/Settings.tsx`)
-- `room_tables` and `room_sections` are live in DB with RLS; run dates columns are live (C-5A)
+**Critical context for next session (C-6: FLW-08 seed data / Harvest workflow):**
+- `room_table_id` / `room_section_id` are nullable FKs on `plant_groups` — placement is optional
+- DB triggers enforce: (1) clear placement on room transfer, (2) table must belong to same room as group
+- `flipRoom` calls are sequential per group — if one group update fails, prior groups remain advanced (no transaction rollback in service layer); monitor for partial failures
+- `LayoutBuilder` is Settings-only — Cultivation view (RoomMapCard) is read-only for structure; directs users to Settings when no layout configured
+- **Invariant C-27 enforced:** Settings owns structure CRUD; Cultivation view owns plant actions only
+- `plant_actions` family defined (C-29): `advanceStage`, `moveToRoom`, `setMotherStatus`, `updatePlantGroupPlacement`, `flipRoom`, `createHarvestSession`
 
 **Next recommendations:**
-- **C-5B: Plant Placement** — add `room_table_id` and `room_section_id` FK columns to `plant_groups`, add table/section management UI to Settings → Grow Rooms, add placement selector to NewPlantGroupModal and PlantGroupDetailPanel
-- **Operator testing** — open a flower room card, click the chevron, set a flip date on a section, verify Day N badge and countdown appear correctly
-- **Type generation** — run `npm run types:generate` to pull in cultivation table types from live schema
-- **customers.service.test.ts fix** — still trivial, 1-liner when convenient
+- **C-6: FLW-08 setup** — create FLW-08 room in DB, configure tables/sections, create plant groups, assign placements, set flip dates
+- **PlantGroupDetailPanel placement editor** — add section assignment UI to the detail panel (currently only visible in MoveToRoomModal step 2)
+- **NewPlantGroupModal placement** — optionally allow placement at creation time
+- **customers.service.test.ts fix** — 1-liner, `zip` → `postal_code`
 
 ---
 

@@ -5,3 +5,6 @@ export { GrowRoomsManagement } from './GrowRoomsManagement';
 export { NewPlantGroupModal } from './NewPlantGroupModal';
 export { MoveToRoomModal } from './MoveToRoomModal';
 export { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+export { FlipRoomModal } from './FlipRoomModal';
+export { RoomMapCard } from './RoomMapCard';
+export { LayoutBuilder } from './LayoutBuilder';

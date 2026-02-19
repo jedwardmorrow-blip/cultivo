@@ -7,6 +7,9 @@
  * following the pattern in batch.types.ts.
  *
  * C-5A: Added RoomSection, RoomTable, UpdateRoomSectionInput for run date tracking.
+ * C-5B: Added room_table_id/room_section_id to PlantGroup; added CreateRoomTableInput,
+ *        UpdateRoomTableInput, CreateRoomSectionInput, UpdatePlantGroupPlacementInput,
+ *        FlipRoomInput new service types.
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
@@ -31,6 +34,8 @@ export interface PlantGroup {
   strain_id: string;
   grow_room_id: string;
   mother_plant_group_id: string | null;
+  room_table_id: string | null;
+  room_section_id: string | null;
   is_mother: boolean;
   plant_count: number;
   growth_stage: GrowthStage;
@@ -43,6 +48,8 @@ export interface PlantGroup {
   strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
   mother_group?: Pick<PlantGroup, 'id' | 'group_number' | 'growth_stage'>;
+  room_tables?: { table_number: number; table_name: string | null } | null;
+  room_sections?: { section_label: string } | null;
 }
 
 export interface PlantGroupStageHistory {
@@ -123,7 +130,36 @@ export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_ty
 
 export type UpdateGrowRoomInput = Partial<Pick<GrowRoom, 'name' | 'room_type' | 'capacity_plants' | 'is_active'>>;
 
+export type CreateRoomTableInput = {
+  grow_room_id: string;
+  table_number: number;
+  table_name?: string | null;
+  total_sqft?: number | null;
+};
+
+export type UpdateRoomTableInput = Partial<{
+  table_name: string | null;
+  total_sqft: number | null;
+  is_active: boolean;
+}>;
+
+export type CreateRoomSectionInput = {
+  room_table_id: string;
+  section_label: string;
+  section_sqft?: number | null;
+};
+
 export type UpdateRoomSectionInput = Partial<Pick<RoomSection, 'flip_date' | 'projected_harvest_date' | 'section_sqft' | 'is_active'>>;
+
+export type UpdatePlantGroupPlacementInput = {
+  room_table_id: string | null;
+  room_section_id: string | null;
+};
+
+export type FlipRoomInput = {
+  grow_room_id: string;
+  flip_date: string;
+};
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
   Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id'>>;

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, Pencil, Archive, RotateCcw, AlertTriangle, ChevronDown, ChevronRight, Calendar, X } from 'lucide-react';
+import { Plus, Pencil, Archive, RotateCcw, AlertTriangle, ChevronDown, ChevronRight, Calendar, X, Layers } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useRoomSections } from '../hooks/useRoomSections';
+import { LayoutBuilder } from './LayoutBuilder';
 import type { GrowRoom, RoomType, RoomTable, RoomSection, CreateGrowRoomInput, UpdateGrowRoomInput } from '../types';
 
 const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
@@ -392,6 +393,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
   const typeCls = ROOM_TYPE_COLORS[room.room_type] ?? ROOM_TYPE_COLORS.mixed;
   const isFlower = room.room_type === 'flower';
   const [expanded, setExpanded] = useState(false);
+  const [layoutExpanded, setLayoutExpanded] = useState(false);
 
   return (
     <div className={`border ${room.is_active ? typeCls : 'border-cult-medium-gray text-cult-medium-gray bg-cult-near-black opacity-60'}`}>
@@ -465,6 +467,29 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
         <div className="border-t border-rose-900 px-4 pb-4 pt-3">
           <p className="text-xs text-rose-400 uppercase tracking-wider mb-3 font-semibold">Section Run Dates</p>
           <FlowerSectionPanel roomId={room.id} />
+        </div>
+      )}
+
+      {room.is_active && (
+        <div className="border-t border-cult-dark-gray">
+          <button
+            onClick={() => setLayoutExpanded((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+          >
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-3 h-3" />
+              <span className="uppercase tracking-wider">Configure Layout</span>
+            </div>
+            {layoutExpanded
+              ? <ChevronDown className="w-3 h-3" />
+              : <ChevronRight className="w-3 h-3" />
+            }
+          </button>
+          {layoutExpanded && (
+            <div className="border-t border-cult-dark-gray px-4 pb-4 pt-3">
+              <LayoutBuilder roomId={room.id} />
+            </div>
+          )}
         </div>
       )}
     </div>
