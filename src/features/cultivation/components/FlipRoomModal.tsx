@@ -35,10 +35,6 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
     (g) => g.growth_stage !== 'flower' && g.growth_stage !== 'harvested'
   );
   const alreadyFlower = plantGroups.filter((g) => g.growth_stage === 'flower');
-  const currentFlipDates = plantGroups
-    .map((g) => g.room_sections?.section_label)
-    .filter(Boolean);
-
   const hasExistingFlipDate = plantGroups.some((g) => g.grow_room_id === room.id);
 
   const isUpdate = alreadyFlower.length > 0 || hasExistingFlipDate;
@@ -56,8 +52,6 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
       setSaving(false);
     }
   }
-
-  void currentFlipDates;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock, ExternalLink } from 'lucide-react';
 import { useBinningSessions } from '../hooks/useBinningSessions';
 import { useDryRooms } from '../hooks/useDryRooms';
 import type { BinningSession, BinningSessionStatus, CreateBinningSessionInput, HarvestSession } from '../types';
@@ -204,9 +204,10 @@ interface SessionCardProps {
   session: BinningSession;
   onComplete: (id: string) => Promise<void>;
   onCancel: (id: string) => Promise<void>;
+  onViewBatch?: () => void;
 }
 
-function SessionCard({ session, onComplete, onCancel }: SessionCardProps) {
+function SessionCard({ session, onComplete, onCancel, onViewBatch }: SessionCardProps) {
   const [acting, setActing] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'complete' | 'cancel' | null>(null);
 
@@ -330,9 +331,20 @@ function SessionCard({ session, onComplete, onCancel }: SessionCardProps) {
       )}
 
       {session.session_status === 'completed' && session.completed_at && (
-        <div className="text-xs text-cult-medium-gray flex items-center gap-1">
-          <CheckCircle className="h-3 w-3 text-sky-400" />
-          Completed {formatDate(session.completed_at.slice(0, 10))}
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-cult-medium-gray flex items-center gap-1">
+            <CheckCircle className="h-3 w-3 text-sky-400" />
+            Completed {formatDate(session.completed_at.slice(0, 10))}
+          </div>
+          {onViewBatch && batchNumber !== '—' && (
+            <button
+              onClick={onViewBatch}
+              className="flex items-center gap-1 text-xs bg-green-950 border border-green-700 text-green-400 px-2 py-0.5 font-mono hover:bg-green-900 transition-colors"
+            >
+              {batchNumber}
+              <ExternalLink className="h-3 w-3 opacity-70" />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -376,7 +388,11 @@ function PendingHarvestRow({ harvest, onStartBinning }: PendingHarvestRowProps) 
   );
 }
 
-export function BinningSessionsView() {
+interface BinningSessionsViewProps {
+  onViewChange?: (view: string) => void;
+}
+
+export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps = {}) {
   const [activeTab, setActiveTab] = useState<TabKey>('pending');
   const [showNewForm, setShowNewForm] = useState(false);
   const [preselectedHarvest, setPreselectedHarvest] = useState<HarvestSession | null>(null);
@@ -504,6 +520,7 @@ export function BinningSessionsView() {
                     session={session}
                     onComplete={completeSession}
                     onCancel={cancelSession}
+                    onViewBatch={onViewChange ? () => onViewChange('batches') : undefined}
                   />
                 ))
               )}

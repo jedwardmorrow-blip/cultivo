@@ -4,6 +4,7 @@ import { UpcomingDeliveries } from './UpcomingDeliveries';
 import { SalesOverview } from './SalesOverview';
 import { InventoryPipelineWidget } from './InventoryPipelineWidget';
 import { PendingConversionsWidget } from './PendingConversionsWidget';
+import { CultivationWidget } from './CultivationWidget';
 
 export function Dashboard({
   onViewChange,
@@ -32,6 +33,11 @@ export function Dashboard({
       {/* Inventory Pipeline */}
       <div className="bg-cult-near-black border border-cult-medium-gray p-6">
         <InventoryPipelineWidget onViewChange={onViewChange} />
+      </div>
+
+      {/* Cultivation Status */}
+      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+        <CultivationWidget onViewChange={onViewChange} />
       </div>
 
       {/* Pending Conversions Widget */}

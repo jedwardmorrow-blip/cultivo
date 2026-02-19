@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sprout, AlertTriangle } from 'lucide-react';
 import { cultivationService } from '../services';
 import { productsService } from '@/features/products/services';
+import { isValidStrainAbbreviation } from '../utils';
 import type { GrowRoom, PlantGroup, CreatePlantGroupInput } from '../types';
 
 interface Strain {
@@ -50,9 +51,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   }, []);
 
   const selectedStrain = strains.find((s) => s.id === strainId);
-  const hasAbbrev = selectedStrain?.abbreviation
-    ? /^[A-Z]{3}$/.test(selectedStrain.abbreviation)
-    : false;
+  const hasAbbrev = isValidStrainAbbreviation(selectedStrain?.abbreviation);
 
   const activeRooms = rooms.filter((r) => r.is_active);
 
@@ -115,7 +114,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                 >
                   <option value="">— Select strain —</option>
                   {strains.map((s) => {
-                    const validAbbrev = s.abbreviation && /^[A-Z]{3}$/.test(s.abbreviation);
+                    const validAbbrev = isValidStrainAbbreviation(s.abbreviation);
                     return (
                       <option key={s.id} value={s.id}>
                         {s.name}{!validAbbrev ? ' (no abbreviation)' : ''}

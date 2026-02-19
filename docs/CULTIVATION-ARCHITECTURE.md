@@ -1265,24 +1265,37 @@ src/features/cultivation/
     HarvestSessionsList.tsx       -- Harvest sessions with tabs (Active/Completed/Cancelled)
     FlipRoomModal.tsx             -- Bulk flip room action modal (C-5B)
     RoomMapCard.tsx               -- Room map grid showing plant placements (C-5B)
+    BinningSessionsView.tsx       -- Binning sessions with pending/active/completed tabs; onViewChange prop
+    DryRoomsManagement.tsx        -- Dry rooms management (Settings → Dry Rooms)
     index.ts
   hooks/
     useGrowRooms.ts               -- State + CRUD for grow_rooms
     usePlantGroups.ts             -- State + CRUD for plant_groups with filter support
     useHarvestSessions.ts         -- State + CRUD for harvest_sessions with filter support
+    useBinningSessions.ts         -- State + CRUD for binning_sessions with filter support
+    useDryRooms.ts                -- State + CRUD for dry_rooms
     useRoomSections.ts            -- State + CRUD for room_tables/room_sections; run dates (C-5A/C-5B)
-    usePlantGroupPlacement.ts     -- Placement state + updatePlacement for a single group (C-5B)
+    usePlantGroupPlacement.ts     -- Placement state + updatePlacement; optional onSuccess callback (D-7)
     index.ts
   services/
-    cultivation.service.ts        -- Supabase operations across all entities (24+ operations after C-5B)
+    cultivation.service.ts        -- Supabase operations across all entities (29 operations)
     index.ts
   types/
     cultivation.types.ts          -- Interim type definitions (hand-authored; regenerate after schema changes)
+    index.ts
+  utils/                          -- NEW (D-7)
+    strainValidation.ts           -- STRAIN_ABBREVIATION_REGEX + isValidStrainAbbreviation()
     index.ts
   index.ts
 ```
 
 **Navigation:** Five routes wired in `App.tsx` (`cultivation-dashboard`, `cultivation-plants`, `cultivation-harvest`, `cultivation-binning`, `cultivation-rooms`). Sidebar navigation entry added in `sectionNavigation.ts`. Grow Rooms and Dry Rooms tabs added to Settings.
+
+**Dashboard integration (D-7):** `CultivationWidget` in `src/features/dashboard/components/` provides an at-a-glance cultivation summary on the main Dashboard: active groups, active harvests, pending binning, stage distribution, and quick navigation links.
+
+**Abbreviation validation (D-7):** `isValidStrainAbbreviation(abbreviation: string | null | undefined): boolean` is the single source of truth for the 3-letter uppercase check. All components import from `'../utils'`. Do not inline `/^[A-Z]{3}$/` — use the shared utility.
+
+**`usePlantGroupPlacement` (D-7):** Accepts an optional `onSuccess?: () => void` second parameter. Callers that need to reload data after placement updates should pass a callback. Existing callers without the parameter continue to work unchanged.
 
 ---
 
@@ -1590,7 +1603,7 @@ The cultivation module is architecturally complete and production-ready. All 9 t
 
 ### Known Gaps (UX, not code defects)
 
-1. **Cultivation → Batches linkage:** When a harvest session is completed, a `batch_registry` row is created automatically. There is no UI link from the harvest session view to the batch in the Batches module. Users must navigate to Batches manually to see production status.
+1. **HarvestSessionsList → Batches linkage:** When a harvest session is completed, a `batch_registry` row is created automatically. There is no UI link from the completed harvest session row to the batch in the Batches module. Users must navigate to Batches manually. (Note: `BinningSessionsView` completed rows now have a batch navigation link as of D-7 — this gap applies only to `HarvestSessionsList`.)
 
 2. **Dry Rooms in Settings only:** Dry rooms are managed under Settings → Dry Rooms. The Binning Sessions form shows a warning ("No active dry rooms — add one in Settings first") if none exist. This is correct UX but could confuse first-time users.
 
@@ -1607,6 +1620,17 @@ The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside t
 ---
 
 ## Document Version History
+
+### v1.9 (2026-02-19)
+- Session D-7: code quality, dashboard widget, and trigger tests
+- Added `utils/` section to Frontend Module Structure documenting `strainValidation.ts` and `isValidStrainAbbreviation()`
+- Added `BinningSessionsView.tsx` and `DryRoomsManagement.tsx` to component list (were implemented but unlisted)
+- Added `useBinningSessions.ts` and `useDryRooms.ts` to hooks list (were implemented but unlisted)
+- Updated `usePlantGroupPlacement` note with D-7 `onSuccess` callback addition
+- Added Dashboard integration note for `CultivationWidget`
+- Added Abbreviation validation note (single source of truth)
+- Corrected Known Gap 1: `BinningSessionsView` now has a batch navigation link; gap scoped to `HarvestSessionsList` only
+- Updated document version header and `Last Updated` footer
 
 ### v1.8 (2026-02-19)
 - Session D-6: full module health analysis and status correction
@@ -1690,6 +1714,6 @@ The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside t
 
 ---
 
-**Document Version:** 1.8
+**Document Version:** 1.9
 **Last Updated:** 2026-02-19
 **Status:** FULLY IMPLEMENTED — all 9 tables and 13 triggers live; entire cultivation pipeline operational

@@ -147,9 +147,9 @@ function AppContent() {
       case 'cultivation-plants':
         return <PlantGroupsList />;
       case 'cultivation-harvest':
-        return <HarvestSessionsList />;
+        return <HarvestSessionsList onViewChange={handleViewChange} />;
       case 'cultivation-binning':
-        return <BinningSessionsView />;
+        return <BinningSessionsView onViewChange={handleViewChange} />;
       case 'cultivation-rooms':
         return <GrowRoomsManagement />;
       case 'production-overview':

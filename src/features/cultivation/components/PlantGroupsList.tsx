@@ -5,6 +5,7 @@ import { useGrowRooms } from '../hooks/useGrowRooms';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+import { isValidStrainAbbreviation } from '../utils';
 import type { PlantGroup, GrowthStage } from '../types';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -32,7 +33,7 @@ interface PlantGroupRowProps {
 function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDetail }: PlantGroupRowProps) {
   const nextStage = NEXT_STAGE[group.growth_stage];
   const stageCls = STAGE_COLORS[group.growth_stage] ?? '';
-  const hasAbbrev = group.strains?.abbreviation && /^[A-Z]{3}$/.test(group.strains.abbreviation);
+  const hasAbbrev = isValidStrainAbbreviation(group.strains?.abbreviation);
 
   const daysInStage = Math.floor(
     (Date.now() - new Date(group.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)

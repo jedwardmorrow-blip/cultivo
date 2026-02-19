@@ -1,4 +1,5 @@
 export { Dashboard } from './Dashboard';
+export { CultivationWidget } from './CultivationWidget';
 export { ActiveProductionSessions } from './ActiveProductionSessions';
 export { AllocationHealth } from './AllocationHealth';
 export { BatchAllocationOverview } from './BatchAllocationOverview';

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, XCircle, Scale, ChevronRight, Leaf, AlertTriangle } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Scale, ChevronRight, Leaf, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { usePlantGroups } from '../hooks/usePlantGroups';
+import { isValidStrainAbbreviation } from '../utils';
 import type { HarvestSession, CreateHarvestSessionInput } from '../types';
 
 type TabKey = 'active' | 'completed' | 'cancelled';
@@ -39,9 +40,7 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const selectedGroup = groups.find((g) => g.id === plantGroupId);
-  const hasAbbreviation = selectedGroup?.strains?.abbreviation
-    ? /^[A-Z]{3}$/.test(selectedGroup.strains.abbreviation)
-    : false;
+  const hasAbbreviation = isValidStrainAbbreviation(selectedGroup?.strains?.abbreviation);
 
   const canSave =
     plantGroupId &&
@@ -107,8 +106,7 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
             >
               <option value="">— Select plant group —</option>
               {groups.map((g) => {
-                const abbrev = g.strains?.abbreviation;
-                const validAbbrev = abbrev && /^[A-Z]{3}$/.test(abbrev);
+                const validAbbrev = isValidStrainAbbreviation(g.strains?.abbreviation);
                 return (
                   <option key={g.id} value={g.id} disabled={!validAbbrev}>
                     {g.group_number} — {g.strains?.name ?? 'Unknown Strain'} — {g.plant_count} plants
@@ -289,9 +287,10 @@ interface SessionRowProps {
   onComplete: (s: HarvestSession) => void;
   onCancel: (s: HarvestSession) => void;
   onAdjust: (s: HarvestSession) => void;
+  onViewBatch?: () => void;
 }
 
-function SessionRow({ session, onComplete, onCancel, onAdjust }: SessionRowProps) {
+function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: SessionRowProps) {
   const strainName = session.plant_groups?.strains?.name ?? 'Unknown Strain';
   const groupNumber = session.plant_groups?.group_number ?? '—';
   const batchNumber = session.batch_registry?.batch_number;
@@ -323,9 +322,14 @@ function SessionRow({ session, onComplete, onCancel, onAdjust }: SessionRowProps
 
         <div className="flex items-center gap-3 flex-shrink-0">
           {batchNumber && (
-            <span className="text-xs bg-green-950 border border-green-700 text-green-400 px-2 py-0.5 font-mono">
+            <button
+              onClick={onViewBatch}
+              title="View batch in Batches module"
+              className="flex items-center gap-1 text-xs bg-green-950 border border-green-700 text-green-400 px-2 py-0.5 font-mono hover:bg-green-900 transition-colors"
+            >
               {batchNumber}
-            </span>
+              {onViewBatch && <ExternalLink className="w-3 h-3 opacity-70" />}
+            </button>
           )}
 
           {session.session_status === 'active' && (
@@ -408,7 +412,11 @@ function ConfirmActionModal({ title, message, confirmLabel, confirmClass, onConf
   );
 }
 
-export function HarvestSessionsList() {
+interface HarvestSessionsListProps {
+  onViewChange?: (view: string) => void;
+}
+
+export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps = {}) {
   const { sessions, loading, error, reload, completeSession, cancelSession, adjustWeight } = useHarvestSessions();
 
   const [activeTab, setActiveTab] = useState<TabKey>('active');
@@ -527,6 +535,7 @@ export function HarvestSessionsList() {
               onComplete={setCompletingSession}
               onCancel={setCancellingSession}
               onAdjust={setAdjustingSession}
+              onViewBatch={onViewChange ? () => onViewChange('batches') : undefined}
             />
           ))
         )}

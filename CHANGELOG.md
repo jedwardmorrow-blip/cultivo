@@ -4,6 +4,85 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session D-7: Cultivation Module Code Quality + Dashboard Widget + Trigger Tests
+
+**Type:** Code Quality / Feature / Testing
+**Module:** Cultivation, Dashboard
+**Priority:** Medium
+**Impact:** Three concurrent improvements: shared validation utility, new dashboard widget, 40 new trigger tests
+**Status:** COMPLETE
+
+### Phase C — Code Quality Fixes
+
+**Extracted abbreviation validation utility (`src/features/cultivation/utils/`)**
+- Created `src/features/cultivation/utils/strainValidation.ts` with `STRAIN_ABBREVIATION_REGEX` and `isValidStrainAbbreviation()` function
+- Created `src/features/cultivation/utils/index.ts` barrel export
+- Updated 4 components to import and use the shared utility: `CultivationDashboard`, `PlantGroupsList`, `NewPlantGroupModal`, `HarvestSessionsList`
+- Removed 6 inline `/^[A-Z]{3}$/` regex literals from the codebase
+
+**Removed dead code (`FlipRoomModal.tsx`)**
+- Removed unused `currentFlipDates` variable and `void currentFlipDates;` suppression line
+
+**Normalized `usePlantGroupPlacement` hook**
+- Added optional `onSuccess?: () => void` parameter (backward-compatible)
+- Hook now calls `onSuccess?.()` after a successful placement update, matching the reload pattern used by other cultivation hooks
+
+**Wired `BinningSessionsView` with cross-module navigation**
+- Added `BinningSessionsViewProps` interface with `onViewChange?: (view: string) => void`
+- Completed binning sessions now show a batch number badge with an external link icon that navigates to the Batches module
+- Updated `App.tsx` to pass `onViewChange={handleViewChange}` to `BinningSessionsView`
+
+### Phase B — Dashboard Cultivation Widget
+
+**New `CultivationWidget` component (`src/features/dashboard/components/CultivationWidget.tsx`)**
+- Loads cultivation summary data in parallel (plant groups, active harvests, binning sessions, unbinned harvests)
+- Displays: 3-stat summary grid (active groups / active harvests / pending binning), stage distribution bar (clone/veg/flower), active harvest list (up to 3), pending binning CTA banner, missing abbreviation warning
+- Navigation links to `cultivation`, `cultivation-harvest`, and `cultivation-binning` views via `onViewChange` prop
+- Registered in `src/features/dashboard/components/index.ts`
+- Inserted between Inventory Pipeline and Pending Conversions in the main Dashboard
+
+### Phase A — Cultivation Trigger Integration Tests
+
+**New test file (`src/__tests__/unit/features/cultivation/cultivation.triggers.test.ts`)**
+- 40 tests covering 13 trigger-enforced invariants (T1–T13):
+  - T1: Stage machine — valid transitions only (clone→veg→flower; no skipping or reversal)
+  - T2: Harvest blocked without valid 3-letter abbreviation
+  - T3: Harvest blocked if plant group is not in flower stage
+  - T4: Batch auto-created on harvest session completion
+  - T5: Harvest cancellation blocked when batch already exists
+  - T6: Binning requires a completed harvest session
+  - T7: Binning requires a matching `batch_registry_id`
+  - T8: Stage history is queryable per plant group
+  - T9: Room transfer history is queryable per plant group
+  - T10: Flip room operation updates room sections and advances eligible groups
+  - T11: `listUnbinnedHarvestSessions` correctly excludes already-binned sessions
+  - T12: `advanceStage` to `'harvested'` is rejected by the service layer
+  - T13: Weight validation on harvest sessions
+- Tests document the service/trigger boundary: `stage_entered_at` is NOT in the update payload (it is set by the DB trigger, not the application)
+- All 40 tests pass
+
+### Files Changed
+
+- `src/features/cultivation/utils/strainValidation.ts` — NEW: shared abbreviation validation
+- `src/features/cultivation/utils/index.ts` — NEW: barrel export
+- `src/features/cultivation/components/CultivationDashboard.tsx` — import shared util
+- `src/features/cultivation/components/PlantGroupsList.tsx` — import shared util
+- `src/features/cultivation/components/NewPlantGroupModal.tsx` — import shared util
+- `src/features/cultivation/components/HarvestSessionsList.tsx` — import shared util
+- `src/features/cultivation/components/FlipRoomModal.tsx` — removed dead code
+- `src/features/cultivation/hooks/usePlantGroupPlacement.ts` — added `onSuccess` callback
+- `src/features/cultivation/components/BinningSessionsView.tsx` — added `onViewChange` prop + batch nav link
+- `src/App.tsx` — pass `onViewChange` to `BinningSessionsView`
+- `src/features/dashboard/components/CultivationWidget.tsx` — NEW: dashboard widget
+- `src/features/dashboard/components/index.ts` — export `CultivationWidget`
+- `src/features/dashboard/components/Dashboard.tsx` — insert `CultivationWidget`
+- `src/__tests__/unit/features/cultivation/cultivation.triggers.test.ts` — NEW: 40 trigger tests
+- `docs/CULTIVATION-ARCHITECTURE.md` — updated Frontend Module Structure + Health Analysis
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — hand-off updated
+- `CHANGELOG.md` — this entry
+
+---
+
 ## 2026-02-19 - Session D-6: Cultivation Module Health Analysis + Bug Fix
 
 **Type:** Bug Fix / Documentation

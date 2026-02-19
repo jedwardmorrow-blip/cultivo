@@ -5,6 +5,7 @@ import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { RoomMapCard } from './RoomMapCard';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+import { isValidStrainAbbreviation } from '../utils';
 import type { PlantGroup } from '../types';
 
 interface StatCardProps {
@@ -72,7 +73,7 @@ export function CultivationDashboard() {
   const strainsWithoutAbbrev = Array.from(
     new Set(
       groups
-        .filter((g) => !g.strains?.abbreviation || !/^[A-Z]{3}$/.test(g.strains.abbreviation))
+        .filter((g) => !isValidStrainAbbreviation(g.strains?.abbreviation))
         .map((g) => g.strains?.name ?? 'Unknown')
     )
   );
