@@ -1,0 +1,248 @@
+import { supabase } from '@/lib/supabase';
+import type {
+  GrowRoom,
+  PlantGroup,
+  PlantGroupStageHistory,
+  PlantGroupRoomHistory,
+  HarvestSession,
+  GrowthStage,
+  HarvestSessionStatus,
+  CreateGrowRoomInput,
+  UpdateGrowRoomInput,
+  CreatePlantGroupInput,
+  CreateHarvestSessionInput,
+} from '../types';
+
+const PLANT_GROUP_SELECT = `
+  id, group_number, name, strain_id, grow_room_id, mother_plant_group_id,
+  is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
+  notes, created_at, created_by, updated_at,
+  strains (name, abbreviation),
+  grow_rooms (name, room_code),
+  mother_group:plant_groups!mother_plant_group_id (id, group_number, growth_stage)
+`;
+
+const HARVEST_SESSION_SELECT = `
+  id, plant_group_id, harvest_date, wet_weight_grams, plant_count_harvested,
+  adjusted_weight_grams, adjustment_reason, batch_registry_id, session_status,
+  completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
+  plant_groups (
+    group_number, strain_id, grow_room_id,
+    strains (name, abbreviation),
+    grow_rooms (room_code)
+  ),
+  batch_registry (batch_number)
+`;
+
+function throwError(error: { message: string } | null, context: string): never {
+  throw new Error(error?.message ?? `Unknown error in ${context}`);
+}
+
+export const cultivationService = {
+  async listGrowRooms(): Promise<GrowRoom[]> {
+    const { data, error } = await supabase
+      .from('grow_rooms')
+      .select('*')
+      .order('room_code');
+    if (error) throwError(error, 'listGrowRooms');
+    return data as GrowRoom[];
+  },
+
+  async createGrowRoom(input: CreateGrowRoomInput): Promise<GrowRoom> {
+    const { data, error } = await supabase
+      .from('grow_rooms')
+      .insert({ ...input, is_active: true })
+      .select()
+      .single();
+    if (error) throwError(error, 'createGrowRoom');
+    return data as GrowRoom;
+  },
+
+  async updateGrowRoom(id: string, input: UpdateGrowRoomInput): Promise<GrowRoom> {
+    const { data, error } = await supabase
+      .from('grow_rooms')
+      .update(input)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throwError(error, 'updateGrowRoom');
+    return data as GrowRoom;
+  },
+
+  async archiveGrowRoom(id: string): Promise<GrowRoom> {
+    return cultivationService.updateGrowRoom(id, { is_active: false });
+  },
+
+  async listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]> {
+    let query = supabase.from('plant_groups').select(PLANT_GROUP_SELECT);
+
+    if (filter?.stage === 'active') {
+      query = query.not('growth_stage', 'eq', 'harvested');
+    } else if (filter?.stage) {
+      query = query.eq('growth_stage', filter.stage);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throwError(error, 'listPlantGroups');
+    return data as unknown as PlantGroup[];
+  },
+
+  async getPlantGroup(id: string): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .select(PLANT_GROUP_SELECT)
+      .eq('id', id)
+      .single();
+    if (error) throwError(error, 'getPlantGroup');
+    return data as unknown as PlantGroup;
+  },
+
+  async createPlantGroup(input: CreatePlantGroupInput): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .insert({
+        ...input,
+        group_number: 'PENDING',
+        growth_stage: 'clone',
+        is_mother: input.is_mother ?? false,
+      })
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'createPlantGroup');
+    return data as unknown as PlantGroup;
+  },
+
+  async advanceStage(id: string, toStage: GrowthStage): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .update({ growth_stage: toStage })
+      .eq('id', id)
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'advanceStage');
+    return data as unknown as PlantGroup;
+  },
+
+  async moveToRoom(id: string, toRoomId: string): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .update({ grow_room_id: toRoomId })
+      .eq('id', id)
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'moveToRoom');
+    return data as unknown as PlantGroup;
+  },
+
+  async setMotherStatus(id: string, isMother: boolean): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .update({ is_mother: isMother })
+      .eq('id', id)
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'setMotherStatus');
+    return data as unknown as PlantGroup;
+  },
+
+  async updatePlantGroupNotes(id: string, notes: string): Promise<PlantGroup> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .update({ notes })
+      .eq('id', id)
+      .select(PLANT_GROUP_SELECT)
+      .single();
+    if (error) throwError(error, 'updatePlantGroupNotes');
+    return data as unknown as PlantGroup;
+  },
+
+  async getStageHistory(plantGroupId: string): Promise<PlantGroupStageHistory[]> {
+    const { data, error } = await supabase
+      .from('plant_group_stage_history')
+      .select('*')
+      .eq('plant_group_id', plantGroupId)
+      .order('transitioned_at', { ascending: false });
+    if (error) throwError(error, 'getStageHistory');
+    return data as PlantGroupStageHistory[];
+  },
+
+  async getRoomHistory(plantGroupId: string): Promise<PlantGroupRoomHistory[]> {
+    const { data, error } = await supabase
+      .from('plant_group_room_history')
+      .select(`
+        id, plant_group_id, from_room_id, to_room_id, moved_at, moved_by, notes,
+        from_room:grow_rooms!from_room_id (name, room_code),
+        to_room:grow_rooms!to_room_id (name, room_code)
+      `)
+      .eq('plant_group_id', plantGroupId)
+      .order('moved_at', { ascending: false });
+    if (error) throwError(error, 'getRoomHistory');
+    return data as unknown as PlantGroupRoomHistory[];
+  },
+
+  async listMotherGroups(): Promise<PlantGroup[]> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .select(PLANT_GROUP_SELECT)
+      .eq('is_mother', true)
+      .not('growth_stage', 'eq', 'harvested')
+      .order('group_number');
+    if (error) throwError(error, 'listMotherGroups');
+    return data as unknown as PlantGroup[];
+  },
+
+  async listHarvestSessions(filter?: { status?: HarvestSessionStatus }): Promise<HarvestSession[]> {
+    let query = supabase.from('harvest_sessions').select(HARVEST_SESSION_SELECT);
+    if (filter?.status) {
+      query = query.eq('session_status', filter.status);
+    }
+    const { data, error } = await query.order('harvest_date', { ascending: false });
+    if (error) throwError(error, 'listHarvestSessions');
+    return data as unknown as HarvestSession[];
+  },
+
+  async createHarvestSession(input: CreateHarvestSessionInput): Promise<HarvestSession> {
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .insert({ ...input, session_status: 'active' })
+      .select(HARVEST_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'createHarvestSession');
+    return data as unknown as HarvestSession;
+  },
+
+  async completeHarvestSession(id: string): Promise<HarvestSession> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .update({ session_status: 'completed', completed_by: user?.id ?? null })
+      .eq('id', id)
+      .select(HARVEST_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'completeHarvestSession');
+    return data as unknown as HarvestSession;
+  },
+
+  async cancelHarvestSession(id: string): Promise<HarvestSession> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .update({ session_status: 'cancelled', cancelled_by: user?.id ?? null })
+      .eq('id', id)
+      .select(HARVEST_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'cancelHarvestSession');
+    return data as unknown as HarvestSession;
+  },
+
+  async adjustHarvestWeight(id: string, adjustedWeight: number, reason: string): Promise<HarvestSession> {
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .update({ adjusted_weight_grams: adjustedWeight, adjustment_reason: reason })
+      .eq('id', id)
+      .select(HARVEST_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'adjustHarvestWeight');
+    return data as unknown as HarvestSession;
+  },
+};

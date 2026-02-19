@@ -8,7 +8,7 @@
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
-export type RoomType = 'clone' | 'veg' | 'flower' | 'mixed';
+export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
 export type HarvestSessionStatus = 'active' | 'completed' | 'cancelled';
 
 export interface GrowRoom {
@@ -24,9 +24,12 @@ export interface GrowRoom {
 
 export interface PlantGroup {
   id: string;
+  group_number: string;
   name: string | null;
   strain_id: string;
   grow_room_id: string;
+  mother_plant_group_id: string | null;
+  is_mother: boolean;
   plant_count: number;
   growth_stage: GrowthStage;
   stage_entered_at: string;
@@ -35,8 +38,9 @@ export interface PlantGroup {
   created_at: string;
   created_by: string | null;
   updated_at: string;
-  strains?: { name: string; abbreviation: string };
+  strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
+  mother_group?: Pick<PlantGroup, 'id' | 'group_number' | 'growth_stage'>;
 }
 
 export interface PlantGroupStageHistory {
@@ -49,12 +53,26 @@ export interface PlantGroupStageHistory {
   notes: string | null;
 }
 
+export interface PlantGroupRoomHistory {
+  id: string;
+  plant_group_id: string;
+  from_room_id: string;
+  to_room_id: string;
+  moved_at: string;
+  moved_by: string | null;
+  notes: string | null;
+  from_room?: { name: string; room_code: string };
+  to_room?: { name: string; room_code: string };
+}
+
 export interface HarvestSession {
   id: string;
   plant_group_id: string;
   harvest_date: string;
   wet_weight_grams: number;
   plant_count_harvested: number;
+  adjusted_weight_grams: number | null;
+  adjustment_reason: string | null;
   batch_registry_id: string | null;
   session_status: HarvestSessionStatus;
   completed_at: string | null;
@@ -64,8 +82,11 @@ export interface HarvestSession {
   notes: string | null;
   created_at: string;
   created_by: string | null;
-  plant_groups?: Pick<PlantGroup, 'strain_id' | 'grow_room_id'> & {
-    strains?: { name: string };
+  plant_groups?: {
+    group_number: string;
+    strain_id: string;
+    grow_room_id: string;
+    strains?: { name: string; abbreviation: string | null };
     grow_rooms?: { room_code: string };
   };
   batch_registry?: { batch_number: string };
@@ -77,7 +98,7 @@ export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_ty
 export type UpdateGrowRoomInput = Partial<Pick<GrowRoom, 'name' | 'room_type' | 'capacity_plants' | 'is_active'>>;
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
-  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes'>>;
+  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id'>>;
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes'>>;

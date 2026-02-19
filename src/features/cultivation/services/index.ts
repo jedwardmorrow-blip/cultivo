@@ -1,1 +1,1 @@
-// Cultivation services will be added in Session C-2/C-3
+export { cultivationService } from './cultivation.service';
