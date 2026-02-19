@@ -4,6 +4,65 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session D-8: Cultivation Testing Infrastructure + Hook Tests + UX Fixes
+
+**Type:** Testing / Code Quality
+**Module:** Cultivation, Dashboard
+**Priority:** Medium
+**Impact:** 106 new tests (454 total); shared date/weight utilities; CultivationWidget navigation bug fixed
+**Status:** COMPLETE
+
+### Testing Infrastructure
+
+**New shared fixtures (`src/__tests__/fixtures/cultivationFixtures.ts`)**
+- Factory functions for all 7 cultivation entities: `makeGrowRoom`, `makeDryRoom`, `makeRoomSection`, `makeRoomTable`, `makePlantGroup`, `makeHarvestSession`, `makeBinningSession`
+- All accept `Partial<T>` overrides for flexible test data setup
+
+**New shared utility (`src/features/cultivation/utils/dateUtils.ts`)**
+- `formatWeight(grams)` — converts grams to readable `g` / `kg` string
+- `formatDate(dateStr)` — formats ISO date to `Mon DD, YYYY` display
+- `todayIso()` — returns current date as `YYYY-MM-DD`
+- `daysBetween(from, to)` — integer day count between two ISO dates
+- Exported from `src/features/cultivation/utils/index.ts`
+
+### Hook Tests (7 new files, `src/__tests__/unit/features/cultivation/hooks/`)
+
+- **`useGrowRooms.test.ts`** — 8 tests: loading, `activeRooms` filter, error handling, all CRUD ops reload list
+- **`useDryRooms.test.ts`** — 7 tests: mirrors useGrowRooms pattern for dry room isolation
+- **`useRoomSections.test.ts`** — 14 tests: null `growRoomId` guard (no service call), reloads on ID change, `hasSections`/`allSections` derived values, all 6 CRUD operations
+- **`usePlantGroupPlacement.test.ts`** — 11 tests: initial state, return value (true/false), `saving` lifecycle, `onSuccess` callback, error clearing
+- **`usePlantGroups.test.ts`** — 10 tests: stage filter passed/reloads on change, CRUD reloads, `getStageHistory`/`getRoomHistory` do NOT reload
+- **`useHarvestSessions.test.ts`** — 8 tests: status filter, reloads on filter change, `completeSession` returns `batch_registry_id`, `cancelSession` propagates error
+- **`useBinningSessions.test.ts`** — 9 tests: `Promise.all` parallel load (loading stays true until both queries resolve), filter scoping, `createSession` reloads both queries
+
+### Service Tests (2 new files)
+
+**`cultivation.service.room-layout.test.ts`** — 10 previously-uncovered service functions:
+- `listRoomTables`, `createRoomTable`, `updateRoomTable`, `archiveRoomTable`
+- `createRoomSection`, `updateRoomSection`, `archiveRoomSection`
+- `flipRoom` (multi-step: 3 `supabase.from` calls), `listPlantGroupsByRoom`, `updatePlantGroupNotes`
+
+**`cultivation.service.error-paths.test.ts`** — Error path coverage:
+- `archiveGrowRoom`/`archiveDryRoom` FK and not-found errors
+- `advanceStage` skip-to-harvested and clone→flower skip checks
+- `createHarvestSession` / `completeHarvestSession` / `cancelHarvestSession` guard conditions
+- `completeBinningSession` / `cancelBinningSession` double-transition errors
+- `moveToRoom` archived room, `adjustHarvestWeight` cancelled session, `setMotherStatus` harvested group
+
+**Test count: 454 tests across 24 files (all passing)**
+
+### UX / Code Quality Fixes
+
+**CultivationWidget navigation bug fixed (`src/features/dashboard/components/CultivationWidget.tsx`)**
+- Both "View Cultivation" buttons called `onViewChange('cultivation')` which has no route case in `App.tsx`
+- Fixed to `onViewChange('cultivation-dashboard')` (the correct route key)
+
+**Shared date/weight utilities adopted**
+- `BinningSessionsView` — removed local `formatWeight`/`formatDate` duplicates; imports from `../utils`
+- `HarvestSessionsList` — removed local duplicates; imports from `../utils`; added named error constants `ERR_MISSING_ABBREVIATION` and `ERR_WRONG_STAGE` replacing magic string checks
+
+---
+
 ## 2026-02-19 - Session D-7: Cultivation Module Code Quality + Dashboard Widget + Trigger Tests
 
 **Type:** Code Quality / Feature / Testing

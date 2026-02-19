@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock, ExternalLink } from 'lucide-react';
 import { useBinningSessions } from '../hooks/useBinningSessions';
 import { useDryRooms } from '../hooks/useDryRooms';
+import { formatWeight, formatDate } from '../utils';
 import type { BinningSession, BinningSessionStatus, CreateBinningSessionInput, HarvestSession } from '../types';
 
 type TabKey = 'pending' | 'active' | 'completed' | 'cancelled';
@@ -12,15 +13,6 @@ const TAB_LABELS: Record<TabKey, string> = {
   completed: 'Completed',
   cancelled: 'Cancelled',
 };
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(2)} kg`;
-  return `${grams.toFixed(1)} g`;
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 function yieldPct(wet: number, dry: number): string {
   return `${((dry / wet) * 100).toFixed(1)}%`;

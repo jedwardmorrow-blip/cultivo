@@ -105,7 +105,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
           </div>
         </div>
         <button
-          onClick={() => onViewChange('cultivation')}
+          onClick={() => onViewChange('cultivation-dashboard')}
           className="flex items-center gap-1.5 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
         >
           View all
@@ -236,7 +236,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
           <Sprout className="w-8 h-8 text-cult-dark-gray mx-auto mb-2" />
           <p className="text-sm text-cult-medium-gray">No active cultivation activity</p>
           <button
-            onClick={() => onViewChange('cultivation')}
+            onClick={() => onViewChange('cultivation-dashboard')}
             className="mt-2 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
           >
             Go to Cultivation →

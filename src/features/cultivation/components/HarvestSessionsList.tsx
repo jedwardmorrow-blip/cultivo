@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Plus, CheckCircle, XCircle, Scale, ChevronRight, Leaf, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { usePlantGroups } from '../hooks/usePlantGroups';
-import { isValidStrainAbbreviation } from '../utils';
+import { isValidStrainAbbreviation, formatWeight, formatDate } from '../utils';
 import type { HarvestSession, CreateHarvestSessionInput } from '../types';
+
+const ERR_MISSING_ABBREVIATION = 'strain abbreviation';
+const ERR_WRONG_STAGE = 'flower stage';
 
 type TabKey = 'active' | 'completed' | 'cancelled';
 
@@ -12,15 +15,6 @@ const TAB_LABELS: Record<TabKey, string> = {
   completed: 'Completed',
   cancelled: 'Cancelled',
 };
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(2)} kg`;
-  return `${grams.toFixed(1)} g`;
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 interface NewHarvestFormProps {
   onSuccess: () => void;
@@ -66,9 +60,9 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
       onSuccess();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('C-12') || msg.includes('strain abbreviation')) {
+      if (msg.includes(ERR_MISSING_ABBREVIATION)) {
         setError('Strain is missing a 3-letter abbreviation. Update it in Products > Strains first.');
-      } else if (msg.includes('C-13') || msg.includes('flower stage')) {
+      } else if (msg.includes(ERR_WRONG_STAGE)) {
         setError('Only flower-stage plant groups can be harvested.');
       } else {
         setError(msg || 'Failed to create harvest session.');

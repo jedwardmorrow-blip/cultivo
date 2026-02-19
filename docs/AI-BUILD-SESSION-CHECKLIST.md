@@ -15,55 +15,58 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** D-7 — Cultivation Module Code Quality + Dashboard Widget + Trigger Tests
+**Session:** D-8 — Cultivation Testing Infrastructure + Hook Tests + UX Fixes
 **Status:** COMPLETE
 
 **What was done:**
 
-Phase C (code quality):
-- Extracted abbreviation validation to `src/features/cultivation/utils/strainValidation.ts` — `isValidStrainAbbreviation()` is now the single source of truth; 6 inline regex literals removed from 4 components
-- Removed dead code (`currentFlipDates` variable + `void` suppression) from `FlipRoomModal`
-- Normalized `usePlantGroupPlacement` hook with optional `onSuccess` callback (backward-compatible)
-- Added `onViewChange` prop to `BinningSessionsView` + batch navigation link in completed sessions; wired in `App.tsx`
+Testing infrastructure:
+- Created `src/__tests__/fixtures/cultivationFixtures.ts` with 7 factory functions (`makeGrowRoom`, `makeDryRoom`, `makeRoomSection`, `makeRoomTable`, `makePlantGroup`, `makeHarvestSession`, `makeBinningSession`) all accepting `Partial<T>` overrides
+- Created `src/features/cultivation/utils/dateUtils.ts` with `formatWeight`, `formatDate`, `todayIso`, `daysBetween`
+- Updated `src/features/cultivation/utils/index.ts` to export `dateUtils`
 
-Phase B (dashboard widget):
-- Created `CultivationWidget` in `src/features/dashboard/components/CultivationWidget.tsx`
-- Widget shows: active groups, active harvests, pending binning stats; stage distribution bar; harvest list; pending binning CTA; missing abbreviation warning; empty state
-- Inserted into Dashboard between Inventory Pipeline and Pending Conversions
+Hook tests (7 new files in `src/__tests__/unit/features/cultivation/hooks/`):
+- `useGrowRooms.test.ts` (8 tests), `useDryRooms.test.ts` (7), `useRoomSections.test.ts` (14), `usePlantGroupPlacement.test.ts` (11), `usePlantGroups.test.ts` (10), `useHarvestSessions.test.ts` (8), `useBinningSessions.test.ts` (9)
+- Key coverage: `Promise.all` parallel load in `useBinningSessions`, null guard in `useRoomSections`, filter dependency reloads, CRUD methods all trigger list refresh
 
-Phase A (tests):
-- Created `src/__tests__/unit/features/cultivation/cultivation.triggers.test.ts`
-- 40 tests across 13 trigger scenarios (T1–T13) — all pass
-- Corrected two test failures during development: `stage_entered_at` is trigger-set (not service-set), and `flipRoom` requires a double-chained `.eq()` mock
+Service tests (2 new files):
+- `cultivation.service.room-layout.test.ts` — 10 room layout functions including `flipRoom` multi-step mock
+- `cultivation.service.error-paths.test.ts` — guard condition errors across all session types
+
+UX / code quality fixes:
+- `CultivationWidget`: fixed both navigation buttons from `'cultivation'` → `'cultivation-dashboard'` (no route existed for the old value)
+- `BinningSessionsView` + `HarvestSessionsList`: removed local `formatWeight`/`formatDate` duplicates; import from shared `../utils`
+- `HarvestSessionsList`: replaced magic string checks with named constants `ERR_MISSING_ABBREVIATION` / `ERR_WRONG_STAGE`
 
 **Build status:** PASSES
+**Test count:** 454 tests across 24 files (all passing); up from 348/15 before this session
 
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 
-**Modified files (this session):**
-- `src/features/cultivation/utils/strainValidation.ts` — NEW
-- `src/features/cultivation/utils/index.ts` — NEW
-- `src/features/cultivation/components/CultivationDashboard.tsx`
-- `src/features/cultivation/components/PlantGroupsList.tsx`
-- `src/features/cultivation/components/NewPlantGroupModal.tsx`
-- `src/features/cultivation/components/HarvestSessionsList.tsx`
-- `src/features/cultivation/components/FlipRoomModal.tsx`
-- `src/features/cultivation/hooks/usePlantGroupPlacement.ts`
-- `src/features/cultivation/components/BinningSessionsView.tsx`
-- `src/App.tsx`
-- `src/features/dashboard/components/CultivationWidget.tsx` — NEW
-- `src/features/dashboard/components/index.ts`
-- `src/features/dashboard/components/Dashboard.tsx`
-- `src/__tests__/unit/features/cultivation/cultivation.triggers.test.ts` — NEW
-- `docs/CULTIVATION-ARCHITECTURE.md` — Frontend Module Structure + Health Analysis updated, v1.9
+**Modified / created files (this session):**
+- `src/__tests__/fixtures/cultivationFixtures.ts` — NEW
+- `src/features/cultivation/utils/dateUtils.ts` — NEW
+- `src/features/cultivation/utils/index.ts` — updated (added dateUtils exports)
+- `src/__tests__/unit/features/cultivation/hooks/useGrowRooms.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/useDryRooms.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/useRoomSections.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/usePlantGroupPlacement.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/usePlantGroups.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/useHarvestSessions.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/hooks/useBinningSessions.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/cultivation.service.room-layout.test.ts` — NEW
+- `src/__tests__/unit/features/cultivation/cultivation.service.error-paths.test.ts` — NEW
+- `src/features/dashboard/components/CultivationWidget.tsx` — navigation bug fix
+- `src/features/cultivation/components/BinningSessionsView.tsx` — shared utils import
+- `src/features/cultivation/components/HarvestSessionsList.tsx` — shared utils + named error constants
 - `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
 - `CHANGELOG.md`
 
 **Next recommendations (in order):**
-1. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete"
-2. **HarvestSessionsList batch link** — the "View Batch" gap in completed harvest sessions still exists (only Binning Sessions got the link this session). Add a similar `onViewChange` → `'batches'` link from `HarvestSessionsList` completed rows
-3. **`useBinningSessions` hook** — `BinningSessionsView` currently calls `cultivationService` directly; create a `useBinningSessions` hook matching the `useHarvestSessions` pattern for consistency
+1. **Real plant data** — user mentioned they are about to add physical plants; first live data test of the cultivation module
+2. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete"
+3. **HarvestSessionsList batch link** — completed harvest session rows still lack a "View Batch" navigation link (only Binning Sessions have it); add `onViewChange` → `'batches'` link
 
 ---
 
