@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
-import { Settings as SettingsIcon, Save, RotateCcw, Package, Users, Box, Leaf, Layers, Building2, Shield, Truck, Car, Navigation, Palette, Warehouse } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Package, Users, Box, Leaf, Layers, Building2, Shield, Truck, Car, Navigation, Palette, Warehouse, Wind } from 'lucide-react';
 import { ProductsManagement, StagesManagement, ProductTypesManagement, StrainsManagement, BrandingManagement } from '../../products';
 import { UserManagement } from './UserManagement';
 import { CustomersManagement } from '../../customers/components/CustomersManagement';
@@ -10,7 +10,7 @@ import { DriversManagement } from './DriversManagement';
 import { VehiclesManagement } from './VehiclesManagement';
 import { RouteTestingTool } from './RouteTestingTool';
 import { BatchManagement } from '../../batches';
-import { GrowRoomsManagement } from '../../cultivation';
+import { GrowRoomsManagement, DryRoomsManagement } from '../../cultivation';
 import type { AppSetting, SettingsFormData } from '../types';
 
 export function Settings() {
@@ -269,6 +269,7 @@ export function Settings() {
     { id: 'types', label: 'Product Types', icon: Box },
     { id: 'strains', label: 'Strains', icon: Leaf },
     { id: 'grow-rooms', label: 'Grow Rooms', icon: Warehouse },
+    { id: 'dry-rooms', label: 'Dry Rooms', icon: Wind },
     { id: 'products', label: 'Products', icon: Package },
     { id: 'users', label: 'Users', icon: Users },
     ...(isAdmin ? [{ id: 'admin', label: 'Admin Controls', icon: Shield }] : []),
@@ -702,6 +703,8 @@ export function Settings() {
       {activeTab === 'strains' && <StrainsManagement />}
 
       {activeTab === 'grow-rooms' && <GrowRoomsManagement />}
+
+      {activeTab === 'dry-rooms' && <DryRoomsManagement />}
 
       {activeTab === 'products' && <ProductsManagement />}
 

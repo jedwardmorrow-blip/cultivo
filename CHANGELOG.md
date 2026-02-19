@@ -4,6 +4,47 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session D-2/D-3: Cultivation Module — Dry Rooms + Binning Sessions
+
+**Type:** FEATURE
+**Module:** Cultivation
+**Priority:** High
+**Impact:** 2 database tables, 2 triggers, 9 new service ops, 2 new hooks, 2 new UI components
+**Status:** COMPLETE
+
+### Database (D-2)
+
+- Created `dry_rooms` table — physical drying room identifiers; room_code unique + immutable
+- Created `binning_sessions` table — dry weight records, 1:1 with harvest_sessions (UNIQUE constraint)
+- `binning_sessions.batch_registry_id` denormalized FK from harvest session for query efficiency
+- RLS enabled on both tables; authenticated SELECT/INSERT/UPDATE, no DELETE
+- `trg_protect_dry_room_code` — blocks room_code mutation after creation (mirrors grow_rooms pattern)
+- `trg_validate_binning_session` — validates harvest session is completed and batch_registry_id matches on INSERT
+- Indexes: `idx_binning_sessions_harvest_session_id`, `idx_binning_sessions_batch_registry_id`
+
+### Service Layer (D-3)
+
+- `listDryRooms()`, `createDryRoom()`, `updateDryRoom()`, `archiveDryRoom()`
+- `listBinningSessions()` — with status filter
+- `listUnbinnedHarvestSessions()` — completed harvests with no non-cancelled binning session
+- `createBinningSession()`, `completeBinningSession()`, `cancelBinningSession()`
+
+### Frontend (D-3)
+
+- `useDryRooms` hook — CRUD state for dry_rooms
+- `useBinningSessions` hook — CRUD state for binning_sessions + unbinnedHarvests loaded together
+- `DryRoomsManagement` component — full CRUD UI with archive/restore, Settings → Dry Rooms tab
+- `BinningSessionsView` component — tabs: Pending / Active / Completed / Cancelled; session cards with yield%
+- Navigation: "Binning Sessions" added to Cultivation sidebar section
+- Settings: "Dry Rooms" tab added alongside Grow Rooms
+
+### Types (D-3)
+
+- `BinningSessionStatus`, `DryRoom`, `BinningSession` interfaces
+- `CreateDryRoomInput`, `UpdateDryRoomInput`, `CreateBinningSessionInput` input types
+
+---
+
 ## 2026-02-19 - Session C-2/C-3: Cultivation Module — Full Implementation
 
 **Type:** FEATURE

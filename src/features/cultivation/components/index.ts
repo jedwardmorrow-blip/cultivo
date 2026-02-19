@@ -8,3 +8,5 @@ export { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 export { FlipRoomModal } from './FlipRoomModal';
 export { RoomMapCard } from './RoomMapCard';
 export { LayoutBuilder } from './LayoutBuilder';
+export { DryRoomsManagement } from './DryRoomsManagement';
+export { BinningSessionsView } from './BinningSessionsView';

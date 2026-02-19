@@ -15,48 +15,46 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** D-1 — Binning Session + Dry Room Documentation
+**Session:** D-2/D-3 — Dry Rooms + Binning Sessions Migration + UI
 **Status:** COMPLETE
 
 **What was done:**
-- **Documentation-only session.** No migrations, no code changes, no risk.
-- All three core cultivation docs updated to **v1.7**:
-  - `CULTIVATION.md` — added Dry Rooms and Binning Sessions to scope, entities, lifecycle, compliance fields, UI screens (§4 Dry Rooms Settings, §5 Binning Sessions), and navigation
-  - `CULTIVATION-ARCHITECTURE.md` — added full DDL for `dry_rooms` and `binning_sessions`, RLS policies, Triggers 12–13 (`trg_protect_dry_room_code`, `trg_validate_binning_session`), Migration D-2-1 entry (pending), 9 new planned service ops, TypeScript types
-  - `CULTIVATION-RULES.md` — added invariants C-30 through C-37, new decisions (Dry Rooms in Settings, Binning is data-capture only, batch_registry_id denormalized), 4 new error messages, 7 new test scenarios
-- `ARCHITECTURE-DECISIONS.md` — added Decision 13 (Binning Session is Data-Capture, Not an Inventory Event)
+- Applied migration `create_dry_rooms_and_binning_sessions`: created `dry_rooms` and `binning_sessions` tables with RLS, triggers 12–13, and indexes
+- Added types: `BinningSessionStatus`, `DryRoom`, `BinningSession`, `CreateDryRoomInput`, `UpdateDryRoomInput`, `CreateBinningSessionInput` to `cultivation.types.ts`
+- Added 9 new service operations to `cultivation.service.ts`: 4 dry room ops + 5 binning session ops
+- Created `useDryRooms` hook — CRUD state for dry_rooms
+- Created `useBinningSessions` hook — CRUD state for binning_sessions + unbinnedHarvests
+- Created `DryRoomsManagement.tsx` component — full CRUD UI with archive/restore
+- Created `BinningSessionsView.tsx` component — Pending/Active/Completed/Cancelled tabs, session cards with yield%
+- Added "Binning Sessions" nav entry to Cultivation sidebar (between Harvest Sessions and Grow Rooms)
+- Added "Dry Rooms" tab to Settings component (alongside Grow Rooms)
+- Wired `cultivation-binning` route in App.tsx with lazy loading
 
-**Key design decisions made (D-1):**
-- Binning sessions do NOT create inventory (invariant C-37, Decision 13) — dry weight is a reference figure only
-- `batch_registry_id` on `binning_sessions` is denormalized from harvest session; trigger validates consistency
-- `dry_rooms.room_code` is immutable after creation (mirrors grow_rooms pattern, invariant C-30)
-- 1:1 UNIQUE constraint: one binning session per harvest session (invariant C-33)
-
-**Build status:** Passes (documentation-only session — no source code changes)
+**Build status:** PASSES — clean build, no errors
 
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 - `customers.service.test.ts` — 1 pre-existing failure: `zip` vs `postal_code` on line ~126
 
 **Modified files (this session):**
-- `docs/CULTIVATION.md` — v1.7
-- `docs/CULTIVATION-ARCHITECTURE.md` — v1.7
-- `docs/CULTIVATION-RULES.md` — v1.7
-- `docs/ARCHITECTURE-DECISIONS.md` — added Decision 13
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` — this file
-
-**Critical context for next session (D-2: Migration — dry_rooms + binning_sessions):**
-- DDL is fully specified in `CULTIVATION-ARCHITECTURE.md` — copy directly into migration file
-- Triggers 12 and 13 PL/pgSQL bodies are fully written in the architecture doc
-- RLS policies are fully written — authenticated-only, no DELETE, no anon
-- Migration filename should follow pattern: `20260219XXXXXX_create_dry_rooms_and_binning_sessions.sql`
-- `batch_registry_id` FK on `binning_sessions` references `batch_registry(id)` — confirm that table name (check existing migrations)
-- After D-2 migration: run D-3 (UI — DryRoomsManagement settings component + BinningSessionsView cultivation component)
+- `supabase/migrations/YYYYMMDDXXXXXX_create_dry_rooms_and_binning_sessions.sql` — NEW
+- `src/features/cultivation/types/cultivation.types.ts`
+- `src/features/cultivation/services/cultivation.service.ts`
+- `src/features/cultivation/hooks/useDryRooms.ts` — NEW
+- `src/features/cultivation/hooks/useBinningSessions.ts` — NEW
+- `src/features/cultivation/hooks/index.ts`
+- `src/features/cultivation/components/DryRoomsManagement.tsx` — NEW
+- `src/features/cultivation/components/BinningSessionsView.tsx` — NEW
+- `src/features/cultivation/components/index.ts`
+- `src/shared/components/navigation/sectionNavigation.ts`
+- `src/App.tsx`
+- `src/features/settings/components/Settings.tsx`
+- `CHANGELOG.md`
 
 **Next recommendations (in order):**
-1. **D-2: Migration** — apply `dry_rooms` + `binning_sessions` DDL, triggers, RLS (use architecture doc as blueprint)
-2. **D-3: UI** — `DryRoomsManagement.tsx` (Settings) + `BinningSessionsView` (Cultivation → Binning Sessions tab)
-3. **customers.service.test.ts fix** — 1-liner, `zip` → `postal_code` on line ~126
+1. **customers.service.test.ts fix** — 1-liner, `zip` → `postal_code` on line ~126
+2. **D-4: Testing** — 28 test scenarios in CULTIVATION-RULES.md § Testing Requirements (unit + integration tests for stage transitions, triggers, binning validation)
+3. **Type regeneration** — run `npm run types:generate` to sync database.types.ts with live schema (includes all 9 cultivation tables)
 
 ---
 

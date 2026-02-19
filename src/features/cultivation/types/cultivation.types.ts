@@ -10,6 +10,8 @@
  * C-5B: Added room_table_id/room_section_id to PlantGroup; added CreateRoomTableInput,
  *        UpdateRoomTableInput, CreateRoomSectionInput, UpdatePlantGroupPlacementInput,
  *        FlipRoomInput new service types.
+ * D-2/D-3: Added BinningSessionStatus, DryRoom, BinningSession, CreateDryRoomInput,
+ *           UpdateDryRoomInput, CreateBinningSessionInput.
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
@@ -166,3 +168,47 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes'>>;
+
+export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
+
+export interface DryRoom {
+  id: string;
+  name: string;
+  room_code: string;
+  capacity_lbs: number | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface BinningSession {
+  id: string;
+  harvest_session_id: string;
+  dry_room_id: string;
+  batch_registry_id: string;
+  dry_weight_grams: number;
+  bin_date: string;
+  session_status: BinningSessionStatus;
+  completed_at: string | null;
+  completed_by: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+  harvest_sessions?: Pick<HarvestSession, 'harvest_date' | 'wet_weight_grams' | 'adjusted_weight_grams'> & {
+    plant_groups?: Pick<PlantGroup, 'group_number'> & {
+      strains?: { name: string; abbreviation: string | null };
+    };
+  };
+  dry_rooms?: { name: string; room_code: string };
+  batch_registry?: { batch_number: string };
+}
+
+export type CreateDryRoomInput = Pick<DryRoom, 'name' | 'room_code'> &
+  Partial<Pick<DryRoom, 'capacity_lbs'>>;
+
+export type UpdateDryRoomInput = Partial<Pick<DryRoom, 'name' | 'capacity_lbs' | 'is_active'>>;
+
+export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'dry_weight_grams' | 'bin_date'> &
+  Partial<Pick<BinningSession, 'notes'>>;

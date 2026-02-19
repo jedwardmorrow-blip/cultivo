@@ -32,6 +32,7 @@ const EODSummary = lazy(() => import('./features/analytics').then((m) => ({ defa
 const CultivationDashboard = lazy(() => import('./features/cultivation').then((m) => ({ default: m.CultivationDashboard })));
 const PlantGroupsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.PlantGroupsList })));
 const HarvestSessionsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.HarvestSessionsList })));
+const BinningSessionsView = lazy(() => import('./features/cultivation').then((m) => ({ default: m.BinningSessionsView })));
 const GrowRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.GrowRoomsManagement })));
 
 function ViewFallback() {
@@ -147,6 +148,8 @@ function AppContent() {
         return <PlantGroupsList />;
       case 'cultivation-harvest':
         return <HarvestSessionsList />;
+      case 'cultivation-binning':
+        return <BinningSessionsView />;
       case 'cultivation-rooms':
         return <GrowRoomsManagement />;
       case 'production-overview':
