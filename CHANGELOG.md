@@ -4,6 +4,37 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-19 - Session D-6: Cultivation Module Health Analysis + Bug Fix
+
+**Type:** Bug Fix / Documentation
+**Module:** Cultivation
+**Priority:** High
+**Impact:** Silent data bug fixed in binning sessions; documentation corrected and updated; module confirmed complete
+**Status:** COMPLETE
+
+### Changes
+
+**Bug fix — `listUnbinnedHarvestSessions` UUID array format (`cultivation.service.ts`)**
+- The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside the parentheses string
+- Original: `(uuid1,uuid2)` — caused silent wrong results (all harvests shown instead of only unbinned ones)
+- Fixed: `("uuid1","uuid2")` — Pending tab in Binning Sessions now correctly excludes already-binned harvests
+
+**Documentation corrections (`CULTIVATION-ARCHITECTURE.md`)**
+- Corrected D-2 migration status from PENDING to COMPLETE — `dry_rooms` and `binning_sessions` were already live
+- Updated document header, schema overview, table definitions, RLS sections, triggers 12+13, migration plan, service layer, type definitions to reflect actual implemented state
+- Updated navigation note: 5 routes implemented, Dry Rooms Settings tab confirmed
+- Updated service count: 29 operations implemented (not 24)
+- Added Health Analysis section documenting compatibility, known UX gaps, and module completion status
+- Version bumped to v1.8
+
+### Files Changed
+
+- `src/features/cultivation/services/cultivation.service.ts` — UUID array fix in `listUnbinnedHarvestSessions`
+- `docs/CULTIVATION-ARCHITECTURE.md` — status corrected, health analysis added, v1.8
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — hand-off updated
+
+---
+
 ## 2026-02-19 - Session D-5: Type Regeneration — Cultivation Tables Added to database.types.ts
 
 **Type:** Infrastructure / Type Safety

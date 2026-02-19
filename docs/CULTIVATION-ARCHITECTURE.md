@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.7
+version: 1.8
 updated: 2026-02-19
-status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions)
+status: FULLY IMPLEMENTED — all 9 tables and 13 triggers are live
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** IMPLEMENTED — 7 tables and 11 triggers are live in the Supabase database. Sessions C-2 (migrations), C-3 (UI), C-4 (room layout schema), C-5A (run dates on room_sections), and C-5B (plant placement FKs + flip action + Room Map UI) are complete. D-1 adds the Dry Rooms and Binning Sessions specification (9 tables total when D-2 is applied).
+> **Status:** FULLY IMPLEMENTED — all 9 tables (7 grow + 2 dry/binning) and 13 triggers are live in the Supabase database. Sessions C-2 through C-5B and D-2 are all complete. The entire cultivation pipeline from plant group creation through harvest and dry-weight binning is operational.
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
@@ -26,6 +26,7 @@ status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions)
 7. [Frontend Module Structure](#frontend-module-structure)
 8. [Service Layer Design](#service-layer-design)
 9. [Type Definitions](#type-definitions)
+10. [Health Analysis (2026-02-19)](#health-analysis)
 
 ---
 
@@ -91,7 +92,7 @@ status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions)
 │  ├─ adjustment_reason text  [nullable, required when adjusted]       │
 │  └─ session_status text  ['active','completed','cancelled']         │
 │       │                                                              │
-│       ▼  (D-2 — PENDING MIGRATION)                                   │
+│       ▼  (D-2 — LIVE)                                                │
 │  binning_sessions                                                    │
 │  ├─ PK: id uuid                                                      │
 │  ├─ FK: harvest_session_id → harvest_sessions(id)  [UNIQUE — 1:1]  │
@@ -101,7 +102,7 @@ status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions)
 │  ├─ bin_date date NOT NULL                                           │
 │  └─ session_status text  ['active','completed','cancelled']         │
 │                                                                      │
-│  dry_rooms  (D-2 — PENDING MIGRATION)                               │
+│  dry_rooms  (D-2 — LIVE)                                            │
 │  ├─ PK: id uuid                                                      │
 │  ├─ room_code text UNIQUE NOT NULL  [immutable after creation]       │
 │  ├─ name text NOT NULL                                               │
@@ -314,7 +315,7 @@ CREATE TABLE IF NOT EXISTS harvest_sessions (
 ALTER TABLE harvest_sessions ENABLE ROW LEVEL SECURITY;
 ```
 
-### dry_rooms [D-2 — PENDING MIGRATION]
+### dry_rooms [D-2 — LIVE]
 
 Physical rooms where harvested material is dried. Simple container identifiers — no table/section sub-structure.
 
@@ -343,7 +344,7 @@ ALTER TABLE dry_rooms ENABLE ROW LEVEL SECURITY;
 - `capacity_lbs` is informational; not enforced by any constraint against binning session weights.
 - Archive via `is_active = false`; no DELETE policy.
 
-### binning_sessions [D-2 — PENDING MIGRATION]
+### binning_sessions [D-2 — LIVE]
 
 Records the dry weight of harvested material after drying. One binning session per harvest session (1:1).
 
@@ -531,7 +532,7 @@ CREATE POLICY "Authenticated users can update harvest sessions"
   WITH CHECK (auth.uid() IS NOT NULL);
 ```
 
-### dry_rooms [D-2 — PENDING MIGRATION]
+### dry_rooms [D-2 — LIVE]
 
 ```sql
 CREATE POLICY "Authenticated users can view dry rooms"
@@ -553,7 +554,7 @@ CREATE POLICY "Authenticated users can update dry rooms"
 
 Note: No DELETE policy on `dry_rooms`. Archive via `is_active = false`.
 
-### binning_sessions [D-2 — PENDING MIGRATION]
+### binning_sessions [D-2 — LIVE]
 
 ```sql
 CREATE POLICY "Authenticated users can view binning sessions"
@@ -1003,7 +1004,7 @@ WHEN (OLD.strain_id IS DISTINCT FROM NEW.strain_id)
 EXECUTE FUNCTION fn_protect_plant_group_strain();
 ```
 
-### 12. Block dry_room_code Changes After Creation [D-2 — PENDING MIGRATION]
+### 12. Block dry_room_code Changes After Creation [D-2 — LIVE]
 
 Mirrors trigger 8. Fires BEFORE UPDATE on `dry_rooms` when `room_code` changes.
 
@@ -1025,7 +1026,7 @@ WHEN (OLD.room_code IS DISTINCT FROM NEW.room_code)
 EXECUTE FUNCTION fn_protect_dry_room_code();
 ```
 
-### 13. Validate Binning Session on Insert [D-2 — PENDING MIGRATION]
+### 13. Validate Binning Session on Insert [D-2 — LIVE]
 
 Fires BEFORE INSERT on `binning_sessions`. Validates two things:
 1. The linked harvest session is `completed` (not still active or cancelled)
@@ -1226,9 +1227,9 @@ New triggers:
 
 No new RLS policies — existing authenticated UPDATE policy on `plant_groups` covers the new columns.
 
-### Migration D-2-1: Create dry_rooms and binning_sessions ⏳ PENDING
+### Migration D-2-1: Create dry_rooms and binning_sessions ✅ COMPLETE
 
-File: `supabase/migrations/YYYYMMDD_create_dry_rooms_and_binning_sessions.sql`
+File: `supabase/migrations/20260219165749_create_dry_rooms_and_binning_sessions.sql`
 
 Creates two new tables (both with RLS enabled and authenticated-user policies applied):
 - `dry_rooms` — simple container identifier for drying locations
@@ -1281,13 +1282,13 @@ src/features/cultivation/
   index.ts
 ```
 
-**Navigation:** Three routes wired in `App.tsx` (`cultivation-dashboard`, `cultivation-plants`, `cultivation-harvest`). Sidebar navigation entry added in `sectionNavigation.ts`. Grow Rooms tab added to Settings.
+**Navigation:** Five routes wired in `App.tsx` (`cultivation-dashboard`, `cultivation-plants`, `cultivation-harvest`, `cultivation-binning`, `cultivation-rooms`). Sidebar navigation entry added in `sectionNavigation.ts`. Grow Rooms and Dry Rooms tabs added to Settings.
 
 ---
 
 ## Service Layer Design (IMPLEMENTED)
 
-The service is fully implemented in `src/features/cultivation/services/cultivation.service.ts` (24 operations after C-5B):
+The service is fully implemented in `src/features/cultivation/services/cultivation.service.ts` (29 operations — all entity groups complete):
 
 ```typescript
 export const cultivationService = {
@@ -1332,13 +1333,13 @@ export const cultivationService = {
   cancelHarvestSession(id: string): Promise<HarvestSession>
   adjustHarvestWeight(id: string, adjustedWeight: number, reason: string): Promise<HarvestSession>
 
-  // Dry Rooms [D-3 — PENDING]
+  // Dry Rooms [IMPLEMENTED]
   listDryRooms(): Promise<DryRoom[]>
   createDryRoom(data: CreateDryRoomInput): Promise<DryRoom>
   updateDryRoom(id: string, data: UpdateDryRoomInput): Promise<DryRoom>
   archiveDryRoom(id: string): Promise<DryRoom>
 
-  // Binning Sessions [D-3 — PENDING]
+  // Binning Sessions [IMPLEMENTED]
   listBinningSessions(filter?: { status?: BinningSessionStatus }): Promise<BinningSession[]>
   listUnbinnedHarvestSessions(): Promise<HarvestSession[]>
   createBinningSession(data: CreateBinningSessionInput): Promise<BinningSession>
@@ -1351,9 +1352,9 @@ export const cultivationService = {
 
 **`createPlantGroup` implementation note:** Passes `group_number: 'PENDING'` on INSERT — the `trg_generate_plant_group_number` BEFORE INSERT trigger immediately replaces this with the correct `PG-YYMMDD-ABBREV` value before the row is committed.
 
-**`createBinningSession` implementation note [D-3]:** The application reads `harvest_sessions.batch_registry_id` and passes it as `batch_registry_id` in the insert payload. The DB trigger validates this matches the harvest session's batch. Never pass a user-supplied `batch_registry_id`; always derive it from the harvest session.
+**`createBinningSession` implementation note:** The application reads `harvest_sessions.batch_registry_id` and passes it as `batch_registry_id` in the insert payload. The DB trigger validates this matches the harvest session's batch. Never pass a user-supplied `batch_registry_id`; always derive it from the harvest session.
 
-**`listUnbinnedHarvestSessions` implementation note [D-3]:** Returns completed harvest sessions that have no corresponding `binning_sessions` row. Uses a LEFT JOIN / IS NULL pattern (see CULTIVATION.md UI Screens § 5).
+**`listUnbinnedHarvestSessions` implementation note:** Returns completed harvest sessions that have no corresponding `binning_sessions` row. Uses a two-step query: first fetches non-cancelled binning session harvest IDs, then excludes those from the completed harvest sessions list. The UUIDs must be quoted in the `.not('id', 'in', ...)` filter string: `("uuid1","uuid2")` not `uuid1,uuid2`.
 
 ---
 
@@ -1517,7 +1518,7 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes'>>;
 
-// [D-3 — PENDING: add to cultivation.types.ts when D-2 migration is applied]
+// Dry Rooms + Binning Sessions [D-2 — LIVE, fully implemented]
 
 export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
 
@@ -1567,7 +1568,56 @@ export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id
 
 ---
 
+---
+
+## Health Analysis
+
+> **Performed:** 2026-02-19 (Session D-6)
+> **Method:** Full code review of all components, hooks, services, types, migration files, and DB verification
+
+### Summary
+
+The cultivation module is architecturally complete and production-ready. All 9 tables, 13 triggers, 29 service operations, and all UI components are implemented and verified.
+
+### Compatibility
+
+- Routing: all 5 cultivation views wired in `App.tsx`
+- Navigation: Cultivation section with 5 sub-tabs registered in `sectionNavigation.ts`
+- Settings: Grow Rooms and Dry Rooms tabs both wired in `Settings.tsx`
+- Auth: standard `useAuth()` pattern, authenticated-only RLS on all 9 tables
+- Type system: cultivation types in `src/features/cultivation/types/`, re-exported via `@/types`
+- No compatibility issues with the rest of the codebase
+
+### Known Gaps (UX, not code defects)
+
+1. **Cultivation → Batches linkage:** When a harvest session is completed, a `batch_registry` row is created automatically. There is no UI link from the harvest session view to the batch in the Batches module. Users must navigate to Batches manually to see production status.
+
+2. **Dry Rooms in Settings only:** Dry rooms are managed under Settings → Dry Rooms. The Binning Sessions form shows a warning ("No active dry rooms — add one in Settings first") if none exist. This is correct UX but could confuse first-time users.
+
+### Bug Fixed This Session
+
+**`listUnbinnedHarvestSessions` UUID array format** (`cultivation.service.ts`)
+
+The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside the parentheses string. The original implementation joined them bare: `(uuid1,uuid2)`. The fix wraps each UUID in double quotes: `("uuid1","uuid2")`. This bug would have caused the Pending tab in Binning Sessions to show all completed harvests instead of only unbinned ones (silent wrong result, not a crash).
+
+### Module Status
+
+**COMPLETE** — all sessions C-1 through D-2 are done. The module is ready for production use.
+
+---
+
 ## Document Version History
+
+### v1.8 (2026-02-19)
+- Session D-6: full module health analysis and status correction
+- Updated document header: status changed from "SPECIFIED (D-1)" to "FULLY IMPLEMENTED — all 9 tables and 13 triggers are live"
+- Corrected D-2 migration status from PENDING to COMPLETE throughout (schema overview, table definitions, RLS policies, triggers 12 and 13, migration plan entry with actual filename)
+- Updated Service Layer Design: 29 operations noted, Dry Rooms and Binning Sessions no longer marked D-3 PENDING
+- Updated `listUnbinnedHarvestSessions` implementation note: documented UUID quoting requirement in Supabase `.not()` filter
+- Updated Type Definitions: removed D-3 PENDING comment
+- Updated Navigation note: 5 routes, mentions Dry Rooms Settings tab
+- Added Health Analysis section (compatibility, known gaps, bug fixed, module status)
+- Added table of contents entry for Health Analysis section
 
 ### v1.7 (2026-02-19)
 - Updated document header: D-1 specification added; 9 tables total when D-2 applied
@@ -1640,6 +1690,6 @@ export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id
 
 ---
 
-**Document Version:** 1.7
+**Document Version:** 1.8
 **Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED (C-5B) + SPECIFIED (D-1: dry_rooms + binning_sessions — pending D-2 migration + D-3 UI)
+**Status:** FULLY IMPLEMENTED — all 9 tables and 13 triggers live; entire cultivation pipeline operational

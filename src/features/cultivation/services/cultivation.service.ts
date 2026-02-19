@@ -479,7 +479,7 @@ export const cultivationService = {
       .eq('session_status', 'completed');
 
     if (excludeIds.length > 0) {
-      query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+      query = query.not('id', 'in', `(${excludeIds.map((id) => `"${id}"`).join(',')})`);
     }
 
     const { data, error } = await query.order('harvest_date', { ascending: false });

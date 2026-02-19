@@ -15,29 +15,31 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-19
-**Session:** D-5 — Type Regeneration (Cultivation Tables)
+**Session:** D-6 — Cultivation Module Health Analysis + Bug Fix
 **Status:** COMPLETE
 
 **What was done:**
-- Added 9 cultivation tables to `database.types.ts` with full Row/Insert/Update/Relationships blocks:
-  `binning_sessions`, `dry_rooms`, `grow_rooms`, `harvest_sessions`, `plant_group_room_history`, `plant_group_stage_history`, `plant_groups`, `room_sections`, `room_tables`
-- Updated `scripts/gen-types.mjs` FKS array with all 13 cultivation FK relationships (so future `npm run types:generate` runs produce correct output)
-- The Supabase client now has full type coverage for all cultivation operations — `from('grow_rooms')`, `from('plant_groups')`, etc. are now fully typed
+- Ran full in-depth analysis of the cultivation module (code, docs, DB, routing, navigation, compatibility)
+- **Key finding:** D-2 migration (`dry_rooms` + `binning_sessions` tables) is **already live** in the database — the architecture doc had it marked as "PENDING MIGRATION" incorrectly. Both tables exist with correct schema, RLS, and triggers.
+- **Bug fixed:** `listUnbinnedHarvestSessions` in `cultivation.service.ts` had a UUID array formatting bug — Supabase `.not('id', 'in', ...)` requires UUIDs quoted inside the parentheses string (`("uuid1","uuid2")`), not bare-joined (`uuid1,uuid2`). Fixed.
+- Updated `CULTIVATION-ARCHITECTURE.md`: corrected D-2 migration status from PENDING to COMPLETE, updated document header and version history, added Health Analysis section
+- Updated `AI-BUILD-SESSION-CHECKLIST.md` (this file) with new hand-off
 
-**Build status:** PASSES — built in 42.70s, 308/308 tests pass
+**Build status:** PASSES — 308/308 tests pass
 
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 
 **Modified files (this session):**
-- `src/lib/database/database.types.ts` — 9 cultivation table blocks added
-- `scripts/gen-types.mjs` — 13 cultivation FK entries added to FKS array
+- `src/features/cultivation/services/cultivation.service.ts` — UUID array format fix in `listUnbinnedHarvestSessions`
+- `docs/CULTIVATION-ARCHITECTURE.md` — D-2 status corrected, health analysis section added, version bumped to v1.8
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
 - `CHANGELOG.md`
 
 **Next recommendations (in order):**
-1. **Cultivation UI polish** — any remaining C-3 UI items: harvest session detail view, binning session form with dry room selector, batch linkage display
-2. **Integration tests** — if live DB testing infrastructure is added in future, cultivation trigger behavior (stage machine, batch creation, binning validation) is the highest-value target
-3. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete" once all C-3 UI work is done
+1. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete" — the module is functionally complete
+2. **Integration UX bridge** — add a "View Batch" link from completed harvest sessions to the Batches module (Cultivation → Batches linkage gap identified in analysis)
+3. **Integration tests** — cultivation trigger behavior (stage machine, batch creation, binning validation) is the highest-value future test target if live DB test infrastructure is added
 
 ---
 
