@@ -15,59 +15,41 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-20
-**Session:** D-14 — Room-Based Harvest Workflow with Multi-Weight Entries
+**Session:** Documentation alignment — E-1/D-14 constraint fix + cross-doc sync
 **Status:** COMPLETE
 
 **What was done:**
 
-Replaced the old inline harvest form with a full 3-step room-based harvest workflow. Added multi-weight entry support and dry room assignment at harvest time.
+Fixed a database constraint bug and synchronized documentation across 4 docs to accurately reflect the E-1 (batch-at-clone-time) and D-14 (empty-shell harvest) patterns.
 
-**1. Database migration**
-- Added `grow_room_id` (FK → grow_rooms) and `dry_room_id` (FK → dry_rooms) columns to `harvest_sessions`
-- Created `harvest_weight_entries` table (weight_grams, plant_count, entry_order per session) with RLS and indexes
+**1. Database migration (relax_harvest_session_check_constraints)**
+- Changed `harvest_sessions.wet_weight_grams` CHECK from `> 0` to `>= 0`
+- Changed `harvest_sessions.plant_count_harvested` CHECK from `> 0` to `>= 0`
+- Enables D-14 empty-shell pattern: session starts at 0, entries recorded in `harvest_weight_entries`, aggregated at finalization
 
-**2. Service layer (6 new methods)**
-- `listHarvestWeightEntries`, `createHarvestWeightEntry`, `deleteHarvestWeightEntry`
-- `finalizeHarvest` (aggregates weight entries → session totals, sets dry_room_id, completes session)
-- `listHarvestSessionsByDryRoom`, `listDryingHarvests`
+**2. CULTIVATION-RULES.md (v2.3)**
+- Updated C-8/C-9 invariant box text to clarify D-14 empty-shell vs completion-time enforcement
+- Added C-39 (batch created at plant group creation, `pre_harvest` state)
+- Added C-40 (harvest completion updates existing pre_harvest batch)
 
-**3. Hooks**
-- New `useHarvestWeightEntries` hook (entries, totals, add/remove)
-- Updated `useHarvestSessions` with `finalizeHarvest` method
+**3. CULTIVATION-ARCHITECTURE.md (v2.1)**
+- Updated `harvest_sessions` table definition: `>= 0` CHECK constraints, added `grow_room_id`, `dry_room_id`, `waste_grams`
+- Replaced `fn_complete_harvest_session` trigger with live E-1 version (two-path: UPDATE existing pre_harvest batch vs legacy INSERT)
+- Updated trigger design notes
 
-**4. Harvest workflow UI (4 new components)**
-- `HarvestRoomSelect` — flower room grid selector
-- `HarvestWeightRecorder` — per-group weight cards with progress bars, inline entry forms, waste recording
-- `HarvestReviewFinalize` — summary with dry room picker and one-click finalize
-- `HarvestWorkflow` — orchestrator with 3-step state machine and breadcrumb navigation
+**4. CULTIVATION.md (v2.0)**
+- Rewrote Lifecycle Overview (Section 4): batch born at step 3 (clone), D-14 empty-shell at step 6, weight entries at step 6a, E-1 UPDATE at step 7
 
-**5. Updated views**
-- `HarvestSessionsList` — removed inline form, "Start Harvest" opens workflow, added grow/dry room badges, room filter
-- `CultivationDashboard` — new Dry Rooms section showing active rooms with drying harvests
-- `BinningSessionsView` — renamed heading to "Drying"
-- Navigation: "Harvests", "Drying", new "Dry Rooms" nav item
+**5. BATCHES.md (v2.5)**
+- Added `pre_harvest` state to lifecycle pipeline, state definitions table, CHECK constraint, state queries, and state machine diagram
+- Updated Batch Creation note to reflect E-1 is LIVE
 
-**Files created:**
-- `src/features/cultivation/components/harvest/HarvestRoomSelect.tsx`
-- `src/features/cultivation/components/harvest/HarvestWeightRecorder.tsx`
-- `src/features/cultivation/components/harvest/HarvestReviewFinalize.tsx`
-- `src/features/cultivation/components/harvest/HarvestWorkflow.tsx`
-- `src/features/cultivation/components/harvest/index.ts`
-- `src/features/cultivation/hooks/useHarvestWeightEntries.ts`
-
-**Files modified:**
-- `src/features/cultivation/types/cultivation.types.ts` (HarvestWeightEntry type, session room fields)
-- `src/features/cultivation/services/cultivation.service.ts` (6 new methods, updated select)
-- `src/features/cultivation/hooks/useHarvestSessions.ts` (finalizeHarvest)
-- `src/features/cultivation/hooks/index.ts` (new export)
-- `src/features/cultivation/components/HarvestSessionsList.tsx` (rewritten)
-- `src/features/cultivation/components/CultivationDashboard.tsx` (dry rooms section)
-- `src/features/cultivation/components/BinningSessionsView.tsx` (rename)
-- `src/features/cultivation/components/index.ts` (new export)
-- `src/shared/components/navigation/sectionNavigation.ts` (renames + new item)
-- `src/App.tsx` (dry rooms route)
-- `docs/CULTIVATION.md`, `docs/CULTIVATION-ARCHITECTURE.md`, `docs/CULTIVATION-RULES.md`
-- `CHANGELOG.md`
+**Files modified (docs only — no code changes):**
+- `docs/CULTIVATION-RULES.md`
+- `docs/CULTIVATION-ARCHITECTURE.md`
+- `docs/CULTIVATION.md`
+- `docs/BATCHES.md`
+- `docs/AI-BUILD-SESSION-CHECKLIST.md`
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**

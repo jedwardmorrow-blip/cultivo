@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 2.0
+version: 2.1
 updated: 2026-02-20
 status: FULLY IMPLEMENTED — 11 tables and 13 triggers live; D-14 (harvest weight entries + room tracking) added
 ---
@@ -291,10 +291,13 @@ CREATE TABLE IF NOT EXISTS harvest_sessions (
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   plant_group_id        uuid NOT NULL REFERENCES plant_groups(id),
   harvest_date          date NOT NULL,
-  wet_weight_grams      numeric(10, 2) NOT NULL CHECK (wet_weight_grams > 0),
+  wet_weight_grams      numeric(10, 2) NOT NULL CHECK (wet_weight_grams >= 0),
   adjusted_weight_grams numeric(10, 2),
   adjustment_reason     text,
-  plant_count_harvested integer NOT NULL CHECK (plant_count_harvested > 0),
+  plant_count_harvested integer NOT NULL CHECK (plant_count_harvested >= 0),
+  grow_room_id          uuid REFERENCES grow_rooms(id),
+  dry_room_id           uuid REFERENCES dry_rooms(id),
+  waste_grams           numeric(10, 2) DEFAULT 0,
   batch_registry_id     uuid REFERENCES batch_registry(id),
   session_status        text NOT NULL DEFAULT 'active'
                           CHECK (session_status IN ('active', 'completed', 'cancelled')),
@@ -729,11 +732,15 @@ WHEN (OLD.grow_room_id IS DISTINCT FROM NEW.grow_room_id)
 EXECUTE FUNCTION fn_log_plant_group_room_history();
 ```
 
-### 5. Harvest Session Completion → Create Batch
+### 5. Harvest Session Completion → Create/Update Batch (E-1 batch-at-clone-time)
 
 Fires BEFORE UPDATE on `harvest_sessions` when `session_status` changes to `'completed'`.
 
-This is the critical integration trigger. The COALESCE fallback has been **removed** — if a strain has no abbreviation, the trigger raises a hard error.
+This is the critical integration trigger. Two-path logic supports the E-1 batch-at-clone-time pattern:
+- **Path A (E-1):** If the plant group already has a `batch_registry_id` (created at clone time with `lifecycle_state = 'pre_harvest'`), the trigger UPDATEs the existing batch — setting harvest date, weight, room, and promoting `lifecycle_state` to `'created'`.
+- **Path B (legacy):** If no pre-existing batch, the trigger INSERTs a new row into `batch_registry` (with `ON CONFLICT` for same-strain same-day dedup).
+
+The COALESCE fallback for abbreviation has been **removed** — if a strain has no abbreviation, the trigger raises a hard error.
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_complete_harvest_session()
@@ -746,13 +753,15 @@ DECLARE
   v_batch_number   text;
   v_batch_id       uuid;
   v_date_prefix    text;
+  v_existing_batch uuid;
 BEGIN
   IF NEW.session_status != 'completed' THEN
     RETURN NEW;
   END IF;
 
-  SELECT pg.strain_id, gr.room_code
-  INTO v_strain_id, v_room_code
+  -- E-1: also reads batch_registry_id from plant_groups
+  SELECT pg.strain_id, pg.batch_registry_id, gr.room_code
+  INTO v_strain_id, v_existing_batch, v_room_code
   FROM plant_groups pg
   JOIN grow_rooms gr ON gr.id = pg.grow_room_id
   WHERE pg.id = NEW.plant_group_id;
@@ -770,32 +779,48 @@ BEGIN
   v_date_prefix  := to_char(NEW.harvest_date, 'YYMMDD');
   v_batch_number := v_date_prefix || '-' || v_strain_abbrev;
 
-  INSERT INTO batch_registry (
-    batch_number,
-    strain,
-    strain_id,
-    harvest_date,
-    initial_weight_grams,
-    room,
-    lifecycle_state,
-    created_by
-  ) VALUES (
-    v_batch_number,
-    v_strain_name,
-    v_strain_id,
-    NEW.harvest_date,
-    NEW.wet_weight_grams,
-    v_room_code,
-    'created',
-    NEW.completed_by
-  )
-  ON CONFLICT (batch_number) DO NOTHING
-  RETURNING id INTO v_batch_id;
+  -- E-1 Path A: batch already exists (created at clone time with pre_harvest state)
+  IF v_existing_batch IS NOT NULL THEN
+    UPDATE batch_registry
+    SET harvest_date = NEW.harvest_date,
+        initial_weight_grams = NEW.wet_weight_grams,
+        room = v_room_code,
+        lifecycle_state = 'created',
+        batch_number = v_batch_number,
+        updated_at = now()
+    WHERE id = v_existing_batch;
 
-  IF v_batch_id IS NULL THEN
-    SELECT id INTO v_batch_id
-    FROM batch_registry
-    WHERE batch_number = v_batch_number;
+    v_batch_id := v_existing_batch;
+
+  -- Path B (legacy): no pre-existing batch — insert new row
+  ELSE
+    INSERT INTO batch_registry (
+      batch_number,
+      strain,
+      strain_id,
+      harvest_date,
+      initial_weight_grams,
+      room,
+      lifecycle_state,
+      created_by
+    ) VALUES (
+      v_batch_number,
+      v_strain_name,
+      v_strain_id,
+      NEW.harvest_date,
+      NEW.wet_weight_grams,
+      v_room_code,
+      'created',
+      NEW.completed_by
+    )
+    ON CONFLICT (batch_number) DO NOTHING
+    RETURNING id INTO v_batch_id;
+
+    IF v_batch_id IS NULL THEN
+      SELECT id INTO v_batch_id
+      FROM batch_registry
+      WHERE batch_number = v_batch_number;
+    END IF;
   END IF;
 
   NEW.batch_registry_id := v_batch_id;
@@ -831,8 +856,9 @@ EXECUTE FUNCTION fn_complete_harvest_session();
 ```
 
 **Design notes:**
+- **E-1 two-path logic:** If `plant_groups.batch_registry_id` is set (batch-at-clone-time), the trigger UPDATEs the existing `pre_harvest` batch to `lifecycle_state = 'created'` and overwrites `batch_number` with the harvest-date-based number (e.g., `260115-GSC` becomes `260301-GSC`). If no pre-existing batch, the legacy INSERT path runs.
 - No COALESCE fallback — abbreviation is required or trigger raises an exception.
-- `ON CONFLICT (batch_number) DO NOTHING` handles same-strain same-day harvest: the second harvest session links to the existing batch.
+- `ON CONFLICT (batch_number) DO NOTHING` handles same-strain same-day harvest (legacy path only): the second harvest session links to the existing batch.
 - Trigger fires BEFORE UPDATE so it can set `NEW.batch_registry_id` and `NEW.completed_at` in one write.
 - The `batch_production_history` insert creates the required audit trail entry.
 - The `strain` text column (NOT NULL in batch_registry) is populated from `strains.name`.
@@ -1729,8 +1755,14 @@ The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside t
 ### v1.0 (2026-02-18)
 - Initial architecture specification written during Session C-1
 
+### v2.1 (2026-02-20)
+- Updated `harvest_sessions` table definition: CHECK constraints relaxed from `> 0` to `>= 0` (D-14 empty-shell pattern)
+- Added D-14 columns to `harvest_sessions`: `grow_room_id`, `dry_room_id`, `waste_grams`
+- Replaced `fn_complete_harvest_session` trigger with live E-1 version (batch-at-clone-time two-path logic)
+- Updated trigger design notes to document E-1 batch update vs. legacy insert paths
+
 ---
 
-**Document Version:** 1.9
-**Last Updated:** 2026-02-19
-**Status:** FULLY IMPLEMENTED — all 9 tables and 13 triggers live; entire cultivation pipeline operational
+**Document Version:** 2.1
+**Last Updated:** 2026-02-20
+**Status:** FULLY IMPLEMENTED — 11 tables and 13 triggers live; entire cultivation pipeline operational

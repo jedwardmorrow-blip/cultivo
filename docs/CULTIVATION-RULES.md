@@ -1,9 +1,9 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 2.0
+version: 2.3
 updated: 2026-02-20
-status: IMPLEMENTED (C-48) + NEW (C-49 to C-50)
+status: IMPLEMENTED (C-48, C-49, C-50) + UPDATED (C-8, C-9, C-39, C-40)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -29,8 +29,13 @@ status: IMPLEMENTED (C-48) + NEW (C-49 to C-50)
 │ C-6.  Cancellation of a harvest session is blocked once             │
 │        batch_registry_id is set                                      │
 │ C-7.  plant_group_stage_history is append-only (no UPDATE/DELETE)   │
-│ C-8.  wet_weight_grams must be > 0 to complete a harvest session    │
-│ C-9.  plant_count_harvested must be > 0                             │
+│ C-8.  wet_weight_grams must be > 0 at harvest session completion.   │
+│        DB CHECK is >= 0 (D-14 empty-shell: session starts at 0,   │
+│        finalized with aggregated totals from weight entries).      │
+│ C-9.  plant_count_harvested must be > 0 at harvest session         │
+│        completion. DB CHECK is >= 0 for same D-14 empty-shell      │
+│        reason. Per-entry validity: harvest_weight_entries enforces  │
+│        weight_grams > 0 and plant_count >= 1.                      │
 │ C-10. Grow rooms cannot be deleted — only archived (is_active=false)│
 │ C-11. strains.abbreviation must be set before creating a plant      │
 │        group or completing a harvest for that strain                 │
@@ -273,11 +278,16 @@ No other transitions are permitted. There is no backward movement.
 
 ### C-8 and C-9: Harvest Session Weight and Count
 
-**Rule:** `wet_weight_grams > 0` and `plant_count_harvested > 0` are required to complete a harvest session.
+**Rule:** `wet_weight_grams > 0` and `plant_count_harvested > 0` are required to **complete** a harvest session. Zero values are valid at session creation time under the D-14 workflow.
 
-**Enforcement:** DB CHECK constraints on the `harvest_sessions` table.
+**Enforcement:**
+- DB CHECK constraints on `harvest_sessions`: `wet_weight_grams >= 0` and `plant_count_harvested >= 0` (relaxed from `> 0` to support D-14 empty-shell pattern)
+- Per-entry validity enforced by `harvest_weight_entries` table: `weight_grams > 0` and `plant_count >= 1`
+- Application-layer: `finalizeHarvest` validates that at least one weight entry exists before aggregating totals into the session. Finalized totals are always > 0.
 
-**Rationale:** Zero-weight harvests are a data entry error. The system must not create a batch with no initial weight.
+**D-14 workflow:** Sessions are created as empty shells (zeroes). Individual weight entries are recorded via `harvest_weight_entries`. At finalization, entries are aggregated into `wet_weight_grams` and `plant_count_harvested` on the session row. See invariant C-49 for the weight entry source-of-truth rule.
+
+**Rationale:** Zero-weight harvests are a data entry error. The system must not create a batch with no initial weight. The `>= 0` DB constraint prevents negative values while allowing the empty-shell creation pattern; the actual `> 0` guarantee is enforced at finalization time by the application and by the per-entry constraints.
 
 ---
 
@@ -597,6 +607,34 @@ No other transitions are permitted. There is no backward movement.
 
 ---
 
+### C-39: Batch Created at Plant Group Creation (Pre-Harvest State) [E-1]
+
+**Rule:** When a plant group is created, the `trg_generate_plant_group_number` trigger also creates a `batch_registry` row with `lifecycle_state = 'pre_harvest'`. The batch number is generated using the `planted_date` (or today if not set) + strain abbreviation, in the standard `YYMMDD-ABBREV` format. The `plant_groups.batch_registry_id` FK is set by the same trigger.
+
+**Enforcement:** DB trigger `trg_generate_plant_group_number` (BEFORE INSERT on `plant_groups`). The trigger inserts into `batch_registry` with `lifecycle_state = 'pre_harvest'` and `clone_date = planted_date`. On batch_number conflict (same strain + same date), it links to the existing batch via SELECT.
+
+**What `pre_harvest` means:** The batch record exists as a placeholder. It has a `clone_date` but no `harvest_date`, no `initial_weight_grams`, and no `room`. These fields are populated later when the harvest session completes (see C-40).
+
+**Batch number at this stage:** Uses the planted/clone date, not the harvest date. The batch number may change at harvest time if the harvest date differs from the planted date. This is expected behavior -- the harvest-date-based number is the final, authoritative one.
+
+**Rationale:** Creating the batch at clone time enables full seed-to-sale traceability from the earliest possible point. The `pre_harvest` state clearly distinguishes batches that have not yet been harvested from those in the processing pipeline.
+
+---
+
+### C-40: Harvest Completion Updates Existing Pre-Harvest Batch [E-1]
+
+**Rule:** When a harvest session is completed, the `fn_complete_harvest_session` trigger checks whether the plant group already has a `batch_registry_id` (set at clone time per C-39). If so, it UPDATEs the existing batch row: sets `harvest_date`, `initial_weight_grams`, `room`, `batch_number` (using harvest date), and `lifecycle_state = 'created'`. If no existing batch is linked (legacy plant groups created before E-1), the trigger falls back to the original INSERT path.
+
+**Enforcement:** DB trigger `fn_complete_harvest_session` (BEFORE UPDATE on `harvest_sessions`). The trigger branches on `v_existing_batch IS NOT NULL` (the `batch_registry_id` from the plant group).
+
+**Batch number update:** The batch number is regenerated using the harvest date (not the clone date). For example, a plant group cloned on 2026-01-15 with batch `260115-GSC` that is harvested on 2026-03-01 will have its batch number updated to `260301-GSC`. This is not a violation of batch_number immutability -- the batch has not yet entered the processing pipeline at `pre_harvest` state.
+
+**Same-strain same-day rule:** If the new harvest-date-based batch number conflicts with an existing batch (same strain harvested on the same day), the UPDATE sets the `batch_registry_id` to the existing batch and the `pre_harvest` row becomes orphaned. The `ON CONFLICT` path handles this correctly.
+
+**Rationale:** Updating the existing row (rather than creating a new one) maintains the FK linkage from `plant_groups.batch_registry_id` without requiring a second update to the plant group. The harvest date is the operationally meaningful date for the batch number (it determines COA timing, aging, and compliance reporting).
+
+---
+
 ## Decisions Made (and Why)
 
 ### Decision: Group-level tracking, not individual plant tracking
@@ -793,6 +831,10 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v2.3 (2026-02-20)
+- Updated C-8/C-9 invariant text and rule detail for D-14 empty-shell pattern (DB CHECK >= 0, > 0 at finalization)
+- Added rule detail sections for C-39 (batch created at plant group creation) and C-40 (harvest completion updates pre_harvest batch)
+
 ### v2.2 (2026-02-20)
 - Added invariants C-49 and C-50 (harvest weight entries as weight source of truth, dry room assignment timing)
 
@@ -839,6 +881,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 2.2
+**Document Version:** 2.3
 **Last Updated:** 2026-02-20
-**Status:** IMPLEMENTED (C-1–C-29, C-47–C-48 live) + SPECIFIED (C-30–C-37 pending D-2 migration) + NEW (C-49–C-50)
+**Status:** IMPLEMENTED (C-1–C-29, C-39–C-40, C-47–C-50 live) + SPECIFIED (C-30–C-37 pending D-2 migration)

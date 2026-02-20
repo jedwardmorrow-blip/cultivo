@@ -1,13 +1,13 @@
 ---
 title: BATCHES
 category: Batch Management & Traceability
-version: 2.4
-updated: 2026-02-18
+version: 2.5
+updated: 2026-02-20
 ---
 
 # BATCHES - Batch Lifecycle & Traceability System
 
-> **Status:** Authoritative Reference Documentation (v2.4) ⭐ **PRIMARY REFERENCE FOR BATCH ARCHITECTURE**
+> **Status:** Authoritative Reference Documentation (v2.5) ⭐ **PRIMARY REFERENCE FOR BATCH ARCHITECTURE**
 > **Purpose:** Complete specification of batch-centric architecture, lifecycle management, and traceability infrastructure
 > **Foundation:** This system is batch-centric - batches are the architectural foundation, not an add-on feature
 > **Critical:** 5 batch-related integrity gaps exist (Migration Batch 1 ready for deployment)
@@ -86,16 +86,23 @@ A **batch** represents a specific harvest of cannabis material from a particular
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ BATCH LIFECYCLE (From Harvest to Depletion)                         │
+│ BATCH LIFECYCLE (From Clone to Depletion)                            │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                       │
-│  CREATED                                                             │
-│  └─ Harvest binned, batch record created                             │
-│     ├─ batch_number: YYMMDD-STRAIN-NN                                │
+│  PRE_HARVEST (E-1 batch-at-clone-time)                               │
+│  └─ Batch born when plant group is created (clone time)              │
+│     ├─ batch_number: YYMMDD-STRAIN (clone/planted date)              │
 │     ├─ strain_id: FK to strains table                                │
-│     ├─ harvest_date: Actual harvest date                             │
-│     ├─ initial_weight_grams: Wet weight (optional)                   │
-│     └─ lifecycle_state: 'created'                                    │
+│     ├─ clone_date: Date plant group was created                      │
+│     ├─ harvest_date: NULL (not yet harvested)                        │
+│     └─ lifecycle_state: 'pre_harvest'                                │
+│                                                                       │
+│  CREATED                                                             │
+│  └─ Harvest completed, batch promoted from pre_harvest               │
+│     ├─ batch_number: YYMMDD-STRAIN (updated to harvest date)        │
+│     ├─ harvest_date: Actual harvest date (was NULL)                  │
+│     ├─ initial_weight_grams: Wet weight from harvest                 │
+│     └─ lifecycle_state: 'pre_harvest' → 'created'                   │
 │                                                                       │
 │  BUCKED                                                              │
 │  └─ Bucking session completed                                        │
@@ -199,7 +206,7 @@ CREATE TABLE batch_registry (
 
   CONSTRAINT valid_batch_lifecycle_state CHECK (
     lifecycle_state IN (
-      'created', 'bucked', 'in_trim', 'bulk_available',
+      'pre_harvest', 'created', 'bucked', 'in_trim', 'bulk_available',
       'in_packaging', 'packaged', 'partially_depleted',
       'depleted', 'archived'
     )
@@ -236,7 +243,7 @@ Once created, these fields **NEVER change**:
 
 ## Batch Creation
 
-> **Cultivation Module Note (Session C-1 complete):** Once the Cultivation module (Sessions C-2 and C-3) is deployed, batch records will be auto-created by harvest session completion triggers. The manual creation path below remains supported for edge cases and legacy data.
+> **Cultivation Module Note (E-1 LIVE):** Batch records are now auto-created at plant group creation time (E-1 batch-at-clone-time) with `lifecycle_state = 'pre_harvest'`. At harvest completion, the trigger UPDATEs the existing batch to `lifecycle_state = 'created'`, sets the harvest date, and changes the batch_number from clone-date to harvest-date format. The manual creation path below remains supported for edge cases and legacy data.
 > See [CULTIVATION.md](./CULTIVATION.md) and [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md) for the full specification.
 
 ### Creation Workflow
@@ -346,7 +353,8 @@ $$ LANGUAGE plpgsql;
 
 | State | Description | Entry Condition | Exit Condition |
 |-------|-------------|----------------|----------------|
-| `created` | Initial state after harvest | Batch created | Bucking session completed |
+| `pre_harvest` | Batch born at clone time (E-1) | Plant group created | Harvest session completed |
+| `created` | Harvest completed, batch promoted | Harvest completion trigger | Bucking session completed |
 | `bucked` | Bucked into flower and smalls | Bucking completed | Trim session started |
 | `in_trim` | Active trim session | Trim started | Trim session completed |
 | `bulk_available` | Trimmed into bulk material | Trim completed | Packaging session started |
@@ -387,6 +395,7 @@ WHERE lifecycle_state NOT IN ('depleted', 'archived')
 GROUP BY lifecycle_state
 ORDER BY
   CASE lifecycle_state
+    WHEN 'pre_harvest' THEN 0
     WHEN 'created' THEN 1
     WHEN 'bucked' THEN 2
     WHEN 'in_trim' THEN 3
@@ -426,7 +435,8 @@ ORDER BY trimming_started_at ASC;
 
 ```mermaid
 stateDiagram-v2
-    [*] --> created: Harvest binned
+    [*] --> pre_harvest: Plant group created (E-1)
+    pre_harvest --> created: Harvest session completes
     created --> bucked: Bucking session completes
     bucked --> in_trim: Trim session starts
     in_trim --> bulk_available: Trim session completes
@@ -437,6 +447,7 @@ stateDiagram-v2
     depleted --> archived: After X days
     archived --> [*]
 
+    pre_harvest --> quarantined: QC hold
     created --> quarantined: QC hold
     bucked --> quarantined: QC hold
     in_trim --> quarantined: QC hold
@@ -1230,6 +1241,11 @@ ORDER BY bph.event_timestamp ASC;
 ---
 
 ## Document Version History
+
+### v2.5 (2026-02-20)
+- **Added `pre_harvest` lifecycle state** to pipeline diagram, state definitions table, CHECK constraint, state queries, and state machine diagram
+- **Updated Batch Creation note** to reflect E-1 batch-at-clone-time is LIVE (batches auto-created at plant group creation)
+- **Updated lifecycle pipeline** title from "Harvest to Depletion" to "Clone to Depletion" to reflect full lifecycle
 
 ### v2.4 (2026-02-18)
 - **Added Cultivation Module note** to Batch Creation section

@@ -1,7 +1,7 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.8
+version: 1.9
 updated: 2026-02-20
 status: IMPLEMENTED (D-14) + SPECIFIED (future features)
 ---
@@ -192,7 +192,7 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ CULTIVATION LIFECYCLE                                                 │
+│ CULTIVATION LIFECYCLE  (E-1 batch-at-clone-time + D-14 harvest)      │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │  1. GROW ROOM EXISTS (admin creates once)                            │
@@ -203,12 +203,17 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │     ├─ is_mother = true                                              │
 │     └─ growth_stage = 'clone' (advances to flower normally)          │
 │                                                                       │
-│  3. CLONE GROUP CREATED (manager)                                    │
+│  3. CLONE GROUP CREATED (manager)                 [E-1: BATCH BORN] │
 │     ├─ strain_id selected                                            │
 │     ├─ mother_plant_group_id = selected mother group (optional)      │
 │     ├─ plant_count entered                                           │
 │     ├─ grow_room_id assigned                                         │
-│     └─ growth_stage = 'clone'                                        │
+│     ├─ growth_stage = 'clone'                                        │
+│     ├─ DB trigger creates batch_registry row:                        │
+│     │  ├─ batch_number = YYMMDD-ABBREV (clone/planted date)         │
+│     │  ├─ lifecycle_state = 'pre_harvest'                            │
+│     │  └─ clone_date populated                                       │
+│     └─ plant_groups.batch_registry_id = new batch UUID               │
 │                                                                       │
 │  4. ROOM TRANSFER (independent action — manager)                     │
 │     ├─ grow_room_id updated on plant_groups                          │
@@ -217,34 +222,44 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  5. STAGE TRANSITIONS (manager, as plants progress)                  │
 │     clone → veg → flower                                             │
 │     ├─ Each transition: stage_entered_at updated                     │
-│     └─ Each transition: plant_group_stage_history row inserted       │
+│     ├─ Each transition: plant_group_stage_history row inserted       │
+│     └─ clone → veg auto-generates individual_plants (trigger)        │
 │                                                                       │
-│  6. HARVEST SESSION CREATED (manager, when flower is ready)         │
+│  6. HARVEST SESSION CREATED (D-14 empty-shell pattern)               │
 │     ├─ harvest_date set                                              │
-│     ├─ wet_weight_grams entered                                      │
+│     ├─ grow_room_id / dry_room_id set (room tracking)               │
+│     ├─ wet_weight_grams = 0 (empty shell — populated later)         │
+│     ├─ plant_count_harvested = 0 (empty shell)                       │
 │     └─ session_status = 'active'                                     │
 │                                                                       │
-│  7. HARVEST SESSION COMPLETED (manager confirms)                     │
-│     ├─ DB trigger validates strain has abbreviation set              │
-│     ├─ DB trigger creates batch_registry row:                        │
-│     │  ├─ batch_number = YYMMDD-ABBREV (from strains.abbreviation)  │
-│     │  ├─ strain_id = plant_group.strain_id                         │
-│     │  ├─ harvest_date = harvest_session.harvest_date               │
-│     │  ├─ initial_weight_grams = harvest_session.wet_weight_grams   │
-│     │  ├─ room = grow_room.room_code                                 │
-│     │  └─ lifecycle_state = 'created'                               │
-│     ├─ harvest_sessions.batch_registry_id = new batch UUID          │
-│     └─ plant_group.growth_stage = 'harvested'                       │
+│  6a. WEIGHT ENTRIES RECORDED (D-14 per-entry pattern)                │
+│     ├─ Individual entries in harvest_weight_entries table             │
+│     ├─ Each entry: weight_grams > 0, plant_count >= 1               │
+│     └─ Running totals visible in UI before completion                │
 │                                                                       │
-│  8. WEIGHT ADJUSTMENT (optional, if error discovered)               │
+│  7. HARVEST SESSION COMPLETED (manager confirms)                     │
+│     ├─ Session wet_weight_grams/plant_count_harvested aggregated     │
+│     │  from harvest_weight_entries (must be > 0 at this point)       │
+│     ├─ DB trigger validates strain has abbreviation set              │
+│     ├─ DB trigger UPDATES existing pre_harvest batch (E-1):         │
+│     │  ├─ batch_number = YYMMDD-ABBREV (harvest date replaces       │
+│     │  │   clone date — e.g., 260115-GSC → 260301-GSC)              │
+│     │  ├─ harvest_date = harvest_session.harvest_date                │
+│     │  ├─ initial_weight_grams = harvest_session.wet_weight_grams    │
+│     │  ├─ room = grow_room.room_code                                 │
+│     │  └─ lifecycle_state = 'pre_harvest' → 'created'               │
+│     ├─ (Legacy path: if no pre-existing batch, INSERTs new row)     │
+│     └─ plant_group.growth_stage = 'harvested'                        │
+│                                                                       │
+│  8. WEIGHT ADJUSTMENT (optional, if error discovered)                │
 │     ├─ adjusted_weight_grams set on harvest_session                  │
 │     ├─ adjustment_reason required                                    │
-│     └─ DB trigger updates batch_registry.initial_weight_grams       │
+│     └─ DB trigger updates batch_registry.initial_weight_grams        │
 │                                                                       │
-│  9. DRY ROOM (material hangs and dries — days to weeks)             │
-│     └─ dry_rooms: Dry Room 1, Dry Room 2, etc. (admin creates once) │
+│  9. DRY ROOM (material hangs and dries — days to weeks)              │
+│     └─ dry_rooms: Dry Room 1, Dry Room 2, etc. (admin creates once)  │
 │                                                                       │
-│  10. BINNING SESSION CREATED (manager, when material is dry)        │
+│  10. BINNING SESSION CREATED (manager, when material is dry)         │
 │     ├─ harvest_session_id = completed harvest session                │
 │     ├─ dry_room_id = room where material was dried                   │
 │     ├─ dry_weight_grams entered                                      │
@@ -252,12 +267,12 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │     └─ session_status = 'active'                                     │
 │                                                                       │
 │  11. BINNING SESSION COMPLETED (manager confirms)                    │
-│     └─ session_status = 'completed' (no downstream trigger)         │
+│     └─ session_status = 'completed' (no downstream trigger)          │
 │        The batch already exists — binning records the dry weight     │
 │        only. The existing batch pipeline is unaffected.              │
 │                                                                       │
 │  12. BATCH ENTERS EXISTING PIPELINE                                  │
-│     └─ batch_registry.lifecycle_state = 'created'                   │
+│     └─ batch_registry.lifecycle_state = 'created'                    │
 │        └─ Batch appears in bucking queue (existing workflow)         │
 │                                                                       │
 └──────────────────────────────────────────────────────────────────────┘
@@ -909,6 +924,13 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.9 (2026-02-20)
+- Rewrote Lifecycle Overview (Section 4) to reflect E-1 batch-at-clone-time and D-14 empty-shell harvest patterns
+- Step 3 (Clone Group Created) now documents batch creation at clone time with `lifecycle_state = 'pre_harvest'`
+- Step 6 updated for D-14 empty-shell: session starts with `wet_weight_grams = 0`, `plant_count_harvested = 0`
+- Added Step 6a (Weight Entries Recorded) for D-14 per-entry pattern
+- Step 7 (Harvest Completed) updated: trigger UPDATEs existing `pre_harvest` batch (E-1 path) instead of inserting; batch_number changes from clone-date to harvest-date format
+
 ### v1.8 (2026-02-20)
 - Session D-14: room-based harvest workflow with multi-weight entries
 - Added `grow_room_id` and `dry_room_id` to harvest_sessions in Module Entities
@@ -976,7 +998,7 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.9
+**Document Version:** 2.0
 **Last Updated:** 2026-02-20
 **Status:** IMPLEMENTED (D-14) + SPECIFIED (future features below)
 
