@@ -13,3 +13,4 @@ export { LayoutBuilder } from './LayoutBuilder';
 export { DryRoomsManagement } from './DryRoomsManagement';
 export { BinningSessionsView } from './BinningSessionsView';
 export { IndividualPlantsTab } from './IndividualPlantsTab';
+export { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';

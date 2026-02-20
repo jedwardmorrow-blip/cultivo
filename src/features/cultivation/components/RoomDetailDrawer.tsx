@@ -2,8 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { X, Flower2, MapPin, Settings, MoreVertical } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
+import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { FlipRoomModal } from './FlipRoomModal';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
+import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 function todayIso(): string {
@@ -51,9 +53,11 @@ function buildGridData(groups: PlantGroup[]): Map<string, PlantGroup[]> {
   return placedMap;
 }
 
+type RoomDrawerAction = 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants';
+
 interface DrawerGridCellProps {
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
   onRefresh: () => void;
 }
 
@@ -83,6 +87,8 @@ function DrawerGridCell({ groups, onGroupAction, onRefresh }: DrawerGridCellProp
             onAdvance={() => onGroupAction(g, 'advance')}
             onToggleMother={() => onGroupAction(g, 'mother')}
             onViewPlants={() => onGroupAction(g, 'plants')}
+            onPrintGroupLabel={() => onGroupAction(g, 'printGroup')}
+            onPrintPlantLabels={() => onGroupAction(g, 'printPlants')}
             onRefresh={onRefresh}
             compact
           />
@@ -95,7 +101,7 @@ function DrawerGridCell({ groups, onGroupAction, onRefresh }: DrawerGridCellProp
 interface DrawerGridProps {
   tables: RoomTable[];
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
   onRefresh: () => void;
 }
 
@@ -169,7 +175,7 @@ function DrawerGrid({ tables, groups, onGroupAction, onRefresh }: DrawerGridProp
 
 interface UnplacedGroupsDrawerProps {
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
   onRefresh: () => void;
 }
 
@@ -204,6 +210,8 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
               onAdvance={() => onGroupAction(g, 'advance')}
               onToggleMother={() => onGroupAction(g, 'mother')}
               onViewPlants={() => onGroupAction(g, 'plants')}
+              onPrintGroupLabel={() => onGroupAction(g, 'printGroup')}
+              onPrintPlantLabels={() => onGroupAction(g, 'printPlants')}
               onRefresh={onRefresh}
               compact
             />
@@ -218,7 +226,7 @@ export interface RoomDetailDrawerProps {
   room: GrowRoom;
   preloadedGroups?: PlantGroup[];
   onClose: () => void;
-  onGroupAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
 }
 
 export function RoomDetailDrawer({
@@ -230,6 +238,19 @@ export function RoomDetailDrawer({
   const [fetchedGroups, setFetchedGroups] = useState<PlantGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showFlipModal, setShowFlipModal] = useState(false);
+  const label = usePlantGroupLabel();
+
+  function handleGroupAction(group: PlantGroup, action: RoomDrawerAction) {
+    if (action === 'printGroup') {
+      void label.openGroupLabel(group);
+      return;
+    }
+    if (action === 'printPlants') {
+      void label.openPlantLabels(group);
+      return;
+    }
+    onGroupAction(group, action);
+  }
 
   const { tables, loading: tablesLoading, reload: reloadTables } = useRoomSections(room.id);
 
@@ -384,12 +405,12 @@ export function RoomDetailDrawer({
                 <DrawerGrid
                   tables={tables}
                   groups={placedGroups}
-                  onGroupAction={onGroupAction}
+                  onGroupAction={handleGroupAction}
                   onRefresh={handleRefresh}
                 />
                 <UnplacedGroupsDrawer
                   groups={unplacedGroups}
-                  onGroupAction={onGroupAction}
+                  onGroupAction={handleGroupAction}
                   onRefresh={handleRefresh}
                 />
                 {groups.length === 0 && (
@@ -439,11 +460,13 @@ export function RoomDetailDrawer({
                         </div>
                         <PlantGroupActionsMenu
                           group={g}
-                          onDetail={() => onGroupAction(g, 'detail')}
-                          onMove={() => onGroupAction(g, 'move')}
-                          onAdvance={() => onGroupAction(g, 'advance')}
-                          onToggleMother={() => onGroupAction(g, 'mother')}
-                          onViewPlants={() => onGroupAction(g, 'plants')}
+                          onDetail={() => handleGroupAction(g, 'detail')}
+                          onMove={() => handleGroupAction(g, 'move')}
+                          onAdvance={() => handleGroupAction(g, 'advance')}
+                          onToggleMother={() => handleGroupAction(g, 'mother')}
+                          onViewPlants={() => handleGroupAction(g, 'plants')}
+                          onPrintGroupLabel={() => handleGroupAction(g, 'printGroup')}
+                          onPrintPlantLabels={() => handleGroupAction(g, 'printPlants')}
                           onRefresh={handleRefresh}
                         />
                       </div>
@@ -464,6 +487,17 @@ export function RoomDetailDrawer({
           onSuccess={handleFlipSuccess}
         />
       )}
+
+      <PlantGroupLabelPrintModal
+        isOpen={label.isOpen}
+        isLoading={label.isLoading}
+        isPrinting={label.isPrinting}
+        labelData={label.labelData}
+        logoDataUrl={label.logoDataUrl}
+        error={label.error}
+        onClose={label.closeLabel}
+        onPrint={(ref) => { void label.printLabels(ref); }}
+      />
     </>
   );
 }

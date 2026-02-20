@@ -1,9 +1,9 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.9
+version: 2.0
 updated: 2026-02-20
-status: IMPLEMENTED (C-42) + NEW (C-43 to C-44 — auto plant IDs, Settings-only room CRUD)
+status: IMPLEMENTED (C-44) + NEW (C-45 to C-46 — mother stage guard, harvest waste recording)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -149,6 +149,17 @@ status: IMPLEMENTED (C-42) + NEW (C-43 to C-44 — auto plant IDs, Settings-only
 │        surfaces only: they show rooms and allow plant operations   │
 │        (flip, harvest, move, advance stage) but contain no room    │
 │        creation, editing, or archiving controls. C-27 extended.   │
+│ C-45. A plant group cannot be designated as a mother plant while   │
+│        it is in 'clone' stage. The "Mark as Mother" action in the  │
+│        PlantGroupActionsMenu is disabled (grayed, blocked) for    │
+│        clone-stage groups. Minimum stage for mother designation:  │
+│        'veg'. New plant groups always start as non-mother.        │
+│        The source mother dropdown in NewPlantGroupModal only shows │
+│        groups in veg or flower stage.                              │
+│ C-46. harvest_sessions.waste_grams is optional (nullable). When   │
+│        provided, it must be >= 0 and strictly less than           │
+│        wet_weight_grams. It is displayed on session rows with a   │
+│        percentage of the display weight (adjusted or wet).        │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

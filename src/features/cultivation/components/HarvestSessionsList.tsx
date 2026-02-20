@@ -28,6 +28,7 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
   const [plantGroupId, setPlantGroupId] = useState('');
   const [harvestDate, setHarvestDate] = useState(new Date().toISOString().slice(0, 10));
   const [wetWeight, setWetWeight] = useState('');
+  const [wasteWeight, setWasteWeight] = useState('');
   const [plantCount, setPlantCount] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -36,11 +37,15 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
   const selectedGroup = groups.find((g) => g.id === plantGroupId);
   const hasAbbreviation = isValidStrainAbbreviation(selectedGroup?.strains?.abbreviation);
 
+  const parsedWet = parseFloat(wetWeight);
+  const parsedWaste = wasteWeight.trim() ? parseFloat(wasteWeight) : null;
+
   const canSave =
     plantGroupId &&
     harvestDate &&
-    parseFloat(wetWeight) > 0 &&
+    parsedWet > 0 &&
     parseInt(plantCount) > 0 &&
+    (parsedWaste === null || (parsedWaste >= 0 && parsedWaste < parsedWet)) &&
     hasAbbreviation &&
     !saving;
 
@@ -52,7 +57,8 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
       const input: CreateHarvestSessionInput = {
         plant_group_id: plantGroupId,
         harvest_date: harvestDate,
-        wet_weight_grams: parseFloat(wetWeight),
+        wet_weight_grams: parsedWet,
+        waste_grams: parsedWaste ?? undefined,
         plant_count_harvested: parseInt(plantCount),
         notes: notes.trim() || undefined,
       };
@@ -152,6 +158,22 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
             placeholder={selectedGroup ? String(selectedGroup.plant_count) : 'e.g. 24'}
             className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Waste Weight (grams)</label>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={wasteWeight}
+            onChange={(e) => setWasteWeight(e.target.value)}
+            placeholder="Optional"
+            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+          />
+          {parsedWaste !== null && parsedWet > 0 && parsedWaste >= parsedWet && (
+            <p className="text-red-400 text-xs mt-1">Waste must be less than wet weight.</p>
+          )}
         </div>
 
         <div>
@@ -307,6 +329,17 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
                 {formatWeight(displayWeight)}
                 {isAdjusted && <span className="text-amber-400 ml-1">(adjusted)</span>}
               </span>
+              {session.waste_grams != null && (
+                <>
+                  <span className="text-cult-medium-gray text-xs">·</span>
+                  <span className="text-cult-medium-gray text-xs">
+                    waste: {formatWeight(session.waste_grams)}
+                    {displayWeight > 0 && (
+                      <span className="ml-1 opacity-70">({Math.round((session.waste_grams / displayWeight) * 100)}%)</span>
+                    )}
+                  </span>
+                </>
+              )}
               <span className="text-cult-medium-gray text-xs">·</span>
               <span className="text-cult-light-gray text-xs">{session.plant_count_harvested} plants</span>
             </div>

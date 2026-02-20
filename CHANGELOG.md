@@ -4,6 +4,21 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-20 - Session D-12: Cultivation Label Printing, Mother Stage Guard, Harvest Waste Recording
+
+**Type:** Feature Addition
+**Module:** Cultivation
+**Status:** COMPLETE
+
+Added plant group label printing, mother plant stage enforcement, and harvest waste recording to the cultivation module.
+
+- **Label printing:** New `usePlantGroupLabel` hook + `PlantGroupLabelPrintModal` component. Two functions accessible from the `...` actions menu on every plant group row: (1) "Print Group Label" — 1.5"×2" label with batch number, strain, stage, plant count, location, CODE128 barcode of batch number; (2) "Print All Plant Labels" — one 1.5"×2" label per active individual plant with CODE128 barcode of state_plant_id. Available in both PlantGroupsList and RoomDetailDrawer.
+- **Mother stage guard:** "Mark as Mother" action is disabled at clone stage — only available at veg or flower. New groups (`NewPlantGroupModal`) always start as non-mother; `is_mother` checkbox disabled with explanatory note. Mother source dropdown filtered to veg/flower groups only. New invariant C-45.
+- **Harvest waste recording:** Migration adds `waste_grams` column to `harvest_sessions`. Optional waste weight field in harvest form with validation (must be < wet weight). Session rows display waste weight with percentage of display weight. New invariant C-46.
+- **Future feature documentation:** Added "Specified — Pending Future Session" section to CULTIVATION.md covering grow recipes, nutrient tracking, yield forecasting, labor costs, state compliance push.
+
+---
+
 ## 2026-02-20 - Session D-10: Cultivation Room Data Loading Performance
 
 **Type:** Performance Optimization

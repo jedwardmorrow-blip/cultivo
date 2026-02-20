@@ -923,6 +923,42 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.7
-**Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED (C-5B) + SPECIFIED (D-1: Dry Rooms + Binning Sessions — pending D-2 migration + D-3 UI)
+**Document Version:** 1.8
+**Last Updated:** 2026-02-20
+**Status:** IMPLEMENTED (D-12) + SPECIFIED (future features below)
+
+---
+
+## Specified — Pending Future Session
+
+The following features have been scoped and documented for future build sessions. No code or migration work has been done for these items. Design decisions should ensure the existing schema can accommodate them without breaking changes.
+
+### Grow Recipes / Feeding Schedules
+
+A recipe system for tracking nutrient and feeding schedules per strain or room type. Each recipe would define a week-by-week feeding program (nutrients, pH, EC/PPM targets). Plant groups would optionally reference a recipe. Recipes would be managed in Settings.
+
+**Design notes:** Store as a `grow_recipes` table with a `recipe_steps` child table (week number, nutrient A/B/C dosages, pH min/max, notes). `plant_groups.grow_recipe_id` nullable FK. No inventory deduction — data capture only.
+
+### Additive / Nutrient Tracking
+
+Per-room or per-group log of actual additives used on specific dates. Supports post-harvest analysis of what was applied. Complements (but does not require) the recipe system above.
+
+**Design notes:** `cultivation_additive_logs` table with `plant_group_id`, `applied_at`, `product_name`, `quantity_ml`, `applied_by`. Queryable by batch for compliance notes.
+
+### Projected Yield / Forecasting
+
+Dashboard widget and per-batch projection showing expected dry weight based on historical yield ratios (wet → dry) per strain. Requires at least 3–5 completed harvest + binning session pairs to derive meaningful averages.
+
+**Design notes:** Entirely computed — no new schema columns needed. A DB view or RPC that aggregates `(dry_weight_grams / wet_weight_grams)` per strain across completed binning sessions, then applies the ratio to active in-progress plant groups' current wet weights. Frontend: InventoryPipelineWidget extension or new CultivationWidget forecast row.
+
+### Labor Cost Tracking
+
+Record labor hours spent on cultivation tasks (watering, training, IPM, harvest) per room or plant group. Enables cost-per-gram analysis.
+
+**Design notes:** `cultivation_labor_logs` table with `grow_room_id` or `plant_group_id`, `task_type` (enum: water/train/ipm/harvest/other), `hours_decimal`, `logged_by`, `logged_at`. No payroll integration — hours only.
+
+### State Compliance Push
+
+Export or push plant group and harvest data to the Arizona AZDHS seed-to-sale compliance system (Metrc or similar). Individual plant IDs (`state_plant_id`) are already captured and formatted correctly for this purpose.
+
+**Design notes:** Requires an edge function to authenticate with the state API. The `individual_plants` table already stores the correct `state_plant_id` format (12-digit numeric). Harvest sessions capture all required fields. The primary gap is the API integration layer, not data capture.

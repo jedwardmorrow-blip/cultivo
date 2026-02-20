@@ -28,7 +28,6 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   const [name, setName] = useState('');
   const [plantedDate, setPlantedDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [isMother, setIsMother] = useState(false);
   const [motherGroupId, setMotherGroupId] = useState('');
 
   const [saving, setSaving] = useState(false);
@@ -54,6 +53,8 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   const hasAbbrev = isValidStrainAbbreviation(selectedStrain?.abbreviation);
 
   const activeRooms = rooms.filter((r) => r.is_active);
+
+  const isMother = false;
 
   const canSave =
     strainId &&
@@ -180,7 +181,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                 />
               </div>
 
-              {motherGroups.length > 0 && (
+              {motherGroups.filter((m) => m.growth_stage === 'veg' || m.growth_stage === 'flower').length > 0 && (
                 <div>
                   <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Source Mother (optional)</label>
                   <select
@@ -189,11 +190,13 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
                   >
                     <option value="">— None —</option>
-                    {motherGroups.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.batch_registry?.batch_number ?? m.strains?.name ?? 'Unknown'} ({m.growth_stage})
-                      </option>
-                    ))}
+                    {motherGroups
+                      .filter((m) => m.growth_stage === 'veg' || m.growth_stage === 'flower')
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.batch_registry?.batch_number ?? m.strains?.name ?? 'Unknown'} ({m.growth_stage})
+                        </option>
+                      ))}
                   </select>
                 </div>
               )}
@@ -209,15 +212,18 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                 />
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isMother}
-                  onChange={(e) => setIsMother(e.target.checked)}
-                  className="w-4 h-4 accent-white"
-                />
-                <span className="text-sm text-cult-light-gray">Mark as mother plant group</span>
-              </label>
+              <div className="space-y-1">
+                <label className="flex items-center gap-2 cursor-not-allowed opacity-50" title="New groups start at clone stage. Designate as mother after advancing to Veg.">
+                  <input
+                    type="checkbox"
+                    checked={false}
+                    disabled
+                    className="w-4 h-4 accent-white"
+                  />
+                  <span className="text-sm text-cult-medium-gray">Mark as mother plant group</span>
+                </label>
+                <p className="text-xs text-cult-dark-gray">New groups start at clone stage. Designate as mother after advancing to Veg.</p>
+              </div>
             </div>
           )}
         </div>

@@ -140,7 +140,9 @@ type PendingAction =
   | { type: 'move'; group: PlantGroup }
   | { type: 'advance'; group: PlantGroup }
   | { type: 'mother'; group: PlantGroup }
-  | { type: 'plants'; group: PlantGroup };
+  | { type: 'plants'; group: PlantGroup }
+  | { type: 'printGroup'; group: PlantGroup }
+  | { type: 'printPlants'; group: PlantGroup };
 
 export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
@@ -178,7 +180,7 @@ export function CultivationDashboard() {
     )
   );
 
-  function handleGroupAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') {
+  function handleGroupAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') {
     setPendingAction({ type: action, group } as PendingAction);
   }
 

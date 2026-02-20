@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Plus, AlertTriangle, Sprout } from 'lucide-react';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
+import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
+import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { isValidStrainAbbreviation } from '../utils';
 import type { PlantGroup, GrowthStage } from '../types';
 
@@ -28,11 +30,13 @@ type PendingAction =
   | { type: 'move'; group: PlantGroup }
   | { type: 'advance'; group: PlantGroup }
   | { type: 'mother'; group: PlantGroup }
-  | { type: 'plants'; group: PlantGroup };
+  | { type: 'plants'; group: PlantGroup }
+  | { type: 'printGroup'; group: PlantGroup }
+  | { type: 'printPlants'; group: PlantGroup };
 
 interface PlantGroupRowProps {
   group: PlantGroup;
-  onAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') => void;
   onRefresh: () => void;
 }
 
@@ -83,6 +87,8 @@ function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
           onAdvance={() => onAction(group, 'advance')}
           onToggleMother={() => onAction(group, 'mother')}
           onViewPlants={() => onAction(group, 'plants')}
+          onPrintGroupLabel={() => onAction(group, 'printGroup')}
+          onPrintPlantLabels={() => onAction(group, 'printPlants')}
           onRefresh={onRefresh}
         />
       </div>
@@ -93,12 +99,13 @@ function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
 export function PlantGroupsList() {
   const { groups, loading, error, reload, createGroup, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { rooms } = useGrowRooms();
+  const label = usePlantGroupLabel();
 
   const [showNewModal, setShowNewModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  function handleAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') {
+  function handleAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') {
     setActionError(null);
     if (action === 'mother') {
       void (async () => {
@@ -108,6 +115,14 @@ export function PlantGroupsList() {
           setActionError(err instanceof Error ? err.message : 'Failed to update mother status.');
         }
       })();
+      return;
+    }
+    if (action === 'printGroup') {
+      void label.openGroupLabel(group);
+      return;
+    }
+    if (action === 'printPlants') {
+      void label.openPlantLabels(group);
       return;
     }
     setPendingAction({ type: action, group } as PendingAction);
@@ -216,6 +231,17 @@ export function PlantGroupsList() {
           initialTab="plants"
         />
       )}
+
+      <PlantGroupLabelPrintModal
+        isOpen={label.isOpen}
+        isLoading={label.isLoading}
+        isPrinting={label.isPrinting}
+        labelData={label.labelData}
+        logoDataUrl={label.logoDataUrl}
+        error={label.error}
+        onClose={label.closeLabel}
+        onPrint={(ref) => { void label.printLabels(ref); }}
+      />
 
       {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

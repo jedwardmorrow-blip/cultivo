@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Home, ArrowRight, Star, Info, Leaf } from 'lucide-react';
+import { MoreVertical, Home, ArrowRight, Star, Info, Leaf, Printer } from 'lucide-react';
 import type { PlantGroup, GrowthStage } from '../types';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -23,6 +23,8 @@ interface PlantGroupActionsMenuProps {
   onAdvance: () => void;
   onToggleMother: () => void;
   onViewPlants: () => void;
+  onPrintGroupLabel: () => void;
+  onPrintPlantLabels: () => void;
   onRefresh: () => void;
   compact?: boolean;
 }
@@ -34,6 +36,8 @@ export function PlantGroupActionsMenu({
   onAdvance,
   onToggleMother,
   onViewPlants,
+  onPrintGroupLabel,
+  onPrintPlantLabels,
   compact = false,
 }: PlantGroupActionsMenuProps) {
   const [open, setOpen] = useState(false);
@@ -41,6 +45,7 @@ export function PlantGroupActionsMenu({
 
   const nextStage = NEXT_STAGE[group.growth_stage];
   const canAdvance = nextStage !== null && nextStage !== 'harvested';
+  const canBeMother = group.growth_stage !== 'clone';
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -92,13 +97,23 @@ export function PlantGroupActionsMenu({
             Move to Room
           </button>
 
-          <button
-            onClick={() => handle(onToggleMother)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-white hover:bg-cult-black transition-colors text-left"
-          >
-            <Star className={`w-3.5 h-3.5 flex-shrink-0 ${group.is_mother ? 'text-amber-400' : 'text-cult-medium-gray'}`} />
-            {group.is_mother ? 'Remove Mother Status' : 'Mark as Mother'}
-          </button>
+          {canBeMother ? (
+            <button
+              onClick={() => handle(onToggleMother)}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-white hover:bg-cult-black transition-colors text-left"
+            >
+              <Star className={`w-3.5 h-3.5 flex-shrink-0 ${group.is_mother ? 'text-amber-400' : 'text-cult-medium-gray'}`} />
+              {group.is_mother ? 'Remove Mother Status' : 'Mark as Mother'}
+            </button>
+          ) : (
+            <div
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-dark-gray cursor-not-allowed"
+              title="Must be in Veg or Flower stage to designate as mother"
+            >
+              <Star className="w-3.5 h-3.5 flex-shrink-0 text-cult-dark-gray" />
+              Mark as Mother
+            </div>
+          )}
 
           <div className="border-t border-cult-dark-gray my-0.5" />
 
@@ -109,6 +124,24 @@ export function PlantGroupActionsMenu({
             <Leaf className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
             View Plant IDs
           </button>
+
+          <button
+            onClick={() => handle(onPrintGroupLabel)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-white hover:bg-cult-black transition-colors text-left"
+          >
+            <Printer className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
+            Print Group Label
+          </button>
+
+          <button
+            onClick={() => handle(onPrintPlantLabels)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-white hover:bg-cult-black transition-colors text-left"
+          >
+            <Printer className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
+            Print All Plant Labels
+          </button>
+
+          <div className="border-t border-cult-dark-gray my-0.5" />
 
           <button
             onClick={() => handle(onDetail)}

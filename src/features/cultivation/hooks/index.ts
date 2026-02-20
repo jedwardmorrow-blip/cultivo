@@ -5,3 +5,5 @@ export { useRoomSections } from './useRoomSections';
 export { usePlantGroupPlacement } from './usePlantGroupPlacement';
 export { useDryRooms } from './useDryRooms';
 export { useBinningSessions } from './useBinningSessions';
+export { usePlantGroupLabel } from './usePlantGroupLabel';
+export type { PlantLabelMode, PlantGroupLabelData, IndividualPlantLabelData, PlantLabelData } from './usePlantGroupLabel';

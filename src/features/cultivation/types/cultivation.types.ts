@@ -86,6 +86,7 @@ export interface HarvestSession {
   plant_group_id: string;
   harvest_date: string;
   wet_weight_grams: number;
+  waste_grams: number | null;
   plant_count_harvested: number;
   adjusted_weight_grams: number | null;
   adjustment_reason: string | null;
@@ -171,7 +172,7 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
   Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id'>>;
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
-  Partial<Pick<HarvestSession, 'notes'>>;
+  Partial<Pick<HarvestSession, 'notes' | 'waste_grams'>>;
 
 export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
 

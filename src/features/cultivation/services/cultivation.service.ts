@@ -55,7 +55,7 @@ const PLANT_GROUP_SUMMARY_SELECT = `
 `;
 
 const HARVEST_SESSION_SELECT = `
-  id, plant_group_id, harvest_date, wet_weight_grams, plant_count_harvested,
+  id, plant_group_id, harvest_date, wet_weight_grams, waste_grams, plant_count_harvested,
   adjusted_weight_grams, adjustment_reason, batch_registry_id, session_status,
   completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
   plant_groups (
