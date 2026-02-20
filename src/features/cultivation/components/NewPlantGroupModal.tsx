@@ -35,7 +35,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   const [sourceType, setSourceType] = useState<PlantSourceType>('clone');
   const [strainId, setStrainId] = useState('');
   const [roomId, setRoomId] = useState('');
-  const [plantCount, setPlantCount] = useState('');
+  const [seedPlantCount, setSeedPlantCount] = useState('');
   const [name, setName] = useState('');
   const [plantedDate, setPlantedDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -91,6 +91,13 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
     setCutSessions((prev) => prev.filter((row) => row.id !== rowId));
   }
 
+  const derivedCloneCount = cutSessions.reduce((sum, cs) => {
+    const n = parseInt(cs.cutCount);
+    return sum + (isNaN(n) ? 0 : n);
+  }, 0);
+
+  const effectivePlantCount = sourceType === 'clone' ? derivedCloneCount : parseInt(seedPlantCount);
+
   const cloneValidation = sourceType === 'clone' ? (() => {
     if (cutSessions.length === 0) return 'At least one cut session is required';
     for (const cs of cutSessions) {
@@ -106,7 +113,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   const canSave =
     strainId &&
     roomId &&
-    parseInt(plantCount) > 0 &&
+    effectivePlantCount > 0 &&
     hasAbbrev &&
     cloneValidation === null &&
     !saving;
@@ -119,7 +126,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
       const input: CreatePlantGroupInput = {
         strain_id: strainId,
         grow_room_id: roomId,
-        plant_count: parseInt(plantCount),
+        plant_count: effectivePlantCount,
         name: name.trim() || undefined,
         planted_date: plantedDate || undefined,
         notes: notes.trim() || undefined,
@@ -244,15 +251,28 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Plant Count *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={plantCount}
-                    onChange={(e) => setPlantCount(e.target.value)}
-                    placeholder="e.g. 24"
-                    className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-                  />
+                  <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">
+                    Plant Count {sourceType === 'clone' ? '(from cuts)' : '*'}
+                  </label>
+                  {sourceType === 'clone' ? (
+                    <div className="w-full bg-cult-black border border-cult-dark-gray text-cult-white px-3 py-2 text-sm flex items-center justify-between">
+                      <span className={derivedCloneCount > 0 ? 'text-cult-white font-semibold' : 'text-cult-dark-gray'}>
+                        {derivedCloneCount > 0 ? derivedCloneCount : '—'}
+                      </span>
+                      {derivedCloneCount > 0 && (
+                        <span className="text-xs text-cult-medium-gray">auto</span>
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      type="number"
+                      min="1"
+                      value={seedPlantCount}
+                      onChange={(e) => setSeedPlantCount(e.target.value)}
+                      placeholder="e.g. 24"
+                      className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Planted Date</label>
