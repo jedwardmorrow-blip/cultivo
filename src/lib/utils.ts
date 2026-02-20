@@ -1,7 +1,12 @@
 export function getSiteUrl(): string {
   const configured = import.meta.env.VITE_PUBLIC_SITE_URL;
   if (configured) return configured.replace(/\/+$/, '');
-  return window.location.origin;
+
+  const origin = window.location.origin;
+  if (origin.includes('webcontainer') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    console.warn('[getSiteUrl] No VITE_PUBLIC_SITE_URL configured. Using dev origin for URLs — QR codes and public links will not work in production.');
+  }
+  return origin;
 }
 
 export function formatCurrency(amount: number): string {
