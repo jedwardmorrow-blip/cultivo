@@ -55,7 +55,7 @@ const PLANT_GROUP_SELECT = `
   room_tables (table_number, table_name),
   room_sections (section_label),
   batch_registry (batch_number, clone_date),
-  cut_sessions:plant_group_cut_sessions (${CUT_SESSION_SELECT})
+  cut_sessions:plant_group_cut_sessions!plant_group_id (${CUT_SESSION_SELECT})
 `;
 
 const PLANT_GROUP_SUMMARY_SELECT = `
