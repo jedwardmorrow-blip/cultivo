@@ -215,11 +215,12 @@ function UnplacedGroups({ groups, onGroupClick }: UnplacedGroupsProps) {
 interface RoomMapCardProps {
   room: GrowRoom;
   onGroupSelect: (group: PlantGroup) => void;
+  preloadedGroups?: PlantGroup[];
 }
 
-export function RoomMapCard({ room, onGroupSelect }: RoomMapCardProps) {
+export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const [groups, setGroups] = useState<PlantGroup[]>([]);
+  const [fetchedGroups, setFetchedGroups] = useState<PlantGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showFlipModal, setShowFlipModal] = useState(false);
 
@@ -229,18 +230,22 @@ export function RoomMapCard({ room, onGroupSelect }: RoomMapCardProps) {
   const isFlower = room.room_type === 'flower';
   const today = todayIso();
 
+  const groups = preloadedGroups
+    ? preloadedGroups.filter((g) => g.grow_room_id === room.id && g.growth_stage !== 'harvested')
+    : fetchedGroups;
+
   const loadGroups = useCallback(async () => {
-    if (!expanded) return;
+    if (!expanded || preloadedGroups) return;
     setLoadingGroups(true);
     try {
       const data = await cultivationService.listPlantGroupsByRoom(room.id);
-      setGroups(data.filter((g) => g.growth_stage !== 'harvested'));
+      setFetchedGroups(data.filter((g) => g.growth_stage !== 'harvested'));
     } catch {
       // silent
     } finally {
       setLoadingGroups(false);
     }
-  }, [expanded, room.id]);
+  }, [expanded, room.id, preloadedGroups]);
 
   useEffect(() => {
     loadGroups();
@@ -279,7 +284,7 @@ export function RoomMapCard({ room, onGroupSelect }: RoomMapCardProps) {
   function handleFlipSuccess() {
     setShowFlipModal(false);
     void reloadTables();
-    void loadGroups();
+    if (!preloadedGroups) void loadGroups();
   }
 
   return (

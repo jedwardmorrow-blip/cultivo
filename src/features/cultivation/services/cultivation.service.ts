@@ -43,6 +43,17 @@ const PLANT_GROUP_SELECT = `
   batch_registry (batch_number, clone_date)
 `;
 
+const PLANT_GROUP_SUMMARY_SELECT = `
+  id, name, strain_id, grow_room_id, mother_plant_group_id,
+  room_table_id, room_section_id, batch_registry_id,
+  is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
+  notes, created_at, created_by, updated_at,
+  strains (name, abbreviation),
+  room_tables (table_number, table_name),
+  room_sections (section_label),
+  batch_registry (batch_number, clone_date)
+`;
+
 const HARVEST_SESSION_SELECT = `
   id, plant_group_id, harvest_date, wet_weight_grams, plant_count_harvested,
   adjusted_weight_grams, adjustment_reason, batch_registry_id, session_status,
@@ -215,7 +226,7 @@ export const cultivationService = {
   },
 
   async listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]> {
-    let query = supabase.from('plant_groups').select(PLANT_GROUP_SELECT);
+    let query = supabase.from('plant_groups').select(PLANT_GROUP_SUMMARY_SELECT);
 
     if (filter?.stage === 'active') {
       query = query.not('growth_stage', 'eq', 'harvested');
@@ -231,7 +242,7 @@ export const cultivationService = {
   async listPlantGroupsByRoom(growRoomId: string): Promise<PlantGroup[]> {
     const { data, error } = await supabase
       .from('plant_groups')
-      .select(PLANT_GROUP_SELECT)
+      .select(PLANT_GROUP_SUMMARY_SELECT)
       .eq('grow_room_id', growRoomId)
       .order('created_at', { ascending: false });
     if (error) throwError(error, 'listPlantGroupsByRoom');
@@ -344,7 +355,7 @@ export const cultivationService = {
   async listMotherGroups(): Promise<PlantGroup[]> {
     const { data, error } = await supabase
       .from('plant_groups')
-      .select(PLANT_GROUP_SELECT)
+      .select(PLANT_GROUP_SUMMARY_SELECT)
       .eq('is_mother', true)
       .not('growth_stage', 'eq', 'harvested')
       .order('created_at', { ascending: false });
@@ -467,26 +478,26 @@ export const cultivationService = {
   },
 
   async listUnbinnedHarvestSessions(): Promise<HarvestSession[]> {
-    const { data: binnedIds, error: binnedErr } = await supabase
-      .from('binning_sessions')
-      .select('harvest_session_id')
-      .not('session_status', 'eq', 'cancelled');
-    if (binnedErr) throwError(binnedErr, 'listUnbinnedHarvestSessions:getBinned');
+    const [binnedResult, sessionsResult] = await Promise.all([
+      supabase
+        .from('binning_sessions')
+        .select('harvest_session_id')
+        .not('session_status', 'eq', 'cancelled'),
+      supabase
+        .from('harvest_sessions')
+        .select(HARVEST_SESSION_SELECT)
+        .eq('session_status', 'completed')
+        .order('harvest_date', { ascending: false }),
+    ]);
 
-    const excludeIds = (binnedIds ?? []).map((r: { harvest_session_id: string }) => r.harvest_session_id);
+    if (binnedResult.error) throwError(binnedResult.error, 'listUnbinnedHarvestSessions:getBinned');
+    if (sessionsResult.error) throwError(sessionsResult.error, 'listUnbinnedHarvestSessions');
 
-    let query = supabase
-      .from('harvest_sessions')
-      .select(HARVEST_SESSION_SELECT)
-      .eq('session_status', 'completed');
+    const binnedIds = new Set(
+      (binnedResult.data ?? []).map((r: { harvest_session_id: string }) => r.harvest_session_id)
+    );
 
-    if (excludeIds.length > 0) {
-      query = query.not('id', 'in', `(${excludeIds.map((id) => `"${id}"`).join(',')})`);
-    }
-
-    const { data, error } = await query.order('harvest_date', { ascending: false });
-    if (error) throwError(error, 'listUnbinnedHarvestSessions');
-    return data as unknown as HarvestSession[];
+    return (sessionsResult.data as unknown as HarvestSession[]).filter((s) => !binnedIds.has(s.id));
   },
 
   async createBinningSession(input: CreateBinningSessionInput): Promise<BinningSession> {

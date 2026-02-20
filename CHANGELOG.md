@@ -4,6 +4,23 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-20 - Session D-10: Cultivation Room Data Loading Performance
+
+**Type:** Performance Optimization
+**Module:** Cultivation
+**Status:** COMPLETE
+
+Eliminated slow room data loading caused by N+1 queries and over-fetching on the cultivation dashboard.
+
+- **Database:** Added `idx_plant_groups_room_stage` composite index on `(grow_room_id, growth_stage)` — covers the most common query pattern. Added partial index `idx_grow_rooms_active_code` for active room list queries.
+- **Service:** Added `PLANT_GROUP_SUMMARY_SELECT` (omits `grow_rooms` and `mother_group` self-join). `listPlantGroups`, `listPlantGroupsByRoom`, and `listMotherGroups` now use the lighter select. `getPlantGroup` retains the full select for the detail panel.
+- **N+1 fix:** `RoomMapCard` now accepts a `preloadedGroups` prop. `CultivationDashboard` passes its already-fetched groups array down to each card, replacing ~11 per-room queries with zero additional queries.
+- **Parallel query fix:** `listUnbinnedHarvestSessions` now fetches binned IDs and completed harvest sessions in parallel via `Promise.all`, then filters in memory — eliminating a sequential waterfall.
+
+**Result:** Rooms page load drops from ~11--22 queries to 3 total (rooms + groups + harvest sessions).
+
+---
+
 ## 2026-02-20 - Session D-9: Remove group_number — Batch Number as Sole Identifier
 
 **Type:** Refactor / Data Model

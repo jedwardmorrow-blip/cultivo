@@ -180,6 +180,7 @@ export function CultivationDashboard() {
                 key={room.id}
                 room={room}
                 onGroupSelect={setSelectedGroup}
+                preloadedGroups={groups}
               />
             ))}
           </div>

@@ -15,20 +15,20 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-20
-**Session:** D-9 — Remove group_number, Batch Number as Sole Identifier
+**Session:** D-10 — Cultivation Room Data Loading Performance
 **Status:** COMPLETE
 
 **What was done:**
 
-Removed `group_number` from `plant_groups` entirely across the codebase. The batch number from `batch_registry` (format `YYMMDD-ABBREV`, e.g. `260218-OGK`) is now the sole human-readable identifier for plant groups throughout the cultivation UI.
+Eliminated N+1 query pattern and over-fetching that caused slow cultivation room loading.
 
 Key changes:
-- `cultivation.types.ts` — removed `group_number` from `PlantGroup`; updated `mother_group` join type to include `batch_registry`; removed `group_number` from `HarvestSession.plant_groups` and `BinningSession.harvest_sessions.plant_groups`
-- `cultivation.service.ts` — removed `group_number` from `PLANT_GROUP_SELECT`, `HARVEST_SESSION_SELECT`, all 4 binning session inline selects; removed `group_number: 'PENDING'` from `createPlantGroup` insert; changed `listMotherGroups` ordering from `group_number` to `created_at DESC`
-- `database.types.ts` — removed `group_number` from `plant_groups` Row/Insert/Update; added `batch_registry_id` to all three
-- 10 component files updated to use `batch_registry?.batch_number` as primary identifier: `PlantGroupsList`, `PlantGroupDetailPanel`, `NewPlantGroupModal`, `RoomMapCard`, `FlipRoomModal`, `MoveToRoomModal`, `HarvestSessionsList`, `BinningSessionsView`, `CultivationDashboard`, `CultivationWidget`
-- Test fixtures + service tests: removed `group_number` from all mock objects; updated `createPlantGroup` test assertion
-- Docs: updated `CULTIVATION-ARCHITECTURE.md`, `CULTIVATION.md`, `CHANGELOG.md`
+- **Migration** `add_cultivation_performance_indexes` — composite index `idx_plant_groups_room_stage` on `(grow_room_id, growth_stage)`; partial index `idx_grow_rooms_active_code` on `grow_rooms WHERE is_active = true`
+- `cultivation.service.ts` — added `PLANT_GROUP_SUMMARY_SELECT` (omits `grow_rooms` join and `mother_group` self-join); `listPlantGroups`, `listPlantGroupsByRoom`, `listMotherGroups` now use it; `getPlantGroup` keeps full select; `listUnbinnedHarvestSessions` now parallelizes its two queries via `Promise.all` and filters in memory
+- `RoomMapCard.tsx` — accepts optional `preloadedGroups?: PlantGroup[]` prop; when provided, filters in memory instead of fetching
+- `CultivationDashboard.tsx` — passes its already-fetched `groups` array as `preloadedGroups` to each `RoomMapCard`
+
+**Result:** Cultivation dashboard page load drops from ~11--22 queries to 3 (rooms + groups + harvest sessions).
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
