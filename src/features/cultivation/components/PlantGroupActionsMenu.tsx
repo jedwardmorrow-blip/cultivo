@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreVertical, Home, ArrowRight, Star, Info, Leaf, Printer } from 'lucide-react';
 import type { PlantGroup, GrowthStage } from '../types';
 
@@ -29,6 +30,12 @@ interface PlantGroupActionsMenuProps {
   compact?: boolean;
 }
 
+interface DropdownPos {
+  top: number;
+  left: number;
+  openUpward: boolean;
+}
+
 export function PlantGroupActionsMenu({
   group,
   onDetail,
@@ -41,42 +48,69 @@ export function PlantGroupActionsMenu({
   compact = false,
 }: PlantGroupActionsMenuProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<DropdownPos>({ top: 0, left: 0, openUpward: false });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const nextStage = NEXT_STAGE[group.growth_stage];
   const canAdvance = nextStage !== null && nextStage !== 'harvested';
   const canBeMother = group.growth_stage !== 'clone';
 
+  const computePosition = useCallback(() => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const menuHeight = 280;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpward = spaceBelow < menuHeight && rect.top > menuHeight;
+
+    setPos({
+      top: openUpward ? rect.top : rect.bottom + 4,
+      left: rect.right,
+      openUpward,
+    });
+  }, []);
+
   useEffect(() => {
+    if (!open) return;
+    computePosition();
+
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        btnRef.current && !btnRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     }
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
+
+    function handleScroll() {
+      setOpen(false);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [open, computePosition]);
 
   function handle(fn: () => void) {
     setOpen(false);
     fn();
   }
 
-  return (
-    <div ref={ref} className="relative flex-shrink-0">
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className={`transition-colors text-cult-medium-gray hover:text-cult-white ${compact ? 'p-0.5' : 'p-1.5'}`}
-        title="Actions"
-      >
-        <MoreVertical className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
-      </button>
-
-      {open && (
+  const dropdown = open
+    ? createPortal(
         <div
-          className="absolute right-0 top-full mt-1 z-50 bg-cult-near-black border border-cult-medium-gray shadow-xl min-w-44"
+          ref={menuRef}
+          className="fixed z-[9999] bg-cult-near-black border border-cult-medium-gray shadow-xl min-w-44"
+          style={{
+            top: pos.openUpward ? undefined : pos.top,
+            bottom: pos.openUpward ? window.innerHeight - pos.top : undefined,
+            left: pos.left - 176,
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {canAdvance && nextStage && (
@@ -150,8 +184,22 @@ export function PlantGroupActionsMenu({
             <Info className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
             View History
           </button>
-        </div>
-      )}
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        ref={btnRef}
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className={`transition-colors text-cult-medium-gray hover:text-cult-white ${compact ? 'p-0.5' : 'p-1.5'}`}
+        title="Actions"
+      >
+        <MoreVertical className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
+      </button>
+      {dropdown}
     </div>
   );
 }
