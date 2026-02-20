@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
-import { X, Flower2, MapPin, Settings, MoreVertical, ChevronDown, ChevronRight, Printer, Loader2, CircleOff } from 'lucide-react';
+import { X, Flower2, MapPin, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { FlipRoomModal } from './FlipRoomModal';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
-import type { GrowRoom, PlantGroup, RoomTable, RoomSection, IndividualPlant } from '../types';
+import { ExpandedPlantsList } from './ExpandedPlantsList';
+import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -215,87 +216,6 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
               onRefresh={onRefresh}
               compact
             />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-interface ExpandedPlantsListProps {
-  plantGroupId: string;
-  onPrintPlants: () => void;
-}
-
-function ExpandedPlantsList({ plantGroupId, onPrintPlants }: ExpandedPlantsListProps) {
-  const [plants, setPlants] = useState<IndividualPlant[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    cultivationService.listIndividualPlants(plantGroupId).then((data) => {
-      if (!cancelled) { setPlants(data); setLoading(false); }
-    }).catch(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => { cancelled = true; };
-  }, [plantGroupId]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center gap-2 px-4 py-3 text-xs text-cult-medium-gray">
-        <Loader2 className="w-3 h-3 animate-spin" />
-        Loading plants...
-      </div>
-    );
-  }
-
-  const activePlants = plants.filter((p) => p.is_active);
-  const inactivePlants = plants.filter((p) => !p.is_active);
-
-  if (plants.length === 0) {
-    return (
-      <div className="px-4 py-3 text-xs text-cult-medium-gray italic">
-        No plant IDs registered yet.
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-t border-cult-dark-gray bg-cult-near-black/50">
-      <div className="flex items-center justify-between px-4 py-2">
-        <span className="text-xs text-cult-light-gray">
-          <span className="text-cult-white font-semibold">{activePlants.length}</span> active
-          {inactivePlants.length > 0 && (
-            <span className="text-cult-medium-gray ml-1">/ {inactivePlants.length} inactive</span>
-          )}
-        </span>
-        <button
-          onClick={onPrintPlants}
-          disabled={activePlants.length === 0}
-          className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-2.5 py-1 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          <Printer className="w-3 h-3" />
-          Print Labels
-        </button>
-      </div>
-      <div className="max-h-60 overflow-y-auto px-4 pb-3 space-y-0.5">
-        {activePlants.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center justify-between px-2.5 py-1.5 border border-cult-dark-gray bg-cult-black text-xs"
-          >
-            <span className="font-mono text-cult-white">{p.state_plant_id}</span>
-            {p.notes && <span className="text-cult-medium-gray truncate ml-3 flex-1">{p.notes}</span>}
-          </div>
-        ))}
-        {inactivePlants.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center justify-between px-2.5 py-1.5 border border-cult-near-black bg-black text-xs opacity-40"
-          >
-            <span className="font-mono text-cult-medium-gray line-through">{p.state_plant_id}</span>
-            <CircleOff className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
           </div>
         ))}
       </div>
@@ -567,8 +487,10 @@ export function RoomDetailDrawer({
                         </div>
                         {isExpanded && (
                           <ExpandedPlantsList
-                            plantGroupId={g.id}
-                            onPrintPlants={() => handleGroupAction(g, 'printPlants')}
+                            group={g}
+                            onPrintSinglePlant={(plant) => { void label.openSinglePlantLabel(plant, g); }}
+                            onPrintSelectedPlants={(plants) => { void label.openSelectedPlantLabels(plants, g); }}
+                            onPrintAllPlants={() => { void label.openPlantLabels(g); }}
                           />
                         )}
                       </div>

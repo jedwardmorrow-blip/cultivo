@@ -14,3 +14,4 @@ export { DryRoomsManagement } from './DryRoomsManagement';
 export { BinningSessionsView } from './BinningSessionsView';
 export { IndividualPlantsTab } from './IndividualPlantsTab';
 export { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
+export { ExpandedPlantsList } from './ExpandedPlantsList';

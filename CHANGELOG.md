@@ -4,6 +4,22 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-20 - Session D-13: Individual Plant Actions, Expanded View, Feature Parity
+
+**Type:** Feature Addition
+**Module:** Cultivation
+**Status:** COMPLETE
+
+Enriched the individual plant expanded view with metadata, per-plant printing, bulk selection, and unified behavior between Plant Groups tab and Room Detail drawer.
+
+- **Shared ExpandedPlantsList component:** Extracted from RoomDetailDrawer into standalone shared component used identically in both Plant Groups tab and Room drawer. Shows metadata header (Mother Plant ID, Clone Date, Stage Entered, Days in Stage), per-plant print icons, checkbox multi-select with select-all toggle, and bulk deactivate with confirmation.
+- **Single-plant label printing:** New `openSinglePlantLabel` and `openSelectedPlantLabels` methods on `usePlantGroupLabel` hook. Print button adapts to selection: "Print All (N)" or "Print Selected (N)".
+- **PlantGroupsList expand behavior:** Plant group rows are now clickable accordions (matching Room Drawer), expanding to show the full individual plant view with all actions.
+- **PLANT_GROUP_SUMMARY_SELECT fix:** Added `grow_rooms` and `mother_group` to the summary query so room codes and mother plant IDs display correctly in all list views.
+- **New invariants:** C-47 (deactivation semantics), C-48 (shared component requirement).
+
+---
+
 ## 2026-02-20 - Session D-12: Cultivation Label Printing, Mother Stage Guard, Harvest Waste Recording
 
 **Type:** Feature Addition

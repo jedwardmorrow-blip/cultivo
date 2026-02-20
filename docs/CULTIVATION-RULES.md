@@ -3,7 +3,7 @@ title: CULTIVATION-RULES
 category: Cultivation Module
 version: 2.0
 updated: 2026-02-20
-status: IMPLEMENTED (C-44) + NEW (C-45 to C-46 — mother stage guard, harvest waste recording)
+status: IMPLEMENTED (C-44) + NEW (C-45 to C-48)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -160,6 +160,15 @@ status: IMPLEMENTED (C-44) + NEW (C-45 to C-46 — mother stage guard, harvest w
 │        provided, it must be >= 0 and strictly less than           │
 │        wet_weight_grams. It is displayed on session rows with a   │
 │        percentage of the display weight (adjusted or wet).        │
+│ C-47. Individual plant deactivation (via single or bulk selection)│
+│        sets is_active = false. Rows are never hard-deleted. The   │
+│        plant_count on the parent group reflects original group    │
+│        size, not current active count. Active count is derived at │
+│        query time from the individual_plants relation.            │
+│ C-48. The ExpandedPlantsList component is the single source of   │
+│        truth for the individual plant expanded view. Both the     │
+│        Plant Groups tab and Room Detail drawer use this shared    │
+│        component to ensure identical functionality and layout.    │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -774,6 +783,9 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v2.1 (2026-02-20)
+- Added invariants C-47 and C-48 (individual plant deactivation semantics, shared ExpandedPlantsList component)
+
 ### v1.7 (2026-02-19)
 - Added invariants C-30 through C-37 (dry room code immutability, dry room no-delete, binning session requires completed harvest, 1:1 constraint, derived batch_registry_id, dry weight > 0, no cancellation after completion, no inventory creation)
 - Added rule detail sections for C-30 through C-37
@@ -814,6 +826,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 1.7
-**Last Updated:** 2026-02-19
-**Status:** IMPLEMENTED (C-1–C-29 live) + SPECIFIED (C-30–C-37 pending D-2 migration)
+**Document Version:** 2.1
+**Last Updated:** 2026-02-20
+**Status:** IMPLEMENTED (C-1–C-29 live) + SPECIFIED (C-30–C-37 pending D-2 migration) + NEW (C-47–C-48)

@@ -62,6 +62,8 @@ const PLANT_GROUP_SUMMARY_SELECT = `
   source_type, is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
+  grow_rooms (name, room_code),
+  mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number), individual_plants (state_plant_id, is_active)),
   room_tables (table_number, table_name),
   room_sections (section_label),
   batch_registry (batch_number, clone_date),

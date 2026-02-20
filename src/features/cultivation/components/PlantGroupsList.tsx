@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, AlertTriangle, Sprout } from 'lucide-react';
+import { Plus, AlertTriangle, Sprout, ChevronDown, ChevronRight } from 'lucide-react';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
@@ -8,6 +8,7 @@ import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
+import { ExpandedPlantsList } from './ExpandedPlantsList';
 import { isValidStrainAbbreviation } from '../utils';
 import type { PlantGroup, GrowthStage } from '../types';
 
@@ -36,11 +37,14 @@ type PendingAction =
 
 interface PlantGroupRowProps {
   group: PlantGroup;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
   onAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') => void;
   onRefresh: () => void;
+  expandContent: React.ReactNode | null;
 }
 
-function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
+function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh, expandContent }: PlantGroupRowProps) {
   const stageCls = STAGE_COLORS[group.growth_stage] ?? '';
   const hasAbbrev = isValidStrainAbbreviation(group.strains?.abbreviation);
 
@@ -49,8 +53,17 @@ function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
   );
 
   return (
-    <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
-      <div className="flex items-center justify-between px-4 py-3 gap-3">
+    <div className="border border-cult-dark-gray bg-cult-near-black hover:border-cult-medium-gray transition-all overflow-hidden">
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+        onClick={onToggleExpand}
+      >
+        <div className="flex-shrink-0 text-cult-medium-gray">
+          {isExpanded
+            ? <ChevronDown className="w-4 h-4" />
+            : <ChevronRight className="w-4 h-4" />
+          }
+        </div>
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-sm font-bold text-cult-white">{group.batch_registry?.batch_number ?? '—'}</span>
@@ -69,29 +82,31 @@ function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className="text-cult-light-gray text-xs truncate">{group.strains?.name ?? 'Unknown'}</span>
-            <span className="text-cult-medium-gray text-xs">·</span>
+            <span className="text-cult-medium-gray text-xs">&middot;</span>
             <span className="text-cult-light-gray text-xs">{group.plant_count} plants</span>
-            <span className="text-cult-medium-gray text-xs">·</span>
+            <span className="text-cult-medium-gray text-xs">&middot;</span>
             <span className="text-cult-light-gray text-xs">{group.grow_rooms?.room_code ?? '—'}</span>
-            <span className="text-cult-medium-gray text-xs">·</span>
+            <span className="text-cult-medium-gray text-xs">&middot;</span>
             <span className="text-cult-medium-gray text-xs">{daysInStage}d in stage</span>
           </div>
         </div>
-
-        <PlantGroupActionsMenu
-          group={group}
-          onDetail={() => onAction(group, 'detail')}
-          onMove={() => onAction(group, 'move')}
-          onAdvance={() => onAction(group, 'advance')}
-          onToggleMother={() => onAction(group, 'mother')}
-          onViewPlants={() => onAction(group, 'plants')}
-          onPrintGroupLabel={() => onAction(group, 'printGroup')}
-          onPrintPlantLabels={() => onAction(group, 'printPlants')}
-          onRefresh={onRefresh}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <PlantGroupActionsMenu
+            group={group}
+            onDetail={() => onAction(group, 'detail')}
+            onMove={() => onAction(group, 'move')}
+            onAdvance={() => onAction(group, 'advance')}
+            onToggleMother={() => onAction(group, 'mother')}
+            onViewPlants={() => onAction(group, 'plants')}
+            onPrintGroupLabel={() => onAction(group, 'printGroup')}
+            onPrintPlantLabels={() => onAction(group, 'printPlants')}
+            onRefresh={onRefresh}
+          />
+        </div>
       </div>
+      {isExpanded && expandContent}
     </div>
   );
 }
@@ -104,6 +119,7 @@ export function PlantGroupsList() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
 
   function handleAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') {
     setActionError(null);
@@ -184,13 +200,23 @@ export function PlantGroupsList() {
           <p className="text-cult-medium-gray text-sm uppercase tracking-wider">No active plant groups</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {groups.map((g) => (
             <PlantGroupRow
               key={g.id}
               group={g}
+              isExpanded={expandedGroupId === g.id}
+              onToggleExpand={() => setExpandedGroupId(expandedGroupId === g.id ? null : g.id)}
               onAction={handleAction}
               onRefresh={reload}
+              expandContent={
+                <ExpandedPlantsList
+                  group={g}
+                  onPrintSinglePlant={(plant) => { void label.openSinglePlantLabel(plant, g); }}
+                  onPrintSelectedPlants={(plants) => { void label.openSelectedPlantLabels(plants, g); }}
+                  onPrintAllPlants={() => { void label.openPlantLabels(g); }}
+                />
+              }
             />
           ))}
         </div>

@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-19
+updated: 2026-02-20
 priority: Working document - update every session
 ---
 
@@ -15,64 +15,56 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-20
-**Session:** D-12 — Cultivation Label Printing, Mother Stage Guard, Harvest Waste Recording
+**Session:** D-13 — Individual Plant Actions, Expanded View Enrichment, Feature Parity
 **Status:** COMPLETE
 
 **What was done:**
 
-Five features added to the cultivation module:
+Four features implemented across the cultivation module:
 
-**1. Plant group label printing (two functions)**
-- New hook `usePlantGroupLabel.ts` — loads logo, fetches plants if needed, sets up label data; provides `openGroupLabel`, `openPlantLabels`, `printLabels`, `closeLabel`.
-- New component `PlantGroupLabelPrintModal.tsx` — 1.5"×2" CODE128 barcode labels; `GroupLabelCard` (batch number, strain, stage, plant count, location) and `IndividualLabelCard` (batch number, strain, individual state_plant_id barcode). Scale prop for preview (3×) vs print (1×). Preview shows first label with count indicator for individual mode.
-- Wired into `PlantGroupsList` and `RoomDetailDrawer` via `PlantGroupActionsMenu` actions "Print Group Label" / "Print All Plant Labels".
+**1. Shared ExpandedPlantsList component**
+- New component `ExpandedPlantsList.tsx` — extracted from `RoomDetailDrawer` inline code into a standalone shared component.
+- Used identically in both Plant Groups tab and Room Detail drawer (feature parity, invariant C-48).
+- Metadata header: Mother Plant ID, Clone Date, Stage Entered date, Days in Stage.
+- Per-plant print icon on each active plant row.
+- Checkbox multi-select with "Select All / Deselect All" toggle.
+- Bulk "Deactivate" action with confirmation step for selected plants.
+- Smart print button: "Print All (N)" when nothing selected, "Print Selected (N)" when subset selected.
 
-**2. Mother plant stage guard**
-- `PlantGroupActionsMenu` — "Mark as Mother" is disabled (grayed, cursor-not-allowed, tooltip) when group is in `clone` stage. Only enabled at `veg` or `flower`.
-- `NewPlantGroupModal` — `is_mother` hardcoded to `false`; checkbox disabled with explanatory note. Mother group source dropdown filtered to only show veg/flower groups.
-- New invariant C-45 added to CULTIVATION-RULES.md.
+**2. Single-plant and selected-plant label printing**
+- `usePlantGroupLabel` hook — two new methods: `openSinglePlantLabel(plant, group)` and `openSelectedPlantLabels(plants, group)`.
+- Reuses existing `PlantGroupLabelPrintModal` with single-element or subset arrays.
 
-**3. Individual plants viewable in room drawer**
-- `RoomDetailDrawer` plant group rows have "View Plant IDs" in the actions menu, deep-linking to the `plants` tab of `PlantGroupDetailPanel`.
-- Same behavior wired in `PlantGroupsList` (already existed via `PlantGroupActionsMenu`).
+**3. PlantGroupsList expand/click behavior (feature parity)**
+- Plant group rows are now clickable/expandable (chevron icon, accordion toggle).
+- Expanding a row shows the full `ExpandedPlantsList` inline — identical to Room Drawer behavior.
+- Three-dot action menu preserved with `stopPropagation`.
 
-**4. Harvest waste recording**
-- Migration `add_waste_grams_to_harvest_sessions` — adds `waste_grams numeric DEFAULT NULL` to `harvest_sessions` (idempotent).
-- `HarvestSession` type and `CreateHarvestSessionInput` updated with `waste_grams`.
-- `HARVEST_SESSION_SELECT` in service updated.
-- `NewHarvestForm` — added optional "Waste Weight (grams)" input with validation (must be < wet weight).
-- `SessionRow` — displays waste weight with percentage of display weight when present.
-- New invariant C-46 added to CULTIVATION-RULES.md.
-
-**5. Future feature documentation (Items 5, 6, 7, 8, 10)**
-- `CULTIVATION.md` updated with "Specified — Pending Future Session" section covering: grow recipes/feeding schedules, additive/nutrient tracking, projected yield & forecasting, labor cost tracking, state compliance push.
+**4. PLANT_GROUP_SUMMARY_SELECT fix**
+- Added `grow_rooms (name, room_code)` and `mother_group` relation to the summary query.
+- Room codes now display correctly in Plant Groups tab.
+- Mother plant ID now available without a separate query.
 
 **Files changed:**
-- `supabase/migrations/add_waste_grams_to_harvest_sessions` (new migration)
-- `src/features/cultivation/hooks/usePlantGroupLabel.ts` (new)
-- `src/features/cultivation/components/PlantGroupLabelPrintModal.tsx` (new)
-- `src/features/cultivation/components/PlantGroupActionsMenu.tsx` (mother guard + print actions)
-- `src/features/cultivation/components/NewPlantGroupModal.tsx` (mother guard)
-- `src/features/cultivation/components/PlantGroupsList.tsx` (print wiring)
-- `src/features/cultivation/components/RoomDetailDrawer.tsx` (print wiring)
-- `src/features/cultivation/components/CultivationDashboard.tsx` (type update)
-- `src/features/cultivation/components/HarvestSessionsList.tsx` (waste field)
-- `src/features/cultivation/types/cultivation.types.ts` (waste_grams)
-- `src/features/cultivation/services/cultivation.service.ts` (select update)
-- `src/features/cultivation/hooks/index.ts` (new exports)
+- `src/features/cultivation/components/ExpandedPlantsList.tsx` (new)
+- `src/features/cultivation/components/PlantGroupsList.tsx` (expand behavior, import shared component)
+- `src/features/cultivation/components/RoomDetailDrawer.tsx` (replaced inline ExpandedPlantsList with shared component)
 - `src/features/cultivation/components/index.ts` (new export)
-- `docs/CULTIVATION.md` (future features section)
-- `docs/CULTIVATION-RULES.md` (C-45, C-46)
-- `docs/CHANGELOG.md` (this session entry)
+- `src/features/cultivation/hooks/usePlantGroupLabel.ts` (two new methods)
+- `src/features/cultivation/services/cultivation.service.ts` (PLANT_GROUP_SUMMARY_SELECT fix)
+- `docs/CULTIVATION-RULES.md` (C-47, C-48)
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this handoff)
+- `CHANGELOG.md` (session entry)
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 
 **Next recommendations (in order):**
-1. **Real plant data** — first live data test of cultivation module with real plants
-2. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete"
-3. **Plant group grouping in PlantGroupsList** — consider grouping by room type (matching the dashboard card grouping) for consistency
+1. **Move to Group action** — implement the plant-level "Move to Group" workflow (requires target group selection modal, strain validation, plant_count sync)
+2. **Move to Room action** — split selected plants into a new group in a different room
+3. **Partial harvest** — harvest a subset of plants from a flower-stage group
+4. **Real plant data** — first live data test of cultivation module with real plants
 
 ---
 

@@ -125,6 +125,53 @@ export function usePlantGroupLabel() {
     }
   }, []);
 
+  const openSinglePlantLabel = useCallback(async (plant: IndividualPlant, group: PlantGroup) => {
+    setIsOpen(true);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const logo = await loadLogo();
+      setLogoDataUrl(logo);
+      setLabelData({
+        mode: 'individual',
+        plants: [plant],
+        batchNumber: group.batch_registry?.batch_number ?? '—',
+        strainName: group.strains?.name ?? 'Unknown',
+        strainAbbreviation: group.strains?.abbreviation ?? '???',
+        growthStage: group.growth_stage,
+        roomCode: group.grow_rooms?.room_code ?? '—',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate label');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const openSelectedPlantLabels = useCallback(async (plants: IndividualPlant[], group: PlantGroup) => {
+    if (plants.length === 0) return;
+    setIsOpen(true);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const logo = await loadLogo();
+      setLogoDataUrl(logo);
+      setLabelData({
+        mode: 'individual',
+        plants,
+        batchNumber: group.batch_registry?.batch_number ?? '—',
+        strainName: group.strains?.name ?? 'Unknown',
+        strainAbbreviation: group.strains?.abbreviation ?? '???',
+        growthStage: group.growth_stage,
+        roomCode: group.grow_rooms?.room_code ?? '—',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate labels');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const printLabels = useCallback(async (printRef: HTMLDivElement | null): Promise<boolean> => {
     if (!labelData || !printRef) return false;
     try {
@@ -196,6 +243,8 @@ ${printRef.innerHTML}
     error,
     openGroupLabel,
     openPlantLabels,
+    openSinglePlantLabel,
+    openSelectedPlantLabels,
     printLabels,
     closeLabel,
   };
