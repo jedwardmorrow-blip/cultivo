@@ -48,6 +48,12 @@ export function useHarvestSessions(filter?: { status?: HarvestSessionStatus }) {
     return session;
   }
 
+  async function finalizeHarvest(id: string, dryRoomId: string): Promise<HarvestSession> {
+    const session = await cultivationService.finalizeHarvest(id, dryRoomId);
+    await load();
+    return session;
+  }
+
   return {
     sessions,
     loading,
@@ -57,5 +63,6 @@ export function useHarvestSessions(filter?: { status?: HarvestSessionStatus }) {
     completeSession,
     cancelSession,
     adjustWeight,
+    finalizeHarvest,
   };
 }

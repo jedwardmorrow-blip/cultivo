@@ -4,6 +4,26 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-20 - Session D-14: Room-Based Harvest Workflow with Multi-Weight Entries
+
+**Type:** Feature Addition
+**Module:** Cultivation
+**Status:** COMPLETE
+
+Replaced the old inline harvest form with a 3-step room-based harvest workflow. Added multi-weight entry support so operators can weigh plants in batches (e.g., 5 at a time from a group of 20). Added dry room assignment at harvest time.
+
+- **Database:** Migration adds `grow_room_id` and `dry_room_id` FK columns to `harvest_sessions`. Creates `harvest_weight_entries` table for recording multiple weight entries per session (weight_grams, plant_count, entry_order). Full RLS and indexes.
+- **3-step harvest workflow:** New `HarvestWorkflow` component with three steps: (1) Select Flower Room, (2) Record Weights per plant group, (3) Review & Finalize with dry room assignment.
+- **Multi-weight entries:** New `HarvestWeightRecorder` step shows per-group weight cards with progress bars, inline weight entry forms, running totals, and waste recording.
+- **Service layer:** 6 new methods on `cultivationService`: `listHarvestWeightEntries`, `createHarvestWeightEntry`, `deleteHarvestWeightEntry`, `finalizeHarvest`, `listHarvestSessionsByDryRoom`, `listDryingHarvests`.
+- **New hook:** `useHarvestWeightEntries` manages entries, loading, totals per session.
+- **Updated `useHarvestSessions`:** Added `finalizeHarvest(id, dryRoomId)` method.
+- **HarvestSessionsList:** Removed inline form; "Start Harvest" now opens the workflow. Added room badges (grow room in rose, dry room in cyan). Added room filter dropdown.
+- **CultivationDashboard:** New "Dry Rooms" section showing active dry rooms with currently-drying harvests, strain/batch/weight info, and total weight per room.
+- **Navigation:** Renamed "Harvest Sessions" to "Harvests", "Binning Sessions" to "Drying". Added "Dry Rooms" nav item to cultivation section.
+
+---
+
 ## 2026-02-20 - Session D-13: Individual Plant Actions, Expanded View, Feature Parity
 
 **Type:** Feature Addition

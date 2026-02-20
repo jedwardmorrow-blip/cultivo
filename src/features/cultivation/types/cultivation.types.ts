@@ -111,6 +111,20 @@ export interface PlantGroupRoomHistory {
   to_room?: { name: string; room_code: string };
 }
 
+export interface HarvestWeightEntry {
+  id: string;
+  harvest_session_id: string;
+  weight_grams: number;
+  plant_count: number;
+  entry_order: number;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export type CreateHarvestWeightEntryInput = Pick<HarvestWeightEntry, 'harvest_session_id' | 'weight_grams' | 'plant_count'> &
+  Partial<Pick<HarvestWeightEntry, 'entry_order' | 'notes'>>;
+
 export interface HarvestSession {
   id: string;
   plant_group_id: string;
@@ -121,6 +135,8 @@ export interface HarvestSession {
   adjusted_weight_grams: number | null;
   adjustment_reason: string | null;
   batch_registry_id: string | null;
+  grow_room_id: string | null;
+  dry_room_id: string | null;
   session_status: HarvestSessionStatus;
   completed_at: string | null;
   completed_by: string | null;
@@ -135,7 +151,10 @@ export interface HarvestSession {
     strains?: { name: string; abbreviation: string | null };
     grow_rooms?: { room_code: string };
   };
+  grow_rooms?: { name: string; room_code: string };
+  dry_rooms?: { name: string; room_code: string };
   batch_registry?: { batch_number: string };
+  weight_entries?: HarvestWeightEntry[];
 }
 
 export interface RoomSection {
@@ -204,7 +223,7 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
   };
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
-  Partial<Pick<HarvestSession, 'notes' | 'waste_grams'>>;
+  Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id'>>;
 
 export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
 

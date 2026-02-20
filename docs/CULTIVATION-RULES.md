@@ -3,7 +3,7 @@ title: CULTIVATION-RULES
 category: Cultivation Module
 version: 2.0
 updated: 2026-02-20
-status: IMPLEMENTED (C-44) + NEW (C-45 to C-48)
+status: IMPLEMENTED (C-48) + NEW (C-49 to C-50)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -169,6 +169,16 @@ status: IMPLEMENTED (C-44) + NEW (C-45 to C-48)
 │        truth for the individual plant expanded view. Both the     │
 │        Plant Groups tab and Room Detail drawer use this shared    │
 │        component to ensure identical functionality and layout.    │
+│ C-49. harvest_weight_entries are the source of truth for harvest  │
+│        session weights. On finalization, wet_weight_grams and     │
+│        plant_count_harvested are computed as SUM(weight_grams)    │
+│        and SUM(plant_count) from the linked entries. Each entry   │
+│        must have weight_grams > 0 and plant_count >= 1.           │
+│        Entries are CASCADE-deleted with their harvest session.     │
+│ C-50. dry_room_id on harvest_sessions is set at finalization,    │
+│        not at session creation. It designates where the material  │
+│        will dry. grow_room_id is set at session creation to       │
+│        record which room the group was harvested from.             │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -783,6 +793,9 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ## Document Version History
 
+### v2.2 (2026-02-20)
+- Added invariants C-49 and C-50 (harvest weight entries as weight source of truth, dry room assignment timing)
+
 ### v2.1 (2026-02-20)
 - Added invariants C-47 and C-48 (individual plant deactivation semantics, shared ExpandedPlantsList component)
 
@@ -826,6 +839,6 @@ The following scenarios should have test coverage. Sessions C-2 and C-3 are comp
 
 ---
 
-**Document Version:** 2.1
+**Document Version:** 2.2
 **Last Updated:** 2026-02-20
-**Status:** IMPLEMENTED (C-1–C-29 live) + SPECIFIED (C-30–C-37 pending D-2 migration) + NEW (C-47–C-48)
+**Status:** IMPLEMENTED (C-1–C-29, C-47–C-48 live) + SPECIFIED (C-30–C-37 pending D-2 migration) + NEW (C-49–C-50)

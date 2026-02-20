@@ -1,15 +1,15 @@
 ---
 title: CULTIVATION
 category: Cultivation Module
-version: 1.7
-updated: 2026-02-19
-status: IMPLEMENTED (C-5B) + SPECIFIED (D-1: Binning + Dry Room)
+version: 1.8
+updated: 2026-02-20
+status: IMPLEMENTED (D-14) + SPECIFIED (future features)
 ---
 
 # CULTIVATION - Grow Room & Plant Lifecycle Module
 
-> **Status:** C-1 through C-5B IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. D-1 (this document update) adds the Binning Session and Dry Room specification for Sessions D-2 (migration) and D-3 (UI).
-> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections), C-5B (plant placement + flip + room map) — complete. D-1 (binning + dry room spec) — complete.
+> **Status:** C-1 through D-14 IMPLEMENTED — database schema, triggers, service layer, and UI are all built and live. D-14 adds room-based harvest workflow with multi-weight entries and dry room assignment at harvest time.
+> **Session history:** C-1 (documentation), C-2 (migrations + triggers), C-3 (UI), C-4 (room layout schema), C-5A (run dates on sections), C-5B (plant placement + flip + room map), D-1 (binning + dry room spec), D-2..D-13, D-14 (room-based harvest workflow) — complete.
 > **Purpose:** Complete reference for tracking plants from clone/seed through harvest and drying, linking directly into the existing batch and inventory pipeline.
 > **Cross-References:** [CULTIVATION-ARCHITECTURE.md](./CULTIVATION-ARCHITECTURE.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [SESSIONS.md](./SESSIONS.md)
 
@@ -58,29 +58,27 @@ The Cultivation module closes this gap by:
 
 ## Scope
 
-### Implemented (Sessions C-2 + C-3 + C-4 + C-5A + C-5B — complete)
+### Implemented (Sessions C-2 through D-14 — complete)
 
 - Grow room management (create, edit, archive) — Settings → Grow Rooms
 - Room table and section structure — DB schema (C-4) + Layout Builder UI in Settings → Grow Rooms (C-5B)
 - Run date tracking per section (flip date, projected harvest date, Day N counter, run length, countdown) — C-5A
 - Plant group placement (room_table_id, room_section_id FKs on plant_groups) — C-5B
-- Room Map grid in Cultivation view (tables × sections grid, plant group occupancy per cell) — C-5B
+- Room Map grid in Cultivation view (tables x sections grid, plant group occupancy per cell) — C-5B
 - Flip Room action (bulk stage advance to flower + set flip date on all sections in room) — C-5B
 - Section-aware Move to Room flow (optional section assignment after room transfer) — C-5B
 - Plant group tracking (strain, count, stage, room) — Cultivation → Plant Groups
 - Mother plant designation and clone lineage (mother_plant_group_id FK)
 - Growth stage transitions with timestamps
 - Room transfer logging as an independent action
-- Harvest session (weighing, batch creation trigger) — Cultivation → Harvest Sessions
+- Room-based harvest workflow (3-step: select room → record weights → review & finalize) — D-14
+- Multi-weight entries per harvest session (weigh plants in batches) — D-14
+- Dry room assignment at harvest time (grow_room_id + dry_room_id on harvest_sessions) — D-14
 - Post-harvest weight adjustment (for data entry corrections)
 - Basic compliance fields (AZDHS-required: room ID, plant count, harvest date)
-- Navigation entry under "Cultivation" section in sidebar
-
-### Specified (Session D-1 — pending D-2 migration + D-3 UI)
-
 - Dry room management (create, edit, archive) — Settings → Dry Rooms
-- Binning session (dry weight entry after drying, links to completed harvest session, records the dry weight that feeds the batch processing pipeline)
-- Transfer of harvested material from wet (harvest) to dry (binning) with dry weight recorded per strain per batch
+- Binning session (dry weight entry after drying, links to completed harvest session)
+- Navigation under "Cultivation" section: Plant Groups, Harvests, Drying, Dry Rooms
 
 ### Out of Scope (explicitly deferred)
 
@@ -152,16 +150,26 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  harvest_sessions                                                     │
 │  ├─ id, plant_group_id → plant_groups.id                             │
 │  ├─ harvest_date (date, required)                                    │
-│  ├─ wet_weight_grams (numeric, required)                             │
+│  ├─ wet_weight_grams (numeric, required — aggregated from entries)   │
 │  ├─ adjusted_weight_grams (numeric, nullable — post-entry correction)│
 │  ├─ adjustment_reason (text, nullable — required if adjusted)        │
-│  ├─ plant_count_harvested (integer — may differ from group total)    │
+│  ├─ plant_count_harvested (integer — aggregated from entries)        │
+│  ├─ grow_room_id → grow_rooms.id (nullable, set at harvest) [D-14]  │
+│  ├─ dry_room_id → dry_rooms.id (nullable, set at finalize) [D-14]   │
 │  ├─ batch_registry_id → batch_registry.id (set on completion)       │
 │  ├─ session_status: 'active' | 'completed' | 'cancelled'            │
 │  ├─ completed_at, completed_by                                       │
 │  └─ notes                                                            │
 │                                                                       │
-│  dry_rooms  [D-2 — PENDING MIGRATION]                                │
+│  harvest_weight_entries  [D-14 — LIVE]                               │
+│  ├─ id, harvest_session_id → harvest_sessions.id (CASCADE)          │
+│  ├─ weight_grams (numeric, required, > 0)                            │
+│  ├─ plant_count (integer, required, >= 1)                            │
+│  ├─ entry_order (integer, default 1)                                 │
+│  ├─ notes (text, nullable)                                           │
+│  └─ created_at, created_by                                           │
+│                                                                       │
+│  dry_rooms  [D-2 — LIVE]                                             │
 │  ├─ id, name, room_code (unique), capacity_lbs                       │
 │  └─ is_active, created_at, created_by                                │
 │                                                                       │
@@ -437,15 +445,42 @@ A harvest session is the event of cutting a plant group. It captures the wet wei
 | `id` | uuid | auto | |
 | `plant_group_id` | uuid | yes | FK → plant_groups |
 | `harvest_date` | date | yes | Actual cut date |
-| `wet_weight_grams` | numeric | yes | Total wet weight at harvest |
+| `wet_weight_grams` | numeric | yes | Total wet weight at harvest (aggregated from weight entries on finalization) |
 | `adjusted_weight_grams` | numeric | no | Corrected weight; set after completion if entry error discovered |
 | `adjustment_reason` | text | no | Required when `adjusted_weight_grams` is set |
-| `plant_count_harvested` | integer | yes | May be < group total if partial harvest |
+| `plant_count_harvested` | integer | yes | May be < group total if partial harvest (aggregated from weight entries on finalization) |
+| `grow_room_id` | uuid | no | FK → grow_rooms; the room the group was in at harvest time [D-14] |
+| `dry_room_id` | uuid | no | FK → dry_rooms; the dry room assigned for drying [D-14] |
 | `batch_registry_id` | uuid | no | Populated by trigger on completion |
 | `session_status` | text | yes | `active`, `completed`, `cancelled` |
 | `completed_at` | timestamptz | no | Set on completion |
 | `completed_by` | uuid | no | FK → auth.users |
 | `notes` | text | no | |
+
+### Harvest Weight Entries [D-14]
+
+The system supports recording multiple weight entries per harvest session, allowing operators to weigh plants in batches (e.g., 5 plants at a time from a group of 20). Each entry records the weight and plant count for one weighing event.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | uuid | auto | |
+| `harvest_session_id` | uuid | yes | FK → harvest_sessions; ON DELETE CASCADE |
+| `weight_grams` | numeric | yes | Must be > 0 |
+| `plant_count` | integer | yes | Must be >= 1 |
+| `entry_order` | integer | yes | Default 1; auto-incremented on creation |
+| `notes` | text | no | |
+| `created_at` | timestamptz | auto | |
+| `created_by` | uuid | no | FK → auth.users |
+
+When the harvest is finalized, `wet_weight_grams` and `plant_count_harvested` on the harvest session are aggregated from all weight entries: `SUM(weight_grams)` and `SUM(plant_count)`.
+
+### Room-Based Harvest Workflow [D-14]
+
+The harvest workflow is a 3-step process:
+
+1. **Select Flower Room:** Choose a room containing flower-stage plant groups. The UI shows a grid of room cards with group counts and plant counts.
+2. **Record Weights:** For each plant group in the selected room, record weight entries (weight + plant count per weighing). Optionally record waste weight per group. A harvest session is created per group on demand when weighing begins.
+3. **Review & Finalize:** Review all groups' weights, select a dry room for the harvested material, and finalize. Finalization aggregates weight entries into the session totals, sets the dry room, and completes the session (triggering batch creation).
 
 ### Completion Trigger
 
@@ -721,21 +756,29 @@ Location: Cultivation → Plant Groups
 | Toggle Mother | "Mark as Mother" / "Remove Mother Status" toggle button |
 | View History | Stage history and room transfer history inline on group detail |
 
-### 3. Harvest Sessions
+### 3. Harvests
 
-Location: Cultivation → Harvest Sessions (tab or sub-nav)
+Location: Cultivation → Harvests (tab or sub-nav)
 
 | View | Description |
 |------|-------------|
 | Active | Sessions with status = 'active' |
-| Completed | Sessions with status = 'completed', showing linked batch_number |
+| Completed | Sessions with status = 'completed', showing linked batch_number, grow room badge, dry room badge |
 
 | Action | Description |
 |--------|-------------|
-| Start | Plant group, harvest date, wet weight, plant count |
-| Complete | Confirmation step showing batch number to be created and strain abbreviation used |
-| Cancel | Only available if no batch yet created |
+| Start Harvest | Opens 3-step workflow: select flower room → record weights per group → review & finalize with dry room assignment [D-14] |
+| Cancel | Only available if no batch yet created (legacy sessions) |
 | Adjust Weight | Available on completed sessions — prompts for corrected weight and reason |
+
+**Harvest Workflow (D-14):**
+1. Room selection grid (flower rooms with plant group counts)
+2. Per-group weight recording (multiple weight entries per group, optional waste)
+3. Review & finalize (dry room picker, aggregated totals, one-click finalize)
+
+**Room badges:** Each session row shows the grow room code (rose badge) and dry room code (cyan badge) when available. A room filter dropdown allows filtering by grow room.
+
+**Room filter:** Dropdown at the top of the list filters harvest sessions by grow room code.
 
 ### 4. Dry Rooms (Settings sub-section) [D-3 — PENDING]
 
@@ -791,8 +834,9 @@ The Cultivation module appears as a new top-level section in the sidebar, betwee
 Dashboard
 Cultivation          ← NEW
   Plant Groups
-  Harvest Sessions
-  Binning Sessions   ← D-3 (pending)
+  Harvests           ← renamed from "Harvest Sessions" [D-14]
+  Drying             ← renamed from "Binning Sessions" [D-14]
+  Dry Rooms          ← new [D-14]
 Sessions
   Trim
   Bucking
@@ -865,6 +909,15 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ## Document Version History
 
+### v1.8 (2026-02-20)
+- Session D-14: room-based harvest workflow with multi-weight entries
+- Added `grow_room_id` and `dry_room_id` to harvest_sessions in Module Entities
+- Added `harvest_weight_entries` table to Module Entities
+- Updated Harvest Sessions section: added weight entries table, room-based workflow description
+- Updated UI Screens: Harvest Sessions renamed to Harvests, added workflow description and room badges
+- Updated Navigation: "Harvests", "Drying", added "Dry Rooms" nav item
+- Updated Scope: moved dry rooms and binning from Specified to Implemented, added D-14 features
+
 ### v1.7 (2026-02-19)
 - Added Dry Rooms and Binning Sessions to Scope → Specified section
 - Added `dry_rooms` and `binning_sessions` to Module Entities (marked D-2 pending)
@@ -923,9 +976,9 @@ Any strains returned here cannot be used in cultivation until their abbreviation
 
 ---
 
-**Document Version:** 1.8
+**Document Version:** 1.9
 **Last Updated:** 2026-02-20
-**Status:** IMPLEMENTED (D-12) + SPECIFIED (future features below)
+**Status:** IMPLEMENTED (D-14) + SPECIFIED (future features below)
 
 ---
 

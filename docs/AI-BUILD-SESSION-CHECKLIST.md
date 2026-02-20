@@ -15,46 +15,59 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-20
-**Session:** D-13 — Individual Plant Actions, Expanded View Enrichment, Feature Parity
+**Session:** D-14 — Room-Based Harvest Workflow with Multi-Weight Entries
 **Status:** COMPLETE
 
 **What was done:**
 
-Four features implemented across the cultivation module:
+Replaced the old inline harvest form with a full 3-step room-based harvest workflow. Added multi-weight entry support and dry room assignment at harvest time.
 
-**1. Shared ExpandedPlantsList component**
-- New component `ExpandedPlantsList.tsx` — extracted from `RoomDetailDrawer` inline code into a standalone shared component.
-- Used identically in both Plant Groups tab and Room Detail drawer (feature parity, invariant C-48).
-- Metadata header: Mother Plant ID, Clone Date, Stage Entered date, Days in Stage.
-- Per-plant print icon on each active plant row.
-- Checkbox multi-select with "Select All / Deselect All" toggle.
-- Bulk "Deactivate" action with confirmation step for selected plants.
-- Smart print button: "Print All (N)" when nothing selected, "Print Selected (N)" when subset selected.
+**1. Database migration**
+- Added `grow_room_id` (FK → grow_rooms) and `dry_room_id` (FK → dry_rooms) columns to `harvest_sessions`
+- Created `harvest_weight_entries` table (weight_grams, plant_count, entry_order per session) with RLS and indexes
 
-**2. Single-plant and selected-plant label printing**
-- `usePlantGroupLabel` hook — two new methods: `openSinglePlantLabel(plant, group)` and `openSelectedPlantLabels(plants, group)`.
-- Reuses existing `PlantGroupLabelPrintModal` with single-element or subset arrays.
+**2. Service layer (6 new methods)**
+- `listHarvestWeightEntries`, `createHarvestWeightEntry`, `deleteHarvestWeightEntry`
+- `finalizeHarvest` (aggregates weight entries → session totals, sets dry_room_id, completes session)
+- `listHarvestSessionsByDryRoom`, `listDryingHarvests`
 
-**3. PlantGroupsList expand/click behavior (feature parity)**
-- Plant group rows are now clickable/expandable (chevron icon, accordion toggle).
-- Expanding a row shows the full `ExpandedPlantsList` inline — identical to Room Drawer behavior.
-- Three-dot action menu preserved with `stopPropagation`.
+**3. Hooks**
+- New `useHarvestWeightEntries` hook (entries, totals, add/remove)
+- Updated `useHarvestSessions` with `finalizeHarvest` method
 
-**4. PLANT_GROUP_SUMMARY_SELECT fix**
-- Added `grow_rooms (name, room_code)` and `mother_group` relation to the summary query.
-- Room codes now display correctly in Plant Groups tab.
-- Mother plant ID now available without a separate query.
+**4. Harvest workflow UI (4 new components)**
+- `HarvestRoomSelect` — flower room grid selector
+- `HarvestWeightRecorder` — per-group weight cards with progress bars, inline entry forms, waste recording
+- `HarvestReviewFinalize` — summary with dry room picker and one-click finalize
+- `HarvestWorkflow` — orchestrator with 3-step state machine and breadcrumb navigation
 
-**Files changed:**
-- `src/features/cultivation/components/ExpandedPlantsList.tsx` (new)
-- `src/features/cultivation/components/PlantGroupsList.tsx` (expand behavior, import shared component)
-- `src/features/cultivation/components/RoomDetailDrawer.tsx` (replaced inline ExpandedPlantsList with shared component)
+**5. Updated views**
+- `HarvestSessionsList` — removed inline form, "Start Harvest" opens workflow, added grow/dry room badges, room filter
+- `CultivationDashboard` — new Dry Rooms section showing active rooms with drying harvests
+- `BinningSessionsView` — renamed heading to "Drying"
+- Navigation: "Harvests", "Drying", new "Dry Rooms" nav item
+
+**Files created:**
+- `src/features/cultivation/components/harvest/HarvestRoomSelect.tsx`
+- `src/features/cultivation/components/harvest/HarvestWeightRecorder.tsx`
+- `src/features/cultivation/components/harvest/HarvestReviewFinalize.tsx`
+- `src/features/cultivation/components/harvest/HarvestWorkflow.tsx`
+- `src/features/cultivation/components/harvest/index.ts`
+- `src/features/cultivation/hooks/useHarvestWeightEntries.ts`
+
+**Files modified:**
+- `src/features/cultivation/types/cultivation.types.ts` (HarvestWeightEntry type, session room fields)
+- `src/features/cultivation/services/cultivation.service.ts` (6 new methods, updated select)
+- `src/features/cultivation/hooks/useHarvestSessions.ts` (finalizeHarvest)
+- `src/features/cultivation/hooks/index.ts` (new export)
+- `src/features/cultivation/components/HarvestSessionsList.tsx` (rewritten)
+- `src/features/cultivation/components/CultivationDashboard.tsx` (dry rooms section)
+- `src/features/cultivation/components/BinningSessionsView.tsx` (rename)
 - `src/features/cultivation/components/index.ts` (new export)
-- `src/features/cultivation/hooks/usePlantGroupLabel.ts` (two new methods)
-- `src/features/cultivation/services/cultivation.service.ts` (PLANT_GROUP_SUMMARY_SELECT fix)
-- `docs/CULTIVATION-RULES.md` (C-47, C-48)
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this handoff)
-- `CHANGELOG.md` (session entry)
+- `src/shared/components/navigation/sectionNavigation.ts` (renames + new item)
+- `src/App.tsx` (dry rooms route)
+- `docs/CULTIVATION.md`, `docs/CULTIVATION-ARCHITECTURE.md`, `docs/CULTIVATION-RULES.md`
+- `CHANGELOG.md`
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**

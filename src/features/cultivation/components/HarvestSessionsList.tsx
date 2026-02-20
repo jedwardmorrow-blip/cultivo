@@ -1,12 +1,9 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, XCircle, Scale, ChevronRight, Leaf, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home } from 'lucide-react';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
-import { usePlantGroups } from '../hooks/usePlantGroups';
-import { isValidStrainAbbreviation, formatWeight, formatDate } from '../utils';
-import type { HarvestSession, CreateHarvestSessionInput } from '../types';
-
-const ERR_MISSING_ABBREVIATION = 'strain abbreviation';
-const ERR_WRONG_STAGE = 'flower stage';
+import { formatWeight, formatDate } from '../utils';
+import { HarvestWorkflow } from './harvest';
+import type { HarvestSession } from '../types';
 
 type TabKey = 'active' | 'completed' | 'cancelled';
 
@@ -15,198 +12,6 @@ const TAB_LABELS: Record<TabKey, string> = {
   completed: 'Completed',
   cancelled: 'Cancelled',
 };
-
-interface NewHarvestFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
-}
-
-function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
-  const { groups, loading: groupsLoading } = usePlantGroups({ stage: 'flower' });
-  const { createSession } = useHarvestSessions();
-
-  const [plantGroupId, setPlantGroupId] = useState('');
-  const [harvestDate, setHarvestDate] = useState(new Date().toISOString().slice(0, 10));
-  const [wetWeight, setWetWeight] = useState('');
-  const [wasteWeight, setWasteWeight] = useState('');
-  const [plantCount, setPlantCount] = useState('');
-  const [notes, setNotes] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const selectedGroup = groups.find((g) => g.id === plantGroupId);
-  const hasAbbreviation = isValidStrainAbbreviation(selectedGroup?.strains?.abbreviation);
-
-  const parsedWet = parseFloat(wetWeight);
-  const parsedWaste = wasteWeight.trim() ? parseFloat(wasteWeight) : null;
-
-  const canSave =
-    plantGroupId &&
-    harvestDate &&
-    parsedWet > 0 &&
-    parseInt(plantCount) > 0 &&
-    (parsedWaste === null || (parsedWaste >= 0 && parsedWaste < parsedWet)) &&
-    hasAbbreviation &&
-    !saving;
-
-  async function handleSubmit() {
-    if (!canSave) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const input: CreateHarvestSessionInput = {
-        plant_group_id: plantGroupId,
-        harvest_date: harvestDate,
-        wet_weight_grams: parsedWet,
-        waste_grams: parsedWaste ?? undefined,
-        plant_count_harvested: parseInt(plantCount),
-        notes: notes.trim() || undefined,
-      };
-      await createSession(input);
-      onSuccess();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes(ERR_MISSING_ABBREVIATION)) {
-        setError('Strain is missing a 3-letter abbreviation. Update it in Products > Strains first.');
-      } else if (msg.includes(ERR_WRONG_STAGE)) {
-        setError('Only flower-stage plant groups can be harvested.');
-      } else {
-        setError(msg || 'Failed to create harvest session.');
-      }
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray p-6 mb-6">
-      <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-4">Start Harvest Session</h3>
-
-      {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3 mb-4">
-          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">
-            Plant Group (Flower Stage) *
-          </label>
-          {groupsLoading ? (
-            <div className="text-cult-medium-gray text-sm">Loading flower groups...</div>
-          ) : groups.length === 0 ? (
-            <div className="text-amber-400 text-sm">No flower-stage plant groups found.</div>
-          ) : (
-            <select
-              value={plantGroupId}
-              onChange={(e) => setPlantGroupId(e.target.value)}
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-            >
-              <option value="">— Select plant group —</option>
-              {groups.map((g) => {
-                const validAbbrev = isValidStrainAbbreviation(g.strains?.abbreviation);
-                return (
-                  <option key={g.id} value={g.id} disabled={!validAbbrev}>
-                    {g.batch_registry?.batch_number ?? g.strains?.name ?? 'Unknown'} — {g.plant_count} plants
-                    {!validAbbrev ? ' (no abbreviation)' : ''}
-                  </option>
-                );
-              })}
-            </select>
-          )}
-          {selectedGroup && !hasAbbreviation && (
-            <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" />
-              This strain has no abbreviation. Add one in Products &gt; Strains before harvesting.
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Harvest Date *</label>
-          <input
-            type="date"
-            value={harvestDate}
-            onChange={(e) => setHarvestDate(e.target.value)}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Wet Weight (grams) *</label>
-          <input
-            type="number"
-            min="0"
-            step="0.1"
-            value={wetWeight}
-            onChange={(e) => setWetWeight(e.target.value)}
-            placeholder="e.g. 5400"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Plants Harvested *</label>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            value={plantCount}
-            onChange={(e) => setPlantCount(e.target.value)}
-            placeholder={selectedGroup ? String(selectedGroup.plant_count) : 'e.g. 24'}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Waste Weight (grams)</label>
-          <input
-            type="number"
-            min="0"
-            step="0.1"
-            value={wasteWeight}
-            onChange={(e) => setWasteWeight(e.target.value)}
-            placeholder="Optional"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          />
-          {parsedWaste !== null && parsedWet > 0 && parsedWaste >= parsedWet && (
-            <p className="text-red-400 text-xs mt-1">Waste must be less than wet weight.</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
-          <input
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          />
-        </div>
-      </div>
-
-      <div className="flex gap-3 mt-4">
-        <button
-          onClick={handleSubmit}
-          disabled={!canSave}
-          className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Leaf className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Start Harvest'}
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
 
 interface AdjustWeightModalProps {
   session: HarvestSession;
@@ -311,6 +116,8 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
   const batchNumber = session.batch_registry?.batch_number;
   const displayWeight = session.adjusted_weight_grams ?? session.wet_weight_grams;
   const isAdjusted = session.adjusted_weight_grams !== null && session.adjusted_weight_grams !== undefined;
+  const growRoomCode = session.grow_rooms?.room_code;
+  const dryRoomCode = session.dry_rooms?.room_code;
 
   return (
     <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
@@ -322,7 +129,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
               <ChevronRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
               <span className="text-cult-white text-sm truncate">{strainName}</span>
             </div>
-            <div className="flex items-center gap-3 mt-0.5">
+            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
               <span className="text-cult-light-gray text-xs">{formatDate(session.harvest_date)}</span>
               <span className="text-cult-medium-gray text-xs">·</span>
               <span className="text-cult-light-gray text-xs">
@@ -342,6 +149,19 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
               )}
               <span className="text-cult-medium-gray text-xs">·</span>
               <span className="text-cult-light-gray text-xs">{session.plant_count_harvested} plants</span>
+
+              {growRoomCode && (
+                <span className="flex items-center gap-1 text-[10px] bg-rose-950 border border-rose-800 text-rose-400 px-1.5 py-0.5 font-mono">
+                  <Home className="w-2.5 h-2.5" />
+                  {growRoomCode}
+                </span>
+              )}
+              {dryRoomCode && (
+                <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
+                  <Wind className="w-2.5 h-2.5" />
+                  {dryRoomCode}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -446,12 +266,13 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
   const { sessions, loading, error, reload, completeSession, cancelSession, adjustWeight } = useHarvestSessions();
 
   const [activeTab, setActiveTab] = useState<TabKey>('active');
-  const [showNewForm, setShowNewForm] = useState(false);
+  const [showWorkflow, setShowWorkflow] = useState(false);
   const [completingSession, setCompletingSession] = useState<HarvestSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<HarvestSession | null>(null);
   const [adjustingSession, setAdjustingSession] = useState<HarvestSession | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [roomFilter, setRoomFilter] = useState<string>('');
 
   const activeSessions = sessions.filter((s) => s.session_status === 'active');
   const completedSessions = sessions.filter((s) => s.session_status === 'completed');
@@ -462,6 +283,18 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
     completed: completedSessions,
     cancelled: cancelledSessions,
   };
+
+  const uniqueRoomCodes = Array.from(
+    new Set(
+      sessions
+        .map((s) => s.grow_rooms?.room_code)
+        .filter((code): code is string => !!code)
+    )
+  ).sort();
+
+  const filteredSessions = roomFilter
+    ? tabSessions[activeTab].filter((s) => s.grow_rooms?.room_code === roomFilter)
+    : tabSessions[activeTab];
 
   async function handleComplete() {
     if (!completingSession) return;
@@ -496,18 +329,27 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
   }
 
   if (loading) {
-    return <div className="p-6 text-cult-light-gray">Loading harvest sessions...</div>;
+    return <div className="p-6 text-cult-light-gray">Loading harvests...</div>;
+  }
+
+  if (showWorkflow) {
+    return (
+      <HarvestWorkflow
+        onComplete={() => { setShowWorkflow(false); reload(); }}
+        onCancel={() => setShowWorkflow(false)}
+      />
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Harvest Sessions</h1>
-          <p className="text-cult-light-gray mt-2">Record harvests and create batches</p>
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Harvests</h1>
+          <p className="text-cult-light-gray mt-2">Record harvests by room and create batches</p>
         </div>
         <button
-          onClick={() => setShowNewForm(!showNewForm)}
+          onClick={() => setShowWorkflow(true)}
           className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg text-sm"
         >
           <Plus className="w-4 h-4" />
@@ -522,39 +364,48 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
         </div>
       )}
 
-      {showNewForm && (
-        <NewHarvestForm
-          onSuccess={() => { setShowNewForm(false); reload(); }}
-          onCancel={() => setShowNewForm(false)}
-        />
-      )}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex gap-0 border-b border-cult-medium-gray">
+          {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-all border-b-2 -mb-px ${
+                activeTab === tab
+                  ? 'border-cult-white text-cult-white'
+                  : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
+              }`}
+            >
+              {TAB_LABELS[tab]}
+              <span className="ml-2 text-xs opacity-60">({tabSessions[tab].length})</span>
+            </button>
+          ))}
+        </div>
 
-      <div className="flex gap-0 border-b border-cult-medium-gray">
-        {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-all border-b-2 -mb-px ${
-              activeTab === tab
-                ? 'border-cult-white text-cult-white'
-                : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
-            }`}
+        {uniqueRoomCodes.length > 1 && (
+          <select
+            value={roomFilter}
+            onChange={(e) => setRoomFilter(e.target.value)}
+            className="bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray uppercase tracking-wider"
           >
-            {TAB_LABELS[tab]}
-            <span className="ml-2 text-xs opacity-60">({tabSessions[tab].length})</span>
-          </button>
-        ))}
+            <option value="">All Rooms</option>
+            {uniqueRoomCodes.map((code) => (
+              <option key={code} value={code}>{code}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="space-y-2">
-        {tabSessions[activeTab].length === 0 ? (
+        {filteredSessions.length === 0 ? (
           <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
             <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
-              No {TAB_LABELS[activeTab].toLowerCase()} harvest sessions
+              No {TAB_LABELS[activeTab].toLowerCase()} harvests
+              {roomFilter && ` in ${roomFilter}`}
             </p>
           </div>
         ) : (
-          tabSessions[activeTab].map((session) => (
+          filteredSessions.map((session) => (
             <SessionRow
               key={session.id}
               session={session}
@@ -575,9 +426,9 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
             </div>
           )}
           <ConfirmActionModal
-            title="Complete Harvest Session"
+            title="Complete Harvest"
             message="Mark this harvest as complete? A batch registry entry will be created automatically for the strain. This action cannot be undone."
-            confirmLabel="Complete Harvest"
+            confirmLabel="Complete"
             confirmClass="bg-green-700 text-white hover:bg-green-600"
             onConfirm={handleComplete}
             onCancel={() => { setCompletingSession(null); setActionError(null); }}
@@ -594,8 +445,8 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
             </div>
           )}
           <ConfirmActionModal
-            title="Cancel Harvest Session"
-            message="Cancel this harvest session? This cannot be undone. The plant group will remain in its current state."
+            title="Cancel Harvest"
+            message="Cancel this harvest? This cannot be undone. The plant group will remain in its current state."
             confirmLabel="Cancel Harvest"
             confirmClass="bg-red-700 text-white hover:bg-red-600"
             onConfirm={handleCancel}

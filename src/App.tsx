@@ -34,6 +34,7 @@ const PlantGroupsList = lazy(() => import('./features/cultivation').then((m) => 
 const HarvestSessionsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.HarvestSessionsList })));
 const BinningSessionsView = lazy(() => import('./features/cultivation').then((m) => ({ default: m.BinningSessionsView })));
 const GrowRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.GrowRoomsManagement })));
+const DryRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.DryRoomsManagement })));
 
 function ViewFallback() {
   return (
@@ -152,6 +153,8 @@ function AppContent() {
         return <BinningSessionsView onViewChange={handleViewChange} />;
       case 'cultivation-rooms':
         return <GrowRoomsManagement />;
+      case 'cultivation-dry-rooms':
+        return <DryRoomsManagement />;
       case 'production-overview':
         return <ProductionDashboard onViewChange={handleViewChange} />;
       case 'bucking-sessions':

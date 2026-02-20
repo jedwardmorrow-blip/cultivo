@@ -417,7 +417,7 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-cult-white">Binning Sessions</h2>
+          <h2 className="text-lg font-semibold text-cult-white">Drying</h2>
           <p className="text-sm text-cult-medium-gray mt-0.5">Record dry weights after the drying process.</p>
         </div>
         <button

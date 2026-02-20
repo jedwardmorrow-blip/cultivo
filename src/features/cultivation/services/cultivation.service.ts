@@ -6,6 +6,7 @@ import type {
   PlantGroupRoomHistory,
   PlantGroupCutSession,
   HarvestSession,
+  HarvestWeightEntry,
   GrowthStage,
   HarvestSessionStatus,
   CreateGrowRoomInput,
@@ -13,6 +14,7 @@ import type {
   CreatePlantGroupInput,
   CreatePlantGroupCutSessionInput,
   CreateHarvestSessionInput,
+  CreateHarvestWeightEntryInput,
   RoomTable,
   RoomSection,
   UpdateRoomSectionInput,
@@ -72,13 +74,15 @@ const PLANT_GROUP_SUMMARY_SELECT = `
 
 const HARVEST_SESSION_SELECT = `
   id, plant_group_id, harvest_date, wet_weight_grams, waste_grams, plant_count_harvested,
-  adjusted_weight_grams, adjustment_reason, batch_registry_id, session_status,
-  completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
+  adjusted_weight_grams, adjustment_reason, batch_registry_id, grow_room_id, dry_room_id,
+  session_status, completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
   plant_groups (
     strain_id, grow_room_id,
     strains (name, abbreviation),
     grow_rooms (room_code)
   ),
+  grow_rooms (name, room_code),
+  dry_rooms (name, room_code),
   batch_registry (batch_number)
 `;
 
@@ -503,6 +507,77 @@ export const cultivationService = {
     return data as unknown as HarvestSession;
   },
 
+  async listHarvestWeightEntries(harvestSessionId: string): Promise<HarvestWeightEntry[]> {
+    const { data, error } = await supabase
+      .from('harvest_weight_entries')
+      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, notes, created_at, created_by')
+      .eq('harvest_session_id', harvestSessionId)
+      .order('entry_order');
+    if (error) throwError(error, 'listHarvestWeightEntries');
+    return data as HarvestWeightEntry[];
+  },
+
+  async createHarvestWeightEntry(input: CreateHarvestWeightEntryInput): Promise<HarvestWeightEntry> {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data: existing } = await supabase
+      .from('harvest_weight_entries')
+      .select('entry_order')
+      .eq('harvest_session_id', input.harvest_session_id)
+      .order('entry_order', { ascending: false })
+      .limit(1);
+    const nextOrder = input.entry_order ?? ((existing?.[0] as { entry_order: number } | undefined)?.entry_order ?? 0) + 1;
+
+    const { data, error } = await supabase
+      .from('harvest_weight_entries')
+      .insert({
+        harvest_session_id: input.harvest_session_id,
+        weight_grams: input.weight_grams,
+        plant_count: input.plant_count,
+        entry_order: nextOrder,
+        notes: input.notes ?? null,
+        created_by: user?.id ?? null,
+      })
+      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, notes, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'createHarvestWeightEntry');
+    return data as HarvestWeightEntry;
+  },
+
+  async deleteHarvestWeightEntry(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('harvest_weight_entries')
+      .delete()
+      .eq('id', id);
+    if (error) throwError(error, 'deleteHarvestWeightEntry');
+  },
+
+  async finalizeHarvest(id: string, dryRoomId: string): Promise<HarvestSession> {
+    const entries = await cultivationService.listHarvestWeightEntries(id);
+    if (entries.length === 0) {
+      throw new Error('Cannot finalize harvest: no weight entries recorded.');
+    }
+
+    const totalWeight = entries.reduce((sum, e) => sum + Number(e.weight_grams), 0);
+    const totalPlants = entries.reduce((sum, e) => sum + e.plant_count, 0);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .update({
+        wet_weight_grams: totalWeight,
+        plant_count_harvested: totalPlants,
+        dry_room_id: dryRoomId,
+        session_status: 'completed',
+        completed_by: user?.id ?? null,
+      })
+      .eq('id', id)
+      .select(HARVEST_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'finalizeHarvest');
+    return data as unknown as HarvestSession;
+  },
+
   async listDryRooms(): Promise<DryRoom[]> {
     const { data, error } = await supabase
       .from('dry_rooms')
@@ -560,6 +635,41 @@ export const cultivationService = {
     const { data, error } = await query.order('bin_date', { ascending: false });
     if (error) throwError(error, 'listBinningSessions');
     return data as unknown as BinningSession[];
+  },
+
+  async listHarvestSessionsByDryRoom(dryRoomId: string): Promise<HarvestSession[]> {
+    const { data, error } = await supabase
+      .from('harvest_sessions')
+      .select(HARVEST_SESSION_SELECT)
+      .eq('dry_room_id', dryRoomId)
+      .eq('session_status', 'completed')
+      .order('harvest_date', { ascending: false });
+    if (error) throwError(error, 'listHarvestSessionsByDryRoom');
+    return data as unknown as HarvestSession[];
+  },
+
+  async listDryingHarvests(): Promise<HarvestSession[]> {
+    const [binnedResult, sessionsResult] = await Promise.all([
+      supabase
+        .from('binning_sessions')
+        .select('harvest_session_id')
+        .not('session_status', 'eq', 'cancelled'),
+      supabase
+        .from('harvest_sessions')
+        .select(HARVEST_SESSION_SELECT)
+        .eq('session_status', 'completed')
+        .not('dry_room_id', 'is', null)
+        .order('harvest_date', { ascending: false }),
+    ]);
+
+    if (binnedResult.error) throwError(binnedResult.error, 'listDryingHarvests:getBinned');
+    if (sessionsResult.error) throwError(sessionsResult.error, 'listDryingHarvests');
+
+    const binnedIds = new Set(
+      (binnedResult.data ?? []).map((r: { harvest_session_id: string }) => r.harvest_session_id)
+    );
+
+    return (sessionsResult.data as unknown as HarvestSession[]).filter((s) => !binnedIds.has(s.id));
   },
 
   async listUnbinnedHarvestSessions(): Promise<HarvestSession[]> {

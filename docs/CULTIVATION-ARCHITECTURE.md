@@ -1,14 +1,14 @@
 ---
 title: CULTIVATION-ARCHITECTURE
 category: Cultivation Module
-version: 1.9
-updated: 2026-02-19
-status: FULLY IMPLEMENTED — 10 tables and 13 triggers live; E-1 (individual plants + batch-at-clone-time) added
+version: 2.0
+updated: 2026-02-20
+status: FULLY IMPLEMENTED — 11 tables and 13 triggers live; D-14 (harvest weight entries + room tracking) added
 ---
 
 # CULTIVATION — Architecture & Database Design
 
-> **Status:** FULLY IMPLEMENTED — 10 tables (7 grow + 2 dry/binning + 1 individual plants) and 13 triggers are live. E-1 adds individual_plants table, batch_registry_id on plant_groups, clone_date on batch_registry, and updates fn_generate_plant_group_number + fn_complete_harvest_session for batch-at-clone-time tracking.
+> **Status:** FULLY IMPLEMENTED — 11 tables (7 grow + 2 dry/binning + 1 individual plants + 1 harvest weight entries) and 13 triggers are live. D-14 adds harvest_weight_entries table, grow_room_id and dry_room_id on harvest_sessions. E-1 added individual_plants table, batch_registry_id on plant_groups, clone_date on batch_registry, and updated fn_generate_plant_group_number + fn_complete_harvest_session for batch-at-clone-time tracking.
 > **Audience:** AI maintaining or extending the cultivation module.
 > **Purpose:** Authoritative database schema, RLS policies, triggers, and integration design.
 > **Cross-References:** [CULTIVATION.md](./CULTIVATION.md), [CULTIVATION-RULES.md](./CULTIVATION-RULES.md), [BATCHES.md](./BATCHES.md), [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
@@ -87,10 +87,21 @@ status: FULLY IMPLEMENTED — 10 tables and 13 triggers live; E-1 (individual pl
 │  ├─ PK: id uuid                                                      │
 │  ├─ FK: plant_group_id → plant_groups(id)                           │
 │  ├─ FK: batch_registry_id → batch_registry(id)  [nullable]         │
+│  ├─ FK: grow_room_id → grow_rooms(id)  [nullable, D-14]            │
+│  ├─ FK: dry_room_id → dry_rooms(id)  [nullable, D-14]              │
 │  ├─ wet_weight_grams numeric NOT NULL                                │
 │  ├─ adjusted_weight_grams numeric  [nullable, post-entry correction] │
 │  ├─ adjustment_reason text  [nullable, required when adjusted]       │
 │  └─ session_status text  ['active','completed','cancelled']         │
+│       │                                                              │
+│       ▼                                                              │
+│  harvest_weight_entries  (D-14 — LIVE)                               │
+│  ├─ PK: id uuid                                                      │
+│  ├─ FK: harvest_session_id → harvest_sessions(id)  [CASCADE]        │
+│  ├─ weight_grams numeric NOT NULL > 0                                │
+│  ├─ plant_count integer NOT NULL >= 1                                │
+│  ├─ entry_order integer NOT NULL DEFAULT 1                           │
+│  └─ notes text  [nullable]                                           │
 │       │                                                              │
 │       ▼  (D-2 — LIVE)                                                │
 │  binning_sessions                                                    │
@@ -1615,11 +1626,17 @@ The Supabase `.not('id', 'in', ...)` filter requires UUID values quoted inside t
 
 ### Module Status
 
-**COMPLETE** — all sessions C-1 through D-2 are done. The module is ready for production use.
+**COMPLETE** — all sessions C-1 through D-14 are done. The module is ready for production use.
 
 ---
 
 ## Document Version History
+
+### v2.0 (2026-02-20)
+- Session D-14: room-based harvest workflow with multi-weight entries
+- Added `harvest_weight_entries` table to Schema Overview (new table, 11 total)
+- Added `grow_room_id` and `dry_room_id` FK columns to `harvest_sessions` in Schema Overview
+- Updated document version header and status
 
 ### v1.9 (2026-02-19)
 - Session D-7: code quality, dashboard widget, and trigger tests

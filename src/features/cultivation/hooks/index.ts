@@ -1,6 +1,7 @@
 export { useGrowRooms } from './useGrowRooms';
 export { usePlantGroups } from './usePlantGroups';
 export { useHarvestSessions } from './useHarvestSessions';
+export { useHarvestWeightEntries } from './useHarvestWeightEntries';
 export { useRoomSections } from './useRoomSections';
 export { usePlantGroupPlacement } from './usePlantGroupPlacement';
 export { useDryRooms } from './useDryRooms';

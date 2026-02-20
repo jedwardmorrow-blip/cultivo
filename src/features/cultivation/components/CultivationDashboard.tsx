@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import { Sprout, Leaf, Scissors, Package, AlertTriangle, Flower } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sprout, Leaf, Scissors, Package, AlertTriangle, Flower, Wind } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
+import { useDryRooms } from '../hooks/useDryRooms';
+import { cultivationService } from '../services';
 import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
-import { isValidStrainAbbreviation } from '../utils';
-import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
+import { isValidStrainAbbreviation, formatWeight } from '../utils';
+import type { GrowRoom, PlantGroup, GrowthStage, DryRoom, HarvestSession } from '../types';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -128,6 +130,123 @@ function RoomSectionGroup({ title, rooms, groups, onRoomClick }: RoomSectionGrou
               plantCount={plantCount}
               onClick={() => onRoomClick(room)}
             />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+interface DryRoomsSectionProps {
+  onViewDryRooms?: () => void;
+}
+
+function DryRoomsSection({ onViewDryRooms }: DryRoomsSectionProps) {
+  const { rooms: dryRooms, loading: dryLoading } = useDryRooms();
+  const [dryingHarvests, setDryingHarvests] = useState<HarvestSession[]>([]);
+  const [loadingHarvests, setLoadingHarvests] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    cultivationService.listDryingHarvests().then((data) => {
+      if (!cancelled) {
+        setDryingHarvests(data);
+        setLoadingHarvests(false);
+      }
+    }).catch(() => {
+      if (!cancelled) setLoadingHarvests(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (dryLoading || loadingHarvests) return null;
+
+  const activeDryRooms = dryRooms.filter((r) => r.is_active);
+  if (activeDryRooms.length === 0) return null;
+
+  function getHarvestsForRoom(roomId: string) {
+    return dryingHarvests.filter((h) => h.dry_room_id === roomId);
+  }
+
+  return (
+    <div className="bg-cult-near-black border border-cult-medium-gray p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs text-cult-light-gray uppercase tracking-wider flex items-center gap-2">
+          <Wind className="w-4 h-4" />
+          Dry Rooms
+        </h2>
+        {onViewDryRooms && (
+          <button
+            onClick={onViewDryRooms}
+            className="text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors underline underline-offset-2"
+          >
+            Manage
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {activeDryRooms.map((room) => {
+          const harvests = getHarvestsForRoom(room.id);
+          const totalWeight = harvests.reduce(
+            (s, h) => s + (h.adjusted_weight_grams ?? h.wet_weight_grams),
+            0
+          );
+          const isEmpty = harvests.length === 0;
+
+          return (
+            <div
+              key={room.id}
+              className={`border ${isEmpty ? 'border-cult-dark-gray' : 'border-cyan-800'} p-4 ${
+                isEmpty ? 'opacity-60' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Wind className={`w-4 h-4 ${isEmpty ? 'text-cult-medium-gray' : 'text-cyan-400'}`} />
+                  <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
+                </div>
+                {!isEmpty && (
+                  <span className="text-xs text-cyan-400 font-mono">
+                    {formatWeight(totalWeight)}
+                  </span>
+                )}
+              </div>
+              <p className="text-cult-light-gray text-xs mb-2">{room.name}</p>
+
+              {isEmpty ? (
+                <p className="text-cult-medium-gray text-xs italic">Empty</p>
+              ) : (
+                <div className="space-y-1">
+                  {harvests.map((h) => {
+                    const strainName = h.plant_groups?.strains?.name ?? 'Unknown';
+                    const batchNumber = h.batch_registry?.batch_number;
+                    const weight = h.adjusted_weight_grams ?? h.wet_weight_grams;
+                    return (
+                      <div
+                        key={h.id}
+                        className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-2 py-1 text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {batchNumber && (
+                            <span className="text-cyan-400 font-mono">{batchNumber}</span>
+                          )}
+                          <span className="text-cult-light-gray truncate">{strainName}</span>
+                        </div>
+                        <span className="text-cult-white font-mono flex-shrink-0">
+                          {formatWeight(weight)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {room.capacity_lbs != null && !isEmpty && (
+                <p className="text-cult-medium-gray text-[10px] mt-2">
+                  Capacity: {room.capacity_lbs} lbs
+                </p>
+              )}
+            </div>
           );
         })}
       </div>
@@ -279,11 +398,11 @@ export function CultivationDashboard() {
         </div>
 
         <div className="bg-cult-near-black border border-cult-medium-gray p-5">
-          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Active Harvest Sessions</h2>
+          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Active Harvests</h2>
           {sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 gap-2">
               <Flower className="w-8 h-8 text-cult-medium-gray" />
-              <p className="text-cult-medium-gray text-sm">No active harvest sessions</p>
+              <p className="text-cult-medium-gray text-sm">No active harvests</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -357,6 +476,8 @@ export function CultivationDashboard() {
           </div>
         </div>
       )}
+
+      <DryRoomsSection />
 
       {selectedRoom && (
         <RoomDetailDrawer
