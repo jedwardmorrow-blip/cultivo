@@ -55,11 +55,12 @@ export interface PlantGroup {
   updated_at: string;
   strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
-  mother_group?: { id: string; growth_stage: GrowthStage; batch_registry?: { batch_number: string } | null };
+  mother_group?: { id: string; growth_stage: GrowthStage; batch_registry?: { batch_number: string } | null; individual_plants?: Pick<IndividualPlant, 'state_plant_id' | 'is_active'>[] };
   room_tables?: { table_number: number; table_name: string | null } | null;
   room_sections?: { section_label: string } | null;
   batch_registry?: { batch_number: string; clone_date: string | null } | null;
   cut_sessions?: PlantGroupCutSession[];
+  individual_plants?: Pick<IndividualPlant, 'state_plant_id' | 'is_active'>[];
 }
 
 export interface PlantGroupCutSession {
@@ -76,6 +77,7 @@ export interface PlantGroupCutSession {
     growth_stage: GrowthStage;
     strains?: { name: string; abbreviation: string | null };
     batch_registry?: { batch_number: string } | null;
+    individual_plants?: Pick<IndividualPlant, 'state_plant_id' | 'is_active'>[];
   };
 }
 

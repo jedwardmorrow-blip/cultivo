@@ -37,7 +37,8 @@ const CUT_SESSION_SELECT = `
   mother_group:plant_groups!mother_plant_group_id (
     id, growth_stage,
     strains (name, abbreviation),
-    batch_registry (batch_number)
+    batch_registry (batch_number),
+    individual_plants (state_plant_id, is_active)
   )
 `;
 
@@ -48,7 +49,7 @@ const PLANT_GROUP_SELECT = `
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   grow_rooms (name, room_code),
-  mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number)),
+  mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number), individual_plants (state_plant_id, is_active)),
   room_tables (table_number, table_name),
   room_sections (section_label),
   batch_registry (batch_number, clone_date),
@@ -63,7 +64,8 @@ const PLANT_GROUP_SUMMARY_SELECT = `
   strains (name, abbreviation),
   room_tables (table_number, table_name),
   room_sections (section_label),
-  batch_registry (batch_number, clone_date)
+  batch_registry (batch_number, clone_date),
+  individual_plants (state_plant_id, is_active)
 `;
 
 const HARVEST_SESSION_SELECT = `

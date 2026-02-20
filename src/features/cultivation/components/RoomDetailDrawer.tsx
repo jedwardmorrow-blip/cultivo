@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { X, Flower2, MapPin, Settings, MoreVertical } from 'lucide-react';
+import { X, Flower2, MapPin, Settings, MoreVertical, ChevronDown, ChevronRight, Printer, Loader2, CircleOff } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { FlipRoomModal } from './FlipRoomModal';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
-import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
+import type { GrowRoom, PlantGroup, RoomTable, RoomSection, IndividualPlant } from '../types';
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -222,6 +222,87 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
   );
 }
 
+interface ExpandedPlantsListProps {
+  plantGroupId: string;
+  onPrintPlants: () => void;
+}
+
+function ExpandedPlantsList({ plantGroupId, onPrintPlants }: ExpandedPlantsListProps) {
+  const [plants, setPlants] = useState<IndividualPlant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    cultivationService.listIndividualPlants(plantGroupId).then((data) => {
+      if (!cancelled) { setPlants(data); setLoading(false); }
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [plantGroupId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 px-4 py-3 text-xs text-cult-medium-gray">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        Loading plants...
+      </div>
+    );
+  }
+
+  const activePlants = plants.filter((p) => p.is_active);
+  const inactivePlants = plants.filter((p) => !p.is_active);
+
+  if (plants.length === 0) {
+    return (
+      <div className="px-4 py-3 text-xs text-cult-medium-gray italic">
+        No plant IDs registered yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t border-cult-dark-gray bg-cult-near-black/50">
+      <div className="flex items-center justify-between px-4 py-2">
+        <span className="text-xs text-cult-light-gray">
+          <span className="text-cult-white font-semibold">{activePlants.length}</span> active
+          {inactivePlants.length > 0 && (
+            <span className="text-cult-medium-gray ml-1">/ {inactivePlants.length} inactive</span>
+          )}
+        </span>
+        <button
+          onClick={onPrintPlants}
+          disabled={activePlants.length === 0}
+          className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-2.5 py-1 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Printer className="w-3 h-3" />
+          Print Labels
+        </button>
+      </div>
+      <div className="max-h-60 overflow-y-auto px-4 pb-3 space-y-0.5">
+        {activePlants.map((p) => (
+          <div
+            key={p.id}
+            className="flex items-center justify-between px-2.5 py-1.5 border border-cult-dark-gray bg-cult-black text-xs"
+          >
+            <span className="font-mono text-cult-white">{p.state_plant_id}</span>
+            {p.notes && <span className="text-cult-medium-gray truncate ml-3 flex-1">{p.notes}</span>}
+          </div>
+        ))}
+        {inactivePlants.map((p) => (
+          <div
+            key={p.id}
+            className="flex items-center justify-between px-2.5 py-1.5 border border-cult-near-black bg-black text-xs opacity-40"
+          >
+            <span className="font-mono text-cult-medium-gray line-through">{p.state_plant_id}</span>
+            <CircleOff className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export interface RoomDetailDrawerProps {
   room: GrowRoom;
   preloadedGroups?: PlantGroup[];
@@ -238,6 +319,7 @@ export function RoomDetailDrawer({
   const [fetchedGroups, setFetchedGroups] = useState<PlantGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showFlipModal, setShowFlipModal] = useState(false);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const label = usePlantGroupLabel();
 
   function handleGroupAction(group: PlantGroup, action: RoomDrawerAction) {
@@ -431,44 +513,64 @@ export function RoomDetailDrawer({
                     const daysInStage = Math.floor(
                       (Date.now() - new Date(g.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
                     );
+                    const isExpanded = expandedGroupId === g.id;
                     return (
                       <div
                         key={g.id}
-                        className="flex items-center gap-3 px-4 py-3 border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
+                        className="border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors overflow-hidden"
                       >
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-sm font-bold text-cult-white">
-                              {g.batch_registry?.batch_number ?? '—'}
-                            </span>
-                            <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
-                              {g.growth_stage}
-                            </span>
-                            {g.is_mother && (
-                              <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
-                                Mother
-                              </span>
-                            )}
+                        <div
+                          className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+                          onClick={() => setExpandedGroupId(isExpanded ? null : g.id)}
+                        >
+                          <div className="flex-shrink-0 text-cult-medium-gray">
+                            {isExpanded
+                              ? <ChevronDown className="w-4 h-4" />
+                              : <ChevronRight className="w-4 h-4" />
+                            }
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-cult-light-gray">{g.strains?.name ?? 'Unknown'}</span>
-                            <span className="text-cult-medium-gray text-xs">·</span>
-                            <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
-                            <span className="text-cult-medium-gray text-xs">·</span>
-                            <span className="text-xs text-cult-medium-gray">{daysInStage}d in stage</span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-sm font-bold text-cult-white">
+                                {g.batch_registry?.batch_number ?? '—'}
+                              </span>
+                              <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
+                                {g.growth_stage}
+                              </span>
+                              {g.is_mother && (
+                                <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                                  Mother
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-xs text-cult-light-gray">{g.strains?.name ?? 'Unknown'}</span>
+                              <span className="text-cult-medium-gray text-xs">·</span>
+                              <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
+                              <span className="text-cult-medium-gray text-xs">·</span>
+                              <span className="text-xs text-cult-medium-gray">{daysInStage}d in stage</span>
+                            </div>
+                          </div>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <PlantGroupActionsMenu
+                              group={g}
+                              onDetail={() => handleGroupAction(g, 'detail')}
+                              onMove={() => handleGroupAction(g, 'move')}
+                              onAdvance={() => handleGroupAction(g, 'advance')}
+                              onToggleMother={() => handleGroupAction(g, 'mother')}
+                              onViewPlants={() => handleGroupAction(g, 'plants')}
+                              onPrintGroupLabel={() => handleGroupAction(g, 'printGroup')}
+                              onPrintPlantLabels={() => handleGroupAction(g, 'printPlants')}
+                              onRefresh={handleRefresh}
+                            />
                           </div>
                         </div>
-                        <PlantGroupActionsMenu
-                          group={g}
-                          onDetail={() => handleGroupAction(g, 'detail')}
-                          onMove={() => handleGroupAction(g, 'move')}
-                          onAdvance={() => handleGroupAction(g, 'advance')}
-                          onToggleMother={() => handleGroupAction(g, 'mother')}
-                          onViewPlants={() => handleGroupAction(g, 'plants')}
-                          onPrintGroupLabel={() => handleGroupAction(g, 'printGroup')}
-                          onPrintPlantLabels={() => handleGroupAction(g, 'printPlants')}
-                          onRefresh={handleRefresh}
-                        />
+                        {isExpanded && (
+                          <ExpandedPlantsList
+                            plantGroupId={g.id}
+                            onPrintPlants={() => handleGroupAction(g, 'printPlants')}
+                          />
+                        )}
                       </div>
                     );
                   })}

@@ -150,9 +150,12 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
   }
 
   function getMotherLabel(m: PlantGroup) {
+    const activePlant = m.individual_plants?.find((p) => p.is_active);
+    const plantId = activePlant?.state_plant_id;
     const batchNum = m.batch_registry?.batch_number;
     const strainName = m.strains?.name ?? 'Unknown';
     const stage = m.growth_stage;
+    if (plantId) return `${plantId} — ${strainName} (${stage})`;
     if (batchNum) return `${batchNum} — ${strainName} (${stage})`;
     return `${strainName} (${stage})`;
   }

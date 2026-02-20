@@ -140,6 +140,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
                     ) : (
                       <div className="space-y-2">
                         {cutSessions.map((cs, idx) => {
+                          const motherPlantId = cs.mother_group?.individual_plants?.find((p) => p.is_active)?.state_plant_id;
                           const motherBatch = cs.mother_group?.batch_registry?.batch_number;
                           const motherStrain = cs.mother_group?.strains?.name ?? 'Unknown';
                           const label = motherBatch ? `${motherBatch} — ${motherStrain}` : motherStrain;
@@ -147,6 +148,9 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
                             <div key={cs.id} className="flex items-start gap-2 text-xs border-l-2 border-cult-dark-gray pl-2">
                               <div className="flex-1 min-w-0">
                                 <div className="text-cult-white font-semibold truncate">Cut {idx + 1}: {label}</div>
+                                {motherPlantId && (
+                                  <div className="text-cult-light-gray font-mono text-[11px]">Mother ID: {motherPlantId}</div>
+                                )}
                                 <div className="text-cult-medium-gray">{cs.cut_count} cuts{cs.cut_date ? ` · ${formatDate(cs.cut_date)}` : ''}</div>
                               </div>
                             </div>
