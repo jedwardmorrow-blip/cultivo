@@ -4,12 +4,14 @@ import type {
   PlantGroup,
   PlantGroupStageHistory,
   PlantGroupRoomHistory,
+  PlantGroupCutSession,
   HarvestSession,
   GrowthStage,
   HarvestSessionStatus,
   CreateGrowRoomInput,
   UpdateGrowRoomInput,
   CreatePlantGroupInput,
+  CreatePlantGroupCutSessionInput,
   CreateHarvestSessionInput,
   RoomTable,
   RoomSection,
@@ -30,23 +32,33 @@ import type {
   BulkImportPlantResult,
 } from '../types';
 
+const CUT_SESSION_SELECT = `
+  id, plant_group_id, mother_plant_group_id, cut_count, cut_date, notes, created_at, created_by,
+  mother_group:plant_groups!mother_plant_group_id (
+    id, growth_stage,
+    strains (name, abbreviation),
+    batch_registry (batch_number)
+  )
+`;
+
 const PLANT_GROUP_SELECT = `
   id, name, strain_id, grow_room_id, mother_plant_group_id,
   room_table_id, room_section_id, batch_registry_id,
-  is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
+  source_type, is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   grow_rooms (name, room_code),
   mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number)),
   room_tables (table_number, table_name),
   room_sections (section_label),
-  batch_registry (batch_number, clone_date)
+  batch_registry (batch_number, clone_date),
+  cut_sessions:plant_group_cut_sessions (${CUT_SESSION_SELECT})
 `;
 
 const PLANT_GROUP_SUMMARY_SELECT = `
   id, name, strain_id, grow_room_id, mother_plant_group_id,
   room_table_id, room_section_id, batch_registry_id,
-  is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
+  source_type, is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   room_tables (table_number, table_name),
@@ -260,17 +272,50 @@ export const cultivationService = {
   },
 
   async createPlantGroup(input: CreatePlantGroupInput): Promise<PlantGroup> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { cut_sessions, ...groupFields } = input;
+
+    const primaryMotherId = cut_sessions && cut_sessions.length > 0
+      ? cut_sessions[0].mother_plant_group_id
+      : groupFields.mother_plant_group_id;
+
     const { data, error } = await supabase
       .from('plant_groups')
       .insert({
-        ...input,
+        ...groupFields,
         growth_stage: 'clone',
-        is_mother: input.is_mother ?? false,
+        is_mother: groupFields.is_mother ?? false,
+        source_type: groupFields.source_type ?? 'clone',
+        mother_plant_group_id: primaryMotherId ?? null,
       })
       .select(PLANT_GROUP_SELECT)
       .single();
     if (error) throwError(error, 'createPlantGroup');
-    return data as unknown as PlantGroup;
+
+    const group = data as unknown as PlantGroup;
+
+    if (cut_sessions && cut_sessions.length > 0) {
+      const rows = cut_sessions.map((cs) => ({
+        plant_group_id: group.id,
+        mother_plant_group_id: cs.mother_plant_group_id,
+        cut_count: cs.cut_count,
+        cut_date: cs.cut_date ?? null,
+        notes: cs.notes ?? null,
+        created_by: user?.id ?? null,
+      }));
+      const { error: csErr } = await supabase.from('plant_group_cut_sessions').insert(rows);
+      if (csErr) throwError(csErr, 'createPlantGroup:cut_sessions');
+
+      if (group.batch_registry_id) {
+        const motherIds = cut_sessions.map((cs) => cs.mother_plant_group_id);
+        await supabase
+          .from('batch_registry')
+          .update({ mother_plant_group_ids: motherIds })
+          .eq('id', group.batch_registry_id);
+      }
+    }
+
+    return group;
   },
 
   async advanceStage(id: string, toStage: GrowthStage): Promise<PlantGroup> {
@@ -352,15 +397,51 @@ export const cultivationService = {
     return data as unknown as PlantGroupRoomHistory[];
   },
 
-  async listMotherGroups(): Promise<PlantGroup[]> {
-    const { data, error } = await supabase
+  async listMotherGroups(filter?: { strainId?: string }): Promise<PlantGroup[]> {
+    let query = supabase
       .from('plant_groups')
       .select(PLANT_GROUP_SUMMARY_SELECT)
       .eq('is_mother', true)
-      .not('growth_stage', 'eq', 'harvested')
-      .order('created_at', { ascending: false });
+      .not('growth_stage', 'eq', 'harvested');
+
+    if (filter?.strainId) {
+      query = query.eq('strain_id', filter.strainId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throwError(error, 'listMotherGroups');
     return data as unknown as PlantGroup[];
+  },
+
+  async listCutSessions(plantGroupId: string): Promise<PlantGroupCutSession[]> {
+    const { data, error } = await supabase
+      .from('plant_group_cut_sessions')
+      .select(CUT_SESSION_SELECT)
+      .eq('plant_group_id', plantGroupId)
+      .order('created_at', { ascending: true });
+    if (error) throwError(error, 'listCutSessions');
+    return data as unknown as PlantGroupCutSession[];
+  },
+
+  async createCutSession(input: CreatePlantGroupCutSessionInput): Promise<PlantGroupCutSession> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from('plant_group_cut_sessions')
+      .insert({
+        ...input,
+        cut_date: input.cut_date ?? null,
+        notes: input.notes ?? null,
+        created_by: user?.id ?? null,
+      })
+      .select(CUT_SESSION_SELECT)
+      .single();
+    if (error) throwError(error, 'createCutSession');
+    return data as unknown as PlantGroupCutSession;
+  },
+
+  async deleteCutSession(id: string): Promise<void> {
+    const { error } = await supabase.from('plant_group_cut_sessions').delete().eq('id', id);
+    if (error) throwError(error, 'deleteCutSession');
   },
 
   async listHarvestSessions(filter?: { status?: HarvestSessionStatus }): Promise<HarvestSession[]> {

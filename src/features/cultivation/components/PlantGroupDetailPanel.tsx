@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Scissors, Sprout } from 'lucide-react';
 import { cultivationService } from '../services';
 import { IndividualPlantsTab } from './IndividualPlantsTab';
-import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory } from '../types';
+import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory, PlantGroupCutSession } from '../types';
 
 type Tab = 'history' | 'plants';
 
@@ -28,24 +28,29 @@ function Stat({ label, value }: { label: string; value: string }) {
 export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }: PlantGroupDetailPanelProps) {
   const [stageHistory, setStageHistory] = useState<PlantGroupStageHistory[]>([]);
   const [roomHistory, setRoomHistory] = useState<PlantGroupRoomHistory[]>([]);
+  const [cutSessions, setCutSessions] = useState<PlantGroupCutSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   useEffect(() => {
     async function load() {
       try {
-        const [sh, rh] = await Promise.all([
+        const [sh, rh, cs] = await Promise.all([
           cultivationService.getStageHistory(group.id),
           cultivationService.getRoomHistory(group.id),
+          group.source_type === 'clone'
+            ? cultivationService.listCutSessions(group.id)
+            : Promise.resolve([]),
         ]);
         setStageHistory(sh);
         setRoomHistory(rh);
+        setCutSessions(cs);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [group.id]);
+  }, [group.id, group.source_type]);
 
   const daysInStage = Math.floor(
     (Date.now() - new Date(group.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
@@ -82,6 +87,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
             <Stat label="Room" value={group.grow_rooms?.room_code ?? '—'} />
             {group.planted_date && <Stat label="Planted" value={formatDate(group.planted_date)} />}
             <Stat label="Mother" value={group.is_mother ? 'Yes' : 'No'} />
+            <Stat label="Source" value={group.source_type === 'seed' ? 'Seed' : 'Clone'} />
           </div>
 
           {group.notes && (
@@ -123,6 +129,44 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
               <p className="text-cult-medium-gray text-sm">Loading history...</p>
             ) : (
               <>
+                {group.source_type === 'clone' && (
+                  <div>
+                    <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Scissors className="w-3 h-3" />
+                      Cut Sessions
+                    </h4>
+                    {cutSessions.length === 0 ? (
+                      <p className="text-cult-medium-gray text-xs">No cut sessions recorded</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {cutSessions.map((cs, idx) => {
+                          const motherBatch = cs.mother_group?.batch_registry?.batch_number;
+                          const motherStrain = cs.mother_group?.strains?.name ?? 'Unknown';
+                          const label = motherBatch ? `${motherBatch} — ${motherStrain}` : motherStrain;
+                          return (
+                            <div key={cs.id} className="flex items-start gap-2 text-xs border-l-2 border-cult-dark-gray pl-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-cult-white font-semibold truncate">Cut {idx + 1}: {label}</div>
+                                <div className="text-cult-medium-gray">{cs.cut_count} cuts{cs.cut_date ? ` · ${formatDate(cs.cut_date)}` : ''}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {group.source_type === 'seed' && (
+                  <div>
+                    <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Sprout className="w-3 h-3" />
+                      Origin
+                    </h4>
+                    <p className="text-cult-medium-gray text-xs">Seed origin — no mother lineage</p>
+                  </div>
+                )}
+
                 <div>
                   <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Stage History</h4>
                   {stageHistory.length === 0 ? (

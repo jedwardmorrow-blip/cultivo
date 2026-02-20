@@ -20,6 +20,7 @@
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
 export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
+export type PlantSourceType = 'clone' | 'seed';
 export type HarvestSessionStatus = 'active' | 'completed' | 'cancelled';
 
 export interface GrowRoom {
@@ -42,6 +43,7 @@ export interface PlantGroup {
   room_table_id: string | null;
   room_section_id: string | null;
   batch_registry_id: string | null;
+  source_type: PlantSourceType;
   is_mother: boolean;
   plant_count: number;
   growth_stage: GrowthStage;
@@ -57,7 +59,33 @@ export interface PlantGroup {
   room_tables?: { table_number: number; table_name: string | null } | null;
   room_sections?: { section_label: string } | null;
   batch_registry?: { batch_number: string; clone_date: string | null } | null;
+  cut_sessions?: PlantGroupCutSession[];
 }
+
+export interface PlantGroupCutSession {
+  id: string;
+  plant_group_id: string;
+  mother_plant_group_id: string;
+  cut_count: number;
+  cut_date: string | null;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+  mother_group?: {
+    id: string;
+    growth_stage: GrowthStage;
+    strains?: { name: string; abbreviation: string | null };
+    batch_registry?: { batch_number: string } | null;
+  };
+}
+
+export type CreatePlantGroupCutSessionInput = {
+  plant_group_id: string;
+  mother_plant_group_id: string;
+  cut_count: number;
+  cut_date?: string;
+  notes?: string;
+};
 
 export interface PlantGroupStageHistory {
   id: string;
@@ -169,7 +197,9 @@ export type FlipRoomInput = {
 };
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &
-  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id'>>;
+  Partial<Pick<PlantGroup, 'name' | 'planted_date' | 'notes' | 'is_mother' | 'mother_plant_group_id' | 'source_type'>> & {
+    cut_sessions?: Omit<CreatePlantGroupCutSessionInput, 'plant_group_id'>[];
+  };
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes' | 'waste_grams'>>;
