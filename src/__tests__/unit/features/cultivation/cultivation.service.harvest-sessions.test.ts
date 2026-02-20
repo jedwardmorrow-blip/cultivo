@@ -30,7 +30,6 @@ const mockHarvestSession = {
   created_at: new Date().toISOString(),
   created_by: 'user-123',
   plant_groups: {
-    group_number: 'PG-260101-001',
     strain_id: 'strain-001',
     grow_room_id: 'room-001',
     strains: { name: 'Blue Pave', abbreviation: 'BP' },

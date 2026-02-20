@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRight, Hash } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { cultivationService } from '../services';
 import { IndividualPlantsTab } from './IndividualPlantsTab';
 import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory } from '../types';
@@ -57,14 +57,13 @@ export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelP
       <div className="bg-cult-near-black border-l border-cult-medium-gray w-full max-w-sm h-full overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-cult-medium-gray">
           <div>
-            <div className="font-mono text-sm font-bold text-cult-white">{group.group_number}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-bold text-cult-white">{batchNumber ?? '—'}</span>
+              {group.is_mother && (
+                <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
+              )}
+            </div>
             <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>
-            {batchNumber && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <Hash className="w-3 h-3 text-cult-medium-gray" />
-                <span className="font-mono text-xs text-cult-medium-gray">{batchNumber}</span>
-              </div>
-            )}
           </div>
           <button
             onClick={onClose}

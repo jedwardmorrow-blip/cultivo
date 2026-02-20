@@ -102,7 +102,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
                   {eligibleGroups.map((g) => (
                     <div key={g.id} className="flex items-center justify-between gap-2 bg-rose-950/30 border border-rose-900 px-3 py-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-mono text-xs font-bold text-rose-300">{g.group_number}</span>
+                        <span className="font-mono text-xs font-bold text-rose-300">{g.batch_registry?.batch_number ?? '—'}</span>
                         <span className="text-xs text-cult-light-gray truncate">
                           {g.strains?.name ?? g.strain_id}
                         </span>
@@ -137,7 +137,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
                 <div className="space-y-1">
                   {alreadyFlower.map((g) => (
                     <div key={g.id} className="flex items-center gap-2 px-3 py-1.5 opacity-50">
-                      <span className="font-mono text-xs text-cult-medium-gray">{g.group_number}</span>
+                      <span className="font-mono text-xs text-cult-medium-gray">{g.batch_registry?.batch_number ?? '—'}</span>
                       <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
                     </div>
                   ))}

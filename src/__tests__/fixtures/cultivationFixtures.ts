@@ -68,7 +68,6 @@ export function makeRoomTable(overrides: Partial<RoomTable> = {}): RoomTable {
 export function makePlantGroup(overrides: Partial<PlantGroup> = {}): PlantGroup {
   return {
     id: 'pg-001',
-    group_number: 'PG-260101-001',
     name: null,
     strain_id: 'strain-001',
     grow_room_id: 'room-001',
@@ -109,7 +108,6 @@ export function makeHarvestSession(overrides: Partial<HarvestSession> = {}): Har
     created_at: '2026-02-19T00:00:00Z',
     created_by: 'user-123',
     plant_groups: {
-      group_number: 'PG-260101-001',
       strain_id: 'strain-001',
       grow_room_id: 'room-001',
       strains: { name: 'Blue Pave', abbreviation: 'BP' },

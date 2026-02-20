@@ -191,7 +191,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     <option value="">— None —</option>
                     {motherGroups.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.group_number} — {m.strains?.name ?? 'Unknown'} ({m.growth_stage})
+                        {m.batch_registry?.batch_number ?? m.strains?.name ?? 'Unknown'} ({m.growth_stage})
                       </option>
                     ))}
                   </select>

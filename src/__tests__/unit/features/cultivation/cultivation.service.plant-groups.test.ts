@@ -14,7 +14,6 @@ vi.mock('@/lib/supabase', () => ({
 
 const mockPlantGroup = {
   id: 'pg-001',
-  group_number: 'PG-260101-001',
   name: 'Test Group',
   strain_id: 'strain-001',
   grow_room_id: 'room-001',
@@ -125,7 +124,7 @@ describe('cultivationService — plant groups', () => {
       plant_count: 50,
     };
 
-    it('inserts with group_number: "PENDING" and growth_stage: "clone"', async () => {
+    it('inserts with growth_stage: "clone"', async () => {
       const { mockInsert } = mockInsertChain(mockSupabaseSuccess(mockPlantGroup));
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ insert: mockInsert });
 
@@ -133,7 +132,6 @@ describe('cultivationService — plant groups', () => {
 
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          group_number: 'PENDING',
           growth_stage: 'clone',
           strain_id: 'strain-001',
           grow_room_id: 'room-001',

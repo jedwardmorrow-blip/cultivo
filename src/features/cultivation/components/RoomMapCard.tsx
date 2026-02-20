@@ -92,7 +92,7 @@ function StrainLegend({ groups }: StrainLegendProps) {
     }
     const entry = strainMap.get(key)!;
     entry.count += g.plant_count;
-    entry.groupNums.push(g.group_number);
+    if (g.batch_registry?.batch_number) entry.groupNums.push(g.batch_registry.batch_number);
   }
 
   if (strainMap.size === 0) return null;
@@ -199,7 +199,7 @@ function UnplacedGroups({ groups, onGroupClick }: UnplacedGroupsProps) {
             onClick={() => onGroupClick(g)}
             className="flex items-center gap-3 px-3 py-2 border border-cult-dark-gray hover:border-cult-medium-gray cursor-pointer transition-colors"
           >
-            <span className="font-mono text-xs font-bold text-cult-light-gray">{g.group_number}</span>
+            <span className="font-mono text-xs font-bold text-cult-light-gray">{g.batch_registry?.batch_number ?? '—'}</span>
             <span className="text-xs text-cult-light-gray">{g.strains?.name ?? g.strain_id}</span>
             <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
             <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ml-auto ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>

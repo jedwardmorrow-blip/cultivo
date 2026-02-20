@@ -32,7 +32,6 @@ const mockBinningSession = {
     wet_weight_grams: 5000,
     adjusted_weight_grams: null,
     plant_groups: {
-      group_number: 'PG-260101-001',
       strains: { name: 'Blue Pave', abbreviation: 'BP' },
     },
   },

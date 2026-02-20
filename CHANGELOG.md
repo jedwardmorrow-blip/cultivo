@@ -4,6 +4,23 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-20 - Session D-9: Remove group_number — Batch Number as Sole Identifier
+
+**Type:** Refactor / Data Model
+**Module:** Cultivation, Dashboard
+**Status:** COMPLETE
+
+Removed `group_number` from `plant_groups` across all types, services, components, tests, and documentation. The batch number (`YYMMDD-ABBREV` from `batch_registry`) is now the sole human-readable identifier for plant groups.
+
+- `cultivation.types.ts` — removed `group_number` from `PlantGroup`, updated `mother_group`/`HarvestSession`/`BinningSession` join types
+- `cultivation.service.ts` — removed `group_number` from all selects; removed `group_number: 'PENDING'` from insert; fixed `listMotherGroups` ordering
+- `database.types.ts` — removed `group_number`, added `batch_registry_id` to `plant_groups` Row/Insert/Update
+- 10 components updated to display `batch_registry?.batch_number` as primary identifier
+- Test fixtures and service tests updated accordingly
+- Docs updated: `CULTIVATION.md`, `CULTIVATION-ARCHITECTURE.md`, `AI-BUILD-SESSION-CHECKLIST.md`
+
+---
+
 ## 2026-02-19 - Session D-8: Cultivation Testing Infrastructure + Hook Tests + UX Fixes
 
 **Type:** Testing / Code Quality

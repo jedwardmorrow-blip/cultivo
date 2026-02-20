@@ -36,7 +36,6 @@ vi.mock('@/lib/supabase', () => ({
 
 const mockGroupClone = {
   id: 'pg-001',
-  group_number: 'PG-260101-001',
   strain_id: 'strain-001',
   grow_room_id: 'room-001',
   growth_stage: 'clone' as const,
@@ -77,7 +76,6 @@ const mockHarvestSession = {
   cancelled_at: null,
   cancelled_by: null,
   plant_groups: {
-    group_number: 'PG-260101-001',
     strains: { name: 'Blue Pave', abbreviation: 'BPV' },
   },
   batch_registry: null,

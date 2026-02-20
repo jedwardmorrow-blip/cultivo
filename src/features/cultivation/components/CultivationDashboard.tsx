@@ -153,7 +153,7 @@ export function CultivationDashboard() {
                 >
                   <div className="flex flex-col">
                     <span className="text-cult-white text-sm font-mono">
-                      {s.plant_groups?.group_number ?? '—'}
+                      {s.batch_registry?.batch_number ?? '—'}
                     </span>
                     <span className="text-cult-light-gray text-xs">
                       {s.plant_groups?.strains?.name ?? 'Unknown Strain'}

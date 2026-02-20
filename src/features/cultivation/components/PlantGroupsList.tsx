@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, ArrowRight, Home, Star, Info, AlertTriangle, Hash } from 'lucide-react';
+import { Plus, ArrowRight, Home, Star, Info, AlertTriangle } from 'lucide-react';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
@@ -44,7 +44,7 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
       <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-bold text-cult-white">{group.group_number}</span>
+            <span className="font-mono text-sm font-bold text-cult-white">{group.batch_registry?.batch_number ?? '—'}</span>
             <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${stageCls}`}>
               {group.growth_stage}
             </span>
@@ -68,15 +68,6 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
             <span className="text-cult-light-gray text-xs">{group.grow_rooms?.room_code ?? '—'}</span>
             <span className="text-cult-medium-gray text-xs">·</span>
             <span className="text-cult-medium-gray text-xs">{daysInStage}d in stage</span>
-            {group.batch_registry?.batch_number && (
-              <>
-                <span className="text-cult-medium-gray text-xs">·</span>
-                <span className="flex items-center gap-0.5 text-cult-medium-gray text-xs font-mono">
-                  <Hash className="w-2.5 h-2.5" />
-                  {group.batch_registry.batch_number}
-                </span>
-              </>
-            )}
           </div>
         </div>
 
@@ -231,7 +222,7 @@ export function PlantGroupsList() {
           <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6">
             <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-2">Advance Stage</h3>
             <p className="text-cult-light-gray text-sm mb-5">
-              Move <span className="text-cult-white font-mono">{advanceTarget.group.group_number}</span> from{' '}
+              Move <span className="text-cult-white font-mono">{advanceTarget.group.batch_registry?.batch_number ?? advanceTarget.group.strains?.name ?? 'this group'}</span> from{' '}
               <span className="text-cult-white">{advanceTarget.group.growth_stage}</span> to{' '}
               <span className="text-cult-white">{advanceTarget.toStage}</span>? This cannot be reversed.
             </p>

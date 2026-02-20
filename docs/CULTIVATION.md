@@ -125,7 +125,7 @@ These items are deferred to future phases and must NOT be scaffolded now to avoi
 │  └─ is_active, created_at, created_by                                │
 │                                                                       │
 │  plant_groups                                                         │
-│  ├─ id, group_number (human-readable, auto-generated)                │
+│  ├─ id, batch_registry_id (set by BEFORE INSERT trigger)             │
 │  ├─ name (optional label)                                            │
 │  ├─ strain_id → strains.id (FK, immutable after creation)            │
 │  ├─ grow_room_id → grow_rooms.id (mutable — plants move rooms)       │
@@ -314,7 +314,7 @@ A plant group is a set of plants of the same strain that move through the grow t
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `id` | uuid | auto | |
-| `group_number` | text | auto | Human-readable ID, e.g. `PG-260218-OGK`. Auto-generated on insert. |
+| `batch_registry_id` | uuid | auto | FK → `batch_registry`; set by BEFORE INSERT trigger. The human-readable identifier is `batch_registry.batch_number` (e.g. `260218-OGK`). |
 | `name` | text | no | Optional label, e.g. "Batch A Clone Set" |
 | `strain_id` | uuid | yes | FK → strains; immutable after creation |
 | `grow_room_id` | uuid | yes | FK → grow_rooms; mutable (updated by Move to Room action) |
@@ -342,15 +342,11 @@ Backward transitions are **not permitted**. A group cannot move from `veg` back 
 
 `harvested` is a terminal state. The group remains visible in history but cannot be modified.
 
-### group_number Format
+### Batch Number as Primary Identifier
 
-Auto-generated on INSERT by DB trigger as `PG-YYMMDD-ABBREV`, where:
-- `YYMMDD` is the creation date
-- `ABBREV` is `strains.abbreviation` (same strain abbreviation used in batch numbers)
+When a plant group is created, the BEFORE INSERT trigger `trg_generate_plant_group_number` creates a `batch_registry` row and sets `batch_registry_id` on the plant group. The `batch_registry.batch_number` (format `YYMMDD-ABBREV`, e.g. `260218-OGK`) is the human-readable identifier displayed throughout the cultivation UI.
 
 If a strain has no abbreviation, the trigger raises an error — the same enforcement applied to harvest completion. Users must set the abbreviation before creating a plant group for that strain.
-
-This gives operators a human-readable reference (e.g., `PG-260218-OGK`) that is distinct from but visually consistent with the batch number format (`260218-OGK`).
 
 ---
 

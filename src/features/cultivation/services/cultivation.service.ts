@@ -31,13 +31,13 @@ import type {
 } from '../types';
 
 const PLANT_GROUP_SELECT = `
-  id, group_number, name, strain_id, grow_room_id, mother_plant_group_id,
+  id, name, strain_id, grow_room_id, mother_plant_group_id,
   room_table_id, room_section_id, batch_registry_id,
   is_mother, plant_count, growth_stage, stage_entered_at, planted_date,
   notes, created_at, created_by, updated_at,
   strains (name, abbreviation),
   grow_rooms (name, room_code),
-  mother_group:plant_groups!mother_plant_group_id (id, group_number, growth_stage),
+  mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number)),
   room_tables (table_number, table_name),
   room_sections (section_label),
   batch_registry (batch_number, clone_date)
@@ -48,7 +48,7 @@ const HARVEST_SESSION_SELECT = `
   adjusted_weight_grams, adjustment_reason, batch_registry_id, session_status,
   completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
   plant_groups (
-    group_number, strain_id, grow_room_id,
+    strain_id, grow_room_id,
     strains (name, abbreviation),
     grow_rooms (room_code)
   ),
@@ -253,7 +253,6 @@ export const cultivationService = {
       .from('plant_groups')
       .insert({
         ...input,
-        group_number: 'PENDING',
         growth_stage: 'clone',
         is_mother: input.is_mother ?? false,
       })
@@ -348,7 +347,7 @@ export const cultivationService = {
       .select(PLANT_GROUP_SELECT)
       .eq('is_mother', true)
       .not('growth_stage', 'eq', 'harvested')
-      .order('group_number');
+      .order('created_at', { ascending: false });
     if (error) throwError(error, 'listMotherGroups');
     return data as unknown as PlantGroup[];
   },
@@ -453,7 +452,6 @@ export const cultivationService = {
         harvest_sessions (
           harvest_date, wet_weight_grams, adjusted_weight_grams,
           plant_groups (
-            group_number,
             strains (name, abbreviation)
           )
         ),
@@ -504,7 +502,6 @@ export const cultivationService = {
         harvest_sessions (
           harvest_date, wet_weight_grams, adjusted_weight_grams,
           plant_groups (
-            group_number,
             strains (name, abbreviation)
           )
         ),
@@ -530,7 +527,6 @@ export const cultivationService = {
         harvest_sessions (
           harvest_date, wet_weight_grams, adjusted_weight_grams,
           plant_groups (
-            group_number,
             strains (name, abbreviation)
           )
         ),
@@ -556,7 +552,6 @@ export const cultivationService = {
         harvest_sessions (
           harvest_date, wet_weight_grams, adjusted_weight_grams,
           plant_groups (
-            group_number,
             strains (name, abbreviation)
           )
         ),

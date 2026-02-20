@@ -196,7 +196,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
             {summary.activeHarvests.slice(0, 3).map((h) => (
               <div key={h.id} className="flex items-center justify-between border border-cult-dark-gray bg-cult-black px-3 py-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-mono text-cult-light-gray">{h.plant_groups?.group_number ?? '—'}</span>
+                  <span className="text-xs font-mono text-cult-light-gray">{h.batch_registry?.batch_number ?? '—'}</span>
                   <span className="text-xs text-cult-white truncate">{h.plant_groups?.strains?.name ?? 'Unknown'}</span>
                 </div>
                 <span className="text-xs text-amber-400 font-mono flex-shrink-0">

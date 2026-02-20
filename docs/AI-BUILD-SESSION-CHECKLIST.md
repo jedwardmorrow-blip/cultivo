@@ -14,54 +14,25 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-19
-**Session:** D-8 — Cultivation Testing Infrastructure + Hook Tests + UX Fixes
+**Date:** 2026-02-20
+**Session:** D-9 — Remove group_number, Batch Number as Sole Identifier
 **Status:** COMPLETE
 
 **What was done:**
 
-Testing infrastructure:
-- Created `src/__tests__/fixtures/cultivationFixtures.ts` with 7 factory functions (`makeGrowRoom`, `makeDryRoom`, `makeRoomSection`, `makeRoomTable`, `makePlantGroup`, `makeHarvestSession`, `makeBinningSession`) all accepting `Partial<T>` overrides
-- Created `src/features/cultivation/utils/dateUtils.ts` with `formatWeight`, `formatDate`, `todayIso`, `daysBetween`
-- Updated `src/features/cultivation/utils/index.ts` to export `dateUtils`
+Removed `group_number` from `plant_groups` entirely across the codebase. The batch number from `batch_registry` (format `YYMMDD-ABBREV`, e.g. `260218-OGK`) is now the sole human-readable identifier for plant groups throughout the cultivation UI.
 
-Hook tests (7 new files in `src/__tests__/unit/features/cultivation/hooks/`):
-- `useGrowRooms.test.ts` (8 tests), `useDryRooms.test.ts` (7), `useRoomSections.test.ts` (14), `usePlantGroupPlacement.test.ts` (11), `usePlantGroups.test.ts` (10), `useHarvestSessions.test.ts` (8), `useBinningSessions.test.ts` (9)
-- Key coverage: `Promise.all` parallel load in `useBinningSessions`, null guard in `useRoomSections`, filter dependency reloads, CRUD methods all trigger list refresh
-
-Service tests (2 new files):
-- `cultivation.service.room-layout.test.ts` — 10 room layout functions including `flipRoom` multi-step mock
-- `cultivation.service.error-paths.test.ts` — guard condition errors across all session types
-
-UX / code quality fixes:
-- `CultivationWidget`: fixed both navigation buttons from `'cultivation'` → `'cultivation-dashboard'` (no route existed for the old value)
-- `BinningSessionsView` + `HarvestSessionsList`: removed local `formatWeight`/`formatDate` duplicates; import from shared `../utils`
-- `HarvestSessionsList`: replaced magic string checks with named constants `ERR_MISSING_ABBREVIATION` / `ERR_WRONG_STAGE`
+Key changes:
+- `cultivation.types.ts` — removed `group_number` from `PlantGroup`; updated `mother_group` join type to include `batch_registry`; removed `group_number` from `HarvestSession.plant_groups` and `BinningSession.harvest_sessions.plant_groups`
+- `cultivation.service.ts` — removed `group_number` from `PLANT_GROUP_SELECT`, `HARVEST_SESSION_SELECT`, all 4 binning session inline selects; removed `group_number: 'PENDING'` from `createPlantGroup` insert; changed `listMotherGroups` ordering from `group_number` to `created_at DESC`
+- `database.types.ts` — removed `group_number` from `plant_groups` Row/Insert/Update; added `batch_registry_id` to all three
+- 10 component files updated to use `batch_registry?.batch_number` as primary identifier: `PlantGroupsList`, `PlantGroupDetailPanel`, `NewPlantGroupModal`, `RoomMapCard`, `FlipRoomModal`, `MoveToRoomModal`, `HarvestSessionsList`, `BinningSessionsView`, `CultivationDashboard`, `CultivationWidget`
+- Test fixtures + service tests: removed `group_number` from all mock objects; updated `createPlantGroup` test assertion
+- Docs: updated `CULTIVATION-ARCHITECTURE.md`, `CULTIVATION.md`, `CHANGELOG.md`
 
 **Build status:** PASSES
-**Test count:** 454 tests across 24 files (all passing); up from 348/15 before this session
-
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
-
-**Modified / created files (this session):**
-- `src/__tests__/fixtures/cultivationFixtures.ts` — NEW
-- `src/features/cultivation/utils/dateUtils.ts` — NEW
-- `src/features/cultivation/utils/index.ts` — updated (added dateUtils exports)
-- `src/__tests__/unit/features/cultivation/hooks/useGrowRooms.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/useDryRooms.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/useRoomSections.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/usePlantGroupPlacement.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/usePlantGroups.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/useHarvestSessions.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/hooks/useBinningSessions.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/cultivation.service.room-layout.test.ts` — NEW
-- `src/__tests__/unit/features/cultivation/cultivation.service.error-paths.test.ts` — NEW
-- `src/features/dashboard/components/CultivationWidget.tsx` — navigation bug fix
-- `src/features/cultivation/components/BinningSessionsView.tsx` — shared utils import
-- `src/features/cultivation/components/HarvestSessionsList.tsx` — shared utils + named error constants
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
-- `CHANGELOG.md`
 
 **Next recommendations (in order):**
 1. **Real plant data** — user mentioned they are about to add physical plants; first live data test of the cultivation module

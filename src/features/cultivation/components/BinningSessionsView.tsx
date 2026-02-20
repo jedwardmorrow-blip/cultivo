@@ -90,7 +90,7 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
             <option value="">Select a harvest session…</option>
             {unbinnedHarvests.map((h) => (
               <option key={h.id} value={h.id}>
-                {h.plant_groups?.strains?.name ?? 'Unknown'} — {h.plant_groups?.group_number ?? '—'} ({formatDate(h.harvest_date)})
+                {h.plant_groups?.strains?.name ?? 'Unknown'} — {h.batch_registry?.batch_number ?? '—'} ({formatDate(h.harvest_date)})
               </option>
             ))}
           </select>
@@ -204,7 +204,6 @@ function SessionCard({ session, onComplete, onCancel, onViewBatch }: SessionCard
   const [confirmAction, setConfirmAction] = useState<'complete' | 'cancel' | null>(null);
 
   const strainName = session.harvest_sessions?.plant_groups?.strains?.name ?? 'Unknown Strain';
-  const groupNumber = session.harvest_sessions?.plant_groups?.group_number ?? '—';
   const wetWeight = session.harvest_sessions?.adjusted_weight_grams ?? session.harvest_sessions?.wet_weight_grams ?? null;
   const batchNumber = session.batch_registry?.batch_number ?? '—';
   const dryRoomName = session.dry_rooms?.name ?? '—';
@@ -237,7 +236,6 @@ function SessionCard({ session, onComplete, onCancel, onViewBatch }: SessionCard
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-cult-white">{strainName}</span>
-            <span className="text-xs text-cult-medium-gray font-mono">{groupNumber}</span>
             <span className={`text-xs font-medium px-2 py-0.5 rounded border ${statusColor[session.session_status]}`}>
               {session.session_status.charAt(0).toUpperCase() + session.session_status.slice(1)}
             </span>
@@ -350,7 +348,6 @@ interface PendingHarvestRowProps {
 
 function PendingHarvestRow({ harvest, onStartBinning }: PendingHarvestRowProps) {
   const strainName = harvest.plant_groups?.strains?.name ?? 'Unknown Strain';
-  const groupNumber = harvest.plant_groups?.group_number ?? '—';
   const batchNumber = harvest.batch_registry?.batch_number ?? '—';
   const wetWeight = harvest.adjusted_weight_grams ?? harvest.wet_weight_grams;
 
@@ -360,7 +357,6 @@ function PendingHarvestRow({ harvest, onStartBinning }: PendingHarvestRowProps) 
         <div className="flex items-center gap-2">
           <Leaf className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
           <span className="text-sm font-medium text-cult-white">{strainName}</span>
-          <span className="text-xs text-cult-medium-gray font-mono">{groupNumber}</span>
         </div>
         <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-medium-gray">
           <span>Batch: <span className="font-mono text-cult-light-gray">{batchNumber}</span></span>

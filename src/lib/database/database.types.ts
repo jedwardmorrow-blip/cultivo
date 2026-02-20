@@ -4048,7 +4048,7 @@ export type Database = {
       plant_groups: {
         Row: {
           id: string
-          group_number: string
+          batch_registry_id: string | null
           name: string | null
           strain_id: string
           grow_room_id: string
@@ -4067,7 +4067,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          group_number: string
+          batch_registry_id?: string | null
           name?: string | null
           strain_id: string
           grow_room_id: string
@@ -4086,7 +4086,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          group_number?: string
+          batch_registry_id?: string | null
           name?: string | null
           strain_id?: string
           grow_room_id?: string

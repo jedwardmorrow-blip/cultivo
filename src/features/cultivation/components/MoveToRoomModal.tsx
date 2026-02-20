@@ -81,7 +81,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onCancel }: MoveToRoomMo
       <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6">
         <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">Move Plant Group</h3>
         <p className="text-cult-light-gray text-sm mb-4">
-          Moving <span className="text-cult-white font-mono">{group.group_number}</span> from{' '}
+          Moving <span className="text-cult-white font-mono">{group.batch_registry?.batch_number ?? group.strains?.name ?? 'this group'}</span> from{' '}
           <span className="text-cult-white">{group.grow_rooms?.name ?? group.grow_room_id}</span>
         </p>
 

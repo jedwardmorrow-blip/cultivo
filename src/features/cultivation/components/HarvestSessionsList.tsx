@@ -103,7 +103,7 @@ function NewHarvestForm({ onSuccess, onCancel }: NewHarvestFormProps) {
                 const validAbbrev = isValidStrainAbbreviation(g.strains?.abbreviation);
                 return (
                   <option key={g.id} value={g.id} disabled={!validAbbrev}>
-                    {g.group_number} — {g.strains?.name ?? 'Unknown Strain'} — {g.plant_count} plants
+                    {g.batch_registry?.batch_number ?? g.strains?.name ?? 'Unknown'} — {g.plant_count} plants
                     {!validAbbrev ? ' (no abbreviation)' : ''}
                   </option>
                 );
@@ -286,7 +286,6 @@ interface SessionRowProps {
 
 function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: SessionRowProps) {
   const strainName = session.plant_groups?.strains?.name ?? 'Unknown Strain';
-  const groupNumber = session.plant_groups?.group_number ?? '—';
   const batchNumber = session.batch_registry?.batch_number;
   const displayWeight = session.adjusted_weight_grams ?? session.wet_weight_grams;
   const isAdjusted = session.adjusted_weight_grams !== null && session.adjusted_weight_grams !== undefined;
@@ -297,7 +296,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
         <div className="flex items-center gap-4 min-w-0">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-cult-white font-mono text-sm font-semibold">{groupNumber}</span>
+              <span className="text-cult-white font-mono text-sm font-semibold">{batchNumber ?? '—'}</span>
               <ChevronRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
               <span className="text-cult-white text-sm truncate">{strainName}</span>
             </div>

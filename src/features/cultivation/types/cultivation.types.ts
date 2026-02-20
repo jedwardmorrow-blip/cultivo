@@ -14,6 +14,8 @@
  *           UpdateDryRoomInput, CreateBinningSessionInput.
  * E-1: Added IndividualPlant, AddIndividualPlantInput, BulkImportPlantResult;
  *      added batch_registry_id to PlantGroup.
+ * D-9: Removed group_number from PlantGroup. Batch number (from batch_registry) is
+ *      the sole human-readable identifier throughout the UI.
  */
 
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
@@ -33,7 +35,6 @@ export interface GrowRoom {
 
 export interface PlantGroup {
   id: string;
-  group_number: string;
   name: string | null;
   strain_id: string;
   grow_room_id: string;
@@ -52,7 +53,7 @@ export interface PlantGroup {
   updated_at: string;
   strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
-  mother_group?: Pick<PlantGroup, 'id' | 'group_number' | 'growth_stage'>;
+  mother_group?: { id: string; growth_stage: GrowthStage; batch_registry?: { batch_number: string } | null };
   room_tables?: { table_number: number; table_name: string | null } | null;
   room_sections?: { section_label: string } | null;
   batch_registry?: { batch_number: string; clone_date: string | null } | null;
@@ -98,7 +99,6 @@ export interface HarvestSession {
   created_at: string;
   created_by: string | null;
   plant_groups?: {
-    group_number: string;
     strain_id: string;
     grow_room_id: string;
     strains?: { name: string; abbreviation: string | null };
@@ -201,7 +201,7 @@ export interface BinningSession {
   created_at: string;
   created_by: string | null;
   harvest_sessions?: Pick<HarvestSession, 'harvest_date' | 'wet_weight_grams' | 'adjusted_weight_grams'> & {
-    plant_groups?: Pick<PlantGroup, 'group_number'> & {
+    plant_groups?: {
       strains?: { name: string; abbreviation: string | null };
     };
   };
