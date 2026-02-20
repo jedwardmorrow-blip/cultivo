@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Plus, ArrowRight, Home, Star, Info, AlertTriangle } from 'lucide-react';
+import { Plus, AlertTriangle, Sprout } from 'lucide-react';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { isValidStrainAbbreviation } from '../utils';
 import type { PlantGroup, GrowthStage } from '../types';
 
@@ -22,16 +23,20 @@ const STAGE_COLORS: Record<GrowthStage, string> = {
   harvested: 'bg-amber-950 border-amber-700 text-amber-400',
 };
 
+type PendingAction =
+  | { type: 'detail'; group: PlantGroup }
+  | { type: 'move'; group: PlantGroup }
+  | { type: 'advance'; group: PlantGroup }
+  | { type: 'mother'; group: PlantGroup }
+  | { type: 'plants'; group: PlantGroup };
+
 interface PlantGroupRowProps {
   group: PlantGroup;
-  onAdvanceStage: (g: PlantGroup, toStage: GrowthStage) => void;
-  onMoveRoom: (g: PlantGroup) => void;
-  onToggleMother: (g: PlantGroup) => void;
-  onDetail: (g: PlantGroup) => void;
+  onAction: (group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') => void;
+  onRefresh: () => void;
 }
 
-function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDetail }: PlantGroupRowProps) {
-  const nextStage = NEXT_STAGE[group.growth_stage];
+function PlantGroupRow({ group, onAction, onRefresh }: PlantGroupRowProps) {
   const stageCls = STAGE_COLORS[group.growth_stage] ?? '';
   const hasAbbrev = isValidStrainAbbreviation(group.strains?.abbreviation);
 
@@ -42,7 +47,7 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
   return (
     <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
       <div className="flex items-center justify-between px-4 py-3 gap-3">
-        <div className="flex flex-col min-w-0">
+        <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-sm font-bold text-cult-white">{group.batch_registry?.batch_number ?? '—'}</span>
             <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${stageCls}`}>
@@ -71,77 +76,66 @@ function PlantGroupRow({ group, onAdvanceStage, onMoveRoom, onToggleMother, onDe
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {nextStage && nextStage !== 'harvested' && (
-            <button
-              onClick={() => onAdvanceStage(group, nextStage)}
-              title={`Advance to ${nextStage}`}
-              className="flex items-center gap-1 text-xs border border-cult-medium-gray text-cult-light-gray px-2.5 py-1.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider"
-            >
-              <ArrowRight className="w-3 h-3" />
-              {nextStage}
-            </button>
-          )}
-          <button
-            onClick={() => onMoveRoom(group)}
-            title="Move to different room"
-            className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
-          >
-            <Home className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onToggleMother(group)}
-            title={group.is_mother ? 'Remove mother status' : 'Mark as mother'}
-            className={`p-1.5 transition-colors ${group.is_mother ? 'text-amber-400 hover:text-amber-300' : 'text-cult-medium-gray hover:text-amber-400'}`}
-          >
-            <Star className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDetail(group)}
-            title="View details"
-            className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
-          >
-            <Info className="w-4 h-4" />
-          </button>
-        </div>
+        <PlantGroupActionsMenu
+          group={group}
+          onDetail={() => onAction(group, 'detail')}
+          onMove={() => onAction(group, 'move')}
+          onAdvance={() => onAction(group, 'advance')}
+          onToggleMother={() => onAction(group, 'mother')}
+          onViewPlants={() => onAction(group, 'plants')}
+          onRefresh={onRefresh}
+        />
       </div>
     </div>
   );
 }
 
 export function PlantGroupsList() {
-  const { groups, loading, error, createGroup, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
+  const { groups, loading, error, reload, createGroup, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { rooms } = useGrowRooms();
 
   const [showNewModal, setShowNewModal] = useState(false);
-  const [movingGroup, setMovingGroup] = useState<PlantGroup | null>(null);
-  const [detailGroup, setDetailGroup] = useState<PlantGroup | null>(null);
-  const [advanceTarget, setAdvanceTarget] = useState<{ group: PlantGroup; toStage: GrowthStage } | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  function handleAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') {
+    setActionError(null);
+    if (action === 'mother') {
+      void (async () => {
+        try {
+          await setMotherStatus(group.id, !group.is_mother);
+        } catch (err: unknown) {
+          setActionError(err instanceof Error ? err.message : 'Failed to update mother status.');
+        }
+      })();
+      return;
+    }
+    setPendingAction({ type: action, group } as PendingAction);
+  }
+
   async function confirmAdvance() {
-    if (!advanceTarget) return;
+    if (!pendingAction || pendingAction.type !== 'advance') return;
+    const group = pendingAction.group;
+    const nextStage = NEXT_STAGE[group.growth_stage];
+    if (!nextStage) return;
     setActionError(null);
     try {
-      await advanceStage(advanceTarget.group.id, advanceTarget.toStage);
-      setAdvanceTarget(null);
+      await advanceStage(group.id, nextStage);
+      setPendingAction(null);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : 'Failed to advance stage.');
     }
   }
 
-  async function handleMoveRoom(group: PlantGroup, toRoomId: string) {
-    await moveToRoom(group.id, toRoomId);
-    setMovingGroup(null);
+  async function handleMoveRoom(toRoomId: string) {
+    if (!pendingAction || pendingAction.type !== 'move') return;
+    await moveToRoom(pendingAction.group.id, toRoomId);
+    setPendingAction(null);
   }
 
-  async function handleToggleMother(group: PlantGroup) {
-    try {
-      await setMotherStatus(group.id, !group.is_mother);
-    } catch (err: unknown) {
-      setActionError(err instanceof Error ? err.message : 'Failed to update mother status.');
-    }
-  }
+  const advanceGroup = pendingAction?.type === 'advance' ? pendingAction.group : null;
+  const nextStageForAdvance = advanceGroup ? NEXT_STAGE[advanceGroup.growth_stage] : null;
+  const isCloneToVeg = advanceGroup?.growth_stage === 'clone' && nextStageForAdvance === 'veg';
 
   if (loading) {
     return <div className="p-6 text-cult-light-gray">Loading plant groups...</div>;
@@ -180,10 +174,8 @@ export function PlantGroupsList() {
             <PlantGroupRow
               key={g.id}
               group={g}
-              onAdvanceStage={(grp, stage) => setAdvanceTarget({ group: grp, toStage: stage })}
-              onMoveRoom={setMovingGroup}
-              onToggleMother={handleToggleMother}
-              onDetail={setDetailGroup}
+              onAction={handleAction}
+              onRefresh={reload}
             />
           ))}
         </div>
@@ -201,31 +193,62 @@ export function PlantGroupsList() {
         />
       )}
 
-      {movingGroup && (
+      {pendingAction?.type === 'move' && (
         <MoveToRoomModal
-          group={movingGroup}
+          group={pendingAction.group}
           rooms={rooms}
-          onMove={(toRoomId) => handleMoveRoom(movingGroup, toRoomId)}
-          onCancel={() => setMovingGroup(null)}
+          onMove={handleMoveRoom}
+          onCancel={() => setPendingAction(null)}
         />
       )}
 
-      {detailGroup && (
+      {pendingAction?.type === 'detail' && (
         <PlantGroupDetailPanel
-          group={detailGroup}
-          onClose={() => setDetailGroup(null)}
+          group={pendingAction.group}
+          onClose={() => setPendingAction(null)}
         />
       )}
 
-      {advanceTarget && (
+      {pendingAction?.type === 'plants' && (
+        <PlantGroupDetailPanel
+          group={pendingAction.group}
+          onClose={() => setPendingAction(null)}
+          initialTab="plants"
+        />
+      )}
+
+      {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-2">Advance Stage</h3>
-            <p className="text-cult-light-gray text-sm mb-5">
-              Move <span className="text-cult-white font-mono">{advanceTarget.group.batch_registry?.batch_number ?? advanceTarget.group.strains?.name ?? 'this group'}</span> from{' '}
-              <span className="text-cult-white">{advanceTarget.group.growth_stage}</span> to{' '}
-              <span className="text-cult-white">{advanceTarget.toStage}</span>? This cannot be reversed.
+          <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6 space-y-4">
+            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">Advance Stage</h3>
+
+            {isCloneToVeg && (
+              <div className="flex items-start gap-2.5 bg-sky-950 border border-sky-700 text-sky-300 p-3 text-sm">
+                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-sky-400" />
+                <div>
+                  <span className="font-semibold block mb-0.5">Plant IDs will be auto-generated</span>
+                  {advanceGroup.plant_count} unique placeholder IDs will be created for this group.
+                  You can replace them with state-issued IDs at any time from the Plant IDs tab.
+                </div>
+              </div>
+            )}
+
+            <p className="text-cult-light-gray text-sm">
+              Move{' '}
+              <span className="text-cult-white font-mono">
+                {advanceGroup.batch_registry?.batch_number ?? advanceGroup.strains?.name ?? 'this group'}
+              </span>{' '}
+              from <span className="text-cult-white">{advanceGroup.growth_stage}</span> to{' '}
+              <span className="text-cult-white">{nextStageForAdvance}</span>? This cannot be reversed.
             </p>
+
+            {actionError && (
+              <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                {actionError}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <button
                 onClick={confirmAdvance}
@@ -234,7 +257,7 @@ export function PlantGroupsList() {
                 Confirm
               </button>
               <button
-                onClick={() => setAdvanceTarget(null)}
+                onClick={() => setPendingAction(null)}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
               >
                 Cancel

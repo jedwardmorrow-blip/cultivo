@@ -1,9 +1,9 @@
 ---
 title: CULTIVATION-RULES
 category: Cultivation Module
-version: 1.8
-updated: 2026-02-19
-status: IMPLEMENTED (C-37) + NEW (C-38 to C-42 — E-1 individual plants)
+version: 1.9
+updated: 2026-02-20
+status: IMPLEMENTED (C-42) + NEW (C-43 to C-44 — auto plant IDs, Settings-only room CRUD)
 ---
 
 # CULTIVATION — Invariants, Rules, and Constraints
@@ -135,6 +135,20 @@ status: IMPLEMENTED (C-37) + NEW (C-38 to C-42 — E-1 individual plants)
 │        cultivationService.bulkImportIndividualPlants(). Duplicate  │
 │        state_plant_ids are silently skipped (ignoreDuplicates).    │
 │        Invalid-format IDs are returned in the errors list.        │
+│ C-43. When a plant group advances from 'clone' to 'veg', the DB   │
+│        trigger trg_auto_generate_individual_plants automatically   │
+│        inserts one individual_plants row per plant in the group    │
+│        (up to plant_count). IDs are random 12-digit placeholder   │
+│        strings. If active individual_plants records already exist  │
+│        for the group (manually added during clone), auto-gen is   │
+│        skipped. Placeholders may be replaced via bulk import.     │
+│        The UI confirms this will happen before the advance call.  │
+│ C-44. Grow room CRUD (create, edit, archive, layout config) is    │
+│        ONLY accessible from Settings → Grow Rooms. The Cultivation│
+│        dashboard and all cultivation sub-views are read + action   │
+│        surfaces only: they show rooms and allow plant operations   │
+│        (flip, harvest, move, advance stage) but contain no room    │
+│        creation, editing, or archiving controls. C-27 extended.   │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

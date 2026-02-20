@@ -4,12 +4,13 @@ import { cultivationService } from '../services';
 import { IndividualPlantsTab } from './IndividualPlantsTab';
 import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory } from '../types';
 
+type Tab = 'history' | 'plants';
+
 interface PlantGroupDetailPanelProps {
   group: PlantGroup;
   onClose: () => void;
+  initialTab?: Tab;
 }
-
-type Tab = 'history' | 'plants';
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -24,11 +25,11 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function PlantGroupDetailPanel({ group, onClose }: PlantGroupDetailPanelProps) {
+export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }: PlantGroupDetailPanelProps) {
   const [stageHistory, setStageHistory] = useState<PlantGroupStageHistory[]>([]);
   const [roomHistory, setRoomHistory] = useState<PlantGroupRoomHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('history');
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   useEffect(() => {
     async function load() {

@@ -3,10 +3,18 @@ import { Sprout, Leaf, Scissors, Package, AlertTriangle, Flower } from 'lucide-r
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
-import { RoomMapCard } from './RoomMapCard';
+import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
+import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation } from '../utils';
-import type { PlantGroup } from '../types';
+import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
+
+const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
+  clone: 'veg',
+  veg: 'flower',
+  flower: 'harvested',
+  harvested: null,
+};
 
 interface StatCardProps {
   label: string;
@@ -51,15 +59,107 @@ function StageBadge({ stage, count }: StageBadgeProps) {
   );
 }
 
+const ROOM_TYPE_BORDER: Record<string, string> = {
+  clone: 'border-l-sky-700',
+  veg: 'border-l-green-700',
+  flower: 'border-l-rose-700',
+  mother: 'border-l-amber-700',
+  mixed: 'border-l-cult-medium-gray',
+};
+
+interface RoomCardProps {
+  room: GrowRoom;
+  groupCount: number;
+  plantCount: number;
+  onClick: () => void;
+}
+
+function RoomCard({ room, groupCount, plantCount, onClick }: RoomCardProps) {
+  const borderCls = ROOM_TYPE_BORDER[room.room_type] ?? ROOM_TYPE_BORDER.mixed;
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left bg-cult-near-black border border-cult-dark-gray border-l-4 ${borderCls} px-4 py-3 hover:border-cult-medium-gray hover:bg-cult-black transition-all group`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
+            <span className="text-xs border border-cult-dark-gray text-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider">
+              {room.room_type}
+            </span>
+          </div>
+          <span className="text-cult-light-gray text-xs truncate mt-0.5">{room.name}</span>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+          <span className="text-xs text-cult-light-gray">{groupCount} group{groupCount !== 1 ? 's' : ''}</span>
+          <span className="text-xs text-cult-medium-gray">{plantCount} plants</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+interface RoomSectionGroupProps {
+  title: string;
+  rooms: GrowRoom[];
+  groups: PlantGroup[];
+  onRoomClick: (room: GrowRoom) => void;
+}
+
+function RoomSectionGroup({ title, rooms, groups, onRoomClick }: RoomSectionGroupProps) {
+  if (rooms.length === 0) return null;
+
+  return (
+    <div>
+      <p className="text-xs text-cult-medium-gray uppercase tracking-widest font-semibold mb-2">
+        {title}
+      </p>
+      <div className="space-y-1.5">
+        {rooms.map((room) => {
+          const roomGroups = groups.filter((g) => g.grow_room_id === room.id);
+          const plantCount = roomGroups.reduce((s, g) => s + g.plant_count, 0);
+          return (
+            <RoomCard
+              key={room.id}
+              room={room}
+              groupCount={roomGroups.length}
+              plantCount={plantCount}
+              onClick={() => onRoomClick(room)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+type PendingAction =
+  | { type: 'detail'; group: PlantGroup }
+  | { type: 'move'; group: PlantGroup }
+  | { type: 'advance'; group: PlantGroup }
+  | { type: 'mother'; group: PlantGroup }
+  | { type: 'plants'; group: PlantGroup };
+
 export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
-  const { groups, loading: groupsLoading } = usePlantGroups({ stage: 'active' });
+  const { groups, loading: groupsLoading, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
-  const [selectedGroup, setSelectedGroup] = useState<PlantGroup | null>(null);
+
+  const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [advanceError, setAdvanceError] = useState<string | null>(null);
 
   const loading = roomsLoading || groupsLoading || sessionsLoading;
 
   const activeRooms = rooms.filter((r) => r.is_active);
+
+  const motherRooms = activeRooms.filter((r) => r.room_type === 'mother');
+  const vegRooms = activeRooms.filter((r) => r.room_type === 'veg');
+  const flowerRooms = activeRooms.filter((r) => r.room_type === 'flower');
+  const cloneRooms = activeRooms.filter((r) => r.room_type === 'clone');
+  const mixedRooms = activeRooms.filter((r) => r.room_type === 'mixed');
 
   const stageCounts = {
     clone: groups.filter((g) => g.growth_stage === 'clone').length,
@@ -78,9 +178,48 @@ export function CultivationDashboard() {
     )
   );
 
+  function handleGroupAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants') {
+    setPendingAction({ type: action, group } as PendingAction);
+  }
+
+  async function confirmAdvance() {
+    if (!pendingAction || pendingAction.type !== 'advance') return;
+    const group = pendingAction.group;
+    const nextStage = NEXT_STAGE[group.growth_stage];
+    if (!nextStage) return;
+    setAdvanceError(null);
+    try {
+      await advanceStage(group.id, nextStage);
+      setPendingAction(null);
+    } catch (err: unknown) {
+      setAdvanceError(err instanceof Error ? err.message : 'Failed to advance stage.');
+    }
+  }
+
+  async function handleMoveRoom(toRoomId: string) {
+    if (!pendingAction || pendingAction.type !== 'move') return;
+    await moveToRoom(pendingAction.group.id, toRoomId);
+    setPendingAction(null);
+  }
+
+  async function handleToggleMother() {
+    if (!pendingAction || pendingAction.type !== 'mother') return;
+    const group = pendingAction.group;
+    try {
+      await setMotherStatus(group.id, !group.is_mother);
+    } catch {
+      // silent
+    }
+    setPendingAction(null);
+  }
+
   if (loading) {
     return <div className="p-6 text-cult-light-gray">Loading cultivation data...</div>;
   }
+
+  const advanceGroup = pendingAction?.type === 'advance' ? pendingAction.group : null;
+  const nextStageForAdvance = advanceGroup ? NEXT_STAGE[advanceGroup.growth_stage] : null;
+  const isCloneToVeg = advanceGroup?.growth_stage === 'clone' && nextStageForAdvance === 'veg';
 
   return (
     <div className="space-y-6">
@@ -172,26 +311,138 @@ export function CultivationDashboard() {
       </div>
 
       {activeRooms.length > 0 && (
-        <div>
-          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-3">Grow Rooms</h2>
-          <div className="space-y-2">
-            {activeRooms.map((room) => (
-              <RoomMapCard
-                key={room.id}
-                room={room}
-                onGroupSelect={setSelectedGroup}
-                preloadedGroups={groups}
-              />
-            ))}
+        <div className="bg-cult-near-black border border-cult-medium-gray p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs text-cult-light-gray uppercase tracking-wider">Grow Rooms</h2>
+            <a
+              href="/settings"
+              className="text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors underline underline-offset-2"
+            >
+              Manage in Settings
+            </a>
+          </div>
+          <div className="space-y-5">
+            <RoomSectionGroup
+              title="Mother"
+              rooms={motherRooms}
+              groups={groups}
+              onRoomClick={setSelectedRoom}
+            />
+            <RoomSectionGroup
+              title="Clone"
+              rooms={cloneRooms}
+              groups={groups}
+              onRoomClick={setSelectedRoom}
+            />
+            <RoomSectionGroup
+              title="Veg"
+              rooms={vegRooms}
+              groups={groups}
+              onRoomClick={setSelectedRoom}
+            />
+            <RoomSectionGroup
+              title="Flower"
+              rooms={flowerRooms}
+              groups={groups}
+              onRoomClick={setSelectedRoom}
+            />
+            <RoomSectionGroup
+              title="Mixed"
+              rooms={mixedRooms}
+              groups={groups}
+              onRoomClick={setSelectedRoom}
+            />
           </div>
         </div>
       )}
 
-      {selectedGroup && (
-        <PlantGroupDetailPanel
-          group={selectedGroup}
-          onClose={() => setSelectedGroup(null)}
+      {selectedRoom && (
+        <RoomDetailDrawer
+          room={selectedRoom}
+          preloadedGroups={groups}
+          onClose={() => setSelectedRoom(null)}
+          onGroupAction={handleGroupAction}
         />
+      )}
+
+      {pendingAction?.type === 'detail' && (
+        <PlantGroupDetailPanel
+          group={pendingAction.group}
+          onClose={() => setPendingAction(null)}
+        />
+      )}
+
+      {pendingAction?.type === 'plants' && (
+        <PlantGroupDetailPanel
+          group={pendingAction.group}
+          onClose={() => setPendingAction(null)}
+          initialTab="plants"
+        />
+      )}
+
+      {pendingAction?.type === 'move' && (
+        <MoveToRoomModal
+          group={pendingAction.group}
+          rooms={rooms}
+          onMove={handleMoveRoom}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
+
+      {pendingAction?.type === 'mother' && (
+        (() => { void handleToggleMother(); return null; })()
+      )}
+
+      {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+          <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6 space-y-4">
+            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">
+              Advance Stage
+            </h3>
+
+            {isCloneToVeg && (
+              <div className="flex items-start gap-2.5 bg-sky-950 border border-sky-700 text-sky-300 p-3 text-sm">
+                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-sky-400" />
+                <div>
+                  <span className="font-semibold block mb-0.5">Plant IDs will be auto-generated</span>
+                  {advanceGroup.plant_count} unique placeholder IDs will be created for this group.
+                  You can replace them with state-issued IDs at any time from the Plant IDs tab.
+                </div>
+              </div>
+            )}
+
+            <p className="text-cult-light-gray text-sm">
+              Move{' '}
+              <span className="text-cult-white font-mono">
+                {advanceGroup.batch_registry?.batch_number ?? advanceGroup.strains?.name ?? 'this group'}
+              </span>{' '}
+              from <span className="text-cult-white">{advanceGroup.growth_stage}</span> to{' '}
+              <span className="text-cult-white">{nextStageForAdvance}</span>? This cannot be reversed.
+            </p>
+
+            {advanceError && (
+              <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                {advanceError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={confirmAdvance}
+                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => { setPendingAction(null); setAdvanceError(null); }}
+                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

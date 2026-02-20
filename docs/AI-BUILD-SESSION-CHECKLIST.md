@@ -15,29 +15,51 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-20
-**Session:** D-10 — Cultivation Room Data Loading Performance
+**Session:** D-11 — Cultivation UX Overhaul (Room Drawer, Actions Menu, Auto Plant IDs)
 **Status:** COMPLETE
 
 **What was done:**
 
-Eliminated N+1 query pattern and over-fetching that caused slow cultivation room loading.
+Three UX improvements to the cultivation module, all aligned with existing architecture decisions:
 
-Key changes:
-- **Migration** `add_cultivation_performance_indexes` — composite index `idx_plant_groups_room_stage` on `(grow_room_id, growth_stage)`; partial index `idx_grow_rooms_active_code` on `grow_rooms WHERE is_active = true`
-- `cultivation.service.ts` — added `PLANT_GROUP_SUMMARY_SELECT` (omits `grow_rooms` join and `mother_group` self-join); `listPlantGroups`, `listPlantGroupsByRoom`, `listMotherGroups` now use it; `getPlantGroup` keeps full select; `listUnbinnedHarvestSessions` now parallelizes its two queries via `Promise.all` and filters in memory
-- `RoomMapCard.tsx` — accepts optional `preloadedGroups?: PlantGroup[]` prop; when provided, filters in memory instead of fetching
-- `CultivationDashboard.tsx` — passes its already-fetched `groups` array as `preloadedGroups` to each `RoomMapCard`
+**1. Auto-generated individual plant IDs on clone-to-veg**
+- **Migration** `20260220130000_auto_generate_individual_plants_on_veg.sql` — adds `fn_generate_plant_id()` (generates unique 12-digit numeric IDs with collision avoidance) and DB trigger `trg_auto_generate_individual_plants` that fires AFTER UPDATE on `plant_groups` when `growth_stage` changes from `'clone'` to `'veg'`. Inserts one `individual_plants` row per plant in the group, skipped if active rows already exist.
+- New invariant **C-43** added to CULTIVATION-RULES.md documenting this behavior.
+- Both `PlantGroupsList` and `CultivationDashboard` advance-stage confirmation modals show a notification banner when the transition is clone → veg, informing the user that IDs will be auto-generated.
 
-**Result:** Cultivation dashboard page load drops from ~11--22 queries to 3 (rooms + groups + harvest sessions).
+**2. Room Detail Drawer**
+- New component `RoomDetailDrawer.tsx` — near-full-screen slide-in overlay (max-w-4xl) triggered by clicking any room card. Contains: room header with type, capacity, flip/day/harvest date for flower rooms; full `RoomMapGrid` table/section layout; unplaced groups list; all-groups list with plant details. Has a "Configure in Settings" link; no room CRUD controls.
+- New invariant **C-44** added to CULTIVATION-RULES.md: grow room CRUD is Settings-only.
+
+**3. Plant Group Actions Menu (3-dot kebab)**
+- New component `PlantGroupActionsMenu.tsx` — single `...` button replacing the scattered row-level icon buttons. Context-aware: shows "Move to Veg" / "Move to Flower" labels based on current stage; shows "Remove Mother Status" vs "Mark as Mother" based on current state; hides "advance" option when at harvested stage.
+- Used in: `PlantGroupsList` rows, `RoomDetailDrawer` grid cells and unplaced/all-groups lists.
+- `PlantGroupDetailPanel` updated to accept `initialTab?: 'history' | 'plants'` prop so "View Plant IDs" menu item can deep-link directly to the plant IDs tab.
+
+**4. Dashboard room cards**
+- `CultivationDashboard` rooms section now groups rooms by type (Mother / Clone / Veg / Flower / Mixed) with section headers and left-border accent stripes. Clicking a room card opens the `RoomDetailDrawer` instead of expanding inline.
+- "Manage in Settings" link added next to the Grow Rooms section header.
+
+**Files changed:**
+- `supabase/migrations/20260220130000_auto_generate_individual_plants_on_veg.sql` (new)
+- `src/features/cultivation/components/PlantGroupActionsMenu.tsx` (new)
+- `src/features/cultivation/components/RoomDetailDrawer.tsx` (new)
+- `src/features/cultivation/components/CultivationDashboard.tsx` (rewritten)
+- `src/features/cultivation/components/PlantGroupsList.tsx` (rewritten)
+- `src/features/cultivation/components/PlantGroupDetailPanel.tsx` (added `initialTab` prop)
+- `src/features/cultivation/components/index.ts` (added 2 new exports)
+- `docs/CULTIVATION-RULES.md` (added C-43, C-44; version 1.9)
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` (this file)
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 
 **Next recommendations (in order):**
-1. **Real plant data** — user mentioned they are about to add physical plants; first live data test of the cultivation module
+1. **Real plant data** — first live data test of cultivation module with real plants
 2. **Module status update** — update `docs/MODULE-STATUS.md` cultivation entry from "pending" to "complete"
-3. **HarvestSessionsList batch link** — completed harvest session rows still lack a "View Batch" navigation link (only Binning Sessions have it); add `onViewChange` → `'batches'` link
+3. **HarvestSessionsList batch link** — completed harvest session rows still lack a "View Batch" link; add `onViewChange` → `'batches'`
+4. **Plant group grouping in PlantGroupsList** — consider grouping by room type (matching the dashboard card grouping) for consistency
 
 ---
 
