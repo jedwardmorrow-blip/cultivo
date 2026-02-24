@@ -1,10 +1,43 @@
-import { Package, Archive, Box, Leaf, Clock, Printer } from 'lucide-react';
+import { useMemo } from 'react';
+import { Package, Scale, Leaf, Clock, Printer, Box, Scissors } from 'lucide-react';
 import { DailyInventoryActivity } from './DailyInventoryActivity';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
 import { useInventoryLabel } from '../hooks';
 import type { InventoryItem, InventoryStats, BulkStats, PackagedStats, BulkSubTab } from '../types';
+
+function formatWeight(grams: number): string {
+  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
+  return `${grams.toFixed(0)}g`;
+}
+
+function LabelPrintButton({ item, labelHook }: { item: InventoryItem; labelHook: ReturnType<typeof useInventoryLabel> }) {
+  return (
+    <button
+      onClick={() => labelHook.openLabel(item)}
+      className="p-1.5 rounded-md hover:bg-cult-medium-gray/60 text-cult-lighter-gray hover:text-cult-white transition-colors"
+      title="Print Label"
+    >
+      <Printer className="w-4 h-4" />
+    </button>
+  );
+}
+
+function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLabel> }) {
+  return (
+    <InventoryLabelPrintModal
+      isOpen={labelHook.isOpen}
+      isLoading={labelHook.isLoading}
+      isPrinting={labelHook.isPrinting}
+      labelData={labelHook.labelData}
+      logoDataUrl={labelHook.logoDataUrl}
+      error={labelHook.error}
+      onClose={labelHook.closeLabel}
+      onPrint={labelHook.printLabel}
+    />
+  );
+}
 
 interface BinnedViewProps {
   items: InventoryItem[];
@@ -14,88 +47,74 @@ interface BinnedViewProps {
 export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
   const labelHook = useInventoryLabel();
 
+  const sortedItems = useMemo(() =>
+    [...items].sort((a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()),
+    [items]
+  );
+
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-8 h-8 text-green-500" />} />
-        <StatsCard label="Total Weight (g)" value={stats.totalWeight.toFixed(0)} icon={<Archive className="w-8 h-8 text-blue-500" />} />
-        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Package className="w-8 h-8 text-purple-500" />} />
-        <StatsCard label="Oldest Package" value={`${stats.oldestPackage || 0} days`} icon={<Clock className="w-8 h-8 text-amber-500" />} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
+        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-blue-800/40" />
+        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
+        <StatsCard
+          label="Oldest Package"
+          value={`${stats.oldestPackage || 0}d`}
+          icon={<Clock className="w-5 h-5" />}
+          accentColor={(stats.oldestPackage || 0) > 14 ? 'border-amber-700/60' : 'border-cult-medium-gray'}
+          subtitle={(stats.oldestPackage || 0) > 14 ? 'Aging - consider processing' : undefined}
+        />
       </div>
 
       {(stats.oldestPackage || 0) > 14 && (
-        <div className="mb-6 p-4 bg-amber-900/20 border border-amber-700 rounded-lg">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <div>
-              <h3 className="text-amber-400 font-bold uppercase tracking-wider">Aging Alert</h3>
-              <p className="text-amber-200 text-sm mt-1">
-                You have binned material that's been waiting {stats.oldestPackage} days. Consider processing soon for optimal quality.
-              </p>
-            </div>
-          </div>
+        <div className="mb-6 px-4 py-3 bg-amber-900/10 border border-amber-800/40 rounded-lg flex items-center gap-3">
+          <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <p className="text-amber-300/90 text-sm">
+            Binned material waiting <span className="font-semibold">{stats.oldestPackage} days</span> -- process soon for optimal quality.
+          </p>
         </div>
       )}
 
       <InventoryTable
-        items={items.sort((a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime())}
+        items={sortedItems}
+        searchable
+        searchPlaceholder="Search binned inventory..."
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-white">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
-            header: 'Status',
-            accessor: 'status',
-            align: 'center',
-            format: (val) => <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">{val || 'Fresh'}</span>
-          },
-          {
-            header: 'Days in Binned',
+            header: 'Age',
             accessor: (item) => Math.floor((Date.now() - new Date(item.last_updated).getTime()) / (1000 * 60 * 60 * 24)),
             align: 'center',
+            sortable: false,
             format: (days) => {
               const isAging = days > 14;
               return (
-                <span className={`px-2 py-1 rounded text-xs font-medium ${isAging ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {days} days
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isAging ? 'bg-amber-900/30 text-amber-400' : 'text-cult-silver'}`}>
+                  {days}d
                 </span>
               );
             }
           },
           {
-            header: 'Actions',
+            header: '',
             accessor: (item) => item,
             align: 'center',
-            format: (_, item) => (
-              <button
-                onClick={() => labelHook.openLabel(item)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors"
-                title="Print Label"
-              >
-                <Printer className="w-4 h-4 text-gray-400 hover:text-white" />
-              </button>
-            )
+            sortable: false,
+            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
           },
         ]}
-        emptyIcon={<Leaf className="w-12 h-12 text-gray-400 mx-auto mb-3" />}
-        emptyMessage="No binned inventory found"
+        emptyMessage="No binned inventory"
         rowClassName={(item) => {
           const days = Math.floor((Date.now() - new Date(item.last_updated).getTime()) / (1000 * 60 * 60 * 24));
-          return days > 14 ? 'bg-amber-900/10' : '';
+          return days > 14 ? 'bg-amber-900/5' : '';
         }}
       />
-      <InventoryLabelPrintModal
-        isOpen={labelHook.isOpen}
-        isLoading={labelHook.isLoading}
-        isPrinting={labelHook.isPrinting}
-        labelData={labelHook.labelData}
-        logoDataUrl={labelHook.logoDataUrl}
-        error={labelHook.error}
-        onClose={labelHook.closeLabel}
-        onPrint={labelHook.printLabel}
-      />
+      <LabelModal labelHook={labelHook} />
     </>
   );
 }
@@ -110,53 +129,40 @@ export function BuckedInventoryView({ items, stats }: BuckedViewProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-8 h-8 text-blue-500" />} />
-        <StatsCard label="Total Weight (g)" value={stats.totalWeight.toFixed(0)} icon={<Archive className="w-8 h-8 text-orange-500" />} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-blue-800/40" />
+        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cyan-800/40" />
+        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
       </div>
 
       <InventoryTable
         items={items}
+        searchable
+        searchPlaceholder="Search bucked inventory..."
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-white">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
             header: 'Status',
             accessor: 'status',
             align: 'center',
-            format: (val) => <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">{val || 'Ready'}</span>
+            sortable: false,
+            format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400">{val || 'Ready'}</span>
           },
           {
-            header: 'Actions',
+            header: '',
             accessor: (item) => item,
             align: 'center',
-            format: (_, item) => (
-              <button
-                onClick={() => labelHook.openLabel(item)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors"
-                title="Print Label"
-              >
-                <Printer className="w-4 h-4 text-gray-400 hover:text-white" />
-              </button>
-            )
+            sortable: false,
+            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
           },
         ]}
-        emptyIcon={<Archive className="w-12 h-12 text-gray-400 mx-auto mb-3" />}
-        emptyMessage="No bucked inventory found"
+        emptyMessage="No bucked inventory"
       />
-      <InventoryLabelPrintModal
-        isOpen={labelHook.isOpen}
-        isLoading={labelHook.isLoading}
-        isPrinting={labelHook.isPrinting}
-        labelData={labelHook.labelData}
-        logoDataUrl={labelHook.logoDataUrl}
-        error={labelHook.error}
-        onClose={labelHook.closeLabel}
-        onPrint={labelHook.printLabel}
-      />
+      <LabelModal labelHook={labelHook} />
     </>
   );
 }
@@ -168,79 +174,89 @@ interface BulkViewProps {
   onSubTabChange: (tab: BulkSubTab) => void;
 }
 
+const bulkTabs: { key: BulkSubTab; label: string; icon: typeof Leaf }[] = [
+  { key: 'flower', label: 'Flower', icon: Leaf },
+  { key: 'smalls', label: 'Smalls', icon: Package },
+  { key: 'trim', label: 'Trim', icon: Scissors },
+];
+
+function getBulkTabCount(items: InventoryItem[], tab: BulkSubTab): number {
+  return items.filter(item => {
+    const name = item.product_name?.toLowerCase() || '';
+    if (tab === 'flower') return name.includes('flower') && !name.includes('smalls');
+    if (tab === 'smalls') return name.includes('smalls');
+    if (tab === 'trim') return name.includes('trim');
+    return false;
+  }).length;
+}
+
 export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: BulkViewProps) {
   const labelHook = useInventoryLabel();
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = useMemo(() => items.filter(item => {
     const name = item.product_name?.toLowerCase() || '';
-    if (subTab === 'flower') return name.includes('flower');
+    if (subTab === 'flower') return name.includes('flower') && !name.includes('smalls');
     if (subTab === 'smalls') return name.includes('smalls');
     if (subTab === 'trim') return name.includes('trim');
     return false;
-  });
+  }), [items, subTab]);
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-8 h-8 text-green-500" />} />
-        <StatsCard label="Flower (g)" value={stats.flower.toFixed(0)} icon={<Leaf className="w-8 h-8 text-green-600" />} />
-        <StatsCard label="Smalls (g)" value={stats.smalls.toFixed(0)} icon={<Archive className="w-8 h-8 text-yellow-500" />} />
-        <StatsCard label="Trim (g)" value={stats.trim.toFixed(0)} icon={<Box className="w-8 h-8 text-orange-500" />} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
+        <StatsCard label="Flower" value={formatWeight(stats.flower)} icon={<Leaf className="w-5 h-5" />} accentColor="border-green-800/40" />
+        <StatsCard label="Smalls" value={formatWeight(stats.smalls)} icon={<Package className="w-5 h-5" />} accentColor="border-amber-800/40" />
+        <StatsCard label="Trim" value={formatWeight(stats.trim)} icon={<Scissors className="w-5 h-5" />} accentColor="border-orange-800/40" />
       </div>
 
-      <div className="mb-6 flex gap-2">
-        {(['flower', 'smalls', 'trim'] as BulkSubTab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => onSubTabChange(tab)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              subTab === tab
-                ? 'bg-white text-cult-black'
-                : 'bg-cult-dark-gray text-white hover:bg-gray-700'
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
+      <div className="mb-6 flex gap-1 p-1 bg-cult-dark-gray rounded-lg w-fit">
+        {bulkTabs.map(({ key, label, icon: Icon }) => {
+          const count = getBulkTabCount(items, key);
+          return (
+            <button
+              key={key}
+              onClick={() => onSubTabChange(key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                subTab === key
+                  ? 'bg-cult-medium-gray text-cult-white shadow-sm'
+                  : 'text-cult-silver hover:text-cult-white'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                subTab === key ? 'bg-cult-lighter-gray/30 text-cult-white' : 'bg-cult-medium-gray/50 text-cult-lighter-gray'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <InventoryTable
         items={filteredItems}
+        searchable
+        searchPlaceholder={`Search bulk ${subTab}...`}
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-white">{val}</span> },
-          { header: 'Product Name', accessor: 'product_name', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-white">{(val || 0).toFixed(1)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
+          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
           {
-            header: 'Actions',
+            header: '',
             accessor: (item) => item,
             align: 'center',
-            format: (_, item) => (
-              <button
-                onClick={() => labelHook.openLabel(item)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors"
-                title="Print Label"
-              >
-                <Printer className="w-4 h-4 text-gray-400 hover:text-white" />
-              </button>
-            )
+            sortable: false,
+            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
           },
         ]}
-        emptyIcon={<Box className="w-12 h-12 text-gray-400 mx-auto mb-3" />}
-        emptyMessage={`No bulk ${subTab} inventory found`}
+        emptyMessage={`No bulk ${subTab} inventory`}
       />
-      <InventoryLabelPrintModal
-        isOpen={labelHook.isOpen}
-        isLoading={labelHook.isLoading}
-        isPrinting={labelHook.isPrinting}
-        labelData={labelHook.labelData}
-        logoDataUrl={labelHook.logoDataUrl}
-        error={labelHook.error}
-        onClose={labelHook.closeLabel}
-        onPrint={labelHook.printLabel}
-      />
+      <LabelModal labelHook={labelHook} />
     </>
   );
 }
@@ -255,49 +271,34 @@ export function PackagedInventoryView({ items, stats }: PackagedViewProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <StatsCard label="Total Units" value={stats.totalUnits.toFixed(0)} icon={<Package className="w-8 h-8 text-purple-500" />} />
-        <StatsCard label="3.5g Units" value={stats.total_3_5g.toFixed(0)} icon={<Box className="w-8 h-8 text-blue-500" />} />
-        <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Archive className="w-8 h-8 text-green-500" />} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatsCard label="Total Units" value={stats.totalUnits.toFixed(0)} icon={<Box className="w-5 h-5" />} accentColor="border-teal-800/40" />
+        <StatsCard label="3.5g Units" value={stats.total_3_5g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-blue-800/40" />
+        <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
       </div>
 
       <InventoryTable
         items={items}
+        searchable
+        searchPlaceholder="Search packaged inventory..."
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-white">{val}</span> },
-          { header: 'Product Name', accessor: 'product_name', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-light-gray">{val || '-'}</span> },
-          { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-white">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
+          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
+          { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
-            header: 'Actions',
+            header: '',
             accessor: (item) => item,
             align: 'center',
-            format: (_, item) => (
-              <button
-                onClick={() => labelHook.openLabel(item)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors"
-                title="Print Label"
-              >
-                <Printer className="w-4 h-4 text-gray-400 hover:text-white" />
-              </button>
-            )
+            sortable: false,
+            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
           },
         ]}
-        emptyIcon={<Box className="w-12 h-12 text-gray-400 mx-auto mb-3" />}
-        emptyMessage="No packaged inventory found"
+        emptyMessage="No packaged inventory"
       />
-      <InventoryLabelPrintModal
-        isOpen={labelHook.isOpen}
-        isLoading={labelHook.isLoading}
-        isPrinting={labelHook.isPrinting}
-        labelData={labelHook.labelData}
-        logoDataUrl={labelHook.logoDataUrl}
-        error={labelHook.error}
-        onClose={labelHook.closeLabel}
-        onPrint={labelHook.printLabel}
-      />
+      <LabelModal labelHook={labelHook} />
     </>
   );
 }

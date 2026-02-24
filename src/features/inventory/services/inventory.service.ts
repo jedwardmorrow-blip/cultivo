@@ -99,30 +99,6 @@ export async function searchInventory(searchTerm: string) {
 }
 
 /**
- * Fetches inventory overview data for aggregation and analysis
- *
- * @returns Promise<{ data: Array<{stage: string, quantity_grams: number, strain_name: string}> | null; error: any }>
- * @description Returns raw inventory data grouped by stage and strain for dashboard widgets
- * @example
- * const { data, error } = await getInventoryOverview();
- * // Data can be aggregated client-side by stage, strain, etc.
- */
-export async function getInventoryOverview() {
-  try {
-    const { data, error } = await supabase
-      .from('inventory_items')
-      .select('stage, quantity_grams, strain_name')
-      .order('strain_name');
-
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    errorService.handle(error, 'Failed to load inventory overview');
-    return { data: null, error };
-  }
-}
-
-/**
  * Creates a new inventory snapshot record from CSV import
  *
  * @param snapshotData - Snapshot metadata including import_date, source_file, notes
@@ -283,35 +259,6 @@ export async function getConversionLots(stage?: string) {
   } catch (error) {
     errorService.handle(error, 'Failed to load conversion lots');
     return { data: null, error };
-  }
-}
-
-/**
- * Updates the lock status of a conversion lot
- *
- * @param lotId - Conversion lot UUID
- * @param isLocked - True to lock the lot, false to unlock
- * @returns Promise<{ error: any | null }>
- * @description Prevents simultaneous conversions from using the same source material
- * @example
- * // Lock a lot before starting conversion
- * await updateConversionLotLock(lotId, true);
- *
- * // Unlock after conversion completes
- * await updateConversionLotLock(lotId, false);
- */
-export async function updateConversionLotLock(lotId: string, isLocked: boolean) {
-  try {
-    const { error } = await supabase
-      .from('conversion_lots')
-      .update({ is_locked: isLocked, updated_at: new Date().toISOString() })
-      .eq('id', lotId);
-
-    if (error) throw error;
-    return { error: null };
-  } catch (error) {
-    errorService.handle(error, 'Failed to update conversion lot lock');
-    return { error };
   }
 }
 

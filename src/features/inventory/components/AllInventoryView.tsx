@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Package, Archive, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2, Archive } from 'lucide-react';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
@@ -16,72 +16,41 @@ interface AllInventoryViewProps {
   onStageFilterChange: (filter: StageFilter) => void;
 }
 
-/**
- * AllInventoryView Component
- *
- * Displays all inventory items across all stages (Binned, Bucked, Bulk, Packaged) in a unified table.
- * Filtering is controlled by the sidebar navigation - clicking stage buttons filters the view.
- *
- * Stage Flow: Binned → Bucked → Bulk → Packaged
- * - Binned: Fresh flower directly from harvest
- * - Bucked: Flower that has been bucked (stems removed)
- * - Bulk: Processed flower, smalls, and trim ready for packaging
- * - Packaged: Final packaged products ready for distribution
- */
+function formatWeight(grams: number): string {
+  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
+  return `${grams.toFixed(0)}g`;
+}
+
+const stageBadgeStyles: Record<string, string> = {
+  binned: 'bg-emerald-900/30 text-emerald-400',
+  bucked: 'bg-blue-900/30 text-blue-400',
+  bulk: 'bg-amber-900/30 text-amber-400',
+  packaged: 'bg-teal-900/30 text-teal-400',
+};
+
+const stageBreakdownConfig = [
+  { key: 'binnedCount' as const, label: 'Binned', icon: Leaf, color: 'text-emerald-400', borderColor: 'border-emerald-800/40' },
+  { key: 'buckedCount' as const, label: 'Bucked', icon: Archive, color: 'text-blue-400', borderColor: 'border-blue-800/40' },
+  { key: 'bulkCount' as const, label: 'Bulk', icon: Box, color: 'text-amber-400', borderColor: 'border-amber-800/40' },
+  { key: 'packagedCount' as const, label: 'Packaged', icon: Package, color: 'text-teal-400', borderColor: 'border-teal-800/40' },
+];
+
 export function AllInventoryView({ items, stats, stageFilter }: AllInventoryViewProps) {
   const labelHook = useInventoryLabel();
 
-  // Multi-select state for combining packages
   const [selectedPackageIds, setSelectedPackageIds] = useState<Set<string>>(new Set());
   const [showCombineModal, setShowCombineModal] = useState(false);
   const [combineError, setCombineError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Filter items based on selected stage
   const filteredItems = useMemo(() => {
-    if (stageFilter === 'all') {
-      return items;
-    }
-
-    return items.filter((item) => {
-      const itemStage = getItemStage(item);
-      return itemStage === stageFilter;
-    });
+    if (stageFilter === 'all') return items;
+    return items.filter((item) => getItemStage(item) === stageFilter);
   }, [items, stageFilter]);
 
-  // Get badge color for stage indicator
-  const getStageBadgeColor = (stage: string | null) => {
-    switch (stage) {
-      case 'binned':
-        return 'bg-green-100 text-green-700';
-      case 'bucked':
-        return 'bg-blue-100 text-blue-700';
-      case 'bulk':
-        return 'bg-orange-100 text-orange-700';
-      case 'packaged':
-        return 'bg-purple-100 text-purple-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  // Get stage display name
-  const getStageDisplayName = (stage: string | null) => {
-    if (!stage) return 'Unknown';
-    return stage.charAt(0).toUpperCase() + stage.slice(1);
-  };
-
-  // Clear all selections
-  const clearSelections = useCallback(() => {
-    setSelectedPackageIds(new Set());
-    setCombineError(null);
-  }, []);
-
-  // Get selected packages data (memoized for performance)
   const selectedPackages = useMemo(() => {
     if (selectedPackageIds.size === 0) return [];
-
     return filteredItems
       .filter((item) => selectedPackageIds.has(item.id))
       .map((item): SelectedPackage => ({
@@ -99,7 +68,6 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
       }));
   }, [filteredItems, selectedPackageIds]);
 
-  // Validate package selection for combining
   const validateCombination = useCallback((): boolean => {
     setIsValidating(true);
 
@@ -109,7 +77,6 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
       return false;
     }
 
-    // Check batch compatibility
     const uniqueBatches = new Set(selectedPackages.map((p) => p.batch_id));
     if (uniqueBatches.size > 1) {
       const batchNumbers = Array.from(new Set(selectedPackages.map(p => p.batch_number)));
@@ -118,7 +85,6 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
       return false;
     }
 
-    // Check product compatibility
     const uniqueProducts = new Set(selectedPackages.map((p) => p.product_id));
     if (uniqueProducts.size > 1) {
       const productNames = Array.from(new Set(selectedPackages.map(p => p.product_name)));
@@ -127,7 +93,6 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
       return false;
     }
 
-    // Check stage compatibility
     const uniqueStages = new Set(selectedPackages.map((p) => p.product_stage_id));
     if (uniqueStages.size > 1) {
       const stageNames = Array.from(new Set(selectedPackages.map(p => p.stage_name)));
@@ -141,33 +106,28 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
     return true;
   }, [selectedPackages]);
 
-  // Open combine modal
+  const clearSelections = useCallback(() => {
+    setSelectedPackageIds(new Set());
+    setCombineError(null);
+  }, []);
+
   const handleCombineClick = useCallback(() => {
     if (validateCombination()) {
       setShowCombineModal(true);
     }
   }, [validateCombination]);
 
-  // Handle combine completion
   const handleCombineComplete = useCallback(() => {
     setShowCombineModal(false);
     setShowSuccessMessage(true);
     clearSelections();
-
-    // Auto-hide success message after 3 seconds
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 3000);
-
-    // Parent component will refresh data via subscription
+    setTimeout(() => { setShowSuccessMessage(false); }, 3000);
   }, [clearSelections]);
 
-  // Handle combine modal close
   const handleCombineClose = useCallback(() => {
     setShowCombineModal(false);
   }, []);
 
-  // Auto-clear error when selection changes
   useEffect(() => {
     if (combineError && selectedPackageIds.size > 0) {
       setCombineError(null);
@@ -176,40 +136,42 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
 
   return (
     <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           label="Total Packages"
           value={stats.totalPackages}
-          icon={<Package className="w-8 h-8 text-white" />}
+          icon={<Package className="w-5 h-5" />}
+          accentColor="border-cult-medium-gray"
         />
         <StatsCard
-          label="Total Weight (g)"
-          value={stats.totalWeight.toFixed(0)}
-          icon={<Archive className="w-8 h-8 text-blue-400" />}
+          label="Total Weight"
+          value={formatWeight(stats.totalWeight)}
+          icon={<Scale className="w-5 h-5" />}
+          accentColor="border-blue-800/40"
         />
         <StatsCard
           label="Unique Strains"
           value={stats.strainCount}
-          icon={<Leaf className="w-8 h-8 text-green-400" />}
+          icon={<Leaf className="w-5 h-5" />}
+          accentColor="border-emerald-800/40"
         />
         <StatsCard
           label="Packaged Units"
           value={stats.packagedCount}
-          icon={<Box className="w-8 h-8 text-purple-400" />}
+          icon={<Box className="w-5 h-5" />}
+          accentColor="border-teal-800/40"
         />
       </div>
 
-      {/* Success Message */}
       {showSuccessMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 animate-fade-in">
+        <div className="bg-emerald-900/15 border border-emerald-800/40 rounded-lg p-4 mb-6 animate-fade-in">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-green-900">
+              <p className="text-sm font-medium text-emerald-300">
                 Packages combined successfully!
               </p>
-              <p className="text-xs text-green-700 mt-1">
+              <p className="text-xs text-emerald-400/70 mt-1">
                 Your inventory has been updated with the new combined package.
               </p>
             </div>
@@ -217,28 +179,26 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
         </div>
       )}
 
-      {/* Selection Banner */}
       {selectedPackageIds.size > 0 && (
         <div className={`rounded-lg p-4 mb-6 transition-all ${
-          combineError ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200'
+          combineError
+            ? 'bg-red-900/15 border border-red-800/40'
+            : 'bg-blue-900/15 border border-blue-800/40'
         }`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-4 min-w-0">
               {combineError ? (
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
               ) : (
-                <Package className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <Package className="w-5 h-5 text-blue-400 flex-shrink-0" />
               )}
-              <div className="flex-1">
-                <p className={`text-sm font-medium ${
-                  combineError ? 'text-red-900' : 'text-blue-900'
-                }`}>
+              <div className="min-w-0">
+                <p className={`text-sm font-medium ${combineError ? 'text-red-300' : 'text-blue-300'}`}>
                   {selectedPackageIds.size} package{selectedPackageIds.size !== 1 ? 's' : ''} selected
                 </p>
                 {combineError && (
-                  <p className="text-sm text-red-700 mt-1 flex items-start gap-2">
-                    <span className="font-medium">Error:</span>
-                    <span>{combineError}</span>
+                  <p className="text-sm text-red-400/80 mt-1">
+                    {combineError}
                   </p>
                 )}
               </div>
@@ -247,14 +207,14 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
               <button
                 onClick={handleCombineClick}
                 disabled={isValidating}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm hover:shadow-md"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
               >
                 <Combine className="w-4 h-4" />
                 {isValidating ? 'Validating...' : 'Combine Packages'}
               </button>
               <button
                 onClick={clearSelections}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-cult-medium-gray text-cult-silver rounded-lg hover:bg-cult-lighter-gray/30 hover:text-cult-white transition-colors text-sm"
               >
                 Clear
               </button>
@@ -263,41 +223,22 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
         </div>
       )}
 
-      {/* Stage Breakdown */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Leaf className="w-4 h-4 text-green-400" />
-            <span className="text-sm text-gray-400">Binned</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {stageBreakdownConfig.map(({ key, label, icon: Icon, color, borderColor }) => (
+          <div key={key} className={`bg-cult-near-black border ${borderColor} rounded-lg p-4 transition-all duration-200 hover:border-cult-lighter-gray/50`}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Icon className={`w-4 h-4 ${color}`} />
+              <span className="text-xs font-medium uppercase tracking-wider text-cult-silver">{label}</span>
+            </div>
+            <div className="text-2xl font-bold text-cult-white tabular-nums">{stats[key]}</div>
           </div>
-          <div className="text-2xl font-bold text-white">{stats.binnedCount}</div>
-        </div>
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Archive className="w-4 h-4 text-blue-400" />
-            <span className="text-sm text-gray-400">Bucked</span>
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.buckedCount}</div>
-        </div>
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Box className="w-4 h-4 text-orange-400" />
-            <span className="text-sm text-gray-400">Bulk</span>
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.bulkCount}</div>
-        </div>
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Package className="w-4 h-4 text-purple-400" />
-            <span className="text-sm text-gray-400">Packaged</span>
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.packagedCount}</div>
-        </div>
+        ))}
       </div>
 
-      {/* Inventory Table */}
       <InventoryTable
         items={filteredItems}
+        searchable
+        searchPlaceholder="Search all inventory..."
         selectable
         selectedIds={selectedPackageIds}
         onSelectionChange={setSelectedPackageIds}
@@ -306,40 +247,41 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
             header: 'Stage',
             accessor: (item) => getItemStage(item),
             align: 'center',
-            format: (stage) => (
-              <span
-                className={`px-2 py-1 rounded text-xs font-medium ${getStageBadgeColor(
-                  stage as string | null
-                )}`}
-              >
-                {getStageDisplayName(stage as string | null)}
-              </span>
-            ),
+            sortable: false,
+            format: (stage) => {
+              const s = stage as string | null;
+              const name = s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Unknown';
+              return (
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${stageBadgeStyles[s || ''] || 'bg-cult-medium-gray/50 text-cult-lighter-gray'}`}>
+                  {name}
+                </span>
+              );
+            },
           },
           {
             header: 'Package ID',
             accessor: 'package_id',
-            format: (val) => <span className="font-medium text-white">{val}</span>,
+            format: (val) => <span className="font-medium text-cult-white">{val}</span>,
           },
           {
-            header: 'Product Name',
+            header: 'Product',
             accessor: 'product_name',
-            format: (val) => <span className="text-white">{val || '-'}</span>,
+            format: (val) => <span className="text-cult-white">{val || '-'}</span>,
           },
           {
             header: 'Strain',
             accessor: 'strain',
-            format: (val) => <span className="text-white">{val}</span>,
+            format: (val) => <span className="text-cult-white">{val}</span>,
           },
           {
             header: 'Batch',
             accessor: 'batch_number',
-            format: (val) => <span className="text-cult-light-gray">{val || '-'}</span>,
+            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
           },
           {
             header: 'Room',
             accessor: 'room',
-            format: (val) => <span className="text-cult-light-gray">{val || '-'}</span>,
+            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
           },
           {
             header: 'Available Qty',
@@ -348,13 +290,11 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
             format: (val, item) => {
               const stage = getItemStage(item);
               const isPackaged = stage === 'packaged';
-              const formattedQty = isPackaged
-                ? (val || 0).toFixed(0)
-                : (val || 0).toFixed(1);
+              const formattedQty = isPackaged ? (val || 0).toFixed(0) : (val || 0).toFixed(1);
               const unit = isPackaged ? 'units' : 'g';
               return (
-                <span className="font-medium text-white">
-                  {formattedQty} {unit}
+                <span className="font-medium text-cult-white tabular-nums">
+                  {formattedQty} <span className="text-cult-silver text-xs">{unit}</span>
                 </span>
               );
             },
@@ -363,39 +303,40 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
             header: 'Status',
             accessor: (item) => item,
             align: 'center',
+            sortable: false,
             format: (_, item) => {
               if (item.available_qty === 0 && item.on_hand_qty > 0) {
                 return (
-                  <span className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 text-amber-400">
                     Reserved
                   </span>
                 );
               }
               return (
-                <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-900/30 text-emerald-400">
                   {item.status || 'Active'}
                 </span>
               );
             },
           },
           {
-            header: 'Actions',
+            header: '',
             accessor: (item) => item,
             align: 'center',
+            sortable: false,
             format: (_, item) => (
               <button
                 onClick={() => labelHook.openLabel(item)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors"
+                className="p-1.5 rounded-md hover:bg-cult-medium-gray/60 text-cult-lighter-gray hover:text-cult-white transition-colors"
                 title="Print Label"
               >
-                <Printer className="w-4 h-4 text-gray-400 hover:text-white" />
+                <Printer className="w-4 h-4" />
               </button>
             ),
           },
         ]}
-        emptyIcon={<Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />}
         emptyMessage="No inventory found"
-        emptySubtext="Import a CSV file or add inventory to get started"
+        emptySubtext="Import inventory or complete sessions to populate"
       />
 
       <InventoryLabelPrintModal

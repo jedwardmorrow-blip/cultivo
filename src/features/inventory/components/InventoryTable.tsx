@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useMemo } from 'react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Package } from 'lucide-react';
 import type { InventoryItem } from '../types';
 
 interface Column {
@@ -6,7 +7,10 @@ interface Column {
   accessor: keyof InventoryItem | ((item: InventoryItem) => ReactNode);
   align?: 'left' | 'center' | 'right';
   format?: (value: any, item: InventoryItem) => ReactNode;
+  sortable?: boolean;
 }
+
+type SortDirection = 'asc' | 'desc' | null;
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -15,12 +19,17 @@ interface InventoryTableProps {
   emptyMessage?: string;
   emptySubtext?: string;
   rowClassName?: (item: InventoryItem) => string;
-
-  // Multi-select props (optional)
+  searchable?: boolean;
+  searchPlaceholder?: string;
   selectable?: boolean;
   selectedIds?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
   isSelectable?: (item: InventoryItem) => boolean;
+}
+
+function getRawValue(item: InventoryItem, accessor: Column['accessor']): any {
+  if (typeof accessor === 'function') return accessor(item);
+  return item[accessor];
 }
 
 export function InventoryTable({
@@ -28,150 +37,256 @@ export function InventoryTable({
   columns,
   emptyIcon,
   emptyMessage = 'No items found',
-  emptySubtext = 'Import a CSV file to see inventory',
+  emptySubtext,
   rowClassName,
+  searchable = false,
+  searchPlaceholder = 'Search by strain, package ID, or batch...',
   selectable = false,
   selectedIds = new Set(),
   onSelectionChange,
   isSelectable = () => true,
 }: InventoryTableProps) {
-  // Handle select all checkbox
-  const selectableItems = items.filter(isSelectable);
-  const allSelectableSelected = selectableItems.length > 0 &&
-    selectableItems.every(item => selectedIds.has(item.id));
+  const [sortColumnIdx, setSortColumnIdx] = useState<number | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = useMemo(() => {
+    if (!searchable || !searchQuery.trim()) return items;
+    const q = searchQuery.toLowerCase();
+    return items.filter((item) => {
+      const fields = [item.package_id, item.strain, item.batch_number, item.batch_id, item.product_name, item.room];
+      return fields.some((f) => f?.toLowerCase().includes(q));
+    });
+  }, [items, searchQuery, searchable]);
+
+  const sortedItems = useMemo(() => {
+    if (sortColumnIdx === null || sortDirection === null) return filteredItems;
+    const col = columns[sortColumnIdx];
+    if (!col) return filteredItems;
+
+    return [...filteredItems].sort((a, b) => {
+      const aVal = getRawValue(a, col.accessor);
+      const bVal = getRawValue(b, col.accessor);
+
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      const aNum = typeof aVal === 'number' ? aVal : parseFloat(aVal);
+      const bNum = typeof bVal === 'number' ? bVal : parseFloat(bVal);
+
+      let cmp: number;
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        cmp = aNum - bNum;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal));
+      }
+      return sortDirection === 'desc' ? -cmp : cmp;
+    });
+  }, [filteredItems, sortColumnIdx, sortDirection, columns]);
+
+  const handleSort = (idx: number) => {
+    const col = columns[idx];
+    if (col.sortable === false) return;
+
+    if (sortColumnIdx === idx) {
+      if (sortDirection === 'asc') setSortDirection('desc');
+      else if (sortDirection === 'desc') { setSortColumnIdx(null); setSortDirection(null); }
+      else setSortDirection('asc');
+    } else {
+      setSortColumnIdx(idx);
+      setSortDirection('asc');
+    }
+  };
+
+  const selectableItems = sortedItems.filter(isSelectable);
+  const allSelectableSelected = selectableItems.length > 0 && selectableItems.every(item => selectedIds.has(item.id));
   const someSelected = selectableItems.some(item => selectedIds.has(item.id));
 
   const handleSelectAll = () => {
     if (!onSelectionChange) return;
-
     if (allSelectableSelected) {
-      // Deselect all
       onSelectionChange(new Set());
     } else {
-      // Select all selectable
-      const newSelection = new Set(selectableItems.map(item => item.id));
-      onSelectionChange(newSelection);
+      onSelectionChange(new Set(selectableItems.map(item => item.id)));
     }
   };
 
   const handleSelectItem = (itemId: string) => {
     if (!onSelectionChange) return;
-
     const newSelection = new Set(selectedIds);
-    if (newSelection.has(itemId)) {
-      newSelection.delete(itemId);
-    } else {
-      newSelection.add(itemId);
-    }
+    if (newSelection.has(itemId)) newSelection.delete(itemId);
+    else newSelection.add(itemId);
     onSelectionChange(newSelection);
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !searchQuery) {
     return (
-      <div className="text-center py-12">
-        {emptyIcon}
-        <p className="text-cult-light-gray">{emptyMessage}</p>
-        <p className="text-gray-400 text-sm mt-1">{emptySubtext}</p>
+      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
+        <div className="flex flex-col items-center justify-center py-16 px-6">
+          <div className="p-4 rounded-full bg-cult-dark-gray mb-4">
+            {emptyIcon || <Package className="w-8 h-8 text-cult-lighter-gray" />}
+          </div>
+          <p className="text-cult-silver font-medium">{emptyMessage}</p>
+          {emptySubtext && <p className="text-cult-lighter-gray text-sm mt-1">{emptySubtext}</p>}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray">
+    <div className="bg-cult-near-black rounded-lg border border-cult-medium-gray overflow-hidden">
+      {searchable && (
+        <div className="px-4 py-3 border-b border-cult-medium-gray">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-lighter-gray" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full pl-9 pr-4 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-sm text-cult-white placeholder-cult-lighter-gray focus:outline-none focus:border-cult-silver transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-lighter-gray hover:text-cult-white text-xs"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-cult-lighter-gray mt-2">
+              {sortedItems.length} result{sortedItems.length !== 1 ? 's' : ''} found
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-cult-medium-gray">
-            <tr>
-              {/* Select all checkbox */}
+          <thead>
+            <tr className="border-b border-cult-medium-gray">
               {selectable && (
                 <th className="px-4 py-3 w-12">
                   <input
                     type="checkbox"
                     checked={allSelectableSelected}
                     ref={input => {
-                      if (input) {
-                        input.indeterminate = someSelected && !allSelectableSelected;
-                      }
+                      if (input) input.indeterminate = someSelected && !allSelectableSelected;
                     }}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
                   />
                 </th>
               )}
+              {columns.map((column, idx) => {
+                const isSortable = column.sortable !== false && typeof column.accessor !== 'function';
+                const isActive = sortColumnIdx === idx;
 
-              {columns.map((column, idx) => (
-                <th
-                  key={idx}
-                  className={`px-4 py-3 text-xs font-medium text-gray-700 uppercase ${
-                    column.align === 'right' ? 'text-right' :
-                    column.align === 'center' ? 'text-center' :
-                    'text-left'
-                  }`}
-                >
-                  {column.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {items.map((item) => {
-              const itemIsSelectable = isSelectable(item);
-              const isSelected = selectedIds.has(item.id);
-
-              return (
-                <tr
-                  key={item.id}
-                  className={`hover:bg-gray-700 ${isSelected ? 'bg-blue-50' : ''} ${
-                    rowClassName ? rowClassName(item) : ''
-                  }`}
-                >
-                  {/* Row checkbox */}
-                  {selectable && (
-                    <td className="px-4 py-3 w-12">
-                      {itemIsSelectable ? (
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectItem(item.id)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-400" title="Not selectable">
-                          -
+                return (
+                  <th
+                    key={idx}
+                    onClick={() => isSortable && handleSort(idx)}
+                    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-cult-silver ${
+                      column.align === 'right' ? 'text-right' :
+                      column.align === 'center' ? 'text-center' :
+                      'text-left'
+                    } ${isSortable ? 'cursor-pointer select-none hover:text-cult-white transition-colors' : ''}`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {column.header}
+                      {isSortable && (
+                        <span className="inline-flex flex-col">
+                          {isActive && sortDirection === 'asc' ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-cult-white" />
+                          ) : isActive && sortDirection === 'desc' ? (
+                            <ChevronDown className="w-3.5 h-3.5 text-cult-white" />
+                          ) : (
+                            <ChevronsUpDown className="w-3.5 h-3.5 text-cult-lighter-gray" />
+                          )}
                         </span>
                       )}
-                    </td>
-                  )}
+                    </span>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-cult-medium-gray/50">
+            {sortedItems.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + (selectable ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
+                  No results match your search
+                </td>
+              </tr>
+            ) : (
+              sortedItems.map((item) => {
+                const itemIsSelectable = isSelectable(item);
+                const isSelected = selectedIds.has(item.id);
 
-                  {columns.map((column, idx) => {
-                    let value;
-                    if (typeof column.accessor === 'function') {
-                      value = column.accessor(item);
-                    } else {
-                      value = item[column.accessor];
-                    }
-
-                    const content = column.format ? column.format(value, item) : value;
-
-                    return (
-                      <td
-                        key={idx}
-                        className={`px-4 py-3 text-sm ${
-                          column.align === 'right' ? 'text-right' :
-                          column.align === 'center' ? 'text-center' :
-                          'text-left'
-                        }`}
-                      >
-                        {content}
+                return (
+                  <tr
+                    key={item.id}
+                    className={`transition-colors duration-100 ${
+                      isSelected ? 'bg-emerald-900/15' : 'hover:bg-cult-dark-gray/60'
+                    } ${rowClassName ? rowClassName(item) : ''}`}
+                  >
+                    {selectable && (
+                      <td className="px-4 py-3 w-12">
+                        {itemIsSelectable ? (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectItem(item.id)}
+                            className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
+                          />
+                        ) : (
+                          <span className="text-xs text-cult-lighter-gray">-</span>
+                        )}
                       </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+                    )}
+                    {columns.map((column, idx) => {
+                      let value;
+                      if (typeof column.accessor === 'function') {
+                        value = column.accessor(item);
+                      } else {
+                        value = item[column.accessor];
+                      }
+                      const content = column.format ? column.format(value, item) : value;
+
+                      return (
+                        <td
+                          key={idx}
+                          className={`px-4 py-3 text-sm ${
+                            column.align === 'right' ? 'text-right' :
+                            column.align === 'center' ? 'text-center' :
+                            'text-left'
+                          }`}
+                        >
+                          {content}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
+
+      {sortedItems.length > 0 && (
+        <div className="px-4 py-2.5 border-t border-cult-medium-gray/50 flex items-center justify-between">
+          <span className="text-xs text-cult-lighter-gray">
+            {sortedItems.length} item{sortedItems.length !== 1 ? 's' : ''}
+            {selectable && selectedIds.size > 0 && (
+              <span className="ml-2 text-emerald-400">({selectedIds.size} selected)</span>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

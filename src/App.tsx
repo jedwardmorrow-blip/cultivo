@@ -8,6 +8,7 @@ import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
 import { StandaloneOrderFormRefactored } from './features/order-form';
 import { NewOrderForm } from './features/orders';
+import { InventoryDataProvider } from './features/inventory/context/InventoryDataContext';
 
 const Dashboard = lazy(() => import('./features/dashboard').then((m) => ({ default: m.Dashboard })));
 const OrdersContainer = lazy(() => import('./features/orders').then((m) => ({ default: m.OrdersContainer })));
@@ -166,15 +167,15 @@ function AppContent() {
       case 'batches':
         return <BatchManagement />;
       case 'inventory-all':
-        return <AllInventoryViewWrapper />;
+        return <InventoryDataProvider><AllInventoryViewWrapper /></InventoryDataProvider>;
       case 'inventory-binned':
-        return <BinnedInventoryViewWrapper />;
+        return <InventoryDataProvider><BinnedInventoryViewWrapper /></InventoryDataProvider>;
       case 'inventory-bucked':
-        return <BuckedInventoryViewWrapper />;
+        return <InventoryDataProvider><BuckedInventoryViewWrapper /></InventoryDataProvider>;
       case 'inventory-bulk':
-        return <BulkInventoryViewWrapper />;
+        return <InventoryDataProvider><BulkInventoryViewWrapper /></InventoryDataProvider>;
       case 'inventory-packaged':
-        return <PackagedInventoryViewWrapper />;
+        return <InventoryDataProvider><PackagedInventoryViewWrapper /></InventoryDataProvider>;
       case 'inventory-daily-activity':
         return <DailyActivityViewWrapper />;
       case 'inventory-conversions':
