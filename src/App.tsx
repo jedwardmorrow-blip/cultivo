@@ -36,6 +36,9 @@ const HarvestSessionsList = lazy(() => import('./features/cultivation').then((m)
 const BinningSessionsView = lazy(() => import('./features/cultivation').then((m) => ({ default: m.BinningSessionsView })));
 const GrowRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.GrowRoomsManagement })));
 const DryRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.DryRoomsManagement })));
+const CRMDashboard = lazy(() => import('./features/crm').then((m) => ({ default: m.CRMDashboard })));
+const AccountsList = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountsList })));
+const AccountDetail = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountDetail })));
 
 function ViewFallback() {
   return (
@@ -190,9 +193,17 @@ function AppContent() {
         return <AnalyticsDashboard />;
       case 'eod-summary':
         return <EODSummary />;
+      case 'crm-dashboard':
+        return <CRMDashboard onViewChange={handleViewChange} />;
+      case 'crm-accounts':
+        return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':
         return <Settings />;
       default:
+        if (currentView.startsWith('crm-account-detail:')) {
+          const acctId = currentView.replace('crm-account-detail:', '');
+          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} />;
+        }
         return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
     }
   }

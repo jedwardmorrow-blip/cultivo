@@ -16,6 +16,9 @@ import {
   Sprout,
   Warehouse,
   Wind,
+  Users,
+  BarChart3,
+  Building2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -92,9 +95,22 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' },
     ],
   },
+  {
+    id: 'crm',
+    label: 'CRM',
+    icon: Users,
+    defaultView: 'crm-dashboard',
+    items: [
+      { id: 'crm-dashboard', label: 'Sales Dashboard', icon: BarChart3, group: 'primary' },
+      { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
+    ],
+  },
 ];
 
 export function getSectionForView(viewId: string): SectionDefinition | undefined {
+  if (viewId.startsWith('crm-account-detail:')) {
+    return sectionDefinitions.find((s) => s.id === 'crm');
+  }
   return sectionDefinitions.find((section) =>
     section.items.some((item) => item.id === viewId)
   );
