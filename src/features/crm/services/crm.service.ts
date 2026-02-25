@@ -355,6 +355,88 @@ export async function getChainLocationPerformance(parentId: string) {
   }
 }
 
+export async function getBatchMonthlyRevenue(accountIds: string[]): Promise<{ data: Map<string, number[]> | null; error: any }> {
+  try {
+    if (accountIds.length === 0) return { data: new Map(), error: null };
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const cutoff = sixMonthsAgo.toISOString().slice(0, 10);
+
+    const { data, error } = await supabase
+      .from('crm_monthly_revenue_by_customer')
+      .select('customer_id, month, monthly_revenue')
+      .in('customer_id', accountIds)
+      .gte('month', cutoff)
+      .order('month', { ascending: true });
+
+    if (error) throw error;
+
+    const revenueMap = new Map<string, number[]>();
+
+    const months: string[] = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(d.toISOString().slice(0, 7));
+    }
+
+    accountIds.forEach((id) => {
+      const accountData = (data || []).filter((r: any) => r.customer_id === id);
+      const monthMap = new Map<string, number>();
+      accountData.forEach((r: any) => {
+        const monthKey = String(r.month).slice(0, 7);
+        monthMap.set(monthKey, Number(r.monthly_revenue));
+      });
+      const values = months.map((m) => monthMap.get(m) || 0);
+      revenueMap.set(id, values);
+    });
+
+    return { data: revenueMap, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load batch monthly revenue');
+    return { data: null, error };
+  }
+}
+
+export async function getPinnedNotes(customerId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('customer_activity_log')
+      .select(`*, user_profiles:user_id(full_name)`)
+      .eq('customer_id', customerId)
+      .eq('pinned', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const notes = (data || []).map((row: any) => ({
+      ...row,
+      user_name: row.user_profiles?.full_name || 'Unknown',
+    }));
+
+    return { data: notes as CustomerActivity[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load pinned notes');
+    return { data: null, error };
+  }
+}
+
+export async function togglePinActivity(activityId: string, pinned: boolean) {
+  try {
+    const { error } = await supabase
+      .from('customer_activity_log')
+      .update({ pinned })
+      .eq('id', activityId);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to toggle pin');
+    return { error };
+  }
+}
+
 export async function updateDeliveryModel(customerId: string, deliveryModel: DeliveryModel) {
   try {
     const { error } = await supabase

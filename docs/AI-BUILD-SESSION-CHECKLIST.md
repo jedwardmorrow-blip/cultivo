@@ -15,37 +15,35 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-25
-**Session:** CRM Phase 3 — Order Integration & Price List Management
+**Session:** CRM Phase 4 — Dashboard Quick Actions, Sparklines & Pinned Notes
 **Status:** COMPLETE
 
 **What was done:**
 
-Implemented CRM Phase 3: create orders directly from account detail pages with pre-selected dispensary, customer price list management UI, and soft price integration in order form.
+Implemented all three features of CRM Phase 4: dashboard quick actions with at-risk inline actions, revenue trend sparklines, and account pinned notes.
 
-**1. Order creation from Account Detail**
-- `App.tsx` — Added `preSelectedCustomerId` state, `handleCreateOrderForCustomer()` handler, CRM activity auto-logging in `handleOrderCreated()`
-- `NewOrderForm.tsx` — New `preSelectedCustomerId` prop, auto-selects and locks dispensary dropdown, loads customer price overrides, applies custom prices on product selection with "Custom" badge
-- `AccountDetail.tsx` — Added `onCreateOrder` prop, passes to AccountHeader
-- `AccountHeader.tsx` — New "New Order" button (ShoppingCart icon) in header right section
+**1. Dashboard Quick Actions (Feature 4A)**
+- `DashboardQuickActions.tsx` (new) — Three action buttons: New Order, Log Activity, Schedule Visit
+- `CRMDashboard.tsx` — Added `onCreateOrder` prop, renders DashboardQuickActions between stats and top accounts
+- `AtRiskAccounts.tsx` — Inline action buttons on hover: Phone (tel: link), Calendar (schedule visit), ShoppingCart (create order)
+- `App.tsx` — Passes `onCreateOrder` callback to CRMDashboard
 
-**2. Customer price list management**
-- `priceList.service.ts` (new) — Full CRUD: `getCustomerPriceList()`, `getActivePricesForCustomer()`, `getActivePriceForProduct()`, `createPriceOverride()`, `updatePriceOverride()`, `deletePriceOverride()`
-- `AccountPriceList.tsx` (new) — Price override management with active/scheduled/expired grouping, product search, discount % display, inline add form
-- `AccountDetail.tsx` — Added "Pricing" tab to TABS array
+**2. Revenue Trend Sparklines (Feature 4B)**
+- `RevenueSparkline.tsx` (new, shared) — Pure SVG sparkline with polyline + gradient fill, color-coded by trend direction
+- `crm.service.ts` — `getBatchMonthlyRevenue(accountIds)` fetches 6 months of revenue in one query using `.in()`
+- `useCRMDashboard.ts` — Fetches monthlyRevenueMap for top 15 accounts, returns it for TopAccountsTable
+- `TopAccountsTable.tsx` — New "Trend" column with sparklines (hidden on small screens)
+- `useAccountDeepDive.ts` — Fetches monthlyRevenue for individual account
+- `AccountDetail.tsx` — Passes monthlyRevenue to AccountHeader
+- `AccountHeader.tsx` — Shows "6-Month Revenue Trend" sparkline card above metrics grid
 
-**3. Price integration in order form**
-- `NewOrderForm.tsx` — When `preSelectedCustomerId` is set, fetches customer's active price overrides. On product select, uses custom price if available, falls back to standard price. Shows "Custom" label on unit price field.
-
-**4. CRM activity auto-logging**
-- `App.tsx` imports `createActivity` from CRM service. On successful order creation from account view, auto-logs a "note" activity with order number.
-
-**5. Types**
-- `crm.types.ts` — Extended `CustomerPriceOverride` with `standard_price` field
-
-**6. Documentation**
-- `docs/CRM.md` — Phase 3 marked Complete, Phase 4 (Future) documented
-- `CHANGELOG.md` — Phase 3 entry
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off
+**3. Account Pinned Notes (Feature 4C)**
+- Migration: `add_pinned_column_to_activity_log` — adds `pinned` boolean (default false) + partial index
+- `crm.types.ts` — Added `pinned` field to `CustomerActivity` interface
+- `crm.service.ts` — `getPinnedNotes(customerId)`, `togglePinActivity(activityId, pinned)`
+- `AccountPinnedNotes.tsx` (new) — Pinned notes panel with amber theme, unpin on hover
+- `AccountActivityLog.tsx` — Pin/unpin toggle button on each activity row, pin indicator badge
+- `AccountDetail.tsx` — AccountPinnedNotes placed above AccountContacts in sidebar
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
@@ -53,11 +51,9 @@ Implemented CRM Phase 3: create orders directly from account detail pages with p
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
 
 **Next recommendations (in order):**
-1. **CRM Phase 4: Dashboard Quick Actions** — New Order / Log Activity / Schedule Visit buttons on CRM Dashboard, inline actions on At-Risk accounts. Pure UI, no database changes.
-2. **CRM Phase 4: Revenue Trend Sparklines** — Pure SVG sparklines in TopAccountsTable and AccountHeader. New service function for batched monthly revenue. No database changes.
-3. **CRM Phase 4: Account Pinned Notes** — Add `pinned` boolean to `customer_activity_log` or create `customer_notes` table. Pin/unpin toggle on activity log entries. Requires migration.
-4. **Revenue trend charts** — requires chart library decision (recharts vs lightweight SVG)
-5. **Cultivation: Move to Group action** — plant-level workflow with strain validation
+1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
+2. **Export/reporting capabilities** — Account data export, revenue reports
+3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
 6. **Cultivation: Move to Room action** — split plants into new group in different room
 
 ---

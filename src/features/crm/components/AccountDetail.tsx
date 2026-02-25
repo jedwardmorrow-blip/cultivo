@@ -11,6 +11,7 @@ import { AccountActivityLog } from './AccountActivityLog';
 import { AccountProductMix } from './AccountProductMix';
 import { AccountDeliveryHistory } from './AccountDeliveryHistory';
 import { AccountPriceList } from './AccountPriceList';
+import { AccountPinnedNotes } from './AccountPinnedNotes';
 
 interface AccountDetailProps {
   accountId: string;
@@ -42,6 +43,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
     healthScore,
     productMix,
     deliveryHistory,
+    monthlyRevenue,
     loading: deepDiveLoading,
   } = useAccountDeepDive(accountId);
 
@@ -93,7 +95,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
         )}
       </div>
 
-      <AccountHeader account={account} healthScore={healthScore} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} />
+      <AccountHeader account={account} healthScore={healthScore} monthlyRevenue={monthlyRevenue} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} />
 
       {account.account_type === 'hub_parent' && childAccounts.length > 0 && (
         <SubAccountsPanel
@@ -129,6 +131,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
           {activeTab === 'pricing' && <AccountPriceList customerId={accountId} />}
         </div>
         <div className="space-y-5">
+          <AccountPinnedNotes customerId={accountId} onUnpin={reload} />
           <AccountContacts
             contacts={contacts}
             customerId={accountId}

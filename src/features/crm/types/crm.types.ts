@@ -83,6 +83,7 @@ export interface CustomerActivity {
   body: string | null;
   follow_up_date: string | null;
   completed: boolean;
+  pinned: boolean;
   created_at: string;
   user_name?: string;
   linked_task_id?: string | null;

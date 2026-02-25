@@ -216,7 +216,7 @@ function AppContent() {
       case 'eod-summary':
         return <EODSummary />;
       case 'crm-dashboard':
-        return <CRMDashboard onViewChange={handleViewChange} />;
+        return <CRMDashboard onViewChange={handleViewChange} onCreateOrder={(customerId) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />;
       case 'crm-queue':
         return <SalesQueue />;
       case 'crm-visit-calendar':

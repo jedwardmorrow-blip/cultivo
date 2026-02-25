@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-25 - CRM Phase 4: Dashboard Quick Actions, Sparklines & Pinned Notes
+
+**Type:** Feature Addition
+**Module:** CRM
+**Status:** COMPLETE
+
+Added dashboard quick actions, revenue trend sparklines, and pinned notes to the CRM module.
+
+- **Dashboard Quick Actions:** Three action buttons (New Order, Log Activity, Schedule Visit) placed between stats cards and top accounts table. At-Risk accounts now show inline action buttons on hover (phone, schedule visit, create order).
+- **Revenue Trend Sparklines:** Pure SVG sparkline component showing 6-month revenue trends. Added to TopAccountsTable as a new "Trend" column and to AccountHeader as a "6-Month Revenue Trend" card. Color-coded: green for uptrend, red for downtrend, amber for flat. Batched data fetching via `getBatchMonthlyRevenue()` avoids N+1 queries.
+- **Account Pinned Notes:** Added `pinned` boolean column to `customer_activity_log` table with partial index. Pin/unpin toggle on activity log entries. Pinned notes panel shows above contacts in account detail sidebar with amber-themed styling.
+- **Components:** `DashboardQuickActions.tsx` (new), `AccountPinnedNotes.tsx` (new), `RevenueSparkline.tsx` (new shared component). Modified: `CRMDashboard.tsx`, `AtRiskAccounts.tsx`, `TopAccountsTable.tsx`, `AccountHeader.tsx`, `AccountDetail.tsx`, `AccountActivityLog.tsx`.
+- **Services:** `getBatchMonthlyRevenue()`, `getPinnedNotes()`, `togglePinActivity()` in `crm.service.ts`.
+- **Hooks:** Enhanced `useCRMDashboard` with `monthlyRevenueMap`, enhanced `useAccountDeepDive` with `monthlyRevenue`.
+- **Migration:** `add_pinned_column_to_activity_log` — adds `pinned` boolean and partial index.
+
+---
+
 ## 2026-02-25 - CRM Phase 3: Order Integration & Price List Management
 
 **Type:** Feature Addition

@@ -5,14 +5,16 @@ import { RevenueStatsCards } from './RevenueStatsCards';
 import { TopAccountsTable } from './TopAccountsTable';
 import { AtRiskAccounts } from './AtRiskAccounts';
 import { SKUPerformanceGrid } from './SKUPerformanceGrid';
+import { DashboardQuickActions } from './DashboardQuickActions';
 
 interface CRMDashboardProps {
   onViewChange: (view: string) => void;
   onSelectAccount?: (accountId: string) => void;
+  onCreateOrder?: (customerId?: string) => void;
 }
 
-export function CRMDashboard({ onViewChange, onSelectAccount }: CRMDashboardProps) {
-  const { stats, topAccounts, atRiskAccounts, topSKUs, loading, reload } = useCRMDashboard();
+export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: CRMDashboardProps) {
+  const { stats, topAccounts, atRiskAccounts, topSKUs, loading, reload, monthlyRevenueMap } = useCRMDashboard();
 
   const handleSelectAccount = (accountId: string) => {
     if (onSelectAccount) {
@@ -51,12 +53,24 @@ export function CRMDashboard({ onViewChange, onSelectAccount }: CRMDashboardProp
 
       {stats && <RevenueStatsCards stats={stats} />}
 
+      {onCreateOrder && (
+        <DashboardQuickActions
+          onCreateOrder={() => onCreateOrder()}
+          onViewChange={onViewChange}
+        />
+      )}
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
-          <TopAccountsTable accounts={topAccounts} onSelectAccount={handleSelectAccount} />
+          <TopAccountsTable accounts={topAccounts} onSelectAccount={handleSelectAccount} monthlyRevenueMap={monthlyRevenueMap} />
         </div>
         <div>
-          <AtRiskAccounts accounts={atRiskAccounts} onSelectAccount={handleSelectAccount} />
+          <AtRiskAccounts
+            accounts={atRiskAccounts}
+            onSelectAccount={handleSelectAccount}
+            onCreateOrder={onCreateOrder}
+            onViewChange={onViewChange}
+          />
         </div>
       </div>
 

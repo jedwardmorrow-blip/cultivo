@@ -1,0 +1,56 @@
+import { ShoppingCart, MessageSquare, Calendar, ArrowRight } from 'lucide-react';
+
+interface DashboardQuickActionsProps {
+  onCreateOrder: () => void;
+  onViewChange: (view: string) => void;
+}
+
+export function DashboardQuickActions({ onCreateOrder, onViewChange }: DashboardQuickActionsProps) {
+  const actions = [
+    {
+      label: 'New Order',
+      description: 'Create order for a customer',
+      icon: ShoppingCart,
+      color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25',
+      onClick: onCreateOrder,
+    },
+    {
+      label: 'Log Activity',
+      description: 'Record a call, visit, or note',
+      icon: MessageSquare,
+      color: 'bg-sky-500/15 text-sky-400 border-sky-500/30 hover:bg-sky-500/25',
+      onClick: () => onViewChange('crm-queue'),
+    },
+    {
+      label: 'Schedule Visit',
+      description: 'Plan an upcoming site visit',
+      icon: Calendar,
+      color: 'bg-teal-500/15 text-teal-400 border-teal-500/30 hover:bg-teal-500/25',
+      onClick: () => onViewChange('crm-visit-calendar'),
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {actions.map((action) => {
+        const Icon = action.icon;
+        return (
+          <button
+            key={action.label}
+            onClick={action.onClick}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all group ${action.color}`}
+          >
+            <div className="p-2 rounded-lg bg-cult-near-black/50 flex-shrink-0">
+              <Icon className="w-4 h-4" />
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-sm font-semibold text-cult-white">{action.label}</p>
+              <p className="text-[10px] text-cult-silver hidden sm:block">{action.description}</p>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors flex-shrink-0" />
+          </button>
+        );
+      })}
+    </div>
+  );
+}

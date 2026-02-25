@@ -1,9 +1,11 @@
-import { AlertTriangle, Clock, ChevronRight, Network } from 'lucide-react';
+import { AlertTriangle, Clock, ChevronRight, Network, Phone, Calendar, ShoppingCart } from 'lucide-react';
 import type { AccountSummary } from '../types';
 
 interface AtRiskAccountsProps {
   accounts: AccountSummary[];
   onSelectAccount: (id: string) => void;
+  onCreateOrder?: (customerId: string) => void;
+  onViewChange?: (view: string) => void;
 }
 
 function formatCurrency(value: number): string {
@@ -11,7 +13,7 @@ function formatCurrency(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
-export function AtRiskAccounts({ accounts, onSelectAccount }: AtRiskAccountsProps) {
+export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder, onViewChange }: AtRiskAccountsProps) {
   if (accounts.length === 0) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-5">
@@ -44,10 +46,12 @@ export function AtRiskAccounts({ accounts, onSelectAccount }: AtRiskAccountsProp
           return (
             <div
               key={account.id}
-              onClick={() => onSelectAccount(account.id)}
-              className="px-5 py-3 flex items-center justify-between hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
+              className="px-5 py-3 flex items-center justify-between hover:bg-cult-dark-gray/50 transition-colors group"
             >
-              <div className="flex-1 min-w-0">
+              <div
+                className="flex-1 min-w-0 cursor-pointer"
+                onClick={() => onSelectAccount(account.id)}
+              >
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
                   {isHub && (
@@ -64,15 +68,48 @@ export function AtRiskAccounts({ accounts, onSelectAccount }: AtRiskAccountsProp
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 ml-4">
-                <div className="text-right">
+              <div className="flex items-center gap-2 ml-3">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {account.phone && (
+                    <a
+                      href={`tel:${account.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded hover:bg-sky-500/15 text-cult-medium-gray hover:text-sky-400 transition-colors"
+                      title={`Call ${account.phone}`}
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  {onViewChange && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onViewChange('crm-visit-calendar'); }}
+                      className="p-1.5 rounded hover:bg-teal-500/15 text-cult-medium-gray hover:text-teal-400 transition-colors"
+                      title="Schedule visit"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {onCreateOrder && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onCreateOrder(account.id); }}
+                      className="p-1.5 rounded hover:bg-emerald-500/15 text-cult-medium-gray hover:text-emerald-400 transition-colors"
+                      title="Create order"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <div className="text-right flex-shrink-0">
                   <div className="flex items-center gap-1 text-amber-400">
                     <Clock className="w-3.5 h-3.5" />
                     <span className="text-sm font-semibold">{account.days_since_last_order}d</span>
                   </div>
                   <span className="text-[10px] text-cult-light-gray">since last order</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+                <ChevronRight
+                  className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors cursor-pointer flex-shrink-0"
+                  onClick={() => onSelectAccount(account.id)}
+                />
               </div>
             </div>
           );

@@ -1,10 +1,12 @@
 import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart } from 'lucide-react';
 import type { AccountSummary, AccountHealthScore } from '../types';
 import { AccountHealthBadge } from './AccountHealthBadge';
+import { RevenueSparkline } from '@/shared/components';
 
 interface AccountHeaderProps {
   account: AccountSummary;
   healthScore?: AccountHealthScore | null;
+  monthlyRevenue?: number[];
   onCreateOrder?: () => void;
 }
 
@@ -22,7 +24,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account, healthScore, onCreateOrder }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder }: AccountHeaderProps) {
   const isHubParent = account.account_type === 'hub_parent';
   const chainRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
   const chainOrders = account.order_count + (account.child_total_orders || 0);
@@ -115,6 +117,12 @@ export function AccountHeader({ account, healthScore, onCreateOrder }: AccountHe
               <ShoppingCart className="w-4 h-4" />
               New Order
             </button>
+          )}
+          {monthlyRevenue && monthlyRevenue.some((v) => v > 0) && (
+            <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50 w-full">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-2">6-Month Revenue Trend</p>
+              <RevenueSparkline data={monthlyRevenue} width={200} height={40} />
+            </div>
           )}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-4">
           {isHubParent ? (

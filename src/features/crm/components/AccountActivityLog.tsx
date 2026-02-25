@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { MessageSquare, Phone, Mail, MapPin, Package, CalendarClock, Plus, Save, StickyNote } from 'lucide-react';
+import { MessageSquare, Phone, Mail, MapPin, Package, CalendarClock, Plus, Save, StickyNote, Pin, PinOff } from 'lucide-react';
 import type { CustomerActivity, ActivityType, CustomerActivityInput } from '../types';
-import { createActivity } from '../services';
+import { createActivity, togglePinActivity } from '../services';
 
 interface AccountActivityLogProps {
   activities: CustomerActivity[];
@@ -147,8 +147,9 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
         {activities.map((activity) => {
           const IconComp = activityIcons[activity.activity_type as ActivityType] || StickyNote;
           const colorClass = activityColors[activity.activity_type as ActivityType] || activityColors.note;
+          const isPinned = activity.pinned;
           return (
-            <div key={activity.id} className="px-5 py-3 flex items-start gap-3">
+            <div key={activity.id} className="px-5 py-3 flex items-start gap-3 group">
               <div className={`p-1.5 rounded ${colorClass} flex-shrink-0 mt-0.5`}>
                 <IconComp className="w-3.5 h-3.5" />
               </div>
@@ -156,6 +157,7 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-cult-white">{activity.subject}</span>
                   <span className="text-[10px] text-cult-silver capitalize">{activity.activity_type.replace('_', ' ')}</span>
+                  {isPinned && <Pin className="w-3 h-3 text-amber-400" />}
                 </div>
                 {activity.body && (
                   <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{activity.body}</p>
@@ -168,6 +170,20 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                   )}
                 </div>
               </div>
+              <button
+                onClick={async () => {
+                  await togglePinActivity(activity.id, !isPinned);
+                  onReload();
+                }}
+                className={`p-1.5 rounded flex-shrink-0 transition-all ${
+                  isPinned
+                    ? 'text-amber-400 hover:bg-amber-500/15'
+                    : 'opacity-0 group-hover:opacity-100 text-cult-medium-gray hover:text-amber-400 hover:bg-cult-dark-gray'
+                }`}
+                title={isPinned ? 'Unpin' : 'Pin to top'}
+              >
+                {isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+              </button>
             </div>
           );
         })}

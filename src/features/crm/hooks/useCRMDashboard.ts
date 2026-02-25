@@ -4,12 +4,14 @@ import {
   getDashboardStats,
   getAccountSummaries,
   getSKUPerformance,
+  getBatchMonthlyRevenue,
 } from '../services';
 
 export function useCRMDashboard() {
   const [stats, setStats] = useState<CRMDashboardStats | null>(null);
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [topSKUs, setTopSKUs] = useState<SKUPerformance[]>([]);
+  const [monthlyRevenueMap, setMonthlyRevenueMap] = useState<Map<string, number[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +25,24 @@ export function useCRMDashboard() {
       ]);
 
       if (statsResult.data) setStats(statsResult.data);
-      if (accountsResult.data) setAccounts(accountsResult.data);
+      if (accountsResult.data) {
+        setAccounts(accountsResult.data);
+
+        const topIds = accountsResult.data
+          .filter((a) => a.account_type !== 'hub_child' && (a.order_count > 0 || (a.child_total_orders || 0) > 0))
+          .sort((a, b) => {
+            const aRev = a.total_revenue + (a.child_total_revenue || 0);
+            const bRev = b.total_revenue + (b.child_total_revenue || 0);
+            return bRev - aRev;
+          })
+          .slice(0, 15)
+          .map((a) => a.id);
+
+        if (topIds.length > 0) {
+          const revenueResult = await getBatchMonthlyRevenue(topIds);
+          if (revenueResult.data) setMonthlyRevenueMap(revenueResult.data);
+        }
+      }
       if (skuResult.data) setTopSKUs(skuResult.data);
 
       if (statsResult.error || accountsResult.error || skuResult.error) {
@@ -67,6 +86,7 @@ export function useCRMDashboard() {
     atRiskAccounts,
     recentOrders,
     topSKUs,
+    monthlyRevenueMap,
     loading,
     error,
     reload: fetchDashboard,
