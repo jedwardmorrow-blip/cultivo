@@ -16,6 +16,7 @@ interface OrdersContextValue extends OrdersState {
     updateItemQuantity: (itemId: string, orderId: string, newQuantity: number) => Promise<void>;
     updateItemPrice: (itemId: string, orderId: string, newPrice: number) => Promise<void>;
     updateItemBatch: (itemId: string, orderId: string, batchId: string | null, strain: string | null) => Promise<void>;
+    updateItemSample: (itemId: string, orderId: string, isSample: boolean) => Promise<void>;
     deleteOrderItem: (itemId: string, orderId: string) => Promise<void>;
     deleteOrder: (orderId: string) => Promise<void>;
     addItemToOrder: (orderId: string, productId: string, quantity: number) => Promise<void>;
@@ -161,6 +162,14 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
     await loadOrderDetails(orderId, true);
   }, [loadOrderDetails]);
 
+  const updateItemSample = useCallback(async (itemId: string, orderId: string, isSample: boolean) => {
+    await ordersDataService.updateItemSample(itemId, isSample);
+    await ordersDataService.updateOrderSampleFlag(orderId);
+    ordersCacheService.invalidate(orderId);
+    await loadOrderDetails(orderId, true);
+    await loadOrders(true);
+  }, [loadOrderDetails, loadOrders]);
+
   const deleteOrderItem = useCallback(async (itemId: string, orderId: string) => {
     await ordersDataService.deleteOrderItem(itemId);
     ordersCacheService.invalidate(orderId);
@@ -284,6 +293,7 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
       updateItemQuantity,
       updateItemPrice,
       updateItemBatch,
+      updateItemSample,
       deleteOrderItem,
       deleteOrder,
       addItemToOrder,

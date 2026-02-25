@@ -437,6 +437,28 @@ export async function togglePinActivity(activityId: string, pinned: boolean) {
   }
 }
 
+export async function getAccountSampleItems(customerId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('order_items')
+      .select(`
+        id, quantity, unit_price, subtotal, status, is_sample,
+        products(name, type, product_category),
+        orders!inner(id, order_number, order_date, status, customer_id, test_mode)
+      `)
+      .eq('orders.customer_id', customerId)
+      .eq('orders.test_mode', false)
+      .eq('is_sample', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load sample history');
+    return { data: null, error };
+  }
+}
+
 export async function updateDeliveryModel(customerId: string, deliveryModel: DeliveryModel) {
   try {
     const { error } = await supabase

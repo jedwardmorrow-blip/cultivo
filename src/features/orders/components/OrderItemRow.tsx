@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle, Printer } from 'lucide-react';
+import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle, Printer, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { PackageAssignmentModal } from './PackageAssignmentModal';
@@ -24,6 +24,7 @@ interface OrderItem {
   pricing_unit?: string;
   product_category?: string;
   batch_id?: string | null;
+  is_sample?: boolean;
 }
 
 interface BatchInfo {
@@ -46,6 +47,7 @@ interface OrderItemRowProps {
   onQuantityUpdate: (itemId: string, orderId: string, newQuantity: number) => void;
   onPriceUpdate: (itemId: string, orderId: string, newPrice: number) => void;
   onBatchUpdate: (itemId: string, orderId: string, batchId: string | null, strain: string | null) => void;
+  onSampleToggle?: (itemId: string, orderId: string, isSample: boolean) => void;
   onDelete: (itemId: string, orderId: string) => void;
 }
 
@@ -55,6 +57,7 @@ export function OrderItemRow({
   onQuantityUpdate,
   onPriceUpdate,
   onBatchUpdate,
+  onSampleToggle,
   onDelete,
 }: OrderItemRowProps) {
   const [editingQuantity, setEditingQuantity] = useState(false);
@@ -158,6 +161,12 @@ export function OrderItemRow({
               {item.product_category === 'preroll' && <span className="text-xs">🚬</span>}
               {item.product_category === 'packaged' && <span className="text-xs">📦</span>}
               <span className="truncate" title={item.product_name}>{item.product_name}</span>
+              {item.is_sample && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded flex-shrink-0">
+                  <Gift className="w-3 h-3" />
+                  Sample
+                </span>
+              )}
             </div>
             {!loadingAssigned && totalAssigned > 0 && (
               <div className="flex items-center gap-2">
@@ -346,6 +355,19 @@ export function OrderItemRow({
             >
               <Printer className="w-3 h-3" />
               Print ({stats.total})
+            </button>
+          )}
+          {onSampleToggle && (
+            <button
+              onClick={() => onSampleToggle(item.id, orderId, !item.is_sample)}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded transition-colors ${
+                item.is_sample
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30'
+                  : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white border border-transparent'
+              }`}
+              title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
+            >
+              <Gift className="w-3 h-3" />
             </button>
           )}
           <button

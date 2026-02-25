@@ -25,7 +25,7 @@ class OrdersDataService {
     const [itemsResult, workflowResult] = await Promise.all([
       supabase
         .from('order_items')
-        .select('id, quantity, unit_price, subtotal, notes, product_id, status, batch_id')
+        .select('id, quantity, unit_price, subtotal, notes, product_id, status, batch_id, is_sample')
         .eq('order_id', orderId),
       supabase
         .from('order_workflow_summary')
@@ -78,6 +78,7 @@ class OrdersDataService {
         pricing_unit: product?.pricing_unit,
         product_category: product?.product_category,
         batch_id: item.batch_id || null,
+        is_sample: item.is_sample ?? false,
       };
     });
 
@@ -130,6 +131,34 @@ class OrdersDataService {
       .from('order_items')
       .update({ unit_price: newPrice })
       .eq('id', itemId);
+
+    if (error) throw error;
+  }
+
+  async updateItemSample(itemId: string, isSample: boolean): Promise<void> {
+    const updates: Record<string, unknown> = { is_sample: isSample };
+    if (isSample) {
+      updates.unit_price = 0;
+    }
+    const { error } = await supabase
+      .from('order_items')
+      .update(updates)
+      .eq('id', itemId);
+
+    if (error) throw error;
+  }
+
+  async updateOrderSampleFlag(orderId: string): Promise<void> {
+    const { data } = await supabase
+      .from('order_items')
+      .select('is_sample')
+      .eq('order_id', orderId);
+
+    const hasSamples = data?.some(item => item.is_sample) ?? false;
+    const { error } = await supabase
+      .from('orders')
+      .update({ is_sample: hasSamples })
+      .eq('id', orderId);
 
     if (error) throw error;
   }

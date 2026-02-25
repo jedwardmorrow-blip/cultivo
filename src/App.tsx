@@ -57,6 +57,7 @@ function AppContent() {
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
   const [cloneFromOrder, setCloneFromOrder] = useState<any>(null);
   const [preSelectedCustomerId, setPreSelectedCustomerId] = useState<string | null>(null);
+  const [sampleMode, setSampleMode] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isStandaloneMode, setIsStandaloneMode] = useState(false);
   const [isResetPasswordMode, setIsResetPasswordMode] = useState(false);
@@ -126,28 +127,40 @@ function AppContent() {
   function handleCreateOrder(cloneFrom?: any) {
     setCloneFromOrder(cloneFrom || null);
     setPreSelectedCustomerId(null);
+    setSampleMode(false);
     setShowNewOrderForm(true);
   }
 
   function handleCreateOrderForCustomer(customerId: string) {
     setCloneFromOrder(null);
     setPreSelectedCustomerId(customerId);
+    setSampleMode(false);
+    setShowNewOrderForm(true);
+  }
+
+  function handleCreateSampleOrder(customerId: string) {
+    setCloneFromOrder(null);
+    setPreSelectedCustomerId(customerId);
+    setSampleMode(true);
     setShowNewOrderForm(true);
   }
 
   function handleOrderCreated(orderData?: { id: string; order_number: string; customer_id: string }) {
     const customerId = preSelectedCustomerId;
+    const wasSampleMode = sampleMode;
     setShowNewOrderForm(false);
     setCloneFromOrder(null);
     setPreSelectedCustomerId(null);
+    setSampleMode(false);
     setCurrentView('orders');
 
     if (customerId && orderData) {
       createActivity({
         customer_id: customerId,
-        activity_type: 'note',
-        subject: 'Order created',
-        body: `Order ${orderData.order_number} created from account view`,
+        activity_type: wasSampleMode ? 'sample' : 'note',
+        subject: wasSampleMode ? 'Sample order sent' : 'Order created',
+        body: `Order ${orderData.order_number} ${wasSampleMode ? 'sent as sample' : 'created'} from account view`,
+        linked_order_id: orderData.id,
       });
     }
   }
@@ -228,7 +241,7 @@ function AppContent() {
       default:
         if (currentView.startsWith('crm-account-detail:')) {
           const acctId = currentView.replace('crm-account-detail:', '');
-          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} />;
+          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} />;
         }
         return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
     }
@@ -243,10 +256,11 @@ function AppContent() {
       </Layout>
       {showNewOrderForm && (
         <NewOrderForm
-          onClose={() => { setShowNewOrderForm(false); setCloneFromOrder(null); setPreSelectedCustomerId(null); }}
+          onClose={() => { setShowNewOrderForm(false); setCloneFromOrder(null); setPreSelectedCustomerId(null); setSampleMode(false); }}
           onSuccess={handleOrderCreated}
           cloneFrom={cloneFromOrder}
           preSelectedCustomerId={preSelectedCustomerId || undefined}
+          sampleMode={sampleMode}
         />
       )}
     </>

@@ -11,6 +11,7 @@ import {
   Clock,
   Calendar,
   Shield,
+  Gift,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
@@ -50,6 +51,7 @@ interface OrderDrawerProps {
   onItemQuantityUpdate: (itemId: string, orderId: string, newQuantity: number) => Promise<void>;
   onItemPriceUpdate: (itemId: string, orderId: string, newPrice: number) => Promise<void>;
   onItemBatchUpdate: (itemId: string, orderId: string, batchId: string | null, strain: string | null) => Promise<void>;
+  onItemSampleToggle?: (itemId: string, orderId: string, isSample: boolean) => Promise<void>;
   onItemDelete: (itemId: string, orderId: string) => Promise<void>;
   onAddItem: (orderId: string, productId: string, quantity: number) => Promise<void>;
   onGenerateInvoice: (orderId: string, orderNumber: string) => void;
@@ -176,6 +178,7 @@ export function OrderDrawer({
   onItemQuantityUpdate,
   onItemPriceUpdate,
   onItemBatchUpdate,
+  onItemSampleToggle,
   onItemDelete,
   onAddItem,
   onGenerateInvoice,
@@ -272,6 +275,12 @@ export function OrderDrawer({
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            {(order as any).is_sample && (
+              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
+                <Gift className="w-3 h-3" />
+                Sample
+              </span>
+            )}
             {order.priority === 'urgent' && (
               <span className="px-2 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
                 Urgent
@@ -328,6 +337,7 @@ export function OrderDrawer({
               onItemQuantityUpdate={onItemQuantityUpdate}
               onItemPriceUpdate={onItemPriceUpdate}
               onItemBatchUpdate={onItemBatchUpdate}
+              onItemSampleToggle={onItemSampleToggle}
               onItemDelete={onItemDelete}
               onAddItem={onAddItem}
               onGenerateInvoice={onGenerateInvoice}

@@ -170,6 +170,7 @@ export function UnifiedOrders({
           onItemQuantityUpdate={actions.updateItemQuantity}
           onItemPriceUpdate={actions.updateItemPrice}
           onItemBatchUpdate={actions.updateItemBatch}
+          onItemSampleToggle={actions.updateItemSample}
           onItemDelete={actions.deleteOrderItem}
           onAddItem={actions.addItemToOrder}
           onGenerateInvoice={handleGenerateInvoice}

@@ -18,6 +18,7 @@ export interface OrderItemExtended {
   pricing_unit?: string;
   product_category?: string;
   batch_id?: string | null;
+  is_sample?: boolean;
 }
 
 // Feature-specific Product type for orders feature
@@ -56,7 +57,8 @@ export type OrderItemStatus =
 export type OrderSource =
   | 'manual'
   | 'dutchie'
-  | 'import';
+  | 'import'
+  | 'sample';
 
 export interface OrderFilters {
   searchTerm: string;

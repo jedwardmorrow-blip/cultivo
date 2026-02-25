@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, DollarSign, Package, Trash2, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, DollarSign, Package, Trash2, Calendar, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface OrderHeaderProps {
@@ -14,6 +14,7 @@ interface OrderHeaderProps {
     requested_delivery_date: string | null;
     scheduled_delivery_date: string | null;
     order_source?: string | null;
+    is_sample?: boolean;
   };
   isExpanded: boolean;
   workflow?: {
@@ -84,6 +85,12 @@ export function OrderHeader({
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+              {order.is_sample && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-amber-500/20 text-amber-400 border-2 border-amber-500/40 uppercase tracking-wider">
+                  <Gift className="w-3.5 h-3.5" />
+                  SAMPLE
+                </span>
+              )}
               {workflow?.ready_to_ship && (
                 <span className="px-3 py-1.5 text-xs font-bold bg-green-900/30 text-green-400 border-2 border-green-600 uppercase tracking-wider">
                   READY TO SHIP

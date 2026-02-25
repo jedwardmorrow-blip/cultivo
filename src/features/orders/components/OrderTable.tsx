@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ChevronLeft, ChevronRight, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
@@ -187,6 +187,12 @@ export function OrderTable({
                       <span className="text-sm font-bold text-cult-off-white tracking-wide">
                         {order.order_number}
                       </span>
+                      {(order as any).is_sample && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
+                          <Gift className="w-2.5 h-2.5" />
+                          Sample
+                        </span>
+                      )}
                       {order.priority === 'urgent' && (
                         <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
                           Urgent

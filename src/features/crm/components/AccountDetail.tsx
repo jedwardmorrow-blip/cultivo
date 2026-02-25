@@ -12,11 +12,13 @@ import { AccountProductMix } from './AccountProductMix';
 import { AccountDeliveryHistory } from './AccountDeliveryHistory';
 import { AccountPriceList } from './AccountPriceList';
 import { AccountPinnedNotes } from './AccountPinnedNotes';
+import { AccountSampleHistory } from './AccountSampleHistory';
 
 interface AccountDetailProps {
   accountId: string;
   onViewChange: (view: string) => void;
   onCreateOrder?: (customerId: string) => void;
+  onCreateSampleOrder?: (customerId: string) => void;
 }
 
 const TABS = [
@@ -24,9 +26,10 @@ const TABS = [
   { key: 'products' as const, label: 'Product Mix' },
   { key: 'deliveries' as const, label: 'Deliveries' },
   { key: 'pricing' as const, label: 'Pricing' },
+  { key: 'samples' as const, label: 'Samples' },
 ];
 
-export function AccountDetail({ accountId, onViewChange, onCreateOrder }: AccountDetailProps) {
+export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreateSampleOrder }: AccountDetailProps) {
   const {
     account,
     childAccounts,
@@ -47,7 +50,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
     loading: deepDiveLoading,
   } = useAccountDeepDive(accountId);
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries' | 'pricing'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries' | 'pricing' | 'samples'>('orders');
 
   const handleSelectAccount = (id: string) => {
     onViewChange(`crm-account-detail:${id}`);
@@ -95,7 +98,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
         )}
       </div>
 
-      <AccountHeader account={account} healthScore={healthScore} monthlyRevenue={monthlyRevenue} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} />
+      <AccountHeader account={account} healthScore={healthScore} monthlyRevenue={monthlyRevenue} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} onCreateSampleOrder={onCreateSampleOrder ? () => onCreateSampleOrder(accountId) : undefined} />
 
       {account.account_type === 'hub_parent' && childAccounts.length > 0 && (
         <SubAccountsPanel
@@ -129,6 +132,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder }: Accoun
           {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} />}
           {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} />}
           {activeTab === 'pricing' && <AccountPriceList customerId={accountId} />}
+          {activeTab === 'samples' && <AccountSampleHistory customerId={accountId} />}
         </div>
         <div className="space-y-5">
           <AccountPinnedNotes customerId={accountId} onUnpin={reload} />

@@ -17,6 +17,7 @@ export interface OrderItem {
   price_locked: boolean;
   pricing_unit?: string;
   status?: string;
+  is_sample: boolean;
   created_at: string;
   updated_at: string;
 }

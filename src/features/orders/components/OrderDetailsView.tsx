@@ -23,6 +23,7 @@ interface OrderDetailsViewProps {
   onItemQuantityUpdate: (itemId: string, orderId: string, newQuantity: number) => Promise<void>;
   onItemPriceUpdate: (itemId: string, orderId: string, newPrice: number) => Promise<void>;
   onItemBatchUpdate: (itemId: string, orderId: string, batchId: string | null, strain: string | null) => Promise<void>;
+  onItemSampleToggle?: (itemId: string, orderId: string, isSample: boolean) => Promise<void>;
   onItemDelete: (itemId: string, orderId: string) => Promise<void>;
   onAddItem: (orderId: string, productId: string, quantity: number) => Promise<void>;
   onGenerateInvoice: (orderId: string, orderNumber: string) => void;
@@ -37,6 +38,7 @@ export const OrderDetailsView = memo(function OrderDetailsView({
   onItemQuantityUpdate,
   onItemPriceUpdate,
   onItemBatchUpdate,
+  onItemSampleToggle,
   onItemDelete,
   onAddItem,
   onGenerateInvoice,
@@ -125,6 +127,7 @@ export const OrderDetailsView = memo(function OrderDetailsView({
                     onQuantityUpdate={onItemQuantityUpdate}
                     onPriceUpdate={onItemPriceUpdate}
                     onBatchUpdate={onItemBatchUpdate}
+                    onSampleToggle={onItemSampleToggle}
                     onDelete={onItemDelete}
                   />
                 ))}

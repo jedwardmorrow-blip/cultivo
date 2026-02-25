@@ -87,6 +87,7 @@ export interface CustomerActivity {
   created_at: string;
   user_name?: string;
   linked_task_id?: string | null;
+  linked_order_id?: string | null;
   visit_id?: string | null;
 }
 
@@ -97,6 +98,7 @@ export interface CustomerActivityInput {
   body?: string;
   follow_up_date?: string;
   linked_task_id?: string;
+  linked_order_id?: string;
   visit_id?: string;
 }
 

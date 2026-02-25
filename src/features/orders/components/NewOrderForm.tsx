@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { validateDate, getDateInputConstraints } from '@/lib/utils';
 import { useOrderableProducts } from '@/hooks';
 import { formatProductPrice } from '@/services';
-import { X, Plus, Trash2, Search, ChevronDown } from 'lucide-react';
+import { X, Plus, Trash2, Search, ChevronDown, Gift } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { getActivePricesForCustomer } from '@/features/crm/services/priceList.service';
 
@@ -23,13 +23,15 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   notes?: string;
+  is_sample: boolean;
 }
 
-export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustomerId }: {
+export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustomerId, sampleMode }: {
   onClose: () => void;
   onSuccess: (orderData?: { id: string; order_number: string; customer_id: string }) => void;
   cloneFrom?: any;
   preSelectedCustomerId?: string;
+  sampleMode?: boolean;
 }) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { products, loading: productsLoading, error: productsError } = useOrderableProducts();
@@ -95,13 +97,14 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     setInternalNotes(cloneFrom.internal_notes || '');
     const { data: itemsData } = await supabase
       .from('order_items')
-      .select('product_id, quantity, unit_price')
+      .select('product_id, quantity, unit_price, is_sample')
       .eq('order_id', cloneFrom.id);
     if (itemsData && itemsData.length > 0) {
       setOrderItems(itemsData.map((item: any) => ({
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        is_sample: item.is_sample ?? false,
       })));
     }
   }
@@ -111,7 +114,19 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
       product_id: '',
       quantity: 0,
       unit_price: 0,
+      is_sample: !!sampleMode,
     }]);
+  }
+
+  function toggleSample(index: number) {
+    const updated = [...orderItems];
+    const newIsSample = !updated[index].is_sample;
+    updated[index] = {
+      ...updated[index],
+      is_sample: newIsSample,
+      unit_price: newIsSample ? 0 : (products.find(p => p.id === updated[index].product_id)?.price_per_unit ?? updated[index].unit_price),
+    };
+    setOrderItems(updated);
   }
 
   function updateOrderItem(index: number, field: keyof OrderItem, value: any) {
@@ -191,6 +206,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     setLoading(true);
 
     try {
+      const allSamples = orderItems.every(item => item.is_sample);
+      const anySamples = orderItems.some(item => item.is_sample);
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -200,6 +217,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
           delivery_notes: deliveryNotes || null,
           internal_notes: internalNotes || null,
           status: 'submitted',
+          is_sample: anySamples,
+          ...(allSamples ? { order_source: 'sample' } : {}),
         })
         .select()
         .single();
@@ -210,9 +229,10 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         order_id: orderData.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        unit_price: item.unit_price,
+        unit_price: item.is_sample ? 0 : item.unit_price,
         notes: item.notes || null,
         status: 'trimming',
+        is_sample: item.is_sample,
       }));
 
       const { error: itemsError } = await supabase
@@ -242,7 +262,15 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         className="bg-cult-near-black border-2 border-cult-medium-gray rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
       >
         <div className="sticky top-0 bg-cult-near-black border-b-2 border-cult-medium-gray px-6 py-5 flex items-center justify-between z-10 rounded-t-lg">
-          <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wider">New Order</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wider">New Order</h2>
+            {sampleMode && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
+                <Gift className="w-3.5 h-3.5" />
+                Sample Mode
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -517,7 +545,20 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
                           className="w-full px-3 py-2.5 bg-cult-near-black border border-cult-medium-gray rounded text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-sm"
                         />
                       </div>
-                      <div className="flex items-end">
+                      <div className="flex items-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => toggleSample(index)}
+                          className={`px-3 py-2.5 rounded transition-colors flex items-center justify-center gap-1.5 text-xs font-bold ${
+                            item.is_sample
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
+                              : 'text-cult-lighter-gray hover:text-cult-white hover:bg-cult-near-black border border-transparent'
+                          }`}
+                          title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
+                        >
+                          <Gift className="w-4 h-4" />
+                          <span className="lg:hidden">{item.is_sample ? 'Sample' : 'Sample'}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => removeOrderItem(index)}

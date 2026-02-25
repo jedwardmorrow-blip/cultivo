@@ -1,4 +1,4 @@
-import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart, Gift } from 'lucide-react';
 import type { AccountSummary, AccountHealthScore } from '../types';
 import { AccountHealthBadge } from './AccountHealthBadge';
 import { RevenueSparkline } from '@/shared/components';
@@ -8,6 +8,7 @@ interface AccountHeaderProps {
   healthScore?: AccountHealthScore | null;
   monthlyRevenue?: number[];
   onCreateOrder?: () => void;
+  onCreateSampleOrder?: () => void;
 }
 
 function getStatusColor(status: string): string {
@@ -24,7 +25,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder, onCreateSampleOrder }: AccountHeaderProps) {
   const isHubParent = account.account_type === 'hub_parent';
   const chainRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
   const chainOrders = account.order_count + (account.child_total_orders || 0);
@@ -109,15 +110,26 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
         </div>
 
         <div className="flex flex-col items-end gap-4 lg:flex-shrink-0">
-          {onCreateOrder && (
-            <button
-              onClick={onCreateOrder}
-              className="flex items-center gap-2 px-4 py-2.5 bg-cult-green text-cult-black rounded-lg hover:bg-cult-green-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-green/20"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              New Order
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {onCreateSampleOrder && (
+              <button
+                onClick={onCreateSampleOrder}
+                className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded-lg hover:bg-amber-500/30 transition-all text-sm font-bold"
+              >
+                <Gift className="w-4 h-4" />
+                Send Sample
+              </button>
+            )}
+            {onCreateOrder && (
+              <button
+                onClick={onCreateOrder}
+                className="flex items-center gap-2 px-4 py-2.5 bg-cult-green text-cult-black rounded-lg hover:bg-cult-green-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-green/20"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                New Order
+              </button>
+            )}
+          </div>
           {monthlyRevenue && monthlyRevenue.some((v) => v > 0) && (
             <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50 w-full">
               <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-2">6-Month Revenue Trend</p>
