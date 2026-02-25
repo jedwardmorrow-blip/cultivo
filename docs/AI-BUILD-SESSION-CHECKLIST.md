@@ -15,56 +15,43 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-25
-**Session:** CRM Phase 2 — Sales Activity Management (tasks, visits, health scoring, product deep-dive)
+**Session:** CRM Phase 2.5 — Chain Hierarchy & Delivery Model
 **Status:** COMPLETE
 
 **What was done:**
 
-Implemented the full CRM Phase 2 Sales Activity Management system: task queue, visit calendar with drag-and-drop, account health scoring, product mix deep-dive, and delivery history — covering documentation, database, services, hooks, and UI components.
+Implemented CRM Phase 2.5: per-child-location performance analytics, delivery model tracking, expand/collapse chain hierarchy in accounts list, and combined chain revenue across all dashboard components.
 
-**1. Documentation updates (docs-first approach)**
-- `docs/CRM.md` — Added Phase 2 specification: crm_tasks/crm_visit_schedule table specs, lifecycle diagrams, scoring formula, frontend architecture, design decisions #6-9
-- `docs/CRM-INTEGRATION-MAP.md` — Added Phase 2 tables, views, service queries, types, and navigation entries
-- `docs/ARCHITECTURE-DECISIONS.md` — Added ADR #14 (auto-logging pattern), #15 (health scores as VIEW), #16 (visit calendar pattern)
-- `docs/AI-SESSION-BRIEF.md` — Updated version to 2.3, dates, session list, CRM reference
+**1. Database migration (add_chain_hierarchy_and_delivery_model)**
+- Added `delivery_model` column to `customers` (text NOT NULL DEFAULT 'direct_to_each', CHECK constraint)
+- Created `crm_chain_location_performance` VIEW with CTE-based revenue share calculation
+- DROP+recreated `crm_customer_summary` VIEW with `delivery_model`, `child_total_revenue`, `child_total_orders`
 
-**2. Database migration (create_crm_sales_activity_system)**
-- Created `crm_tasks` table with CHECK constraints, RLS (4 policies), 5 indexes
-- Created `crm_visit_schedule` table with CHECK constraints, RLS (4 policies), 4 indexes
-- Added `linked_task_id` and `visit_id` FK columns to `customer_activity_log`
-- Created `fn_update_updated_at_column()` trigger for both tables
-- Created `crm_account_scores` VIEW (health scoring: recency 40%, frequency 25%, revenue 20%, engagement 15%)
-- Created `crm_product_mix_by_customer` VIEW
+**2. Type definitions**
+- Added `DeliveryModel`, `ChainHealthLabel`, `ChainLocationPerformance` types to `crm.types.ts`
+- Extended `AccountSummary` with `delivery_model`, `child_total_revenue`, `child_total_orders`
 
-**3. Type definitions**
-- Extended `crm.types.ts` with TaskType, TaskPriority, TaskStatus, CRMTask, CRMTaskInput, VisitType, VisitStatus, VisitSchedule, VisitScheduleInput, AccountHealthScore, CustomerProductMix
+**3. Service layer**
+- Added `getChainLocationPerformance()` and `updateDeliveryModel()` to `crm.service.ts`
 
-**4. Service layer (3 new files)**
-- `tasks.service.ts` — getTasks, getOpenTasks, createTask, completeTask (auto-logging), snoozeTask, cancelTask
-- `visits.service.ts` — getVisits, getVisitsForMonth, scheduleVisit, completeVisit (auto-logging), rescheduleVisit, cancelVisit
-- `deepDive.service.ts` — getAccountHealthScores, getAccountHealthById, getCustomerProductMix, getCustomerDeliveryHistory
+**4. Hooks**
+- `useAccountDetail.ts` — Added `chainPerformance` state, parallel fetch with child accounts
+- `useCRMDashboard.ts` — Filter hub_child from top/at-risk lists, sort by combined revenue
 
-**5. Hooks (4 new files)**
-- `useSalesQueue.ts` — Tasks + visits with overdue/today/upcoming categories, real-time subscriptions
-- `useVisitCalendar.ts` — Monthly visit data grouped by date, month navigation, real-time subscriptions
-- `useAccountDeepDive.ts` — Parallel load of health score, product mix, delivery history
-- `useTaskManager.ts` — Task CRUD with filters and real-time subscriptions
+**5. Components (6 enhanced)**
+- `SubAccountsPanel.tsx` — Full rewrite: health badges per child, revenue share bars, top performer, delivery model badge
+- `AccountDetail.tsx` — Pass chainPerformance and deliveryModel to SubAccountsPanel
+- `AccountsList.tsx` — Full rewrite: expand/collapse chain rows, child grouping, search bubbling, combined revenue sort
+- `AccountHeader.tsx` — Full rewrite: delivery model badges (Package/Truck icons), chain-level metrics for hub parents
+- `TopAccountsTable.tsx` — Full rewrite: combined chain revenue, CHAIN badge
+- `AtRiskAccounts.tsx` — Full rewrite: combined chain revenue, CHAIN badge
 
-**6. Components (7 new files + 2 enhanced)**
-- `SalesQueue.tsx` — Daily action center with overdue/today/week sections, task/visit actions
-- `TaskCreateModal.tsx` — Modal form for creating tasks
-- `VisitCalendar.tsx` — Monthly calendar with drag-and-drop visit rescheduling
-- `VisitScheduleModal.tsx` — Modal form for scheduling visits
-- `AccountProductMix.tsx` — Product deep-dive with revenue share bars
-- `AccountDeliveryHistory.tsx` — Delivery timeline with status badges
-- `AccountHealthBadge.tsx` — Health score pill (sm/md sizes)
-- Enhanced `AccountDetail.tsx` — Added tabbed view (Orders/Product Mix/Deliveries), health badge integration
-- Enhanced `AccountHeader.tsx` — Health score badge in header
-
-**7. Navigation and routing**
-- Added `crm-queue` and `crm-visit-calendar` to sectionNavigation.ts
-- Added lazy imports and renderView cases in App.tsx
-- Updated barrel exports in components/index.ts and crm/index.ts
+**6. Documentation**
+- `docs/CRM-SUB-ACCOUNTS.md` — Delivery model section, chain performance view schema, UI implementation details
+- `docs/CRM.md` — Phase 2.5 section, delivery_model column, crm_chain_location_performance view, design decisions #10-11
+- `docs/CRM-INTEGRATION-MAP.md` — Phase 2.5 view, service queries, types
+- `docs/ARCHITECTURE-DECISIONS.md` — ADR #17 (delivery model and chain performance as view-based analytics)
+- `CHANGELOG.md` — Phase 2.5 entry
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**

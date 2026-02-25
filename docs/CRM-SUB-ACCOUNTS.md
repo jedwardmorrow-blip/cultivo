@@ -107,14 +107,79 @@ If Story ever moves to a hub delivery model, the same parent/child pattern can b
 2. Updating all Story location records to `hub_child` with `parent_customer_id` pointing to the parent
 3. Existing orders remain linked to the individual location records (no data migration needed)
 
+## Delivery Model (Phase 2.5)
+
+The `delivery_model` column on `customers` specifies how a hub parent fulfills child locations:
+
+| Value | Description | Badge |
+|-------|-------------|-------|
+| `direct_to_each` | Separate deliveries to each child location | Truck icon, cyan |
+| `hub_and_spoke` | Single delivery to parent hub, distributed internally | Package icon, teal |
+
+**Current assignments:**
+- Sol Flower (SOL): `hub_and_spoke` (delivers to hub in Tempe, internal distribution)
+- Earth's Healing (WEE): `direct_to_each` (separate deliveries to each Tucson location)
+
+### `crm_chain_location_performance` View
+
+Per-child-location metrics for hub parents, sorted by revenue rank:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `child_id` | uuid | Child account ID |
+| `child_name` | text | Child account name |
+| `child_code` | text | Child dispensary_code |
+| `parent_customer_id` | uuid | FK to parent hub |
+| `parent_name` | text | Parent account name |
+| `parent_code` | text | Parent dispensary_code |
+| `delivery_model` | text | From parent record |
+| `city`, `state` | text | Child location |
+| `account_status` | text | Child status |
+| `order_count` | integer | Child's order count |
+| `revenue` | numeric | Child's total revenue |
+| `avg_order_value` | numeric | Child's avg order value |
+| `last_order_date` | timestamptz | |
+| `days_since_last_order` | integer | |
+| `revenue_share_pct` | numeric | % of parent chain total |
+| `health_label` | text | healthy/cooling/at_risk/dormant/no_orders |
+| `revenue_rank` | integer | 1 = top performer |
+
+### `crm_customer_summary` Additions (Phase 2.5)
+
+Three new columns added to the summary view:
+- `delivery_model` (text) — from customers table
+- `child_total_revenue` (numeric) — sum of all child account revenue
+- `child_total_orders` (integer) — sum of all child account orders
+
+These enable combined revenue sorting in the dashboard and accounts list.
+
 ## UI Implementation
 
 ### Account Detail Page - Sub-Accounts Panel
 - Visible only when `account_type = 'hub_parent'`
 - Lists all child locations with address, dispensary_code, order count
-- "Add Location" button to create new hub_child record
+- Shows delivery model badge (Hub & Spoke vs Direct to Each)
+- Per-child health badges (Healthy/Cooling/At Risk/Dormant)
+- Revenue share progress bars showing each child's % of chain total
+- Top performer callout in footer
 - Click on child to navigate to its own detail page
 
-### Accounts List - Hub Indicator
-- Hub parent accounts show a badge/icon indicating they have child locations
-- Optional filter to show hub parents only, or expand to show children
+### Account Detail Page - Header
+- Hub parents show CHAIN badge with Network icon
+- Delivery model badge (Hub & Spoke / Direct to Each)
+- Metrics switch: Chain Revenue + Chain Orders + Direct Revenue (hub parents) vs standard metrics (direct accounts)
+
+### Accounts List - Chain Hierarchy
+- Hub child accounts are hidden from the main list (grouped under parent)
+- Hub parent rows show expand/collapse toggle (ChevronDown) with CHAIN badge
+- Expanded children shown as indented rows with MapPin icon and lighter styling
+- Revenue column shows combined (parent + children) with "direct" subtitle
+- Orders column shows combined with "direct" subtitle
+- Sorting by revenue uses combined chain revenue for hub parents
+- Search matches child names/codes and bubbles up to reveal the parent row
+
+### Dashboard - Top Accounts & At-Risk
+- Hub child accounts excluded from both lists (prevents double-counting)
+- Hub parent rows show CHAIN badge with Network icon
+- Revenue shown as combined (parent + children) for hub parents
+- Sorting uses combined chain revenue

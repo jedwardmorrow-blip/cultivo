@@ -4,6 +4,25 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-25 - CRM Phase 2.5: Chain Hierarchy & Delivery Model
+
+**Type:** Feature Addition
+**Module:** CRM
+**Status:** COMPLETE
+
+Added delivery model tracking, per-child-location performance analytics, and chain-aware UI across the CRM module.
+
+- **Database:** Migration adds `delivery_model` column to customers (`direct_to_each` | `hub_and_spoke`). Creates `crm_chain_location_performance` view with revenue share %, health labels, and ranking per child location. Extends `crm_customer_summary` with `delivery_model`, `child_total_revenue`, `child_total_orders`.
+- **Accounts List:** Hub child accounts grouped under parents with expand/collapse toggle. CHAIN badge with location count. Combined revenue/orders sorting. Search matches child names and bubbles up to parent.
+- **Account Header:** Delivery model badges (Hub & Spoke / Direct to Each). Chain-level metrics for hub parents.
+- **Sub-Accounts Panel:** Per-child health badges, revenue share progress bars, top performer callout, delivery model badge.
+- **Dashboard:** Hub child accounts excluded from Top Accounts and At-Risk lists. CHAIN badge. Combined revenue display.
+- **Types:** Added `DeliveryModel`, `ChainHealthLabel`, `ChainLocationPerformance`.
+- **Services:** Added `getChainLocationPerformance()`, `updateDeliveryModel()`.
+- **Hooks:** Updated `useAccountDetail` and `useCRMDashboard` for chain awareness.
+
+---
+
 ## 2026-02-25 - CRM Phase 2: Sales Activity Management
 
 **Type:** Feature Addition

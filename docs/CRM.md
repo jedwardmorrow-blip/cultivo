@@ -80,6 +80,7 @@ Links sales reps (user_profiles) to customer accounts.
 - `last_order_date` (timestamptz, denormalized)
 - `lifetime_revenue` (numeric, default 0, denormalized)
 - `tags` (text[], default '{}')
+- `delivery_model` (text, default 'direct_to_each') - 'direct_to_each' | 'hub_and_spoke' (Phase 2.5)
 
 ### CRM Analytics Views
 
@@ -89,6 +90,10 @@ One row per customer with aggregated stats:
 - First/last order dates, days since last order
 - Account status, account type
 - Top strains purchased
+- `delivery_model`, `child_total_revenue`, `child_total_orders` (Phase 2.5)
+
+#### `crm_chain_location_performance` (Phase 2.5)
+Per-child-location metrics for hub parents with revenue share %, health labels, and revenue ranking. See [CRM-SUB-ACCOUNTS.md](./CRM-SUB-ACCOUNTS.md) for full schema.
 
 #### `crm_monthly_revenue_by_customer`
 Monthly revenue breakdown per customer for trend analysis.
@@ -340,6 +345,12 @@ CRM Section:
 
 9. **Product deep-dive is a VIEW, not a materialized table:** Aggregated from `order_items` + `orders` + `products` on read. Data is always current and requires no refresh triggers.
 
+### Key Design Decisions (Phase 2.5)
+
+10. **Delivery model on customers, not a separate table:** Simple text column (`direct_to_each` | `hub_and_spoke`) on the existing customers table. Only hub parents need this value; direct accounts default to `direct_to_each`. No junction table needed since the delivery model is a property of the customer, not a many-to-many relationship.
+
+11. **Chain performance as a VIEW with revenue share %:** The `crm_chain_location_performance` view computes per-child metrics, revenue share percentages, health labels, and revenue rankings in a single query. Using CTEs (child_stats -> parent_totals -> final join) ensures correct percentages and avoids N+1 queries in the UI.
+
 ## Implementation Phases
 
 ### Phase 1 (Complete)
@@ -351,7 +362,7 @@ CRM Section:
 - Account Detail page with sub-accounts
 - Navigation integration
 
-### Phase 2 (Current)
+### Phase 2 (Complete)
 - `crm_tasks` and `crm_visit_schedule` tables with RLS
 - `crm_account_scores` and `crm_product_mix_by_customer` views
 - `linked_task_id` and `visit_id` columns on `customer_activity_log`
@@ -361,6 +372,15 @@ CRM Section:
 - Account Delivery History panel
 - Account Health Badge integration
 - Enhanced Activity Log with task/visit linking
+
+### Phase 2.5 (Complete)
+- `delivery_model` column on customers table
+- `crm_chain_location_performance` view with revenue share, health labels, ranking
+- Enhanced `crm_customer_summary` with delivery_model, child_total_revenue, child_total_orders
+- Accounts list: expand/collapse chain rows, combined revenue sort, child search bubbling
+- Account header: delivery model badge, chain-level metrics for hub parents
+- SubAccountsPanel: per-child health badges, revenue share progress bars, top performer callout
+- Dashboard: hub_child exclusion, combined revenue for hub parents, CHAIN badge
 
 ### Phase 3 (Future)
 - Per-customer price list management

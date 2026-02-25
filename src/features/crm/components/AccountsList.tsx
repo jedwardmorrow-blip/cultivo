@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Building2, ChevronRight, Filter, X } from 'lucide-react';
+import { Search, Building2, ChevronRight, ChevronDown, Filter, X, MapPin, Network } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
 import { getAccountSummaries } from '../services';
 import type { AccountSummary, AccountStatus, AccountType } from '../types';
@@ -31,6 +31,7 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
   const [typeFilter, setTypeFilter] = useState<AccountType | 'all'>('all');
   const [sortField, setSortField] = useState<'name' | 'total_revenue' | 'last_order_date' | 'order_count'>('total_revenue');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function load() {
@@ -42,8 +43,37 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
     load();
   }, []);
 
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string, AccountSummary[]>();
+    accounts.forEach((a) => {
+      if (a.account_type === 'hub_child' && a.parent_customer_id) {
+        const existing = map.get(a.parent_customer_id) || [];
+        existing.push(a);
+        map.set(a.parent_customer_id, existing);
+      }
+    });
+    return map;
+  }, [accounts]);
+
+  const matchingChildParentIds = useMemo(() => {
+    if (!searchTerm) return new Set<string>();
+    const term = searchTerm.toLowerCase();
+    const parentIds = new Set<string>();
+    accounts.forEach((a) => {
+      if (a.account_type === 'hub_child' && a.parent_customer_id) {
+        const matches =
+          a.name.toLowerCase().includes(term) ||
+          a.dispensary_code.toLowerCase().includes(term) ||
+          (a.city && a.city.toLowerCase().includes(term)) ||
+          (a.license_name && a.license_name.toLowerCase().includes(term));
+        if (matches) parentIds.add(a.parent_customer_id);
+      }
+    });
+    return parentIds;
+  }, [accounts, searchTerm]);
+
   const filteredAccounts = useMemo(() => {
-    let result = accounts;
+    let result = accounts.filter((a) => a.account_type !== 'hub_child');
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -52,7 +82,8 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
           a.name.toLowerCase().includes(term) ||
           a.dispensary_code.toLowerCase().includes(term) ||
           (a.city && a.city.toLowerCase().includes(term)) ||
-          (a.license_name && a.license_name.toLowerCase().includes(term))
+          (a.license_name && a.license_name.toLowerCase().includes(term)) ||
+          matchingChildParentIds.has(a.id)
       );
     }
 
@@ -61,8 +92,15 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
     }
 
     if (typeFilter !== 'all') {
-      result = result.filter((a) => a.account_type === typeFilter);
+      if (typeFilter === 'hub_child') {
+        result = [];
+      } else {
+        result = result.filter((a) => a.account_type === typeFilter);
+      }
     }
+
+    const getCombinedRevenue = (a: AccountSummary) =>
+      Number(a.total_revenue) + (a.child_total_revenue || 0);
 
     result.sort((a, b) => {
       let aVal: any, bVal: any;
@@ -72,16 +110,16 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
           bVal = b.name.toLowerCase();
           break;
         case 'total_revenue':
-          aVal = Number(a.total_revenue);
-          bVal = Number(b.total_revenue);
+          aVal = getCombinedRevenue(a);
+          bVal = getCombinedRevenue(b);
           break;
         case 'last_order_date':
           aVal = a.last_order_date ? new Date(a.last_order_date).getTime() : 0;
           bVal = b.last_order_date ? new Date(b.last_order_date).getTime() : 0;
           break;
         case 'order_count':
-          aVal = a.order_count;
-          bVal = b.order_count;
+          aVal = a.order_count + (a.child_total_orders || 0);
+          bVal = b.order_count + (b.child_total_orders || 0);
           break;
         default:
           return 0;
@@ -92,7 +130,7 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
     });
 
     return result;
-  }, [accounts, searchTerm, statusFilter, typeFilter, sortField, sortDir]);
+  }, [accounts, searchTerm, statusFilter, typeFilter, sortField, sortDir, matchingChildParentIds]);
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
@@ -107,6 +145,16 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
     onViewChange(`crm-account-detail:${accountId}`);
   };
 
+  const toggleParent = (parentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId);
+      else next.add(parentId);
+      return next;
+    });
+  };
+
   const hasFilters = statusFilter !== 'all' || typeFilter !== 'all' || searchTerm !== '';
 
   if (loading) return <LoadingSpinner />;
@@ -116,7 +164,14 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Accounts</h1>
-          <p className="text-cult-light-gray mt-1">{accounts.length} dispensary accounts</p>
+          <p className="text-cult-light-gray mt-1">
+            {accounts.filter((a) => a.account_type !== 'hub_child').length} accounts
+            {childrenByParent.size > 0 && (
+              <span className="ml-1 text-cult-silver">
+                ({Array.from(childrenByParent.values()).reduce((s, c) => s + c.length, 0)} hub locations)
+              </span>
+            )}
+          </p>
         </div>
         <button
           onClick={() => onViewChange('crm-dashboard')}
@@ -199,63 +254,27 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-cult-charcoal/50">
-              {filteredAccounts.map((account) => (
-                <tr
-                  key={account.id}
-                  onClick={() => handleSelectAccount(account.id)}
-                  className="hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-mono text-cult-light-gray">{account.dispensary_code}</span>
-                          {account.account_type === 'hub_parent' && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/20 text-sky-400 rounded">
-                              HUB ({account.child_account_count} locations)
-                            </span>
-                          )}
-                          {account.account_type === 'hub_child' && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/15 text-sky-300/70 rounded">SUB</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs text-cult-light-gray">
-                      {[account.city, account.state].filter(Boolean).join(', ') || '-'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className={`text-sm font-semibold ${Number(account.total_revenue) > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
-                      {Number(account.total_revenue) > 0 ? formatCurrency(Number(account.total_revenue)) : '-'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right hidden md:table-cell">
-                    <span className="text-sm text-cult-light-gray">{account.order_count || '-'}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right hidden lg:table-cell">
-                    <span className={`text-xs ${
-                      account.days_since_last_order !== null && account.days_since_last_order > 30
-                        ? 'text-amber-400'
-                        : 'text-cult-light-gray'
-                    }`}>
-                      {account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : '-'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center hidden sm:table-cell">
-                    <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase border ${getStatusColor(account.account_status)}`}>
-                      {account.account_status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
-                  </td>
-                </tr>
-              ))}
+              {filteredAccounts.map((account) => {
+                const isHub = account.account_type === 'hub_parent';
+                const children = isHub ? (childrenByParent.get(account.id) || []) : [];
+                const isExpanded = expandedParents.has(account.id);
+                const combinedRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
+                const combinedOrders = account.order_count + (account.child_total_orders || 0);
+
+                return (
+                  <ParentRow
+                    key={account.id}
+                    account={account}
+                    isHub={isHub}
+                    children={children}
+                    isExpanded={isExpanded}
+                    combinedRevenue={combinedRevenue}
+                    combinedOrders={combinedOrders}
+                    onSelect={handleSelectAccount}
+                    onToggle={toggleParent}
+                  />
+                );
+              })}
               {filteredAccounts.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-cult-light-gray text-sm">
@@ -268,6 +287,152 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ParentRow({
+  account,
+  isHub,
+  children,
+  isExpanded,
+  combinedRevenue,
+  combinedOrders,
+  onSelect,
+  onToggle,
+}: {
+  account: AccountSummary;
+  isHub: boolean;
+  children: AccountSummary[];
+  isExpanded: boolean;
+  combinedRevenue: number;
+  combinedOrders: number;
+  onSelect: (id: string) => void;
+  onToggle: (id: string, e: React.MouseEvent) => void;
+}) {
+  return (
+    <>
+      <tr
+        onClick={() => onSelect(account.id)}
+        className="hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
+      >
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            {isHub && children.length > 0 ? (
+              <button
+                onClick={(e) => onToggle(account.id, e)}
+                className="p-0.5 rounded hover:bg-cult-charcoal transition-colors"
+              >
+                <ChevronDown className={`w-4 h-4 text-cult-silver transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+              </button>
+            ) : (
+              <Building2 className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+            )}
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[10px] font-mono text-cult-light-gray">{account.dispensary_code}</span>
+                {isHub && (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                    <Network className="w-3 h-3" />
+                    CHAIN ({account.child_account_count})
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3 hidden sm:table-cell">
+          <span className="text-xs text-cult-light-gray">
+            {[account.city, account.state].filter(Boolean).join(', ') || '-'}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <div>
+            <span className={`text-sm font-semibold ${combinedRevenue > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
+              {combinedRevenue > 0 ? formatCurrency(combinedRevenue) : '-'}
+            </span>
+            {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
+              <p className="text-[10px] text-cult-silver">
+                {formatCurrency(Number(account.total_revenue))} direct
+              </p>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-right hidden md:table-cell">
+          <div>
+            <span className="text-sm text-cult-light-gray">{combinedOrders || '-'}</span>
+            {isHub && account.order_count > 0 && (account.child_total_orders || 0) > 0 && (
+              <p className="text-[10px] text-cult-silver">{account.order_count} direct</p>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-right hidden lg:table-cell">
+          <span className={`text-xs ${
+            account.days_since_last_order !== null && account.days_since_last_order > 30
+              ? 'text-amber-400'
+              : 'text-cult-light-gray'
+          }`}>
+            {account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : '-'}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-center hidden sm:table-cell">
+          <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase border ${getStatusColor(account.account_status)}`}>
+            {account.account_status}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+        </td>
+      </tr>
+
+      {isHub && isExpanded && children.map((child) => (
+        <tr
+          key={child.id}
+          onClick={() => onSelect(child.id)}
+          className="hover:bg-cult-dark-gray/30 cursor-pointer transition-colors group bg-cult-dark-gray/20"
+        >
+          <td className="px-4 py-2.5 pl-12">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5 text-sky-400/60 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm text-cult-silver group-hover:text-cult-white truncate">{child.name}</p>
+                <span className="text-[10px] font-mono text-cult-light-gray">{child.dispensary_code}</span>
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-2.5 hidden sm:table-cell">
+            <span className="text-xs text-cult-light-gray">
+              {[child.city, child.state].filter(Boolean).join(', ') || '-'}
+            </span>
+          </td>
+          <td className="px-4 py-2.5 text-right">
+            <span className={`text-sm ${Number(child.total_revenue) > 0 ? 'text-emerald-400/80' : 'text-cult-medium-gray'}`}>
+              {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
+            </span>
+          </td>
+          <td className="px-4 py-2.5 text-right hidden md:table-cell">
+            <span className="text-sm text-cult-light-gray">{child.order_count || '-'}</span>
+          </td>
+          <td className="px-4 py-2.5 text-right hidden lg:table-cell">
+            <span className={`text-xs ${
+              child.days_since_last_order !== null && child.days_since_last_order > 30
+                ? 'text-amber-400'
+                : 'text-cult-light-gray'
+            }`}>
+              {child.days_since_last_order !== null ? `${child.days_since_last_order}d ago` : '-'}
+            </span>
+          </td>
+          <td className="px-4 py-2.5 text-center hidden sm:table-cell">
+            <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase border ${getStatusColor(child.account_status)}`}>
+              {child.account_status}
+            </span>
+          </td>
+          <td className="px-4 py-2.5 text-right">
+            <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+          </td>
+        </tr>
+      ))}
+    </>
   );
 }
 

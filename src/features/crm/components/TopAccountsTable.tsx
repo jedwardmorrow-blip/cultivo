@@ -1,4 +1,4 @@
-import { Building2, ChevronRight, TrendingDown } from 'lucide-react';
+import { Building2, ChevronRight, TrendingDown, Network } from 'lucide-react';
 import type { AccountSummary } from '../types';
 
 interface TopAccountsTableProps {
@@ -19,11 +19,6 @@ function getStatusColor(status: string): string {
     case 'churned': return 'bg-red-500/20 text-red-400';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
   }
-}
-
-function getAccountTypeBadge(type: string): string | null {
-  if (type === 'hub_parent') return 'HUB';
-  return null;
 }
 
 export function TopAccountsTable({ accounts, onSelectAccount }: TopAccountsTableProps) {
@@ -53,7 +48,9 @@ export function TopAccountsTable({ accounts, onSelectAccount }: TopAccountsTable
           </thead>
           <tbody className="divide-y divide-cult-charcoal/50">
             {accounts.map((account) => {
-              const hubBadge = getAccountTypeBadge(account.account_type);
+              const isHub = account.account_type === 'hub_parent';
+              const combinedRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
+              const combinedOrders = account.order_count + (account.child_total_orders || 0);
               const isAtRisk = account.days_since_last_order !== null && account.days_since_last_order > 30;
 
               return (
@@ -67,9 +64,10 @@ export function TopAccountsTable({ accounts, onSelectAccount }: TopAccountsTable
                       <span className="text-sm text-cult-white font-medium truncate max-w-[200px]">
                         {account.name}
                       </span>
-                      {hubBadge && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500/20 text-sky-400 rounded">
-                          {hubBadge}
+                      {isHub && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                          <Network className="w-3 h-3" />
+                          CHAIN
                         </span>
                       )}
                     </div>
@@ -78,12 +76,22 @@ export function TopAccountsTable({ accounts, onSelectAccount }: TopAccountsTable
                     <span className="text-xs font-mono text-cult-light-gray">{account.dispensary_code}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="text-sm font-semibold text-emerald-400">
-                      {formatCurrency(account.total_revenue)}
-                    </span>
+                    <div>
+                      <span className="text-sm font-semibold text-emerald-400">
+                        {formatCurrency(isHub ? combinedRevenue : Number(account.total_revenue))}
+                      </span>
+                      {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
+                        <p className="text-[10px] text-cult-silver">{formatCurrency(Number(account.total_revenue))} direct</p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right hidden md:table-cell">
-                    <span className="text-sm text-cult-light-gray">{account.order_count}</span>
+                    <div>
+                      <span className="text-sm text-cult-light-gray">{isHub ? combinedOrders : account.order_count}</span>
+                      {isHub && account.order_count > 0 && (account.child_total_orders || 0) > 0 && (
+                        <p className="text-[10px] text-cult-silver">{account.order_count} direct</p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <span className="text-sm text-cult-light-gray">

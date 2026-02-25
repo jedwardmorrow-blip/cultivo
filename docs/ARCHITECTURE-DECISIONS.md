@@ -336,3 +336,24 @@ WHERE batch_registry_id = ? AND session_status = 'completed';
 Mirrors the same-batch wet weight pattern (see Decision 11).
 
 **Reference:** CULTIVATION-RULES.md Invariant C-37, CULTIVATION-ARCHITECTURE.md Triggers section (Trigger 13)
+
+---
+
+## 17. Delivery Model and Chain Performance as View-Based Analytics (2026-02-25)
+
+**Context:** CRM Phase 2.5 adds delivery model tracking (hub_and_spoke vs direct_to_each) and per-child-location performance analytics for multi-location dispensary chains.
+
+**Decision:** Delivery model is a simple text column on `customers`. Chain performance metrics are computed via a Postgres VIEW (`crm_chain_location_performance`) using CTEs for correct revenue share percentages. The `crm_customer_summary` view is extended with `delivery_model`, `child_total_revenue`, and `child_total_orders` for dashboard sorting.
+
+**Rationale:**
+- Simple column vs. junction table: delivery model is a 1:1 property of the customer, not a relationship. A text column with CHECK constraint is sufficient.
+- VIEW over stored aggregates: with <20 hub_child accounts, real-time computation is fast. No refresh triggers needed.
+- CTE-based percentage calculation: `child_stats` -> `parent_totals` -> final join ensures revenue_share_pct is always correct (sums to 100% per parent).
+- Health labels in the VIEW: computed from days_since_last_order using the same thresholds as `crm_account_scores`, keeping health definitions consistent.
+
+**Frontend implications:**
+- Hub_child accounts excluded from dashboard top/at-risk lists to prevent double-counting
+- Hub_parent revenue sorted by combined (parent + children) in all lists
+- Expand/collapse tree pattern in AccountsList with child search bubbling
+
+**Reference:** CRM-SUB-ACCOUNTS.md, CRM.md Phase 2.5

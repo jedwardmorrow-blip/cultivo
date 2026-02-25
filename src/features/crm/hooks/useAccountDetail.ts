@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type {
   AccountSummary,
+  ChainLocationPerformance,
   CustomerContact,
   CustomerActivity,
   MonthlyRevenue,
@@ -8,6 +9,7 @@ import type {
 import {
   getAccountById,
   getChildAccounts,
+  getChainLocationPerformance,
   getAccountContacts,
   getAccountOrders,
   getActivityLog,
@@ -28,6 +30,7 @@ interface AccountOrder {
 export function useAccountDetail(accountId: string | null) {
   const [account, setAccount] = useState<AccountSummary | null>(null);
   const [childAccounts, setChildAccounts] = useState<AccountSummary[]>([]);
+  const [chainPerformance, setChainPerformance] = useState<ChainLocationPerformance[]>([]);
   const [contacts, setContacts] = useState<CustomerContact[]>([]);
   const [orders, setOrders] = useState<AccountOrder[]>([]);
   const [activities, setActivities] = useState<CustomerActivity[]>([]);
@@ -54,8 +57,12 @@ export function useAccountDetail(accountId: string | null) {
       if (accountResult.data) {
         setAccount(accountResult.data);
         if (accountResult.data.account_type === 'hub_parent') {
-          const childResult = await getChildAccounts(accountId);
+          const [childResult, perfResult] = await Promise.all([
+            getChildAccounts(accountId),
+            getChainLocationPerformance(accountId),
+          ]);
           if (childResult.data) setChildAccounts(childResult.data);
+          if (perfResult.data) setChainPerformance(perfResult.data);
         }
       }
 
@@ -79,6 +86,7 @@ export function useAccountDetail(accountId: string | null) {
   return {
     account,
     childAccounts,
+    chainPerformance,
     contacts,
     orders,
     activities,

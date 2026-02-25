@@ -52,6 +52,7 @@ Documents how the CRM module connects to every existing feature in the CULT syst
 | `crm_revenue_pipeline` | Open order value by customer | 1 |
 | `crm_account_scores` | Health score computed from recency/frequency/trend/engagement | 2 |
 | `crm_product_mix_by_customer` | Per-customer product breakdown from order history | 2 |
+| `crm_chain_location_performance` | Per-child-location metrics with revenue share %, health labels, ranking | 2.5 |
 
 ## Frontend Integration Points
 
@@ -115,6 +116,7 @@ crm.service.ts
     crm_monthly_revenue_by_customer (Phase 1 view)
     crm_account_scores      (Phase 2 view)
     crm_product_mix_by_customer (Phase 2 view)
+    crm_chain_location_performance (Phase 2.5 view)
 ```
 
 ## Type System Integration
@@ -149,6 +151,11 @@ crm.service.ts
 - `VisitScheduleInput` - scheduling input
 - `AccountHealthScore` - computed health score from crm_account_scores view
 - `CustomerProductMix` - per-customer product breakdown from crm_product_mix_by_customer view
+
+**Phase 2.5:**
+- `DeliveryModel` - 'direct_to_each' | 'hub_and_spoke'
+- `ChainHealthLabel` - 'healthy' | 'cooling' | 'at_risk' | 'dormant' | 'no_orders'
+- `ChainLocationPerformance` - per-child location metrics with revenue share, health label, ranking
 
 ## Navigation Integration
 

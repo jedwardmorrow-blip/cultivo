@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Clock, ChevronRight, Network } from 'lucide-react';
 import type { AccountSummary } from '../types';
 
 interface AtRiskAccountsProps {
@@ -35,33 +35,48 @@ export function AtRiskAccounts({ accounts, onSelectAccount }: AtRiskAccountsProp
       </div>
 
       <div className="divide-y divide-cult-charcoal/50">
-        {accounts.map((account) => (
-          <div
-            key={account.id}
-            onClick={() => onSelectAccount(account.id)}
-            className="px-5 py-3 flex items-center justify-between hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-xs text-cult-light-gray font-mono">{account.dispensary_code}</span>
-                <span className="text-xs text-cult-light-gray">
-                  {formatCurrency(account.total_revenue)} lifetime
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 ml-4">
-              <div className="text-right">
-                <div className="flex items-center gap-1 text-amber-400">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="text-sm font-semibold">{account.days_since_last_order}d</span>
+        {accounts.map((account) => {
+          const isHub = account.account_type === 'hub_parent';
+          const combinedRevenue = isHub
+            ? Number(account.total_revenue) + (account.child_total_revenue || 0)
+            : Number(account.total_revenue);
+
+          return (
+            <div
+              key={account.id}
+              onClick={() => onSelectAccount(account.id)}
+              className="px-5 py-3 flex items-center justify-between hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
+                  {isHub && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                      <Network className="w-3 h-3" />
+                      CHAIN
+                    </span>
+                  )}
                 </div>
-                <span className="text-[10px] text-cult-light-gray">since last order</span>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <span className="text-xs text-cult-light-gray font-mono">{account.dispensary_code}</span>
+                  <span className="text-xs text-cult-light-gray">
+                    {formatCurrency(combinedRevenue)} lifetime
+                  </span>
+                </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+              <div className="flex items-center gap-3 ml-4">
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-amber-400">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="text-sm font-semibold">{account.days_since_last_order}d</span>
+                  </div>
+                  <span className="text-[10px] text-cult-light-gray">since last order</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

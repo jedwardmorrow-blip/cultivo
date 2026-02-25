@@ -26,6 +26,7 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
   const {
     account,
     childAccounts,
+    chainPerformance,
     contacts,
     orders,
     activities,
@@ -95,6 +96,8 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
         <SubAccountsPanel
           parentName={account.name}
           childAccounts={childAccounts}
+          chainPerformance={chainPerformance}
+          deliveryModel={account.delivery_model}
           onSelectAccount={handleSelectAccount}
         />
       )}

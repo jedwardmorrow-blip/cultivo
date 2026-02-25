@@ -2,10 +2,12 @@ import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
 import type {
   AccountSummary,
+  ChainLocationPerformance,
   CustomerContact,
   CustomerContactInput,
   CustomerActivity,
   CustomerActivityInput,
+  DeliveryModel,
   MonthlyRevenue,
   SKUPerformance,
   RevenuePipelineItem,
@@ -333,6 +335,37 @@ export async function updateAccountTags(customerId: string, tags: string[]) {
     return { error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to update account tags');
+    return { error };
+  }
+}
+
+export async function getChainLocationPerformance(parentId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('crm_chain_location_performance')
+      .select('*')
+      .eq('parent_customer_id', parentId)
+      .order('revenue', { ascending: false });
+
+    if (error) throw error;
+    return { data: data as ChainLocationPerformance[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load chain location performance');
+    return { data: null, error };
+  }
+}
+
+export async function updateDeliveryModel(customerId: string, deliveryModel: DeliveryModel) {
+  try {
+    const { error } = await supabase
+      .from('customers')
+      .update({ delivery_model: deliveryModel, updated_at: new Date().toISOString() })
+      .eq('id', customerId);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to update delivery model');
     return { error };
   }
 }

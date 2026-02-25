@@ -40,15 +40,22 @@ export function useCRMDashboard() {
     fetchDashboard();
   }, [fetchDashboard]);
 
-  const atRiskAccounts = accounts.filter(
+  const nonChildAccounts = accounts.filter((a) => a.account_type !== 'hub_child');
+
+  const atRiskAccounts = nonChildAccounts.filter(
     (a) => a.account_status === 'active' && a.days_since_last_order !== null && a.days_since_last_order > 30
   );
 
-  const topAccounts = accounts
-    .filter((a) => a.order_count > 0)
+  const topAccounts = nonChildAccounts
+    .filter((a) => a.order_count > 0 || (a.child_total_orders || 0) > 0)
+    .sort((a, b) => {
+      const aRev = a.total_revenue + (a.child_total_revenue || 0);
+      const bRev = b.total_revenue + (b.child_total_revenue || 0);
+      return bRev - aRev;
+    })
     .slice(0, 15);
 
-  const recentOrders = accounts
+  const recentOrders = nonChildAccounts
     .filter((a) => a.last_order_date)
     .sort((a, b) => new Date(b.last_order_date!).getTime() - new Date(a.last_order_date!).getTime())
     .slice(0, 10);

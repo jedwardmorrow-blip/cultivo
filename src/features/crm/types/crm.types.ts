@@ -1,6 +1,8 @@
 export type AccountType = 'direct' | 'hub_parent' | 'hub_child';
 export type AccountStatus = 'active' | 'inactive' | 'prospect' | 'churned';
 export type ActivityType = 'call' | 'email' | 'visit' | 'sample' | 'note' | 'follow_up';
+export type DeliveryModel = 'direct_to_each' | 'hub_and_spoke';
+export type ChainHealthLabel = 'healthy' | 'cooling' | 'at_risk' | 'dormant' | 'no_orders';
 
 export interface AccountSummary {
   id: string;
@@ -30,6 +32,9 @@ export interface AccountSummary {
   open_order_value: number;
   contact_count: number;
   child_account_count: number;
+  delivery_model: DeliveryModel;
+  child_total_revenue: number;
+  child_total_orders: number;
 }
 
 export interface CustomerContact {
@@ -244,4 +249,25 @@ export interface CustomerProductMix {
   first_order_date: string | null;
   last_order_date: string | null;
   order_count: number;
+}
+
+export interface ChainLocationPerformance {
+  child_id: string;
+  child_name: string;
+  child_code: string;
+  parent_customer_id: string;
+  parent_name: string;
+  parent_code: string;
+  delivery_model: DeliveryModel;
+  city: string | null;
+  state: string | null;
+  account_status: string;
+  order_count: number;
+  revenue: number;
+  avg_order_value: number;
+  last_order_date: string | null;
+  days_since_last_order: number | null;
+  revenue_share_pct: number;
+  health_label: ChainHealthLabel;
+  revenue_rank: number;
 }
