@@ -1,16 +1,26 @@
+import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
-import { useAccountDetail } from '../hooks';
+import { useAccountDetail, useAccountDeepDive } from '../hooks';
 import { AccountHeader } from './AccountHeader';
+import { AccountHealthBadge } from './AccountHealthBadge';
 import { SubAccountsPanel } from './SubAccountsPanel';
 import { AccountOrderHistory } from './AccountOrderHistory';
 import { AccountContacts } from './AccountContacts';
 import { AccountActivityLog } from './AccountActivityLog';
+import { AccountProductMix } from './AccountProductMix';
+import { AccountDeliveryHistory } from './AccountDeliveryHistory';
 
 interface AccountDetailProps {
   accountId: string;
   onViewChange: (view: string) => void;
 }
+
+const TABS = [
+  { key: 'orders' as const, label: 'Orders' },
+  { key: 'products' as const, label: 'Product Mix' },
+  { key: 'deliveries' as const, label: 'Deliveries' },
+];
 
 export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
   const {
@@ -23,6 +33,15 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
     error,
     reload,
   } = useAccountDetail(accountId);
+
+  const {
+    healthScore,
+    productMix,
+    deliveryHistory,
+    loading: deepDiveLoading,
+  } = useAccountDeepDive(accountId);
+
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries'>('orders');
 
   const handleSelectAccount = (id: string) => {
     onViewChange(`crm-account-detail:${id}`);
@@ -50,13 +69,16 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
   return (
     <div className="space-y-5 pb-8">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => onViewChange('crm-accounts')}
-          className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Accounts
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onViewChange('crm-accounts')}
+            className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Accounts
+          </button>
+          <AccountHealthBadge healthScore={healthScore} size="sm" />
+        </div>
         {account.parent_customer_id && (
           <button
             onClick={() => handleSelectAccount(account.parent_customer_id!)}
@@ -67,7 +89,7 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
         )}
       </div>
 
-      <AccountHeader account={account} />
+      <AccountHeader account={account} healthScore={healthScore} />
 
       {account.account_type === 'hub_parent' && childAccounts.length > 0 && (
         <SubAccountsPanel
@@ -79,7 +101,25 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2 space-y-5">
-          <AccountOrderHistory orders={orders} />
+          <div className="flex items-center gap-1 bg-cult-dark-gray/50 rounded-lg p-1 border border-cult-medium-gray/50">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                  activeTab === tab.key
+                    ? 'bg-cult-near-black text-cult-white shadow-sm'
+                    : 'text-cult-silver hover:text-cult-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'orders' && <AccountOrderHistory orders={orders} />}
+          {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} />}
+          {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} />}
         </div>
         <div className="space-y-5">
           <AccountContacts

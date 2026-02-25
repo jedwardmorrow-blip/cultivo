@@ -33,21 +33,25 @@ Documents how the CRM module connects to every existing feature in the CULT syst
 
 ### New Tables the CRM Owns
 
-| Table | Purpose |
-|---|---|
-| `customer_contacts` | Multiple contacts per account |
-| `customer_price_lists` | Per-customer pricing overrides |
-| `customer_activity_log` | Sales interaction tracking |
-| `sales_rep_assignments` | Rep-to-account linkage |
+| Table | Purpose | Phase |
+|---|---|---|
+| `customer_contacts` | Multiple contacts per account | 1 |
+| `customer_price_lists` | Per-customer pricing overrides | 1 |
+| `customer_activity_log` | Sales interaction tracking (+ `linked_task_id`, `visit_id` in Phase 2) | 1+2 |
+| `sales_rep_assignments` | Rep-to-account linkage | 1 |
+| `crm_tasks` | Follow-up tasks with type, priority, due date, status | 2 |
+| `crm_visit_schedule` | Planned account visits with outcome tracking | 2 |
 
 ### New Views the CRM Creates
 
-| View | Purpose |
-|---|---|
-| `crm_customer_summary` | Aggregated account metrics |
-| `crm_monthly_revenue_by_customer` | Revenue trends per account |
-| `crm_sku_performance` | Product performance analytics |
-| `crm_revenue_pipeline` | Open order value by customer |
+| View | Purpose | Phase |
+|---|---|---|
+| `crm_customer_summary` | Aggregated account metrics | 1 |
+| `crm_monthly_revenue_by_customer` | Revenue trends per account | 1 |
+| `crm_sku_performance` | Product performance analytics | 1 |
+| `crm_revenue_pipeline` | Open order value by customer | 1 |
+| `crm_account_scores` | Health score computed from recency/frequency/trend/engagement | 2 |
+| `crm_product_mix_by_customer` | Per-customer product breakdown from order history | 2 |
 
 ## Frontend Integration Points
 
@@ -100,12 +104,17 @@ crm.service.ts
     order_items             (line item detail)
     products                (SKU data)
     invoices                (payment status)
-    customer_contacts       (NEW)
-    customer_price_lists    (NEW)
-    customer_activity_log   (NEW)
-    sales_rep_assignments   (NEW)
-    crm_customer_summary    (NEW view)
-    crm_monthly_revenue_by_customer (NEW view)
+    delivery_schedule        (Phase 2 - delivery history per account)
+    customer_contacts       (Phase 1)
+    customer_price_lists    (Phase 1)
+    customer_activity_log   (Phase 1+2 - with linked_task_id, visit_id)
+    sales_rep_assignments   (Phase 1)
+    crm_tasks               (Phase 2)
+    crm_visit_schedule      (Phase 2)
+    crm_customer_summary    (Phase 1 view)
+    crm_monthly_revenue_by_customer (Phase 1 view)
+    crm_account_scores      (Phase 2 view)
+    crm_product_mix_by_customer (Phase 2 view)
 ```
 
 ## Type System Integration
@@ -117,6 +126,8 @@ crm.service.ts
 - `Product`
 
 ### New CRM Types (in `src/features/crm/types/`)
+
+**Phase 1:**
 - `CustomerContact` - contact record
 - `CustomerPriceOverride` - price list entry
 - `CustomerActivity` - activity log entry
@@ -126,10 +137,23 @@ crm.service.ts
 - `AccountType` - 'direct' | 'hub_parent' | 'hub_child'
 - `AccountStatus` - 'active' | 'inactive' | 'prospect' | 'churned'
 
+**Phase 2:**
+- `TaskType` - 'callback' | 'visit_reminder' | 'sample_drop' | 'reorder_prompt' | 'general'
+- `TaskPriority` - 'low' | 'medium' | 'high' | 'urgent'
+- `TaskStatus` - 'open' | 'in_progress' | 'completed' | 'cancelled'
+- `CRMTask` - task record with joined customer_name, assigned_user_name
+- `CRMTaskInput` - create/update input
+- `VisitType` - 'check_in' | 'sample_drop' | 'new_pitch' | 'relationship'
+- `VisitStatus` - 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
+- `VisitSchedule` - visit record with joined customer_name, user_name
+- `VisitScheduleInput` - scheduling input
+- `AccountHealthScore` - computed health score from crm_account_scores view
+- `CustomerProductMix` - per-customer product breakdown from crm_product_mix_by_customer view
+
 ## Navigation Integration
 
 ### sectionNavigation.ts Changes
-New section added:
+CRM section with Phase 2 additions:
 ```typescript
 {
   id: 'crm',
@@ -138,20 +162,25 @@ New section added:
   defaultView: 'crm-dashboard',
   items: [
     { id: 'crm-dashboard', label: 'Sales Dashboard', icon: BarChart3 },
+    { id: 'crm-queue', label: 'My Queue', icon: ClipboardList },       // Phase 2
+    { id: 'crm-visit-calendar', label: 'Visit Calendar', icon: CalendarDays }, // Phase 2
     { id: 'crm-accounts', label: 'Accounts', icon: Building2 },
   ],
 }
 ```
 
 ### App.tsx Changes
-New cases in `renderView()`:
+View cases including Phase 2:
 ```typescript
 case 'crm-dashboard':
   return <CRMDashboard onViewChange={handleViewChange} />;
+case 'crm-queue':
+  return <SalesQueue onViewChange={handleViewChange} />;              // Phase 2
+case 'crm-visit-calendar':
+  return <VisitCalendar />;                                            // Phase 2
 case 'crm-accounts':
   return <AccountsList onViewChange={handleViewChange} />;
-case 'crm-account-detail':
-  return <AccountDetail accountId={selectedAccountId} onViewChange={handleViewChange} />;
+// crm-account-detail:{id} handled in default case
 ```
 
 ## Data Safety Considerations

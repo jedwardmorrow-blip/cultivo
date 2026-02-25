@@ -1,7 +1,7 @@
 ---
 title: Architecture Decisions Record
 category: Architecture Reference
-updated: 2026-02-18
+updated: 2026-02-25
 ---
 
 # Architecture Decisions Record
@@ -244,6 +244,70 @@ When creating packages during partial finalization, `source_session_ids` must re
 - Packaging sessions (unit-based, non-bulk) do not pass `output_weight`/`output_units`, so they default to full finalization (backward compatible)
 
 **Reference:** `conversions.service.ts`, migration `repair_swf_partial_finalization_status`
+
+---
+
+## 14. Task and Visit Auto-Logging Pattern (2026-02-25)
+
+**Context:** CRM Phase 2 introduces tasks and visit scheduling. When a task or visit is completed, the account timeline (customer_activity_log) must reflect this without requiring manual double-entry.
+
+**Decision:** Completing a task or visit auto-creates a `customer_activity_log` entry in the service layer. The activity log entry contains a `linked_task_id` or `visit_id` back-reference to the source record.
+
+**Rationale:**
+- Single source of truth: the activity log remains the complete account timeline
+- No manual double-entry: completing a task = one action, two records
+- Back-references allow the UI to distinguish auto-logged entries and link back to the source
+- Service-layer implementation (not database trigger) keeps the logic auditable and testable
+
+**Implementation:**
+```typescript
+async function completeTask(taskId: string) {
+  // 1. Update task status + completed_at
+  // 2. Auto-create activity log entry with linked_task_id = taskId
+}
+
+async function completeVisit(visitId: string, outcomeNotes: string) {
+  // 1. Update visit status + outcome_notes
+  // 2. Auto-create activity log entry with visit_id = visitId
+}
+```
+
+**Why service-layer, not trigger?** A database trigger would create coupling between the task/visit tables and the activity log. The service layer approach is explicit, testable, and follows the existing `createActivity()` pattern already used in Phase 1.
+
+**Reference:** CRM.md Phase 2, crm.service.ts
+
+---
+
+## 15. Account Health Scoring as a View, Not a Stored Column (2026-02-25)
+
+**Context:** Account health scores help identify at-risk and dormant customers. The score combines order recency, frequency trend, revenue trend, and engagement metrics.
+
+**Decision:** Health scores are computed on-read via a Postgres VIEW (`crm_account_scores`) rather than stored as a column on the customers table.
+
+**Rationale:**
+- Always fresh: no stale data, no sync triggers, no refresh jobs
+- Acceptable performance: <100 customer accounts; the aggregation queries complete in milliseconds
+- Simpler schema: no need for a trigger to recalculate scores on every order/task/visit change
+- Matches the `crm_customer_summary` pattern already established in Phase 1
+
+**Why not a stored column?** With <100 accounts, the read-time computation cost is negligible. Stored columns would require triggers on `orders`, `crm_tasks`, `crm_visit_schedule`, and `customer_activity_log` to stay current, adding significant complexity for no measurable performance gain.
+
+**Reference:** CRM.md Phase 2, crm_account_scores view definition
+
+---
+
+## 16. Visit Calendar Follows DistributionCalendar Pattern (2026-02-25)
+
+**Context:** The Visit Calendar needs a monthly grid with drag-and-drop, modal detail views, and real-time updates.
+
+**Decision:** The Visit Calendar component mirrors the existing DistributionCalendar architecture: monthly grid, drag-to-reschedule, Supabase real-time subscription, click-to-expand day detail modal.
+
+**Rationale:**
+- Consistency: users already understand the DistributionCalendar interaction model
+- Reduced maintenance: same patterns, similar code structure, shared understanding
+- Proven approach: drag-and-drop + real-time is already working in production for delivery scheduling
+
+**Reference:** CRM.md Phase 2, DistributionCalendar.tsx
 
 ---
 

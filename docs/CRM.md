@@ -181,9 +181,168 @@ New cases in `renderView()`:
 | Product catalog | Price list management references products table |
 | Analytics | Revenue analytics extend existing dashboard patterns |
 
+## Sales Activity Management (Phase 2)
+
+Phase 2 adds task tracking, visit scheduling, account health scoring, and product deep-dive analytics to the CRM module.
+
+### New Tables
+
+#### `crm_tasks`
+Actionable follow-up items linked to customer accounts. Each task has a type, priority, due date, and status.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | uuid | PK | `gen_random_uuid()` |
+| `customer_id` | uuid, FK -> customers | YES | Account the task relates to |
+| `assigned_user_id` | uuid, FK -> user_profiles | no | Sales rep assigned; null = unassigned |
+| `task_type` | text | YES | `callback`, `visit_reminder`, `sample_drop`, `reorder_prompt`, `general` |
+| `title` | text | YES | Short description |
+| `description` | text | no | Extended notes |
+| `due_date` | date | YES | When this task should be completed |
+| `priority` | text | YES | `low`, `medium`, `high`, `urgent` (default `medium`) |
+| `status` | text | YES | `open`, `in_progress`, `completed`, `cancelled` (default `open`) |
+| `completed_at` | timestamptz | no | Set on completion |
+| `related_activity_id` | uuid, FK -> customer_activity_log | no | Optional back-reference to the activity that spawned this task |
+| `created_at` | timestamptz | auto | `default now()` |
+| `updated_at` | timestamptz | auto | `default now()` |
+
+**Task Lifecycle:**
+```
+  open ──> in_progress ──> completed
+    │           │
+    │           └──> cancelled
+    └──> cancelled
+    │
+    └──(snooze: push due_date forward)──> open (same task, new due_date)
+```
+
+**Rules:**
+1. `completed_at` is set automatically when `status` changes to `completed`
+2. Completing a task auto-creates a `customer_activity_log` entry with `activity_type = 'follow_up'` and `linked_task_id` back-reference
+3. Snoozing updates `due_date` but does not change `status`
+4. Tasks are never deleted; cancelled tasks remain for audit trail
+
+#### `crm_visit_schedule`
+Planned account visits with time window, type classification, and outcome capture.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | uuid | PK | `gen_random_uuid()` |
+| `customer_id` | uuid, FK -> customers | YES | Account being visited |
+| `user_id` | uuid, FK -> user_profiles | no | Sales rep conducting the visit |
+| `visit_date` | date | YES | Scheduled date |
+| `visit_time_window` | text | no | e.g. "Morning", "Afternoon", "10am-12pm" |
+| `visit_type` | text | YES | `check_in`, `sample_drop`, `new_pitch`, `relationship` |
+| `location_notes` | text | no | Where to meet, parking instructions, etc. |
+| `status` | text | YES | `scheduled`, `completed`, `cancelled`, `rescheduled` (default `scheduled`) |
+| `outcome_notes` | text | no | Filled on completion |
+| `linked_activity_id` | uuid, FK -> customer_activity_log | no | Auto-set on completion |
+| `created_at` | timestamptz | auto | `default now()` |
+| `updated_at` | timestamptz | auto | `default now()` |
+
+**Visit Lifecycle:**
+```
+  scheduled ──> completed
+      │
+      ├──> cancelled
+      │
+      └──> rescheduled ──> scheduled (new visit_date)
+```
+
+**Rules:**
+1. Completing a visit auto-creates a `customer_activity_log` entry with `activity_type = 'visit'` and `visit_id` back-reference
+2. Rescheduling updates `visit_date` and sets `status` back to `scheduled`
+3. Visits are drag-and-drop reschedulable on the visit calendar
+
+### Columns Added to `customer_activity_log`
+- `linked_task_id` (uuid, FK -> crm_tasks, nullable) - back-reference when activity was auto-created by task completion
+- `visit_id` (uuid, FK -> crm_visit_schedule, nullable) - back-reference when activity was auto-created by visit completion
+
+### New Views
+
+#### `crm_account_scores`
+Computed health score for each customer account, evaluated on read (not stored).
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `customer_id` | uuid | PK from customers |
+| `customer_name` | text | |
+| `dispensary_code` | text | |
+| `health_score` | numeric | 0-100, higher = healthier |
+| `health_label` | text | `healthy` (75-100), `cooling` (50-74), `at_risk` (25-49), `dormant` (0-24) |
+| `days_since_last_order` | integer | |
+| `order_frequency_30d` | integer | Orders in last 30 days |
+| `order_frequency_90d` | integer | Orders in last 90 days |
+| `revenue_trend` | text | `growing`, `stable`, `declining`, `inactive` |
+| `open_task_count` | integer | Unresolved tasks |
+| `last_visit_date` | date | Most recent completed visit |
+
+**Scoring Formula:**
+- Recency (40%): Days since last order, scaled 0-40 (0 days = 40, 60+ days = 0)
+- Frequency (25%): Orders in last 90 days, scaled 0-25 (6+ = 25, 0 = 0)
+- Revenue trend (20%): Compare last 60 day revenue to prior 60 days (growing = 20, stable = 15, declining = 5, inactive = 0)
+- Engagement (15%): Based on open tasks resolved + visits in last 30 days (2+ activities = 15, 1 = 10, 0 = 5; no tasks/visits ever = 0)
+
+#### `crm_product_mix_by_customer`
+Per-customer product breakdown aggregated from order history.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `customer_id` | uuid | |
+| `customer_name` | text | |
+| `product_id` | uuid | |
+| `product_name` | text | |
+| `product_type` | text | |
+| `product_category` | text | |
+| `strain` | text | |
+| `total_units` | integer | Total units ordered |
+| `total_revenue` | numeric | |
+| `avg_unit_price` | numeric | |
+| `first_order_date` | date | |
+| `last_order_date` | date | |
+| `order_count` | integer | Number of orders containing this product |
+
+### Frontend Architecture (Phase 2 Additions)
+
+```
+src/features/crm/
+  components/
+    SalesQueue.tsx              # Daily action center (tasks + visits)
+    VisitCalendar.tsx           # Monthly visit calendar with drag-and-drop
+    AccountProductMix.tsx       # Product deep-dive tab in account detail
+    AccountDeliveryHistory.tsx  # Delivery history timeline in account detail
+    AccountHealthBadge.tsx      # Health score pill for headers/tables
+  hooks/
+    useSalesQueue.ts            # Task + visit data for current user
+    useVisitCalendar.ts         # Visit schedule for calendar view
+    useAccountDeepDive.ts       # Product mix + delivery history for account
+    useTaskManager.ts           # Task CRUD with filtering
+```
+
+### Navigation (Phase 2 Additions)
+
+```
+CRM Section:
+  - crm-dashboard      (Sales Dashboard)       [existing]
+  - crm-queue          (My Queue)              [NEW]
+  - crm-visit-calendar (Visit Calendar)        [NEW]
+  - crm-accounts       (Accounts)              [existing]
+  - crm-account-detail (Account Detail)        [existing, enhanced]
+```
+
+### Key Design Decisions (Phase 2)
+
+6. **Task and Visit auto-logging:** Completing a task or visit auto-creates a `customer_activity_log` entry with back-reference. Single source of truth for account timeline; no manual double-entry.
+
+7. **Health scores as a VIEW, not stored columns:** Computed on read via Postgres view rather than stored/updated. Always fresh, no sync issues, acceptable performance with <100 customer accounts.
+
+8. **Visit Calendar follows DistributionCalendar pattern:** Same monthly grid + drag-and-drop + real-time subscriptions + modal details. Consistency reduces maintenance burden and onboarding time.
+
+9. **Product deep-dive is a VIEW, not a materialized table:** Aggregated from `order_items` + `orders` + `products` on read. Data is always current and requires no refresh triggers.
+
 ## Implementation Phases
 
-### Phase 1 (Current)
+### Phase 1 (Complete)
 - Database migrations for all new tables and columns
 - CRM analytics views
 - Frontend feature module skeleton
@@ -192,10 +351,20 @@ New cases in `renderView()`:
 - Account Detail page with sub-accounts
 - Navigation integration
 
-### Phase 2 (Future)
-- Activity log with follow-up reminders
+### Phase 2 (Current)
+- `crm_tasks` and `crm_visit_schedule` tables with RLS
+- `crm_account_scores` and `crm_product_mix_by_customer` views
+- `linked_task_id` and `visit_id` columns on `customer_activity_log`
+- Sales Queue (My Queue) daily action center
+- Visit Calendar with drag-and-drop scheduling
+- Account Product Mix deep-dive tab
+- Account Delivery History panel
+- Account Health Badge integration
+- Enhanced Activity Log with task/visit linking
+
+### Phase 3 (Future)
 - Per-customer price list management
 - Revenue trend charts (requires chart library)
-- Automated at-risk account alerts
 - Sales rep performance dashboard
 - Export/reporting capabilities
+- Automated at-risk account alerts/notifications

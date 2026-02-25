@@ -39,6 +39,8 @@ const DryRoomsManagement = lazy(() => import('./features/cultivation').then((m) 
 const CRMDashboard = lazy(() => import('./features/crm').then((m) => ({ default: m.CRMDashboard })));
 const AccountsList = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountsList })));
 const AccountDetail = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountDetail })));
+const SalesQueue = lazy(() => import('./features/crm').then((m) => ({ default: m.SalesQueue })));
+const VisitCalendar = lazy(() => import('./features/crm').then((m) => ({ default: m.VisitCalendar })));
 
 function ViewFallback() {
   return (
@@ -195,6 +197,10 @@ function AppContent() {
         return <EODSummary />;
       case 'crm-dashboard':
         return <CRMDashboard onViewChange={handleViewChange} />;
+      case 'crm-queue':
+        return <SalesQueue />;
+      case 'crm-visit-calendar':
+        return <VisitCalendar />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':

@@ -19,6 +19,8 @@ import {
   Users,
   BarChart3,
   Building2,
+  ClipboardList,
+  CalendarDays,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -102,6 +104,8 @@ export const sectionDefinitions: SectionDefinition[] = [
     defaultView: 'crm-dashboard',
     items: [
       { id: 'crm-dashboard', label: 'Sales Dashboard', icon: BarChart3, group: 'primary' },
+      { id: 'crm-queue', label: 'My Queue', icon: ClipboardList, group: 'primary' },
+      { id: 'crm-visit-calendar', label: 'Visit Calendar', icon: CalendarDays, group: 'primary' },
       { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
     ],
   },

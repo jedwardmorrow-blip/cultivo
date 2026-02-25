@@ -1,16 +1,16 @@
 ---
 title: AI Session Brief
 category: AI Development
-version: 2.2
-updated: 2026-02-19 (C-2/C-3 complete — docs updated)
+version: 2.3
+updated: 2026-02-25 (CRM Phase 2 — sales activity management)
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-02-19 (Session: cultivation doc pass — C-2/C-3 complete)
-> **Last Migration:** 2026-02-19 (create_cultivation_schema + create_cultivation_triggers)
+> **Last Updated:** 2026-02-25 (Session: CRM Phase 2 — sales activity management)
+> **Last Migration:** 2026-02-25 (CRM Phase 2: crm_tasks, crm_visit_schedule, views, RLS)
 > **Build Status:** Passing
 
 ---
@@ -46,11 +46,11 @@ The system is **feature-complete** and in **production use**. All core workflows
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-02-19: Cultivation doc pass — updated all cultivation docs to reflect C-2/C-3 complete; committed migration SQL files to version control
-2. 2026-02-19: Session C-2/C-3 — Cultivation module full implementation (5 tables, 9 triggers, 7 UI components, 3 hooks, service layer, StrainsManagement hardening)
-3. 2026-02-18: Session C-1 — Cultivation module documentation (CULTIVATION.md, CULTIVATION-ARCHITECTURE.md, CULTIVATION-RULES.md + doc updates)
-4. 2026-02-18: Phase C3 — Standardize error return pattern across conversions service layer
-5. 2026-02-18: Phase A type hardening + pre-cultivation documentation
+1. 2026-02-25: CRM Phase 2 — Sales activity management (crm_tasks, crm_visit_schedule, health scores, product mix, Sales Queue, Visit Calendar, Account deep-dive)
+2. 2026-02-20: Documentation alignment — E-1/D-14 constraint fix + cross-doc sync
+3. 2026-02-19: Cultivation doc pass — updated all cultivation docs to reflect C-2/C-3 complete
+4. 2026-02-19: Session C-2/C-3 — Cultivation module full implementation
+5. 2026-02-18: Session C-1 — Cultivation module documentation
 
 **Known deferred items:**
 - **Cultivation module** — Sessions C-1/C-2/C-3 all COMPLETE. Fully operational.
@@ -133,6 +133,7 @@ supabase/
 - [BATCHES.md](./BATCHES.md) | [SESSIONS.md](./SESSIONS.md) | [INVENTORY-TRACKING.md](./INVENTORY-TRACKING.md)
 - [ORDERS.md](./ORDERS.md) | [PRODUCTS.md](./PRODUCTS.md) | [CUSTOMERS.md](./CUSTOMERS.md)
 - [COA-HANDLING.md](./COA-HANDLING.md) | [DATABASE-TRIGGERS.md](./DATABASE-TRIGGERS.md)
+- If working on CRM Sales Activity features: read [CRM.md](./CRM.md) Phase 2 section + [CRM-INTEGRATION-MAP.md](./CRM-INTEGRATION-MAP.md)
 
 **Cultivation module docs:**
 - [CULTIVATION.md](./CULTIVATION.md) - Scope, entities, lifecycle, UI screens (v1.3 — IMPLEMENTED)

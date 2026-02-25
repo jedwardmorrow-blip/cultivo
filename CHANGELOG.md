@@ -4,6 +4,25 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-25 - CRM Phase 2: Sales Activity Management
+
+**Type:** Feature Addition
+**Module:** CRM
+**Status:** COMPLETE
+
+Added task queue, visit calendar, account health scoring, product mix deep-dive, and delivery history to the CRM module.
+
+- **Database:** Migration creates `crm_tasks` and `crm_visit_schedule` tables with full RLS and indexes. Adds `linked_task_id` and `visit_id` FK columns to `customer_activity_log`. Creates `crm_account_scores` health scoring view and `crm_product_mix_by_customer` aggregation view.
+- **Sales Queue (My Queue):** Daily action center showing overdue, today, and upcoming tasks and visits with complete/snooze/cancel actions. Real-time subscriptions for live updates.
+- **Visit Calendar:** Monthly calendar grid with color-coded visit types, drag-and-drop rescheduling, day-click detail modals, and visit completion with outcome notes.
+- **Account Health Scoring:** Computed health score (0-100) per account based on recency (40%), frequency (25%), revenue trend (20%), and engagement (15%). Displayed as badges in account headers and detail pages.
+- **Product Mix Deep-Dive:** Per-account product breakdown showing revenue share, units ordered, average price, and order count with visual revenue bars.
+- **Delivery History:** Delivery timeline for each account with status badges, item counts, and delivery dates.
+- **Enhanced Account Detail:** Added tabbed view (Orders / Product Mix / Deliveries) and health badge integration in header.
+- **Navigation:** Added "My Queue" and "Visit Calendar" to CRM section.
+
+---
+
 ## 2026-02-20 - Session D-14: Room-Based Harvest Workflow with Multi-Weight Entries
 
 **Type:** Feature Addition

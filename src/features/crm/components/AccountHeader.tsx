@@ -1,8 +1,10 @@
 import { Building2, MapPin, Phone, Mail, FileText, Shield } from 'lucide-react';
-import type { AccountSummary } from '../types';
+import type { AccountSummary, AccountHealthScore } from '../types';
+import { AccountHealthBadge } from './AccountHealthBadge';
 
 interface AccountHeaderProps {
   account: AccountSummary;
+  healthScore?: AccountHealthScore | null;
 }
 
 function getStatusColor(status: string): string {
@@ -19,7 +21,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore }: AccountHeaderProps) {
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -38,6 +40,7 @@ export function AccountHeader({ account }: AccountHeaderProps) {
                 HUB PARENT
               </span>
             )}
+            {healthScore && <AccountHealthBadge healthScore={healthScore} size="md" />}
           </div>
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">

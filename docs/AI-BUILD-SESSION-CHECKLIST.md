@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-20
+updated: 2026-02-25
 priority: Working document - update every session
 ---
 
@@ -14,52 +14,67 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-20
-**Session:** Documentation alignment — E-1/D-14 constraint fix + cross-doc sync
+**Date:** 2026-02-25
+**Session:** CRM Phase 2 — Sales Activity Management (tasks, visits, health scoring, product deep-dive)
 **Status:** COMPLETE
 
 **What was done:**
 
-Fixed a database constraint bug and synchronized documentation across 4 docs to accurately reflect the E-1 (batch-at-clone-time) and D-14 (empty-shell harvest) patterns.
+Implemented the full CRM Phase 2 Sales Activity Management system: task queue, visit calendar with drag-and-drop, account health scoring, product mix deep-dive, and delivery history — covering documentation, database, services, hooks, and UI components.
 
-**1. Database migration (relax_harvest_session_check_constraints)**
-- Changed `harvest_sessions.wet_weight_grams` CHECK from `> 0` to `>= 0`
-- Changed `harvest_sessions.plant_count_harvested` CHECK from `> 0` to `>= 0`
-- Enables D-14 empty-shell pattern: session starts at 0, entries recorded in `harvest_weight_entries`, aggregated at finalization
+**1. Documentation updates (docs-first approach)**
+- `docs/CRM.md` — Added Phase 2 specification: crm_tasks/crm_visit_schedule table specs, lifecycle diagrams, scoring formula, frontend architecture, design decisions #6-9
+- `docs/CRM-INTEGRATION-MAP.md` — Added Phase 2 tables, views, service queries, types, and navigation entries
+- `docs/ARCHITECTURE-DECISIONS.md` — Added ADR #14 (auto-logging pattern), #15 (health scores as VIEW), #16 (visit calendar pattern)
+- `docs/AI-SESSION-BRIEF.md` — Updated version to 2.3, dates, session list, CRM reference
 
-**2. CULTIVATION-RULES.md (v2.3)**
-- Updated C-8/C-9 invariant box text to clarify D-14 empty-shell vs completion-time enforcement
-- Added C-39 (batch created at plant group creation, `pre_harvest` state)
-- Added C-40 (harvest completion updates existing pre_harvest batch)
+**2. Database migration (create_crm_sales_activity_system)**
+- Created `crm_tasks` table with CHECK constraints, RLS (4 policies), 5 indexes
+- Created `crm_visit_schedule` table with CHECK constraints, RLS (4 policies), 4 indexes
+- Added `linked_task_id` and `visit_id` FK columns to `customer_activity_log`
+- Created `fn_update_updated_at_column()` trigger for both tables
+- Created `crm_account_scores` VIEW (health scoring: recency 40%, frequency 25%, revenue 20%, engagement 15%)
+- Created `crm_product_mix_by_customer` VIEW
 
-**3. CULTIVATION-ARCHITECTURE.md (v2.1)**
-- Updated `harvest_sessions` table definition: `>= 0` CHECK constraints, added `grow_room_id`, `dry_room_id`, `waste_grams`
-- Replaced `fn_complete_harvest_session` trigger with live E-1 version (two-path: UPDATE existing pre_harvest batch vs legacy INSERT)
-- Updated trigger design notes
+**3. Type definitions**
+- Extended `crm.types.ts` with TaskType, TaskPriority, TaskStatus, CRMTask, CRMTaskInput, VisitType, VisitStatus, VisitSchedule, VisitScheduleInput, AccountHealthScore, CustomerProductMix
 
-**4. CULTIVATION.md (v2.0)**
-- Rewrote Lifecycle Overview (Section 4): batch born at step 3 (clone), D-14 empty-shell at step 6, weight entries at step 6a, E-1 UPDATE at step 7
+**4. Service layer (3 new files)**
+- `tasks.service.ts` — getTasks, getOpenTasks, createTask, completeTask (auto-logging), snoozeTask, cancelTask
+- `visits.service.ts` — getVisits, getVisitsForMonth, scheduleVisit, completeVisit (auto-logging), rescheduleVisit, cancelVisit
+- `deepDive.service.ts` — getAccountHealthScores, getAccountHealthById, getCustomerProductMix, getCustomerDeliveryHistory
 
-**5. BATCHES.md (v2.5)**
-- Added `pre_harvest` state to lifecycle pipeline, state definitions table, CHECK constraint, state queries, and state machine diagram
-- Updated Batch Creation note to reflect E-1 is LIVE
+**5. Hooks (4 new files)**
+- `useSalesQueue.ts` — Tasks + visits with overdue/today/upcoming categories, real-time subscriptions
+- `useVisitCalendar.ts` — Monthly visit data grouped by date, month navigation, real-time subscriptions
+- `useAccountDeepDive.ts` — Parallel load of health score, product mix, delivery history
+- `useTaskManager.ts` — Task CRUD with filters and real-time subscriptions
 
-**Files modified (docs only — no code changes):**
-- `docs/CULTIVATION-RULES.md`
-- `docs/CULTIVATION-ARCHITECTURE.md`
-- `docs/CULTIVATION.md`
-- `docs/BATCHES.md`
-- `docs/AI-BUILD-SESSION-CHECKLIST.md`
+**6. Components (7 new files + 2 enhanced)**
+- `SalesQueue.tsx` — Daily action center with overdue/today/week sections, task/visit actions
+- `TaskCreateModal.tsx` — Modal form for creating tasks
+- `VisitCalendar.tsx` — Monthly calendar with drag-and-drop visit rescheduling
+- `VisitScheduleModal.tsx` — Modal form for scheduling visits
+- `AccountProductMix.tsx` — Product deep-dive with revenue share bars
+- `AccountDeliveryHistory.tsx` — Delivery timeline with status badges
+- `AccountHealthBadge.tsx` — Health score pill (sm/md sizes)
+- Enhanced `AccountDetail.tsx` — Added tabbed view (Orders/Product Mix/Deliveries), health badge integration
+- Enhanced `AccountHeader.tsx` — Health score badge in header
+
+**7. Navigation and routing**
+- Added `crm-queue` and `crm-visit-calendar` to sectionNavigation.ts
+- Added lazy imports and renderView cases in App.tsx
+- Updated barrel exports in components/index.ts and crm/index.ts
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 
 **Next recommendations (in order):**
-1. **Move to Group action** — implement the plant-level "Move to Group" workflow (requires target group selection modal, strain validation, plant_count sync)
-2. **Move to Room action** — split selected plants into a new group in a different room
-3. **Partial harvest** — harvest a subset of plants from a flower-stage group
-4. **Real plant data** — first live data test of cultivation module with real plants
+1. **CRM Phase 3** — Per-customer price list management UI
+2. **Revenue trend charts** — requires chart library decision (recharts vs lightweight)
+3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
+4. **Cultivation: Move to Room action** — split plants into new group in different room
 
 ---
 

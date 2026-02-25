@@ -79,6 +79,8 @@ export interface CustomerActivity {
   completed: boolean;
   created_at: string;
   user_name?: string;
+  linked_task_id?: string | null;
+  visit_id?: string | null;
 }
 
 export interface CustomerActivityInput {
@@ -87,6 +89,8 @@ export interface CustomerActivityInput {
   subject: string;
   body?: string;
   follow_up_date?: string;
+  linked_task_id?: string;
+  visit_id?: string;
 }
 
 export interface SalesRepAssignment {
@@ -147,4 +151,97 @@ export interface CRMDashboardStats {
   avgOrderValue: number;
   atRiskCount: number;
   prospectCount: number;
+}
+
+export type TaskType = 'callback' | 'visit_reminder' | 'sample_drop' | 'reorder_prompt' | 'general';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus = 'open' | 'in_progress' | 'completed' | 'cancelled';
+
+export interface CRMTask {
+  id: string;
+  customer_id: string;
+  assigned_user_id: string | null;
+  task_type: TaskType;
+  title: string;
+  description: string | null;
+  due_date: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  completed_at: string | null;
+  related_activity_id: string | null;
+  created_at: string;
+  updated_at: string;
+  customer_name?: string;
+  dispensary_code?: string;
+  assigned_user_name?: string;
+}
+
+export interface CRMTaskInput {
+  customer_id: string;
+  assigned_user_id?: string;
+  task_type: TaskType;
+  title: string;
+  description?: string;
+  due_date: string;
+  priority?: TaskPriority;
+}
+
+export type VisitType = 'check_in' | 'sample_drop' | 'new_pitch' | 'relationship';
+export type VisitStatus = 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
+
+export interface VisitSchedule {
+  id: string;
+  customer_id: string;
+  user_id: string | null;
+  visit_date: string;
+  visit_time_window: string | null;
+  visit_type: VisitType;
+  location_notes: string | null;
+  status: VisitStatus;
+  outcome_notes: string | null;
+  linked_activity_id: string | null;
+  created_at: string;
+  updated_at: string;
+  customer_name?: string;
+  dispensary_code?: string;
+  user_name?: string;
+}
+
+export interface VisitScheduleInput {
+  customer_id: string;
+  user_id?: string;
+  visit_date: string;
+  visit_time_window?: string;
+  visit_type: VisitType;
+  location_notes?: string;
+}
+
+export interface AccountHealthScore {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  health_score: number;
+  health_label: 'healthy' | 'cooling' | 'at_risk' | 'dormant';
+  days_since_last_order: number | null;
+  order_frequency_30d: number;
+  order_frequency_90d: number;
+  revenue_trend: 'growing' | 'stable' | 'declining' | 'inactive';
+  open_task_count: number;
+  last_visit_date: string | null;
+}
+
+export interface CustomerProductMix {
+  customer_id: string;
+  customer_name: string;
+  product_id: string;
+  product_name: string;
+  product_type: string;
+  product_category: string;
+  strain: string | null;
+  total_units: number;
+  total_revenue: number;
+  avg_unit_price: number;
+  first_order_date: string | null;
+  last_order_date: string | null;
+  order_count: number;
 }
