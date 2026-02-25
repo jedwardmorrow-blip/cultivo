@@ -1,10 +1,11 @@
-import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart } from 'lucide-react';
 import type { AccountSummary, AccountHealthScore } from '../types';
 import { AccountHealthBadge } from './AccountHealthBadge';
 
 interface AccountHeaderProps {
   account: AccountSummary;
   healthScore?: AccountHealthScore | null;
+  onCreateOrder?: () => void;
 }
 
 function getStatusColor(status: string): string {
@@ -21,7 +22,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account, healthScore }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore, onCreateOrder }: AccountHeaderProps) {
   const isHubParent = account.account_type === 'hub_parent';
   const chainRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
   const chainOrders = account.order_count + (account.child_total_orders || 0);
@@ -105,7 +106,17 @@ export function AccountHeader({ account, healthScore }: AccountHeaderProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:flex-shrink-0">
+        <div className="flex flex-col items-end gap-4 lg:flex-shrink-0">
+          {onCreateOrder && (
+            <button
+              onClick={onCreateOrder}
+              className="flex items-center gap-2 px-4 py-2.5 bg-cult-green text-cult-black rounded-lg hover:bg-cult-green-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-green/20"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              New Order
+            </button>
+          )}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-4">
           {isHubParent ? (
             <>
               <MetricBlock label="Chain Revenue" value={formatCurrency(chainRevenue)} accent="emerald" />
@@ -129,6 +140,7 @@ export function AccountHeader({ account, healthScore }: AccountHeaderProps) {
               />
             </>
           )}
+        </div>
         </div>
       </div>
     </div>

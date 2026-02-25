@@ -71,6 +71,7 @@ export interface CustomerPriceOverride {
   created_at: string;
   product_name?: string;
   product_sku?: string;
+  standard_price?: number | null;
 }
 
 export interface CustomerActivity {

@@ -132,6 +132,7 @@ src/features/crm/
   services/
     index.ts
     crm.service.ts            # Main CRM data service
+    priceList.service.ts      # Customer price override CRUD
   hooks/
     index.ts
     useCRMDashboard.ts        # Dashboard data loading
@@ -382,9 +383,50 @@ CRM Section:
 - SubAccountsPanel: per-child health badges, revenue share progress bars, top performer callout
 - Dashboard: hub_child exclusion, combined revenue for hub parents, CHAIN badge
 
-### Phase 3 (Future)
-- Per-customer price list management
-- Revenue trend charts (requires chart library)
+### Phase 3 (Complete)
+- Order creation from Account Detail (New Order button in account header)
+- Pre-selected customer auto-fill in order form with locked dispensary field
+- CRM activity auto-logging on order creation from account view
+- Customer price list management UI (Pricing tab in Account Detail)
+- Price override CRUD: add/delete overrides with product search, effective/expiry dates, notes
+- Active/scheduled/expired override grouping with discount % display
+- Soft price integration in order form: custom prices auto-fill when creating orders from account view
+- `priceList.service.ts` with full CRUD and active-price lookup functions
+
+### Phase 4 (Future — Detailed Specifications)
+
+#### Feature 4A: Dashboard Quick Actions
+**No database changes required.**
+- Create `DashboardQuickActions` component in `src/features/crm/components/`
+- Place between `RevenueStatsCards` and `TopAccountsTable` in `CRMDashboard.tsx`
+- Three action buttons: New Order (ShoppingCart), Log Activity (MessageSquare), Schedule Visit (Calendar)
+- "New Order" needs `onCreateOrder` callback passed into CRMDashboard from App.tsx (same pattern as AccountDetail)
+- "Log Activity" and "Schedule Visit" open existing modal patterns from SalesQueue
+- Add inline actions on `AtRiskAccounts.tsx` rows: phone icon (opens `tel:` link), calendar icon (schedule visit modal), cart icon (create order for that account)
+- Components to modify: `CRMDashboard.tsx`, `AtRiskAccounts.tsx`
+
+#### Feature 4B: Revenue Trend Sparklines
+**No database changes required.**
+- Create `RevenueSparkline` component in `src/shared/components/` — pure SVG polyline, ~80x24px, no chart library
+- Data source: existing `crm_monthly_revenue_by_customer` view (last 6 months)
+- New service function `getBatchMonthlyRevenue(accountIds: string[])` in `crm.service.ts` — fetches last 6 months for multiple accounts in one query to avoid N+1
+- Add sparkline column to `TopAccountsTable.tsx` (after revenue column)
+- Add sparkline to `AccountHeader.tsx` metrics section
+- Hook changes: `useCRMDashboard` fetches monthly revenue for top account IDs after initial load
+- Color: green for uptrend, amber for flat, red for downtrend (compare first half vs second half of 6-month window)
+
+#### Feature 4C: Account Pinned Notes
+**Requires database migration.**
+- Option A (recommended): Add `pinned` boolean column (default false) to `customer_activity_log` table
+- Option B: Create new `customer_notes` table (id, customer_id, content, pinned_order, created_at, user_id)
+- Create `AccountPinnedNotes` component in `src/features/crm/components/`
+- Placement: right sidebar of `AccountDetail.tsx`, above `AccountActivityLog`
+- Max 5 pinned notes per account (enforced in UI, soft limit)
+- Pin/unpin toggle on existing activity log entries via `AccountActivityLog.tsx`
+- Visual: amber left border card, smaller text, compact layout
+- Service additions in `crm.service.ts`: `getPinnedNotes(customerId)`, `togglePinNote(activityId, pinned)`
+- Components to modify: `AccountDetail.tsx`, `AccountActivityLog.tsx`
+
+#### Remaining Future Items
 - Sales rep performance dashboard
 - Export/reporting capabilities
-- Automated at-risk account alerts/notifications

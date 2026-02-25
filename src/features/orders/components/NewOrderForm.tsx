@@ -5,7 +5,7 @@ import { useOrderableProducts } from '@/hooks';
 import { formatProductPrice } from '@/services';
 import { X, Plus, Trash2, Search, ChevronDown } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
-// import { Calendar, SearchableSelect } from './common';
+import { getActivePricesForCustomer } from '@/features/crm/services/priceList.service';
 
 interface Customer {
   id: string;
@@ -25,10 +25,11 @@ interface OrderItem {
   notes?: string;
 }
 
-export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
+export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustomerId }: {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (orderData?: { id: string; order_number: string; customer_id: string }) => void;
   cloneFrom?: any;
+  preSelectedCustomerId?: string;
 }) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { products, loading: productsLoading, error: productsError } = useOrderableProducts();
@@ -45,6 +46,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
   const [productSearchTerms, setProductSearchTerms] = useState<{ [key: number]: string }>({});
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const [customerPrices, setCustomerPrices] = useState<Map<string, number> | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -59,6 +61,14 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
     setDataLoading(productsLoading);
   }, [productsLoading]);
 
+  useEffect(() => {
+    if (preSelectedCustomerId) {
+      getActivePricesForCustomer(preSelectedCustomerId).then(({ data }) => {
+        if (data) setCustomerPrices(data);
+      });
+    }
+  }, [preSelectedCustomerId]);
+
   async function loadCustomers() {
     const { data } = await supabase
       .from('customers')
@@ -68,6 +78,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
       setCustomers(data);
       if (cloneFrom && data.length > 0) {
         prefillFromClone(data);
+      } else if (preSelectedCustomerId) {
+        setSelectedCustomerId(preSelectedCustomerId);
       }
     }
   }
@@ -109,7 +121,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
     if (field === 'product_id') {
       const product = products.find(p => p.id === value);
       if (product) {
-        updated[index].unit_price = product.price_per_unit || 0;
+        const customPrice = customerPrices?.get(value);
+        updated[index].unit_price = customPrice ?? product.price_per_unit ?? 0;
         updated[index].product_name = product.name;
       }
     }
@@ -208,7 +221,11 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
 
       if (itemsError) throw itemsError;
 
-      onSuccess();
+      onSuccess({
+        id: orderData.id,
+        order_number: orderData.order_number,
+        customer_id: orderData.customer_id,
+      });
     } catch (error) {
       console.error('Error creating order:', error);
       notificationService.error('Failed to create order. Please try again.');
@@ -264,7 +281,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
                 required
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green"
+                disabled={!!preSelectedCustomerId}
+                className={`w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green ${preSelectedCustomerId ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 <option value="">Select dispensary...</option>
                 {customers.map(customer => (
@@ -273,6 +291,9 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
                   </option>
                 ))}
               </select>
+              {preSelectedCustomerId && (
+                <p className="text-xs text-cult-light-gray mt-1">Pre-selected from account view</p>
+              )}
             </div>
 
             <div>
@@ -481,6 +502,9 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom }: {
                       <div className="w-full lg:w-36">
                         <label className="block text-xs font-medium text-cult-light-gray mb-2">
                           Unit Price *
+                          {item.product_id && customerPrices?.has(item.product_id) && (
+                            <span className="ml-1 text-[10px] font-bold text-amber-400">Custom</span>
+                          )}
                         </label>
                         <input
                           type="number"

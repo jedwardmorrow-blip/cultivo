@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-25 - CRM Phase 3: Order Integration & Price List Management
+
+**Type:** Feature Addition
+**Module:** CRM, Orders
+**Status:** COMPLETE
+
+Added the ability to create orders directly from account detail pages and manage per-customer price overrides.
+
+- **Order from Account:** New "New Order" button on Account Header opens order form with dispensary pre-selected and locked. After submission, navigates to Orders module and auto-logs a CRM activity on the account timeline.
+- **Customer Price List UI:** New "Pricing" tab in Account Detail with CRUD management for price overrides. Shows active, scheduled, and expired overrides with discount/premium percentage display. Product search dropdown, effective/expiry dates, and notes support.
+- **Price Integration in Order Form:** When creating orders from an account with price overrides, custom prices auto-fill on product selection with a "Custom" badge indicator. Standard prices used when no override exists.
+- **Components:** `AccountPriceList.tsx` (new), `AccountHeader.tsx` (enhanced with New Order button), `AccountDetail.tsx` (enhanced with Pricing tab and onCreateOrder prop), `NewOrderForm.tsx` (enhanced with preSelectedCustomerId and price lookup).
+- **Services:** `priceList.service.ts` (new) with `getCustomerPriceList()`, `getActivePricesForCustomer()`, `getActivePriceForProduct()`, `createPriceOverride()`, `updatePriceOverride()`, `deletePriceOverride()`.
+- **App.tsx:** Added `handleCreateOrderForCustomer()` handler, `preSelectedCustomerId` state, CRM activity auto-logging on order creation.
+- **Types:** Extended `CustomerPriceOverride` with `standard_price` field.
+
+---
+
 ## 2026-02-25 - CRM Phase 2.5: Chain Hierarchy & Delivery Model
 
 **Type:** Feature Addition

@@ -15,53 +15,50 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-25
-**Session:** CRM Phase 2.5 — Chain Hierarchy & Delivery Model
+**Session:** CRM Phase 3 — Order Integration & Price List Management
 **Status:** COMPLETE
 
 **What was done:**
 
-Implemented CRM Phase 2.5: per-child-location performance analytics, delivery model tracking, expand/collapse chain hierarchy in accounts list, and combined chain revenue across all dashboard components.
+Implemented CRM Phase 3: create orders directly from account detail pages with pre-selected dispensary, customer price list management UI, and soft price integration in order form.
 
-**1. Database migration (add_chain_hierarchy_and_delivery_model)**
-- Added `delivery_model` column to `customers` (text NOT NULL DEFAULT 'direct_to_each', CHECK constraint)
-- Created `crm_chain_location_performance` VIEW with CTE-based revenue share calculation
-- DROP+recreated `crm_customer_summary` VIEW with `delivery_model`, `child_total_revenue`, `child_total_orders`
+**1. Order creation from Account Detail**
+- `App.tsx` — Added `preSelectedCustomerId` state, `handleCreateOrderForCustomer()` handler, CRM activity auto-logging in `handleOrderCreated()`
+- `NewOrderForm.tsx` — New `preSelectedCustomerId` prop, auto-selects and locks dispensary dropdown, loads customer price overrides, applies custom prices on product selection with "Custom" badge
+- `AccountDetail.tsx` — Added `onCreateOrder` prop, passes to AccountHeader
+- `AccountHeader.tsx` — New "New Order" button (ShoppingCart icon) in header right section
 
-**2. Type definitions**
-- Added `DeliveryModel`, `ChainHealthLabel`, `ChainLocationPerformance` types to `crm.types.ts`
-- Extended `AccountSummary` with `delivery_model`, `child_total_revenue`, `child_total_orders`
+**2. Customer price list management**
+- `priceList.service.ts` (new) — Full CRUD: `getCustomerPriceList()`, `getActivePricesForCustomer()`, `getActivePriceForProduct()`, `createPriceOverride()`, `updatePriceOverride()`, `deletePriceOverride()`
+- `AccountPriceList.tsx` (new) — Price override management with active/scheduled/expired grouping, product search, discount % display, inline add form
+- `AccountDetail.tsx` — Added "Pricing" tab to TABS array
 
-**3. Service layer**
-- Added `getChainLocationPerformance()` and `updateDeliveryModel()` to `crm.service.ts`
+**3. Price integration in order form**
+- `NewOrderForm.tsx` — When `preSelectedCustomerId` is set, fetches customer's active price overrides. On product select, uses custom price if available, falls back to standard price. Shows "Custom" label on unit price field.
 
-**4. Hooks**
-- `useAccountDetail.ts` — Added `chainPerformance` state, parallel fetch with child accounts
-- `useCRMDashboard.ts` — Filter hub_child from top/at-risk lists, sort by combined revenue
+**4. CRM activity auto-logging**
+- `App.tsx` imports `createActivity` from CRM service. On successful order creation from account view, auto-logs a "note" activity with order number.
 
-**5. Components (6 enhanced)**
-- `SubAccountsPanel.tsx` — Full rewrite: health badges per child, revenue share bars, top performer, delivery model badge
-- `AccountDetail.tsx` — Pass chainPerformance and deliveryModel to SubAccountsPanel
-- `AccountsList.tsx` — Full rewrite: expand/collapse chain rows, child grouping, search bubbling, combined revenue sort
-- `AccountHeader.tsx` — Full rewrite: delivery model badges (Package/Truck icons), chain-level metrics for hub parents
-- `TopAccountsTable.tsx` — Full rewrite: combined chain revenue, CHAIN badge
-- `AtRiskAccounts.tsx` — Full rewrite: combined chain revenue, CHAIN badge
+**5. Types**
+- `crm.types.ts` — Extended `CustomerPriceOverride` with `standard_price` field
 
 **6. Documentation**
-- `docs/CRM-SUB-ACCOUNTS.md` — Delivery model section, chain performance view schema, UI implementation details
-- `docs/CRM.md` — Phase 2.5 section, delivery_model column, crm_chain_location_performance view, design decisions #10-11
-- `docs/CRM-INTEGRATION-MAP.md` — Phase 2.5 view, service queries, types
-- `docs/ARCHITECTURE-DECISIONS.md` — ADR #17 (delivery model and chain performance as view-based analytics)
-- `CHANGELOG.md` — Phase 2.5 entry
+- `docs/CRM.md` — Phase 3 marked Complete, Phase 4 (Future) documented
+- `CHANGELOG.md` — Phase 3 entry
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
+- `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
 
 **Next recommendations (in order):**
-1. **CRM Phase 3** — Per-customer price list management UI
-2. **Revenue trend charts** — requires chart library decision (recharts vs lightweight)
-3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-4. **Cultivation: Move to Room action** — split plants into new group in different room
+1. **CRM Phase 4: Dashboard Quick Actions** — New Order / Log Activity / Schedule Visit buttons on CRM Dashboard, inline actions on At-Risk accounts. Pure UI, no database changes.
+2. **CRM Phase 4: Revenue Trend Sparklines** — Pure SVG sparklines in TopAccountsTable and AccountHeader. New service function for batched monthly revenue. No database changes.
+3. **CRM Phase 4: Account Pinned Notes** — Add `pinned` boolean to `customer_activity_log` or create `customer_notes` table. Pin/unpin toggle on activity log entries. Requires migration.
+4. **Revenue trend charts** — requires chart library decision (recharts vs lightweight SVG)
+5. **Cultivation: Move to Group action** — plant-level workflow with strain validation
+6. **Cultivation: Move to Room action** — split plants into new group in different room
 
 ---
 

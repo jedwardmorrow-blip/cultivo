@@ -10,19 +10,22 @@ import { AccountContacts } from './AccountContacts';
 import { AccountActivityLog } from './AccountActivityLog';
 import { AccountProductMix } from './AccountProductMix';
 import { AccountDeliveryHistory } from './AccountDeliveryHistory';
+import { AccountPriceList } from './AccountPriceList';
 
 interface AccountDetailProps {
   accountId: string;
   onViewChange: (view: string) => void;
+  onCreateOrder?: (customerId: string) => void;
 }
 
 const TABS = [
   { key: 'orders' as const, label: 'Orders' },
   { key: 'products' as const, label: 'Product Mix' },
   { key: 'deliveries' as const, label: 'Deliveries' },
+  { key: 'pricing' as const, label: 'Pricing' },
 ];
 
-export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
+export function AccountDetail({ accountId, onViewChange, onCreateOrder }: AccountDetailProps) {
   const {
     account,
     childAccounts,
@@ -42,7 +45,7 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
     loading: deepDiveLoading,
   } = useAccountDeepDive(accountId);
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries' | 'pricing'>('orders');
 
   const handleSelectAccount = (id: string) => {
     onViewChange(`crm-account-detail:${id}`);
@@ -90,7 +93,7 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
         )}
       </div>
 
-      <AccountHeader account={account} healthScore={healthScore} />
+      <AccountHeader account={account} healthScore={healthScore} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} />
 
       {account.account_type === 'hub_parent' && childAccounts.length > 0 && (
         <SubAccountsPanel
@@ -123,6 +126,7 @@ export function AccountDetail({ accountId, onViewChange }: AccountDetailProps) {
           {activeTab === 'orders' && <AccountOrderHistory orders={orders} />}
           {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} />}
           {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} />}
+          {activeTab === 'pricing' && <AccountPriceList customerId={accountId} />}
         </div>
         <div className="space-y-5">
           <AccountContacts
