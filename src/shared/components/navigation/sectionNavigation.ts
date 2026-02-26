@@ -16,7 +16,7 @@ import {
   Sprout,
   Warehouse,
   Wind,
-  Users,
+  DollarSign,
   BarChart3,
   Building2,
   ClipboardList,
@@ -58,7 +58,7 @@ export const sectionDefinitions: SectionDefinition[] = [
   },
   {
     id: 'sales',
-    label: 'Sales & Distribution',
+    label: 'Distribution',
     icon: Truck,
     defaultView: 'orders',
     items: [
@@ -99,8 +99,8 @@ export const sectionDefinitions: SectionDefinition[] = [
   },
   {
     id: 'crm',
-    label: 'CRM',
-    icon: Users,
+    label: 'Sales',
+    icon: DollarSign,
     defaultView: 'crm-dashboard',
     items: [
       { id: 'crm-dashboard', label: 'Sales Dashboard', icon: BarChart3, group: 'primary' },
