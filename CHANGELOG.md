@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-26 - CRM Phase 5: Account Info Editing & Contact Management
+
+**Type:** Feature Addition
+**Module:** CRM
+**Status:** COMPLETE
+
+Added dispensary account info editing from the CRM Account Detail page, with full data sync across the application.
+
+- **Account Info Edit Modal:** New `AccountInfoEditModal.tsx` opens via pencil icon on the account header. Editable fields: dispensary name, contact info (name/email/phone), delivery address, license & compliance (license name/number, ATO number), account settings (payment terms, preferred delivery day), and internal notes. Dispensary code displayed as read-only.
+- **Dual Address Sync:** Updates write to both primary (`address`, `city`, `state`, `postal_code`) and legacy (`delivery_*`) fields, matching the pattern in `customers.service.ts`.
+- **Geocoding Integration:** Address changes automatically clear stale coordinates and trigger re-geocoding via OpenRouteService, keeping delivery routing accurate.
+- **Contact Inline Editing:** `AccountContacts.tsx` now supports edit (pencil icon) and primary contact toggle (star icon) on each contact row. Inline edit mode with name, title, email, phone fields.
+- **Database:** Migration expands `crm_customer_summary` view with address, postal_code, delivery address fields, ATO number, credit limit, account credit balance, and notes.
+- **Type System:** `AccountSummary` interface extended with new fields. New `AccountInfoInput` interface for the update service.
+- **Service:** `updateAccountInfo()` in `crm.service.ts` handles the full update lifecycle including dual-address sync and geocoding.
+
+---
+
 ## 2026-02-25 - CRM Phase 4: Dashboard Quick Actions, Sparklines & Pinned Notes
 
 **Type:** Feature Addition

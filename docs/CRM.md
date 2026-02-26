@@ -119,7 +119,8 @@ src/features/crm/
     AccountHeader.tsx         # Account name, status, type badges
     AccountOrderHistory.tsx   # Order history table for account
     AccountRevenueChart.tsx   # Monthly revenue chart for account
-    AccountContacts.tsx       # Contact cards with actions
+    AccountContacts.tsx       # Contact cards with inline add/edit/delete + primary toggle
+    AccountInfoEditModal.tsx  # Modal for editing dispensary info (contact, address, license, settings)
     AccountActivityLog.tsx    # Activity timeline
     AccountPriceList.tsx      # Custom pricing overrides
     SubAccountsPanel.tsx      # Hub child locations list
@@ -186,6 +187,35 @@ New cases in `renderView()`:
 | Batch/COA | COA documents attached to orders for compliance |
 | Product catalog | Price list management references products table |
 | Analytics | Revenue analytics extend existing dashboard patterns |
+
+## Account Info Editing (Phase 5)
+
+Dispensary account info can be edited directly from the CRM Account Detail page.
+
+### Edit Modal (`AccountInfoEditModal`)
+Accessible via pencil icon on the AccountHeader. Editable fields:
+- **Dispensary Identity**: name (dispensary_code is read-only to protect existing order numbers)
+- **Contact Info**: contact_name, email, phone
+- **Delivery Address**: address, city, state, postal_code
+- **License & Compliance**: license_name, license_number, ato_number
+- **Account Settings**: default_payment_terms (dropdown), preferred_delivery_day (dropdown)
+- **Notes**: free-text notes
+
+### Data Sync
+- Updates write to the `customers` table, syncing both primary and `delivery_*` address fields
+- Address changes trigger geocode clearing and automatic re-geocoding via OpenRouteService
+- All downstream modules (orders, invoices, manifests, coversheets, delivery routing) read from the `customers` table at query time, so edits propagate immediately
+
+### Contact Inline Editing (`AccountContacts`)
+- Edit button (pencil icon) appears on hover for each contact row
+- Inline edit mode with name, title, email, phone fields
+- Star toggle to set/unset primary contact status
+- Uses existing `updateContact` service function in `crm.service.ts`
+
+### Service Layer
+- `updateAccountInfo(customerId, input, previousAccount)` in `crm.service.ts`
+- Handles dual-address sync, geocoding invalidation, and re-geocoding
+- Pattern mirrors `updateCustomerWithGeocodeCheck` from `customers.service.ts`
 
 ## Sales Activity Management (Phase 2)
 

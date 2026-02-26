@@ -89,16 +89,20 @@ Documents how the CRM module connects to every existing feature in the CULT syst
 
 ### Customers Module (`src/features/customers/`)
 - **CRM extends Customers**: CRM builds on the existing `customersService`
+- **CRM writes to `customers`**: `updateAccountInfo` updates contact info, address, license, and account settings directly on the `customers` table with dual-address sync and geocode re-trigger
 - **CRM uses**: `useCustomers` hook, `CustomerForm` component patterns
-- **Migration path**: CRM Account Detail replaces basic customer edit for sales use cases
+- **Two edit paths**: CRM Account Detail for sales workflow editing; Customers Management for admin/bulk operations. Both sync dual address fields and trigger geocoding on address change
 
 ## Service Layer Dependencies
 
 ```
 crm.service.ts
   imports from:
-    @/lib/supabase          (Supabase client)
-    @/services/error.service (Error handling)
+    @/lib/supabase                          (Supabase client)
+    @/services/error.service                (Error handling)
+    delivery/services/geocoding.service     (Address geocoding for account updates)
+  writes to:
+    customers                               (updateAccountInfo — contact, address, license, settings)
   queries:
     customers               (with new CRM columns)
     orders                  (customer order history)

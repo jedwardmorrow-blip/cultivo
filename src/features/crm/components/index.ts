@@ -1,5 +1,6 @@
 export { CRMDashboard } from './CRMDashboard';
 export { AccountsList } from './AccountsList';
 export { AccountDetail } from './AccountDetail';
+export { AccountInfoEditModal } from './AccountInfoEditModal';
 export { SalesQueue } from './SalesQueue';
 export { VisitCalendar } from './VisitCalendar';

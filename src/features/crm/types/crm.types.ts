@@ -21,6 +21,16 @@ export interface AccountSummary {
   phone: string | null;
   license_number: string | null;
   license_name: string | null;
+  address: string | null;
+  postal_code: string | null;
+  delivery_address: string | null;
+  delivery_city: string | null;
+  delivery_state: string | null;
+  delivery_postal_code: string | null;
+  ato_number: string | null;
+  credit_limit: number | null;
+  account_credit_balance: number | null;
+  notes: string | null;
   order_count: number;
   total_revenue: number;
   avg_order_value: number;
@@ -35,6 +45,23 @@ export interface AccountSummary {
   delivery_model: DeliveryModel;
   child_total_revenue: number;
   child_total_orders: number;
+}
+
+export interface AccountInfoInput {
+  name: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  license_name: string | null;
+  license_number: string | null;
+  ato_number: string | null;
+  default_payment_terms: string | null;
+  preferred_delivery_day: string | null;
+  notes: string | null;
 }
 
 export interface CustomerContact {

@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-25
+updated: 2026-02-26
 priority: Working document - update every session
 ---
 
@@ -14,36 +14,29 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-25
-**Session:** CRM Phase 4 — Dashboard Quick Actions, Sparklines & Pinned Notes
+**Date:** 2026-02-26
+**Session:** CRM Phase 5 — Account Info Editing & Contact Management
 **Status:** COMPLETE
 
 **What was done:**
 
-Implemented all three features of CRM Phase 4: dashboard quick actions with at-risk inline actions, revenue trend sparklines, and account pinned notes.
+Added dispensary account info editing from the CRM Account Detail page with full data sync across the app.
 
-**1. Dashboard Quick Actions (Feature 4A)**
-- `DashboardQuickActions.tsx` (new) — Three action buttons: New Order, Log Activity, Schedule Visit
-- `CRMDashboard.tsx` — Added `onCreateOrder` prop, renders DashboardQuickActions between stats and top accounts
-- `AtRiskAccounts.tsx` — Inline action buttons on hover: Phone (tel: link), Calendar (schedule visit), ShoppingCart (create order)
-- `App.tsx` — Passes `onCreateOrder` callback to CRMDashboard
+**1. Account Info Edit Modal**
+- `AccountInfoEditModal.tsx` (new) — Modal with dispensary name, contact info, address, license/compliance, account settings (payment terms, delivery day), and notes. Dispensary code is read-only.
+- `AccountHeader.tsx` — Added pencil icon edit button next to dispensary name, `onEdit` prop
+- `AccountDetail.tsx` — Wires modal open/close, calls `updateAccountInfo`, reloads on save with success/error notifications
 
-**2. Revenue Trend Sparklines (Feature 4B)**
-- `RevenueSparkline.tsx` (new, shared) — Pure SVG sparkline with polyline + gradient fill, color-coded by trend direction
-- `crm.service.ts` — `getBatchMonthlyRevenue(accountIds)` fetches 6 months of revenue in one query using `.in()`
-- `useCRMDashboard.ts` — Fetches monthlyRevenueMap for top 15 accounts, returns it for TopAccountsTable
-- `TopAccountsTable.tsx` — New "Trend" column with sparklines (hidden on small screens)
-- `useAccountDeepDive.ts` — Fetches monthlyRevenue for individual account
-- `AccountDetail.tsx` — Passes monthlyRevenue to AccountHeader
-- `AccountHeader.tsx` — Shows "6-Month Revenue Trend" sparkline card above metrics grid
+**2. Data Sync & Geocoding**
+- `crm.service.ts` — New `updateAccountInfo(customerId, input, previousAccount)` function. Syncs both primary and `delivery_*` address fields. Clears geocoding on address change and triggers re-geocoding via OpenRouteService.
+- Imports `formatAddressForGeocoding` and `updateCustomerGeocode` from `delivery/services/geocoding.service`
 
-**3. Account Pinned Notes (Feature 4C)**
-- Migration: `add_pinned_column_to_activity_log` — adds `pinned` boolean (default false) + partial index
-- `crm.types.ts` — Added `pinned` field to `CustomerActivity` interface
-- `crm.service.ts` — `getPinnedNotes(customerId)`, `togglePinActivity(activityId, pinned)`
-- `AccountPinnedNotes.tsx` (new) — Pinned notes panel with amber theme, unpin on hover
-- `AccountActivityLog.tsx` — Pin/unpin toggle button on each activity row, pin indicator badge
-- `AccountDetail.tsx` — AccountPinnedNotes placed above AccountContacts in sidebar
+**3. Contact Inline Editing**
+- `AccountContacts.tsx` — Added edit (pencil) and primary toggle (star) buttons on each contact row. Inline edit mode with save/cancel. Uses existing `updateContact` service function.
+
+**4. Database & Types**
+- Migration: `expand_crm_customer_summary_with_address_fields` — Drops and recreates `crm_customer_summary` view adding `address`, `postal_code`, `delivery_address/city/state/postal_code`, `ato_number`, `credit_limit`, `account_credit_balance`, `notes`
+- `crm.types.ts` — Extended `AccountSummary` with new fields. Added `AccountInfoInput` interface.
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
@@ -54,7 +47,7 @@ Implemented all three features of CRM Phase 4: dashboard quick actions with at-r
 1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
 2. **Export/reporting capabilities** — Account data export, revenue reports
 3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-6. **Cultivation: Move to Room action** — split plants into new group in different room
+4. **Cultivation: Move to Room action** — split plants into new group in different room
 
 ---
 

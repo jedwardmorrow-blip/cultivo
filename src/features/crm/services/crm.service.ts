@@ -1,7 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
+import {
+  formatAddressForGeocoding,
+  updateCustomerGeocode,
+} from '../../delivery/services/geocoding.service';
 import type {
   AccountSummary,
+  AccountInfoInput,
   ChainLocationPerformance,
   CustomerContact,
   CustomerContactInput,
@@ -470,6 +475,79 @@ export async function updateDeliveryModel(customerId: string, deliveryModel: Del
     return { error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to update delivery model');
+    return { error };
+  }
+}
+
+export async function updateAccountInfo(
+  customerId: string,
+  input: AccountInfoInput,
+  previousAccount: AccountSummary
+) {
+  try {
+    const updateData: Record<string, unknown> = {
+      name: input.name,
+      contact_name: input.contact_name || null,
+      email: input.email || null,
+      phone: input.phone || null,
+      address: input.address || null,
+      city: input.city || null,
+      state: input.state || null,
+      postal_code: input.postal_code || null,
+      delivery_address: input.address || null,
+      delivery_city: input.city || null,
+      delivery_state: input.state || 'AZ',
+      delivery_postal_code: input.postal_code || null,
+      license_name: input.license_name || null,
+      license_number: input.license_number || null,
+      ato_number: input.ato_number || null,
+      default_payment_terms: input.default_payment_terms || null,
+      preferred_delivery_day: input.preferred_delivery_day || null,
+      notes: input.notes || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('customers')
+      .update(updateData)
+      .eq('id', customerId);
+
+    if (error) throw error;
+
+    const addressChanged =
+      input.address !== (previousAccount.delivery_address || previousAccount.address) ||
+      input.city !== (previousAccount.delivery_city || previousAccount.city) ||
+      input.state !== (previousAccount.delivery_state || previousAccount.state) ||
+      input.postal_code !== (previousAccount.delivery_postal_code || previousAccount.postal_code);
+
+    if (addressChanged) {
+      await supabase
+        .from('customers')
+        .update({
+          latitude: null,
+          longitude: null,
+          formatted_address: null,
+          geocoded_at: null,
+          geocoding_error: null,
+        })
+        .eq('id', customerId);
+
+      if (input.address && input.city) {
+        try {
+          const addressToGeocode = formatAddressForGeocoding(
+            input.address, input.city, input.state, input.postal_code,
+            null, null, null, null
+          );
+          await updateCustomerGeocode(customerId, addressToGeocode);
+        } catch {
+          // Geocoding failure is non-blocking
+        }
+      }
+    }
+
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to update account info');
     return { error };
   }
 }

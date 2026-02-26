@@ -1,4 +1,4 @@
-import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart, Gift } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart, Gift, Pencil } from 'lucide-react';
 import type { AccountSummary, AccountHealthScore } from '../types';
 import { AccountHealthBadge } from './AccountHealthBadge';
 import { RevenueSparkline } from '@/shared/components';
@@ -9,6 +9,7 @@ interface AccountHeaderProps {
   monthlyRevenue?: number[];
   onCreateOrder?: () => void;
   onCreateSampleOrder?: () => void;
+  onEdit?: () => void;
 }
 
 function getStatusColor(status: string): string {
@@ -25,7 +26,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder, onCreateSampleOrder }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder, onCreateSampleOrder, onEdit }: AccountHeaderProps) {
   const isHubParent = account.account_type === 'hub_parent';
   const chainRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
   const chainOrders = account.order_count + (account.child_total_orders || 0);
@@ -37,6 +38,15 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
           <div className="flex items-center gap-3 flex-wrap">
             <Building2 className="w-6 h-6 text-cult-silver flex-shrink-0" />
             <h1 className="text-2xl font-bold text-cult-white truncate">{account.name}</h1>
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="p-1.5 text-cult-medium-gray hover:text-cult-white hover:bg-cult-dark-gray rounded transition-all"
+                title="Edit account info"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
             <span className="text-sm font-mono text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded">
               {account.dispensary_code}
             </span>

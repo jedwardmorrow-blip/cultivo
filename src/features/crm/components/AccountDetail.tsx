@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
+import { notificationService } from '@/services';
 import { useAccountDetail, useAccountDeepDive } from '../hooks';
+import { updateAccountInfo } from '../services';
 import { AccountHeader } from './AccountHeader';
 import { AccountHealthBadge } from './AccountHealthBadge';
+import { AccountInfoEditModal } from './AccountInfoEditModal';
 import { SubAccountsPanel } from './SubAccountsPanel';
 import { AccountOrderHistory } from './AccountOrderHistory';
 import { AccountContacts } from './AccountContacts';
@@ -13,6 +16,7 @@ import { AccountDeliveryHistory } from './AccountDeliveryHistory';
 import { AccountPriceList } from './AccountPriceList';
 import { AccountPinnedNotes } from './AccountPinnedNotes';
 import { AccountSampleHistory } from './AccountSampleHistory';
+import type { AccountInfoInput } from '../types';
 
 interface AccountDetailProps {
   accountId: string;
@@ -51,9 +55,21 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
   } = useAccountDeepDive(accountId);
 
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries' | 'pricing' | 'samples'>('orders');
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleSelectAccount = (id: string) => {
     onViewChange(`crm-account-detail:${id}`);
+  };
+
+  const handleSaveAccountInfo = async (input: AccountInfoInput) => {
+    if (!account) return;
+    const result = await updateAccountInfo(accountId, input, account);
+    if (result.error) {
+      notificationService.error('Failed to update account info');
+      throw result.error;
+    }
+    notificationService.success('Account info updated');
+    reload();
   };
 
   if (loading) return <LoadingSpinner />;
@@ -98,7 +114,21 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
         )}
       </div>
 
-      <AccountHeader account={account} healthScore={healthScore} monthlyRevenue={monthlyRevenue} onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined} onCreateSampleOrder={onCreateSampleOrder ? () => onCreateSampleOrder(accountId) : undefined} />
+      <AccountHeader
+        account={account}
+        healthScore={healthScore}
+        monthlyRevenue={monthlyRevenue}
+        onCreateOrder={onCreateOrder ? () => onCreateOrder(accountId) : undefined}
+        onCreateSampleOrder={onCreateSampleOrder ? () => onCreateSampleOrder(accountId) : undefined}
+        onEdit={() => setShowEditModal(true)}
+      />
+
+      <AccountInfoEditModal
+        account={account}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleSaveAccountInfo}
+      />
 
       {account.account_type === 'hub_parent' && childAccounts.length > 0 && (
         <SubAccountsPanel
