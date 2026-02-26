@@ -334,6 +334,66 @@ export async function getEnrichedCalendarOrders(archived: boolean = false): Prom
   }
 }
 
+export interface CalendarOrderItem {
+  id: string;
+  product_name: string;
+  strain_name: string | null;
+  quantity: number;
+  pricing_unit: string | null;
+  status: string | null;
+  is_sample: boolean;
+  batch_number: string | null;
+  quality_grade_id: string | null;
+}
+
+export async function getOrderItemsForCalendar(orderId: string): Promise<{ data: CalendarOrderItem[]; error: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('order_items')
+      .select(`
+        id,
+        quantity,
+        status,
+        is_sample,
+        products!inner (
+          name,
+          pricing_unit,
+          strains ( name )
+        ),
+        order_item_allocations (
+          batch_registry!inner (
+            batch_number,
+            quality_grade_id
+          )
+        )
+      `)
+      .eq('order_id', orderId);
+
+    if (error) throw error;
+
+    const items: CalendarOrderItem[] = (data || []).map((row: any) => {
+      const product = row.products;
+      const alloc = row.order_item_allocations?.[0];
+      return {
+        id: row.id,
+        product_name: product?.name || 'Unknown',
+        strain_name: product?.strains?.name || null,
+        quantity: Number(row.quantity),
+        pricing_unit: product?.pricing_unit || null,
+        status: row.status || null,
+        is_sample: row.is_sample ?? false,
+        batch_number: alloc?.batch_registry?.batch_number || null,
+        quality_grade_id: alloc?.batch_registry?.quality_grade_id || null,
+      };
+    });
+
+    return { data: items, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load order items for calendar');
+    return { data: [], error };
+  }
+}
+
 export async function clearOrderDeliveryDate(orderId: string) {
   try {
     const { error } = await supabase

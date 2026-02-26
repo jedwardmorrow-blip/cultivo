@@ -3,11 +3,13 @@ import { formatCurrency } from '@/lib/utils';
 import { getRouteZone, getAllZones, getApproxMiles } from '../utils';
 import { formatDuration } from '../services/routing.service';
 import type { CalendarOrder } from '../services/delivery.service';
+import { OrderItemsExpander } from './OrderItemsExpander';
 
 interface DayDetailModalProps {
   date: Date;
   orders: CalendarOrder[];
   onClose: () => void;
+  onSelectOrder?: (orderId: string) => void;
 }
 
 const READY_STATUSES = new Set(['ready_for_delivery', 'completed']);
@@ -49,7 +51,7 @@ function groupByZone(orders: CalendarOrder[]): Map<string, CalendarOrder[]> {
   return groups;
 }
 
-export function DayDetailModal({ date, orders, onClose }: DayDetailModalProps) {
+export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDetailModalProps) {
   const grouped = groupByZone(orders);
   const zones = getAllZones();
   const activeZones = zones.filter(z => grouped.has(z.id));
@@ -116,17 +118,17 @@ export function DayDetailModal({ date, orders, onClose }: DayDetailModalProps) {
                     </span>
                   </div>
                   <span className="text-xs text-cult-light-gray font-medium">
-                    ${formatCurrency(zoneValue)}
+                    {formatCurrency(zoneValue)}
                   </span>
                 </div>
 
-                <table className="w-full">
-                  <tbody className="divide-y divide-cult-charcoal/50">
-                    {zoneOrders.map(order => {
-                      const miles = getApproxMiles(order.customer_lat, order.customer_lon);
-                      return (
-                        <tr key={order.id} className="hover:bg-cult-black/50 transition-colors">
-                          <td className="px-5 py-3">
+                <div className="divide-y divide-cult-charcoal/50">
+                  {zoneOrders.map(order => {
+                    const miles = getApproxMiles(order.customer_lat, order.customer_lon);
+                    return (
+                      <div key={order.id} className="hover:bg-cult-black/50 transition-colors">
+                        <div className="flex items-center px-5 py-3">
+                          <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-cult-white">
                               {order.customer_name}
                             </div>
@@ -147,20 +149,21 @@ export function DayDetailModal({ date, orders, onClose }: DayDetailModalProps) {
                                 </>
                               )}
                             </div>
-                          </td>
-                          <td className="px-3 py-3">
+                          </div>
+                          <div className="flex items-center gap-3 flex-shrink-0">
                             <ReadinessBadge status={order.status} />
-                          </td>
-                          <td className="px-5 py-3 text-right">
                             <span className="text-sm font-semibold text-cult-white">
-                              ${formatCurrency(order.total_amount)}
+                              {formatCurrency(order.total_amount)}
                             </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+                        <div className="px-5 pb-2">
+                          <OrderItemsExpander orderId={order.id} onSelectOrder={onSelectOrder} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
@@ -177,7 +180,7 @@ export function DayDetailModal({ date, orders, onClose }: DayDetailModalProps) {
               ))}
             </div>
             <div className="text-base font-semibold text-cult-white">
-              Total: <span className="text-green-500">${formatCurrency(totalValue)}</span>
+              Total: <span className="text-green-500">{formatCurrency(totalValue)}</span>
             </div>
           </div>
         </div>

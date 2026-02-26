@@ -7,6 +7,7 @@ import { getRouteZone, getRouteZoneId } from '../utils';
 import { supabase } from '@/lib/supabase';
 import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
 import { DayDetailModal } from './DayDetailModal';
+import { OrderItemsExpander } from './OrderItemsExpander';
 
 const ORDER_STATUS_COLORS: Record<string, { bg: string; text: string; border: string; label: string }> = {
   submitted: { bg: 'bg-blue-900/30', text: 'text-blue-400', border: 'border-blue-600', label: 'Submitted' },
@@ -30,7 +31,11 @@ function getDayOfWeek(date: Date): string {
   return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
 }
 
-export function DistributionCalendar() {
+interface DistributionCalendarProps {
+  onSelectOrder?: (orderId: string) => void;
+}
+
+export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allOrders, setAllOrders] = useState<CalendarOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -206,7 +211,7 @@ export function DistributionCalendar() {
         />
         <StatCard
           label="Total Revenue"
-          value={`$${formatCurrency(totalRevenue)}`}
+          value={formatCurrency(totalRevenue)}
           borderColor="border-cult-light-gray"
           valueColor="text-cult-white"
         />
@@ -301,6 +306,7 @@ export function DistributionCalendar() {
       <UpcomingDeliveriesTable
         orders={scheduledOrders}
         onDragStart={handleDragStart}
+        onSelectOrder={onSelectOrder}
       />
 
       {showPlanPanel && (
@@ -308,6 +314,7 @@ export function DistributionCalendar() {
           orders={unscheduledOrders}
           onClose={() => setShowPlanPanel(false)}
           onDragStart={handleDragStart}
+          onSelectOrder={onSelectOrder}
         />
       )}
 
@@ -316,6 +323,7 @@ export function DistributionCalendar() {
           date={selectedDate}
           orders={ordersByDate.get(formatDateToLocal(selectedDate)) || []}
           onClose={() => setShowModal(false)}
+          onSelectOrder={onSelectOrder}
         />
       )}
     </div>
@@ -453,9 +461,11 @@ function DayCell({
 function UpcomingDeliveriesTable({
   orders,
   onDragStart,
+  onSelectOrder,
 }: {
   orders: CalendarOrder[];
   onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
+  onSelectOrder?: (orderId: string) => void;
 }) {
   const sorted = useMemo(() =>
     [...orders].sort((a, b) => {
@@ -479,46 +489,53 @@ function UpcomingDeliveriesTable({
             return (
               <div
                 key={order.id}
-                draggable
-                onDragStart={(e) => onDragStart(e, order)}
-                className="flex items-center justify-between p-4 border-2 border-cult-medium-gray hover:border-cult-white transition-colors cursor-move bg-cult-black"
-                title="Drag to calendar to reschedule"
+                className="border-2 border-cult-medium-gray hover:border-cult-white transition-colors bg-cult-black"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 ${sc.bg} border ${sc.border}`}>
-                    <Package className={`w-5 h-5 ${sc.text}`} />
+                <div
+                  draggable
+                  onDragStart={(e) => onDragStart(e, order)}
+                  className="flex items-center justify-between p-4 cursor-move"
+                  title="Drag to calendar to reschedule"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 ${sc.bg} border ${sc.border}`}>
+                      <Package className={`w-5 h-5 ${sc.text}`} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-cult-white">{order.order_number}</span>
+                        <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${sc.bg} ${sc.text} border ${sc.border}`}>
+                          {sc.label}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${zone.dotColor}`} />
+                          <span className={`text-xs ${zone.color}`}>{zone.label}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-cult-white">{order.order_number}</span>
-                      <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${sc.bg} ${sc.text} border ${sc.border}`}>
-                        {sc.label}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <div className={`w-2 h-2 rounded-full ${zone.dotColor}`} />
-                        <span className={`text-xs ${zone.color}`}>{zone.label}</span>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <div className="text-sm text-cult-light-gray">Delivery Date</div>
+                      <div className="font-medium text-cult-white">
+                        {order.requested_delivery_date
+                          ? new Date(order.requested_delivery_date + 'T00:00:00').toLocaleDateString()
+                          : 'Not scheduled'}
                       </div>
                     </div>
-                    <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <div className="text-sm text-cult-light-gray">Delivery Date</div>
-                    <div className="font-medium text-cult-white">
-                      {order.requested_delivery_date
-                        ? new Date(order.requested_delivery_date + 'T00:00:00').toLocaleDateString()
-                        : 'Not scheduled'}
+                    <div className="text-right">
+                      <div className="text-sm text-cult-light-gray">Amount</div>
+                      <div className="font-medium text-cult-white">{formatCurrency(order.total_amount)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-cult-light-gray">Items</div>
+                      <div className="font-medium text-cult-white">{order.item_count}</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-cult-light-gray">Amount</div>
-                    <div className="font-medium text-cult-white">${formatCurrency(order.total_amount)}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-cult-light-gray">Items</div>
-                    <div className="font-medium text-cult-white">{order.item_count}</div>
-                  </div>
+                </div>
+                <div className="px-4 pb-3">
+                  <OrderItemsExpander orderId={order.id} onSelectOrder={onSelectOrder} />
                 </div>
               </div>
             );

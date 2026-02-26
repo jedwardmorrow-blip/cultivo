@@ -2,11 +2,13 @@ import { X, GripVertical, MapPin, Calendar, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getRouteZone, getAllZones, type RouteZone } from '../utils';
 import type { CalendarOrder } from '../services/delivery.service';
+import { OrderItemsExpander } from './OrderItemsExpander';
 
 interface UnscheduledOrdersPanelProps {
   orders: CalendarOrder[];
   onClose: () => void;
   onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
+  onSelectOrder?: (orderId: string) => void;
 }
 
 const DAY_LABELS: Record<string, string> = {
@@ -25,7 +27,7 @@ function groupByZone(orders: CalendarOrder[]): Map<string, CalendarOrder[]> {
   return groups;
 }
 
-export function UnscheduledOrdersPanel({ orders, onClose, onDragStart }: UnscheduledOrdersPanelProps) {
+export function UnscheduledOrdersPanel({ orders, onClose, onDragStart, onSelectOrder }: UnscheduledOrdersPanelProps) {
   const grouped = groupByZone(orders);
   const zones = getAllZones();
   const activeZones = zones.filter(z => grouped.has(z.id));
@@ -45,7 +47,7 @@ export function UnscheduledOrdersPanel({ orders, onClose, onDragStart }: Unsched
               Unscheduled Orders
             </h3>
             <p className="text-xs text-cult-light-gray mt-0.5">
-              {orders.length} orders &middot; ${formatCurrency(totalValue)}
+              {orders.length} orders &middot; {formatCurrency(totalValue)}
             </p>
           </div>
           <button
@@ -91,7 +93,7 @@ export function UnscheduledOrdersPanel({ orders, onClose, onDragStart }: Unsched
                     </div>
                     <div className="space-y-0.5 px-2 py-1">
                       {zoneOrders.map(order => (
-                        <OrderCard key={order.id} order={order} zone={zone} onDragStart={onDragStart} />
+                        <OrderCard key={order.id} order={order} zone={zone} onDragStart={onDragStart} onSelectOrder={onSelectOrder} />
                       ))}
                     </div>
                   </div>
@@ -115,48 +117,55 @@ function OrderCard({
   order,
   zone,
   onDragStart,
+  onSelectOrder,
 }: {
   order: CalendarOrder;
   zone: RouteZone;
   onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
+  onSelectOrder?: (orderId: string) => void;
 }) {
   const prefDay = order.preferred_delivery_day
     ? DAY_LABELS[order.preferred_delivery_day.toLowerCase()] || order.preferred_delivery_day
     : null;
 
   return (
-    <div
-      draggable
-      onDragStart={(e) => onDragStart(e, order)}
-      className="flex items-center gap-2 px-2 py-2 rounded-cult bg-cult-near-black border border-cult-charcoal hover:border-cult-medium-gray cursor-move group transition-colors"
-    >
-      <GripVertical className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-light-gray flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <div className={`w-1.5 h-1.5 rounded-full ${zone.dotColor} flex-shrink-0`} />
-          <span className="text-sm text-cult-white truncate font-medium">
-            {order.customer_name}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-cult-lighter-gray">{order.order_number}</span>
-          <span className="text-xs text-cult-lighter-gray">&middot;</span>
-          <span className="text-xs text-cult-light-gray font-medium">${formatCurrency(order.total_amount)}</span>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {order.customer_city && (
-            <span className="flex items-center gap-0.5 text-xs text-cult-lighter-gray">
-              <MapPin className="w-2.5 h-2.5" />
-              {order.customer_city}
+    <div className="rounded-cult bg-cult-near-black border border-cult-charcoal hover:border-cult-medium-gray transition-colors">
+      <div
+        draggable
+        onDragStart={(e) => onDragStart(e, order)}
+        className="flex items-center gap-2 px-2 py-2 cursor-move group"
+      >
+        <GripVertical className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-light-gray flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${zone.dotColor} flex-shrink-0`} />
+            <span className="text-sm text-cult-white truncate font-medium">
+              {order.customer_name}
             </span>
-          )}
-          {prefDay && (
-            <span className="flex items-center gap-0.5 text-xs text-cult-lighter-gray">
-              <Calendar className="w-2.5 h-2.5" />
-              Pref: {prefDay}
-            </span>
-          )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-cult-lighter-gray">{order.order_number}</span>
+            <span className="text-xs text-cult-lighter-gray">&middot;</span>
+            <span className="text-xs text-cult-light-gray font-medium">{formatCurrency(order.total_amount)}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            {order.customer_city && (
+              <span className="flex items-center gap-0.5 text-xs text-cult-lighter-gray">
+                <MapPin className="w-2.5 h-2.5" />
+                {order.customer_city}
+              </span>
+            )}
+            {prefDay && (
+              <span className="flex items-center gap-0.5 text-xs text-cult-lighter-gray">
+                <Calendar className="w-2.5 h-2.5" />
+                Pref: {prefDay}
+              </span>
+            )}
+          </div>
         </div>
+      </div>
+      <div className="px-2 pb-1.5">
+        <OrderItemsExpander orderId={order.id} onSelectOrder={onSelectOrder} />
       </div>
     </div>
   );

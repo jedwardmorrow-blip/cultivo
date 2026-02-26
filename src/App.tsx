@@ -226,7 +226,7 @@ function AppContent() {
       case 'inventory-audits':
         return <AuditsViewWrapper />;
       case 'delivery':
-        return <DistributionCalendar />;
+        return <DistributionCalendar onSelectOrder={handleSelectOrder} />;
       case 'analytics':
         return <AnalyticsDashboard />;
       case 'eod-summary':

@@ -27,7 +27,8 @@ export {
   generateStaticMapDataUrl,
   generateSimpleMapDataUrl,
   getEnrichedCalendarOrders,
-  clearOrderDeliveryDate
+  clearOrderDeliveryDate,
+  getOrderItemsForCalendar
 } from './services';
 
 export type {
@@ -41,7 +42,8 @@ export type {
   LeafletMapOptions,
   StaticMapOptions,
   MapBounds,
-  CalendarOrder
+  CalendarOrder,
+  CalendarOrderItem
 } from './services';
 
 export {

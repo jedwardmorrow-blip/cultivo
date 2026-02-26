@@ -2,10 +2,11 @@ export {
   getDeliverySchedules,
   updateDeliveryStatus,
   getEnrichedCalendarOrders,
-  clearOrderDeliveryDate
+  clearOrderDeliveryDate,
+  getOrderItemsForCalendar
 } from './delivery.service';
 
-export type { CalendarOrder } from './delivery.service';
+export type { CalendarOrder, CalendarOrderItem } from './delivery.service';
 
 export {
   calculateRouteFromAPI,
