@@ -136,8 +136,10 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     if (field === 'product_id') {
       const product = products.find(p => p.id === value);
       if (product) {
-        const customPrice = customerPrices?.get(value);
-        updated[index].unit_price = customPrice ?? product.price_per_unit ?? 0;
+        if (!updated[index].is_sample) {
+          const customPrice = customerPrices?.get(value);
+          updated[index].unit_price = customPrice ?? product.price_per_unit ?? 0;
+        }
         updated[index].product_name = product.name;
       }
     }
@@ -539,8 +541,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
                           required
                           min="0"
                           step="0.01"
-                          value={item.unit_price || ''}
-                          onChange={(e) => updateOrderItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                          value={item.unit_price === 0 ? '0' : item.unit_price || ''}
+                          onChange={(e) => updateOrderItem(index, 'unit_price', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
                           className="w-full px-3 py-2.5 bg-cult-near-black border border-cult-medium-gray rounded text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-sm"
                         />
@@ -570,7 +572,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
                         </button>
                       </div>
                     </div>
-                    {item.quantity > 0 && item.unit_price > 0 && (
+                    {item.quantity > 0 && (item.unit_price > 0 || item.is_sample) && (
                       <div className="mt-3 pt-3 border-t border-cult-medium-gray flex justify-between items-center text-sm">
                         <span className="text-cult-light-gray">Line Total:</span>
                         <span className="text-cult-green font-semibold">${lineTotal.toFixed(2)}</span>

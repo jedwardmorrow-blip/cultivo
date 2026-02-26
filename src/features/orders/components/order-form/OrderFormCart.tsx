@@ -188,8 +188,8 @@ export function OrderFormCart({
                       required
                       min="0"
                       step="0.01"
-                      value={item.unit_price || ''}
-                      onChange={(e) => onUpdatePrice(index, parseFloat(e.target.value) || 0)}
+                      value={item.unit_price === 0 ? '0' : item.unit_price || ''}
+                      onChange={(e) => onUpdatePrice(index, e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
                       disabled={item.price_locked}
                       className={`w-full pl-10 pr-4 py-3 bg-cult-dark-gray border rounded-lg text-cult-white text-lg font-semibold focus:outline-none focus:ring-2 ${
                         item.price_locked
