@@ -57,7 +57,7 @@ export function useBadgeCounts(enabled: boolean = true) {
             .neq('lifecycle_state', 'archived'),
           supabase
             .from('inventory_items')
-            .select('stage'),
+            .select('category'),
           supabase
             .from('conversion_summary_view')
             .select('session_id', { count: 'exact', head: true }),
@@ -68,10 +68,13 @@ export function useBadgeCounts(enabled: boolean = true) {
         ]);
 
         const inventoryItems = inventoryResult.data || [];
-        const binnedCount = inventoryItems.filter((item) => item.stage === 'binned').length;
-        const buckedCount = inventoryItems.filter((item) => item.stage === 'bucked').length;
-        const bulkCount = inventoryItems.filter((item) => item.stage === 'bulk').length;
-        const packagedCount = inventoryItems.filter((item) => item.stage === 'packaged').length;
+        const binnedCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('binned')).length;
+        const buckedCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('bucked')).length;
+        const bulkCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('bulk')).length;
+        const packagedCount = inventoryItems.filter((item) => {
+          const cat = (item.category || '').toLowerCase();
+          return cat.includes('packaged') || cat.includes('prepack');
+        }).length;
 
         setCounts({
           orders: ordersResult.count || 0,
