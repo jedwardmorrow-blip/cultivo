@@ -179,14 +179,34 @@ export interface RevenuePipelineItem {
 }
 
 export interface CRMDashboardStats {
-  totalRevenue: number;
-  monthlyRevenue: number;
+  periodRevenue: number;
+  periodOrders: number;
+  periodAvgOrder: number;
+  prevPeriodRevenue: number;
+  prevPeriodOrders: number;
+  prevPeriodAvgOrder: number;
   activeAccounts: number;
   totalAccounts: number;
-  ordersThisMonth: number;
-  avgOrderValue: number;
   atRiskCount: number;
   prospectCount: number;
+  uniqueCustomersInPeriod: number;
+}
+
+export interface TopAccountByRange {
+  id: string;
+  name: string;
+  dispensary_code: string;
+  account_type: string;
+  account_status: string;
+  parent_customer_id: string | null;
+  period_revenue: number;
+  period_orders: number;
+  period_avg_order: number;
+  last_order_in_period: string | null;
+  child_period_revenue: number;
+  child_period_orders: number;
+  total_revenue: number;
+  days_since_last_order: number | null;
 }
 
 export type TaskType = 'callback' | 'visit_reminder' | 'sample_drop' | 'reorder_prompt' | 'general';

@@ -1,19 +1,11 @@
 import { Truck, Package, Calendar, CheckCircle2 } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/shared/utils/format';
 import type { DeliveryHistoryItem } from '../services/deepDive.service';
 
 interface AccountDeliveryHistoryProps {
   deliveries: DeliveryHistoryItem[];
   loading: boolean;
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr + 'T12:00:00');
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  periodLabel?: string;
 }
 
 function getStatusStyle(status: string): string {
@@ -34,7 +26,7 @@ function getStatusLabel(status: string): string {
   }
 }
 
-export function AccountDeliveryHistory({ deliveries, loading }: AccountDeliveryHistoryProps) {
+export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: AccountDeliveryHistoryProps) {
   if (loading) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-8">
@@ -54,6 +46,11 @@ export function AccountDeliveryHistory({ deliveries, loading }: AccountDeliveryH
         <div className="flex items-center gap-2">
           <Truck className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Delivery History</h3>
+          {periodLabel && (
+            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+              {periodLabel}
+            </span>
+          )}
         </div>
         <span className="text-xs text-cult-light-gray">{deliveries.length} deliveries</span>
       </div>

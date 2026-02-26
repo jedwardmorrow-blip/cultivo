@@ -1,16 +1,17 @@
-import { Building2, ChevronRight, TrendingDown, Network } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Building2, ChevronRight, TrendingDown, Network, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { RevenueSparkline } from '@/shared/components';
-import type { AccountSummary } from '../types';
+import { formatCurrencyShort } from '@/shared/utils/format';
+import type { TopAccountByRange } from '../types';
+
+type SortKey = 'revenue' | 'orders' | 'avg_order' | 'last_order';
+type SortDir = 'asc' | 'desc';
 
 interface TopAccountsTableProps {
-  accounts: AccountSummary[];
+  accounts: TopAccountByRange[];
   onSelectAccount: (id: string) => void;
   monthlyRevenueMap?: Map<string, number[]>;
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
+  periodLabel?: string;
 }
 
 function getStatusColor(status: string): string {
@@ -23,13 +24,66 @@ function getStatusColor(status: string): string {
   }
 }
 
-export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap }: TopAccountsTableProps) {
+function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+  if (!active) return <ArrowUpDown className="w-3 h-3 text-cult-medium-gray" />;
+  return dir === 'desc'
+    ? <ArrowDown className="w-3 h-3 text-emerald-400" />
+    : <ArrowUp className="w-3 h-3 text-emerald-400" />;
+}
+
+export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap, periodLabel }: TopAccountsTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>('revenue');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const sorted = useMemo(() => {
+    const list = [...accounts];
+    const dir = sortDir === 'desc' ? -1 : 1;
+    list.sort((a, b) => {
+      switch (sortKey) {
+        case 'revenue': {
+          const aRev = a.period_revenue + a.child_period_revenue;
+          const bRev = b.period_revenue + b.child_period_revenue;
+          return (aRev - bRev) * dir;
+        }
+        case 'orders': {
+          const aOrd = a.period_orders + a.child_period_orders;
+          const bOrd = b.period_orders + b.child_period_orders;
+          return (aOrd - bOrd) * dir;
+        }
+        case 'avg_order':
+          return (a.period_avg_order - b.period_avg_order) * dir;
+        case 'last_order': {
+          const aD = a.days_since_last_order ?? 99999;
+          const bD = b.days_since_last_order ?? 99999;
+          return (aD - bD) * dir;
+        }
+        default:
+          return 0;
+      }
+    });
+    return list;
+  }, [accounts, sortKey, sortDir]);
+
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
       <div className="px-5 py-4 border-b border-cult-charcoal flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Top Accounts</h3>
+          {periodLabel && (
+            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+              {periodLabel}
+            </span>
+          )}
         </div>
         <span className="text-xs text-cult-light-gray">{accounts.length} accounts</span>
       </div>
@@ -40,20 +94,48 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap 
             <tr className="border-b border-cult-charcoal">
               <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Account</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider hidden sm:table-cell">Code</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Revenue</th>
+              <th
+                className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider cursor-pointer hover:text-cult-white transition-colors select-none"
+                onClick={() => handleSort('revenue')}
+              >
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Revenue <SortIcon active={sortKey === 'revenue'} dir={sortDir} />
+                </span>
+              </th>
               <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider hidden lg:table-cell">Trend</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden md:table-cell">Orders</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden lg:table-cell">Avg Order</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden md:table-cell">Last Order</th>
+              <th
+                className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden md:table-cell cursor-pointer hover:text-cult-white transition-colors select-none"
+                onClick={() => handleSort('orders')}
+              >
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Orders <SortIcon active={sortKey === 'orders'} dir={sortDir} />
+                </span>
+              </th>
+              <th
+                className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden lg:table-cell cursor-pointer hover:text-cult-white transition-colors select-none"
+                onClick={() => handleSort('avg_order')}
+              >
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Avg Order <SortIcon active={sortKey === 'avg_order'} dir={sortDir} />
+                </span>
+              </th>
+              <th
+                className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider hidden md:table-cell cursor-pointer hover:text-cult-white transition-colors select-none"
+                onClick={() => handleSort('last_order')}
+              >
+                <span className="inline-flex items-center gap-1 justify-end">
+                  Last Order <SortIcon active={sortKey === 'last_order'} dir={sortDir} />
+                </span>
+              </th>
               <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider hidden sm:table-cell">Status</th>
               <th className="px-4 py-3 w-10"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-charcoal/50">
-            {accounts.map((account) => {
+            {sorted.map((account) => {
               const isHub = account.account_type === 'hub_parent';
-              const combinedRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
-              const combinedOrders = account.order_count + (account.child_total_orders || 0);
+              const combinedRevenue = account.period_revenue + account.child_period_revenue;
+              const combinedOrders = account.period_orders + account.child_period_orders;
               const isAtRisk = account.days_since_last_order !== null && account.days_since_last_order > 30;
               const sparklineData = monthlyRevenueMap?.get(account.id);
 
@@ -82,10 +164,10 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap 
                   <td className="px-4 py-3 text-right">
                     <div>
                       <span className="text-sm font-semibold text-emerald-400">
-                        {formatCurrency(isHub ? combinedRevenue : Number(account.total_revenue))}
+                        {formatCurrencyShort(isHub ? combinedRevenue : account.period_revenue)}
                       </span>
-                      {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
-                        <p className="text-[10px] text-cult-silver">{formatCurrency(Number(account.total_revenue))} direct</p>
+                      {isHub && account.period_revenue > 0 && account.child_period_revenue > 0 && (
+                        <p className="text-[10px] text-cult-silver">{formatCurrencyShort(account.period_revenue)} direct</p>
                       )}
                     </div>
                   </td>
@@ -100,15 +182,15 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap 
                   </td>
                   <td className="px-4 py-3 text-right hidden md:table-cell">
                     <div>
-                      <span className="text-sm text-cult-light-gray">{isHub ? combinedOrders : account.order_count}</span>
-                      {isHub && account.order_count > 0 && (account.child_total_orders || 0) > 0 && (
-                        <p className="text-[10px] text-cult-silver">{account.order_count} direct</p>
+                      <span className="text-sm text-cult-light-gray">{isHub ? combinedOrders : account.period_orders}</span>
+                      {isHub && account.period_orders > 0 && account.child_period_orders > 0 && (
+                        <p className="text-[10px] text-cult-silver">{account.period_orders} direct</p>
                       )}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <span className="text-sm text-cult-light-gray">
-                      {formatCurrency(account.avg_order_value)}
+                      {formatCurrencyShort(account.period_avg_order)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right hidden md:table-cell">

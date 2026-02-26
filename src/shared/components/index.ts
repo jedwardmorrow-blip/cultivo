@@ -5,3 +5,4 @@ export { BaseForm } from './BaseForm';
 export { FormField } from './FormField';
 export { FormInput } from './FormInput';
 export { RevenueSparkline } from './RevenueSparkline';
+export { DateRangeFilter } from './DateRangeFilter';

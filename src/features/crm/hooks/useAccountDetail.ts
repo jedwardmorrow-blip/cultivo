@@ -11,28 +11,15 @@ import {
   getChildAccounts,
   getChainLocationPerformance,
   getAccountContacts,
-  getAccountOrders,
   getActivityLog,
   getMonthlyRevenue,
 } from '../services';
-
-interface AccountOrder {
-  id: string;
-  order_number: string;
-  status: string;
-  total_amount: number;
-  order_date: string;
-  requested_delivery_date: string | null;
-  scheduled_delivery_date: string | null;
-  archived: boolean;
-}
 
 export function useAccountDetail(accountId: string | null) {
   const [account, setAccount] = useState<AccountSummary | null>(null);
   const [childAccounts, setChildAccounts] = useState<AccountSummary[]>([]);
   const [chainPerformance, setChainPerformance] = useState<ChainLocationPerformance[]>([]);
   const [contacts, setContacts] = useState<CustomerContact[]>([]);
-  const [orders, setOrders] = useState<AccountOrder[]>([]);
   const [activities, setActivities] = useState<CustomerActivity[]>([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,11 +32,10 @@ export function useAccountDetail(accountId: string | null) {
       setLoading(true);
       setError(null);
 
-      const [accountResult, contactsResult, ordersResult, activityResult, revenueResult] =
+      const [accountResult, contactsResult, activityResult, revenueResult] =
         await Promise.all([
           getAccountById(accountId),
           getAccountContacts(accountId),
-          getAccountOrders(accountId),
           getActivityLog(accountId),
           getMonthlyRevenue(accountId),
         ]);
@@ -67,7 +53,6 @@ export function useAccountDetail(accountId: string | null) {
       }
 
       if (contactsResult.data) setContacts(contactsResult.data);
-      if (ordersResult.data) setOrders(ordersResult.data as AccountOrder[]);
       if (activityResult.data) setActivities(activityResult.data);
       if (revenueResult.data) setMonthlyRevenue(revenueResult.data);
 
@@ -88,7 +73,6 @@ export function useAccountDetail(accountId: string | null) {
     childAccounts,
     chainPerformance,
     contacts,
-    orders,
     activities,
     monthlyRevenue,
     loading,

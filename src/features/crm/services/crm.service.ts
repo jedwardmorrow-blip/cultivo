@@ -17,6 +17,7 @@ import type {
   SKUPerformance,
   RevenuePipelineItem,
   CRMDashboardStats,
+  TopAccountByRange,
 } from '../types';
 
 export async function getAccountSummaries() {
@@ -264,52 +265,113 @@ export async function getRevenuePipeline() {
   }
 }
 
-export async function getDashboardStats(): Promise<{ data: CRMDashboardStats | null; error: any }> {
+export async function getDashboardStatsByRange(
+  startDate: string,
+  endDate: string
+): Promise<{ data: CRMDashboardStats | null; error: any }> {
   try {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const { data, error } = await supabase.rpc('crm_dashboard_stats_by_range', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    });
 
-    const [summaryResult, monthlyResult] = await Promise.all([
-      supabase.from('crm_customer_summary').select('id, total_revenue, order_count, account_status, days_since_last_order'),
-      supabase
-        .from('orders')
-        .select('id, total_amount')
-        .eq('test_mode', false)
-        .eq('archived', false)
-        .gte('order_date', monthStart),
-    ]);
+    if (error) throw error;
 
-    if (summaryResult.error) throw summaryResult.error;
-    if (monthlyResult.error) throw monthlyResult.error;
-
-    const accounts = summaryResult.data || [];
-    const monthlyOrders = monthlyResult.data || [];
-
-    const totalRevenue = accounts.reduce((sum, a) => sum + Number(a.total_revenue || 0), 0);
-    const monthlyRevenue = monthlyOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-    const activeAccounts = accounts.filter(a => a.account_status === 'active').length;
-    const prospectCount = accounts.filter(a => a.account_status === 'prospect').length;
-    const atRiskCount = accounts.filter(a =>
-      a.account_status === 'active' && a.days_since_last_order !== null && a.days_since_last_order > 30
-    ).length;
-    const ordersThisMonth = monthlyOrders.length;
-    const avgOrderValue = ordersThisMonth > 0 ? monthlyRevenue / ordersThisMonth : 0;
-
+    const raw = data as Record<string, number>;
     return {
       data: {
-        totalRevenue,
-        monthlyRevenue,
-        activeAccounts,
-        totalAccounts: accounts.length,
-        ordersThisMonth,
-        avgOrderValue,
-        atRiskCount,
-        prospectCount,
+        periodRevenue: Number(raw.period_revenue) || 0,
+        periodOrders: Number(raw.period_orders) || 0,
+        periodAvgOrder: Number(raw.period_avg_order) || 0,
+        prevPeriodRevenue: Number(raw.prev_period_revenue) || 0,
+        prevPeriodOrders: Number(raw.prev_period_orders) || 0,
+        prevPeriodAvgOrder: Number(raw.prev_period_avg_order) || 0,
+        activeAccounts: Number(raw.active_accounts) || 0,
+        totalAccounts: Number(raw.total_accounts) || 0,
+        atRiskCount: Number(raw.at_risk_count) || 0,
+        prospectCount: Number(raw.prospect_count) || 0,
+        uniqueCustomersInPeriod: Number(raw.unique_customers_in_period) || 0,
       },
       error: null,
     };
   } catch (error) {
     errorService.handle(error, 'Failed to load CRM dashboard stats');
+    return { data: null, error };
+  }
+}
+
+export async function getTopAccountsByRange(startDate: string, endDate: string) {
+  try {
+    const { data, error } = await supabase.rpc('crm_top_accounts_by_range', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    });
+
+    if (error) throw error;
+
+    const accounts: TopAccountByRange[] = (data || []).map((row: any) => ({
+      ...row,
+      period_revenue: Number(row.period_revenue) || 0,
+      period_orders: Number(row.period_orders) || 0,
+      period_avg_order: Number(row.period_avg_order) || 0,
+      child_period_revenue: Number(row.child_period_revenue) || 0,
+      child_period_orders: Number(row.child_period_orders) || 0,
+      total_revenue: Number(row.total_revenue) || 0,
+      days_since_last_order: row.days_since_last_order != null ? Number(row.days_since_last_order) : null,
+    }));
+
+    return { data: accounts, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load top accounts');
+    return { data: null, error };
+  }
+}
+
+export async function getSKUPerformanceByRange(startDate: string, endDate: string) {
+  try {
+    const { data, error } = await supabase.rpc('crm_sku_performance_by_range', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    });
+
+    if (error) throw error;
+
+    const skus: SKUPerformance[] = (data || []).map((row: any) => ({
+      ...row,
+      order_count: Number(row.order_count) || 0,
+      total_units_sold: Number(row.total_units_sold) || 0,
+      total_revenue: Number(row.total_revenue) || 0,
+      avg_unit_price: Number(row.avg_unit_price) || 0,
+      unique_customers: Number(row.unique_customers) || 0,
+      first_sold_date: null,
+      last_sold_date: null,
+    }));
+
+    return { data: skus, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load SKU performance');
+    return { data: null, error };
+  }
+}
+
+export async function getAccountOrdersByRange(customerId: string, startDate: string, endDate: string) {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id, order_number, status, total_amount, order_date,
+        requested_delivery_date, scheduled_delivery_date, archived
+      `)
+      .eq('customer_id', customerId)
+      .eq('test_mode', false)
+      .gte('order_date', startDate)
+      .lte('order_date', endDate + 'T23:59:59')
+      .order('order_date', { ascending: false });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load account orders');
     return { data: null, error };
   }
 }

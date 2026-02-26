@@ -1,4 +1,5 @@
 import { Package, ExternalLink } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/shared/utils/format';
 
 interface AccountOrder {
   id: string;
@@ -13,14 +14,7 @@ interface AccountOrder {
 interface AccountOrderHistoryProps {
   orders: AccountOrder[];
   onSelectOrder?: (orderId: string) => void;
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  periodLabel?: string;
 }
 
 function getOrderStatusColor(status: string): string {
@@ -34,7 +28,7 @@ function getOrderStatusColor(status: string): string {
   }
 }
 
-export function AccountOrderHistory({ orders, onSelectOrder }: AccountOrderHistoryProps) {
+export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: AccountOrderHistoryProps) {
   if (orders.length === 0) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
@@ -55,6 +49,11 @@ export function AccountOrderHistory({ orders, onSelectOrder }: AccountOrderHisto
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Order History</h3>
+          {periodLabel && (
+            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+              {periodLabel}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4 text-xs text-cult-light-gray">
           <span>{orders.length} orders</span>

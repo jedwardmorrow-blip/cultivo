@@ -1,4 +1,5 @@
 import { AlertTriangle, Clock, ChevronRight, Network, Phone, Calendar, ShoppingCart } from 'lucide-react';
+import { formatCurrencyShort } from '@/shared/utils/format';
 import type { AccountSummary } from '../types';
 
 interface AtRiskAccountsProps {
@@ -6,11 +7,6 @@ interface AtRiskAccountsProps {
   onSelectAccount: (id: string) => void;
   onCreateOrder?: (customerId: string) => void;
   onViewChange?: (view: string) => void;
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
 }
 
 export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder, onViewChange }: AtRiskAccountsProps) {
@@ -64,7 +60,7 @@ export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder, onVie
                 <div className="flex items-center gap-3 mt-0.5">
                   <span className="text-xs text-cult-light-gray font-mono">{account.dispensary_code}</span>
                   <span className="text-xs text-cult-light-gray">
-                    {formatCurrency(combinedRevenue)} lifetime
+                    {formatCurrencyShort(combinedRevenue)} lifetime
                   </span>
                 </div>
               </div>

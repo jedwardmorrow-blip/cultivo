@@ -1,14 +1,11 @@
 import { Package, TrendingUp, Hash } from 'lucide-react';
+import { formatCurrencyShort } from '@/shared/utils/format';
 import type { CustomerProductMix } from '../types';
 
 interface AccountProductMixProps {
   productMix: CustomerProductMix[];
   loading: boolean;
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
+  periodLabel?: string;
 }
 
 function getCategoryColor(category: string): string {
@@ -22,7 +19,7 @@ function getCategoryColor(category: string): string {
   }
 }
 
-export function AccountProductMix({ productMix, loading }: AccountProductMixProps) {
+export function AccountProductMix({ productMix, loading, periodLabel }: AccountProductMixProps) {
   if (loading) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-8">
@@ -43,6 +40,11 @@ export function AccountProductMix({ productMix, loading }: AccountProductMixProp
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Product Mix</h3>
+          {periodLabel && (
+            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+              {periodLabel}
+            </span>
+          )}
         </div>
         <span className="text-xs text-cult-light-gray">{productMix.length} products</span>
       </div>
@@ -51,7 +53,7 @@ export function AccountProductMix({ productMix, loading }: AccountProductMixProp
         <div className="px-5 py-3 border-b border-cult-charcoal/50 grid grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">Revenue</p>
-            <p className="text-sm font-bold text-emerald-400">{formatCurrency(totalRevenue)}</p>
+            <p className="text-sm font-bold text-emerald-400">{formatCurrencyShort(totalRevenue)}</p>
           </div>
           <div className="text-center">
             <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">Units</p>
@@ -93,9 +95,9 @@ export function AccountProductMix({ productMix, loading }: AccountProductMixProp
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-semibold text-emerald-400">{formatCurrency(Number(product.total_revenue))}</p>
+                  <p className="text-sm font-semibold text-emerald-400">{formatCurrencyShort(Number(product.total_revenue))}</p>
                   <p className="text-[10px] text-cult-silver">{product.total_units} units</p>
-                  <p className="text-[10px] text-cult-light-gray">{formatCurrency(Number(product.avg_unit_price))}/ea</p>
+                  <p className="text-[10px] text-cult-light-gray">{formatCurrencyShort(Number(product.avg_unit_price))}/ea</p>
                 </div>
               </div>
               <div className="mt-2 h-1 bg-cult-dark-gray rounded-full overflow-hidden">

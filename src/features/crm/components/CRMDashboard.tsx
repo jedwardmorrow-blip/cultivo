@@ -1,5 +1,5 @@
-import { RefreshCw } from 'lucide-react';
-import { LoadingSpinner } from '@/shared/components';
+import { RefreshCw, Loader2 } from 'lucide-react';
+import { LoadingSpinner, DateRangeFilter } from '@/shared/components';
 import { useCRMDashboard } from '../hooks';
 import { RevenueStatsCards } from './RevenueStatsCards';
 import { TopAccountsTable } from './TopAccountsTable';
@@ -14,7 +14,20 @@ interface CRMDashboardProps {
 }
 
 export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: CRMDashboardProps) {
-  const { stats, topAccounts, atRiskAccounts, topSKUs, loading, reload, monthlyRevenueMap } = useCRMDashboard();
+  const {
+    stats,
+    topAccounts,
+    atRiskAccounts,
+    topSKUs,
+    loading,
+    isRefreshing,
+    reload,
+    monthlyRevenueMap,
+    dateRange,
+    setDateRange,
+    compareEnabled,
+    setCompareEnabled,
+  } = useCRMDashboard();
 
   const handleSelectAccount = (accountId: string) => {
     if (onSelectAccount) {
@@ -46,12 +59,38 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
             className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
             title="Refresh data"
           >
-            <RefreshCw className="w-4 h-4" />
+            {isRefreshing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>
 
-      {stats && <RevenueStatsCards stats={stats} />}
+      <DateRangeFilter
+        value={dateRange}
+        onChange={setDateRange}
+        showCompare
+        compareEnabled={compareEnabled}
+        onCompareToggle={setCompareEnabled}
+      />
+
+      {isRefreshing && (
+        <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
+          <div className="h-full bg-emerald-500/60 rounded animate-pulse w-2/3" />
+        </div>
+      )}
+
+      <div className={`transition-opacity duration-200 ${isRefreshing ? 'opacity-60' : 'opacity-100'}`}>
+        {stats && (
+          <RevenueStatsCards
+            stats={stats}
+            periodLabel={dateRange.label}
+            compareEnabled={compareEnabled}
+          />
+        )}
+      </div>
 
       {onCreateOrder && (
         <DashboardQuickActions
@@ -60,21 +99,30 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
         />
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
-          <TopAccountsTable accounts={topAccounts} onSelectAccount={handleSelectAccount} monthlyRevenueMap={monthlyRevenueMap} />
-        </div>
-        <div>
-          <AtRiskAccounts
-            accounts={atRiskAccounts}
-            onSelectAccount={handleSelectAccount}
-            onCreateOrder={onCreateOrder}
-            onViewChange={onViewChange}
-          />
+      <div className={`transition-opacity duration-200 ${isRefreshing ? 'opacity-60' : 'opacity-100'}`}>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <TopAccountsTable
+              accounts={topAccounts}
+              onSelectAccount={handleSelectAccount}
+              monthlyRevenueMap={monthlyRevenueMap}
+              periodLabel={dateRange.label}
+            />
+          </div>
+          <div>
+            <AtRiskAccounts
+              accounts={atRiskAccounts}
+              onSelectAccount={handleSelectAccount}
+              onCreateOrder={onCreateOrder}
+              onViewChange={onViewChange}
+            />
+          </div>
         </div>
       </div>
 
-      <SKUPerformanceGrid skus={topSKUs} />
+      <div className={`transition-opacity duration-200 ${isRefreshing ? 'opacity-60' : 'opacity-100'}`}>
+        <SKUPerformanceGrid skus={topSKUs} periodLabel={dateRange.label} />
+      </div>
     </div>
   );
 }

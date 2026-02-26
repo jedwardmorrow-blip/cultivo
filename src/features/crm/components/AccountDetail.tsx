@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { LoadingSpinner } from '@/shared/components';
+import { LoadingSpinner, DateRangeFilter } from '@/shared/components';
 import { notificationService } from '@/services';
 import { useAccountDetail, useAccountDeepDive } from '../hooks';
 import { updateAccountInfo } from '../services';
@@ -17,6 +17,8 @@ import { AccountPriceList } from './AccountPriceList';
 import { AccountPinnedNotes } from './AccountPinnedNotes';
 import { AccountSampleHistory } from './AccountSampleHistory';
 import type { AccountInfoInput } from '../types';
+import type { DateRange } from '@/shared/utils/dateRange';
+import { computeDateRange } from '@/shared/utils/dateRange';
 
 interface AccountDetailProps {
   accountId: string;
@@ -33,29 +35,42 @@ const TABS = [
   { key: 'samples' as const, label: 'Samples' },
 ];
 
+const DEFAULT_DETAIL_RANGE = computeDateRange('all_time');
+
 export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreateSampleOrder }: AccountDetailProps) {
   const {
     account,
     childAccounts,
     chainPerformance,
     contacts,
-    orders,
     activities,
     loading,
     error,
     reload,
   } = useAccountDetail(accountId);
 
+  const [detailDateRange, setDetailDateRange] = useState<DateRange>(DEFAULT_DETAIL_RANGE);
+
   const {
     healthScore,
     productMix,
     deliveryHistory,
+    orders,
     monthlyRevenue,
     loading: deepDiveLoading,
-  } = useAccountDeepDive(accountId);
+    isRefreshing: deepDiveRefreshing,
+    onDateRangeChange,
+  } = useAccountDeepDive(accountId, DEFAULT_DETAIL_RANGE);
 
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'deliveries' | 'pricing' | 'samples'>('orders');
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleDetailDateChange = (range: DateRange) => {
+    setDetailDateRange(range);
+    onDateRangeChange(range);
+  };
+
+  const isDateFiltered = activeTab === 'orders' || activeTab === 'products' || activeTab === 'deliveries';
 
   const handleSelectAccount = (id: string) => {
     onViewChange(`crm-account-detail:${id}`);
@@ -158,9 +173,25 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
             ))}
           </div>
 
-          {activeTab === 'orders' && <AccountOrderHistory orders={orders} />}
-          {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} />}
-          {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} />}
+          {isDateFiltered && (
+            <DateRangeFilter
+              value={detailDateRange}
+              onChange={handleDetailDateChange}
+              compact
+            />
+          )}
+
+          {deepDiveRefreshing && (
+            <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
+              <div className="h-full bg-emerald-500/60 rounded animate-pulse w-2/3" />
+            </div>
+          )}
+
+          <div className={`transition-opacity duration-200 ${deepDiveRefreshing ? 'opacity-60' : 'opacity-100'}`}>
+            {activeTab === 'orders' && <AccountOrderHistory orders={orders} periodLabel={detailDateRange.label} />}
+            {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} periodLabel={detailDateRange.label} />}
+            {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} periodLabel={detailDateRange.label} />}
+          </div>
           {activeTab === 'pricing' && <AccountPriceList customerId={accountId} />}
           {activeTab === 'samples' && <AccountSampleHistory customerId={accountId} />}
         </div>

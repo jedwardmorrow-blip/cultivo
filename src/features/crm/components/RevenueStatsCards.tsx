@@ -1,40 +1,58 @@
 import { DollarSign, ShoppingCart, Users, TrendingUp, AlertTriangle, UserPlus } from 'lucide-react';
 import { StatsCard } from '@/features/inventory/components/StatsCard';
+import { formatCurrencyShort } from '@/shared/utils/format';
 import type { CRMDashboardStats } from '../types';
 
 interface RevenueStatsCardsProps {
   stats: CRMDashboardStats;
+  periodLabel: string;
+  compareEnabled?: boolean;
 }
 
-function formatCurrency(value: number): string {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
+function computeTrend(current: number, previous: number): { trend: 'up' | 'down' | 'neutral'; value: string } | null {
+  if (previous === 0 && current === 0) return null;
+  if (previous === 0) return { trend: 'up', value: 'New' };
+  const pct = ((current - previous) / previous) * 100;
+  if (Math.abs(pct) < 1) return { trend: 'neutral', value: '0%' };
+  return {
+    trend: pct > 0 ? 'up' : 'down',
+    value: `${pct > 0 ? '+' : ''}${pct.toFixed(0)}%`,
+  };
 }
 
-export function RevenueStatsCards({ stats }: RevenueStatsCardsProps) {
+export function RevenueStatsCards({ stats, periodLabel, compareEnabled = false }: RevenueStatsCardsProps) {
+  const revTrend = compareEnabled ? computeTrend(stats.periodRevenue, stats.prevPeriodRevenue) : null;
+  const orderTrend = compareEnabled ? computeTrend(stats.periodOrders, stats.prevPeriodOrders) : null;
+  const avgTrend = compareEnabled ? computeTrend(stats.periodAvgOrder, stats.prevPeriodAvgOrder) : null;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       <StatsCard
-        label="Total Revenue"
-        value={formatCurrency(stats.totalRevenue)}
+        label="Revenue"
+        value={formatCurrencyShort(stats.periodRevenue)}
         icon={<DollarSign className="w-5 h-5" />}
-        subtitle="All time"
+        subtitle={periodLabel}
         accentColor="border-emerald-600/40"
+        trend={revTrend?.trend}
+        trendValue={revTrend?.value}
       />
       <StatsCard
-        label="This Month"
-        value={formatCurrency(stats.monthlyRevenue)}
+        label="Orders"
+        value={stats.periodOrders}
         icon={<TrendingUp className="w-5 h-5" />}
-        subtitle={`${stats.ordersThisMonth} orders`}
+        subtitle={`${stats.uniqueCustomersInPeriod} customers`}
         accentColor="border-emerald-600/40"
+        trend={orderTrend?.trend}
+        trendValue={orderTrend?.value}
       />
       <StatsCard
         label="Avg Order"
-        value={formatCurrency(stats.avgOrderValue)}
+        value={formatCurrencyShort(stats.periodAvgOrder)}
         icon={<ShoppingCart className="w-5 h-5" />}
-        subtitle="This month"
+        subtitle={periodLabel}
         accentColor="border-sky-600/40"
+        trend={avgTrend?.trend}
+        trendValue={avgTrend?.value}
       />
       <StatsCard
         label="Active Accounts"

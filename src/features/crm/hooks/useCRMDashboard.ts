@@ -1,43 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AccountSummary, CRMDashboardStats, SKUPerformance } from '../types';
+import type { CRMDashboardStats, SKUPerformance, TopAccountByRange } from '../types';
 import {
-  getDashboardStats,
-  getAccountSummaries,
-  getSKUPerformance,
+  getDashboardStatsByRange,
+  getTopAccountsByRange,
+  getSKUPerformanceByRange,
   getBatchMonthlyRevenue,
+  getAccountSummaries,
 } from '../services';
+import type { DateRange } from '@/shared/utils/dateRange';
+import { computeDateRange } from '@/shared/utils/dateRange';
+import type { AccountSummary } from '../types';
+
+const DEFAULT_RANGE = computeDateRange('30d');
 
 export function useCRMDashboard() {
+  const [dateRange, setDateRange] = useState<DateRange>(DEFAULT_RANGE);
+  const [compareEnabled, setCompareEnabled] = useState(false);
   const [stats, setStats] = useState<CRMDashboardStats | null>(null);
-  const [accounts, setAccounts] = useState<AccountSummary[]>([]);
+  const [topAccounts, setTopAccounts] = useState<TopAccountByRange[]>([]);
+  const [atRiskAccounts, setAtRiskAccounts] = useState<AccountSummary[]>([]);
   const [topSKUs, setTopSKUs] = useState<SKUPerformance[]>([]);
   const [monthlyRevenueMap, setMonthlyRevenueMap] = useState<Map<string, number[]>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchDashboard = useCallback(async (range: DateRange, isInitial = false) => {
     try {
-      setLoading(true);
-      const [statsResult, accountsResult, skuResult] = await Promise.all([
-        getDashboardStats(),
+      if (isInitial) setLoading(true);
+      else setIsRefreshing(true);
+
+      const [statsResult, accountsResult, skuResult, allAccountsResult] = await Promise.all([
+        getDashboardStatsByRange(range.start, range.end),
+        getTopAccountsByRange(range.start, range.end),
+        getSKUPerformanceByRange(range.start, range.end),
         getAccountSummaries(),
-        getSKUPerformance(),
       ]);
 
       if (statsResult.data) setStats(statsResult.data);
       if (accountsResult.data) {
-        setAccounts(accountsResult.data);
+        setTopAccounts(accountsResult.data);
 
-        const topIds = accountsResult.data
-          .filter((a) => a.account_type !== 'hub_child' && (a.order_count > 0 || (a.child_total_orders || 0) > 0))
-          .sort((a, b) => {
-            const aRev = a.total_revenue + (a.child_total_revenue || 0);
-            const bRev = b.total_revenue + (b.child_total_revenue || 0);
-            return bRev - aRev;
-          })
-          .slice(0, 15)
-          .map((a) => a.id);
-
+        const topIds = accountsResult.data.map((a) => a.id);
         if (topIds.length > 0) {
           const revenueResult = await getBatchMonthlyRevenue(topIds);
           if (revenueResult.data) setMonthlyRevenueMap(revenueResult.data);
@@ -45,50 +48,44 @@ export function useCRMDashboard() {
       }
       if (skuResult.data) setTopSKUs(skuResult.data);
 
-      if (statsResult.error || accountsResult.error || skuResult.error) {
-        setError('Some dashboard data failed to load');
+      if (allAccountsResult.data) {
+        const nonChild = allAccountsResult.data.filter((a) => a.account_type !== 'hub_child');
+        setAtRiskAccounts(
+          nonChild.filter(
+            (a) => a.account_status === 'active' && a.days_since_last_order != null && a.days_since_last_order > 30
+          )
+        );
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+    fetchDashboard(dateRange, true);
+  }, []);
 
-  const nonChildAccounts = accounts.filter((a) => a.account_type !== 'hub_child');
-
-  const atRiskAccounts = nonChildAccounts.filter(
-    (a) => a.account_status === 'active' && a.days_since_last_order !== null && a.days_since_last_order > 30
+  const handleDateRangeChange = useCallback(
+    (range: DateRange) => {
+      setDateRange(range);
+      fetchDashboard(range, false);
+    },
+    [fetchDashboard]
   );
-
-  const topAccounts = nonChildAccounts
-    .filter((a) => a.order_count > 0 || (a.child_total_orders || 0) > 0)
-    .sort((a, b) => {
-      const aRev = a.total_revenue + (a.child_total_revenue || 0);
-      const bRev = b.total_revenue + (b.child_total_revenue || 0);
-      return bRev - aRev;
-    })
-    .slice(0, 15);
-
-  const recentOrders = nonChildAccounts
-    .filter((a) => a.last_order_date)
-    .sort((a, b) => new Date(b.last_order_date!).getTime() - new Date(a.last_order_date!).getTime())
-    .slice(0, 10);
 
   return {
     stats,
-    accounts,
     topAccounts,
     atRiskAccounts,
-    recentOrders,
     topSKUs,
     monthlyRevenueMap,
     loading,
-    error,
-    reload: fetchDashboard,
+    isRefreshing,
+    dateRange,
+    compareEnabled,
+    setCompareEnabled,
+    setDateRange: handleDateRangeChange,
+    reload: () => fetchDashboard(dateRange, false),
   };
 }
