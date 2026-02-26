@@ -245,6 +245,111 @@ export async function getRoutingApiKey() {
   }
 }
 
+export interface CalendarOrder {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  customer_name: string;
+  requested_delivery_date: string | null;
+  total_amount: number;
+  item_count: number;
+  status: string;
+  customer_lat: number | null;
+  customer_lon: number | null;
+  customer_city: string | null;
+  preferred_delivery_day: string | null;
+  cached_duration_seconds: number | null;
+  cached_distance_meters: number | null;
+}
+
+export async function getEnrichedCalendarOrders(archived: boolean = false): Promise<{ data: CalendarOrder[]; error: any }> {
+  try {
+    const { data: ordersData, error: ordersError } = await supabase
+      .from('orders')
+      .select('id, order_number, customer_id, requested_delivery_date, total_amount, status, archived')
+      .eq('archived', archived)
+      .not('status', 'eq', 'cancelled');
+
+    if (ordersError) throw ordersError;
+    if (!ordersData || ordersData.length === 0) return { data: [], error: null };
+
+    const customerIds = [...new Set(ordersData.map(o => o.customer_id).filter(Boolean))];
+    const orderIds = ordersData.map(o => o.id);
+
+    const [customersResult, itemsResult, routesResult] = await Promise.all([
+      customerIds.length > 0
+        ? supabase.from('customers').select('id, name, latitude, longitude, city, preferred_delivery_day').in('id', customerIds)
+        : { data: [], error: null },
+      orderIds.length > 0
+        ? supabase.from('order_items').select('order_id').in('order_id', orderIds)
+        : { data: [], error: null },
+      customerIds.length > 0
+        ? supabase.from('delivery_routes').select('destination_customer_id, duration_seconds, distance_meters').in('destination_customer_id', customerIds)
+        : { data: [], error: null },
+    ]);
+
+    const customerMap = new Map<string, any>();
+    (customersResult.data || []).forEach(c => customerMap.set(c.id, c));
+
+    const itemCountMap: Record<string, number> = {};
+    (itemsResult.data || []).forEach(item => {
+      itemCountMap[item.order_id] = (itemCountMap[item.order_id] || 0) + 1;
+    });
+
+    const routeMap = new Map<string, { duration_seconds: number; distance_meters: number }>();
+    (routesResult.data || []).forEach(r => {
+      if (!routeMap.has(r.destination_customer_id)) {
+        routeMap.set(r.destination_customer_id, {
+          duration_seconds: Number(r.duration_seconds),
+          distance_meters: Number(r.distance_meters),
+        });
+      }
+    });
+
+    const enriched: CalendarOrder[] = ordersData.map(order => {
+      const customer = order.customer_id ? customerMap.get(order.customer_id) : null;
+      const route = order.customer_id ? routeMap.get(order.customer_id) : null;
+      return {
+        id: order.id,
+        order_number: order.order_number,
+        customer_id: order.customer_id,
+        customer_name: customer?.name || 'Unknown',
+        requested_delivery_date: order.requested_delivery_date,
+        total_amount: Number(order.total_amount),
+        item_count: itemCountMap[order.id] || 0,
+        status: order.status,
+        customer_lat: customer?.latitude ? Number(customer.latitude) : null,
+        customer_lon: customer?.longitude ? Number(customer.longitude) : null,
+        customer_city: customer?.city || null,
+        preferred_delivery_day: customer?.preferred_delivery_day || null,
+        cached_duration_seconds: route?.duration_seconds ?? null,
+        cached_distance_meters: route?.distance_meters ?? null,
+      };
+    });
+
+    return { data: enriched, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load enriched calendar orders');
+    return { data: [], error };
+  }
+}
+
+export async function clearOrderDeliveryDate(orderId: string) {
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .update({ requested_delivery_date: null })
+      .eq('id', orderId)
+      .select();
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to clear order delivery date');
+    return { error };
+  }
+}
+
 /**
  * Updates customer geocode coordinates
  */

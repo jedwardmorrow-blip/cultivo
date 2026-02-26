@@ -4,6 +4,27 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-26 - Distribution Calendar: Route-Aware Delivery Planning
+
+**Type:** Feature Enhancement
+**Module:** Delivery
+**Status:** COMPLETE
+
+Enhanced the Distribution Calendar with geographic route zone awareness, an unscheduled orders planning panel, and intelligent day-suggestion hints for delivery scheduling.
+
+- **Route Zone System:** New `routeZones.ts` utility classifies all customers into 5 named delivery corridors (Local, East Valley, West Valley, Tucson, Northern AZ) based on distance and bearing from the facility. Each zone has a distinct color for visual identification.
+- **Enriched Data Loading:** Replaced the 3-query waterfall (`getOrdersForCalendar` + `getOrderItemCounts` + `getCustomerNames`) with a single `getEnrichedCalendarOrders()` call that fetches orders, customer geo data, item counts, and cached route durations in parallel.
+- **Calendar Day Cells:** Each day now shows colored zone dots at the bottom (indicating which geographic zones are represented), a readiness indicator (green check if all orders are ready, amber warning if not), and estimated total drive time from cached route data.
+- **Stats Bar:** Added "Needs Prep (7d)" stat card showing count of orders scheduled in the next 7 days that are not yet ready for delivery. Existing 3 stats retained and grid updated to 4-column layout.
+- **Unscheduled Orders Panel:** "Plan" button in calendar header toggles a right-side slide-in panel (matching app drawer conventions). Lists all unscheduled orders grouped by route zone, each showing customer city, order value, and preferred delivery day. Orders are draggable from the panel onto calendar days.
+- **Suggested Day Hints:** When dragging an order, calendar days with the best scheduling fit gently pulse with a green border. Fit scoring considers zone match with existing orders, preferred delivery day match, and remaining day capacity. Pure client-side computation using already-loaded data.
+- **Day Detail Modal:** Extracted to dedicated `DayDetailModal.tsx` component. Orders now grouped by route zone with zone-colored headers. Each order shows readiness badge (Ready/In Progress/Needs Work), approximate miles from facility, and cached drive time. Footer summarizes zone count and total estimated drive time.
+- **Upcoming Deliveries Table:** Now includes zone color dot and label next to each order's status badge.
+- **Components:** `DayDetailModal.tsx` (new), `UnscheduledOrdersPanel.tsx` (new), `DistributionCalendar.tsx` (rewritten). **Utils:** `routeZones.ts` (new). **Services:** `getEnrichedCalendarOrders()`, `clearOrderDeliveryDate()` added to `delivery.service.ts`.
+- **No database changes required.** All zone classification uses existing customer coordinate data and facility settings. Route durations sourced from existing `delivery_routes` cache.
+
+---
+
 ## 2026-02-26 - Enable Realtime Subscriptions & Fix Stale Data
 
 **Type:** Bug Fix

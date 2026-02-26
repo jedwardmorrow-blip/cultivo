@@ -1,57 +1,23 @@
-import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Truck, Package } from 'lucide-react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { getOrdersForCalendar, getOrderItemCounts, getCustomerNames, updateOrderDeliveryDate as updateDeliveryDate } from '../services/delivery.service';
+import { getEnrichedCalendarOrders, updateOrderDeliveryDate as updateDeliveryDate, type CalendarOrder } from '../services/delivery.service';
+import { formatDuration } from '../services/routing.service';
+import { getRouteZone, getRouteZoneId } from '../utils';
 import { supabase } from '@/lib/supabase';
+import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
+import { DayDetailModal } from './DayDetailModal';
 
-interface Order {
-  id: string;
-  order_number: string;
-  customer_name: string;
-  requested_delivery_date: string | null;
-  total_amount: number;
-  item_count: number;
-  status: string;
-}
-
-const ORDER_STATUS_COLORS = {
-  submitted: {
-    bg: 'bg-blue-900/30',
-    text: 'text-blue-400',
-    border: 'border-blue-600',
-    label: 'Submitted'
-  },
-  accepted: {
-    bg: 'bg-cyan-900/30',
-    text: 'text-cyan-400',
-    border: 'border-cyan-600',
-    label: 'Accepted'
-  },
-  processing: {
-    bg: 'bg-yellow-900/30',
-    text: 'text-yellow-400',
-    border: 'border-yellow-600',
-    label: 'Processing'
-  },
-  ready_for_delivery: {
-    bg: 'bg-green-900/30',
-    text: 'text-green-400',
-    border: 'border-green-600',
-    label: 'Ready for Delivery'
-  },
-  completed: {
-    bg: 'bg-emerald-900/30',
-    text: 'text-emerald-400',
-    border: 'border-emerald-600',
-    label: 'Completed'
-  },
-  cancelled: {
-    bg: 'bg-red-900/30',
-    text: 'text-red-400',
-    border: 'border-red-600',
-    label: 'Cancelled'
-  }
+const ORDER_STATUS_COLORS: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  submitted: { bg: 'bg-blue-900/30', text: 'text-blue-400', border: 'border-blue-600', label: 'Submitted' },
+  accepted: { bg: 'bg-cyan-900/30', text: 'text-cyan-400', border: 'border-cyan-600', label: 'Accepted' },
+  processing: { bg: 'bg-yellow-900/30', text: 'text-yellow-400', border: 'border-yellow-600', label: 'Processing' },
+  ready_for_delivery: { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-600', label: 'Ready' },
+  completed: { bg: 'bg-emerald-900/30', text: 'text-emerald-400', border: 'border-emerald-600', label: 'Completed' },
+  cancelled: { bg: 'bg-red-900/30', text: 'text-red-400', border: 'border-red-600', label: 'Cancelled' },
 };
+
+const READY_STATUSES = new Set(['ready_for_delivery', 'completed']);
 
 function formatDateToLocal(date: Date): string {
   const year = date.getFullYear();
@@ -60,129 +26,125 @@ function formatDateToLocal(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function getDayOfWeek(date: Date): string {
+  return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
+}
+
 export function DistributionCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<CalendarOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [draggedOrder, setDraggedOrder] = useState<Order | null>(null);
+  const [draggedOrder, setDraggedOrder] = useState<CalendarOrder | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPlanPanel, setShowPlanPanel] = useState(false);
 
-  useEffect(() => {
-    loadOrders();
-
-    // Subscribe to order changes for real-time updates
-    const channel = supabase
-      .channel('orders-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        () => {
-          loadOrders();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentDate]);
-
-  async function loadOrders() {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-
-      // Load orders from service
-      const { data: ordersData } = await getOrdersForCalendar(false);
-      if (!ordersData) {
-        setOrders([]);
-        return;
-      }
-
-      // Get order item counts
-      const orderIds = ordersData.map(o => o.id);
-      const { data: itemCounts } = await getOrderItemCounts(orderIds);
-
-      const countMap = itemCounts?.reduce((acc, item) => {
-        acc[item.order_id] = (acc[item.order_id] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      // Get customer names
-      const customerIds = ordersData.map(o => o.customer_id).filter(Boolean);
-      const { data: customers } = await getCustomerNames(customerIds);
-
-      const customerMap = customers?.reduce((acc, c) => {
-        acc[c.id] = c.name;
-        return acc;
-      }, {} as Record<string, string>) || {};
-
-      // Format orders with customer names and item counts
-      const formattedOrders = ordersData.map(order => ({
-        id: order.id,
-        order_number: order.order_number,
-        customer_name: order.customer_id ? customerMap[order.customer_id] || 'Unknown' : 'Unknown',
-        requested_delivery_date: order.requested_delivery_date,
-        total_amount: Number(order.total_amount),
-        item_count: countMap[order.id] || 0,
-        status: order.status,
-      }));
-
-      // Filter to current month
-      const filteredOrders = formattedOrders.filter(order => {
-        if (!order.requested_delivery_date) return false;
-        const orderDate = new Date(order.requested_delivery_date);
-        return orderDate >= startOfMonth && orderDate <= endOfMonth;
-      });
-
-      setOrders(filteredOrders);
+      const { data } = await getEnrichedCalendarOrders(false);
+      setAllOrders(data);
     } catch (error) {
       console.error('Error loading orders:', error);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadOrders();
+
+    const channel = supabase
+      .channel('calendar-orders-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => { loadOrders(); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [loadOrders]);
+
+  const startOfMonth = useMemo(() => new Date(currentDate.getFullYear(), currentDate.getMonth(), 1), [currentDate]);
+  const endOfMonth = useMemo(() => new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0), [currentDate]);
+
+  const scheduledOrders = useMemo(() =>
+    allOrders.filter(o => {
+      if (!o.requested_delivery_date) return false;
+      const d = new Date(o.requested_delivery_date + 'T00:00:00');
+      return d >= startOfMonth && d <= endOfMonth;
+    }),
+    [allOrders, startOfMonth, endOfMonth]
+  );
+
+  const unscheduledOrders = useMemo(() =>
+    allOrders.filter(o => !o.requested_delivery_date),
+    [allOrders]
+  );
+
+  const ordersByDate = useMemo(() => {
+    const map = new Map<string, CalendarOrder[]>();
+    for (const order of scheduledOrders) {
+      if (!order.requested_delivery_date) continue;
+      const existing = map.get(order.requested_delivery_date) || [];
+      existing.push(order);
+      map.set(order.requested_delivery_date, existing);
+    }
+    return map;
+  }, [scheduledOrders]);
+
+  const needsPrepCount = useMemo(() => {
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return allOrders.filter(o => {
+      if (!o.requested_delivery_date) return false;
+      const d = new Date(o.requested_delivery_date + 'T00:00:00');
+      return d >= now && d <= weekFromNow && !READY_STATUSES.has(o.status);
+    }).length;
+  }, [allOrders]);
+
+  const suggestedDates = useMemo(() => {
+    if (!draggedOrder) return new Set<string>();
+    const suggestions = new Set<string>();
+    const draggedZoneId = getRouteZoneId(draggedOrder.customer_lat, draggedOrder.customer_lon);
+
+    const { daysInMonth: dim, startingDayOfWeek: sdow, year: y, month: m } = getDaysInMonthInfo(currentDate);
+    const scored: Array<{ dateStr: string; score: number }> = [];
+
+    for (let i = 1; i <= dim; i++) {
+      const d = new Date(y, m, i);
+      if (d < new Date(new Date().setHours(0, 0, 0, 0))) continue;
+      const dateStr = formatDateToLocal(d);
+      const dayOrders = ordersByDate.get(dateStr) || [];
+      let score = 0;
+
+      const dayZoneIds = new Set(dayOrders.map(o => getRouteZoneId(o.customer_lat, o.customer_lon)));
+      if (dayZoneIds.has(draggedZoneId) && dayOrders.length > 0) score += 3;
+
+      if (draggedOrder.preferred_delivery_day) {
+        const dow = getDayOfWeek(d);
+        if (dow === draggedOrder.preferred_delivery_day.toLowerCase()) score += 2;
+      }
+
+      if (dayOrders.length === 0) score += 1;
+      else if (dayOrders.length <= 3) score += 0.5;
+
+      if (score >= 2) scored.push({ dateStr, score });
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    scored.slice(0, 3).forEach(s => suggestions.add(s.dateStr));
+    return suggestions;
+  }, [draggedOrder, currentDate, ordersByDate]);
 
   async function handleUpdateDeliveryDate(orderId: string, newDate: string) {
     await updateDeliveryDate(orderId, newDate);
     await loadOrders();
   }
 
-  function getDaysInMonth(date: Date) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    return { daysInMonth, startingDayOfWeek, year, month };
-  }
-
-  function getOrdersForDate(date: Date): Order[] {
-    const dateStr = formatDateToLocal(date);
-    return orders.filter(order => order.requested_delivery_date === dateStr);
-  }
-
-  function previousMonth() {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  }
-
-  function nextMonth() {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  }
-
-  function isToday(date: Date): boolean {
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
-  }
-
-  function handleDragStart(e: React.DragEvent, order: Order) {
+  function handleDragStart(e: React.DragEvent, order: CalendarOrder) {
     setDraggedOrder(order);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', order.id);
@@ -191,8 +153,7 @@ export function DistributionCalendar() {
   function handleDragOver(e: React.DragEvent, date: Date) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    const dateStr = formatDateToLocal(date);
-    setDragOverDate(dateStr);
+    setDragOverDate(formatDateToLocal(date));
   }
 
   function handleDragLeave() {
@@ -203,92 +164,94 @@ export function DistributionCalendar() {
     e.preventDefault();
     e.stopPropagation();
     setDragOverDate(null);
-
     if (draggedOrder) {
-      const newDateStr = formatDateToLocal(date);
-      handleUpdateDeliveryDate(draggedOrder.id, newDateStr);
+      handleUpdateDeliveryDate(draggedOrder.id, formatDateToLocal(date));
       setDraggedOrder(null);
     }
   }
 
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
+  function handleDragEnd() {
+    setDraggedOrder(null);
+    setDragOverDate(null);
+  }
+
+  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonthInfo(currentDate);
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  const days = [];
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    days.push(null);
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(new Date(year, month, i));
-  }
+  const days: Array<Date | null> = [];
+  for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
+  for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
 
-  const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
-  const ordersWithDates = orders.filter(order => order.requested_delivery_date).length;
-
-  const statusCounts = orders.reduce((acc, order) => {
-    acc[order.status] = (acc[order.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const totalRevenue = scheduledOrders.reduce((sum, o) => sum + o.total_amount, 0);
 
   return (
-    <div>
+    <div onDragEnd={handleDragEnd}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Distribution Calendar</h1>
-        <p className="text-cult-light-gray mt-1">View and manage delivery schedules - drag orders to reschedule</p>
+        <p className="text-cult-light-gray mt-1">Plan and manage delivery schedules -- drag orders to reschedule</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-cult-near-black border-2 border-cult-light-gray p-6">
-          <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">Total Orders</div>
-          <div className="text-3xl font-bold text-cult-white mt-2">{totalOrders}</div>
-        </div>
-        <div className="bg-cult-near-black border-2 border-green-600 p-6">
-          <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">Scheduled Deliveries</div>
-          <div className="text-3xl font-bold text-green-500 mt-2">{ordersWithDates}</div>
-        </div>
-        <div className="bg-cult-near-black border-2 border-cult-light-gray p-6">
-          <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">Total Revenue</div>
-          <div className="text-3xl font-bold text-cult-white mt-2">${formatCurrency(totalRevenue)}</div>
-        </div>
-      </div>
-
-      <div className="bg-cult-near-black border-2 border-cult-medium-gray mb-6 p-4">
-        <h3 className="text-sm font-bold text-cult-white uppercase tracking-wider mb-3">Order Status Legend</h3>
-        <div className="flex flex-wrap gap-4">
-          {Object.entries(ORDER_STATUS_COLORS).map(([status, config]) => (
-            <div key={status} className="flex items-center gap-2">
-              <div className={`w-4 h-4 ${config.bg} border ${config.border}`}></div>
-              <span className="text-sm text-cult-light-gray">
-                {config.label}
-                {statusCounts[status] ? ` (${statusCounts[status]})` : ''}
-              </span>
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <StatCard
+          label="Total Orders"
+          value={String(scheduledOrders.length)}
+          borderColor="border-cult-light-gray"
+          valueColor="text-cult-white"
+        />
+        <StatCard
+          label="Scheduled"
+          value={String(scheduledOrders.length)}
+          borderColor="border-green-600"
+          valueColor="text-green-500"
+        />
+        <StatCard
+          label="Total Revenue"
+          value={`$${formatCurrency(totalRevenue)}`}
+          borderColor="border-cult-light-gray"
+          valueColor="text-cult-white"
+        />
+        <StatCard
+          label="Needs Prep (7d)"
+          value={String(needsPrepCount)}
+          borderColor={needsPrepCount > 0 ? 'border-amber-600' : 'border-cult-light-gray'}
+          valueColor={needsPrepCount > 0 ? 'text-amber-400' : 'text-cult-white'}
+          icon={needsPrepCount > 0 ? <AlertTriangle className="w-4 h-4 text-amber-400" /> : undefined}
+        />
       </div>
 
       <div className="bg-cult-near-black border-2 border-cult-medium-gray overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b-2 border-cult-medium-gray bg-cult-black">
-          <button
-            onClick={previousMonth}
-            className="p-2 hover:bg-cult-medium-gray transition-colors"
-          >
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-cult-medium-gray transition-colors">
             <ChevronLeft className="w-5 h-5 text-cult-light-gray" />
           </button>
-          <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">{monthName}</h2>
-          <button
-            onClick={nextMonth}
-            className="p-2 hover:bg-cult-medium-gray transition-colors"
-          >
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">{monthName}</h2>
+            <button
+              onClick={() => setShowPlanPanel(!showPlanPanel)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-cult transition-all ${
+                showPlanPanel
+                  ? 'bg-green-900/40 text-green-400 border border-green-600'
+                  : 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray hover:border-cult-light-gray hover:text-cult-white'
+              }`}
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+              Plan
+              {unscheduledOrders.length > 0 && (
+                <span className={`ml-1 px-1.5 py-0.5 text-xs font-bold rounded-full ${
+                  showPlanPanel ? 'bg-green-600 text-white' : 'bg-cult-medium-gray text-cult-white'
+                }`}>
+                  {unscheduledOrders.length}
+                </span>
+              )}
+            </button>
+          </div>
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-cult-medium-gray transition-colors">
             <ChevronRight className="w-5 h-5 text-cult-light-gray" />
           </button>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-cult-light-gray">
-            Loading calendar...
-          </div>
+          <div className="p-12 text-center text-cult-light-gray">Loading calendar...</div>
         ) : (
           <div className="p-4">
             <div className="grid grid-cols-7 gap-2 mb-2">
@@ -301,80 +264,33 @@ export function DistributionCalendar() {
 
             <div className="grid grid-cols-7 gap-2">
               {days.map((date, index) => {
-                if (!date) {
-                  return <div key={`empty-${index}`} className="aspect-square" />;
-                }
+                if (!date) return <div key={`empty-${index}`} className="aspect-square" />;
 
-                const dayOrders = getOrdersForDate(date);
-                const isCurrentDay = isToday(date);
                 const dateStr = formatDateToLocal(date);
+                const dayOrders = ordersByDate.get(dateStr) || [];
+                const isCurrentDay = isToday(date);
                 const isDragOver = dragOverDate === dateStr;
+                const isSuggested = suggestedDates.has(dateStr);
 
                 return (
-                  <div
+                  <DayCell
                     key={date.toISOString()}
-                    onDragOver={(e) => handleDragOver(e, date)}
+                    date={date}
+                    orders={dayOrders}
+                    isToday={isCurrentDay}
+                    isDragOver={isDragOver}
+                    isSuggested={isSuggested}
+                    onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, date)}
+                    onDrop={handleDrop}
+                    onDragStart={handleDragStart}
                     onClick={() => {
                       if (dayOrders.length > 0) {
                         setSelectedDate(date);
                         setShowModal(true);
                       }
                     }}
-                    className={`aspect-square border-2 p-2 transition-all ${
-                      dayOrders.length > 0 ? 'cursor-pointer' : ''
-                    } ${
-                      isDragOver
-                        ? 'border-green-500 bg-green-950/20 scale-105'
-                        : isCurrentDay
-                        ? 'border-yellow-500 bg-yellow-950/20'
-                        : 'border-cult-medium-gray hover:border-cult-light-gray bg-cult-black'
-                    }`}
-                  >
-                    <div className={`text-sm font-medium mb-1 ${
-                      isCurrentDay ? 'text-yellow-500 font-bold' : 'text-cult-white'
-                    }`}>
-                      {date.getDate()}
-                    </div>
-
-                    {dayOrders.length > 0 && (
-                      <div className="space-y-1">
-                        {dayOrders.slice(0, 2).map(order => {
-                          const statusConfig = ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] || ORDER_STATUS_COLORS.submitted;
-                          return (
-                            <div
-                              key={order.id}
-                              draggable
-                              onDragStart={(e) => {
-                                handleDragStart(e, order);
-                                e.stopPropagation();
-                              }}
-                              onDragEnd={(e) => e.stopPropagation()}
-                              className={`${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border} text-xs px-1.5 py-0.5 truncate cursor-move hover:opacity-80 transition-opacity`}
-                              title={`${order.order_number} - ${order.customer_name} - ${statusConfig.label} - Drag to reschedule`}
-                            >
-                              <div className="flex items-center gap-1">
-                                <Truck className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate font-medium">{order.customer_name}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {dayOrders.length > 2 && (
-                          <div
-                            className="text-xs text-cult-lighter-gray px-1.5 cursor-pointer hover:text-cult-white"
-                            onClick={() => {
-                              setSelectedDate(date);
-                              setShowModal(true);
-                            }}
-                          >
-                            +{dayOrders.length - 2} more
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  />
                 );
               })}
             </div>
@@ -382,154 +298,261 @@ export function DistributionCalendar() {
         )}
       </div>
 
-      <div className="mt-6 bg-cult-near-black border-2 border-cult-medium-gray p-6">
-        <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">Upcoming Deliveries</h3>
-        {orders.length === 0 ? (
-          <div className="text-center py-8 text-cult-light-gray">
-            No scheduled deliveries this month
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {orders
-              .sort((a, b) => {
-                if (!a.requested_delivery_date) return 1;
-                if (!b.requested_delivery_date) return -1;
-                return a.requested_delivery_date.localeCompare(b.requested_delivery_date);
-              })
-              .map(order => {
-                const statusConfig = ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] || ORDER_STATUS_COLORS.submitted;
-                return (
-                  <div
-                    key={order.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, order)}
-                    className="flex items-center justify-between p-4 border-2 border-cult-medium-gray hover:border-cult-white transition-colors cursor-move bg-cult-black"
-                    title="Drag to calendar to reschedule"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 ${statusConfig.bg} border ${statusConfig.border}`}>
-                        <Package className={`w-5 h-5 ${statusConfig.text}`} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-cult-white">{order.order_number}</span>
-                          <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                            {statusConfig.label}
-                          </span>
-                        </div>
-                        <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <div className="text-sm text-cult-light-gray">Delivery Date</div>
-                        <div className="font-medium text-cult-white">
-                          {order.requested_delivery_date
-                            ? new Date(order.requested_delivery_date + 'T00:00:00').toLocaleDateString()
-                            : 'Not scheduled'}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-cult-light-gray">Amount</div>
-                        <div className="font-medium text-cult-white">${formatCurrency(order.total_amount)}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-cult-light-gray">Items</div>
-                        <div className="font-medium text-cult-white">{order.item_count}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        )}
-      </div>
+      <UpcomingDeliveriesTable
+        orders={scheduledOrders}
+        onDragStart={handleDragStart}
+      />
+
+      {showPlanPanel && (
+        <UnscheduledOrdersPanel
+          orders={unscheduledOrders}
+          onClose={() => setShowPlanPanel(false)}
+          onDragStart={handleDragStart}
+        />
+      )}
 
       {showModal && selectedDate && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="bg-cult-near-black border-2 border-cult-light-gray shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 border-b-2 border-cult-medium-gray bg-cult-black">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
-                  Deliveries for {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-cult-light-gray hover:text-cult-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+        <DayDetailModal
+          date={selectedDate}
+          orders={ordersByDate.get(formatDateToLocal(selectedDate)) || []}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+    </div>
+  );
+}
 
-            <div className="overflow-y-auto max-h-[calc(80vh-160px)]">
-              <table className="w-full">
-                <thead className="bg-cult-black sticky top-0 border-b-2 border-cult-medium-gray">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-cult-light-gray uppercase tracking-wider">
-                      Dispensary
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-cult-light-gray uppercase tracking-wider">
-                      Order Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-cult-light-gray uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-cult-light-gray uppercase tracking-wider">
-                      Order Value
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-cult-medium-gray">
-                  {getOrdersForDate(selectedDate).map((order) => {
-                    const statusConfig = ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] || ORDER_STATUS_COLORS.submitted;
-                    return (
-                      <tr
-                        key={order.id}
-                        className="hover:bg-cult-black transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm font-medium text-cult-white">
-                          {order.customer_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-cult-light-gray">
-                          {order.order_number}
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}>
-                            {statusConfig.label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-cult-white text-right">
-                          ${formatCurrency(order.total_amount)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+function StatCard({
+  label, value, borderColor, valueColor, icon,
+}: {
+  label: string;
+  value: string;
+  borderColor: string;
+  valueColor: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className={`bg-cult-near-black border-2 ${borderColor} p-5`}>
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">{label}</div>
+        {icon}
+      </div>
+      <div className={`text-3xl font-bold ${valueColor} mt-2`}>{value}</div>
+    </div>
+  );
+}
 
-            <div className="p-6 border-t-2 border-cult-medium-gray bg-cult-black">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-cult-light-gray">
-                  Total Orders: <span className="text-cult-white font-bold">{getOrdersForDate(selectedDate).length}</span>
-                </div>
-                <div className="text-lg font-semibold text-cult-white">
-                  Total Value: <span className="text-green-500">${formatCurrency(getOrdersForDate(selectedDate).reduce((sum, order) => sum + order.total_amount, 0))}</span>
-                </div>
-              </div>
-            </div>
+function DayCell({
+  date, orders, isToday: isTodayDate, isDragOver, isSuggested,
+  onDragOver, onDragLeave, onDrop, onDragStart, onClick,
+}: {
+  date: Date;
+  orders: CalendarOrder[];
+  isToday: boolean;
+  isDragOver: boolean;
+  isSuggested: boolean;
+  onDragOver: (e: React.DragEvent, date: Date) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, date: Date) => void;
+  onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
+  onClick: () => void;
+}) {
+  const zoneDotsMap = useMemo(() => {
+    const zoneSet = new Map<string, string>();
+    for (const o of orders) {
+      const zone = getRouteZone(o.customer_lat, o.customer_lon);
+      if (!zoneSet.has(zone.id)) zoneSet.set(zone.id, zone.dotColor);
+    }
+    return zoneSet;
+  }, [orders]);
+
+  const allReady = orders.length > 0 && orders.every(o => READY_STATUSES.has(o.status));
+  const someNotReady = orders.length > 0 && orders.some(o => !READY_STATUSES.has(o.status));
+
+  const totalDuration = orders.reduce((sum, o) => sum + (o.cached_duration_seconds || 0), 0);
+
+  return (
+    <div
+      onDragOver={(e) => onDragOver(e, date)}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, date)}
+      onClick={onClick}
+      className={`aspect-square border-2 p-1.5 transition-all flex flex-col ${
+        orders.length > 0 ? 'cursor-pointer' : ''
+      } ${
+        isDragOver
+          ? 'border-green-500 bg-green-950/20 scale-[1.03]'
+          : isSuggested
+          ? 'border-green-700/60 bg-green-950/10 animate-pulse'
+          : isTodayDate
+          ? 'border-yellow-500 bg-yellow-950/20'
+          : 'border-cult-medium-gray hover:border-cult-light-gray bg-cult-black'
+      }`}
+    >
+      <div className="flex items-center justify-between mb-0.5">
+        <span className={`text-sm font-medium ${
+          isTodayDate ? 'text-yellow-500 font-bold' : 'text-cult-white'
+        }`}>
+          {date.getDate()}
+        </span>
+        {orders.length > 0 && (
+          <div className="flex items-center gap-0.5">
+            {allReady && <CheckCircle2 className="w-3 h-3 text-green-500" />}
+            {someNotReady && !allReady && <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />}
           </div>
+        )}
+      </div>
+
+      {orders.length > 0 && (
+        <div className="flex-1 min-h-0 space-y-0.5 overflow-hidden">
+          {orders.slice(0, 2).map(order => {
+            const sc = ORDER_STATUS_COLORS[order.status] || ORDER_STATUS_COLORS.submitted;
+            return (
+              <div
+                key={order.id}
+                draggable
+                onDragStart={(e) => { handleStopProp(e); onDragStart(e, order); }}
+                onDragEnd={handleStopProp}
+                onClick={handleStopPropClick}
+                className={`${sc.bg} ${sc.text} border ${sc.border} text-xs px-1 py-0.5 truncate cursor-move hover:opacity-80 transition-opacity`}
+                title={`${order.order_number} - ${order.customer_name} - ${sc.label}`}
+              >
+                <div className="flex items-center gap-0.5">
+                  <Truck className="w-2.5 h-2.5 flex-shrink-0" />
+                  <span className="truncate font-medium">{order.customer_name}</span>
+                </div>
+              </div>
+            );
+          })}
+          {orders.length > 2 && (
+            <div className="text-xs text-cult-lighter-gray px-1 cursor-pointer hover:text-cult-white">
+              +{orders.length - 2} more
+            </div>
+          )}
+        </div>
+      )}
+
+      {orders.length > 0 && (
+        <div className="flex items-center justify-between mt-auto pt-0.5">
+          <div className="flex items-center gap-0.5">
+            {[...zoneDotsMap.values()].map((dotColor, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+            ))}
+          </div>
+          {totalDuration > 0 && (
+            <span className="text-[9px] text-cult-lighter-gray leading-none">
+              ~{formatDuration(totalDuration)}
+            </span>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+function UpcomingDeliveriesTable({
+  orders,
+  onDragStart,
+}: {
+  orders: CalendarOrder[];
+  onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
+}) {
+  const sorted = useMemo(() =>
+    [...orders].sort((a, b) => {
+      if (!a.requested_delivery_date) return 1;
+      if (!b.requested_delivery_date) return -1;
+      return a.requested_delivery_date.localeCompare(b.requested_delivery_date);
+    }),
+    [orders]
+  );
+
+  return (
+    <div className="mt-6 bg-cult-near-black border-2 border-cult-medium-gray p-6">
+      <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">Upcoming Deliveries</h3>
+      {sorted.length === 0 ? (
+        <div className="text-center py-8 text-cult-light-gray">No scheduled deliveries this month</div>
+      ) : (
+        <div className="space-y-3">
+          {sorted.map(order => {
+            const sc = ORDER_STATUS_COLORS[order.status] || ORDER_STATUS_COLORS.submitted;
+            const zone = getRouteZone(order.customer_lat, order.customer_lon);
+            return (
+              <div
+                key={order.id}
+                draggable
+                onDragStart={(e) => onDragStart(e, order)}
+                className="flex items-center justify-between p-4 border-2 border-cult-medium-gray hover:border-cult-white transition-colors cursor-move bg-cult-black"
+                title="Drag to calendar to reschedule"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 ${sc.bg} border ${sc.border}`}>
+                    <Package className={`w-5 h-5 ${sc.text}`} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-cult-white">{order.order_number}</span>
+                      <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${sc.bg} ${sc.text} border ${sc.border}`}>
+                        {sc.label}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <div className={`w-2 h-2 rounded-full ${zone.dotColor}`} />
+                        <span className={`text-xs ${zone.color}`}>{zone.label}</span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <div className="text-sm text-cult-light-gray">Delivery Date</div>
+                    <div className="font-medium text-cult-white">
+                      {order.requested_delivery_date
+                        ? new Date(order.requested_delivery_date + 'T00:00:00').toLocaleDateString()
+                        : 'Not scheduled'}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-cult-light-gray">Amount</div>
+                    <div className="font-medium text-cult-white">${formatCurrency(order.total_amount)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-cult-light-gray">Items</div>
+                    <div className="font-medium text-cult-white">{order.item_count}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getDaysInMonthInfo(date: Date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  return {
+    daysInMonth: lastDay.getDate(),
+    startingDayOfWeek: firstDay.getDay(),
+    year,
+    month,
+  };
+}
+
+function isToday(date: Date): boolean {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+}
+
+function handleStopProp(e: React.DragEvent) {
+  e.stopPropagation();
+}
+
+function handleStopPropClick(e: React.MouseEvent) {
+  e.stopPropagation();
 }

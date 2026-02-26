@@ -1,6 +1,8 @@
 export {
   DeliverySchedule,
   DistributionCalendar,
+  DayDetailModal,
+  UnscheduledOrdersPanel,
   LeafletRouteMap
 } from './components';
 
@@ -23,7 +25,9 @@ export {
   getLocationById,
   generateLeafletMapDataUrl,
   generateStaticMapDataUrl,
-  generateSimpleMapDataUrl
+  generateSimpleMapDataUrl,
+  getEnrichedCalendarOrders,
+  clearOrderDeliveryDate
 } from './services';
 
 export type {
@@ -36,5 +40,16 @@ export type {
   Location,
   LeafletMapOptions,
   StaticMapOptions,
-  MapBounds
+  MapBounds,
+  CalendarOrder
 } from './services';
+
+export {
+  getRouteZone,
+  getRouteZoneId,
+  getAllZones,
+  getZoneById,
+  getApproxMiles
+} from './utils';
+
+export type { RouteZone } from './utils';

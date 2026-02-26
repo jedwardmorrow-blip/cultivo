@@ -357,3 +357,22 @@ Mirrors the same-batch wet weight pattern (see Decision 11).
 - Expand/collapse tree pattern in AccountsList with child search bubbling
 
 **Reference:** CRM-SUB-ACCOUNTS.md, CRM.md Phase 2.5
+
+---
+
+## 18. Route Zone Classification is Client-Side, Not Stored (2026-02-26)
+
+**Context:** The Distribution Calendar needs geographic awareness to help users plan route-efficient delivery days (clustering orders by geographic corridor).
+
+**Decision:** Route zones are computed client-side using haversine distance + bearing from facility coordinates. The 5 zones (Local, East Valley, West Valley, Tucson, Northern AZ) are defined as constants in `src/features/delivery/utils/routeZones.ts`. No database column or migration required.
+
+**Rationale:**
+- With <40 active customers, computing zones for all visible orders is negligible (sub-millisecond).
+- Avoids a stored column that would need re-computation when facility coordinates or zone boundaries change.
+- Zone boundaries can be adjusted in code without a migration.
+- Customer coordinate data already exists in the `customers` table; facility coordinates are in `app_settings`.
+- Suggested-day scoring (zone match + preferred day + capacity) is pure client-side using already-loaded order data.
+
+**Zone assignment logic:** Distance < 10mi = Local, Distance > 80mi + bearing S/SE = Tucson, Distance > 80mi + other bearings = Northern AZ, 10-80mi + bearing E/SE = East Valley, 10-80mi + bearing W/NW = West Valley.
+
+**Reference:** CHANGELOG 2026-02-26, `src/features/delivery/utils/routeZones.ts`

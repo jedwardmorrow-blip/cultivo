@@ -1,6 +1,6 @@
 ---
 title: Module Status
-updated: 2026-02-18
+updated: 2026-02-26
 ---
 
 # Module Status
@@ -20,7 +20,7 @@ Quick reference for the implementation status of each module.
 | Dashboard | Production | 2026-01-21 | `src/features/dashboard/` | None |
 | Analytics | Production | 2025-10-12 | `src/features/analytics/` | None |
 | Settings | Production | 2025-10-17 | `src/features/settings/` | None |
-| Delivery/Routing | Production | 2025-10-17 | `src/features/delivery/` | None |
+| Delivery/Routing | Production | 2026-02-26 | `src/features/delivery/` | None |
 | Auth | Production | 2025-10-12 | `src/features/auth/`, `src/lib/auth.tsx` | None |
 | Order Form (Public) | Production | 2025-10-24 | `src/features/order-form/` | None |
 | Test Mode | Production | 2025-11-24 | `src/contexts/TestModeContext.tsx` | Not integrated into all UI workflows |

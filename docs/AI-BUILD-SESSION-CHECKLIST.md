@@ -15,30 +15,34 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-26
-**Session:** Enable Realtime Subscriptions & Fix Stale Data
+**Session:** Distribution Calendar: Route-Aware Delivery Planning
 **Status:** COMPLETE
 
 **What was done:**
 
-Fixed stale data across the entire application. The root cause: no tables were published to the `supabase_realtime` publication, so all 14 frontend realtime subscriptions were silently receiving zero events.
+Enhanced the Distribution Calendar with geographic route zone awareness, unscheduled orders planning panel, and intelligent day-suggestion hints.
 
-**1. Database Migration**
-- `enable_realtime_publication_for_subscribed_tables` — Added 10 tables to `supabase_realtime`: `inventory_items`, `orders`, `order_items`, `conversion_packages`, `batch_registry`, `trim_sessions`, `bucking_sessions`, `packaging_sessions`, `crm_tasks`, `crm_visit_schedule`
-- Uses exception-safe loop with `IF NOT EXISTS`-style error handling
+**1. Route Zone System (new)**
+- `src/features/delivery/utils/routeZones.ts` — 5 named zones (Local, East Valley, West Valley, Tucson, Northern AZ) classified by haversine distance + bearing from facility. Each zone has color tokens for UI.
+- `src/features/delivery/utils/index.ts` — Barrel exports.
 
-**2. Inventory Grade Refresh**
-- `InventoryViews.tsx` — `GradeColumn()` now accepts optional `onDataRefresh` callback; calls it after successful grade assignment
-- `AllInventoryView.tsx` — Inline grade column also calls `onDataRefresh` after assignment
-- `InventoryViewsSimplified.tsx` — All 5 view wrappers thread `fetchInventory(true)` from context as `onDataRefresh` prop
-- View component props (`BinnedViewProps`, `BuckedViewProps`, `BulkViewProps`, `PackagedViewProps`, `AllInventoryViewProps`) extended with optional `onDataRefresh`
+**2. Enriched Data Loading**
+- `delivery.service.ts` — New `getEnrichedCalendarOrders()` replaces 3-query waterfall with parallel fetches (orders + customers + items + cached routes). Returns `CalendarOrder` interface with customer geo, zone, and route cache data.
+- `delivery.service.ts` — New `clearOrderDeliveryDate()` utility.
 
-**3. Orders Refresh**
-- `App.tsx` — Added `ordersRefreshKey` state counter. `handleOrderCreated` increments it. `OrdersContainer` receives it as `key`, forcing remount and fresh data load.
+**3. Calendar Enhancements**
+- `DistributionCalendar.tsx` — Full rewrite. Stats bar now 4 cards (added "Needs Prep 7d"). Day cells show zone dots, readiness indicators, cached drive time. "Plan" button toggles unscheduled panel. Drag-from-panel suggestions pulse best-fit days.
+- `UnscheduledOrdersPanel.tsx` (new) — Right-side slide-in drawer listing unscheduled orders grouped by zone. Draggable order cards.
+- `DayDetailModal.tsx` (new) — Orders grouped by zone with readiness badges, distance, and drive time per order. Zone summary footer.
+
+**4. Module Exports**
+- Updated `components/index.ts`, `services/index.ts`, `delivery/index.ts` with all new exports.
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
+- `preferred_delivery_day` is currently null for all customers — will be populated via CRM interface over time
 
 **Next recommendations (in order):**
 1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
