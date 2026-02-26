@@ -355,16 +355,14 @@ export async function getOrderItemsForCalendar(orderId: string): Promise<{ data:
         quantity,
         status,
         is_sample,
+        strain,
         products!inner (
           name,
-          pricing_unit,
-          strains ( name )
+          pricing_unit
         ),
-        order_item_allocations (
-          batch_registry!inner (
-            batch_number,
-            quality_grade_id
-          )
+        batch_registry (
+          batch_number,
+          quality_grade_id
         )
       `)
       .eq('order_id', orderId);
@@ -373,17 +371,16 @@ export async function getOrderItemsForCalendar(orderId: string): Promise<{ data:
 
     const items: CalendarOrderItem[] = (data || []).map((row: any) => {
       const product = row.products;
-      const alloc = row.order_item_allocations?.[0];
       return {
         id: row.id,
         product_name: product?.name || 'Unknown',
-        strain_name: product?.strains?.name || null,
+        strain_name: row.strain || null,
         quantity: Number(row.quantity),
         pricing_unit: product?.pricing_unit || null,
         status: row.status || null,
         is_sample: row.is_sample ?? false,
-        batch_number: alloc?.batch_registry?.batch_number || null,
-        quality_grade_id: alloc?.batch_registry?.quality_grade_id || null,
+        batch_number: row.batch_registry?.batch_number || null,
+        quality_grade_id: row.batch_registry?.quality_grade_id || null,
       };
     });
 
