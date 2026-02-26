@@ -15,28 +15,25 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-02-26
-**Session:** CRM Phase 5 — Account Info Editing & Contact Management
+**Session:** Enable Realtime Subscriptions & Fix Stale Data
 **Status:** COMPLETE
 
 **What was done:**
 
-Added dispensary account info editing from the CRM Account Detail page with full data sync across the app.
+Fixed stale data across the entire application. The root cause: no tables were published to the `supabase_realtime` publication, so all 14 frontend realtime subscriptions were silently receiving zero events.
 
-**1. Account Info Edit Modal**
-- `AccountInfoEditModal.tsx` (new) — Modal with dispensary name, contact info, address, license/compliance, account settings (payment terms, delivery day), and notes. Dispensary code is read-only.
-- `AccountHeader.tsx` — Added pencil icon edit button next to dispensary name, `onEdit` prop
-- `AccountDetail.tsx` — Wires modal open/close, calls `updateAccountInfo`, reloads on save with success/error notifications
+**1. Database Migration**
+- `enable_realtime_publication_for_subscribed_tables` — Added 10 tables to `supabase_realtime`: `inventory_items`, `orders`, `order_items`, `conversion_packages`, `batch_registry`, `trim_sessions`, `bucking_sessions`, `packaging_sessions`, `crm_tasks`, `crm_visit_schedule`
+- Uses exception-safe loop with `IF NOT EXISTS`-style error handling
 
-**2. Data Sync & Geocoding**
-- `crm.service.ts` — New `updateAccountInfo(customerId, input, previousAccount)` function. Syncs both primary and `delivery_*` address fields. Clears geocoding on address change and triggers re-geocoding via OpenRouteService.
-- Imports `formatAddressForGeocoding` and `updateCustomerGeocode` from `delivery/services/geocoding.service`
+**2. Inventory Grade Refresh**
+- `InventoryViews.tsx` — `GradeColumn()` now accepts optional `onDataRefresh` callback; calls it after successful grade assignment
+- `AllInventoryView.tsx` — Inline grade column also calls `onDataRefresh` after assignment
+- `InventoryViewsSimplified.tsx` — All 5 view wrappers thread `fetchInventory(true)` from context as `onDataRefresh` prop
+- View component props (`BinnedViewProps`, `BuckedViewProps`, `BulkViewProps`, `PackagedViewProps`, `AllInventoryViewProps`) extended with optional `onDataRefresh`
 
-**3. Contact Inline Editing**
-- `AccountContacts.tsx` — Added edit (pencil) and primary toggle (star) buttons on each contact row. Inline edit mode with save/cancel. Uses existing `updateContact` service function.
-
-**4. Database & Types**
-- Migration: `expand_crm_customer_summary_with_address_fields` — Drops and recreates `crm_customer_summary` view adding `address`, `postal_code`, `delivery_address/city/state/postal_code`, `ato_number`, `credit_limit`, `account_credit_balance`, `notes`
-- `crm.types.ts` — Extended `AccountSummary` with new fields. Added `AccountInfoInput` interface.
+**3. Orders Refresh**
+- `App.tsx` — Added `ordersRefreshKey` state counter. `handleOrderCreated` increments it. `OrdersContainer` receives it as `key`, forcing remount and fresh data load.
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**

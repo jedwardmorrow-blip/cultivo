@@ -17,6 +17,7 @@ interface AllInventoryViewProps {
   stats: AllInventoryStats;
   stageFilter: StageFilter;
   onStageFilterChange: (filter: StageFilter) => void;
+  onDataRefresh?: () => void;
 }
 
 function formatWeight(grams: number): string {
@@ -38,7 +39,7 @@ const stageBreakdownConfig = [
   { key: 'packagedCount' as const, label: 'Packaged', icon: Package, color: 'text-teal-400', borderColor: 'border-teal-800/40' },
 ];
 
-export function AllInventoryView({ items, stats, stageFilter }: AllInventoryViewProps) {
+export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: AllInventoryViewProps) {
   const labelHook = useInventoryLabel();
 
   const [selectedPackageIds, setSelectedPackageIds] = useState<Set<string>>(new Set());
@@ -316,6 +317,7 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
                   try {
                     const { data: { user } } = await supabase.auth.getUser();
                     await qualityGradeService.assignItemGrade(item.id, newGradeId, user?.id || null);
+                    onDataRefresh?.();
                   } catch (err) {
                     console.error('Failed to update grade:', err);
                   }

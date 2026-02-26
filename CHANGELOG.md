@@ -4,6 +4,20 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-26 - Enable Realtime Subscriptions & Fix Stale Data
+
+**Type:** Bug Fix
+**Module:** System-wide
+**Status:** COMPLETE
+
+Fixed stale data across the entire application by enabling Supabase Realtime publication for all subscribed tables, and added explicit refresh callbacks for inventory grades and order creation.
+
+- **Database Migration:** Added 10 tables to `supabase_realtime` publication: `inventory_items`, `orders`, `order_items`, `conversion_packages`, `batch_registry`, `trim_sessions`, `bucking_sessions`, `packaging_sessions`, `crm_tasks`, `crm_visit_schedule`. All 14 existing realtime subscriptions across the app are now active.
+- **Inventory Grade Refresh:** Grade changes on inventory items now trigger an immediate silent data refresh, so the badge updates instantly without waiting for the realtime round-trip.
+- **Orders Refresh:** Creating a new order now forces the orders list to reload, ensuring the new order appears immediately.
+
+---
+
 ## 2026-02-26 - CRM Phase 5: Account Info Editing & Contact Management
 
 **Type:** Feature Addition

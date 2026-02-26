@@ -39,13 +39,14 @@ function InventoryLoadingState() {
 }
 
 function useInventoryContext() {
-  const { inventoryItems, loading } = useSharedInventoryData();
+  const { inventoryItems, loading, fetchInventory } = useSharedInventoryData();
   const filters = useInventoryFilters(inventoryItems);
-  return { loading, ...filters };
+  const onDataRefresh = () => fetchInventory(true);
+  return { loading, onDataRefresh, ...filters };
 }
 
 export function AllInventoryViewWrapper() {
-  const { loading, allItems, allInventoryStats } = useInventoryContext();
+  const { loading, allItems, allInventoryStats, onDataRefresh } = useInventoryContext();
   if (loading) return <InventoryLoadingState />;
 
   return (
@@ -55,52 +56,53 @@ export function AllInventoryViewWrapper() {
         stats={allInventoryStats}
         stageFilter="all"
         onStageFilterChange={() => {}}
+        onDataRefresh={onDataRefresh}
       />
     </ViewShell>
   );
 }
 
 export function BinnedInventoryViewWrapper() {
-  const { loading, binnedItems, binnedStats } = useInventoryContext();
+  const { loading, binnedItems, binnedStats, onDataRefresh } = useInventoryContext();
   if (loading) return <InventoryLoadingState />;
 
   return (
     <ViewShell title="Binned Inventory" subtitle="Fresh flower directly from harvest, ready for processing">
-      <BinnedInventoryView items={binnedItems} stats={binnedStats} />
+      <BinnedInventoryView items={binnedItems} stats={binnedStats} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
 }
 
 export function BuckedInventoryViewWrapper() {
-  const { loading, buckedItems, buckedStats } = useInventoryContext();
+  const { loading, buckedItems, buckedStats, onDataRefresh } = useInventoryContext();
   if (loading) return <InventoryLoadingState />;
 
   return (
     <ViewShell title="Bucked Inventory" subtitle="Flower that has been bucked and is ready for trimming">
-      <BuckedInventoryView items={buckedItems} stats={buckedStats} />
+      <BuckedInventoryView items={buckedItems} stats={buckedStats} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
 }
 
 export function BulkInventoryViewWrapper() {
-  const { loading, bulkItems, bulkStats } = useInventoryContext();
+  const { loading, bulkItems, bulkStats, onDataRefresh } = useInventoryContext();
   const [subTab, setSubTab] = useState<BulkSubTab>('flower');
   if (loading) return <InventoryLoadingState />;
 
   return (
     <ViewShell title="Bulk Inventory" subtitle="Processed flower, smalls, and trim ready for packaging">
-      <BulkInventoryView items={bulkItems} stats={bulkStats} subTab={subTab} onSubTabChange={setSubTab} />
+      <BulkInventoryView items={bulkItems} stats={bulkStats} subTab={subTab} onSubTabChange={setSubTab} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
 }
 
 export function PackagedInventoryViewWrapper() {
-  const { loading, packagedItems, packagedStats } = useInventoryContext();
+  const { loading, packagedItems, packagedStats, onDataRefresh } = useInventoryContext();
   if (loading) return <InventoryLoadingState />;
 
   return (
     <ViewShell title="Packaged Inventory" subtitle="Final packaged products ready for distribution">
-      <PackagedInventoryView items={packagedItems} stats={packagedStats} />
+      <PackagedInventoryView items={packagedItems} stats={packagedStats} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
 }

@@ -42,7 +42,7 @@ function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLa
   );
 }
 
-function GradeColumn() {
+function GradeColumn(onDataRefresh?: () => void) {
   return {
     header: 'Grade',
     accessor: (item: InventoryItem) => item,
@@ -56,6 +56,7 @@ function GradeColumn() {
           try {
             const { data: { user } } = await supabase.auth.getUser();
             await qualityGradeService.assignItemGrade(item.id, newGradeId, user?.id || null);
+            onDataRefresh?.();
           } catch (err) {
             console.error('Failed to update grade:', err);
           }
@@ -68,9 +69,10 @@ function GradeColumn() {
 interface BinnedViewProps {
   items: InventoryItem[];
   stats: InventoryStats;
+  onDataRefresh?: () => void;
 }
 
-export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
+export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewProps) {
   const labelHook = useInventoryLabel();
 
   const sortedItems = useMemo(() =>
@@ -127,7 +129,7 @@ export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
               );
             }
           },
-          GradeColumn(),
+          GradeColumn(onDataRefresh),
           {
             header: '',
             accessor: (item) => item,
@@ -150,9 +152,10 @@ export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
 interface BuckedViewProps {
   items: InventoryItem[];
   stats: InventoryStats;
+  onDataRefresh?: () => void;
 }
 
-export function BuckedInventoryView({ items, stats }: BuckedViewProps) {
+export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewProps) {
   const labelHook = useInventoryLabel();
 
   return (
@@ -181,7 +184,7 @@ export function BuckedInventoryView({ items, stats }: BuckedViewProps) {
             sortable: false,
             format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400">{val || 'Ready'}</span>
           },
-          GradeColumn(),
+          GradeColumn(onDataRefresh),
           {
             header: '',
             accessor: (item) => item,
@@ -202,6 +205,7 @@ interface BulkViewProps {
   stats: BulkStats;
   subTab: BulkSubTab;
   onSubTabChange: (tab: BulkSubTab) => void;
+  onDataRefresh?: () => void;
 }
 
 const bulkTabs: { key: BulkSubTab; label: string; icon: typeof Leaf }[] = [
@@ -220,7 +224,7 @@ function getBulkTabCount(items: InventoryItem[], tab: BulkSubTab): number {
   }).length;
 }
 
-export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: BulkViewProps) {
+export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onDataRefresh }: BulkViewProps) {
   const labelHook = useInventoryLabel();
 
   const filteredItems = useMemo(() => items.filter(item => {
@@ -277,7 +281,7 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: Bulk
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
-          GradeColumn(),
+          GradeColumn(onDataRefresh),
           {
             header: '',
             accessor: (item) => item,
@@ -296,9 +300,10 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: Bulk
 interface PackagedViewProps {
   items: InventoryItem[];
   stats: PackagedStats;
+  onDataRefresh?: () => void;
 }
 
-export function PackagedInventoryView({ items, stats }: PackagedViewProps) {
+export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedViewProps) {
   const labelHook = useInventoryLabel();
 
   return (
@@ -321,7 +326,7 @@ export function PackagedInventoryView({ items, stats }: PackagedViewProps) {
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
-          GradeColumn(),
+          GradeColumn(onDataRefresh),
           {
             header: '',
             accessor: (item) => item,

@@ -61,6 +61,7 @@ function AppContent() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isStandaloneMode, setIsStandaloneMode] = useState(false);
   const [isResetPasswordMode, setIsResetPasswordMode] = useState(false);
+  const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -152,6 +153,7 @@ function AppContent() {
     setCloneFromOrder(null);
     setPreSelectedCustomerId(null);
     setSampleMode(false);
+    setOrdersRefreshKey((k) => k + 1);
     setCurrentView('orders');
 
     if (customerId && orderData) {
@@ -177,6 +179,7 @@ function AppContent() {
       case 'orders':
         return (
           <OrdersContainer
+            key={ordersRefreshKey}
             onCreateOrder={handleCreateOrder}
             onSelectOrder={handleSelectOrder}
             selectedOrderId={selectedOrderId}
