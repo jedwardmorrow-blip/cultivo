@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Package, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getBatchAllocationOverview } from '../services/dashboard.service';
+import { QualityGradeBadge } from '@/shared/components';
 
 interface BatchAllocation {
   batch_id: string;
@@ -28,6 +29,7 @@ interface BatchAllocation {
 export function BatchAllocationOverview() {
   const [allocations, setAllocations] = useState<BatchAllocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [batchGrades, setBatchGrades] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     loadBatchAllocations();
@@ -46,6 +48,19 @@ export function BatchAllocationOverview() {
     try {
       const { data } = await getBatchAllocationOverview();
       setAllocations(data || []);
+
+      if (data && data.length > 0) {
+        const batchIds = data.map((a: BatchAllocation) => a.batch_id);
+        const { data: grades } = await supabase
+          .from('batch_registry')
+          .select('id, quality_grade_id')
+          .in('id', batchIds);
+        if (grades) {
+          const map: Record<string, string | null> = {};
+          grades.forEach((g: any) => { map[g.id] = g.quality_grade_id; });
+          setBatchGrades(map);
+        }
+      }
     } catch (error) {
       console.error('Error loading batch allocations:', error);
     } finally {
@@ -140,7 +155,10 @@ export function BatchAllocationOverview() {
                       {batch.batch_id}
                     </h3>
                   </div>
-                  <p className="text-sm text-cult-light-gray">{batch.strain}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-cult-light-gray">{batch.strain}</p>
+                    <QualityGradeBadge gradeId={batchGrades[batch.batch_id] ?? null} />
+                  </div>
                   <p className="text-xs text-cult-lighter-gray mt-1">{batch.current_stage}</p>
                 </div>
                 {batch.orders_assigned > 0 && (

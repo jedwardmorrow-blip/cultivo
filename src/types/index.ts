@@ -34,6 +34,7 @@ export * from './coa.types';
 export * from './coversheet.types';
 export * from './user.types';
 export * from './movement.types';
+export * from './qualityGrade.types';
 
 // Feature-specific types that are widely used
 export * from '../features/settings/types';

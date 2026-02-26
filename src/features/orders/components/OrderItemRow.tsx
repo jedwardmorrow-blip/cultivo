@@ -8,6 +8,7 @@ import { OrderItemLabelPrintModal } from './OrderItemLabelPrintModal';
 import { useTotalAssignedQuantity } from '../hooks';
 import { useOrderItemLabels } from '../hooks/useOrderItemLabels';
 import { fulfillmentValidationService } from '../services/fulfillmentValidation.service';
+import { QualityGradeBadge } from '@/shared/components';
 import type { FulfillmentStatus } from '../types';
 
 interface OrderItem {
@@ -70,6 +71,7 @@ export function OrderItemRow({
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [showAssignedPackages, setShowAssignedPackages] = useState(false);
   const [showLabelPrintModal, setShowLabelPrintModal] = useState(false);
+  const [batchGradeId, setBatchGradeId] = useState<string | null>(null);
 
   const { totalAssigned, loading: loadingAssigned } = useTotalAssignedQuantity(item.id);
   const { stats, loading: labelsLoading } = useOrderItemLabels(item.id);
@@ -124,6 +126,23 @@ export function OrderItemRow({
 
     return () => { cancelled = true; };
   }, [item.strain]);
+
+  useEffect(() => {
+    if (!item.batch_id) {
+      setBatchGradeId(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('batch_registry')
+        .select('quality_grade_id')
+        .eq('id', item.batch_id!)
+        .maybeSingle();
+      if (!cancelled) setBatchGradeId(data?.quality_grade_id || null);
+    })();
+    return () => { cancelled = true; };
+  }, [item.batch_id]);
 
   const startEditingQuantity = () => {
     setEditingQuantity(true);
@@ -236,6 +255,11 @@ export function OrderItemRow({
             </option>
           ))}
         </select>
+        {item.batch_id && batchGradeId && (
+          <div className="mt-1">
+            <QualityGradeBadge gradeId={batchGradeId} />
+          </div>
+        )}
         {!item.strain && (
           <p className="text-xs text-red-500 mt-1">Product missing strain</p>
         )}

@@ -74,12 +74,9 @@ export interface TrimCompleteForm {
   bucked_smalls_grams: number;
   bucked_smalls_inventory_id: string;
   notes: string;
+  quality_grade_id?: string | null;
 }
 
-/**
- * Form data for completing a packaging session
- * Records units packaged by size and any waste/trim generated
- */
 export interface PackagingCompleteForm {
   ending_weight: number;
   units_3_5g: number;
@@ -88,15 +85,13 @@ export interface PackagingCompleteForm {
   trim_grams: number;
   waste_grams: number;
   notes: string;
+  quality_grade_id?: string | null;
 }
 
-/**
- * Form data for completing a bucking session
- * Records output weights of flower, smalls, and waste
- */
 export interface BuckingCompleteForm {
   bucked_flower_grams: number;
   bucked_smalls_grams: number;
   waste_grams: number;
   notes: string;
+  quality_grade_id?: string | null;
 }

@@ -4,6 +4,7 @@ import { completePackagingSession } from '../services/sessions.service';
 import { formatElapsedTime } from '../utils';
 import type { PackagingSession, PackagingCompleteForm } from '../types';
 import { notificationService } from '@/services/notification.service';
+import { QualityGradeSelector } from '@/shared/components';
 
 interface PackagingSessionCompleteModalProps {
   session: PackagingSession;
@@ -219,6 +220,11 @@ export function PackagingSessionCompleteModal({
                 </div>
               )}
             </div>
+
+            <QualityGradeSelector
+              value={formData.quality_grade_id ?? null}
+              onChange={(gradeId) => setFormData({ ...formData, quality_grade_id: gradeId })}
+            />
 
             <div>
               <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>

@@ -4,6 +4,9 @@ import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
 import { CombinePackagesModal } from './CombinePackagesModal';
+import { QualityGradeBadge } from '@/shared/components';
+import { qualityGradeService } from '@/services';
+import { supabase } from '@/lib/supabase';
 import { useInventoryLabel } from '../hooks';
 import { getItemStage } from '../hooks/useInventoryFilters';
 import type { InventoryItem, AllInventoryStats, StageFilter } from '../types';
@@ -239,6 +242,7 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
         items={filteredItems}
         searchable
         searchPlaceholder="Search all inventory..."
+        gradeFilterable
         selectable
         selectedIds={selectedPackageIds}
         onSelectionChange={setSelectedPackageIds}
@@ -298,6 +302,26 @@ export function AllInventoryView({ items, stats, stageFilter }: AllInventoryView
                 </span>
               );
             },
+          },
+          {
+            header: 'Grade',
+            accessor: (item) => item,
+            align: 'center',
+            sortable: false,
+            format: (_, item) => (
+              <QualityGradeBadge
+                gradeId={(item as any).quality_grade_id}
+                editable
+                onGradeChange={async (newGradeId) => {
+                  try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    await qualityGradeService.assignItemGrade(item.id, newGradeId, user?.id || null);
+                  } catch (err) {
+                    console.error('Failed to update grade:', err);
+                  }
+                }}
+              />
+            ),
           },
           {
             header: 'Status',

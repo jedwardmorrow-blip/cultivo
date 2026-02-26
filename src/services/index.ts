@@ -2,6 +2,7 @@ export { notificationService } from './notification.service';
 export type { NotificationOptions } from './notification.service';
 export { errorService } from './error.service';
 export { inventoryMovementService } from './inventoryMovement.service';
+export { qualityGradeService } from './qualityGrade.service';
 export * from './movementHandlers';
 
 export { settingsService, logoService, validateImageFile } from '../features/settings/services';

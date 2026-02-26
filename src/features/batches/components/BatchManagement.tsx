@@ -7,7 +7,9 @@ import type {
   BatchAllocationWarning,
   CreateBatchInput
 } from '@/types/batch.types';
-import { notificationService, errorService } from '@/services';
+import { notificationService, errorService, qualityGradeService } from '@/services';
+import { QualityGradeBadge } from '@/shared/components';
+import { supabase } from '@/lib/supabase';
 import { COAUploadModal } from './COAUploadModal';
 
 export function BatchManagement() {
@@ -338,6 +340,9 @@ export function BatchManagement() {
                 <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
                   THC %
                 </th>
+                <th className="text-center py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                  Grade
+                </th>
                 <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
                   Allocation
                 </th>
@@ -377,6 +382,30 @@ export function BatchManagement() {
                     <td className="py-3 px-4">{getCOAStatusBadge(batch.coa_status)}</td>
                     <td className="py-3 px-4 text-cult-white font-medium">
                       {batch.thc_percentage ? `${batch.thc_percentage.toFixed(2)}%` : '-'}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <QualityGradeBadge
+                        gradeId={(batch as any).quality_grade_id}
+                        editable
+                        size="md"
+                        onGradeChange={async (newGradeId) => {
+                          try {
+                            const { data: { user } } = await supabase.auth.getUser();
+                            const { cascadedCount } = await qualityGradeService.assignBatchGrade(
+                              batch.batch_id,
+                              newGradeId,
+                              user?.id || null
+                            );
+                            if (cascadedCount > 0) {
+                              notificationService.success(`Grade updated and cascaded to ${cascadedCount} inventory item${cascadedCount !== 1 ? 's' : ''}`);
+                            }
+                            await loadData();
+                          } catch (err) {
+                            console.error('Failed to update batch grade:', err);
+                            notificationService.error('Failed to update grade');
+                          }
+                        }}
+                      />
                     </td>
                     <td className="py-3 px-4">
                       {summary && (

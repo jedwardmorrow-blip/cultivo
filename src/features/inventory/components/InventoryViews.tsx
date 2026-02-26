@@ -4,6 +4,9 @@ import { DailyInventoryActivity } from './DailyInventoryActivity';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
+import { QualityGradeBadge } from '@/shared/components';
+import { qualityGradeService } from '@/services';
+import { supabase } from '@/lib/supabase';
 import { useInventoryLabel } from '../hooks';
 import type { InventoryItem, InventoryStats, BulkStats, PackagedStats, BulkSubTab } from '../types';
 
@@ -37,6 +40,29 @@ function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLa
       onPrint={labelHook.printLabel}
     />
   );
+}
+
+function GradeColumn() {
+  return {
+    header: 'Grade',
+    accessor: (item: InventoryItem) => item,
+    align: 'center' as const,
+    sortable: false,
+    format: (_: any, item: InventoryItem) => (
+      <QualityGradeBadge
+        gradeId={(item as any).quality_grade_id}
+        editable
+        onGradeChange={async (newGradeId) => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            await qualityGradeService.assignItemGrade(item.id, newGradeId, user?.id || null);
+          } catch (err) {
+            console.error('Failed to update grade:', err);
+          }
+        }}
+      />
+    ),
+  };
 }
 
 interface BinnedViewProps {
@@ -80,6 +106,7 @@ export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
         items={sortedItems}
         searchable
         searchPlaceholder="Search binned inventory..."
+        gradeFilterable
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -100,6 +127,7 @@ export function BinnedInventoryView({ items, stats }: BinnedViewProps) {
               );
             }
           },
+          GradeColumn(),
           {
             header: '',
             accessor: (item) => item,
@@ -139,6 +167,7 @@ export function BuckedInventoryView({ items, stats }: BuckedViewProps) {
         items={items}
         searchable
         searchPlaceholder="Search bucked inventory..."
+        gradeFilterable
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -152,6 +181,7 @@ export function BuckedInventoryView({ items, stats }: BuckedViewProps) {
             sortable: false,
             format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400">{val || 'Ready'}</span>
           },
+          GradeColumn(),
           {
             header: '',
             accessor: (item) => item,
@@ -239,6 +269,7 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: Bulk
         items={filteredItems}
         searchable
         searchPlaceholder={`Search bulk ${subTab}...`}
+        gradeFilterable
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -246,6 +277,7 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange }: Bulk
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
+          GradeColumn(),
           {
             header: '',
             accessor: (item) => item,
@@ -281,6 +313,7 @@ export function PackagedInventoryView({ items, stats }: PackagedViewProps) {
         items={items}
         searchable
         searchPlaceholder="Search packaged inventory..."
+        gradeFilterable
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -288,6 +321,7 @@ export function PackagedInventoryView({ items, stats }: PackagedViewProps) {
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
+          GradeColumn(),
           {
             header: '',
             accessor: (item) => item,

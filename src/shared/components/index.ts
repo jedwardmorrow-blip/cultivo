@@ -6,3 +6,5 @@ export { FormField } from './FormField';
 export { FormInput } from './FormInput';
 export { RevenueSparkline } from './RevenueSparkline';
 export { DateRangeFilter } from './DateRangeFilter';
+export { QualityGradeBadge } from './QualityGradeBadge';
+export { QualityGradeSelector } from './QualityGradeSelector';

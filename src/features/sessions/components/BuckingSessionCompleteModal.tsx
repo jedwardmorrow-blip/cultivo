@@ -3,6 +3,7 @@ import { formatElapsedTime } from '../utils';
 import type { BuckingSession, BuckingCompleteForm } from '../types';
 import { completeBuckingSession } from '../services/sessions.service';
 import { notificationService } from '@/services/notification.service';
+import { QualityGradeSelector } from '@/shared/components';
 
 interface BuckingSessionCompleteModalProps {
   session: BuckingSession;
@@ -173,6 +174,11 @@ export function BuckingSessionCompleteModal({
                 </p>
               )}
             </div>
+
+            <QualityGradeSelector
+              value={formData.quality_grade_id ?? null}
+              onChange={(gradeId) => setFormData(prev => ({ ...prev, quality_grade_id: gradeId }))}
+            />
 
             <div>
               <label className="block text-sm font-medium text-cult-white mb-1">Additional Notes</label>
