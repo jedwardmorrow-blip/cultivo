@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { ChevronDown, Scissors, Package, Tag, FileWarning, CheckCircle2, Loader2, ExternalLink, FlaskConical } from 'lucide-react';
 import { QualityGradeBadge } from '@/shared/components';
+import { formatCurrency } from '@/shared/utils/format';
 import { getOrderItemsForCalendar, type CalendarOrderItem } from '../services/delivery.service';
 
 const ITEM_STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; label: string; Icon: typeof Scissors }> = {
@@ -90,6 +91,18 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                       <span className="text-cult-light-gray">
                         {item.quantity} {item.pricing_unit || 'units'}
                       </span>
+                      {item.unit_price > 0 && (
+                        <>
+                          <span className="text-cult-medium-gray">&middot;</span>
+                          <span className="text-cult-lighter-gray">{formatCurrency(item.unit_price)}/{item.pricing_unit || 'unit'}</span>
+                        </>
+                      )}
+                      {item.total_price > 0 && (
+                        <>
+                          <span className="text-cult-medium-gray">&middot;</span>
+                          <span className="text-cult-white font-semibold">{formatCurrency(item.total_price)}</span>
+                        </>
+                      )}
                       {item.batch_number ? (
                         <>
                           <span className="text-cult-medium-gray">&middot;</span>

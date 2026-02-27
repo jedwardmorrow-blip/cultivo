@@ -340,6 +340,8 @@ export interface CalendarOrderItem {
   strain_name: string | null;
   quantity: number;
   pricing_unit: string | null;
+  unit_price: number;
+  total_price: number;
   status: string | null;
   is_sample: boolean;
   batch_number: string | null;
@@ -353,6 +355,8 @@ export async function getOrderItemsForCalendar(orderId: string): Promise<{ data:
       .select(`
         id,
         quantity,
+        unit_price,
+        total_price,
         status,
         is_sample,
         strain,
@@ -377,6 +381,8 @@ export async function getOrderItemsForCalendar(orderId: string): Promise<{ data:
         strain_name: row.strain || null,
         quantity: Number(row.quantity),
         pricing_unit: product?.pricing_unit || null,
+        unit_price: Number(row.unit_price || 0),
+        total_price: Number(row.total_price || 0),
         status: row.status || null,
         is_sample: row.is_sample ?? false,
         batch_number: row.batch_registry?.batch_number || null,
