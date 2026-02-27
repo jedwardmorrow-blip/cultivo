@@ -4,6 +4,22 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-27 - Fix 14g Smalls Naming & Finalization Status Sync
+
+**Type:** Bug Fix
+**Module:** Inventory / Sessions / Conversions
+**Status:** COMPLETE
+
+Fixed a naming mismatch in the packaging trigger that caused 14g items to be labeled "14g Flower" instead of "14g Smalls", preventing package assignment to orders requesting "14g Smalls". Also fixed a finalization status sync gap that caused already-finalized sessions to still appear as pending in the conversions view.
+
+- **Trigger Fix:** Updated `set_packaging_product_names()` to generate `'14g Smalls'` instead of `'14g Flower'`. The 14g = Smalls convention is established system-wide (products catalog, `productNaming.ts`, order items). 3.5g Flower and 1lb Flower (454g) were already correct.
+- **RPC Fix:** Updated `finalize_session_aggregated()` packaging path to also set product-specific finalization columns (`finalization_status_14g`, `_3_5g`, `_1lb`) alongside the generic `finalization_status_packaged`. This prevents the `pending_conversion_sessions` view from showing already-finalized sessions as pending (double-finalization risk).
+- **Data Backfill:** Corrected 3 packaging sessions (`output_product_14g_name`), 1 inventory item (`product_name`), and synced 1 session's `finalization_status_14g` to match its already-finalized generic status.
+- **Migration:** `20260227_fix_14g_naming_and_finalization_sync.sql`
+- **No frontend changes required.** The inventory name now matches order product names, so package assignment works immediately.
+
+---
+
 ## 2026-02-26 - Distribution Calendar: Route-Aware Delivery Planning
 
 **Type:** Feature Enhancement

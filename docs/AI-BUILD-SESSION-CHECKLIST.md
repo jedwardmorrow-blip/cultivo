@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-26
+updated: 2026-02-27
 priority: Working document - update every session
 ---
 
@@ -14,35 +14,33 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-26
-**Session:** Distribution Calendar: Route-Aware Delivery Planning
+**Date:** 2026-02-27
+**Session:** Fix 14g Smalls Naming & Finalization Status Sync
 **Status:** COMPLETE
 
 **What was done:**
 
-Enhanced the Distribution Calendar with geographic route zone awareness, unscheduled orders planning panel, and intelligent day-suggestion hints.
+Fixed a bug where the packaging trigger named 14g items "14g Flower" instead of "14g Smalls", causing package assignment failures for orders (e.g., Story Bell). Also fixed a finalization status sync gap in the RPC.
 
-**1. Route Zone System (new)**
-- `src/features/delivery/utils/routeZones.ts` — 5 named zones (Local, East Valley, West Valley, Tucson, Northern AZ) classified by haversine distance + bearing from facility. Each zone has color tokens for UI.
-- `src/features/delivery/utils/index.ts` — Barrel exports.
+**1. Trigger Fix (database)**
+- `set_packaging_product_names()` — Changed `'14g Flower'` to `'14g Smalls'` in the 14g product name template. Convention: 14g = Smalls system-wide (products catalog, `productNaming.ts`, all historical 14g sessions sourced from Bulk Smalls).
 
-**2. Enriched Data Loading**
-- `delivery.service.ts` — New `getEnrichedCalendarOrders()` replaces 3-query waterfall with parallel fetches (orders + customers + items + cached routes). Returns `CalendarOrder` interface with customer geo, zone, and route cache data.
-- `delivery.service.ts` — New `clearOrderDeliveryDate()` utility.
+**2. RPC Fix (database)**
+- `finalize_session_aggregated()` — Packaging path now also sets product-specific finalization columns (`finalization_status_14g`, `_3_5g`, `_1lb`) alongside the generic `finalization_status_packaged`. Prevents `pending_conversion_sessions` view from showing already-finalized sessions as pending.
 
-**3. Calendar Enhancements**
-- `DistributionCalendar.tsx` — Full rewrite. Stats bar now 4 cards (added "Needs Prep 7d"). Day cells show zone dots, readiness indicators, cached drive time. "Plan" button toggles unscheduled panel. Drag-from-panel suggestions pulse best-fit days.
-- `UnscheduledOrdersPanel.tsx` (new) — Right-side slide-in drawer listing unscheduled orders grouped by zone. Draggable order cards.
-- `DayDetailModal.tsx` (new) — Orders grouped by zone with readiness badges, distance, and drive time per order. Zone summary footer.
+**3. Data Backfill (database)**
+- 3 packaging sessions: `output_product_14g_name` corrected from `'14g Flower'` to `'14g Smalls'`
+- 1 inventory item (`260227-BLM-001`): `product_name` corrected
+- 1 session (Black Maple): `finalization_status_14g` synced to `'finalized'` to match its `finalization_status_packaged`
 
-**4. Module Exports**
-- Updated `components/index.ts`, `services/index.ts`, `delivery/index.ts` with all new exports.
+**Migration:** `fix_14g_naming_and_finalization_sync`
+**No frontend changes.** Inventory names now match order product names.
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
-- `preferred_delivery_day` is currently null for all customers — will be populated via CRM interface over time
+- White Devil 14g session (`e8091c75`) still pending in both columns — never finalized, no inventory created yet. Will finalize naturally when operator processes it.
 
 **Next recommendations (in order):**
 1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
