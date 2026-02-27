@@ -302,6 +302,17 @@ export interface CustomerProductMix {
   order_count: number;
 }
 
+export interface CRMCalendarOrder {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  customer_name: string;
+  requested_delivery_date: string;
+  total_amount: number;
+  status: string;
+  item_count: number;
+}
+
 export interface ChainLocationPerformance {
   child_id: string;
   child_name: string;

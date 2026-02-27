@@ -1,5 +1,7 @@
-import { Package, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Package, ExternalLink, ChevronDown } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/shared/utils/format';
+import { OrderItemsExpander } from '@/features/delivery/components/OrderItemsExpander';
 
 interface AccountOrder {
   id: string;
@@ -29,6 +31,8 @@ function getOrderStatusColor(status: string): string {
 }
 
 export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: AccountOrderHistoryProps) {
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
   if (orders.length === 0) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
@@ -42,6 +46,10 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
   }
 
   const totalValue = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+
+  const toggleExpand = (orderId: string) => {
+    setExpandedOrderId(prev => prev === orderId ? null : orderId);
+  };
 
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
@@ -65,6 +73,7 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
         <table className="w-full">
           <thead>
             <tr className="border-b border-cult-charcoal">
+              <th className="px-2 py-3 w-8"></th>
               <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Order</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Date</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Amount</th>
@@ -74,38 +83,60 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-charcoal/50">
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                onClick={() => onSelectOrder?.(order.id)}
-                className={`hover:bg-cult-dark-gray/50 transition-colors ${onSelectOrder ? 'cursor-pointer' : ''}`}
-              >
-                <td className="px-4 py-3">
-                  <span className="text-sm font-mono text-cult-white">{order.order_number}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-cult-light-gray">{formatDate(order.order_date)}</span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <span className="text-sm font-semibold text-cult-white">{formatCurrency(Number(order.total_amount))}</span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase ${getOrderStatusColor(order.status)}`}>
-                    {order.status.replace(/_/g, ' ')}
-                  </span>
-                </td>
-                <td className="px-4 py-3 hidden md:table-cell">
-                  <span className="text-xs text-cult-light-gray">
-                    {order.requested_delivery_date ? formatDate(order.requested_delivery_date) : '-'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {onSelectOrder && (
-                    <ExternalLink className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-white" />
-                  )}
-                </td>
-              </tr>
-            ))}
+            {orders.map((order) => {
+              const isExpanded = expandedOrderId === order.id;
+              return (
+                <tr key={order.id} className="group">
+                  <td colSpan={7} className="p-0">
+                    <div>
+                      <div
+                        className={`flex items-center hover:bg-cult-dark-gray/50 transition-colors ${onSelectOrder ? 'cursor-pointer' : ''}`}
+                        onClick={() => toggleExpand(order.id)}
+                      >
+                        <div className="px-2 py-3 w-8 flex items-center justify-center">
+                          <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </div>
+                        <div className="px-4 py-3 flex-1 min-w-0">
+                          <span className="text-sm font-mono text-cult-white">{order.order_number}</span>
+                        </div>
+                        <div className="px-4 py-3">
+                          <span className="text-sm text-cult-light-gray">{formatDate(order.order_date)}</span>
+                        </div>
+                        <div className="px-4 py-3 text-right">
+                          <span className="text-sm font-semibold text-cult-white">{formatCurrency(Number(order.total_amount))}</span>
+                        </div>
+                        <div className="px-4 py-3 text-center">
+                          <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase ${getOrderStatusColor(order.status)}`}>
+                            {order.status.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="px-4 py-3 hidden md:block">
+                          <span className="text-xs text-cult-light-gray">
+                            {order.requested_delivery_date ? formatDate(order.requested_delivery_date) : '-'}
+                          </span>
+                        </div>
+                        <div className="px-4 py-3 w-10">
+                          {onSelectOrder && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onSelectOrder(order.id); }}
+                              className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors"
+                              title="View full order"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {isExpanded && (
+                        <div className="px-5 pb-3 pt-1 bg-cult-dark-gray/20 border-t border-cult-charcoal/30">
+                          <OrderItemsExpander orderId={order.id} onSelectOrder={onSelectOrder} />
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

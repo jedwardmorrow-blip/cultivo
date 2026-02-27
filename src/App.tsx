@@ -236,7 +236,7 @@ function AppContent() {
       case 'crm-queue':
         return <SalesQueue />;
       case 'crm-visit-calendar':
-        return <VisitCalendar />;
+        return <VisitCalendar onSelectOrder={handleSelectOrder} />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':
@@ -244,7 +244,7 @@ function AppContent() {
       default:
         if (currentView.startsWith('crm-account-detail:')) {
           const acctId = currentView.replace('crm-account-detail:', '');
-          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} />;
+          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />;
         }
         return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
     }

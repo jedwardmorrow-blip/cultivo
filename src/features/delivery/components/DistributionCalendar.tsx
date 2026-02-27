@@ -3,22 +3,12 @@ import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle,
 import { formatCurrency } from '@/lib/utils';
 import { getEnrichedCalendarOrders, updateOrderDeliveryDate as updateDeliveryDate, type CalendarOrder } from '../services/delivery.service';
 import { formatDuration } from '../services/routing.service';
-import { getRouteZone, getRouteZoneId } from '../utils';
+import { getRouteZone, getRouteZoneId, getOrderStatusStyle, isOrderReadyStatus } from '../utils';
 import { supabase } from '@/lib/supabase';
 import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
 import { DayDetailModal } from './DayDetailModal';
 import { OrderItemsExpander } from './OrderItemsExpander';
 
-const ORDER_STATUS_COLORS: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  submitted: { bg: 'bg-blue-900/30', text: 'text-blue-400', border: 'border-blue-600', label: 'Submitted' },
-  accepted: { bg: 'bg-cyan-900/30', text: 'text-cyan-400', border: 'border-cyan-600', label: 'Accepted' },
-  processing: { bg: 'bg-yellow-900/30', text: 'text-yellow-400', border: 'border-yellow-600', label: 'Processing' },
-  ready_for_delivery: { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-600', label: 'Ready' },
-  completed: { bg: 'bg-emerald-900/30', text: 'text-emerald-400', border: 'border-emerald-600', label: 'Completed' },
-  cancelled: { bg: 'bg-red-900/30', text: 'text-red-400', border: 'border-red-600', label: 'Cancelled' },
-};
-
-const READY_STATUSES = new Set(['ready_for_delivery', 'completed']);
 
 function formatDateToLocal(date: Date): string {
   const year = date.getFullYear();
@@ -106,7 +96,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
     return allOrders.filter(o => {
       if (!o.requested_delivery_date) return false;
       const d = new Date(o.requested_delivery_date + 'T00:00:00');
-      return d >= now && d <= weekFromNow && !READY_STATUSES.has(o.status);
+      return d >= now && d <= weekFromNow && !isOrderReadyStatus(o.status);
     }).length;
   }, [allOrders]);
 
@@ -374,8 +364,8 @@ function DayCell({
     return zoneSet;
   }, [orders]);
 
-  const allReady = orders.length > 0 && orders.every(o => READY_STATUSES.has(o.status));
-  const someNotReady = orders.length > 0 && orders.some(o => !READY_STATUSES.has(o.status));
+  const allReady = orders.length > 0 && orders.every(o => isOrderReadyStatus(o.status));
+  const someNotReady = orders.length > 0 && orders.some(o => !isOrderReadyStatus(o.status));
 
   const totalDuration = orders.reduce((sum, o) => sum + (o.cached_duration_seconds || 0), 0);
 
@@ -414,7 +404,7 @@ function DayCell({
       {orders.length > 0 && (
         <div className="flex-1 min-h-0 space-y-0.5 overflow-hidden">
           {orders.slice(0, 2).map(order => {
-            const sc = ORDER_STATUS_COLORS[order.status] || ORDER_STATUS_COLORS.submitted;
+            const sc = getOrderStatusStyle(order.status);
             return (
               <div
                 key={order.id}
@@ -484,7 +474,7 @@ function UpcomingDeliveriesTable({
       ) : (
         <div className="space-y-3">
           {sorted.map(order => {
-            const sc = ORDER_STATUS_COLORS[order.status] || ORDER_STATUS_COLORS.submitted;
+            const sc = getOrderStatusStyle(order.status);
             const zone = getRouteZone(order.customer_lat, order.customer_lon);
             return (
               <div

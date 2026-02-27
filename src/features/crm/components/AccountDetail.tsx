@@ -25,6 +25,7 @@ interface AccountDetailProps {
   onViewChange: (view: string) => void;
   onCreateOrder?: (customerId: string) => void;
   onCreateSampleOrder?: (customerId: string) => void;
+  onSelectOrder?: (orderId: string) => void;
 }
 
 const TABS = [
@@ -37,7 +38,7 @@ const TABS = [
 
 const DEFAULT_DETAIL_RANGE = computeDateRange('all_time');
 
-export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreateSampleOrder }: AccountDetailProps) {
+export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreateSampleOrder, onSelectOrder }: AccountDetailProps) {
   const {
     account,
     childAccounts,
@@ -188,7 +189,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
           )}
 
           <div className={`transition-opacity duration-200 ${deepDiveRefreshing ? 'opacity-60' : 'opacity-100'}`}>
-            {activeTab === 'orders' && <AccountOrderHistory orders={orders} periodLabel={detailDateRange.label} />}
+            {activeTab === 'orders' && <AccountOrderHistory orders={orders} onSelectOrder={onSelectOrder} periodLabel={detailDateRange.label} />}
             {activeTab === 'products' && <AccountProductMix productMix={productMix} loading={deepDiveLoading} periodLabel={detailDateRange.label} />}
             {activeTab === 'deliveries' && <AccountDeliveryHistory deliveries={deliveryHistory} loading={deepDiveLoading} periodLabel={detailDateRange.label} />}
           </div>

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
-import type { VisitSchedule, VisitScheduleInput } from '../types';
+import type { VisitSchedule, VisitScheduleInput, CRMCalendarOrder } from '../types';
 
 export async function getVisits(filters?: {
   customerId?: string;
@@ -153,5 +153,48 @@ export async function cancelVisit(visitId: string) {
   } catch (error) {
     errorService.handle(error, 'Failed to cancel visit');
     return { data: null, error };
+  }
+}
+
+export async function getOrdersForCRMCalendar(year: number, month: number): Promise<{ data: CRMCalendarOrder[]; error: any }> {
+  try {
+    const dateFrom = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const dateTo = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        order_number,
+        customer_id,
+        requested_delivery_date,
+        total_amount,
+        status,
+        customers:customer_id(name),
+        order_items(id)
+      `)
+      .gte('requested_delivery_date', dateFrom)
+      .lte('requested_delivery_date', dateTo)
+      .eq('archived', false)
+      .neq('status', 'cancelled');
+
+    if (error) throw error;
+
+    const orders: CRMCalendarOrder[] = (data || []).map((row: any) => ({
+      id: row.id,
+      order_number: row.order_number,
+      customer_id: row.customer_id,
+      customer_name: row.customers?.name || 'Unknown',
+      requested_delivery_date: row.requested_delivery_date,
+      total_amount: Number(row.total_amount || 0),
+      status: row.status,
+      item_count: Array.isArray(row.order_items) ? row.order_items.length : 0,
+    }));
+
+    return { data: orders, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load calendar orders');
+    return { data: [], error };
   }
 }
