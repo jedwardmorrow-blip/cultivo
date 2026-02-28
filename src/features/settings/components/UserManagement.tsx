@@ -164,7 +164,7 @@ export function UserManagement() {
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg"
         >
           <UserPlus className="w-5 h-5" />
           Add User
@@ -255,7 +255,7 @@ export function UserManagement() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-gray-100 transition disabled:opacity-50"
+                className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50"
               >
                 {submitting ? 'Creating...' : 'Create User'}
               </button>
@@ -278,7 +278,7 @@ export function UserManagement() {
       <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-cult-medium-gray">
+            <thead className="bg-cult-surface-sunken border-b border-cult-medium-gray">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
@@ -288,7 +288,7 @@ export function UserManagement() {
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-cult-border-subtle">
               {users.map((user) => (
                 <tr key={user.id} className="hover:bg-cult-surface-overlay">
                   <td className="px-4 py-3 text-sm text-white">{user.email}</td>
@@ -377,7 +377,7 @@ export function UserManagement() {
               <button
                 onClick={handleResetPassword}
                 disabled={resettingPassword}
-                className="flex-1 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition disabled:opacity-50"
+                className="flex-1 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50"
               >
                 {resettingPassword ? 'Sending...' : 'Send Reset Email'}
               </button>

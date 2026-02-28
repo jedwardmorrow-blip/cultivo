@@ -47,7 +47,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => onComplete(session)}
-                        className="bg-white text-black font-bold uppercase tracking-wider px-4 py-1.5 hover:bg-gray-200 transition-all duration-300 text-sm"
+                        className="bg-white text-black font-bold uppercase tracking-wider px-4 py-1.5 hover:bg-cult-surface-raised transition-all duration-300 text-sm"
                       >
                         Complete
                       </button>

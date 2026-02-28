@@ -181,7 +181,7 @@ export function PlantGroupsList() {
         </div>
         <button
           onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg text-sm"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg text-sm"
         >
           <Plus className="w-4 h-4" />
           New Group
@@ -304,7 +304,7 @@ export function PlantGroupsList() {
             <div className="flex gap-3">
               <button
                 onClick={confirmAdvance}
-                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all"
+                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all"
               >
                 Confirm
               </button>

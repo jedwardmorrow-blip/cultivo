@@ -70,9 +70,9 @@ export function InventoryLabelPrintModal({
             </div>
           </div>
 
-          <div className="p-16 bg-gray-100 flex items-center justify-center" style={{ minHeight: '600px' }}>
+          <div className="p-16 bg-cult-surface flex items-center justify-center" style={{ minHeight: '600px' }}>
             {isLoading && (
-              <div className="text-gray-600 text-center">
+              <div className="text-cult-text-faint text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-border-strong mx-auto mb-4"></div>
                 <p>Loading label data...</p>
               </div>

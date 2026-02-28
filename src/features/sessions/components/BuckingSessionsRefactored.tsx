@@ -55,7 +55,7 @@ export function BuckingSessionsRefactored() {
         </div>
         <button
           onClick={() => setShowStartForm(!showStartForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg"
         >
           <Plus className="w-5 h-5" />
           Start New Tote

@@ -367,7 +367,7 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
         <button
           onClick={handleSave}
           disabled={!canSave}
-          className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Room'}
         </button>
@@ -518,7 +518,7 @@ export function GrowRoomsManagement() {
         </div>
         <button
           onClick={() => { setShowAddForm(!showAddForm); setEditingRoom(null); }}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg text-sm"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg text-sm"
         >
           <Plus className="w-4 h-4" />
           Add Room

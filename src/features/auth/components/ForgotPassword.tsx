@@ -104,7 +104,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-cult-black py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-cult-black py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>

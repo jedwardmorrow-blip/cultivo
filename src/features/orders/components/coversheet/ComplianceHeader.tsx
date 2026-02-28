@@ -85,7 +85,7 @@ export function ComplianceHeader({
       </div>
 
       {/* Pregnancy Warning - Required by Arizona Law */}
-      <div className="border-2 border-gray-400 bg-gray-50 p-4 max-w-2xl mx-auto">
+      <div className="border-2 border-cult-border bg-cult-surface-sunken p-4 max-w-2xl mx-auto">
         <p className="text-sm leading-relaxed italic">
           {displayWarning}
         </p>

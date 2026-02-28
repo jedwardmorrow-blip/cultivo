@@ -82,7 +82,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
         <button
           onClick={handleAdd}
           disabled={!canSave}
-          className="flex items-center gap-1.5 bg-white text-cult-black px-3 py-1.5 text-xs font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 bg-white text-cult-black px-3 py-1.5 text-xs font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-3.5 h-3.5" />
           {saving ? '...' : 'Add'}

@@ -312,7 +312,7 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
   if (history.length === 0) {
     return (
       <div className="text-center py-12">
-        <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+        <Package className="w-12 h-12 text-cult-text-faint mx-auto mb-4" />
         <p className="text-cult-text-muted">No conversion history found for the selected filters</p>
       </div>
     );
@@ -386,7 +386,7 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
                     {item.weight_variance_pct?.toFixed(1)}%
                   </span>
                 ) : (
-                  <span className="text-gray-600">-</span>
+                  <span className="text-cult-text-faint">-</span>
                 )}
               </td>
             </tr>
@@ -401,7 +401,7 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
   if (metrics.length === 0) {
     return (
       <div className="text-center py-12">
-        <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+        <TrendingUp className="w-12 h-12 text-cult-text-faint mx-auto mb-4" />
         <p className="text-cult-text-muted">No performance metrics found for the selected filters</p>
       </div>
     );
@@ -468,7 +468,7 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
                     {item.avg_variance_pct.toFixed(1)}%
                   </span>
                 ) : (
-                  <span className="text-gray-600">-</span>
+                  <span className="text-cult-text-faint">-</span>
                 )}
               </td>
             </tr>

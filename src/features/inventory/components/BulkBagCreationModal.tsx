@@ -169,16 +169,16 @@ export function BulkBagCreationModal({
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border-subtle">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Create Bulk Bags</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-cult-text-primary">Create Bulk Bags</h2>
+              <p className="text-sm text-cult-text-faint mt-1">
                 {session.strain_name} · {session.batch_name} · {session.product_name}
               </p>
             </div>
             <button
               onClick={handleClose}
-              className="text-cult-text-muted hover:text-gray-600 transition-colors"
+              className="text-cult-text-muted hover:text-cult-text-faint transition-colors"
               disabled={isSubmitting}
             >
               <X className="w-6 h-6" />
@@ -265,20 +265,20 @@ export function BulkBagCreationModal({
             {/* Bags List */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-900">Bulk Bags</h3>
+                <h3 className="text-sm font-medium text-cult-text-primary">Bulk Bags</h3>
                 <div className="flex gap-2">
                   {bags.length > 0 && (
                     <>
                       <button
                         onClick={handleSplitEvenly}
-                        className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                        className="text-xs px-3 py-1 bg-cult-surface text-gray-700 rounded hover:bg-cult-surface-raised transition-colors"
                         disabled={isSubmitting}
                       >
                         Split Evenly
                       </button>
                       <button
                         onClick={handleUseAllRemaining}
-                        className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                        className="text-xs px-3 py-1 bg-cult-surface text-gray-700 rounded hover:bg-cult-surface-raised transition-colors"
                         disabled={isSubmitting || remainingWeight <= 0}
                       >
                         Use Remaining
@@ -289,9 +289,9 @@ export function BulkBagCreationModal({
               </div>
 
               {bags.length === 0 ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-8 text-center">
                   <Package className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 mb-4">No bags added yet</p>
+                  <p className="text-sm text-cult-text-faint mb-4">No bags added yet</p>
                   <button
                     onClick={handleAddBag}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -306,18 +306,18 @@ export function BulkBagCreationModal({
                   {bags.map((bag, index) => (
                     <div
                       key={bag.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                      className="flex items-center gap-3 p-3 bg-cult-surface-sunken border border-cult-border-subtle rounded-lg"
                     >
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-blue-900">{index + 1}</span>
                       </div>
                       <div className="flex-1">
-                        <label className="block text-xs text-gray-600 mb-1">Weight (grams)</label>
+                        <label className="block text-xs text-cult-text-faint mb-1">Weight (grams)</label>
                         <input
                           type="number"
                           value={bag.weight || ''}
                           onChange={e => handleWeightChange(bag.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0"
                           min="0"
                           step="0.1"
@@ -336,7 +336,7 @@ export function BulkBagCreationModal({
 
                   <button
                     onClick={handleAddBag}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2 border-2 border-dashed border-cult-border rounded-lg text-cult-text-faint hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                     disabled={isSubmitting}
                   >
                     <Plus className="w-4 h-4" />
@@ -348,23 +348,23 @@ export function BulkBagCreationModal({
 
             {/* Summary */}
             {bags.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Summary</h4>
+              <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4">
+                <h4 className="text-sm font-medium text-cult-text-primary mb-3">Summary</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <div className="text-gray-600">Total Bags</div>
-                    <div className="font-semibold text-gray-900">{bags.length}</div>
+                    <div className="text-cult-text-faint">Total Bags</div>
+                    <div className="font-semibold text-cult-text-primary">{bags.length}</div>
                   </div>
                   <div>
-                    <div className="text-gray-600">Total Weight</div>
-                    <div className="font-semibold text-gray-900">{totalAllocated}g</div>
+                    <div className="text-cult-text-faint">Total Weight</div>
+                    <div className="font-semibold text-cult-text-primary">{totalAllocated}g</div>
                   </div>
                   <div>
-                    <div className="text-gray-600">Available</div>
-                    <div className="font-semibold text-gray-900">{availableWeight}g</div>
+                    <div className="text-cult-text-faint">Available</div>
+                    <div className="font-semibold text-cult-text-primary">{availableWeight}g</div>
                   </div>
                   <div>
-                    <div className="text-gray-600">Remaining</div>
+                    <div className="text-cult-text-faint">Remaining</div>
                     <div
                       className={`font-semibold ${
                         isOverAllocated
@@ -383,10 +383,10 @@ export function BulkBagCreationModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-700 bg-white border border-cult-border rounded-lg hover:bg-cult-surface-sunken transition-colors"
               disabled={isSubmitting}
             >
               Cancel

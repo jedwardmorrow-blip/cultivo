@@ -291,7 +291,7 @@ export function InvoiceManagement() {
 
               {selectedInvoice.notes && (
                 <div className="mt-8 pt-4 border-t">
-                  <p className="text-sm text-gray-600">{selectedInvoice.notes}</p>
+                  <p className="text-sm text-cult-text-faint">{selectedInvoice.notes}</p>
                 </div>
               )}
             </div>

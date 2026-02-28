@@ -134,19 +134,19 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border-subtle">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-cult-text-primary">
                 {step === 'success' ? 'Finalization Complete' : 'Review Session Output'}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-cult-text-faint mt-1">
                 {session.strain_name} · {session.batch_name} · {sessionTypeLabel}
               </p>
             </div>
             {step !== 'success' && (
               <button
                 onClick={handleCloseModal}
-                className="text-cult-text-muted hover:text-gray-600 transition-colors"
+                className="text-cult-text-muted hover:text-cult-text-faint transition-colors"
                 disabled={isLoading}
               >
                 <X className="w-6 h-6" />
@@ -236,7 +236,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 </div>
 
                 {/* Void Option */}
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-cult-border-subtle pt-4">
                   <button
                     onClick={() => setShowVoidConfirm(true)}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
@@ -274,7 +274,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                     onChange={(e) => setVoidReason(e.target.value)}
                     placeholder="Enter reason for voiding this session..."
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   />
                 </div>
 
@@ -284,7 +284,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       setShowVoidConfirm(false);
                       setVoidReason('');
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-2 border border-cult-border text-gray-700 rounded-lg hover:bg-cult-surface-sunken transition-colors"
                   >
                     Cancel
                   </button>
@@ -333,13 +333,13 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
             {step === 'review' && !showVoidConfirm && (
               <>
                 <button
                   onClick={handleCloseModal}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -370,7 +370,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 <button
                   onClick={() => setStep('review')}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>

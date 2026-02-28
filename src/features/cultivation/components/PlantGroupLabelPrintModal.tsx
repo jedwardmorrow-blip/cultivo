@@ -330,7 +330,7 @@ export function PlantGroupLabelPrintModal({
           <button
             onClick={() => onPrint(printRef.current)}
             disabled={isLoading || isPrinting || !!error || !labelData}
-            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPrinting ? (
               <Loader2 className="w-4 h-4 animate-spin" />

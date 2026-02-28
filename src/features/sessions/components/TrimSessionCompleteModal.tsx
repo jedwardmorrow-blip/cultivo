@@ -258,7 +258,7 @@ export function TrimSessionCompleteModal({
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="bg-white text-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-gray-200 transition-all duration-300"
+                className="bg-white text-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface-raised transition-all duration-300"
               >
                 Complete Session
               </button>

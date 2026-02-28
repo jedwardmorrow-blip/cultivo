@@ -533,7 +533,7 @@ export function CultivationDashboard() {
             <div className="flex gap-3">
               <button
                 onClick={confirmAdvance}
-                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all"
+                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all"
               >
                 Confirm
               </button>

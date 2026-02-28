@@ -166,7 +166,7 @@ export function HarvestReviewFinalize({
         <button
           onClick={handleFinalize}
           disabled={!canFinalize}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
         >
           <CheckCircle className="w-4 h-4" />
           {saving ? 'Finalizing...' : 'Finalize Harvest'}

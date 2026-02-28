@@ -86,7 +86,7 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
           <button
             onClick={handleSave}
             disabled={!parseFloat(adjustedWeight) || !reason.trim() || saving}
-            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Scale className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Adjustment'}
@@ -350,7 +350,7 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
         </div>
         <button
           onClick={() => setShowWorkflow(true)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg text-sm"
+          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg text-sm"
         >
           <Plus className="w-4 h-4" />
           Start Harvest

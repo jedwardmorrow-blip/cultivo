@@ -110,7 +110,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
       if (abs >= 5) return 'text-red-600 font-bold';
       if (abs >= 3) return 'text-orange-600 font-semibold';
       if (abs >= 1) return 'text-yellow-600';
-      return 'text-gray-600';
+      return 'text-cult-text-faint';
     };
 
     const { audit, lines } = auditData;
@@ -178,7 +178,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
           )}
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-4 gap-2 bg-gray-100 p-3 rounded">
+          <div className="grid grid-cols-4 gap-2 bg-cult-surface p-3 rounded">
             <div className="text-center">
               <div className="text-xs font-semibold">Total Lines</div>
               <div className="text-lg">{audit.total_lines}</div>
@@ -216,25 +216,25 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
             </thead>
             <tbody>
               {lines.map((line, index) => (
-                <tr key={line.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="border border-gray-300 px-2 py-1">{line.line_order}</td>
-                  <td className="border border-gray-300 px-2 py-1 font-mono text-xs">{line.package_id}</td>
-                  <td className="border border-gray-300 px-2 py-1">{line.product_name}</td>
-                  <td className="border border-gray-300 px-2 py-1">{line.strain || '-'}</td>
-                  <td className="border border-gray-300 px-2 py-1">{line.stage}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-right">
+                <tr key={line.id} className={index % 2 === 0 ? 'bg-white' : 'bg-cult-surface-sunken'}>
+                  <td className="border border-cult-border px-2 py-1">{line.line_order}</td>
+                  <td className="border border-cult-border px-2 py-1 font-mono text-xs">{line.package_id}</td>
+                  <td className="border border-cult-border px-2 py-1">{line.product_name}</td>
+                  <td className="border border-cult-border px-2 py-1">{line.strain || '-'}</td>
+                  <td className="border border-cult-border px-2 py-1">{line.stage}</td>
+                  <td className="border border-cult-border px-2 py-1 text-right">
                     {formatQty(line.expected_qty, line.unit)}
                   </td>
-                  <td className="border border-gray-300 px-2 py-1 text-right">
+                  <td className="border border-cult-border px-2 py-1 text-right">
                     {line.actual_qty !== null ? formatQty(line.actual_qty, line.unit) : '___.___ ' + line.unit}
                   </td>
-                  <td className={`border border-gray-300 px-2 py-1 text-right ${getVarianceClass(line.variance_percentage)}`}>
+                  <td className={`border border-cult-border px-2 py-1 text-right ${getVarianceClass(line.variance_percentage)}`}>
                     {line.variance_qty !== null && line.variance_percentage !== null
                       ? `${line.variance_qty > 0 ? '+' : ''}${line.variance_qty.toFixed(2)} (${line.variance_percentage.toFixed(1)}%)`
                       : '-'
                     }
                   </td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">
+                  <td className="border border-cult-border px-2 py-1 text-center">
                     {line.confirmed ? '✓' : '☐'}
                   </td>
                 </tr>
@@ -251,7 +251,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
 
         {/* Variance Summary */}
         {audit.variance_count > 0 && (
-          <div className="variance-summary mb-6 p-3 bg-gray-100 rounded">
+          <div className="variance-summary mb-6 p-3 bg-cult-surface rounded">
             <div className="font-semibold mb-2">Variance Summary:</div>
             <div className="text-sm">
               <div>Lines with Variance: {audit.variance_count} of {audit.total_lines}</div>
@@ -262,35 +262,35 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
         )}
 
         {/* Signatures */}
-        <div className="signatures mt-8 pt-6 border-t-2 border-gray-300">
+        <div className="signatures mt-8 pt-6 border-t-2 border-cult-border">
           <div className="grid grid-cols-2 gap-8">
             <div>
               <div className="mb-8">
                 <div className="font-semibold mb-2">Prepared By:</div>
                 <div className="border-b-2 border-cult-border-subtle pb-1 mb-1">{auditData.prepared_by_name}</div>
-                <div className="text-xs text-gray-600">Signature</div>
+                <div className="text-xs text-cult-text-faint">Signature</div>
               </div>
               <div>
                 <div className="border-b-2 border-cult-border-subtle pb-1 mb-1 w-32"></div>
-                <div className="text-xs text-gray-600">Date</div>
+                <div className="text-xs text-cult-text-faint">Date</div>
               </div>
             </div>
             <div>
               <div className="mb-8">
                 <div className="font-semibold mb-2">Reviewed By:</div>
                 <div className="border-b-2 border-cult-border-subtle pb-1 mb-1">_______________________</div>
-                <div className="text-xs text-gray-600">Signature</div>
+                <div className="text-xs text-cult-text-faint">Signature</div>
               </div>
               <div>
                 <div className="border-b-2 border-cult-border-subtle pb-1 mb-1 w-32"></div>
-                <div className="text-xs text-gray-600">Date</div>
+                <div className="text-xs text-cult-text-faint">Date</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="audit-footer text-center text-xs text-cult-text-muted mt-6 pt-4 border-t border-gray-300">
+        <div className="audit-footer text-center text-xs text-cult-text-muted mt-6 pt-4 border-t border-cult-border">
           <div>Generated: {formatDate(new Date().toISOString())}</div>
           <div>This is an official inventory audit document. Retain for compliance records.</div>
         </div>

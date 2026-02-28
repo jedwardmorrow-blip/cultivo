@@ -372,7 +372,7 @@ export function PackagingSessionStartForm({
         <div className="flex gap-3">
           <button
             type="submit"
-            className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-gray-100 transition"
+            className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface transition"
           >
             Start Session
           </button>

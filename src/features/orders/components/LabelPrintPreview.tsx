@@ -353,7 +353,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
             </button>
           </div>
         </div>
-        <div className="p-12 bg-gray-100 flex items-center justify-center overflow-hidden" style={{ minHeight: '600px' }}>
+        <div className="p-12 bg-cult-surface flex items-center justify-center overflow-hidden" style={{ minHeight: '600px' }}>
           <div style={{ transform: 'scale(2.8)', transformOrigin: 'center', margin: '80px' }}>
             {labelContent}
           </div>

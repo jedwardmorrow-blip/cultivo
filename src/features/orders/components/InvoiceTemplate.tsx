@@ -184,7 +184,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                       <div className="strain-info text-xs text-gray-700 mt-0.5">{strainInfo}</div>
                     )}
                     {batchInfo && (
-                      <div className="batch-info text-xs text-gray-600 mt-0.5 font-medium">{batchInfo}</div>
+                      <div className="batch-info text-xs text-cult-text-faint mt-0.5 font-medium">{batchInfo}</div>
                     )}
                   </td>
                   <td className="text-right py-2 px-2 text-sm align-top">

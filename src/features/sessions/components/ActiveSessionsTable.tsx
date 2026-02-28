@@ -47,7 +47,7 @@ export function ActiveSessionsTable({ sessions, onComplete, onCancel }: ActiveSe
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => onComplete(session)}
-                        className="bg-white text-black px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-gray-200 transition-all duration-300 text-sm"
+                        className="bg-white text-black px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-cult-surface-raised transition-all duration-300 text-sm"
                       >
                         Complete
                       </button>

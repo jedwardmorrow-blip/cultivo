@@ -168,7 +168,7 @@ export function VehiclesManagement() {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-cult-surface-raised transition-all duration-200 font-medium uppercase tracking-wider text-sm"
         >
           <Plus className="w-4 h-4" />
           Add Vehicle
@@ -365,13 +365,13 @@ export function VehiclesManagement() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-3 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+                  className="px-6 py-3 bg-white text-black hover:bg-cult-surface-raised transition-all duration-200 font-medium uppercase tracking-wider text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+                  className="px-6 py-3 bg-white text-black hover:bg-cult-surface-raised transition-all duration-200 font-medium uppercase tracking-wider text-sm"
                 >
                   {editingVehicle ? 'Update' : 'Add'} Vehicle
                 </button>

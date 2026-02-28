@@ -178,7 +178,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             <button
               onClick={handleAdd}
               disabled={addSaving}
-              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40"
             >
               {addSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
               {addSaving ? 'Saving...' : 'Save'}
@@ -207,7 +207,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             <button
               onClick={handleImport}
               disabled={importing || !importText.trim()}
-              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40"
             >
               {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
               {importing ? 'Importing...' : 'Import'}

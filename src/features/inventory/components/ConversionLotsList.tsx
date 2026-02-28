@@ -62,7 +62,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
             placeholder="Search by batch, strain, or product..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
@@ -72,7 +72,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
           className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
             showFilters
               ? 'bg-blue-50 border-blue-300 text-blue-700'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              : 'bg-white border-cult-border text-gray-700 hover:bg-cult-surface-sunken'
           }`}
         >
           <Filter className="w-5 h-5" />
@@ -82,7 +82,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
         {/* Sort button */}
         <button
           onClick={() => applySort({ field: 'strain_name', direction: 'asc' })}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 border border-cult-border rounded-lg bg-white text-gray-700 hover:bg-cult-surface-sunken transition-colors"
         >
           <ArrowUpDown className="w-5 h-5" />
           Sort
@@ -91,7 +91,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4">
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-3">Status</h3>
             <div className="flex flex-wrap gap-2">
@@ -100,7 +100,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   type="checkbox"
                   checked={statusFilter.includes('active')}
                   onChange={() => toggleStatus('active')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-cult-border text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">Active</span>
               </label>
@@ -109,7 +109,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   type="checkbox"
                   checked={statusFilter.includes('completed_today')}
                   onChange={() => toggleStatus('completed_today')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-cult-border text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-700">Completed Today</span>
               </label>
@@ -127,10 +127,10 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
 
       {/* Empty state */}
       {!isLoading && lots.length === 0 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+        <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-8 text-center">
           <Package className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No conversions pending</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-medium text-cult-text-primary mb-1">No conversions pending</h3>
+          <p className="text-sm text-cult-text-faint">
             Complete trim or packaging sessions to create pending conversions.
           </p>
         </div>
@@ -169,15 +169,15 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
         isCompleted
           ? 'bg-green-50 border-green-200 hover:bg-green-100'
           : lot.is_locked
-          ? 'bg-gray-50 border-gray-200 opacity-75 cursor-not-allowed'
-          : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
+          ? 'bg-cult-surface-sunken border-cult-border-subtle opacity-75 cursor-not-allowed'
+          : 'bg-white border-cult-border-subtle hover:border-blue-300 hover:shadow-md'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
         {/* Main info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-base font-semibold text-gray-900 truncate">
+            <h3 className="text-base font-semibold text-cult-text-primary truncate">
               {lot.strain_name}
             </h3>
             <span className="text-xs font-medium text-cult-text-muted">
@@ -185,7 +185,7 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
             </span>
           </div>
 
-          <p className="text-sm text-gray-600 mb-2">
+          <p className="text-sm text-cult-text-faint mb-2">
             {lot.product_name} · {lot.product_type}
           </p>
 
@@ -210,7 +210,7 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
         <div className="text-right">
           {isBulk ? (
             <>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-cult-text-primary">
                 {lot.remaining_weight?.toFixed(0) || 0}
                 <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
               </div>
@@ -220,7 +220,7 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
             </>
           ) : (
             <>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-cult-text-primary">
                 {lot.remaining_units || 0}
                 <span className="text-sm font-normal text-cult-text-muted ml-1">units</span>
               </div>

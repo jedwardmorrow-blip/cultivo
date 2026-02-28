@@ -59,7 +59,7 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
         <button
           onClick={handleAdd}
           disabled={saving || !label.trim()}
-          className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-cult-surface disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           {saving ? '...' : 'Save'}
         </button>
@@ -305,7 +305,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
         <button
           onClick={handleAdd}
           disabled={saving || !num}
-          className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-cult-surface disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           {saving ? '...' : 'Add Table'}
         </button>

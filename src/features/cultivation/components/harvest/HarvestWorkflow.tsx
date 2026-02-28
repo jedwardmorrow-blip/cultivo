@@ -204,7 +204,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('review')}
-                className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all text-sm"
+                className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all text-sm"
               >
                 Review & Finalize
               </button>

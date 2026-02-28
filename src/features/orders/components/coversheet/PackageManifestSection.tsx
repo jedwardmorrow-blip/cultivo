@@ -99,7 +99,7 @@ export function PackageManifestSection({
   if (loading) {
     return (
       <div className="border-2 border-black bg-white p-8 text-center compliance-section">
-        <div className="flex items-center justify-center gap-3 text-gray-600">
+        <div className="flex items-center justify-center gap-3 text-cult-text-faint">
           <Package className="w-6 h-6 animate-pulse" />
           <p className="text-lg">Loading package manifest...</p>
         </div>
@@ -120,8 +120,8 @@ export function PackageManifestSection({
 
   if (packages.length === 0) {
     return (
-      <div className="border-2 border-gray-300 bg-white p-8 text-center compliance-section">
-        <div className="flex items-center justify-center gap-3 text-gray-600">
+      <div className="border-2 border-cult-border bg-white p-8 text-center compliance-section">
+        <div className="flex items-center justify-center gap-3 text-cult-text-faint">
           <Package className="w-6 h-6" />
           <p className="text-lg">
             No packages assigned to this order. Complete package assignments to generate manifest.
@@ -144,7 +144,7 @@ export function PackageManifestSection({
   return (
     <div className="border-2 border-black bg-white compliance-section">
       {/* Section Header */}
-      <div className="border-b-2 border-black bg-gray-50 p-4">
+      <div className="border-b-2 border-black bg-cult-surface-sunken p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6" />
@@ -161,7 +161,7 @@ export function PackageManifestSection({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b-2 border-black bg-gray-100">
+            <tr className="border-b-2 border-black bg-cult-surface">
               <th className="text-left py-3 px-4 text-sm font-bold uppercase tracking-wide">
                 Package ID
               </th>
@@ -193,7 +193,7 @@ export function PackageManifestSection({
               <>
                 {/* Product Group Header (Optional - for visual organization) */}
                 {Object.keys(packagesByProduct).length > 1 && (
-                  <tr key={`header-${groupIndex}`} className="bg-gray-50 border-t border-gray-300">
+                  <tr key={`header-${groupIndex}`} className="bg-cult-surface-sunken border-t border-cult-border">
                     <td colSpan={showLabelStatus ? 6 : 5} className="py-2 px-4">
                       <span className="font-semibold text-sm uppercase tracking-wide text-gray-700">
                         {productName} ({productPackages.length} {productPackages.length === 1 ? 'package' : 'packages'})
@@ -211,7 +211,7 @@ export function PackageManifestSection({
                   return (
                     <tr
                       key={pkg.id}
-                      className="border-b border-gray-200 last:border-b-0"
+                      className="border-b border-cult-border-subtle last:border-b-0"
                     >
                       {/* Package ID */}
                       <td className="py-3 px-4">
@@ -264,7 +264,7 @@ export function PackageManifestSection({
                               Generated
                             </span>
                           ) : (
-                            <span className="inline-block px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded print:bg-transparent print:border print:border-cult-border-strong">
+                            <span className="inline-block px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-cult-surface text-cult-text-faint rounded print:bg-transparent print:border print:border-cult-border-strong">
                               Pending
                             </span>
                           )}
@@ -280,20 +280,20 @@ export function PackageManifestSection({
       </div>
 
       {/* Summary Footer */}
-      <div className="border-t-2 border-black p-4 bg-gray-50">
+      <div className="border-t-2 border-black p-4 bg-cult-surface-sunken">
         <div className="grid grid-cols-3 gap-4 text-center text-sm">
           <div>
-            <div className="text-gray-600 uppercase tracking-wide">Total Packages</div>
+            <div className="text-cult-text-faint uppercase tracking-wide">Total Packages</div>
             <div className="text-2xl font-bold">{packages.length}</div>
           </div>
           <div>
-            <div className="text-gray-600 uppercase tracking-wide">Labels Generated</div>
+            <div className="text-cult-text-faint uppercase tracking-wide">Labels Generated</div>
             <div className="text-2xl font-bold text-green-600">
               {packages.filter(p => p.label_number && !p.voided_at).length}
             </div>
           </div>
           <div>
-            <div className="text-gray-600 uppercase tracking-wide">Unique Strains</div>
+            <div className="text-cult-text-faint uppercase tracking-wide">Unique Strains</div>
             <div className="text-2xl font-bold text-blue-600">
               {new Set(packages.map(p => p.strain).filter(Boolean)).size}
             </div>

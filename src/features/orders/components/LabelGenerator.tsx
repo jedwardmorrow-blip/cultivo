@@ -1051,7 +1051,7 @@ export function LabelGenerator() {
                 </div>
               </div>
 
-              <div className="p-16 bg-gray-100 flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
+              <div className="p-16 bg-cult-surface flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
                 {imageError && (
                   <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
                     {imageError}

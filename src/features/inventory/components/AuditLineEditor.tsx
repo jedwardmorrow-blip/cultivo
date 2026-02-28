@@ -117,7 +117,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
     if (abs >= 5) return 'text-red-600 font-bold';
     if (abs >= 3) return 'text-orange-600 font-semibold';
     if (abs >= 1) return 'text-yellow-600';
-    return 'text-gray-600';
+    return 'text-cult-text-faint';
   };
 
   const formatQty = (qty: number, unit: string) => {
@@ -135,13 +135,13 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by package ID, product, or strain..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as any)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="all">All Lines</option>
           <option value="pending">Pending</option>
@@ -152,9 +152,9 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">Total Lines</div>
-          <div className="text-2xl font-bold text-gray-900">{lines.length}</div>
+        <div className="p-4 bg-cult-surface-sunken rounded-lg">
+          <div className="text-sm text-cult-text-faint">Total Lines</div>
+          <div className="text-2xl font-bold text-cult-text-primary">{lines.length}</div>
         </div>
         <div className="p-4 bg-green-50 rounded-lg">
           <div className="text-sm text-green-600">Confirmed</div>
@@ -177,37 +177,37 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
       </div>
 
       {/* Table */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-cult-border-subtle rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-cult-border-subtle">
+            <thead className="bg-cult-surface-sunken">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">#</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Package ID</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Product</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Stage</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase tracking-wider">Expected</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase tracking-wider">Actual</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase tracking-wider">Variance</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase tracking-wider">#</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Package ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Product</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Stage</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Expected</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Actual</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Variance</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-cult-border-subtle">
               {filteredLines.map(line => {
                 const isEditing = editingLineId === line.id;
                 const hasVariance = line.variance_qty !== null && Math.abs(line.variance_qty) > 0.01;
 
                 return (
                   <tr key={line.id} className={line.confirmed ? 'bg-green-50' : ''}>
-                    <td className="px-4 py-3 text-sm text-gray-900">{line.line_order}</td>
-                    <td className="px-4 py-3 text-sm font-mono text-gray-900">{line.package_id}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">{line.line_order}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-cult-text-primary">{line.package_id}</td>
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       <div>{line.product_name}</div>
                       {line.strain && <div className="text-xs text-cult-text-muted">{line.strain}</div>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{line.stage}</td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-900">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">{line.stage}</td>
+                    <td className="px-4 py-3 text-sm text-right text-cult-text-primary">
                       {formatQty(line.expected_qty, line.unit)}
                     </td>
                     <td className="px-4 py-3 text-sm text-right">
@@ -217,11 +217,11 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                           step="0.01"
                           value={editValues.actual_qty}
                           onChange={(e) => setEditValues(prev => ({ ...prev, actual_qty: e.target.value }))}
-                          className="w-24 px-2 py-1 border border-gray-300 rounded text-right focus:ring-2 focus:ring-blue-500"
+                          className="w-24 px-2 py-1 border border-cult-border rounded text-right focus:ring-2 focus:ring-blue-500"
                           autoFocus
                         />
                       ) : line.actual_qty !== null ? (
-                        <span className="text-gray-900">{formatQty(line.actual_qty, line.unit)}</span>
+                        <span className="text-cult-text-primary">{formatQty(line.actual_qty, line.unit)}</span>
                       ) : (
                         <span className="text-cult-text-muted">—</span>
                       )}
@@ -256,7 +256,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                               <select
                                 value={editValues.variance_reason}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, variance_reason: e.target.value as VarianceReason }))}
-                                className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                className="px-2 py-1 text-xs border border-cult-border rounded focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Select reason...</option>
                                 {varianceReasons.map(r => (

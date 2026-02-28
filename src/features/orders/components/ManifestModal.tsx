@@ -186,17 +186,17 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
 
             /* Preserve all background colors */
             .bg-white { background-color: white !important; }
-            .bg-gray-50 { background-color: #f9fafb !important; }
-            .bg-gray-100 { background-color: #f3f4f6 !important; }
+            .bg-cult-surface-sunken { background-color: #f9fafb !important; }
+            .bg-cult-surface { background-color: #f3f4f6 !important; }
 
             /* Preserve all border colors */
             .border-black { border-color: black !important; }
-            .border-gray-300 { border-color: #d1d5db !important; }
-            .border-gray-400 { border-color: #9ca3af !important; }
+            .border-cult-border { border-color: #d1d5db !important; }
+            .border-cult-border { border-color: #9ca3af !important; }
 
             /* Preserve all text colors */
             .text-black { color: black !important; }
-            .text-gray-600 { color: #4b5563 !important; }
+            .text-cult-text-faint { color: #4b5563 !important; }
             .text-gray-700 { color: #374151 !important; }
 
             /* Border widths */
@@ -561,7 +561,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
               </button>
             </div>
 
-            <div className="bg-gray-100 p-4 max-h-[70vh] overflow-y-auto">
+            <div className="bg-cult-surface p-4 max-h-[70vh] overflow-y-auto">
               <ManifestTemplate ref={manifestRef} manifestData={manifestData} onImagesLoaded={() => setImagesLoaded(true)} />
             </div>
             <div style={{ display: 'none' }}>
