@@ -51,7 +51,7 @@ export function ResetPassword() {
             <p className="text-cult-light-gray mb-4">
               Your password has been successfully updated
             </p>
-            <p className="text-sm text-gray-400">Redirecting to login...</p>
+            <p className="text-sm text-cult-text-muted">Redirecting to login...</p>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@ export function ResetPassword() {
               New Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cult-text-muted" />
               <input
                 id="password"
                 type="password"
@@ -87,7 +87,7 @@ export function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
+                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
                 placeholder="Min. 6 characters"
               />
             </div>
@@ -98,7 +98,7 @@ export function ResetPassword() {
               Confirm New Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cult-text-muted" />
               <input
                 id="confirmPassword"
                 type="password"
@@ -106,7 +106,7 @@ export function ResetPassword() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
+                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
                 placeholder="Confirm your password"
               />
             </div>

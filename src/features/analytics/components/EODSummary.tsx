@@ -81,7 +81,7 @@ export function EODSummary() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">End of Day Summary</h1>
-          <p className="text-gray-300 mt-1">Consolidated packages ready for Dutchie conversion</p>
+          <p className="text-cult-text-secondary mt-1">Consolidated packages ready for Dutchie conversion</p>
         </div>
         <button
           onClick={handlePrint}

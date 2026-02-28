@@ -57,7 +57,7 @@ export function CombinePackagesModal({
             <button
               onClick={onClose}
               disabled={workflow.step === 'completing'}
-              className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              className="text-cult-text-muted hover:text-gray-600 transition-colors disabled:opacity-50"
             >
               <X className="w-6 h-6" />
             </button>
@@ -68,16 +68,16 @@ export function CombinePackagesModal({
             <div className="flex items-center gap-2 text-sm">
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'select_packages' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'select_packages' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>1. Review</span>
                 {workflow.step !== 'select_packages' && <CheckCircle className="w-4 h-4 text-green-600" />}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'generate_id' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'generate_id' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>2. ID</span>
@@ -85,10 +85,10 @@ export function CombinePackagesModal({
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 )}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'confirm_variance' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'confirm_variance' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>3. Confirm</span>
@@ -96,10 +96,10 @@ export function CombinePackagesModal({
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 )}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'complete' ? 'text-green-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'complete' ? 'text-green-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>4. Done</span>
@@ -191,10 +191,10 @@ export function CombinePackagesModal({
                         <table className="w-full text-sm">
                           <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                              <th className="px-3 py-2 text-left text-xs font-medium text-cult-text-muted uppercase">
                                 Package ID
                               </th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                              <th className="px-3 py-2 text-right text-xs font-medium text-cult-text-muted uppercase">
                                 Quantity
                               </th>
                             </tr>
@@ -252,7 +252,7 @@ export function CombinePackagesModal({
                       <RefreshCw className="w-4 h-4 text-gray-600" />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-cult-text-muted mt-1">
                     Format: YYMMDD-STRAIN-### (must be unique)
                   </p>
                 </div>
@@ -383,7 +383,7 @@ export function CombinePackagesModal({
                         </p>
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 mt-4">Closing automatically...</p>
+                    <p className="text-xs text-cult-text-muted mt-4">Closing automatically...</p>
                   </div>
                 )}
               </div>

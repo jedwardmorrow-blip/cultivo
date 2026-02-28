@@ -266,7 +266,7 @@ export function UserManagement() {
                   setError('');
                   setFormData({ email: '', password: '', fullName: '', role: 'user' });
                 }}
-                className="bg-cult-medium-gray text-white px-6 py-2 font-bold uppercase tracking-wider hover:bg-gray-600 transition"
+                className="bg-cult-medium-gray text-white px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
               >
                 Cancel
               </button>
@@ -290,7 +290,7 @@ export function UserManagement() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-700">
+                <tr key={user.id} className="hover:bg-cult-surface-overlay">
                   <td className="px-4 py-3 text-sm text-white">{user.email}</td>
                   <td className="px-4 py-3 text-sm text-cult-light-gray">{user.full_name || '-'}</td>
                   <td className="px-4 py-3 text-sm">
@@ -326,7 +326,7 @@ export function UserManagement() {
                       <button
                         onClick={() => handleToggleActive(user.id, user.is_active)}
                         disabled={user.id === profile?.id}
-                        className="text-xs font-medium text-white hover:text-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-xs font-medium text-white hover:text-cult-text-secondary transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {user.is_active ? 'Deactivate' : 'Activate'}
                       </button>
@@ -347,7 +347,7 @@ export function UserManagement() {
 
         {users.length === 0 && (
           <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <Users className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
             <p className="text-cult-light-gray">No users found</p>
           </div>
         )}
@@ -387,7 +387,7 @@ export function UserManagement() {
                   setError('');
                 }}
                 disabled={resettingPassword}
-                className="flex-1 bg-cult-medium-gray text-white px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-600 transition disabled:opacity-50"
+                className="flex-1 bg-cult-medium-gray text-white px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition disabled:opacity-50"
               >
                 Cancel
               </button>

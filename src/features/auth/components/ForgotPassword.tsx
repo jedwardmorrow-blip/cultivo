@@ -55,7 +55,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
             <button
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-600 transition"
+              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
@@ -87,14 +87,14 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cult-text-muted" />
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
+                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
                 placeholder="you@example.com"
               />
             </div>
@@ -112,7 +112,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
             <button
               type="button"
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-600 transition"
+              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

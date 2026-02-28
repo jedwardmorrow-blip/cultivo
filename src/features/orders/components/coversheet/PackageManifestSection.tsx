@@ -244,7 +244,7 @@ export function PackageManifestSection({
                             {pkg.label_number}
                           </span>
                         ) : (
-                          <span className="text-gray-400 text-sm italic">No label</span>
+                          <span className="text-cult-text-muted text-sm italic">No label</span>
                         )}
                       </td>
 
@@ -264,7 +264,7 @@ export function PackageManifestSection({
                               Generated
                             </span>
                           ) : (
-                            <span className="inline-block px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded print:bg-transparent print:border print:border-gray-600">
+                            <span className="inline-block px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded print:bg-transparent print:border print:border-cult-border-strong">
                               Pending
                             </span>
                           )}

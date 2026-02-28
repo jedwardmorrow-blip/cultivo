@@ -110,7 +110,7 @@ export function VarianceLogViewer({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-cult-text-muted" />
             <input
               type="text"
               value={searchTerm}
@@ -276,7 +276,7 @@ export function VarianceLogViewer({
                   <td className="px-4 py-3 text-sm font-mono text-gray-900">{entry.package_id}</td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     <div>{entry.product_name}</div>
-                    {entry.strain && <div className="text-xs text-gray-500">{entry.strain}</div>}
+                    {entry.strain && <div className="text-xs text-cult-text-muted">{entry.strain}</div>}
                   </td>
                   <td className="px-4 py-3 text-sm text-right text-gray-900">
                     {entry.expected_qty.toFixed(2)} {entry.unit}
@@ -310,7 +310,7 @@ export function VarianceLogViewer({
         </div>
 
         {entries.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-cult-text-muted">
             <p>No variance entries found</p>
           </div>
         )}

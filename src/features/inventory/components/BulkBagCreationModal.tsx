@@ -178,7 +178,7 @@ export function BulkBagCreationModal({
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-cult-text-muted hover:text-gray-600 transition-colors"
               disabled={isSubmitting}
             >
               <X className="w-6 h-6" />
@@ -290,7 +290,7 @@ export function BulkBagCreationModal({
 
               {bags.length === 0 ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <Package className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
                   <p className="text-sm text-gray-600 mb-4">No bags added yet</p>
                   <button
                     onClick={handleAddBag}

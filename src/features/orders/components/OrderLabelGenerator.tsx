@@ -318,7 +318,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           )}
 
           {labels.length === 0 && unlabeledAssignments.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-cult-text-muted">
               <Tag className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg">No package assignments found for this order.</p>
               <p className="text-sm mt-2">Assign packages to order items to generate labels.</p>

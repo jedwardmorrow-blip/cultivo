@@ -146,7 +146,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
             {step !== 'success' && (
               <button
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-cult-text-muted hover:text-gray-600 transition-colors"
                 disabled={isLoading}
               >
                 <X className="w-6 h-6" />

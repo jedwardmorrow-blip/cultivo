@@ -99,7 +99,7 @@ export function BatchComplianceTable({
                         View
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">N/A</span>
+                      <span className="text-cult-text-muted text-sm">N/A</span>
                     )}
                   </td>
                 )}

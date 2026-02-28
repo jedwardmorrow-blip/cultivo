@@ -106,17 +106,17 @@ export function InvoiceManagement() {
 
   function getStatusColor(status: string) {
     const colors: Record<string, string> = {
-      draft: 'bg-gray-700 text-gray-300',
+      draft: 'bg-cult-surface-overlay text-cult-text-secondary',
       sent: 'bg-blue-900/30 text-blue-400 border-blue-600',
       paid: 'bg-green-900/30 text-green-400 border-green-600',
       overdue: 'bg-red-900/30 text-red-400 border-red-600',
-      cancelled: 'bg-gray-900/30 text-gray-400 border-gray-600',
+      cancelled: 'bg-cult-surface/30 text-cult-text-muted border-cult-border-strong',
     };
     return colors[status] || colors.draft;
   }
 
   if (loading) {
-    return <div className="text-gray-400">Loading invoices...</div>;
+    return <div className="text-cult-text-muted">Loading invoices...</div>;
   }
 
   return (
@@ -133,10 +133,10 @@ export function InvoiceManagement() {
           </h3>
           <div className="space-y-2">
             {pendingInvoices.map(pending => (
-              <div key={pending.order_id} className="flex items-center justify-between p-3 bg-gray-900/50 rounded">
+              <div key={pending.order_id} className="flex items-center justify-between p-3 bg-cult-surface/50 rounded">
                 <div>
                   <div className="text-white font-medium">{pending.order_number}</div>
-                  <div className="text-sm text-gray-400">{pending.customer_name}</div>
+                  <div className="text-sm text-cult-text-muted">{pending.customer_name}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-white font-semibold">${pending.total_amount.toFixed(2)}</span>
@@ -154,29 +154,29 @@ export function InvoiceManagement() {
         </div>
       )}
 
-      <div className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+      <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-900/50 border-b border-gray-700">
+            <thead className="bg-cult-surface/50 border-b border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Invoice #</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Order</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Issue Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Due Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Amount</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Invoice #</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Customer</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Order</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Issue Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Due Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Amount</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-cult-border">
               {invoices.map(invoice => (
-                <tr key={invoice.id} className="hover:bg-gray-900/30">
+                <tr key={invoice.id} className="hover:bg-cult-surface/30">
                   <td className="px-4 py-3 text-white font-mono">{invoice.invoice_number}</td>
                   <td className="px-4 py-3 text-white">{invoice.customer_name}</td>
-                  <td className="px-4 py-3 text-gray-400">{invoice.order_number}</td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(invoice.issue_date).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(invoice.due_date).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{invoice.order_number}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{new Date(invoice.issue_date).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{new Date(invoice.due_date).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-white font-semibold">${invoice.total_amount.toFixed(2)}</td>
                   <td className="px-4 py-3">
                     <select
@@ -198,13 +198,13 @@ export function InvoiceManagement() {
                           setSelectedInvoice(invoice);
                           setShowPreview(true);
                         }}
-                        className="p-2 hover:bg-gray-700 rounded transition-colors"
+                        className="p-2 hover:bg-cult-surface-overlay rounded transition-colors"
                         title="Preview & Print"
                       >
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <Eye className="w-4 h-4 text-cult-text-muted" />
                       </button>
-                      <button className="p-2 hover:bg-gray-700 rounded transition-colors" title="Send">
-                        <Send className="w-4 h-4 text-gray-400" />
+                      <button className="p-2 hover:bg-cult-surface-overlay rounded transition-colors" title="Send">
+                        <Send className="w-4 h-4 text-cult-text-muted" />
                       </button>
                     </div>
                   </td>
@@ -221,14 +221,14 @@ export function InvoiceManagement() {
           onClick={() => setShowPreview(false)}
         >
           <div
-            className="bg-gray-900 border border-gray-700 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-cult-surface border border-cult-border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+            <div className="p-6 border-b border-cult-border flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">Invoice Preview</h3>
               <button
                 onClick={() => setShowPreview(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-cult-text-muted hover:text-white"
               >
                 ✕
               </button>

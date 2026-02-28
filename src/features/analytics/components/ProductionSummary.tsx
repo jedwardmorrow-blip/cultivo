@@ -73,7 +73,7 @@ export function ProductionSummary() {
       <div className="flex justify-between items-center mb-6 print:mb-4">
         <div>
           <h1 className="text-3xl font-bold text-white print:text-black">Daily Production Summary</h1>
-          <p className="text-gray-300 mt-1 print:text-gray-700">Complete activity report for Dutchie entry</p>
+          <p className="text-cult-text-secondary mt-1 print:text-gray-700">Complete activity report for Dutchie entry</p>
         </div>
         <div className="flex items-center gap-3 print:hidden">
           <input

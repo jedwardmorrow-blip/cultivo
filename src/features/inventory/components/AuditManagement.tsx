@@ -311,7 +311,7 @@ export function AuditManagement() {
             </div>
           ) : (
             <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <FileText className="h-16 w-16 text-cult-text-muted mx-auto mb-4" />
               <p className="text-gray-600 mb-4">No active audit</p>
               <button
                 onClick={() => setShowInitModal(true)}
@@ -355,7 +355,7 @@ export function AuditManagement() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-cult-text-muted">
               <p>No audit history</p>
             </div>
           )}

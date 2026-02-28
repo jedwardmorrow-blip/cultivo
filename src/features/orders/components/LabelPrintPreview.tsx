@@ -236,7 +236,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'Label not found'}</p>
-            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
+            <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>
         </div>
       </div>,
@@ -336,8 +336,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
 
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-[70] flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 p-4 border-b border-gray-700 flex items-center justify-between bg-gray-900 z-10">
+      <div className="bg-cult-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 p-4 border-b border-cult-border flex items-center justify-between bg-cult-surface z-10">
           <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
           <div className="flex gap-2">
             <button
@@ -348,7 +348,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
               <Printer className="w-4 h-4" />
               {isPrinting ? 'Printing...' : imagesReady ? 'Print Label' : 'Loading...'}
             </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-white px-3">
+            <button onClick={onClose} className="text-cult-text-muted hover:text-white px-3">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -423,7 +423,7 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'No labels found'}</p>
-            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
+            <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>
         </div>
       </div>
@@ -435,7 +435,7 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
       <div className="print:hidden sticky top-4 left-0 right-0 z-60 flex justify-center gap-2 mb-4">
         <button
           onClick={onClose}
-          className="px-6 py-3 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
+          className="px-6 py-3 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
         >
           <X className="w-5 h-5" />
           Close

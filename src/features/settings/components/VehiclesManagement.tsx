@@ -227,7 +227,7 @@ export function VehiclesManagement() {
                       className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium uppercase tracking-wider transition-all ${
                         vehicle.is_active
                           ? 'bg-green-900/30 text-green-400 border border-green-600 hover:bg-green-900/50'
-                          : 'bg-gray-900/30 text-gray-400 border border-gray-600 hover:bg-gray-900/50'
+                          : 'bg-cult-surface/30 text-cult-text-muted border border-cult-border-strong hover:bg-cult-surface/50'
                       }`}
                     >
                       {vehicle.is_active ? (

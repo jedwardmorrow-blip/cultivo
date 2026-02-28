@@ -122,7 +122,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
         style={{ width: '8.5in', fontSize: '10pt' }}
       >
         {/* Header */}
-        <div className="audit-header flex items-start justify-between mb-6 pb-4 border-b-2 border-gray-800">
+        <div className="audit-header flex items-start justify-between mb-6 pb-4 border-b-2 border-cult-border-subtle">
           <div className="audit-logo flex-shrink-0">
             {(logoDataUrl || auditData.company_logo_path) && (
               <img
@@ -202,16 +202,16 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
         <div className="audit-lines mb-6">
           <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="bg-gray-800 text-white">
-                <th className="border border-gray-600 px-2 py-1 text-left">#</th>
-                <th className="border border-gray-600 px-2 py-1 text-left">Package ID</th>
-                <th className="border border-gray-600 px-2 py-1 text-left">Product</th>
-                <th className="border border-gray-600 px-2 py-1 text-left">Strain</th>
-                <th className="border border-gray-600 px-2 py-1 text-left">Stage</th>
-                <th className="border border-gray-600 px-2 py-1 text-right">Expected</th>
-                <th className="border border-gray-600 px-2 py-1 text-right">Actual</th>
-                <th className="border border-gray-600 px-2 py-1 text-right">Variance</th>
-                <th className="border border-gray-600 px-2 py-1 text-center">✓</th>
+              <tr className="bg-cult-surface-raised text-white">
+                <th className="border border-cult-border-strong px-2 py-1 text-left">#</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-left">Package ID</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-left">Product</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-left">Strain</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-left">Stage</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-right">Expected</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-right">Actual</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-right">Variance</th>
+                <th className="border border-cult-border-strong px-2 py-1 text-center">✓</th>
               </tr>
             </thead>
             <tbody>
@@ -243,7 +243,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
           </table>
 
           {lines.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-cult-text-muted">
               No audit lines to display
             </div>
           )}
@@ -267,22 +267,22 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
             <div>
               <div className="mb-8">
                 <div className="font-semibold mb-2">Prepared By:</div>
-                <div className="border-b-2 border-gray-800 pb-1 mb-1">{auditData.prepared_by_name}</div>
+                <div className="border-b-2 border-cult-border-subtle pb-1 mb-1">{auditData.prepared_by_name}</div>
                 <div className="text-xs text-gray-600">Signature</div>
               </div>
               <div>
-                <div className="border-b-2 border-gray-800 pb-1 mb-1 w-32"></div>
+                <div className="border-b-2 border-cult-border-subtle pb-1 mb-1 w-32"></div>
                 <div className="text-xs text-gray-600">Date</div>
               </div>
             </div>
             <div>
               <div className="mb-8">
                 <div className="font-semibold mb-2">Reviewed By:</div>
-                <div className="border-b-2 border-gray-800 pb-1 mb-1">_______________________</div>
+                <div className="border-b-2 border-cult-border-subtle pb-1 mb-1">_______________________</div>
                 <div className="text-xs text-gray-600">Signature</div>
               </div>
               <div>
-                <div className="border-b-2 border-gray-800 pb-1 mb-1 w-32"></div>
+                <div className="border-b-2 border-cult-border-subtle pb-1 mb-1 w-32"></div>
                 <div className="text-xs text-gray-600">Date</div>
               </div>
             </div>
@@ -290,7 +290,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
         </div>
 
         {/* Footer */}
-        <div className="audit-footer text-center text-xs text-gray-500 mt-6 pt-4 border-t border-gray-300">
+        <div className="audit-footer text-center text-xs text-cult-text-muted mt-6 pt-4 border-t border-gray-300">
           <div>Generated: {formatDate(new Date().toISOString())}</div>
           <div>This is an official inventory audit document. Retain for compliance records.</div>
         </div>

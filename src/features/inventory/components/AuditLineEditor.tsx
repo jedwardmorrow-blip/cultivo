@@ -129,7 +129,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
       {/* Filters */}
       <div className="flex items-center space-x-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-cult-text-muted" />
           <input
             type="text"
             value={searchTerm}
@@ -204,7 +204,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                     <td className="px-4 py-3 text-sm font-mono text-gray-900">{line.package_id}</td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div>{line.product_name}</div>
-                      {line.strain && <div className="text-xs text-gray-500">{line.strain}</div>}
+                      {line.strain && <div className="text-xs text-cult-text-muted">{line.strain}</div>}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">{line.stage}</td>
                     <td className="px-4 py-3 text-sm text-right text-gray-900">
@@ -223,7 +223,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                       ) : line.actual_qty !== null ? (
                         <span className="text-gray-900">{formatQty(line.actual_qty, line.unit)}</span>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-cult-text-muted">—</span>
                       )}
                     </td>
                     <td className={`px-4 py-3 text-sm text-right ${getVarianceClass(line.variance_percentage)}`}>
@@ -233,7 +233,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                           <div className="text-xs">({line.variance_percentage.toFixed(1)}%)</div>
                         </div>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-cult-text-muted">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -297,8 +297,8 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
         </div>
 
         {filteredLines.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <div className="text-center py-12 text-cult-text-muted">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-cult-text-muted" />
             <p>No audit lines found</p>
           </div>
         )}

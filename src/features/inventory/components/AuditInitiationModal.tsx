@@ -73,7 +73,7 @@ export function AuditInitiationModal({
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            className="text-cult-text-muted hover:text-gray-600 disabled:opacity-50"
           >
             <X className="h-6 w-6" />
           </button>

@@ -48,8 +48,8 @@ export function InventoryLabelPrintModal({
   return (
     <>
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-cult-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-4 border-b border-cult-border flex items-center justify-between">
             <h3 className="text-xl font-bold text-white">Internal Inventory Label (1.5" x 2")</h3>
             <div className="flex gap-2">
               <button
@@ -62,7 +62,7 @@ export function InventoryLabelPrintModal({
               </button>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white p-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-cult-text-muted hover:text-white p-2 rounded hover:bg-cult-surface-raised transition-colors"
                 title="Close"
               >
                 <X className="w-5 h-5" />
@@ -73,7 +73,7 @@ export function InventoryLabelPrintModal({
           <div className="p-16 bg-gray-100 flex items-center justify-center" style={{ minHeight: '600px' }}>
             {isLoading && (
               <div className="text-gray-600 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-border-strong mx-auto mb-4"></div>
                 <p>Loading label data...</p>
               </div>
             )}

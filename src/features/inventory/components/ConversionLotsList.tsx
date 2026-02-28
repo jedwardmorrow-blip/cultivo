@@ -56,7 +56,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
       <div className="flex items-center gap-3">
         {/* Search */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cult-text-muted w-5 h-5" />
           <input
             type="text"
             placeholder="Search by batch, strain, or product..."
@@ -128,7 +128,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
       {/* Empty state */}
       {!isLoading && lots.length === 0 && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <Package className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
           <h3 className="text-lg font-medium text-gray-900 mb-1">No conversions pending</h3>
           <p className="text-sm text-gray-600">
             Complete trim or packaging sessions to create pending conversions.
@@ -180,7 +180,7 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
             <h3 className="text-base font-semibold text-gray-900 truncate">
               {lot.strain_name}
             </h3>
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-cult-text-muted">
               {lot.batch_name}
             </span>
           </div>
@@ -212,9 +212,9 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
             <>
               <div className="text-2xl font-bold text-gray-900">
                 {lot.remaining_weight?.toFixed(0) || 0}
-                <span className="text-sm font-normal text-gray-500 ml-1">g</span>
+                <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-cult-text-muted mt-1">
                 of {lot.total_weight?.toFixed(0) || 0}g total
               </div>
             </>
@@ -222,16 +222,16 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
             <>
               <div className="text-2xl font-bold text-gray-900">
                 {lot.remaining_units || 0}
-                <span className="text-sm font-normal text-gray-500 ml-1">units</span>
+                <span className="text-sm font-normal text-cult-text-muted ml-1">units</span>
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-cult-text-muted mt-1">
                 of {lot.total_units || 0} total
               </div>
             </>
           )}
 
           {/* Session count */}
-          <div className="text-xs text-gray-500 mt-2">
+          <div className="text-xs text-cult-text-muted mt-2">
             {lot.contributing_session_count} session{lot.contributing_session_count !== 1 ? 's' : ''}
           </div>
         </div>

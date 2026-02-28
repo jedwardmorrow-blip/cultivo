@@ -150,7 +150,7 @@ export function ConversionHistoryView() {
             <History className="w-6 h-6 text-white" />
             <h2 className="text-2xl font-bold text-white">Conversion History</h2>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-cult-text-muted text-sm">
             View past conversions, track performance, and analyze variance trends
           </p>
         </div>
@@ -162,7 +162,7 @@ export function ConversionHistoryView() {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'history'
                 ? 'bg-green-600 text-white'
-                : 'bg-cult-medium-gray text-gray-300 hover:bg-cult-light-gray'
+                : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
             }`}
           >
             <History className="w-4 h-4 inline mr-2" />
@@ -173,7 +173,7 @@ export function ConversionHistoryView() {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'metrics'
                 ? 'bg-green-600 text-white'
-                : 'bg-cult-medium-gray text-gray-300 hover:bg-cult-light-gray'
+                : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
@@ -187,7 +187,7 @@ export function ConversionHistoryView() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-cult-text-secondary mb-2">
               <Search className="w-4 h-4 inline mr-1" />
               Search
             </label>
@@ -196,13 +196,13 @@ export function ConversionHistoryView() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Batch, strain, package ID..."
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-white placeholder-cult-text-muted focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-cult-text-secondary mb-2">
               <Filter className="w-4 h-4 inline mr-1" />
               Date Range
             </label>
@@ -221,7 +221,7 @@ export function ConversionHistoryView() {
 
           {/* Strain Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Strain</label>
+            <label className="block text-sm font-medium text-cult-text-secondary mb-2">Strain</label>
             <select
               value={strainFilter}
               onChange={(e) => setStrainFilter(e.target.value)}
@@ -238,7 +238,7 @@ export function ConversionHistoryView() {
 
           {/* User Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">User</label>
+            <label className="block text-sm font-medium text-cult-text-secondary mb-2">User</label>
             <select
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
@@ -263,7 +263,7 @@ export function ConversionHistoryView() {
             onChange={(e) => setShowVarianceOnly(e.target.checked)}
             className="w-4 h-4 rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-2 focus:ring-green-500"
           />
-          <label htmlFor="variance-filter" className="text-sm text-gray-300">
+          <label htmlFor="variance-filter" className="text-sm text-cult-text-secondary">
             Show only conversions with variance
           </label>
         </div>
@@ -272,22 +272,22 @@ export function ConversionHistoryView() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-cult-dark-gray rounded-lg p-4">
-          <div className="text-sm text-gray-400 mb-1">Total Conversions</div>
+          <div className="text-sm text-cult-text-muted mb-1">Total Conversions</div>
           <div className="text-2xl font-bold text-white">{filteredHistory.length}</div>
         </div>
         <div className="bg-cult-dark-gray rounded-lg p-4">
-          <div className="text-sm text-gray-400 mb-1">Total Packages</div>
+          <div className="text-sm text-cult-text-muted mb-1">Total Packages</div>
           <div className="text-2xl font-bold text-white">{totalPackages}</div>
         </div>
         <div className="bg-cult-dark-gray rounded-lg p-4">
-          <div className="text-sm text-gray-400 mb-1">Total Weight</div>
+          <div className="text-sm text-cult-text-muted mb-1">Total Weight</div>
           <div className="text-2xl font-bold text-white">{totalWeight.toFixed(1)}g</div>
         </div>
         <div className="bg-cult-dark-gray rounded-lg p-4">
-          <div className="text-sm text-gray-400 mb-1">With Variance</div>
+          <div className="text-sm text-cult-text-muted mb-1">With Variance</div>
           <div className="text-2xl font-bold text-white">
             {conversionsWithVariance}
-            <span className="text-sm text-gray-400 ml-2">
+            <span className="text-sm text-cult-text-muted ml-2">
               ({filteredHistory.length > 0 ? ((conversionsWithVariance / filteredHistory.length) * 100).toFixed(0) : 0}%)
             </span>
           </div>
@@ -313,7 +313,7 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
     return (
       <div className="text-center py-12">
         <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-        <p className="text-gray-400">No conversion history found for the selected filters</p>
+        <p className="text-cult-text-muted">No conversion history found for the selected filters</p>
       </div>
     );
   }
@@ -323,31 +323,31 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-cult-medium-gray">
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Date
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Batch
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Strain
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Product
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Packages
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Weight
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Duration
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               User
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Variance
             </th>
           </tr>
@@ -360,20 +360,20 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
               </td>
               <td className="px-4 py-3 text-sm text-white font-mono">{item.batch_number}</td>
               <td className="px-4 py-3 text-sm text-white">{item.strain_name}</td>
-              <td className="px-4 py-3 text-sm text-gray-300">{item.product_name}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-secondary">{item.product_name}</td>
               <td className="px-4 py-3 text-sm text-white text-center">
                 {item.package_count}
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-cult-text-muted">
                   {item.packages_with_stock}/{item.packages_in_inventory} in stock
                 </div>
               </td>
               <td className="px-4 py-3 text-sm text-white text-right">
                 {item.total_weight ? `${item.total_weight.toFixed(1)}g` : `${item.total_units} units`}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-300 text-center">
+              <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">
                 {item.duration_minutes ? `${item.duration_minutes.toFixed(0)}m` : '-'}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-300">{item.converted_by_name}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-secondary">{item.converted_by_name}</td>
               <td className="px-4 py-3 text-sm text-center">
                 {item.variance_reason ? (
                   <span
@@ -402,7 +402,7 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
     return (
       <div className="text-center py-12">
         <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-        <p className="text-gray-400">No performance metrics found for the selected filters</p>
+        <p className="text-cult-text-muted">No performance metrics found for the selected filters</p>
       </div>
     );
   }
@@ -412,28 +412,28 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-cult-medium-gray">
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Date
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               User
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Lots
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Packages
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Weight
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Avg Time
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Variance Rate
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase tracking-wider">
               Avg Variance
             </th>
           </tr>
@@ -450,10 +450,10 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
               <td className="px-4 py-3 text-sm text-white text-right">
                 {item.total_weight_converted ? `${item.total_weight_converted.toFixed(1)}g` : '-'}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-300 text-center">
+              <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">
                 {item.avg_conversion_time_minutes ? `${item.avg_conversion_time_minutes.toFixed(0)}m` : '-'}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-300 text-center">
+              <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">
                 {item.conversions_with_variance}/{item.lots_completed}
               </td>
               <td className="px-4 py-3 text-sm text-center">

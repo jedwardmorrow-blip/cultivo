@@ -55,7 +55,7 @@ export function TrimSessionsRefactored() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Trim Sessions</h1>
-          <p className="text-gray-300 mt-1">Start bins and log completions</p>
+          <p className="text-cult-text-secondary mt-1">Start bins and log completions</p>
         </div>
         <button
           onClick={() => setShowStartForm(!showStartForm)}

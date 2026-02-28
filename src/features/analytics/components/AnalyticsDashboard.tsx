@@ -59,7 +59,7 @@ export function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading analytics...</div>
+        <div className="text-cult-text-muted">Loading analytics...</div>
       </div>
     );
   }
@@ -70,99 +70,99 @@ export function AnalyticsDashboard() {
         <h2 className="text-2xl font-bold text-white">Analytics Dashboard</h2>
         <div className="flex gap-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+            <label className="block text-sm text-cult-text-muted mb-1">Start Date</label>
             <input
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+              className="bg-cult-surface-raised border border-cult-border rounded px-3 py-2 text-white"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">End Date</label>
+            <label className="block text-sm text-cult-text-muted mb-1">End Date</label>
             <input
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
+              className="bg-cult-surface-raised border border-cult-border rounded px-3 py-2 text-white"
             />
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="w-5 h-5 text-blue-400" />
-            <span className="text-gray-400 text-sm">Avg Trimmer Speed</span>
+            <span className="text-cult-text-muted text-sm">Avg Trimmer Speed</span>
           </div>
           <div className="text-3xl font-bold text-white">{avgTrimmerProductivity.toFixed(0)}</div>
-          <div className="text-sm text-gray-500">grams/hour</div>
+          <div className="text-sm text-cult-text-muted">grams/hour</div>
         </div>
 
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-green-400" />
-            <span className="text-gray-400 text-sm">Avg Packager Speed</span>
+            <span className="text-cult-text-muted text-sm">Avg Packager Speed</span>
           </div>
           <div className="text-3xl font-bold text-white">{avgPackagerProductivity.toFixed(0)}</div>
-          <div className="text-sm text-gray-500">units/hour</div>
+          <div className="text-sm text-cult-text-muted">units/hour</div>
         </div>
 
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5 text-yellow-400" />
-            <span className="text-gray-400 text-sm">Total Processed</span>
+            <span className="text-cult-text-muted text-sm">Total Processed</span>
           </div>
           <div className="text-3xl font-bold text-white">{(totalWeightProcessed / 1000).toFixed(1)}</div>
-          <div className="text-sm text-gray-500">kg</div>
+          <div className="text-sm text-cult-text-muted">kg</div>
         </div>
 
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-5 h-5 text-purple-400" />
-            <span className="text-gray-400 text-sm">Units Produced</span>
+            <span className="text-cult-text-muted text-sm">Units Produced</span>
           </div>
           <div className="text-3xl font-bold text-white">{totalUnitsProduced.toLocaleString()}</div>
-          <div className="text-sm text-gray-500">total units</div>
+          <div className="text-sm text-cult-text-muted">total units</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Trimmer Productivity</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {trimmerStats.slice(0, 10).map((stat, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-900/50 rounded">
+              <div key={idx} className="flex items-center justify-between p-3 bg-cult-surface/50 rounded">
                 <div>
                   <div className="text-white font-medium">{stat.metric_date}</div>
-                  <div className="text-sm text-gray-400">{stat.total_workers} workers, {stat.total_sessions} sessions</div>
+                  <div className="text-sm text-cult-text-muted">{stat.total_workers} workers, {stat.total_sessions} sessions</div>
                 </div>
                 <div className="text-right">
                   <div className="text-white font-semibold">{stat.avg_grams_per_hour.toFixed(0)} g/hr</div>
-                  <div className="text-sm text-gray-400">{(stat.total_weight_grams / 1000).toFixed(1)} kg total</div>
+                  <div className="text-sm text-cult-text-muted">{(stat.total_weight_grams / 1000).toFixed(1)} kg total</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Conversion Analysis</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {conversionData.slice(0, 10).map((conv, idx) => (
-              <div key={idx} className="p-3 bg-gray-900/50 rounded">
+              <div key={idx} className="p-3 bg-cult-surface/50 rounded">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-white font-medium">{conv.strain}</span>
                   <span className={`px-2 py-1 rounded text-xs ${
                     conv.performance_status === 'over_performing' ? 'bg-green-900/30 text-green-400' :
                     conv.performance_status === 'under_performing' ? 'bg-red-900/30 text-red-400' :
-                    'bg-gray-700 text-gray-300'
+                    'bg-cult-surface-overlay text-cult-text-secondary'
                   }`}>
                     {conv.variance_percentage > 0 ? '+' : ''}{conv.variance_percentage.toFixed(1)}%
                   </span>
                 </div>
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-cult-text-muted">
                   {conv.from_stage} → {conv.to_stage}: {conv.actual_percentage.toFixed(1)}%
                   {conv.expected_percentage && ` (expected ${conv.expected_percentage.toFixed(1)}%)`}
                 </div>
