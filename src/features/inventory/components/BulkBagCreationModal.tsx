@@ -271,14 +271,14 @@ export function BulkBagCreationModal({
                     <>
                       <button
                         onClick={handleSplitEvenly}
-                        className="text-xs px-3 py-1 bg-cult-surface text-gray-700 rounded hover:bg-cult-surface-raised transition-colors"
+                        className="text-xs px-3 py-1 bg-cult-surface text-cult-text-muted rounded hover:bg-cult-surface-raised transition-colors"
                         disabled={isSubmitting}
                       >
                         Split Evenly
                       </button>
                       <button
                         onClick={handleUseAllRemaining}
-                        className="text-xs px-3 py-1 bg-cult-surface text-gray-700 rounded hover:bg-cult-surface-raised transition-colors"
+                        className="text-xs px-3 py-1 bg-cult-surface text-cult-text-muted rounded hover:bg-cult-surface-raised transition-colors"
                         disabled={isSubmitting || remainingWeight <= 0}
                       >
                         Use Remaining
@@ -386,7 +386,7 @@ export function BulkBagCreationModal({
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-cult-border rounded-lg hover:bg-cult-surface-sunken transition-colors"
+              className="px-4 py-2 text-cult-text-muted bg-white border border-cult-border rounded-lg hover:bg-cult-surface-sunken transition-colors"
               disabled={isSubmitting}
             >
               Cancel

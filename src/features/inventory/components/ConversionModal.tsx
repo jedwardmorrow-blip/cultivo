@@ -266,7 +266,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2">
                     Reason for voiding (required)
                   </label>
                   <textarea
@@ -284,7 +284,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       setShowVoidConfirm(false);
                       setVoidReason('');
                     }}
-                    className="flex-1 px-4 py-2 border border-cult-border text-gray-700 rounded-lg hover:bg-cult-surface-sunken transition-colors"
+                    className="flex-1 px-4 py-2 border border-cult-border text-cult-text-muted rounded-lg hover:bg-cult-surface-sunken transition-colors"
                   >
                     Cancel
                   </button>
@@ -339,7 +339,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 <button
                   onClick={handleCloseModal}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-cult-text-primary transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -370,7 +370,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 <button
                   onClick={() => setStep('review')}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-cult-text-primary transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>

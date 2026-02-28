@@ -124,7 +124,7 @@ export function VarianceLogViewer({
             className={`flex items-center px-4 py-2 border rounded-lg transition-colors ${
               showFilters || activeFiltersCount > 0
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-cult-border text-gray-700 hover:bg-cult-surface-sunken'
+                : 'border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
             }`}
           >
             <Filter className="h-5 w-5 mr-2" />
@@ -189,7 +189,7 @@ export function VarianceLogViewer({
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.source_type?.includes(source.value)
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-cult-border text-gray-700 hover:bg-cult-surface-sunken'
+                      : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
                   {source.label}
@@ -209,7 +209,7 @@ export function VarianceLogViewer({
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.variance_reason?.includes(reason.value)
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-cult-border text-gray-700 hover:bg-cult-surface-sunken'
+                      : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
                   {reason.label}
@@ -222,7 +222,7 @@ export function VarianceLogViewer({
           <div className="flex justify-end pt-2">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-cult-text-primary font-medium"
+              className="px-4 py-2 text-sm text-cult-text-muted hover:text-cult-text-primary font-medium"
             >
               Clear All Filters
             </button>

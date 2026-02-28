@@ -159,7 +159,7 @@ export function AuditInitiationModal({
           {selectedStages.length > 0 && (
             <div className="p-4 bg-cult-surface-sunken border border-cult-border-subtle rounded-lg">
               <h3 className="font-semibold text-cult-text-primary mb-2">Audit Summary</h3>
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-cult-text-muted">
                 <p>Stages to audit: <span className="font-medium">{selectedStages.join(', ')}</span></p>
                 <p className="mt-1">
                   Selected stages will be <span className="font-medium text-orange-600">locked</span> during the audit
@@ -174,7 +174,7 @@ export function AuditInitiationModal({
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="px-6 py-2 border border-cult-border text-gray-700 rounded-lg hover:bg-cult-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 border border-cult-border text-cult-text-muted rounded-lg hover:bg-cult-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Cancel
           </button>

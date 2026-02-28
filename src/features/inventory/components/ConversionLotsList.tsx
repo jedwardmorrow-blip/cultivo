@@ -72,7 +72,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
           className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
             showFilters
               ? 'bg-blue-50 border-blue-300 text-blue-700'
-              : 'bg-white border-cult-border text-gray-700 hover:bg-cult-surface-sunken'
+              : 'bg-white border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
           }`}
         >
           <Filter className="w-5 h-5" />
@@ -82,7 +82,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
         {/* Sort button */}
         <button
           onClick={() => applySort({ field: 'strain_name', direction: 'asc' })}
-          className="flex items-center gap-2 px-4 py-2 border border-cult-border rounded-lg bg-white text-gray-700 hover:bg-cult-surface-sunken transition-colors"
+          className="flex items-center gap-2 px-4 py-2 border border-cult-border rounded-lg bg-white text-cult-text-muted hover:bg-cult-surface-sunken transition-colors"
         >
           <ArrowUpDown className="w-5 h-5" />
           Sort
@@ -93,7 +93,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
       {showFilters && (
         <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Status</h3>
+            <h3 className="text-sm font-medium text-cult-text-muted mb-3">Status</h3>
             <div className="flex flex-wrap gap-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -102,7 +102,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   onChange={() => toggleStatus('active')}
                   className="rounded border-cult-border text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Active</span>
+                <span className="text-sm text-cult-text-muted">Active</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -111,7 +111,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   onChange={() => toggleStatus('completed_today')}
                   className="rounded border-cult-border text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Completed Today</span>
+                <span className="text-sm text-cult-text-muted">Completed Today</span>
               </label>
             </div>
           </div>

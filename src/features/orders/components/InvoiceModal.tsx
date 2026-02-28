@@ -157,7 +157,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
             .font-medium { font-weight: 500; }
 
             /* Colors */
-            .text-gray-700 { color: #374151; }
+            .text-cult-text-muted { color: #374151; }
             .text-cult-text-faint { color: #4B5563; }
 
             /* Width */

@@ -197,7 +197,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
             /* Preserve all text colors */
             .text-black { color: black !important; }
             .text-cult-text-faint { color: #4b5563 !important; }
-            .text-gray-700 { color: #374151 !important; }
+            .text-cult-text-muted { color: #374151 !important; }
 
             /* Border widths */
             .border { border-width: 1px !important; }

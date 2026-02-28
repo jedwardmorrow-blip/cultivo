@@ -73,7 +73,7 @@ export function ProductionSummary() {
       <div className="flex justify-between items-center mb-6 print:mb-4">
         <div>
           <h1 className="text-3xl font-bold text-white print:text-black">Daily Production Summary</h1>
-          <p className="text-cult-text-secondary mt-1 print:text-gray-700">Complete activity report for Dutchie entry</p>
+          <p className="text-cult-text-secondary mt-1 print:text-cult-text-muted">Complete activity report for Dutchie entry</p>
         </div>
         <div className="flex items-center gap-3 print:hidden">
           <input
@@ -140,13 +140,13 @@ export function ProductionSummary() {
           <table className="w-full">
             <thead className="bg-cult-dark-gray print:bg-cult-surface border-b border-cult-medium-gray print:border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Trimmer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Strain</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Source Pkg</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Pulled</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Output</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Room</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Trimmer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Strain</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Source Pkg</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Pulled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Output</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Room</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-cult-medium-gray print:divide-cult-border-subtle">
@@ -154,7 +154,7 @@ export function ProductionSummary() {
                 <tr key={session.id} className="hover:bg-cult-dark-gray print:hover:bg-transparent">
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.trimmer_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.strain}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">{session.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">{session.package_id}</td>
                   <td className="px-4 py-3 text-sm text-right text-cult-white print:text-black">{session.pulled_weight}g</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
@@ -178,7 +178,7 @@ export function ProductionSummary() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700">Holding</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
                       <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
@@ -207,14 +207,14 @@ export function ProductionSummary() {
           <table className="w-full">
             <thead className="bg-cult-dark-gray print:bg-cult-surface border-b border-cult-medium-gray print:border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Packager</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Strain</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Source Pkg</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Pulled</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Units Created</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Dest Pkg</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Room</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Packager</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Strain</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Source Pkg</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Pulled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Units Created</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Dest Pkg</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Room</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-cult-medium-gray print:divide-cult-border-subtle">
@@ -222,7 +222,7 @@ export function ProductionSummary() {
                 <tr key={session.id} className="hover:bg-cult-dark-gray print:hover:bg-transparent">
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.packager_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.strain}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">{session.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">{session.package_id}</td>
                   <td className="px-4 py-3 text-sm text-right text-cult-white print:text-black">{session.pull_weight}g</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
@@ -237,8 +237,8 @@ export function ProductionSummary() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">See EOD Summary</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700">Holding</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">See EOD Summary</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
                       <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
@@ -282,7 +282,7 @@ export function ProductionSummary() {
                     {trimSessions.filter(s => !s.recorded_in_dutchie).map((session, idx) => (
                       <div key={session.id} className="bg-cult-dark-gray print:bg-cult-surface-sunken p-4 rounded border border-cult-medium-gray print:border-cult-border">
                         <p className="font-medium text-cult-white print:text-black mb-2">{idx + 1}. {session.strain}</p>
-                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-gray-700">
+                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-cult-text-muted">
                           <li>☐ Deduct {session.pulled_weight}g from {session.package_id}</li>
                           {session.big_buds_grams && session.big_buds_grams > 0 && (
                             <li className="ml-4">☐ Add {session.big_buds_grams.toFixed(1)}g Flower to [See EOD Summary]</li>
@@ -307,7 +307,7 @@ export function ProductionSummary() {
                     {packagingSessions.filter(s => !s.recorded_in_dutchie).map((session, idx) => (
                       <div key={session.id} className="bg-cult-dark-gray print:bg-cult-surface-sunken p-4 rounded border border-cult-medium-gray print:border-cult-border">
                         <p className="font-medium text-cult-white print:text-black mb-2">{idx + 1}. {session.strain}</p>
-                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-gray-700">
+                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-cult-text-muted">
                           <li>☐ Deduct {session.pull_weight}g from {session.package_id}</li>
                           {session.units_3_5g && session.units_3_5g > 0 && (
                             <li className="ml-4">☐ Add {session.units_3_5g} units 3.5g to [See EOD Summary]</li>

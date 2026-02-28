@@ -181,7 +181,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                   <td className="py-2 px-2 text-sm align-top">
                     <div className="product-name font-semibold">{productDisplay}</div>
                     {strainInfo && (
-                      <div className="strain-info text-xs text-gray-700 mt-0.5">{strainInfo}</div>
+                      <div className="strain-info text-xs text-cult-text-muted mt-0.5">{strainInfo}</div>
                     )}
                     {batchInfo && (
                       <div className="batch-info text-xs text-cult-text-faint mt-0.5 font-medium">{batchInfo}</div>
@@ -214,7 +214,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             {invoiceData.notes && (
               <div>
                 <div className="notes-title font-bold text-sm mb-1">Notes:</div>
-                <div className="notes-content text-sm text-gray-700">{invoiceData.notes}</div>
+                <div className="notes-content text-sm text-cult-text-muted">{invoiceData.notes}</div>
               </div>
             )}
             <div className="originator-license mt-4">

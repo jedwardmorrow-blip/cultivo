@@ -232,7 +232,7 @@ export function CombinePackagesModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2">
                     Package ID
                   </label>
                   <div className="flex gap-2">
@@ -260,7 +260,7 @@ export function CombinePackagesModal({
                 {summary && (
                   <div className="border border-cult-border-subtle rounded-lg p-4 bg-cult-surface-sunken">
                     <h4 className="text-sm font-medium text-cult-text-primary mb-2">Will Combine</h4>
-                    <div className="text-sm text-gray-700 space-y-1">
+                    <div className="text-sm text-cult-text-muted space-y-1">
                       <div>
                         <span className="font-medium">{summary.total_packages}</span> packages →{' '}
                         <span className="font-medium">1</span> combined package
@@ -325,7 +325,7 @@ export function CombinePackagesModal({
                   </h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Variance Reason</label>
+                      <label className="block text-sm text-cult-text-muted mb-1">Variance Reason</label>
                       <select
                         value={workflow.varianceReason || ''}
                         onChange={(e) =>
@@ -342,7 +342,7 @@ export function CombinePackagesModal({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Notes</label>
+                      <label className="block text-sm text-cult-text-muted mb-1">Notes</label>
                       <textarea
                         value={workflow.varianceNote}
                         onChange={(e) => workflow.setVarianceNote(e.target.value)}
@@ -374,7 +374,7 @@ export function CombinePackagesModal({
                       Packages Combined Successfully!
                     </h3>
                     {workflow.result && (
-                      <div className="text-sm text-gray-700 space-y-1">
+                      <div className="text-sm text-cult-text-muted space-y-1">
                         <p>
                           New Package: <span className="font-mono font-semibold">{workflow.result.new_package_id}</span>
                         </p>
@@ -395,7 +395,7 @@ export function CombinePackagesModal({
             <div className="flex items-center justify-between px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
               <button
                 onClick={workflow.step === 'select_packages' ? onClose : workflow.previousStep}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-cult-text-primary transition-colors"
+                className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors"
               >
                 {workflow.step === 'select_packages' ? 'Cancel' : 'Back'}
               </button>

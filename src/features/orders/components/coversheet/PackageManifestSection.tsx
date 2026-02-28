@@ -195,7 +195,7 @@ export function PackageManifestSection({
                 {Object.keys(packagesByProduct).length > 1 && (
                   <tr key={`header-${groupIndex}`} className="bg-cult-surface-sunken border-t border-cult-border">
                     <td colSpan={showLabelStatus ? 6 : 5} className="py-2 px-4">
-                      <span className="font-semibold text-sm uppercase tracking-wide text-gray-700">
+                      <span className="font-semibold text-sm uppercase tracking-wide text-cult-text-muted">
                         {productName} ({productPackages.length} {productPackages.length === 1 ? 'package' : 'packages'})
                       </span>
                     </td>

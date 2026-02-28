@@ -255,7 +255,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                 <ol className="space-y-1.5 text-xs">
                   {manifestData.route_instructions.map((instruction, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <span className="font-bold text-gray-700 min-w-[1.5rem]">{instruction.step_number}.</span>
+                      <span className="font-bold text-cult-text-muted min-w-[1.5rem]">{instruction.step_number}.</span>
                       <div className="flex-1">
                         <span>{instruction.instruction_text}</span>
                         {instruction.distance_meters > 0 && (
@@ -296,7 +296,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                     <td className="border-r border-black p-2 align-top">
                       <div className="font-semibold">{productDisplay}</div>
                       {packageInfo && (
-                        <div className="text-xs text-gray-700 mt-0.5">{packageInfo}</div>
+                        <div className="text-xs text-cult-text-muted mt-0.5">{packageInfo}</div>
                       )}
                     </td>
                     <td className="border-r border-black p-2 text-right align-top">
@@ -351,7 +351,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
 
           <div className="border-t-2 border-black p-4 bg-white">
             <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Receiver Verification</div>
-            <div className="text-xs italic mb-3 text-gray-700">
+            <div className="text-xs italic mb-3 text-cult-text-muted">
               I confirm that the contents of this shipment match weight and quantity records entered above, and I agree to take custody of this shipment as indicated.
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">

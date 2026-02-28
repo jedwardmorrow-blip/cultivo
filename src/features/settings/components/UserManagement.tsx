@@ -280,12 +280,12 @@ export function UserManagement() {
           <table className="w-full">
             <thead className="bg-cult-surface-sunken border-b border-cult-medium-gray">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Role</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">Created</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Role</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Created</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-cult-border-subtle">
