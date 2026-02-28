@@ -1,0 +1,614 @@
+=== DIAGNOSTIC REPORT ===
+
+Generated: 2026-02-28T17:21:34.270Z
+
+
+--- FILE: services/sessions.service.ts ---
+L1: import { supabase } from '@/lib/supabase';
+L2: import { errorService } from '@/services';
+L3: import type {
+L4:   TrimSessionInsert,
+L5:   TrimSessionUpdate,
+L6:   BuckingSessionInsert,
+L7:   BuckingSessionUpdate,
+L8:   PackagingSessionInsert,
+L9:   PackagingSessionUpdate,
+L10: } from '../types';
+L11: 
+L12: /**
+L13:  * Sessions Service
+L14:  *
+L15:  * Centralized service for all production session operations (trim, bucking, packaging).
+L16:  */
+L17: 
+L18: // Trim Sessions
+L19: /**
+L20:  * Fetches all trim sessions
+L21:  *
+L22:  * @returns Promise<{ data: TrimSession[] | null; error: any }>
+L23:  * @description Returns all trim sessions ordered by creation date (newest first)
+L24:  */
+L25: export async function getTrimSessions() {
+L26:   try {
+L27:     const { data, error } = await supabase
+L28:       .from('trim_sessions')
+L29:       .select('*')
+L30:       .order('created_at', { ascending: false });
+L31: 
+L32:     if (error) throw error;
+L33:     return { data, error: null };
+L34:   } catch (error) {
+L35:     errorService.handle(error, 'Failed to load trim sessions');
+L36:     return { data: null, error };
+L37:   }
+L38: }
+L39: 
+L40: /**
+L41:  * Fetches active trim sessions
+L42:  *
+L43:  * @returns Promise<{ data: TrimSession[] | null; error: any }>
+L44:  * @description Returns trim sessions that are not completed or cancelled
+L45:  */
+L46: export async function getActiveTrimSessions() {
+L47:   try {
+L48:     const { data, error } = await supabase
+L49:       .from('trim_sessions')
+L50:       .select('*')
+L51:       .is('completed_at', null)
+L52:       .is('cancelled_at', null)
+L53:       .order('started_at', { ascending: false });
+L54: 
+L55:     if (error) throw error;
+L56:     return { data, error: null };
+L57:   } catch (error) {
+L58:     errorService.handle(error, 'Failed to load active trim sessions');
+L59:     return { data: null, error };
+L60:   }
+L61: }
+L62: 
+L63: /**
+L64:  * Creates a new trim session
+L65:  *
+L66:  * @param sessionData - Trim session data
+L67:  * @returns Promise<{ data: TrimSession | null; error: any }>
+L68:  */
+L69: export async function createTrimSession(sessionData: TrimSessionInsert) {
+L70:   try {
+L71:     const { data, error } = await supabase
+L72:       .from('trim_sessions')
+L73:       .insert(sessionData)
+L74:       .select()
+L75:       .single();
+L76: 
+L77:     if (error) throw error;
+L78:     return { data, error: null };
+L79:   } catch (error) {
+L80:     errorService.handle(error, 'Failed to create trim session');
+L81:     return { data: null, error };
+L82:   }
+L83: }
+L84: 
+L85: /**
+L86:  * Completes a trim session
+L87:  *
+L88:  * @param sessionId - Trim session UUID
+L89:  * @param completionData - Completion data (weights, yields, etc.)
+L90:  * @returns Promise<{ data: TrimSession | null; error: any }>
+L91:  * @description Sets completed_at timestamp and updates session data
+L92:  */
+L93: export async function completeTrimSession(sessionId: string, completionData: TrimSessionUpdate) {
+L94:   try {
+L95:     const { data, error } = await supabase
+L96:       .from('trim_sessions')
+L97:       .update({
+L98:         ...completionData,
+L99:         completed_at: new Date().toISOString(),
+L100:         updated_at: new Date().toISOString(),
+L101:       })
+L102:       .eq('id', sessionId)
+L103:       .select()
+L104:       .single();
+L105: 
+L106:     if (error) throw error;
+L107:     return { data, error: null };
+L108:   } catch (error) {
+L109:     errorService.handle(error, 'Failed to complete trim session');
+L110:     return { data: null, error };
+L111:   }
+L112: }
+L113: 
+L114: /**
+L115:  * Cancels a trim session
+L116:  *
+L117:  * @param sessionId - Trim session UUID
+L118:  * @param notes - Optional cancellation notes
+L119:  * @returns Promise<{ data: TrimSession | null; error: any }>
+L120:  */
+L121: export async function cancelTrimSession(sessionId: string, notes?: string) {
+L122:   try {
+L123:     const { error } = await supabase
+L124:       .from('trim_sessions')
+L125:       .update({
+L126:         session_status: 'cancelled',
+L127:         notes: notes,
+L128:         cancelled_at: new Date().toISOString(),
+L129:       })
+L130:       .eq('id', sessionId);
+L131: 
+L132:     if (error) throw error;
+L133:     return { error: null };
+L134:   } catch (error) {
+L135:     errorService.handle(error, 'Failed to cancel trim session');
+L136:     return { error };
+L137:   }
+L138: }
+L139: 
+L140: // Bucking Sessions
+L141: /**
+L142:  * Fetches all bucking sessions
+L143:  *
+L144:  * @returns Promise<{ data: BuckingSession[] | null; error: any }>
+L145:  */
+L146: export async function getBuckingSessions() {
+L147:   try {
+L148:     const { data, error } = await supabase
+L149:       .from('bucking_sessions')
+L150:       .select('*')
+L151:       .order('created_at', { ascending: false });
+L152: 
+L153:     if (error) throw error;
+L154:     return { data, error: null };
+L155:   } catch (error) {
+L156:     errorService.handle(error, 'Failed to load bucking sessions');
+L157:     return { data: null, error };
+L158:   }
+L159: }
+L160: 
+L161: /**
+L162:  * Fetches active bucking sessions
+L163:  *
+L164:  * @returns Promise<{ data: BuckingSession[] | null; error: any }>
+L165:  */
+L166: export async function getActiveBuckingSessions() {
+L167:   try {
+L168:     const { data, error } = await supabase
+L169:       .from('bucking_sessions')
+L170:       .select('*')
+L171:       .is('completed_at', null)
+L172:       .is('cancelled_at', null)
+L173:       .order('started_at', { ascending: false });
+L174: 
+L175:     if (error) throw error;
+L176:     return { data, error: null };
+L177:   } catch (error) {
+L178:     errorService.handle(error, 'Failed to load active bucking sessions');
+L179:     return { data: null, error };
+L180:   }
+L181: }
+L182: 
+L183: /**
+L184:  * Creates a new bucking session
+L185:  *
+L186:  * @param sessionData - Bucking session data
+L187:  * @returns Promise<{ data: BuckingSession | null; error: any }>
+L188:  */
+L189: export async function createBuckingSession(sessionData: BuckingSessionInsert) {
+L190:   try {
+L191:     const { data, error } = await supabase
+L192:       .from('bucking_sessions')
+L193:       .insert(sessionData)
+L194:       .select()
+L195:       .single();
+L196: 
+L197:     if (error) throw error;
+L198:     return { data, error: null };
+L199:   } catch (error) {
+L200:     errorService.handle(error, 'Failed to create bucking session');
+L201:     return { data: null, error };
+L202:   }
+L203: }
+L204: 
+L205: /**
+L206:  * Completes a bucking session
+L207:  *
+L208:  * @param sessionId - Bucking session UUID
+L209:  * @param completionData - Completion data
+L210:  * @returns Promise<{ data: BuckingSession | null; error: any }>
+L211:  */
+L212: export async function completeBuckingSession(sessionId: string, completionData: BuckingSessionUpdate) {
+L213:   try {
+L214:     const { data, error } = await supabase
+L215:       .from('bucking_sessions')
+L216:       .update({
+L217:         ...completionData,
+L218:         completed_at: new Date().toISOString(),
+L219:         updated_at: new Date().toISOString(),
+L220:       })
+L221:       .eq('id', sessionId)
+L222:       .select()
+L223:       .single();
+L224: 
+L225:     if (error) throw error;
+L226:     return { data, error: null };
+L227:   } catch (error) {
+L228:     errorService.handle(error, 'Failed to complete bucking session');
+L229:     return { data: null, error };
+L230:   }
+L231: }
+L232: 
+L233: /**
+L234:  * Cancels a bucking session
+L235:  *
+L236:  * @param sessionId - Bucking session UUID
+L237:  * @param notes - Optional cancellation notes
+L238:  * @returns Promise<{ error: any | null }>
+L239:  */
+L240: export async function cancelBuckingSession(sessionId: string, notes?: string) {
+L241:   try {
+L242:     const { error } = await supabase
+L243:       .from('bucking_sessions')
+L244:       .update({
+L245:         session_status: 'cancelled',
+L246:         notes: notes,
+L247:         cancelled_at: new Date().toISOString(),
+L248:       })
+L249:       .eq('id', sessionId);
+L250: 
+L251:     if (error) throw error;
+L252:     return { error: null };
+L253:   } catch (error) {
+L254:     errorService.handle(error, 'Failed to cancel bucking session');
+L255:     return { error };
+L256:   }
+L257: }
+L258: 
+L259: // Packaging Sessions
+L260: /**
+L261:  * Fetches all packaging sessions
+L262:  *
+L263:  * @returns Promise<{ data: PackagingSession[] | null; error: any }>
+L264:  */
+L265: export async function getPackagingSessions() {
+L266:   try {
+L267:     const { data, error } = await supabase
+L268:       .from('packaging_sessions')
+L269:       .select('*')
+L270:       .order('created_at', { ascending: false });
+L271: 
+L272:     if (error) throw error;
+L273:     return { data, error: null };
+L274:   } catch (error) {
+L275:     errorService.handle(error, 'Failed to load packaging sessions');
+L276:     return { data: null, error };
+L277:   }
+L278: }
+L279: 
+L280: /**
+L281:  * Fetches active packaging sessions
+L282:  *
+L283:  * @returns Promise<{ data: PackagingSession[] | null; error: any }>
+L284:  */
+L285: export async function getActivePackagingSessions() {
+L286:   try {
+L287:     const { data, error } = await supabase
+L288:       .from('packaging_sessions')
+L289:       .select('*')
+L290:       .is('completed_at', null)
+L291:       .is('cancelled_at', null)
+L292:       .order('started_at', { ascending: false });
+L293: 
+L294:     if (error) throw error;
+L295:     return { data, error: null };
+L296:   } catch (error) {
+L297:     errorService.handle(error, 'Failed to load active packaging sessions');
+L298:     return { data: null, error };
+L299:   }
+L300: }
+L301: 
+L302: /**
+L303:  * Creates a new packaging session
+L304:  *
+L305:  * @param sessionData - Packaging session data
+L306:  * @returns Promise<{ data: PackagingSession | null; error: any }>
+L307:  */
+L308: export async function createPackagingSession(sessionData: PackagingSessionInsert) {
+L309:   try {
+L310:     const { data, error } = await supabase
+L311:       .from('packaging_sessions')
+L312:       .insert(sessionData)
+L313:       .select()
+L314:       .single();
+L315: 
+L316:     if (error) throw error;
+L317:     return { data, error: null };
+L318:   } catch (error) {
+L319:     errorService.handle(error, 'Failed to create packaging session');
+L320:     return { data: null, error };
+L321:   }
+L322: }
+L323: 
+L324: /**
+L325:  * Completes a packaging session
+L326:  *
+L327:  * @param sessionId - Packaging session UUID
+L328:  * @param completionData - Completion data
+L329:  * @returns Promise<{ data: PackagingSession | null; error: any }>
+L330:  */
+L331: export async function completePackagingSession(sessionId: string, completionData: PackagingSessionUpdate) {
+L332:   try {
+L333:     const { data, error } = await supabase
+L334:       .from('packaging_sessions')
+L335:       .update({
+L336:         ...completionData,
+L337:         completed_at: new Date().toISOString(),
+L338:         updated_at: new Date().toISOString(),
+L339:       })
+L340:       .eq('id', sessionId)
+L341:       .select()
+L342:       .single();
+L343: 
+L344:     if (error) throw error;
+L345:     return { data, error: null };
+L346:   } catch (error) {
+L347:     errorService.handle(error, 'Failed to complete packaging session');
+L348:     return { data: null, error };
+L349:   }
+L350: }
+L351: 
+L352: /**
+L353:  * Cancels a packaging session
+L354:  *
+L355:  * @param sessionId - Packaging session UUID
+L356:  * @param notes - Optional cancellation notes
+L357:  * @returns Promise<{ error: any | null }>
+L358:  */
+L359: export async function cancelPackagingSession(sessionId: string, notes?: string) {
+L360:   try {
+L361:     const { error } = await supabase
+L362:       .from('packaging_sessions')
+L363:       .update({
+L364:         session_status: 'cancelled',
+L365:         notes: notes,
+L366:         cancelled_at: new Date().toISOString(),
+L367:       })
+L368:       .eq('id', sessionId);
+L369: 
+L370:     if (error) throw error;
+L371:     return { error: null };
+L372:   } catch (error) {
+L373:     errorService.handle(error, 'Failed to cancel packaging session');
+L374:     return { error };
+L375:   }
+L376: }
+L377: 
+L378: // Universal Undo Function
+L379: /**
+L380:  * Undoes a completed session, restoring it to active state
+L381:  *
+L382:  * @param sessionId - Session UUID
+L383:  * @param sessionType - Type of session ('trim' | 'bucking' | 'packaging')
+L384:  * @returns Promise<{ data: any | null; error: any }>
+L385:  * @description Clears the completed_at timestamp, restoring the session to active state.
+L386:  * This allows operators to correct mistakes immediately after completing a session.
+L387:  */
+L388: export async function undoCompletedSession(
+L389:   sessionId: string,
+L390:   sessionType: 'trim' | 'bucking' | 'packaging'
+L391: ) {
+L392:   try {
+L393:     const { data: existingPackages, error: pkgError } = await supabase
+L394:       .from('conversion_packages')
+L395:       .select('id')
+L396:       .contains('source_session_ids', [sessionId])
+L397:       .limit(1);
+L398: 
+L399:     if (pkgError) throw pkgError;
+L400: 
+L401:     if (existingPackages && existingPackages.length > 0) {
+L402:       throw new Error(
+L403:         'Cannot undo: this session has already been finalized into conversion packages. ' +
+L404:         'Void the conversion first before undoing the session.'
+L405:       );
+L406:     }
+L407: 
+L408:     const tableName = `${sessionType}_sessions`;
+L409: 
+L410:     const { data, error } = await supabase
+L411:       .from(tableName)
+L412:       .update({
+L413:         completed_at: null,
+L414:         updated_at: new Date().toISOString(),
+L415:       })
+L416:       .eq('id', sessionId)
+L417:       .select()
+L418:       .single();
+L419: 
+L420:     if (error) throw error;
+L421:     return { data, error: null };
+L422:   } catch (error) {
+L423:     errorService.handle(error, `Failed to undo completed ${sessionType} session`);
+L424:     return { data: null, error };
+L425:   }
+L426: }
+L427: 
+
+--- FILE: utils/index.ts ---
+L1: export function formatElapsedTime(startedAt: string): string {
+L2:   const start = new Date(startedAt);
+L3:   const now = new Date();
+L4:   const minutes = Math.floor((now.getTime() - start.getTime()) / 60000);
+L5:   const hours = Math.floor(minutes / 60);
+L6:   const mins = minutes % 60;
+L7:   return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+L8: }
+L9: 
+L10: export function getTodayDateString(): string {
+L11:   return new Date().toISOString().split('T')[0];
+L12: }
+L13: 
+
+--- FILE: types/index.ts ---
+L1: import { Database } from '@/lib/database';
+L2: 
+L3: /**
+L4:  * Production Session Types
+L5:  *
+L6:  * All session types follow consistent patterns:
+L7:  * - session_status: 'active' | 'completed' | 'cancelled'
+L8:  * - Inventory is reserved on INSERT when status = 'active'
+L9:  * - Inventory is released on UPDATE when status changes to 'cancelled'
+L10:  * - Pending conversions created on UPDATE when status changes to 'completed'
+L11:  */
+L12: 
+L13: /** Trim session: Processes bucked flower into flower, smalls, and trim */
+L14: export type TrimSession = Database['public']['Tables']['trim_sessions']['Row'];
+L15: export type TrimSessionInsert = Database['public']['Tables']['trim_sessions']['Insert'];
+L16: export type TrimSessionUpdate = Database['public']['Tables']['trim_sessions']['Update'];
+L17: 
+L18: /** Packaging session: Packages bulk inventory into retail units (3.5g, 14g, 454g) */
+L19: export type PackagingSession = Database['public']['Tables']['packaging_sessions']['Row'];
+L20: export type PackagingSessionInsert = Database['public']['Tables']['packaging_sessions']['Insert'];
+L21: export type PackagingSessionUpdate = Database['public']['Tables']['packaging_sessions']['Update'];
+L22: 
+L23: /** Bucking session: Processes raw plant material into bucked flower and smalls */
+L24: export type BuckingSession = Database['public']['Tables']['bucking_sessions']['Row'];
+L25: export type BuckingSessionInsert = Database['public']['Tables']['bucking_sessions']['Insert'];
+L26: export type BuckingSessionUpdate = Database['public']['Tables']['bucking_sessions']['Update'];
+L27: 
+L28: /** Inventory item with reservation tracking via available_qty */
+L29: export type InventoryItem = Database['public']['Tables']['inventory_items']['Row'];
+L30: 
+L31: /** Session type discriminator */
+L32: export type SessionType = 'bucking' | 'trim' | 'packaging';
+L33: 
+L34: /** Valid session status values - consistent across all session types */
+L35: export type SessionStatus = 'active' | 'completed' | 'cancelled';
+L36: 
+L37: export interface BaseSessionStats {
+L38:   activeSessions: number;
+L39:   completedToday: number;
+L40: }
+L41: 
+L42: export interface TrimSessionStats extends BaseSessionStats {
+L43:   avgGramsPerHour: number;
+L44:   totalFlowerToday: number;
+L45: }
+L46: 
+L47: export interface PackagingSessionStats extends BaseSessionStats {
+L48:   totalUnitsToday: number;
+L49:   avgUnitsPerHour: number;
+L50: }
+L51: 
+L52: export interface BuckingSessionStats extends BaseSessionStats {
+L53:   avgKgPerHour: number;
+L54:   totalFlowerToday: number;
+L55:   totalSmallsToday: number;
+L56:   totalWasteToday: number;
+L57: }
+L58: 
+L59: export interface ConsolidatedPackages {
+L60:   flower?: string;
+L61:   smalls?: string;
+L62:   trim?: string;
+L63: }
+L64: 
+L65: /**
+L66:  * Form data for completing a trim session
+L67:  * Records output weights and any additional bucked smalls discovered
+L68:  */
+L69: export interface TrimCompleteForm {
+L70:   big_buds_grams: number;
+L71:   small_buds_grams: number;
+L72:   trim_grams: number;
+L73:   waste_grams: number;
+L74:   bucked_smalls_grams: number;
+L75:   bucked_smalls_inventory_id: string;
+L76:   notes: string;
+L77:   quality_grade_id?: string | null;
+L78: }
+L79: 
+L80: export interface PackagingCompleteForm {
+L81:   ending_weight: number;
+L82:   units_3_5g: number;
+L83:   units_14g: number;
+L84:   units_454g: number;
+L85:   trim_grams: number;
+L86:   waste_grams: number;
+L87:   notes: string;
+L88:   quality_grade_id?: string | null;
+L89: }
+L90: 
+L91: export interface BuckingCompleteForm {
+L92:   bucked_flower_grams: number;
+L93:   bucked_smalls_grams: number;
+L94:   waste_grams: number;
+L95:   notes: string;
+L96:   quality_grade_id?: string | null;
+L97: }
+L98: 
+
+--- FILE: components/ProductionDashboard.tsx (lines 120-180) ---
+L120:   bucking: { label: 'Bucking', icon: Scissors, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+L121:   trim: { label: 'Trim', icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+L122:   packaging: { label: 'Packaging', icon: Box, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
+L123: } as const;
+L124: 
+L125: export function ProductionDashboard({ onViewChange }: ProductionDashboardProps) {
+L126:   const [activeBucking, setActiveBucking] = useState<BuckingSession[]>([]);
+L127:   const [activeTrim, setActiveTrim] = useState<TrimSession[]>([]);
+L128:   const [activePackaging, setActivePackaging] = useState<PackagingSession[]>([]);
+L129:   const [allBucking, setAllBucking] = useState<BuckingSession[]>([]);
+L130:   const [allTrim, setAllTrim] = useState<TrimSession[]>([]);
+L131:   const [allPackaging, setAllPackaging] = useState<PackagingSession[]>([]);
+L132:   const [loading, setLoading] = useState(true);
+L133:   const [, setTick] = useState(0);
+L134: 
+L135:   useEffect(() => {
+L136:     fetchAll();
+L137: 
+L138:     const channel = supabase
+L139:       .channel('production-dashboard')
+L140:       .on('postgres_changes', { event: '*', schema: 'public', table: 'bucking_sessions' }, fetchAll)
+L141:       .on('postgres_changes', { event: '*', schema: 'public', table: 'trim_sessions' }, fetchAll)
+L142:       .on('postgres_changes', { event: '*', schema: 'public', table: 'packaging_sessions' }, fetchAll)
+L143:       .subscribe();
+L144: 
+L145:     const timer = setInterval(() => setTick((t) => t + 1), 30000);
+L146: 
+L147:     return () => {
+L148:       supabase.removeChannel(channel);
+L149:       clearInterval(timer);
+L150:     };
+L151:   }, []);
+L152: 
+L153:   async function fetchAll() {
+L154:     try {
+L155:       const [ab, at, ap, allB, allT, allP] = await Promise.all([
+L156:         getActiveBuckingSessions(),
+L157:         getActiveTrimSessions(),
+L158:         getActivePackagingSessions(),
+L159:         getBuckingSessions(),
+L160:         getTrimSessions(),
+L161:         getPackagingSessions(),
+L162:       ]);
+L163: 
+L164:       setActiveBucking(ab.data || []);
+L165:       setActiveTrim((at.data || []).filter((s: any) => s.session_status === 'active'));
+L166:       setActivePackaging(ap.data || []);
+L167:       setAllBucking(allB.data || []);
+L168:       setAllTrim(allT.data || []);
+L169:       setAllPackaging(allP.data || []);
+L170:     } catch (err) {
+L171:       console.error('Error loading production dashboard:', err);
+L172:     } finally {
+L173:       setLoading(false);
+L174:     }
+L175:   }
+L176: 
+L177:   const activeRows = normalizeActiveSessions(activeBucking, activeTrim, activePackaging);
+L178:   const totalActive = activeRows.length;
+L179:   const todaySummary = computeTodaySummary(allBucking, allTrim, allPackaging);
+L180:   const totalCompletedToday =
+
+--- POTENTIAL CULT- BREAKAGE IN ProductionDashboard.tsx ---
+No issues found - all cult- references are within className/class strings.
