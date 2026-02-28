@@ -21,3 +21,5 @@ export * from './VarianceLogViewer';
 export * from './AuditManagement';
 
 export * from './InventoryViewsSimplified';
+export * from './RebalanceWeightModal';
+export * from './RowActionMenu';

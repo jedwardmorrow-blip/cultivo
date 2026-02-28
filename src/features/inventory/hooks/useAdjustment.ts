@@ -1,30 +1,25 @@
 import { useState, useCallback } from 'react';
 import { adjustInventoryItem } from '../services/adjustment.service';
 import { notificationService } from '@/services/notification.service';
-import type { AdjustmentRequest } from '../types/adjustment.types';
-
-/**
- * useAdjustment
- *
- * Handles inventory quantity adjustments.
- * Used for corrections, waste, loss, or other manual adjustments.
- *
- * @returns {Object} Adjustment state and functions
- *
- * @example
- * const { adjusting, applyAdjustment } = useAdjustment();
- */
+import { supabase } from '@/lib/supabase';
+import type { QuickAdjustmentRequest } from '../types/adjustment.types';
 
 export function useAdjustment() {
   const [adjusting, setAdjusting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applyAdjustment = useCallback(async (request: AdjustmentRequest) => {
+  const applyAdjustment = useCallback(async (request: QuickAdjustmentRequest) => {
     try {
       setAdjusting(true);
       setError(null);
 
-      await adjustInventoryItem(request);
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || '';
+
+      const result = await adjustInventoryItem(request, userId);
+      if (!result.success) {
+        throw new Error(result.error || 'Adjustment failed');
+      }
 
       notificationService.success('Inventory adjustment applied successfully');
     } catch (err) {
@@ -37,13 +32,16 @@ export function useAdjustment() {
     }
   }, []);
 
-  const applyBulkAdjustment = useCallback(async (requests: AdjustmentRequest[]) => {
+  const applyBulkAdjustment = useCallback(async (requests: QuickAdjustmentRequest[]) => {
     try {
       setAdjusting(true);
       setError(null);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || '';
+
       for (const request of requests) {
-        await adjustInventoryItem(request);
+        await adjustInventoryItem(request, userId);
       }
 
       notificationService.success(`Successfully applied ${requests.length} adjustments`);

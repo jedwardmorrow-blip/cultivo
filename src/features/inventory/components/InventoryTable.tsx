@@ -28,6 +28,7 @@ interface InventoryTableProps {
   onSelectionChange?: (selectedIds: Set<string>) => void;
   isSelectable?: (item: InventoryItem) => boolean;
   gradeFilterable?: boolean;
+  renderRowActions?: (item: InventoryItem) => ReactNode;
 }
 
 function getRawValue(item: InventoryItem, accessor: Column['accessor']): any {
@@ -49,6 +50,7 @@ export function InventoryTable({
   onSelectionChange,
   isSelectable = () => true,
   gradeFilterable = false,
+  renderRowActions,
 }: InventoryTableProps) {
   const [sortColumnIdx, setSortColumnIdx] = useState<number | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -288,12 +290,13 @@ export function InventoryTable({
                   </th>
                 );
               })}
+              {renderRowActions && <th className="px-2 py-3 w-12" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-medium-gray/50">
             {sortedItems.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (selectable ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
+                <td colSpan={columns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
                   No results match your search
                 </td>
               </tr>
@@ -345,6 +348,11 @@ export function InventoryTable({
                         </td>
                       );
                     })}
+                    {renderRowActions && (
+                      <td className="px-2 py-3 w-12">
+                        {renderRowActions(item)}
+                      </td>
+                    )}
                   </tr>
                 );
               })

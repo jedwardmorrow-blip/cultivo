@@ -14,33 +14,41 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-27
-**Session:** Fix 14g Smalls Naming & Finalization Status Sync
+**Date:** 2026-02-28
+**Session:** Inventory Row Actions — Quick Adjust, Rebalance Weight, Combine Packages
 **Status:** COMPLETE
 
 **What was done:**
 
-Fixed a bug where the packaging trigger named 14g items "14g Flower" instead of "14g Smalls", causing package assignment failures for orders (e.g., Story Bell). Also fixed a finalization status sync gap in the RPC.
+Added a three-dot row action menu to the All Inventory table with three per-item operations. Database RPCs were applied in a prior session; this session built all frontend code.
 
-**1. Trigger Fix (database)**
-- `set_packaging_product_names()` — Changed `'14g Flower'` to `'14g Smalls'` in the 14g product name template. Convention: 14g = Smalls system-wide (products catalog, `productNaming.ts`, all historical 14g sessions sourced from Bulk Smalls).
+**1. RowActionMenu component** (new)
+- `RowActionMenu.tsx` — Reusable three-dot dropdown with visibility toggles, destructive styling, click-outside/Escape dismissal.
 
-**2. RPC Fix (database)**
-- `finalize_session_aggregated()` — Packaging path now also sets product-specific finalization columns (`finalization_status_14g`, `_3_5g`, `_1lb`) alongside the generic `finalization_status_packaged`. Prevents `pending_conversion_sessions` view from showing already-finalized sessions as pending.
+**2. Quick Adjustment restyle** (rewrite)
+- `QuickAdjustmentModal.tsx` — Full dark theme restyle (cult-* colors). Variance display: emerald for increases, red for decreases. 5%+ high variance warning.
 
-**3. Data Backfill (database)**
-- 3 packaging sessions: `output_product_14g_name` corrected from `'14g Flower'` to `'14g Smalls'`
-- 1 inventory item (`260227-BLM-001`): `product_name` corrected
-- 1 session (Black Maple): `finalization_status_14g` synced to `'finalized'` to match its `finalization_status_packaged`
+**3. Rebalance Weight feature** (new)
+- `rebalance.types.ts` — RebalanceRequest, RebalanceResult, RebalanceValidation interfaces
+- `rebalance.service.ts` — validateRebalance() client-side checks + executeRebalance() calls `fn_rebalance_inventory_weight` RPC
+- `RebalanceWeightModal.tsx` — Searchable destination picker, live before/after preview, 50%+ warning, reason + notes fields
 
-**Migration:** `fix_14g_naming_and_finalization_sync`
-**No frontend changes.** Inventory names now match order product names.
+**4. AllInventoryView wiring** (modified)
+- Replaced inline printer column with RowActionMenu (Print Label, Adjust Qty [admin], Rebalance [admin])
+- Added QuickAdjustmentModal and RebalanceWeightModal with full state management
+- Data refresh on completion of any action
+
+**5. Bug fix: useAdjustment hook**
+- Fixed broken import `AdjustmentRequest` -> `QuickAdjustmentRequest`
+- Added userId passthrough to adjustment service
+
+**6. InventoryTable enhancement**
+- Added `renderRowActions` prop with proper colspan accounting
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors — not blocking
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
-- White Devil 14g session (`e8091c75`) still pending in both columns — never finalized, no inventory created yet. Will finalize naturally when operator processes it.
 
 **Next recommendations (in order):**
 1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress

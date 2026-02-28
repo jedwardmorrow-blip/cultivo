@@ -4,6 +4,26 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-02-28 - Inventory Row Actions: Quick Adjust, Rebalance Weight, Combine Packages
+
+**Type:** Feature Addition
+**Module:** Inventory
+**Status:** COMPLETE
+
+Added a three-dot row action menu to the All Inventory table, surfacing three per-item operations: Print Label (all users), Quick Adjustment (admin), and Rebalance Weight (admin). Combine Packages was already wired from a previous session.
+
+- **RowActionMenu Component:** New reusable `RowActionMenu.tsx` renders a three-dot icon (MoreVertical) with a dropdown of context-sensitive actions. Supports visibility toggles, destructive action styling, outside-click and Escape dismissal.
+- **Quick Adjustment Restyle:** Rewrote `QuickAdjustmentModal.tsx` from light theme to dark theme (cult-* color system). Variance display uses emerald for increases, red for decreases. High variance warning at 5%+ threshold.
+- **Rebalance Weight Feature:** New `RebalanceWeightModal.tsx` allows transferring weight between two inventory items of the same unit type. Searchable destination picker, live before/after preview, 50%+ source depletion warning. Reason code and notes required. Calls `fn_rebalance_inventory_weight` RPC.
+- **AllInventoryView Wiring:** Replaced the inline printer icon column with the RowActionMenu. Admin users see Adjust Quantity and Rebalance Weight actions. All users see Print Label. Both modals wired with proper state management and data refresh on completion.
+- **useAdjustment Hook Fix:** Fixed broken import (`AdjustmentRequest` -> `QuickAdjustmentRequest`) and added userId passthrough to the adjustment service.
+- **InventoryTable Enhancement:** Added `renderRowActions` prop for per-row action rendering, with proper colspan accounting for empty states.
+- **Database Migration (previous session):** `fn_combine_inventory_packages` and `fn_rebalance_inventory_weight` RPCs. Extended `variance_source` enum with `combine_packages` and `weight_rebalance`.
+- **New Files:** `rebalance.types.ts`, `rebalance.service.ts`, `RebalanceWeightModal.tsx`, `RowActionMenu.tsx`
+- **Modified Files:** `QuickAdjustmentModal.tsx`, `useAdjustment.ts`, `InventoryTable.tsx`, `AllInventoryView.tsx`, index exports
+
+---
+
 ## 2026-02-27 - Fix 14g Smalls Naming & Finalization Status Sync
 
 **Type:** Bug Fix
