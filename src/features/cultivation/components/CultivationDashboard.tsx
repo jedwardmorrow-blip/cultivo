@@ -323,7 +323,7 @@ export function CultivationDashboard() {
   const isCloneToVeg = advanceGroup?.growth_stage === 'clone' && nextStageForAdvance === 'veg';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
         <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
         <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>

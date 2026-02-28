@@ -41,11 +41,11 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Sales Dashboard</h1>
-          <p className="text-cult-light-gray mt-1">Account performance and revenue analytics</p>
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Sales Dashboard</h1>
+          <p className="text-cult-light-gray mt-2">Account performance and revenue analytics</p>
         </div>
         <div className="flex items-center gap-3">
           <button

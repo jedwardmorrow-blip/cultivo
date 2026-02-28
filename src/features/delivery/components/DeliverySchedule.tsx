@@ -98,8 +98,8 @@ export function DeliverySchedule() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Delivery Schedule</h1>
-        <p className="text-cult-light-gray mt-1">Coordinate delivery routes and track shipments</p>
+        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Delivery Schedule</h1>
+        <p className="text-cult-light-gray mt-2">Coordinate delivery routes and track shipments</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

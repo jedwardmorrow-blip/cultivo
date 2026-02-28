@@ -189,7 +189,7 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
   }
 
   return (
-    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
+    <div className="p-6 max-w-[1800px] mx-auto space-y-6 stagger-fade-in">
       <div>
         <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">
           Production

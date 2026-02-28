@@ -133,8 +133,8 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
     <div className="space-y-6 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Visit Calendar</h1>
-          <p className="text-cult-light-gray mt-1">Schedule and track account visits</p>
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Visit Calendar</h1>
+          <p className="text-cult-light-gray mt-2">Schedule and track account visits</p>
         </div>
         <div className="flex items-center gap-3">
           <button

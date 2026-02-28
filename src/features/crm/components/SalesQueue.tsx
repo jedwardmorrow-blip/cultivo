@@ -238,8 +238,8 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
     <div className="space-y-6 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">My Queue</h1>
-          <p className="text-cult-light-gray mt-1">Tasks and visits requiring your attention</p>
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">My Queue</h1>
+          <p className="text-cult-light-gray mt-2">Tasks and visits requiring your attention</p>
         </div>
         <div className="flex items-center gap-3">
           <button

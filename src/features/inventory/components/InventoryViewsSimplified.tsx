@@ -19,8 +19,8 @@ function ViewShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-cult-white tracking-tight uppercase">{title}</h1>
-        <p className="text-cult-silver text-sm mt-1">{subtitle}</p>
+        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">{title}</h1>
+        <p className="text-cult-light-gray text-sm mt-2">{subtitle}</p>
       </div>
       {children}
     </div>

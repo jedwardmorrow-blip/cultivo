@@ -163,8 +163,8 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
     <div className="space-y-5 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Accounts</h1>
-          <p className="text-cult-light-gray mt-1">
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Accounts</h1>
+          <p className="text-cult-light-gray mt-2">
             {accounts.filter((a) => a.account_type !== 'hub_child').length} accounts
             {childrenByParent.size > 0 && (
               <span className="ml-1 text-cult-silver">

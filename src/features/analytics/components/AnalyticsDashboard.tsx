@@ -65,9 +65,12 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white uppercase tracking-wide">ANALYTICS</h2>
+        <div>
+          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Analytics</h1>
+          <p className="text-cult-light-gray mt-2">Production throughput and conversion metrics</p>
+        </div>
         <div className="flex gap-4">
           <div>
             <label className="block text-sm text-cult-text-muted mb-1">Start Date</label>
@@ -91,7 +94,7 @@ export function AnalyticsDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="w-5 h-5 text-blue-400" />
             <span className="text-cult-text-muted text-sm">Avg Trimmer Speed</span>
@@ -100,7 +103,7 @@ export function AnalyticsDashboard() {
           <div className="text-sm text-cult-text-muted">grams/hour</div>
         </div>
 
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-5 h-5 text-green-400" />
             <span className="text-cult-text-muted text-sm">Avg Packager Speed</span>
@@ -109,7 +112,7 @@ export function AnalyticsDashboard() {
           <div className="text-sm text-cult-text-muted">units/hour</div>
         </div>
 
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5 text-yellow-400" />
             <span className="text-cult-text-muted text-sm">Total Processed</span>
@@ -118,7 +121,7 @@ export function AnalyticsDashboard() {
           <div className="text-sm text-cult-text-muted">kg</div>
         </div>
 
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-5 h-5 text-teal-400" />
             <span className="text-cult-text-muted text-sm">Units Produced</span>
@@ -129,7 +132,7 @@ export function AnalyticsDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <h3 className="text-lg font-semibold text-white mb-4">Trimmer Productivity</h3>
           {trimmerStats.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -155,7 +158,7 @@ export function AnalyticsDashboard() {
           )}
         </div>
 
-        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <h3 className="text-lg font-semibold text-white mb-4">Conversion Analysis</h3>
           {conversionData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">

@@ -182,8 +182,8 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   return (
     <div onDragEnd={handleDragEnd}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Distribution Calendar</h1>
-        <p className="text-cult-light-gray mt-1">Plan and manage delivery schedules -- drag orders to reschedule</p>
+        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Distribution Calendar</h1>
+        <p className="text-cult-light-gray mt-2">Plan and manage delivery schedules -- drag orders to reschedule</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
