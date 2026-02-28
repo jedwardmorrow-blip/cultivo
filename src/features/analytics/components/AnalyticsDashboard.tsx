@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, Users, Package } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Package, Scissors, RefreshCw } from 'lucide-react';
 import { ProductionSummary } from './ProductionSummary';
 import { getThroughputSummary, getConversionAnalysis, type ThroughputData, type ConversionData } from '../services';
 
@@ -67,7 +67,7 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Analytics Dashboard</h2>
+        <h2 className="text-2xl font-bold text-white uppercase tracking-wide">ANALYTICS</h2>
         <div className="flex gap-4">
           <div>
             <label className="block text-sm text-cult-text-muted mb-1">Start Date</label>
@@ -120,7 +120,7 @@ export function AnalyticsDashboard() {
 
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
-            <Users className="w-5 h-5 text-purple-400" />
+            <Users className="w-5 h-5 text-teal-400" />
             <span className="text-cult-text-muted text-sm">Units Produced</span>
           </div>
           <div className="text-3xl font-bold text-white">{totalUnitsProduced.toLocaleString()}</div>
@@ -131,44 +131,60 @@ export function AnalyticsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Trimmer Productivity</h3>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {trimmerStats.slice(0, 10).map((stat, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-cult-surface/50 rounded">
-                <div>
-                  <div className="text-white font-medium">{stat.metric_date}</div>
-                  <div className="text-sm text-cult-text-muted">{stat.total_workers} workers, {stat.total_sessions} sessions</div>
+          {trimmerStats.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Scissors className="w-10 h-10 text-cult-text-muted/40 mb-3" />
+              <p className="text-cult-text-muted text-sm">No trimmer data for this period</p>
+              <p className="text-cult-text-muted/60 text-xs mt-1">Complete trim sessions to see productivity metrics</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {trimmerStats.slice(0, 10).map((stat, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-cult-surface/50 rounded">
+                  <div>
+                    <div className="text-white font-medium">{stat.metric_date}</div>
+                    <div className="text-sm text-cult-text-muted">{stat.total_workers} workers, {stat.total_sessions} sessions</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-semibold">{stat.avg_grams_per_hour.toFixed(0)} g/hr</div>
+                    <div className="text-sm text-cult-text-muted">{(stat.total_weight_grams / 1000).toFixed(1)} kg total</div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-white font-semibold">{stat.avg_grams_per_hour.toFixed(0)} g/hr</div>
-                  <div className="text-sm text-cult-text-muted">{(stat.total_weight_grams / 1000).toFixed(1)} kg total</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Conversion Analysis</h3>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {conversionData.slice(0, 10).map((conv, idx) => (
-              <div key={idx} className="p-3 bg-cult-surface/50 rounded">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-white font-medium">{conv.strain}</span>
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    conv.performance_status === 'over_performing' ? 'bg-green-900/30 text-green-400' :
-                    conv.performance_status === 'under_performing' ? 'bg-red-900/30 text-red-400' :
-                    'bg-cult-surface-overlay text-cult-text-secondary'
-                  }`}>
-                    {conv.variance_percentage > 0 ? '+' : ''}{conv.variance_percentage.toFixed(1)}%
-                  </span>
+          {conversionData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <RefreshCw className="w-10 h-10 text-cult-text-muted/40 mb-3" />
+              <p className="text-cult-text-muted text-sm">No conversion data for this period</p>
+              <p className="text-cult-text-muted/60 text-xs mt-1">Finalize sessions to generate conversion metrics</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {conversionData.slice(0, 10).map((conv, idx) => (
+                <div key={idx} className="p-3 bg-cult-surface/50 rounded">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-medium">{conv.strain}</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      conv.performance_status === 'over_performing' ? 'bg-green-900/30 text-green-400' :
+                      conv.performance_status === 'under_performing' ? 'bg-red-900/30 text-red-400' :
+                      'bg-cult-surface-overlay text-cult-text-secondary'
+                    }`}>
+                      {conv.variance_percentage > 0 ? '+' : ''}{conv.variance_percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="text-sm text-cult-text-muted">
+                    {conv.from_stage} → {conv.to_stage}: {conv.actual_percentage.toFixed(1)}%
+                    {conv.expected_percentage && ` (expected ${conv.expected_percentage.toFixed(1)}%)`}
+                  </div>
                 </div>
-                <div className="text-sm text-cult-text-muted">
-                  {conv.from_stage} → {conv.to_stage}: {conv.actual_percentage.toFixed(1)}%
-                  {conv.expected_percentage && ` (expected ${conv.expected_percentage.toFixed(1)}%)`}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

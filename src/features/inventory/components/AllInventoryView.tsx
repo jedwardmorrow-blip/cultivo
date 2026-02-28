@@ -420,11 +420,6 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
           },
           {
-            header: 'Room',
-            accessor: 'room',
-            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
-          },
-          {
             header: 'Available Qty',
             accessor: 'available_qty',
             align: 'right',

@@ -113,7 +113,6 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
             header: 'Age',
@@ -175,7 +174,6 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
             header: 'Status',
@@ -279,7 +277,6 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
           GradeColumn(onDataRefresh),
           {
@@ -324,7 +321,6 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Room', accessor: 'room', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           GradeColumn(onDataRefresh),
           {
