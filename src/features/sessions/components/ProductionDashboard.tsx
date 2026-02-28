@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import {
   Scissors,
@@ -19,6 +20,31 @@ import {
   getTrimSessions,
   getPackagingSessions,
 } from '../services/sessions.service';
+
+
+class ProdEB extends React.Component {
+  constructor(p) { super(p); this.state = { err: null, info: null }; }
+  static getDerivedStateFromError(e) { return { err: e }; }
+  componentDidCatch(e, i) { this.setState({ info: i }); }
+  render() {
+    if (this.state.err) {
+      return React.createElement('div', {
+        style: { padding: '20px', margin: '20px', background: '#1a1a1a',
+          border: '2px solid #ff6b6b', borderRadius: '8px', color: '#ff6b6b',
+          fontFamily: 'monospace', fontSize: '12px', maxHeight: '500px', overflow: 'auto' }
+      },
+        React.createElement('h2', { style: { color: '#ff6b6b' } }, 'Production Dashboard Error'),
+        React.createElement('pre', { style: { color: '#ffd93d', whiteSpace: 'pre-wrap' } },
+          String(this.state.err)),
+        React.createElement('pre', { style: { color: '#aaa', whiteSpace: 'pre-wrap', marginTop: '10px' } },
+          this.state.err?.stack || ''),
+        React.createElement('pre', { style: { color: '#6bcfff', whiteSpace: 'pre-wrap', marginTop: '10px' } },
+          this.state.info?.componentStack || '')
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface ProductionDashboardProps {
   onViewChange: (view: string) => void;
@@ -122,7 +148,7 @@ const TYPE_CONFIG = {
   packaging: { label: 'Packaging', icon: Box, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
 } as const;
 
-export function ProductionDashboard({ onViewChange }: ProductionDashboardProps) {
+function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
   const [activeBucking, setActiveBucking] = useState<BuckingSession[]>([]);
   const [activeTrim, setActiveTrim] = useState<TrimSession[]>([]);
   const [activePackaging, setActivePackaging] = useState<PackagingSession[]>([]);
@@ -436,4 +462,8 @@ function QuickActionButton({
       {label}
     </button>
   );
+}
+
+export function ProductionDashboard(props: ProductionDashboardProps) {
+  return React.createElement(ProdEB, null, React.createElement(ProductionDashboardInner, props));
 }
