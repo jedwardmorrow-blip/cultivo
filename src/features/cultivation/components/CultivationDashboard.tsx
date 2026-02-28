@@ -10,6 +10,7 @@ import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation, formatWeight } from '../utils';
 import type { GrowRoom, PlantGroup, GrowthStage, DryRoom, HarvestSession } from '../types';
+import { StatCard } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -18,40 +19,19 @@ const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   harvested: null,
 };
 
-interface StatCardProps {
-  label: string;
-  value: number | string;
-  icon: React.ReactNode;
-  accent?: string;
-  sub?: string;
-}
-
-function StatCard({ label, value, icon, accent = 'text-cult-white', sub }: StatCardProps) {
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-cult-light-gray uppercase tracking-wider">{label}</span>
-        <span className="text-cult-medium-gray">{icon}</span>
-      </div>
-      <span className={`text-3xl font-bold ${accent}`}>{value}</span>
-      {sub && <span className="text-xs text-cult-medium-gray">{sub}</span>}
-    </div>
-  );
-}
-
-interface StageBadgeProps {
+interface StageCountBadgeProps {
   stage: string;
   count: number;
 }
 
-function StageBadge({ stage, count }: StageBadgeProps) {
+function StageCountBadge({ stage, count }: StageCountBadgeProps) {
   const styles: Record<string, string> = {
-    clone: 'bg-sky-950 border-sky-700 text-sky-400',
-    veg: 'bg-green-950 border-green-700 text-green-400',
-    flower: 'bg-rose-950 border-rose-700 text-rose-400',
-    harvested: 'bg-amber-950 border-amber-700 text-amber-400',
+    clone: 'bg-cult-stage-clone/10 border-cult-stage-clone/40 text-cult-stage-clone',
+    veg: 'bg-cult-stage-veg/10 border-cult-stage-veg/40 text-cult-stage-veg',
+    flower: 'bg-cult-stage-flower/10 border-cult-stage-flower/40 text-cult-stage-flower',
+    harvested: 'bg-cult-stage-harvest/10 border-cult-stage-harvest/40 text-cult-stage-harvest',
   };
-  const cls = styles[stage] ?? 'bg-cult-black border-cult-medium-gray text-cult-light-gray';
+  const cls = styles[stage] ?? 'bg-cult-surface border-cult-border text-cult-text-muted';
 
   return (
     <div className={`flex items-center justify-between border px-3 py-2 ${cls}`}>
@@ -62,11 +42,11 @@ function StageBadge({ stage, count }: StageBadgeProps) {
 }
 
 const ROOM_TYPE_BORDER: Record<string, string> = {
-  clone: 'border-l-sky-700',
-  veg: 'border-l-green-700',
-  flower: 'border-l-rose-700',
-  mother: 'border-l-amber-700',
-  mixed: 'border-l-cult-medium-gray',
+  clone: 'border-l-cult-stage-clone',
+  veg: 'border-l-cult-stage-veg',
+  flower: 'border-l-cult-stage-flower',
+  mother: 'border-l-cult-stage-harvest',
+  mixed: 'border-l-cult-border',
 };
 
 interface RoomCardProps {
@@ -369,13 +349,13 @@ export function CultivationDashboard() {
           label="Active Groups"
           value={groups.length}
           icon={<Sprout className="w-4 h-4" />}
-          sub={`${totalPlants.toLocaleString()} total plants`}
+          subtitle={`${totalPlants.toLocaleString()} total plants`}
         />
         <StatCard
           label="Active Harvests"
           value={sessions.length}
           icon={<Scissors className="w-4 h-4" />}
-          accent={sessions.length > 0 ? 'text-amber-400' : 'text-cult-white'}
+          variant={sessions.length > 0 ? 'accent' : 'default'}
         />
         <StatCard
           label="Mother Plants"
@@ -388,9 +368,9 @@ export function CultivationDashboard() {
         <div className="bg-cult-near-black border border-cult-medium-gray p-5">
           <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Plants by Stage</h2>
           <div className="space-y-2">
-            <StageBadge stage="clone" count={stageCounts.clone} />
-            <StageBadge stage="veg" count={stageCounts.veg} />
-            <StageBadge stage="flower" count={stageCounts.flower} />
+            <StageCountBadge stage="clone" count={stageCounts.clone} />
+            <StageCountBadge stage="veg" count={stageCounts.veg} />
+            <StageCountBadge stage="flower" count={stageCounts.flower} />
           </div>
           {groups.length === 0 && (
             <p className="text-cult-medium-gray text-sm text-center py-4">No active plant groups</p>
