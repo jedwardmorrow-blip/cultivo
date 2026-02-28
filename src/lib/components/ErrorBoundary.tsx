@@ -45,12 +45,11 @@ export class ErrorBoundary extends Component<Props, State> {
       this.props.onError(error, errorInfo);
     }
 
-    // DIAGNOSTIC: auto-reset disabled to keep error visible
-    // if (this.state.errorCount < 3) {
-    //   this.resetTimer = setTimeout(() => {
-    //     this.handleReset();
-    //   }, 10000);
-    // }
+    if (this.state.errorCount < 3) {
+      this.resetTimer = setTimeout(() => {
+        this.handleReset();
+      }, 10000);
+    }
   }
 
   public componentDidUpdate(prevProps: Props) {
@@ -116,7 +115,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       const errorType = this.getErrorType();
       const suggestion = this.getErrorSuggestion();
-      const showDetails = true;
+      const showDetails = import.meta.env.DEV || this.state.errorCount < 2;
 
       return (
         <div className="min-h-screen bg-cult-black flex items-center justify-center p-4">
@@ -138,7 +137,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {showDetails && this.state.error && (
-              <details open className="mb-6 bg-cult-black p-4 border border-cult-medium-gray">
+              <details className="mb-6 bg-cult-black p-4 border border-cult-medium-gray">
                 <summary className="cursor-pointer text-cult-white hover:text-cult-light-gray font-medium mb-2">
                   Technical Details
                 </summary>
@@ -152,7 +151,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   {this.state.error.stack && (
                     <div>
                       <p className="text-cult-lighter-gray text-sm font-medium mb-1">Stack Trace:</p>
-                      <pre className="p-3 bg-cult-near-black text-red-400 text-xs overflow-auto rounded max-h-96">
+                      <pre className="p-3 bg-cult-near-black text-cult-lighter-gray text-xs overflow-auto rounded max-h-48">
                         {this.state.error.stack}
                       </pre>
                     </div>

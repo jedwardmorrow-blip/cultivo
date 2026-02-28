@@ -1,10 +1,13 @@
 export { LoadingSpinner } from './LoadingSpinner';
+export { BaseForm } from './BaseForm';
 export { BaseModal } from './BaseModal';
 export { ErrorDisplay } from './ErrorDisplay';
+export { FormField } from './FormField';
 export { FormInput } from './FormInput';
 export { DateRangeFilter } from './DateRangeFilter';
 export { RevenueSparkline } from './RevenueSparkline';
 export { QualityGradeBadge } from './QualityGradeBadge';
+export { QualityGradeSelector } from './QualityGradeSelector';
 export { StatCard } from './StatCard';
 export { StageBadge } from './StageBadge';
 export type { CultivationStage } from './StageBadge';
