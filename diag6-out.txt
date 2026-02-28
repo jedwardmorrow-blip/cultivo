@@ -1,0 +1,30 @@
+=== App.tsx lines with Production ===
+L17: const ProductionDashboard = lazy(() => import('./features/sessions').then((m) => ({ default: m.ProductionDashboard })));
+L200:       case 'production-overview':
+L201:         return <ProductionDashboard onViewChange={handleViewChange} />;
+
+=== routes.tsx lines with Production ===
+
+=== Service files check ===
+src/features/sessions/services/sessions.service.ts: EXISTS
+src/features/sessions/services/sessions.service.tsx: MISSING
+src/features/sessions/services/index.ts: EXISTS
+
+=== Dependency files check ===
+src/features/sessions/types/index.ts: EXISTS
+src/features/sessions/utils/index.ts: EXISTS
+
+=== ProductionDashboard.tsx (440 total lines) ===
+Imports:
+L1: import { useState, useEffect } from 'react';
+L2: import {
+L11: import { supabase } from '@/lib/supabase';
+L12: import { formatElapsedTime } from '../utils';
+L13: import type { BuckingSession, TrimSession, PackagingSession } from '../types';
+L14: import {
+
+Export:
+L125: export function ProductionDashboard({ onViewChange }: ProductionDashboardProps) {
+
+Lucide icons used:
+L10: } from 'lucide-react';
