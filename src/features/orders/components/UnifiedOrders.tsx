@@ -175,6 +175,7 @@ export function UnifiedOrders({
       {selectedIds.size > 0 && (
         <BulkActionBar
           selectedCount={selectedIds.size}
+          selectedOrders={orders.filter(o => selectedIds.has(o.id))}
           onBulkStatusChange={handleBulkStatusChange}
           onClearSelection={() => setSelectedIds(new Set())}
         />

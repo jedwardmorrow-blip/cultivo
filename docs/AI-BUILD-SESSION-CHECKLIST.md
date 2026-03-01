@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-27
+updated: 2026-03-01
 priority: Working document - update every session
 ---
 
@@ -14,36 +14,34 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-28
-**Session:** Inventory Row Actions — Quick Adjust, Rebalance Weight, Combine Packages
+**Date:** 2026-03-01
+**Session:** Order Status Workflow Overhaul
 **Status:** COMPLETE
 
 **What was done:**
 
-Added a three-dot row action menu to the All Inventory table with three per-item operations. Database RPCs were applied in a prior session; this session built all frontend code.
+Replaced the hidden chevron-based status cycling mechanism with intentional, bi-directional status controls. Added transition validation, toast notifications, and delivery date gating.
 
-**1. RowActionMenu component** (new)
-- `RowActionMenu.tsx` — Reusable three-dot dropdown with visibility toggles, destructive styling, click-outside/Escape dismissal.
+**1. Transition utility** (new)
+- `orderTransitions.ts` — Full transition map (forward/backward/cancel/reopen), validation, labels, bulk helpers.
 
-**2. Quick Adjustment restyle** (rewrite)
-- `QuickAdjustmentModal.tsx` — Full dark theme restyle (cult-* colors). Variance display: emerald for increases, red for decreases. 5%+ high variance warning.
+**2. StatusActionPanel** (new)
+- `StatusActionPanel.tsx` — Dedicated panel in OrderDrawer with primary forward button, secondary revert button, cancel link, reopen for cancelled orders. Inline delivery date prompt when advancing to ready_for_delivery without a date set.
 
-**3. Rebalance Weight feature** (new)
-- `rebalance.types.ts` — RebalanceRequest, RebalanceResult, RebalanceValidation interfaces
-- `rebalance.service.ts` — validateRebalance() client-side checks + executeRebalance() calls `fn_rebalance_inventory_weight` RPC
-- `RebalanceWeightModal.tsx` — Searchable destination picker, live before/after preview, 50%+ warning, reason + notes fields
+**3. OrderTable redesign** (modified)
+- Removed left/right chevron cycling. Status badge is now read-only with a single forward-advance arrow (ArrowRight) visible on row hover for non-terminal statuses.
 
-**4. AllInventoryView wiring** (modified)
-- Replaced inline printer column with RowActionMenu (Print Label, Adjust Qty [admin], Rebalance [admin])
-- Added QuickAdjustmentModal and RebalanceWeightModal with full state management
-- Data refresh on completion of any action
+**4. OrderDrawer redesign** (modified)
+- Removed `<select>` dropdown from header, replaced with read-only status badge. StatusActionPanel placed below timeline. Confirmation dialogs for cancel/reopen handled inside panel.
 
-**5. Bug fix: useAdjustment hook**
-- Fixed broken import `AdjustmentRequest` -> `QuickAdjustmentRequest`
-- Added userId passthrough to adjustment service
+**5. Toast notifications** (modified)
+- `OrdersContext.tsx` — All status changes produce feedback via notificationService. Success/info/warning/error depending on transition type. Invalid transitions blocked with error toast.
 
-**6. InventoryTable enhancement**
-- Added `renderRowActions` prop with proper colspan accounting
+**6. BulkActionBar** (modified)
+- Now receives selected orders and computes valid common transitions. Dropdown shows grouped Advance/Revert/Cancel options. Cancellation gated behind ConfirmDialog.
+
+**7. Database fix** (migration)
+- Changed `orders.status` default from 'pending' (violated CHECK constraint) to 'submitted'.
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
@@ -51,10 +49,10 @@ Added a three-dot row action menu to the All Inventory table with three per-item
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
 
 **Next recommendations (in order):**
-1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
-2. **Export/reporting capabilities** — Account data export, revenue reports
-3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-4. **Cultivation: Move to Room action** — split plants into new group in different room
+1. **Package assignment readiness indicator** — Show batch assignment progress on order items, soft warning when advancing without full assignment
+2. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
+3. **Export/reporting capabilities** — Account data export, revenue reports
+4. **Cultivation: Move to Group action** — plant-level workflow with strain validation
 
 ---
 

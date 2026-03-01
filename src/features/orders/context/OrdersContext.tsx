@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { ordersDataService } from '../services/ordersService';
 import { ordersCacheService } from '../services/orders-cache.service';
 import { ordersReducer, initialState, type OrdersState, type OrdersAction } from './orders.reducer';
+import { notificationService } from '@/services/notification.service';
+import { canTransitionTo, getStatusLabel, isBackwardTransition } from '../utils/orderTransitions';
 import type { Order, OrderItem, Product } from '../types';
 
 interface OrdersContextValue extends OrdersState {
@@ -130,11 +132,37 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
   }, [state.products.length]);
 
   const updateOrderStatus = useCallback(async (orderId: string, newStatus: string) => {
-    await ordersDataService.updateOrderStatus(orderId, newStatus);
-    ordersCacheService.invalidate(orderId);
-    await loadOrders(true);
-    await loadOrderDetails(orderId, true);
-  }, [loadOrders, loadOrderDetails]);
+    const order = state.orders.find(o => o.id === orderId);
+    const currentStatus = order?.status || 'submitted';
+    const orderNum = order?.order_number || orderId.slice(0, 8);
+
+    if (!canTransitionTo(currentStatus, newStatus)) {
+      notificationService.error(
+        `Cannot move from ${getStatusLabel(currentStatus)} to ${getStatusLabel(newStatus)}`,
+        'Invalid Transition',
+      );
+      return;
+    }
+
+    try {
+      await ordersDataService.updateOrderStatus(orderId, newStatus);
+      ordersCacheService.invalidate(orderId);
+
+      if (newStatus === 'cancelled') {
+        notificationService.warning(`Order ${orderNum} has been cancelled`);
+      } else if (isBackwardTransition(currentStatus, newStatus)) {
+        notificationService.info(`Order ${orderNum} reverted to ${getStatusLabel(newStatus)}`);
+      } else {
+        notificationService.success(`Order ${orderNum} moved to ${getStatusLabel(newStatus)}`);
+      }
+
+      await loadOrders(true);
+      await loadOrderDetails(orderId, true);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to update order status';
+      notificationService.error(msg, 'Status Update Failed');
+    }
+  }, [loadOrders, loadOrderDetails, state.orders]);
 
   const updateItemStatus = useCallback(async (itemId: string, orderId: string, newStatus: string) => {
     await ordersDataService.updateItemStatus(itemId, newStatus);

@@ -19,6 +19,7 @@ import { getStatusColor } from '../utils/orderGrouping';
 import { getOrderAge } from '../utils/orderAttention';
 import { OrderDetailsView } from './OrderDetailsView';
 import { ConfirmDialog } from './ConfirmDialog';
+import { StatusActionPanel } from './StatusActionPanel';
 import { useOrdersContext } from '../hooks';
 import type { Order, Product } from '../types';
 
@@ -174,6 +175,7 @@ export function OrderDrawer({
   onClose,
   onStatusUpdate,
   onDeleteOrder,
+  onUpdateDeliveryDate,
   onItemStatusUpdate,
   onItemQuantityUpdate,
   onItemPriceUpdate,
@@ -186,7 +188,6 @@ export function OrderDrawer({
 }: OrderDrawerProps) {
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
   const { orderDetails, loading } = useOrdersContext();
 
   const items = orderDetails?.get(order.id) || [];
@@ -234,14 +235,6 @@ export function OrderDrawer({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (newStatus === 'cancelled') {
-      setConfirmCancel(true);
-      return;
-    }
-    await onStatusUpdate(order.id, newStatus);
-  };
-
   const handleDelete = async () => {
     await onDeleteOrder(order.id);
     onClose();
@@ -262,19 +255,9 @@ export function OrderDrawer({
             <h2 className="text-lg font-bold text-cult-off-white tracking-wide truncate">
               {order.order_number}
             </h2>
-            <select
-              value={order.status || 'submitted'}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              className={`px-2.5 py-1 text-[11px] font-bold border rounded uppercase tracking-wider cursor-pointer ${statusColors} bg-cult-near-black hover:opacity-80 transition-all`}
-            >
-              <option value="submitted">Submitted</option>
-              <option value="accepted">Accepted</option>
-              <option value="processing">Processing</option>
-              <option value="ready_for_delivery">Ready for Delivery</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+            <span className={`px-2.5 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
+              {STATUS_LABELS[order.status || 'submitted'] || order.status}
+            </span>
             {(order as any).is_sample && (
               <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
                 <Gift className="w-3 h-3" />
@@ -325,6 +308,12 @@ export function OrderDrawer({
             </div>
 
             <OrderTimeline currentStatus={order.status || 'submitted'} />
+
+            <StatusActionPanel
+              order={order}
+              onStatusUpdate={onStatusUpdate}
+              onUpdateDeliveryDate={onUpdateDeliveryDate}
+            />
 
             {customer && <CustomerCard customer={customer} />}
 
@@ -395,19 +384,6 @@ export function OrderDrawer({
         />
       )}
 
-      {confirmCancel && (
-        <ConfirmDialog
-          title="Cancel Order"
-          message={`Are you sure you want to cancel order ${order.order_number}? This will mark the order as cancelled.`}
-          confirmLabel="Cancel Order"
-          variant="danger"
-          onConfirm={async () => {
-            setConfirmCancel(false);
-            await onStatusUpdate(order.id, 'cancelled');
-          }}
-          onCancel={() => setConfirmCancel(false)}
-        />
-      )}
     </>
   );
 }

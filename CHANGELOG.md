@@ -4,6 +4,27 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-01 - Order Status Workflow Overhaul
+
+**Type:** Feature Improvement
+**Module:** Orders / Distribution
+**Status:** COMPLETE
+
+Replaced the hidden chevron-based status cycling with intentional, bi-directional status controls including forward advance, step-back, cancel, and reopen actions.
+
+- **Transition Utility:** New `orderTransitions.ts` defines the full transition map with forward/backward/cancel/reopen paths, labels, and validation helpers.
+- **OrderTable:** Removed left/right chevron cycling. Status badge is now read-only with a single forward-advance arrow button (visible on hover) for non-terminal statuses.
+- **OrderDrawer:** Removed the `<select>` dropdown from the header. Added a dedicated Status Action Panel below the timeline with a primary forward button, secondary revert button, and cancel link (all gated behind confirmation dialogs where appropriate). Delivery date is prompted inline when advancing to ready_for_delivery without one set.
+- **Toast Notifications:** All status changes now produce feedback via the existing notification service — success for forward moves, info for reverts, warning for cancellations, error for invalid transitions.
+- **Transition Validation:** `OrdersContext.updateOrderStatus` validates transitions before executing and blocks invalid moves with an error toast.
+- **BulkActionBar:** Now receives selected orders and computes valid common transitions. Dropdown shows grouped Advance/Revert/Cancel options. Cancellation requires confirmation dialog.
+- **Database Fix:** Changed `orders.status` column default from 'pending' (which violated the CHECK constraint) to 'submitted'.
+- **New Files:** `orderTransitions.ts`, `StatusActionPanel.tsx`
+- **Modified Files:** `OrderTable.tsx`, `OrderDrawer.tsx`, `BulkActionBar.tsx`, `UnifiedOrders.tsx`, `OrdersContext.tsx`
+- **Migration:** `fix_orders_status_default_to_submitted`
+
+---
+
 ## 2026-03-01 - Typography, Animation & Loading State Overhaul
 
 **Type:** UI Polish
