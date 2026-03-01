@@ -4,6 +4,28 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-01 - Package Assignment Reservation System
+
+**Type:** Feature / Architecture
+**Module:** Orders / Inventory
+**Status:** COMPLETE
+
+Implemented trigger-based inventory reservation on package assignments, replacing the unused legacy allocation system. Inventory is now automatically reserved when packages are assigned to orders and permanently deducted when orders are completed.
+
+- **Legacy Removal:** Dropped `order_item_allocations` table, `inventory_transactions` table, 10 legacy functions, and 4 legacy triggers that were no longer in use.
+- **Reservation Triggers:** Added `status` column ('reserved'/'fulfilled'/'released') to `package_assignments`. INSERT trigger reserves inventory (decrements available_qty, increments reserved_qty). DELETE trigger releases reservation.
+- **Order Completion:** Trigger on orders status change to 'completed' converts all reservations to FULFILLMENT movements (permanent on_hand_qty deduction). Cancellation releases all reservations.
+- **Revert Support:** If order status reverts from 'completed', RETURN movements restore inventory and re-reserve.
+- **Views:** Created `inventory_reservation_summary` and `package_assignments_with_reservations` for reservation visibility.
+- **Service Migration:** Updated `invoiceService.ts` and `manifestService.ts` to use `package_assignments` instead of legacy `order_item_allocations`.
+- **Type Updates:** Removed `Allocation` interface, added `PackageAssignmentStatus` type. Fixed `fulfillmentValidation.service.ts` column name mismatches.
+- **UI:** Assignment badges show Reserved (blue) or Fulfilled (green) status. Fulfilled assignments cannot be removed. Completion and cancellation hints explain inventory effects.
+- **Migrations:** `remove_legacy_allocation_system`, `add_package_assignment_reservation_system`, `create_inventory_reservation_views`, `create_order_fulfillment_triggers`
+- **Modified Files:** `invoiceService.ts`, `manifestService.ts`, `order.types.ts`, `orders.types.ts`, `packageAssignment.service.ts`, `fulfillmentValidation.service.ts`, `AssignedPackagesDisplay.tsx`, `StatusActionPanel.tsx`
+- **Documentation:** Updated ORDERS.md (v2.0 rewrite), ARCHITECTURE-DECISIONS.md (Decision 19), AI-SESSION-BRIEF.md, AI-BUILD-SESSION-CHECKLIST.md
+
+---
+
 ## 2026-03-01 - Order Status Workflow Overhaul
 
 **Type:** Feature Improvement

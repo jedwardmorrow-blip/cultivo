@@ -15,33 +15,44 @@ priority: Working document - update every session
 ## Hand-Off from Last Session
 
 **Date:** 2026-03-01
-**Session:** Order Status Workflow Overhaul
+**Session:** Package Assignment Reservation System
 **Status:** COMPLETE
 
 **What was done:**
 
-Replaced the hidden chevron-based status cycling mechanism with intentional, bi-directional status controls. Added transition validation, toast notifications, and delivery date gating.
+Implemented trigger-based inventory reservation on package assignments. Removed the entire legacy allocation system. Inventory is now automatically reserved when packages are assigned and permanently deducted when orders complete.
 
-**1. Transition utility** (new)
-- `orderTransitions.ts` — Full transition map (forward/backward/cancel/reopen), validation, labels, bulk helpers.
+**1. Legacy allocation removal** (migration: `remove_legacy_allocation_system`)
+- Dropped `order_item_allocations` table, `inventory_transactions` table
+- Dropped 10 legacy functions and 4 legacy triggers
+- Simplified `validate_ready_for_delivery` function
 
-**2. StatusActionPanel** (new)
-- `StatusActionPanel.tsx` — Dedicated panel in OrderDrawer with primary forward button, secondary revert button, cancel link, reopen for cancelled orders. Inline delivery date prompt when advancing to ready_for_delivery without a date set.
+**2. Package assignment reservation triggers** (migration: `add_package_assignment_reservation_system`)
+- Added `status` column to `package_assignments` ('reserved' | 'fulfilled' | 'released')
+- `fn_reserve_inventory_on_assignment` — AFTER INSERT, reserves inventory (available_qty--, reserved_qty++), creates RESERVE movement
+- `fn_release_inventory_on_unassignment` — BEFORE DELETE, releases reservation if status='reserved'
 
-**3. OrderTable redesign** (modified)
-- Removed left/right chevron cycling. Status badge is now read-only with a single forward-advance arrow (ArrowRight) visible on row hover for non-terminal statuses.
+**3. Inventory reservation views** (migration: `create_inventory_reservation_views`)
+- `inventory_reservation_summary` — per-item reservation aggregation
+- `package_assignments_with_reservations` — extended assignment details with inventory context
 
-**4. OrderDrawer redesign** (modified)
-- Removed `<select>` dropdown from header, replaced with read-only status badge. StatusActionPanel placed below timeline. Confirmation dialogs for cancel/reopen handled inside panel.
+**4. Order fulfillment triggers** (migration: `create_order_fulfillment_triggers`)
+- `fn_fulfill_inventory_on_order_complete` — on status->'completed': releases reservation, creates FULFILLMENT movement, status='fulfilled'
+- `fn_release_inventory_on_order_cancel` — on status->'cancelled': releases all reservations
+- `fn_reverse_fulfillment_on_order_revert` — on status leaves 'completed': creates RETURN movement, re-reserves
 
-**5. Toast notifications** (modified)
-- `OrdersContext.tsx` — All status changes produce feedback via notificationService. Success/info/warning/error depending on transition type. Invalid transitions blocked with error toast.
+**5. Invoice & Manifest service migration** (modified)
+- `invoiceService.ts` — Replaced `order_item_allocations` query with `package_assignments`
+- `manifestService.ts` — Same pattern of migration
 
-**6. BulkActionBar** (modified)
-- Now receives selected orders and computes valid common transitions. Dropdown shows grouped Advance/Revert/Cancel options. Cancellation gated behind ConfirmDialog.
+**6. Type & service updates** (modified)
+- Removed `Allocation` interface from `order.types.ts`, added `PackageAssignmentStatus`
+- Updated `packageAssignment.service.ts` — status field, fulfilled guard, filtered queries
+- Fixed `fulfillmentValidation.service.ts` — corrected column names to match actual views
 
-**7. Database fix** (migration)
-- Changed `orders.status` default from 'pending' (violated CHECK constraint) to 'submitted'.
+**7. UI reservation visibility** (modified)
+- `AssignedPackagesDisplay.tsx` — Status badges (Reserved/Fulfilled), fulfilled items cannot be removed
+- `StatusActionPanel.tsx` — Updated hints for completion and cancellation inventory effects
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
@@ -49,10 +60,10 @@ Replaced the hidden chevron-based status cycling mechanism with intentional, bi-
 - `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
 
 **Next recommendations (in order):**
-1. **Package assignment readiness indicator** — Show batch assignment progress on order items, soft warning when advancing without full assignment
-2. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
-3. **Export/reporting capabilities** — Account data export, revenue reports
-4. **Cultivation: Move to Group action** — plant-level workflow with strain validation
+1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
+2. **Export/reporting capabilities** — Account data export, revenue reports
+3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
+4. **RLS anon policy removal** — Remove legacy anon policies from pre-auth tables
 
 ---
 

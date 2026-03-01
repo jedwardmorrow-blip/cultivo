@@ -1,4 +1,4 @@
-import { Package, Tag, Printer, XCircle, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Tag, Printer, XCircle, Trash2, AlertCircle, Lock, ShieldCheck } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
   useOrderItemPackageAssignments,
@@ -77,7 +77,8 @@ export function AssignedPackagesDisplay({
     );
   }
 
-  const totalAssigned = assignments.reduce((sum, a) => sum + Number(a.quantity_assigned), 0);
+  const activeAssignments = assignments.filter(a => a.assignment_status !== 'released');
+  const totalAssigned = activeAssignments.reduce((sum, a) => sum + Number(a.quantity_assigned), 0);
 
   return (
     <div className="space-y-4">
@@ -94,23 +95,39 @@ export function AssignedPackagesDisplay({
       </div>
 
       <div className="space-y-2">
-        {assignments.map((assignment) => {
+        {activeAssignments.map((assignment) => {
           const hasLabel = !!assignment.label_id;
           const labelPrinted = !!assignment.printed_at;
           const labelVoided = !!assignment.voided_at;
+          const isFulfilled = assignment.assignment_status === 'fulfilled';
 
           return (
             <div
               key={assignment.id}
-              className="p-4 bg-cult-dark-gray border border-cult-medium-gray hover:border-cult-lighter-gray transition-colors"
+              className={`p-4 bg-cult-dark-gray border transition-colors ${
+                isFulfilled
+                  ? 'border-green-600/40'
+                  : 'border-cult-medium-gray hover:border-cult-lighter-gray'
+              }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <Package className="w-5 h-5 text-green-400" />
+                    <Package className={`w-5 h-5 ${isFulfilled ? 'text-green-500' : 'text-green-400'}`} />
                     <span className="font-bold text-cult-white">
                       {assignment.package_id || 'Unknown Package'}
                     </span>
+                    {isFulfilled ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/40 border border-green-600/50 text-green-400 text-xs font-bold uppercase">
+                        <ShieldCheck className="w-3 h-3" />
+                        Fulfilled
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 border border-blue-600/40 text-blue-400 text-xs font-bold uppercase">
+                        <Lock className="w-3 h-3" />
+                        Reserved
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -210,14 +227,16 @@ export function AssignedPackagesDisplay({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleRemoveAssignment(assignment.id, hasLabel)}
-                  disabled={removing}
-                  className="ml-4 p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors disabled:opacity-50"
-                  title="Remove assignment"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                {!isFulfilled && (
+                  <button
+                    onClick={() => handleRemoveAssignment(assignment.id, hasLabel)}
+                    disabled={removing}
+                    className="ml-4 p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                    title="Remove assignment"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </div>
           );

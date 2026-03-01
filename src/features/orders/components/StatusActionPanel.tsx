@@ -20,7 +20,7 @@ const STATUS_HINTS: Record<string, string> = {
   'submitted->accepted': 'Confirms the order and begins fulfillment planning.',
   'accepted->processing': 'Indicates batch allocation and processing have started.',
   'processing->ready_for_delivery': 'All items prepared. Ready for manifest and delivery.',
-  'ready_for_delivery->completed': 'Delivery confirmed. Order is finalized.',
+  'ready_for_delivery->completed': 'Inventory will be permanently deducted for all assigned packages.',
 };
 
 export function StatusActionPanel({
@@ -175,7 +175,7 @@ export function StatusActionPanel({
       {confirmCancel && (
         <ConfirmDialog
           title="Cancel Order"
-          message={`Cancel order ${order.order_number}${order.customer_name ? ` for ${order.customer_name}` : ''}? This will mark it as cancelled.`}
+          message={`Cancel order ${order.order_number}${order.customer_name ? ` for ${order.customer_name}` : ''}? Any reserved inventory will be released back to available stock.`}
           confirmLabel="Cancel Order"
           variant="danger"
           onConfirm={async () => {
