@@ -12,6 +12,7 @@ import type { AvailablePackage } from '../services';
 interface PackageAssignmentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAssignmentComplete?: () => void | Promise<void>;
   orderId: string;
   orderItemId: string;
   productName: string;
@@ -26,6 +27,7 @@ interface SelectedPackage extends AvailablePackage {
 export function PackageAssignmentModal({
   isOpen,
   onClose,
+  onAssignmentComplete,
   orderId,
   orderItemId,
   productName,
@@ -103,7 +105,11 @@ export function PackageAssignmentModal({
         );
       }
 
-      onClose();
+      if (onAssignmentComplete) {
+        await onAssignmentComplete();
+      } else {
+        onClose();
+      }
     } catch (error) {
       console.error('[PackageAssignmentModal] Assignment failed:', error);
     }

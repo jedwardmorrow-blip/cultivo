@@ -176,12 +176,39 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
   if (assignedPackageIds.length > 0) {
     const { data: inventoryData } = await supabase
       .from('inventory_items')
-      .select('id, package_id, batch, batch_number, sku, net_weight, thc_percentage, strain')
+      .select('id, package_id, batch, batch_number, sku, net_weight, thc_percentage, strain, batch_id')
       .in('package_id', assignedPackageIds);
 
     inventoryData?.forEach(inv => {
       inventoryMap.set(inv.package_id, inv);
     });
+
+    const invBatchIds = Array.from(new Set(
+      (inventoryData || []).map(inv => inv.batch_id).filter(Boolean)
+    )).filter(bid => !batchMap.has(bid));
+
+    if (invBatchIds.length > 0) {
+      const { data: extraBatches } = await supabase
+        .from('batch_registry')
+        .select('id, batch_number, strain, harvest_date')
+        .in('id', invBatchIds);
+
+      extraBatches?.forEach(batch => {
+        batchMap.set(batch.id, batch);
+      });
+
+      const { data: extraCoas } = await supabase
+        .from('certificates_of_analysis')
+        .select('batch_id, thc_percentage, cbd_percentage, total_cannabinoids_percentage, harvest_date')
+        .in('batch_id', invBatchIds)
+        .eq('is_active', true);
+
+      extraCoas?.forEach(coa => {
+        if (coa.batch_id && !coaByBatchMap.has(coa.batch_id)) {
+          coaByBatchMap.set(coa.batch_id, coa);
+        }
+      });
+    }
   }
 
   const strainNames = Array.from(new Set(items.map(item => item.products?.strain).filter(Boolean)));
@@ -235,6 +262,21 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
         }
         if (!thcPercentage) {
           thcPercentage = inventory.thc_percentage;
+        }
+        if (inventory.batch_id) {
+          const invBatch = batchMap.get(inventory.batch_id);
+          if (invBatch && !harvestDate) {
+            harvestDate = invBatch.harvest_date || null;
+          }
+          const invCoa = coaByBatchMap.get(inventory.batch_id);
+          if (invCoa) {
+            if (!harvestDate && invCoa.harvest_date) {
+              harvestDate = invCoa.harvest_date;
+            }
+            if (!thcPercentage && invCoa.thc_percentage) {
+              thcPercentage = invCoa.thc_percentage;
+            }
+          }
         }
       }
     }

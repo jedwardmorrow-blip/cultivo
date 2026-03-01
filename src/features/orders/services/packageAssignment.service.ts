@@ -195,6 +195,30 @@ export const packageAssignmentService = {
         );
       }
 
+      // Validate against over-allocation
+      const { data: orderItem, error: orderItemError } = await supabase
+        .from('order_items')
+        .select('quantity')
+        .eq('id', orderItemId)
+        .maybeSingle();
+
+      if (orderItemError || !orderItem) {
+        throw new PackageAssignmentServiceError(
+          'Could not verify order item quantity',
+          orderItemError,
+          'ORDER_ITEM_NOT_FOUND'
+        );
+      }
+
+      const totalAlreadyAssigned = await this.getTotalAssignedQuantity(orderItemId);
+      if (totalAlreadyAssigned + quantityAssigned > orderItem.quantity) {
+        throw new PackageAssignmentServiceError(
+          `Cannot assign ${quantityAssigned} units: would exceed ordered quantity of ${orderItem.quantity} (already assigned: ${totalAlreadyAssigned})`,
+          null,
+          'OVER_ALLOCATION'
+        );
+      }
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
 

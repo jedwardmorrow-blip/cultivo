@@ -16,7 +16,7 @@ import type { AppSetting, SettingsFormData } from '../types';
 export function Settings() {
   const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('general');
-  const [settings, setSettings] = useState<SettingFormData>({
+  const [settings, setSettings] = useState<SettingsFormData>({
     trim_lead_time_days: 2,
     packaging_lead_time_days: 1,
     default_overage_percentage: 10,
@@ -242,7 +242,7 @@ export function Settings() {
     await handleSave();
   }
 
-  function handleChange(key: keyof SettingFormData, value: number) {
+  function handleChange(key: keyof SettingsFormData, value: number) {
     setSettings(prev => ({
       ...prev,
       [key]: value,

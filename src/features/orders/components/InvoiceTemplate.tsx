@@ -139,7 +139,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                 </tr>
                 <tr>
                   <td className="font-bold pr-4 py-1">Est Delivery:</td>
-                  <td>{formatDate(invoiceData.estimated_delivery_date)}</td>
+                  <td>{formatDate(invoiceData.estimated_delivery_date) || 'TBD'}</td>
                 </tr>
               </tbody>
             </table>
