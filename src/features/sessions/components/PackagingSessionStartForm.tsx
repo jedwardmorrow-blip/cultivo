@@ -3,6 +3,7 @@ import type { PackagingSessionInsert, InventoryItem } from '../types';
 import { createPackagingSession } from '../services/sessions.service';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { notificationService } from '@/services/notification.service';
 
 const AVAILABLE_PACKAGERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo', 'Mike', 'Josie'];
@@ -370,19 +371,17 @@ export function PackagingSessionStartForm({
         </div>
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface transition"
-          >
+          <Button type="submit" size="sm">
             Start Session
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={onCancel}
-            className="border border-cult-medium-gray text-cult-white px-6 py-2 font-semibold uppercase tracking-wider hover:border-cult-white transition"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </form>
     </div>

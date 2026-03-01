@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Button } from '@/shared/components';
 
 export function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -112,13 +113,14 @@ export function ResetPassword() {
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-cult-black py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={loading}
+            fullWidth
           >
             {loading ? 'Updating...' : 'Update Password'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

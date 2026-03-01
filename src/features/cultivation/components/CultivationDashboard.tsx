@@ -10,7 +10,7 @@ import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation, formatWeight } from '../utils';
 import type { GrowRoom, PlantGroup, GrowthStage, DryRoom, HarvestSession } from '../types';
-import { StatCard, PageSkeleton } from '../../../shared/components';
+import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -531,12 +531,12 @@ export function CultivationDashboard() {
             )}
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={confirmAdvance}
-                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all"
+                size="sm"
               >
                 Confirm
-              </button>
+              </Button>
               <button
                 onClick={() => { setPendingAction(null); setAdvanceError(null); }}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"

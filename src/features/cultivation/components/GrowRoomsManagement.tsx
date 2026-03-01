@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Pencil, Archive, RotateCcw, AlertTriangle, ChevronDown, ChevronRight, Calendar, X, Layers } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { LayoutBuilder } from './LayoutBuilder';
@@ -364,13 +365,13 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
       </div>
 
       <div className="flex gap-3">
-        <button
+        <Button
           onClick={handleSave}
           disabled={!canSave}
-          className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          size="sm"
         >
           {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Room'}
-        </button>
+        </Button>
         <button
           onClick={onCancel}
           className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
@@ -516,13 +517,12 @@ export function GrowRoomsManagement() {
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Grow Rooms</h1>
           <p className="text-cult-light-gray mt-2">Configure grow rooms for plant group assignments</p>
         </div>
-        <button
+        <Button
           onClick={() => { setShowAddForm(!showAddForm); setEditingRoom(null); }}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg text-sm"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Add Room
-        </button>
+        </Button>
       </div>
 
       {error && (

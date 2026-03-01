@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Button } from '@/shared/components';
 
 interface ForgotPasswordProps {
   onBack: () => void;
@@ -101,13 +102,14 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
           </div>
 
           <div className="space-y-3">
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-cult-black py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50 disabled:cursor-not-allowed"
+              loading={loading}
+              fullWidth
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
+            </Button>
 
             <button
               type="button"

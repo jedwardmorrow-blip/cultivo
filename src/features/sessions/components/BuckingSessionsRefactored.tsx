@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { PageSkeleton } from '@/shared/components';
+import { Button, PageSkeleton } from '@/shared/components';
 import { useBuckingSessions } from '../hooks/useBuckingSessions';
 import { useBuckingData } from '../hooks/useBuckingData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -54,13 +54,12 @@ export function BuckingSessionsRefactored() {
           <h1 className="text-3xl font-bold text-cult-white">Bucking Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Process binned material into bucked flower and smalls</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowStartForm(!showStartForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg"
+          icon={<Plus className="w-5 h-5" />}
         >
-          <Plus className="w-5 h-5" />
           Start New Tote
-        </button>
+        </Button>
       </div>
 
       <SessionStats stats={stats} type="bucking" />

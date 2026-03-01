@@ -4,7 +4,7 @@ import { formatElapsedTime } from '../utils';
 import type { TrimSession, TrimCompleteForm, InventoryItem } from '../types';
 import { completeTrimSession } from '../services/sessions.service';
 import { notificationService } from '@/services/notification.service';
-import { QualityGradeSelector } from '@/shared/components';
+import { Button, QualityGradeSelector } from '@/shared/components';
 
 interface TrimSessionCompleteModalProps {
   session: TrimSession;
@@ -256,12 +256,9 @@ export function TrimSessionCompleteModal({
             </div>
 
             <div className="flex gap-3">
-              <button
-                type="submit"
-                className="bg-white text-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface-raised transition-all duration-300"
-              >
+              <Button type="submit" size="sm">
                 Complete Session
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={onCancel}

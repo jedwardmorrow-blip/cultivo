@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Plus } from 'lucide-react';
-import { PageSkeleton } from '@/shared/components';
+import { Button, PageSkeleton } from '@/shared/components';
 import { useTrimSessions } from '../hooks/useTrimSessions';
 import { useSessionData } from '../hooks/useSessionData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -58,13 +58,12 @@ export function TrimSessionsRefactored() {
           <h1 className="text-3xl font-bold text-cult-white">Trim Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Start bins and log completions</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowStartForm(!showStartForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg"
+          icon={<Plus className="w-5 h-5" />}
         >
-          <Plus className="w-5 h-5" />
           Start New Bin
-        </button>
+        </Button>
       </div>
 
       <SessionStats stats={stats} />

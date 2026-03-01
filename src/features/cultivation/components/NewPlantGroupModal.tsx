@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sprout, AlertTriangle, Plus, Trash2, Scissors } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import { productsService } from '@/features/products/services';
 import { isValidStrainAbbreviation } from '../utils';
@@ -418,14 +419,14 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
         </div>
 
         <div className="flex gap-3 px-6 pb-6">
-          <button
+          <Button
             onClick={handleCreate}
             disabled={!canSave}
-            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            size="sm"
+            icon={<Sprout className="w-4 h-4" />}
           >
-            <Sprout className="w-4 h-4" />
             {saving ? 'Creating...' : 'Create Group'}
-          </button>
+          </Button>
           <button
             onClick={onCancel}
             className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"

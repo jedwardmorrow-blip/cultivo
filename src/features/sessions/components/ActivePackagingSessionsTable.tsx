@@ -1,3 +1,4 @@
+import { Button } from '@/shared/components';
 import { formatElapsedTime } from '../utils';
 import type { PackagingSession } from '../types';
 
@@ -45,12 +46,12 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <button
+                      <Button
                         onClick={() => onComplete(session)}
-                        className="bg-white text-black font-bold uppercase tracking-wider px-4 py-1.5 hover:bg-cult-surface-raised transition-all duration-300 text-sm"
+                        size="sm"
                       >
                         Complete
-                      </button>
+                      </Button>
                       <button
                         onClick={() => onCancel(session)}
                         className="bg-red-600 text-white px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-red-700 transition text-sm"

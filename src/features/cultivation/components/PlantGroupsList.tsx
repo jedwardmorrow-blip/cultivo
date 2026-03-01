@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, AlertTriangle, Sprout, ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
@@ -179,13 +180,12 @@ export function PlantGroupsList() {
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Plant Groups</h1>
           <p className="text-cult-light-gray mt-2">Track plant groups through clone, veg, and flower stages</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg text-sm"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           New Group
-        </button>
+        </Button>
       </div>
 
       {(error || actionError) && (
@@ -302,12 +302,12 @@ export function PlantGroupsList() {
             )}
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={confirmAdvance}
-                className="bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-cult-surface transition-all"
+                size="sm"
               >
                 Confirm
-              </button>
+              </Button>
               <button
                 onClick={() => setPendingAction(null)}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"

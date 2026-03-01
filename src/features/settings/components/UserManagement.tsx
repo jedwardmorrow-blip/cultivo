@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/utils';
 import { Users, UserPlus, Check, X, AlertCircle, RotateCw } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { Database } from '@/lib/database';
 import { settingsService } from '../services/settings.service';
 
@@ -162,13 +163,12 @@ export function UserManagement() {
           <h2 className="text-2xl font-bold text-white uppercase tracking-wide">User Management</h2>
           <p className="text-cult-light-gray mt-1">Manage user accounts and permissions</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition-all shadow-lg"
+          icon={<UserPlus className="w-5 h-5" />}
         >
-          <UserPlus className="w-5 h-5" />
           Add User
-        </button>
+        </Button>
       </div>
 
       {resetSuccess && (
@@ -252,13 +252,14 @@ export function UserManagement() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-white text-cult-black px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50"
+                loading={submitting}
+                size="sm"
               >
                 {submitting ? 'Creating...' : 'Create User'}
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={() => {
@@ -374,13 +375,14 @@ export function UserManagement() {
             )}
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handleResetPassword}
                 disabled={resettingPassword}
-                className="flex-1 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface transition disabled:opacity-50"
+                loading={resettingPassword}
+                className="flex-1"
               >
                 {resettingPassword ? 'Sending...' : 'Send Reset Email'}
-              </button>
+              </Button>
               <button
                 onClick={() => {
                   setResetPasswordUser(null);
