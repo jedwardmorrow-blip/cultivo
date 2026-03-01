@@ -159,7 +159,9 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
       await loadOrders(true);
       await loadOrderDetails(orderId, true);
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to update order status';
+      const msg = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message: unknown }).message)
+        : 'Failed to update order status';
       notificationService.error(msg, 'Status Update Failed');
     }
   }, [loadOrders, loadOrderDetails, state.orders]);
