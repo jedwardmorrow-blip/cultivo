@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Plus } from 'lucide-react';
+import { PageSkeleton } from '@/shared/components';
 import { usePackagingSessions } from '../hooks/usePackagingSessions';
 import { usePackagingData } from '../hooks/usePackagingData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -47,14 +48,14 @@ export function PackagingSessionsRefactored() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading packaging sessions...</div>;
+    return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Packaging Sessions</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Packaging Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Start packages and log completions</p>
         </div>
         <button

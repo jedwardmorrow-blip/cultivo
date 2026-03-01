@@ -54,25 +54,25 @@ export function CompletedSessionsTable({
         <table className="w-full">
           <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Date</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Trimmer</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Strain</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Conversion</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Pulled (g)</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Flower (g)</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Smalls (g)</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Trim (g)</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Minutes</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">g/hr</th>
-              {isAdmin && <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray uppercase">Admin</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Trimmer</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Strain</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Conversion</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Pulled (g)</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Flower (g)</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Smalls (g)</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Trim (g)</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Minutes</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">g/hr</th>
+              {isAdmin && <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Admin</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-medium-gray">
             {sessions.map((session) => {
               const conversionStatus = getConversionStatus(session);
               return (
-              <tr key={session.id} className="hover:bg-cult-dark-gray">
+              <tr key={session.id} className="hover:bg-cult-dark-gray/50 transition-colors">
                 <td className="px-4 py-3 text-sm text-cult-white">{new Date(session.session_date).toLocaleDateString()}</td>
                 <td className="px-4 py-3 text-sm font-medium text-cult-white">{session.trimmer_name}</td>
                 <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>

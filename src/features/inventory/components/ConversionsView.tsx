@@ -87,8 +87,8 @@ export function ConversionsView() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Package className="w-6 h-6 text-white" />
-            <h2 className="text-2xl font-bold text-white">Conversions</h2>
+            <Package className="w-6 h-6 text-cult-white" />
+            <h2 className="text-2xl font-bold text-cult-white">Conversions</h2>
           </div>
           <p className="text-cult-text-muted text-sm">
             Create packages from completed sessions and finalize to immediately available inventory
@@ -141,7 +141,7 @@ export function ConversionsView() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-cult-white">
               Pending Finalization ({pendingSessions.length})
             </h3>
           </div>
@@ -220,7 +220,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             {/* Main info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-white truncate">
+                <h3 className="text-base font-semibold text-cult-white truncate">
                   {session.strain_name}
                 </h3>
                 <span className="text-xs font-medium text-cult-text-muted">
@@ -258,7 +258,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             <div className="text-right shrink-0">
               {isBulk ? (
                 <>
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-bold text-cult-white">
                     {session.output_weight?.toFixed(0) || 0}
                     <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
                   </div>
@@ -270,7 +270,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-bold text-cult-white">
                     {session.output_units || 0}
                     <span className="text-sm font-normal text-cult-text-muted ml-1">units</span>
                   </div>
@@ -408,7 +408,7 @@ function SessionBreakdownPanel({
                   ? <span className="font-mono text-cult-text-muted text-[11px]">{c.source_package_id}</span>
                   : <span className="text-cult-text-faint">—</span>}
               </td>
-              <td className="py-1.5 text-right font-medium text-white">
+              <td className="py-1.5 text-right font-medium text-cult-white">
                 {isBulk
                   ? `${(c.output_weight || 0).toFixed(0)}g`
                   : `${c.output_units || 0}`}
@@ -419,7 +419,7 @@ function SessionBreakdownPanel({
         <tfoot>
           <tr className={`border-t ${isUrgent ? 'border-amber-700/40' : 'border-white/10'}`}>
             <td colSpan={3} className="pt-2 text-cult-text-muted font-medium">Total</td>
-            <td className="pt-2 text-right font-bold text-white">
+            <td className="pt-2 text-right font-bold text-cult-white">
               {isBulk ? `${total.toFixed(0)}g` : `${total}`}
             </td>
           </tr>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Plus } from 'lucide-react';
+import { PageSkeleton } from '@/shared/components';
 import { useTrimSessions } from '../hooks/useTrimSessions';
 import { useSessionData } from '../hooks/useSessionData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -47,14 +48,14 @@ export function TrimSessionsRefactored() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading trim sessions...</div>;
+    return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Trim Sessions</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Trim Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Start bins and log completions</p>
         </div>
         <button

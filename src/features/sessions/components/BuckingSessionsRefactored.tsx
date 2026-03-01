@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { PageSkeleton } from '@/shared/components';
 import { useBuckingSessions } from '../hooks/useBuckingSessions';
 import { useBuckingData } from '../hooks/useBuckingData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -43,14 +44,14 @@ export function BuckingSessionsRefactored() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading bucking sessions...</div>;
+    return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Bucking Sessions</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Bucking Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Process binned material into bucked flower and smalls</p>
         </div>
         <button

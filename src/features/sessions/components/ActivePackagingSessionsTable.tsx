@@ -17,12 +17,12 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
         <table className="w-full">
           <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Packager</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Strain</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Package ID</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Pull (g)</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray uppercase">Elapsed</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray uppercase">Action</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Packager</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Strain</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Package ID</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Pull (g)</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Elapsed</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-medium-gray">
@@ -35,7 +35,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
               </tr>
             ) : (
               sessions.map((session) => (
-                <tr key={session.id} className="hover:bg-cult-dark-gray">
+                <tr key={session.id} className="hover:bg-cult-dark-gray/50 transition-colors">
                   <td className="px-4 py-3 text-sm font-medium text-cult-white">{session.packager_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
                   <td className="px-4 py-3 text-sm text-cult-light-gray">{session.package_id}</td>
