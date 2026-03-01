@@ -182,7 +182,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   return (
     <div onDragEnd={handleDragEnd}>
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Distribution Calendar</h1>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Distribution Calendar</h1>
         <p className="text-cult-light-gray mt-2">Plan and manage delivery schedules -- drag orders to reschedule</p>
       </div>
 
@@ -251,7 +251,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           <div className="p-4">
             <div className="grid grid-cols-7 gap-2 mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-xs font-semibold text-cult-light-gray py-2 uppercase tracking-wider">
+                <div key={day} className="text-center text-xs font-medium text-cult-light-gray py-2 uppercase tracking-wide">
                   {day}
                 </div>
               ))}
@@ -330,7 +330,7 @@ function StatCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-cult-near-black border-2 ${borderColor} p-5`}>
+    <div className={`bg-cult-near-black border-2 ${borderColor} p-5 transition-all duration-200 hover:scale-[1.01]`}>
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">{label}</div>
         {icon}

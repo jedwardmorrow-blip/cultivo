@@ -10,7 +10,7 @@ import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation, formatWeight } from '../utils';
 import type { GrowRoom, PlantGroup, GrowthStage, DryRoom, HarvestSession } from '../types';
-import { StatCard } from '../../../shared/components';
+import { StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -151,7 +151,7 @@ function DryRoomsSection({ onViewDryRooms }: DryRoomsSectionProps) {
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs text-cult-light-gray uppercase tracking-wider flex items-center gap-2">
+        <h2 className="text-sm text-cult-light-gray uppercase tracking-wider flex items-center gap-2">
           <Wind className="w-4 h-4" />
           Dry Rooms
         </h2>
@@ -315,7 +315,7 @@ export function CultivationDashboard() {
   }
 
   if (loading) {
-    return <div className="p-6 text-cult-light-gray">Loading cultivation data...</div>;
+    return <PageSkeleton variant="cards" />;
   }
 
   const advanceGroup = pendingAction?.type === 'advance' ? pendingAction.group : null;
@@ -325,7 +325,7 @@ export function CultivationDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
         <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
       </div>
 
@@ -366,7 +366,7 @@ export function CultivationDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-cult-near-black border border-cult-medium-gray p-5">
-          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Plants by Stage</h2>
+          <h2 className="text-sm text-cult-light-gray uppercase tracking-wider mb-4">Plants by Stage</h2>
           <div className="space-y-2">
             <StageCountBadge stage="clone" count={stageCounts.clone} />
             <StageCountBadge stage="veg" count={stageCounts.veg} />
@@ -378,7 +378,7 @@ export function CultivationDashboard() {
         </div>
 
         <div className="bg-cult-near-black border border-cult-medium-gray p-5">
-          <h2 className="text-xs text-cult-light-gray uppercase tracking-wider mb-4">Active Harvests</h2>
+          <h2 className="text-sm text-cult-light-gray uppercase tracking-wider mb-4">Active Harvests</h2>
           {sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 gap-2">
               <Flower className="w-8 h-8 text-cult-medium-gray" />
@@ -414,7 +414,7 @@ export function CultivationDashboard() {
       {activeRooms.length > 0 && (
         <div className="bg-cult-near-black border border-cult-medium-gray p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs text-cult-light-gray uppercase tracking-wider">Grow Rooms</h2>
+            <h2 className="text-sm text-cult-light-gray uppercase tracking-wider">Grow Rooms</h2>
             <a
               href="/settings"
               className="text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors underline underline-offset-2"

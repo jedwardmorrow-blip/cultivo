@@ -117,7 +117,7 @@ export function OrderTable({
 
   const allSelected = orders.length > 0 && selectedIds.size === orders.length;
 
-  const thClass = 'px-3 py-3 text-left text-[11px] font-bold text-cult-silver uppercase tracking-wider cursor-pointer hover:text-cult-white transition-colors select-none';
+  const thClass = 'px-3 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide cursor-pointer hover:text-cult-white transition-colors select-none';
   const thSortable = (field: SortField, label: string, align?: string) => (
     <th
       className={`${thClass} ${align === 'right' ? 'text-right' : ''}`}

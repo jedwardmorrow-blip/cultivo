@@ -176,7 +176,7 @@ export function PlantGroupsList() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Plant Groups</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Plant Groups</h1>
           <p className="text-cult-light-gray mt-2">Track plant groups through clone, veg, and flower stages</p>
         </div>
         <button

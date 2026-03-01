@@ -9,6 +9,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { PageSkeleton } from '@/shared/components';
 import { formatElapsedTime } from '../utils';
 import type { BuckingSession, TrimSession, PackagingSession } from '../types';
 import {
@@ -182,8 +183,8 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <div className="text-cult-light-gray">Loading production overview...</div>
+      <div className="p-6 max-w-[1800px] mx-auto">
+        <PageSkeleton variant="dashboard" />
       </div>
     );
   }
@@ -191,7 +192,7 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6 stagger-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">
           Production
         </h1>
         <p className="text-cult-light-gray mt-2">Real-time floor activity across all session types</p>
@@ -227,7 +228,7 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
         <div className="px-6 py-4 border-b border-cult-medium-gray flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-2 h-2 rounded-full ${totalActive > 0 ? 'bg-cult-green animate-pulse' : 'bg-cult-medium-gray'}`} />
-            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+            <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
               Active Sessions
             </h2>
             {totalActive > 0 && (
@@ -248,19 +249,19 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
             <table className="w-full">
               <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
                     Type
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
                     Worker
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
                     Strain
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
                     Package ID
                   </th>
-                  <th className="px-5 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-5 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wide">
                     Elapsed
                   </th>
                 </tr>
@@ -324,7 +325,7 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
 
       {/* Quick Actions */}
       <div className="bg-cult-near-black border border-cult-medium-gray p-6">
-        <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider mb-4">
           Start Session
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -364,7 +365,7 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`bg-cult-near-black border p-5 ${highlight ? 'border-cult-green/30' : 'border-cult-medium-gray'}`}>
+    <div className={`bg-cult-near-black border p-5 transition-all duration-200 hover:scale-[1.01] ${highlight ? 'border-cult-green/30' : 'border-cult-medium-gray'}`}>
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-cult-silver uppercase tracking-wider font-medium">{label}</p>
         {icon}

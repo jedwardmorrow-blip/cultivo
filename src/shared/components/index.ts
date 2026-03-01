@@ -9,5 +9,6 @@ export { RevenueSparkline } from './RevenueSparkline';
 export { QualityGradeBadge } from './QualityGradeBadge';
 export { QualityGradeSelector } from './QualityGradeSelector';
 export { StatCard } from './StatCard';
+export { PageSkeleton } from './PageSkeleton';
 export { StageBadge } from './StageBadge';
 export type { CultivationStage } from './StageBadge';

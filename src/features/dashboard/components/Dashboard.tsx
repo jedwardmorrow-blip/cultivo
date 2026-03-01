@@ -18,7 +18,7 @@ export function Dashboard({
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Dashboard</h1>
         <p className="text-cult-light-gray mt-2">Real-time production operations overview</p>
       </div>
 
@@ -52,7 +52,7 @@ export function Dashboard({
 
       <div className={widgetCard}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Quick Actions</h2>
+          <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Quick Actions</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button

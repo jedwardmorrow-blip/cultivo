@@ -21,7 +21,7 @@ export function StatCard({
   label, value, subtitle, icon, trend, variant = 'default', className = '',
 }: StatCardProps) {
   return (
-    <div className={`bg-cult-surface-raised border ${variantStyles[variant]} rounded-cult p-5 transition-all duration-200 ease-cult hover:bg-cult-surface-overlay ${className}`}>
+    <div className={`bg-cult-surface-raised border ${variantStyles[variant]} rounded-cult p-5 transition-all duration-200 ease-cult hover:bg-cult-surface-overlay hover:scale-[1.01] ${className}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-caption uppercase tracking-wider text-cult-text-muted">{label}</span>
         {icon && <span className="text-cult-text-muted">{icon}</span>}

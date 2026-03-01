@@ -4,6 +4,28 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-01 - Typography, Animation & Loading State Overhaul
+
+**Type:** UI Polish
+**Module:** Global
+**Status:** COMPLETE
+
+Systematic pass across the entire application to standardize typography hierarchy, tighten animations, and replace plain-text loading states with skeleton shimmer screens.
+
+- **Page Titles:** Standardized all page-level headings from text-4xl to text-3xl across 17 files (Dashboard, Orders, Inventory, Sessions, CRM, Cultivation, Delivery, Settings, Analytics).
+- **Section Headers:** Standardized card/section headers to text-sm font-semibold uppercase tracking-wider across Dashboard, Analytics, Production, and Settings pages. Calendar/display labels intentionally left larger.
+- **Table Headers:** Standardized table column headers to text-xs font-medium uppercase tracking-wide across Orders, Delivery, Production, and Distribution Calendar.
+- **Cultivation Headers:** Bumped dashboard section labels from text-xs to text-sm for readability (Dry Rooms, Plants by Stage, Active Harvests, Grow Rooms).
+- **Page Transition:** Tightened fade-in from 300ms ease-in-out to 150ms ease-out with upward-slide from 4px instead of downward-slide from -10px.
+- **Stagger Animation:** Reduced child stagger delays from 60ms to 50ms increments and shortened base duration from 400ms to 300ms.
+- **Tab Transition:** Added new tab-content-enter CSS animation class for tab switch content.
+- **Stat Card Hover:** Added hover:scale-[1.01] micro-interaction to all stat card variants (shared StatCard, inventory StatsCard, and local stat cards in Production, Distribution, Visit Calendar, Sales Queue).
+- **Skeleton Loading:** Created shared PageSkeleton component with shimmer animation. Replaced plain-text and spinner loading states in Production, Orders, CRM Dashboard, Cultivation Dashboard, and Inventory views.
+- **New Files:** PageSkeleton.tsx
+- **Modified Files:** index.css, StatCard.tsx, StatsCard.tsx, Dashboard.tsx, AnalyticsDashboard.tsx, ProductionDashboard.tsx, Settings.tsx, UnifiedOrders.tsx, CRMDashboard.tsx, CultivationDashboard.tsx, DistributionCalendar.tsx, DeliverySchedule.tsx, OrderTable.tsx, InventoryViewsSimplified.tsx, VisitCalendar.tsx, SalesQueue.tsx, PlantGroupsList.tsx, HarvestSessionsList.tsx, GrowRoomsManagement.tsx, shared/components/index.ts
+
+---
+
 ## 2026-02-28 - Inventory Row Actions: Quick Adjust, Rebalance Weight, Combine Packages
 
 **Type:** Feature Addition

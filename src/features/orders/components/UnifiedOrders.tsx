@@ -7,6 +7,7 @@ import { OrderDrawer } from './OrderDrawer';
 import { BulkActionBar } from './BulkActionBar';
 import { useOrderList, useOrderActions, useProducts } from '../hooks';
 import { useAdvancedFilteredOrders } from '../hooks/useAdvancedFilteredOrders';
+import { PageSkeleton } from '@/shared/components';
 import type { Order } from '../types';
 
 interface UnifiedOrdersProps {
@@ -95,21 +96,14 @@ export function UnifiedOrders({
   }, [onCreateOrder]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-cult-green border-t-transparent rounded-full animate-spin" />
-          <span className="text-cult-silver text-sm">Loading orders...</span>
-        </div>
-      </div>
-    );
+    return <PageSkeleton variant="table" />;
   }
 
   if (error) {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
         </div>
         <div className="bg-red-900/20 border border-red-800/50 rounded-cult p-8 text-center">
           <p className="text-red-400 text-sm mb-4">{error.message}</p>
@@ -128,7 +122,7 @@ export function UnifiedOrders({
     <div className="max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
           <p className="text-cult-light-gray text-sm mt-2">
             {orders.length} total orders
           </p>

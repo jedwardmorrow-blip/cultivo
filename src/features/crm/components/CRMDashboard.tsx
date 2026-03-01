@@ -1,5 +1,5 @@
 import { RefreshCw, Loader2 } from 'lucide-react';
-import { LoadingSpinner, DateRangeFilter } from '@/shared/components';
+import { DateRangeFilter, PageSkeleton } from '@/shared/components';
 import { useCRMDashboard } from '../hooks';
 import { RevenueStatsCards } from './RevenueStatsCards';
 import { TopAccountsTable } from './TopAccountsTable';
@@ -37,14 +37,14 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <PageSkeleton variant="dashboard" />;
   }
 
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Sales Dashboard</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Sales Dashboard</h1>
           <p className="text-cult-light-gray mt-2">Account performance and revenue analytics</p>
         </div>
         <div className="flex items-center gap-3">

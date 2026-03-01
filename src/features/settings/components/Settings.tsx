@@ -278,7 +278,7 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Settings</h1>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Settings</h1>
         <p className="text-cult-light-gray mt-2">Configure application settings and manage resources</p>
       </div>
 
@@ -344,7 +344,7 @@ export function Settings() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
             <SettingsIcon className="w-6 h-6 text-cult-white" />
-            <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+            <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
               Operations Configuration
             </h2>
           </div>
@@ -444,7 +444,7 @@ export function Settings() {
       </div>
 
           <div className="mt-8 bg-cult-near-black border border-cult-medium-gray p-6">
-            <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
               How Lead Times Work
             </h3>
             <div className="space-y-3 text-sm text-cult-light-gray">
@@ -486,7 +486,7 @@ export function Settings() {
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-6">
                 <Navigation className="w-6 h-6 text-cult-white" />
-                <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+                <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
                   Routing & Directions Configuration
                 </h2>
               </div>
@@ -544,7 +544,7 @@ export function Settings() {
                 </div>
 
                 <div className="border-t border-cult-medium-gray pt-6">
-                  <h3 className="text-md font-semibold text-cult-white mb-4 uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
                     Facility Location
                   </h3>
                   <p className="text-sm text-cult-light-gray mb-4">
@@ -665,7 +665,7 @@ export function Settings() {
           </div>
 
           <div className="mt-8 bg-cult-near-black border border-cult-medium-gray p-6">
-            <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
               How Routing Works
             </h3>
             <div className="space-y-3 text-sm text-cult-light-gray">

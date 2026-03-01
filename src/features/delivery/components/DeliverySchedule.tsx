@@ -147,28 +147,28 @@ export function DeliverySchedule() {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Time Window
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Route
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Driver
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
                   Actions
                 </th>
               </tr>

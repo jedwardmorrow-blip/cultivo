@@ -68,7 +68,7 @@ export function AnalyticsDashboard() {
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Analytics</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Analytics</h1>
           <p className="text-cult-light-gray mt-2">Production throughput and conversion metrics</p>
         </div>
         <div className="flex gap-4">
@@ -133,7 +133,7 @@ export function AnalyticsDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
-          <h3 className="text-lg font-semibold text-white mb-4">Trimmer Productivity</h3>
+          <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Trimmer Productivity</h3>
           {trimmerStats.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Scissors className="w-10 h-10 text-cult-text-muted/40 mb-3" />
@@ -159,7 +159,7 @@ export function AnalyticsDashboard() {
         </div>
 
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
-          <h3 className="text-lg font-semibold text-white mb-4">Conversion Analysis</h3>
+          <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Conversion Analysis</h3>
           {conversionData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <RefreshCw className="w-10 h-10 text-cult-text-muted/40 mb-3" />
