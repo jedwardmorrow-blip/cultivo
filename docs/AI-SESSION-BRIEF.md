@@ -1,17 +1,18 @@
 ---
 title: AI Session Brief
 category: AI Development
-version: 2.5
-updated: 2026-03-01 (Package Assignment Reservation System)
+version: 2.6
+updated: 2026-03-02 (Go-Live Plan v4.0 Documentation)
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-03-01 (Session: Package Assignment Reservation System)
+> **Last Updated:** 2026-03-02 (Session: Go-Live Plan v4.0 Documentation)
 > **Last Migration:** 2026-03-01 (Reservation triggers, legacy allocation removal, fulfillment triggers)
 > **Build Status:** Passing
+> **Go-Live Plan:** See [GO-LIVE-PLAN-v4.0.md](./GO-LIVE-PLAN-v4.0.md) -- schema-first migration to cult-ops Supabase
 
 ---
 
@@ -46,11 +47,11 @@ The system is **feature-complete** and in **production use**. All core workflows
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-03-01: Package Assignment Reservation System — Removed legacy allocation system, added trigger-based inventory reservation on package assignments, fulfillment on order completion, release on cancellation
-2. 2026-03-01: Order Status Workflow Overhaul — Bi-directional status controls, transition validation, StatusActionPanel
-3. 2026-02-25: CRM Phase 2.5 — Chain hierarchy & delivery model
-4. 2026-02-25: CRM Phase 2 — Sales activity management (crm_tasks, crm_visit_schedule, health scores)
-5. 2026-02-20: Documentation alignment — E-1/D-14 constraint fix + cross-doc sync
+1. 2026-03-02: Go-Live Plan v4.0 Documentation — Schema-first migration strategy from Bolt.new to cult-ops Supabase (docs only, no code changes)
+2. 2026-03-01: Package Assignment Reservation System — Removed legacy allocation system, added trigger-based inventory reservation on package assignments, fulfillment on order completion, release on cancellation
+3. 2026-03-01: Order Status Workflow Overhaul — Bi-directional status controls, transition validation, StatusActionPanel
+4. 2026-02-25: CRM Phase 2.5 — Chain hierarchy & delivery model
+5. 2026-02-25: CRM Phase 2 — Sales activity management (crm_tasks, crm_visit_schedule, health scores)
 
 **Known deferred items:**
 - **Cultivation module** — Sessions C-1/C-2/C-3 all COMPLETE. Fully operational.

@@ -14,56 +14,38 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-01
-**Session:** Package Assignment Reservation System
+**Date:** 2026-03-02
+**Session:** Go-Live Plan v4.0 Documentation
 **Status:** COMPLETE
 
 **What was done:**
 
-Implemented trigger-based inventory reservation on package assignments. Removed the entire legacy allocation system. Inventory is now automatically reserved when packages are assigned and permanently deducted when orders complete.
+Created GO-LIVE-PLAN-v4.0.md documenting the schema-first migration strategy from Bolt.new instance to cult-ops Supabase instance. This is a documentation-only session -- no code or database changes.
 
-**1. Legacy allocation removal** (migration: `remove_legacy_allocation_system`)
-- Dropped `order_item_allocations` table, `inventory_transactions` table
-- Dropped 10 legacy functions and 4 legacy triggers
-- Simplified `validate_ready_for_delivery` function
+**Key changes from v3.4 strategy:**
+- Changed from soft-reset (27-table FK-ordered DELETE in place) to schema-first migration (export DDL, deploy to clean instance, import production data only)
+- Target is cult-ops Supabase instance (`fhjcvdimdgzwrijotmxg`), not the Bolt.new instance
+- Bolt.new instance (`fonreynkfeqywshijqpi`) remains untouched as backup
+- Simpler execution: no FK-ordered DELETE, no trigger disable/enable dance for deletes
+- Still requires trigger disable for inventory upload (4 triggers on inventory_items)
+- Auth user UUID preservation is the key risk -- documented two mitigation options
 
-**2. Package assignment reservation triggers** (migration: `add_package_assignment_reservation_system`)
-- Added `status` column to `package_assignments` ('reserved' | 'fulfilled' | 'released')
-- `fn_reserve_inventory_on_assignment` — AFTER INSERT, reserves inventory (available_qty--, reserved_qty++), creates RESERVE movement
-- `fn_release_inventory_on_unassignment` — BEFORE DELETE, releases reservation if status='reserved'
+**Files created/modified:**
+- `docs/GO-LIVE-PLAN-v4.0.md` — New plan (supersedes v3.4)
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off section
+- `docs/AI-SESSION-BRIEF.md` — Added go-live plan reference
+- `CHANGELOG.md` — Session entry added
 
-**3. Inventory reservation views** (migration: `create_inventory_reservation_views`)
-- `inventory_reservation_summary` — per-item reservation aggregation
-- `package_assignments_with_reservations` — extended assignment details with inventory context
-
-**4. Order fulfillment triggers** (migration: `create_order_fulfillment_triggers`)
-- `fn_fulfill_inventory_on_order_complete` — on status->'completed': releases reservation, creates FULFILLMENT movement, status='fulfilled'
-- `fn_release_inventory_on_order_cancel` — on status->'cancelled': releases all reservations
-- `fn_reverse_fulfillment_on_order_revert` — on status leaves 'completed': creates RETURN movement, re-reserves
-
-**5. Invoice & Manifest service migration** (modified)
-- `invoiceService.ts` — Replaced `order_item_allocations` query with `package_assignments`
-- `manifestService.ts` — Same pattern of migration
-
-**6. Type & service updates** (modified)
-- Removed `Allocation` interface from `order.types.ts`, added `PackageAssignmentStatus`
-- Updated `packageAssignment.service.ts` — status field, fulfilled guard, filtered queries
-- Fixed `fulfillmentValidation.service.ts` — corrected column names to match actual views
-
-**7. UI reservation visibility** (modified)
-- `AssignedPackagesDisplay.tsx` — Status badges (Reserved/Fulfilled), fulfilled items cannot be removed
-- `StatusActionPanel.tsx` — Updated hints for completion and cancellation inventory effects
-
-**Build status:** PASSES
+**Build status:** PASSES (no code changes)
 **Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors — not blocking
-- `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
+- Pre-existing tsc errors -- not blocking
+- `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
 
-**Next recommendations (in order):**
-1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
-2. **Export/reporting capabilities** — Account data export, revenue reports
-3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-4. **RLS anon policy removal** — Remove legacy anon policies from pre-auth tables
+**Next steps (go-live execution):**
+1. **Phase 1: Schema export** -- Query Bolt.new DB catalog to generate complete DDL
+2. **Phase 2: Deploy schema** -- Run DDL on cult-ops via SQL Editor
+3. **Phase 3-6: Data migration** -- Export production data, upload audit data, re-link strains
+4. **Phase 7: Cutover** -- Update .env, redeploy edge functions, verify
 
 ---
 

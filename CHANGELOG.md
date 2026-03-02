@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-02 - Go-Live Plan v4.0 Documentation
+
+**Type:** Documentation
+**Module:** Operations / Go-Live
+**Status:** COMPLETE
+
+Created the v4.0 go-live plan documenting a schema-first migration strategy from the Bolt.new Supabase instance to the cult-ops Supabase instance. This replaces the v3.4 soft-reset approach.
+
+- **Strategy Change:** Migrating to cult-ops instance (`fhjcvdimdgzwrijotmxg`) instead of resetting data in place on Bolt.new instance (`fonreynkfeqywshijqpi`). Cleaner and safer -- no 27-table FK-ordered DELETE sequence needed.
+- **8-Phase Plan:** Schema export, schema deploy, data cleanup, production data import, fresh audit data upload, strain re-linking, environment cutover, verification.
+- **Production Data Preserved:** 23 tables (~2,545 rows) of real business data (orders, customers, products, settings, etc.) carry forward.
+- **Test Data Left Behind:** All session, inventory, batch, and cultivation test data stays on Bolt.new. Fresh audit data uploaded to clean database.
+- **Rollback:** Bolt.new instance is never modified -- serves as live backup. Revert by changing .env back.
+- **New File:** `docs/GO-LIVE-PLAN-v4.0.md`
+- **Updated Files:** `docs/AI-SESSION-BRIEF.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`
+
+---
+
 ## 2026-03-01 - Sessions & Conversions Styling Uniformity Audit
 
 **Type:** Styling Fix
