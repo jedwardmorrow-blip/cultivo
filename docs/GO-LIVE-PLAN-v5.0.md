@@ -1,6 +1,6 @@
 # CultOps Go-Live Plan
 
-**Version 5.1 -- Verified Schema-First Migration to cult-ops Supabase**
+**Version 5.2 -- Verified Schema-First Migration to cult-ops Supabase**
 **Prepared: March 2, 2026**
 
 > This plan supersedes v4.0 and all prior versions. The strategy remains schema-first
@@ -14,6 +14,10 @@
 > to prevent wrong role assignments, and adds `route_waypoints` (236 rows) and
 > `system_metadata` (1 row) to the migration scope. Also fixes incorrect column
 > name references (`products.strain_name` -> `products.strain`).
+>
+> v5.2 (same date) adds Phase 6.0/6.2 trigger disable/re-enable for the re-link
+> UPDATEs, adds 15 missing tables to Section 2.7 for complete 94-table accounting,
+> and moves Slack edge functions to Post-Cutover Backlog (not in repo, no secrets).
 
 ---
 
@@ -27,7 +31,7 @@
 | 4 | Auth strategy | Committed to Option A (UUID preservation) | Avoids remapping UUIDs across 7 FK-dependent tables |
 | 5 | FK import order | Fixed incorrect FK dependencies (grow_rooms, dry_rooms, room_sections, customers self-ref) | v4.0 listed several tables as "no FK dependencies" when they actually FK to auth.users |
 | 6 | Storage buckets | Corrected bucket names: `coa-pdfs` (not `coa-documents`), `company-assets` (not `logos`) | Names must match source instance |
-| 7 | Edge functions | Added `slack-notify` and `slack-order-webhook` to redeployment list | v4.0 only listed 2 of 4 deployed functions |
+| 7 | Edge functions | Documented `slack-notify` and `slack-order-webhook`; moved to Post-Cutover Backlog | Not in repo, no Slack secrets; not critical for go-live |
 | 8 | Row counts | Corrected to match live database: customers=39, app_settings=33, product_types=14 | v4.0 used stale counts from the Data Reference document |
 | 9 | Data quality | Added 5 additional data quality fixes beyond strain name corrections | Identified from Data Reference cross-check |
 | 10 | order_items.batch_id | Documented that 48 rows have non-null batch_id requiring NULL-out in export | batch_registry is not migrating; FK is SET NULL |
@@ -38,6 +42,9 @@
 | 15 | Data scope | Added `route_waypoints` (236 rows) and `system_metadata` (1 row) to migration | route_waypoints FK to delivery_routes; system_metadata holds architecture docs |
 | 16 | Column names | Fixed `products.strain_name` -> `products.strain` in 6 locations | Actual column name is `strain`, not `strain_name` |
 | 17 | Strain support | Added `strain_aliases` and `strain_metadata` rebuild to Phase 5 and Post-Go-Live | These FK to strains and need new UUIDs after fresh strain upload |
+| 18 | Triggers | Added Phase 6.0/6.2: disable/re-enable 3 UPDATE triggers on order_items during re-link | Coversheet invalidation, order total recalc, and timestamp overwrite during strain_id UPDATEs |
+| 19 | Data scope | Added 15 missing tables to Section 2.7 "Tables That Do NOT Migrate" | Complete accounting of all 94 tables |
+| 20 | Edge functions | Moved `slack-notify` and `slack-order-webhook` to Post-Cutover Backlog | Not in repo, no Slack secrets configured; not critical for go-live |
 
 ---
 
@@ -156,18 +163,24 @@ against the live database on March 2, 2026.
 
 ### 2.7 Tables That Do NOT Migrate (Left on Bolt.new)
 
-All test/development data is left behind:
+All test/development data is left behind. Row counts shown where non-zero.
 
 | Category | Tables | Notes |
 |----------|--------|-------|
 | Inventory | `inventory_items` (122), `inventory_movements` (227) | Test data; fresh inventory from audit |
+| Inventory operational | `inventory_internal_labels` (9), `inventory_reconciliation` (3), `inventory_snapshots` (13), `inventory_variances` (4) | Operational artifacts from test sessions |
 | Batches | `batch_registry` (65) | Test batches; fresh batches from audit |
+| Batch tracking | `batch_id_backfill_log` (185), `batch_lifecycle_events` (54), `batch_production_history` (2), `batch_stage_tracking` (129) | Migration artifacts and test lifecycle data |
 | Sessions | `trim_sessions`, `bucking_sessions`, `packaging_sessions` | All test data |
 | Cultivation | `plant_groups`, `individual_plants`, `harvest_sessions`, `harvest_weight_entries`, `binning_sessions` | All test data |
+| Cultivation tracking | `plant_group_cut_sessions` (2), `plant_group_room_history` (4), `plant_group_stage_history` (16) | Test cultivation history |
 | Strains | `strains` (43) | Re-uploaded fresh with correct abbreviations |
+| Strain support | `strain_aliases` (6), `strain_metadata` (41) | Rebuilt with new strain UUIDs in Phase 5.1b / Post-Go-Live |
 | COAs | `certificates_of_analysis` (20) | Re-uploaded from lab CSV |
 | Internal inventory | `internal_bulk_inventory`, `internal_bucked_inventory`, `internal_packaged_inventory` | Deprecated tables |
 | Conversions | `pending_conversions`, `conversion_packages` | Test data |
+| Packaging | `consolidated_packages` (57), `consolidated_package_sources` (71) | Test packaging consolidation data |
+| Audit/variance | `conversion_variance_log` (1), `variance_log` (12) | Test variance tracking |
 | Schedules | `delivery_schedule`, `trim_schedule`, `packaging_schedule` | All 0 rows |
 | Other empty | `batch_allocations` (0), `order_fulfillment_items` (0), `slack_notifications` (0), `manifests` (0), `crm_tasks` (0), `draft_orders` (0) | No data to migrate |
 
@@ -572,7 +585,27 @@ ALTER TABLE inventory_items ENABLE TRIGGER trigger_inventory_auto_register_batch
 
 ### Phase 6 -- Re-Link Preserved Data to Fresh Strains
 
-After strains are uploaded in Phase 5, restore strain_id references on preserved tables:
+After strains are uploaded in Phase 5, restore strain_id references on preserved tables.
+
+**Phase 6.0 -- Disable Re-Link Triggers**
+
+The UPDATE statements below touch `order_items` and `products`. Three triggers on
+`order_items` will fire and cause unnecessary side effects (coversheet invalidation,
+order total recalculation, timestamp overwrites). Disable them before re-linking:
+
+```sql
+-- BEFORE Phase 6 re-link UPDATEs
+ALTER TABLE order_items DISABLE TRIGGER trigger_mark_coversheet_outdated_on_items_change;
+ALTER TABLE order_items DISABLE TRIGGER update_order_total_on_item_change;
+ALTER TABLE order_items DISABLE TRIGGER update_order_item_updated_at;
+```
+
+Note: Two triggers on `products` (`validate_product_stage_type` and
+`trigger_product_strain_id_sync`) are safe to leave enabled. The validator only checks
+stage/type combos (not changing here). The strain sync trigger is column-gated to the
+`strain` text column and will not fire when only `strain_id` is updated.
+
+**Phase 6.1 -- Re-Link Strain References**
 
 ```sql
 -- Re-link order_items
@@ -601,6 +634,15 @@ WHERE l.strain_id IS NULL
   );
 ```
 
+**Phase 6.2 -- Re-Enable Re-Link Triggers**
+
+```sql
+-- AFTER Phase 6 re-link UPDATEs complete
+ALTER TABLE order_items ENABLE TRIGGER trigger_mark_coversheet_outdated_on_items_change;
+ALTER TABLE order_items ENABLE TRIGGER update_order_total_on_item_change;
+ALTER TABLE order_items ENABLE TRIGGER update_order_item_updated_at;
+```
+
 **Verification after Phase 6:**
 ```sql
 -- Unmatched order_items (should return 0 rows if all strain names are correct)
@@ -626,22 +668,21 @@ VITE_SUPABASE_ANON_KEY=<cult-ops anon key from dashboard>
 - Build with new env vars: `npm run build`
 - Deploy to hosting (Vercel/Bolt.new)
 
-**7.3 Edge Functions (4 functions):**
+**7.3 Edge Functions (2 functions for go-live):**
 
-All 4 edge functions must be redeployed to the cult-ops instance:
+Deploy 2 edge functions that are in the repo to the cult-ops instance:
 
 | Function | JWT Verify | Source | Notes |
 |----------|-----------|--------|-------|
 | `admin-create-user` | true | `supabase/functions/admin-create-user/index.ts` | In repo |
 | `inventory-reset` | true | `supabase/functions/inventory-reset/index.ts` | In repo |
-| `slack-notify` | true | Deployed only (not in repo) | Export code from Bolt.new first |
-| `slack-order-webhook` | false | Deployed only (not in repo) | Export code from Bolt.new first |
 
 Edge function environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`) are auto-populated per instance.
 
-**Pre-requisite:** Export the `slack-notify` and `slack-order-webhook` function code
-from the Bolt.new instance before cutover, since they are not checked into the repository.
+The 2 Slack functions (`slack-notify`, `slack-order-webhook`) are deferred to the
+Post-Cutover Backlog (Section 11). They are not in the repo, have no Slack-specific
+secrets configured, and are not required for core operations.
 
 **7.4 Storage Buckets:**
 
@@ -839,8 +880,9 @@ See v3.4 Section 3.3 for full column reference for:
 | INSERT triggers fire during Phase 4 import | High | High | Disable 9 triggers per Phase 3.5; re-enable after import |
 | Trigger fires during inventory INSERT | Medium | High | Disable 4 triggers per Phase 5.6 |
 | ATP constraint violation on INSERT | Medium | High | Ensure available_qty = on_hand_qty when reserved_qty = 0 |
-| Strain name mismatch during re-link | Medium | Medium | Apply Phase 6.1 corrections; verify Phase 6 queries |
-| Slack functions not in repo | Medium | Medium | Export code from Bolt.new before cutover |
+| UPDATE triggers fire during Phase 6 re-link | Medium | Medium | Disable 3 order_items triggers per Phase 6.0; re-enable in Phase 6.2 |
+| Strain name mismatch during re-link | Medium | Medium | Apply Phase 4.1 corrections; verify Phase 6 queries |
+| Slack functions not in repo | Medium | Low | Deferred to Post-Cutover Backlog (Section 11.1); not critical for go-live |
 | Storage bucket permissions | Low | Medium | Configure bucket policies after creation; set public=true |
 | Edge function env vars | Low | Medium | Auto-populated on cult-ops; verify with test call |
 | Bolt.new instance goes offline | Low | Low | Schema and data already exported; no dependency after cutover |
@@ -856,8 +898,6 @@ See v3.4 Section 3.3 for full column reference for:
     [ ] Get cult-ops anon key and service_role key from dashboard
     [ ] Confirm audit spreadsheet is final and reviewed
     [ ] Confirm COA lab CSV is final
-    [ ] Export slack-notify function code from Bolt.new
-    [ ] Export slack-order-webhook function code from Bolt.new
 
 [ ] Phase 1: Schema Export
     [ ] Export complete DDL via pg_dump --schema-only (preferred)
@@ -907,9 +947,11 @@ See v3.4 Section 3.3 for full column reference for:
     [ ] 5.5: Re-enable 4 inventory triggers
 
 [ ] Phase 6: Re-Link Preserved Data
-    [ ] Re-link order_items.strain_id to new strain UUIDs
-    [ ] Re-link products.strain_id to new strain UUIDs
-    [ ] Re-link labels.strain_id via product lookup
+    [ ] 6.0: Disable 3 triggers on order_items (coversheet, total, updated_at)
+    [ ] 6.1: Re-link order_items.strain_id to new strain UUIDs
+    [ ] 6.1: Re-link products.strain_id to new strain UUIDs
+    [ ] 6.1: Re-link labels.strain_id via product lookup
+    [ ] 6.2: Re-enable 3 triggers on order_items
     [ ] Verify no unmatched rows
 
 [ ] Phase 7: Environment Cutover
@@ -918,8 +960,6 @@ See v3.4 Section 3.3 for full column reference for:
     [ ] Deploy to hosting
     [ ] Deploy edge function: admin-create-user
     [ ] Deploy edge function: inventory-reset
-    [ ] Deploy edge function: slack-notify
-    [ ] Deploy edge function: slack-order-webhook (verifyJWT: false)
     [ ] Upload logos to company-assets storage bucket
     [ ] Upload COA PDFs to coa-pdfs bucket (can be post-go-live)
 
@@ -977,6 +1017,26 @@ After successful cutover and 24-hour monitoring:
 6. Rebuild `strain_metadata` (41 rows) with new strain UUIDs for THC ranges and terpene profiles
 7. Consider archiving Bolt.new instance (do not delete -- keep as historical backup)
 8. `NOTIFY pgrst, 'reload schema'` if views are stale
+
+### 11.1 Post-Cutover Backlog: Slack Functions
+
+The 2 Slack edge functions are not in the repository and have no Slack-specific secrets
+configured on either Supabase instance. They are not required for core operations and
+should be set up after go-live stabilizes.
+
+| Step | Action |
+|------|--------|
+| 1 | Export `slack-notify` source code from Bolt.new dashboard (Functions tab) |
+| 2 | Export `slack-order-webhook` source code from Bolt.new dashboard (Functions tab) |
+| 3 | Add source files to repo: `supabase/functions/slack-notify/index.ts` and `supabase/functions/slack-order-webhook/index.ts` |
+| 4 | Determine required Slack secrets (likely `SLACK_WEBHOOK_URL` or `SLACK_BOT_TOKEN`) |
+| 5 | Configure Slack secret(s) on cult-ops via Supabase Dashboard > Edge Functions > Secrets |
+| 6 | Deploy `slack-notify` to cult-ops (JWT verify: true) |
+| 7 | Deploy `slack-order-webhook` to cult-ops (JWT verify: false) |
+| 8 | Verify end-to-end with a test notification |
+
+Note: The `slack_notifications` table schema migrates with the full schema export
+(Phase 1/2), so the backing table will be ready when these functions are deployed.
 
 ---
 
