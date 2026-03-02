@@ -1,6 +1,6 @@
 # CultOps Go-Live Plan
 
-**Version 5.0 -- Verified Schema-First Migration to cult-ops Supabase**
+**Version 5.1 -- Verified Schema-First Migration to cult-ops Supabase**
 **Prepared: March 2, 2026**
 
 > This plan supersedes v4.0 and all prior versions. The strategy remains schema-first
@@ -8,6 +8,12 @@
 > import only production data). v5.0 corrects factual errors in v4.0, commits to
 > concrete decisions that v4.0 left open, and tightens the data scope based on live
 > database verification performed March 2, 2026.
+>
+> v5.1 (same date) adds critical trigger management: Phase 3.5 disables 9 INSERT
+> triggers that would corrupt data during import, Phase 3 disables the auth trigger
+> to prevent wrong role assignments, and adds `route_waypoints` (236 rows) and
+> `system_metadata` (1 row) to the migration scope. Also fixes incorrect column
+> name references (`products.strain_name` -> `products.strain`).
 
 ---
 
@@ -27,6 +33,11 @@
 | 10 | order_items.batch_id | Documented that 48 rows have non-null batch_id requiring NULL-out in export | batch_registry is not migrating; FK is SET NULL |
 | 11 | Enums | Added 6 custom enum types to schema export checklist | v4.0 did not mention enums at all |
 | 12 | Verification | Expanded from 10 to 16 verification queries | Added enum, storage, edge function, and cross-reference checks |
+| 13 | Triggers | Added Phase 3.5: disable 9 INSERT triggers on migrating tables before import | Triggers on orders, order_items, products, package_assignments would cause duplicate rows, data overwrites, and FK failures during import |
+| 14 | Auth trigger | Added auth trigger disable/re-enable around user creation in Phase 3 | `handle_new_user` trigger assigns wrong roles and empty names |
+| 15 | Data scope | Added `route_waypoints` (236 rows) and `system_metadata` (1 row) to migration | route_waypoints FK to delivery_routes; system_metadata holds architecture docs |
+| 16 | Column names | Fixed `products.strain_name` -> `products.strain` in 6 locations | Actual column name is `strain`, not `strain_name` |
+| 17 | Strain support | Added `strain_aliases` and `strain_metadata` rebuild to Phase 5 and Post-Go-Live | These FK to strains and need new UUIDs after fresh strain upload |
 
 ---
 
@@ -87,8 +98,9 @@ against the live database on March 2, 2026.
 | app_settings | 33 | All application configuration |
 | delivery_drivers | 1 | Driver record |
 | delivery_vehicles | 1 | Vehicle record |
+| system_metadata | 1 | Documents inventory architecture decision (Decision #4) |
 
-**Subtotal: 8 tables, 64 rows**
+**Subtotal: 9 tables, 65 rows**
 
 ### 2.2 Tier 2 -- Core Entities (FK to auth.users or Tier 1)
 
@@ -111,9 +123,10 @@ against the live database on March 2, 2026.
 | notification_preferences | 9 | No FK constraints (verified) |
 | quality_grade_history | 8 | `quality_grades`, `auth.users` (`changed_by`) |
 | delivery_routes | 18 | `customers` (origin + destination) |
+| route_waypoints | 236 | `delivery_routes` (CASCADE) -- GPS waypoints for route map display |
 | labels | 29 | `products`, `strains` (NULL on export), `label_types`, `auth.users` (`voided_by`) |
 
-**Subtotal: 6 tables, 73 rows**
+**Subtotal: 7 tables, 309 rows**
 
 ### 2.4 Tier 4 -- Orders and Related (FK to Tier 2 + Tier 3)
 
@@ -139,7 +152,7 @@ against the live database on March 2, 2026.
 
 ### 2.6 Migration Totals
 
-**Total: 27 tables, ~2,547 rows of production data**
+**Total: 29 tables, ~2,784 rows of production data**
 
 ### 2.7 Tables That Do NOT Migrate (Left on Bolt.new)
 
@@ -273,9 +286,30 @@ const { data, error } = await supabase.auth.admin.createUser({
 });
 ```
 
-**Important:** The `user_profiles` trigger (`handle_new_user`) may auto-create a
-profile row when a user is created. If so, the Phase 4 import of `user_profiles`
-must use UPSERT (INSERT ... ON CONFLICT DO UPDATE) rather than plain INSERT.
+**CRITICAL: Auth Trigger Handling**
+
+The `on_auth_user_created` trigger on `auth.users` fires `handle_new_user()`, which
+auto-INSERTs a `user_profiles` row. This trigger has two problems:
+1. The first user created gets `role = 'admin'`, all others get `role = 'user'` -- so 9 of 10 users will have wrong roles
+2. `full_name` will be empty unless passed in `raw_user_meta_data`
+
+**Resolution:** Disable the trigger before creating users, then re-enable after:
+
+```sql
+-- BEFORE creating auth users
+ALTER TABLE auth.users DISABLE TRIGGER on_auth_user_created;
+
+-- ... create all 10 auth users via admin API ...
+
+-- AFTER all users created
+ALTER TABLE auth.users ENABLE TRIGGER on_auth_user_created;
+```
+
+With the trigger disabled, no `user_profiles` rows are auto-created. The Phase 4
+import (step 11) will INSERT `user_profiles` with the correct roles and full names.
+
+**Note:** Justin (`b5116e5d-...`) must have `role = 'admin'`. All others have their
+existing roles from the source database.
 
 **Tables that FK to auth.users (7 tables):**
 - `user_profiles.id`
@@ -294,6 +328,50 @@ SELECT COUNT(*) FROM auth.users;
 -- Expected: 10
 ```
 
+### Phase 3.5 -- Disable INSERT Triggers on Migrating Tables
+
+Nine INSERT triggers on tables being imported in Phase 4 will fire during data import
+and cause cascading problems: duplicate rows, data overwrites, FK lookup failures,
+and inventory reservation errors. ALL must be disabled before import and re-enabled after.
+
+| Trigger | Table | Problem if Left Enabled |
+|---------|-------|------------------------|
+| `generate_order_number_trigger` | orders | BEFORE INSERT -- overwrites `order_number` if NULL/empty |
+| `order_item_fulfillment_checklist_trigger` | order_items | AFTER INSERT -- auto-creates `order_fulfillment_checklist` rows, causing duplicates when step 22 imports them |
+| `trigger_order_item_strain_populate` | order_items | BEFORE INSERT -- looks up strain from products (which have `strain_id = NULL`), overwrites imported strain data |
+| `update_order_total_on_item_change` | order_items | AFTER INSERT -- recalculates `orders.total_amount` on every row insert |
+| `trigger_mark_coversheet_outdated_on_items_change` | order_items | AFTER INSERT -- marks all coversheets as outdated |
+| `trigger_product_strain_id_sync` | products | BEFORE INSERT -- calls `get_or_create_strain()` which INSERTs into `strains` table, polluting it before Phase 5 |
+| `validate_product_stage_type` | products | BEFORE INSERT -- may reject rows with edge-case stage/type combinations |
+| `trg_check_assignment_quantity_limit` | package_assignments | BEFORE INSERT -- validates against order_items quantities |
+| `trg_reserve_inventory_on_assignment` | package_assignments | AFTER INSERT -- tries to UPDATE `inventory_items` (EMPTY at this point) and will FAIL |
+
+```sql
+-- BEFORE Phase 4 data import
+ALTER TABLE orders DISABLE TRIGGER generate_order_number_trigger;
+ALTER TABLE order_items DISABLE TRIGGER order_item_fulfillment_checklist_trigger;
+ALTER TABLE order_items DISABLE TRIGGER trigger_order_item_strain_populate;
+ALTER TABLE order_items DISABLE TRIGGER update_order_total_on_item_change;
+ALTER TABLE order_items DISABLE TRIGGER trigger_mark_coversheet_outdated_on_items_change;
+ALTER TABLE products DISABLE TRIGGER trigger_product_strain_id_sync;
+ALTER TABLE products DISABLE TRIGGER validate_product_stage_type;
+ALTER TABLE package_assignments DISABLE TRIGGER trg_check_assignment_quantity_limit;
+ALTER TABLE package_assignments DISABLE TRIGGER trg_reserve_inventory_on_assignment;
+
+-- ... Phase 4 data import runs here ...
+
+-- AFTER Phase 4 data import completes
+ALTER TABLE orders ENABLE TRIGGER generate_order_number_trigger;
+ALTER TABLE order_items ENABLE TRIGGER order_item_fulfillment_checklist_trigger;
+ALTER TABLE order_items ENABLE TRIGGER trigger_order_item_strain_populate;
+ALTER TABLE order_items ENABLE TRIGGER update_order_total_on_item_change;
+ALTER TABLE order_items ENABLE TRIGGER trigger_mark_coversheet_outdated_on_items_change;
+ALTER TABLE products ENABLE TRIGGER trigger_product_strain_id_sync;
+ALTER TABLE products ENABLE TRIGGER validate_product_stage_type;
+ALTER TABLE package_assignments ENABLE TRIGGER trg_check_assignment_quantity_limit;
+ALTER TABLE package_assignments ENABLE TRIGGER trg_reserve_inventory_on_assignment;
+```
+
 ### Phase 4 -- Export and Import Production Data
 
 **4.1 Data Quality Corrections (Applied in Export SQL)**
@@ -305,8 +383,8 @@ source database. The source database remains untouched.
 |---|-------|-------|----------|-----------|
 | 1 | order_items | strain | Super Silver Marker | Silver Marker |
 | 2 | order_items | strain | Flava Flav | Flavor Flav |
-| 3 | products | strain_name | Super Silver Marker | Silver Marker |
-| 4 | products | strain_name | Flava Flav | Flavor Flav |
+| 3 | products | strain | Super Silver Marker | Silver Marker |
+| 4 | products | strain | Flava Flav | Flavor Flav |
 | 5 | product_types | description | Fresh Frozdn | Fresh Frozen |
 | 6 | order_items | strain_id | (any value) | NULL (batch_registry not migrating) |
 | 7 | order_items | batch_id | (48 non-null rows) | NULL (batch_registry not migrating) |
@@ -328,37 +406,39 @@ being fully imported.
  6. app_settings               33 rows
  7. delivery_drivers            1 row
  8. delivery_vehicles           1 row
+ 9. system_metadata             1 row     -- Inventory architecture documentation
 
 --- Tier 2: Core entities (FK to auth.users or Tier 1) ---
- 9. customers                  39 rows    -- Import hub parents first (parent_customer_id = NULL),
+10. customers                  39 rows    -- Import hub parents first (parent_customer_id = NULL),
                                           -- then UPDATE children with parent_customer_id
-10. products                 1049 rows    -- strain_id = NULL, stage_id -> product_stages,
+11. products                 1049 rows    -- strain_id = NULL, stage_id -> product_stages,
                                           -- type_id -> product_types
                                           -- Import non-self-referencing first, then UPDATE replaced_by_product_id
-11. user_profiles              10 rows    -- Use UPSERT if trigger auto-created rows in Phase 3
-12. grow_rooms                 11 rows    -- created_by -> auth.users
-13. dry_rooms                   3 rows    -- created_by -> auth.users
+12. user_profiles              10 rows    -- Plain INSERT (auth trigger disabled in Phase 3)
+13. grow_rooms                 11 rows    -- created_by -> auth.users
+14. dry_rooms                   3 rows    -- created_by -> auth.users
 
 --- Tier 3: Dependent entities (FK to Tier 2) ---
-14. room_tables                 1 row     -- grow_room_id -> grow_rooms, created_by -> auth.users
-15. room_sections               8 rows    -- room_table_id -> room_tables, created_by -> auth.users
-16. notification_preferences    9 rows    -- No FK constraints
-17. quality_grade_history       8 rows    -- quality_grades, auth.users
-18. delivery_routes            18 rows    -- customers (origin + destination)
-19. labels                     29 rows    -- products, label_types, auth.users; strain_id = NULL
+15. room_tables                 1 row     -- grow_room_id -> grow_rooms, created_by -> auth.users
+16. room_sections               8 rows    -- room_table_id -> room_tables, created_by -> auth.users
+17. notification_preferences    9 rows    -- No FK constraints
+18. quality_grade_history       8 rows    -- quality_grades, auth.users
+19. delivery_routes            18 rows    -- customers (origin + destination)
+20. route_waypoints           236 rows    -- delivery_routes (CASCADE)
+21. labels                     29 rows    -- products, label_types, auth.users; strain_id = NULL
 
 --- Tier 4: Orders and related ---
-20. orders                    132 rows    -- customer_id -> customers
-21. order_items               576 rows    -- orders, products; strain_id = NULL, batch_id = NULL
-22. order_fulfillment_checklist 576 rows  -- orders, order_items
-23. invoices                    3 rows    -- orders, customers
-24. coversheets                 5 rows    -- orders
-25. package_assignments         2 rows    -- orders, order_items, labels, auth.users
+22. orders                    132 rows    -- customer_id -> customers
+23. order_items               576 rows    -- orders, products; strain_id = NULL, batch_id = NULL
+24. order_fulfillment_checklist 576 rows  -- orders, order_items
+25. invoices                    3 rows    -- orders, customers
+26. coversheets                 5 rows    -- orders
+27. package_assignments         2 rows    -- orders, order_items, labels, auth.users
 
 --- Tier 5: CRM activity ---
-26. customer_activity_log       3 rows    -- customers, orders (SET NULL for missing), user_profiles;
+28. customer_activity_log       3 rows    -- customers, orders (SET NULL for missing), user_profiles;
                                           -- crm_tasks ref = NULL, crm_visit_schedule ref = NULL
-27. crm_visit_schedule          1 row     -- customers, user_profiles;
+29. crm_visit_schedule          1 row     -- customers, user_profiles;
                                           -- linked_activity_id -> customer_activity_log (SET NULL if missing)
 ```
 
@@ -401,11 +481,12 @@ UNION ALL SELECT 'app_settings', COUNT(*) FROM app_settings
 UNION ALL SELECT 'user_profiles', COUNT(*) FROM user_profiles
 UNION ALL SELECT 'labels', COUNT(*) FROM labels
 UNION ALL SELECT 'delivery_routes', COUNT(*) FROM delivery_routes
+UNION ALL SELECT 'route_waypoints', COUNT(*) FROM route_waypoints
 UNION ALL SELECT 'package_assignments', COUNT(*) FROM package_assignments
 ORDER BY tbl;
 -- Must match: orders=132, order_items=576, order_fulfillment_checklist=576,
 -- products=1049, customers=39, app_settings=33, user_profiles=10,
--- labels=29, delivery_routes=18, package_assignments=2
+-- labels=29, delivery_routes=18, route_waypoints=236, package_assignments=2
 ```
 
 ### Phase 5 -- Upload Fresh Audit Data
@@ -421,6 +502,17 @@ with no conflicting test data.
   - Dante's Inferno: add `dominance_type`
   - Devil Driver: add `dominance_type`
   - Strawguava: normalize `dominance_type` to proper case, fix category from "unknown"
+
+**5.1b Strain Aliases and Metadata**
+
+After uploading fresh strains, rebuild the supporting tables:
+
+- `strain_aliases` (6 rows on source) -- Search aliases like "dogwalker" -> "Dog Walker".
+  Re-create with new strain UUIDs from Phase 5.1.
+- `strain_metadata` (41 rows on source) -- THC ranges, terpene profiles, descriptions.
+  Re-create with new strain UUIDs from Phase 5.1.
+
+These are not critical for go-live but improve search and display. Can be done post-go-live.
 
 **5.2 Batch Registry**
 - Source: Audit spreadsheet (34 batches)
@@ -494,7 +586,7 @@ WHERE oi.strain = s.name
 UPDATE products p
 SET strain_id = s.id
 FROM strains s
-WHERE p.strain_name = s.name
+WHERE p.strain = s.name
   AND p.strain_id IS NULL;
 
 -- Re-link labels
@@ -517,9 +609,9 @@ FROM order_items oi
 WHERE oi.strain IS NOT NULL AND oi.strain != '' AND oi.strain_id IS NULL;
 
 -- Unmatched products (some may legitimately lack strain)
-SELECT DISTINCT p.strain_name
+SELECT DISTINCT p.strain
 FROM products p
-WHERE p.strain_name IS NOT NULL AND p.strain_name != '' AND p.strain_id IS NULL;
+WHERE p.strain IS NOT NULL AND p.strain != '' AND p.strain_id IS NULL;
 ```
 
 ### Phase 7 -- Environment Cutover
@@ -599,6 +691,7 @@ UNION ALL SELECT 'app_settings', COUNT(*) FROM app_settings
 UNION ALL SELECT 'user_profiles', COUNT(*) FROM user_profiles
 UNION ALL SELECT 'labels', COUNT(*) FROM labels
 UNION ALL SELECT 'delivery_routes', COUNT(*) FROM delivery_routes
+UNION ALL SELECT 'route_waypoints', COUNT(*) FROM route_waypoints
 UNION ALL SELECT 'package_assignments', COUNT(*) FROM package_assignments
 UNION ALL SELECT 'invoices', COUNT(*) FROM invoices
 UNION ALL SELECT 'coversheets', COUNT(*) FROM coversheets
@@ -642,7 +735,7 @@ WHERE strain IS NOT NULL AND strain != '' AND strain_id IS NULL;
 
 -- 11. Product-strain re-link completeness
 SELECT COUNT(*) AS unlinked FROM products
-WHERE strain_name IS NOT NULL AND strain_name != '' AND strain_id IS NULL;
+WHERE strain IS NOT NULL AND strain != '' AND strain_id IS NULL;
 -- Should be 0 or near-0 (some products may legitimately lack strain)
 
 -- 12. COA linkage
@@ -717,8 +810,8 @@ See v3.4 Section 3.3 for full column reference for:
 
 | Original | Corrected | Affected Tables |
 |----------|-----------|-----------------|
-| Super Silver Marker | Silver Marker | `order_items.strain`, `products.strain_name` |
-| Flava Flav | Flavor Flav | `order_items.strain`, `products.strain_name` |
+| Super Silver Marker | Silver Marker | `order_items.strain`, `products.strain` |
+| Flava Flav | Flavor Flav | `order_items.strain`, `products.strain` |
 
 ### 6.2 Other Data Quality Fixes
 
@@ -742,7 +835,8 @@ See v3.4 Section 3.3 for full column reference for:
 | RLS policy blocks data import | Medium | High | Use service_role key for all imports |
 | FK constraint violation during import | Low | High | Follow Phase 4 tiered import order strictly |
 | Self-referential FK on customers/products | Medium | Medium | Two-pass insert: NULL refs first, then UPDATE |
-| user_profiles trigger auto-creates rows | Medium | Low | Use UPSERT for user_profiles import |
+| Auth trigger creates wrong user_profiles | High | High | Disable `on_auth_user_created` trigger per Phase 3 |
+| INSERT triggers fire during Phase 4 import | High | High | Disable 9 triggers per Phase 3.5; re-enable after import |
 | Trigger fires during inventory INSERT | Medium | High | Disable 4 triggers per Phase 5.6 |
 | ATP constraint violation on INSERT | Medium | High | Ensure available_qty = on_hand_qty when reserved_qty = 0 |
 | Strain name mismatch during re-link | Medium | Medium | Apply Phase 6.1 corrections; verify Phase 6 queries |
@@ -779,22 +873,29 @@ See v3.4 Section 3.3 for full column reference for:
     [ ] Create company-assets storage bucket (public: true)
 
 [ ] Phase 3: Auth User Recreation
+    [ ] Disable auth trigger: ALTER TABLE auth.users DISABLE TRIGGER on_auth_user_created
     [ ] Create 10 auth users with UUID preservation (admin API)
     [ ] Fix Dave's email: david@cultcannabis.co (not .c)
+    [ ] Re-enable auth trigger: ALTER TABLE auth.users ENABLE TRIGGER on_auth_user_created
     [ ] Verify: auth.users count = 10
+
+[ ] Phase 3.5: Disable INSERT Triggers on Migrating Tables
+    [ ] Disable 9 triggers (orders, order_items, products, package_assignments)
+    [ ] Verify all disabled: SELECT tgname, tgenabled FROM pg_trigger ...
 
 [ ] Phase 4: Import Production Data
     [ ] Apply data quality corrections to export SQL (Section 6)
-    [ ] Import Tier 1: 8 reference tables (64 rows)
+    [ ] Import Tier 1: 9 reference tables (65 rows)
     [ ] Import Tier 2: 5 core entity tables (1,112 rows)
     [ ]   -- customers: two-pass for parent_customer_id self-ref
     [ ]   -- products: two-pass for replaced_by_product_id self-ref
-    [ ]   -- user_profiles: UPSERT if trigger auto-created rows
-    [ ] Import Tier 3: 6 dependent tables (73 rows)
+    [ ]   -- user_profiles: plain INSERT (auth trigger disabled in Phase 3)
+    [ ] Import Tier 3: 7 dependent tables (309 rows)
     [ ] Import Tier 4: 6 order tables (1,294 rows)
     [ ]   -- order_items: strain_id = NULL, batch_id = NULL
     [ ] Import Tier 5: 2 CRM tables (4 rows)
-    [ ] Verify row counts for all 27 tables
+    [ ] Re-enable 9 INSERT triggers disabled in Phase 3.5
+    [ ] Verify row counts for all 29 tables
 
 [ ] Phase 5: Upload Fresh Audit Data
     [ ] 5.1: Upload strains from audit spreadsheet (with data quality fixes)
@@ -872,8 +973,10 @@ After successful cutover and 24-hour monitoring:
 2. Run `npm run types:generate` against cult-ops to regenerate database types
 3. Update `vercel.json` or deployment config if applicable
 4. Update Earth's Healing ATO number from placeholder "4444" to real value
-5. Consider archiving Bolt.new instance (do not delete -- keep as historical backup)
-6. `NOTIFY pgrst, 'reload schema'` if views are stale
+5. Rebuild `strain_aliases` (6 rows) with new strain UUIDs for search functionality
+6. Rebuild `strain_metadata` (41 rows) with new strain UUIDs for THC ranges and terpene profiles
+7. Consider archiving Bolt.new instance (do not delete -- keep as historical backup)
+8. `NOTIFY pgrst, 'reload schema'` if views are stale
 
 ---
 
@@ -910,6 +1013,7 @@ quality_grade_history.new_grade_id  -> quality_grades.id         (?)
 quality_grade_history.changed_by    -> auth.users.id             (?)
 delivery_routes.origin_customer_id  -> customers.id              (CASCADE)
 delivery_routes.destination_customer_id -> customers.id          (CASCADE)
+route_waypoints.route_id            -> delivery_routes.id        (CASCADE)
 labels.product_id                   -> products.id               (NO ACTION)
 labels.strain_id                    -> strains.id                (NO ACTION)
 labels.label_type_id                -> label_types.id            (NO ACTION)
