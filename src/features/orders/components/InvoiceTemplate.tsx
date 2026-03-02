@@ -68,7 +68,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
     }, [invoiceData.company_logo_path, onImagesLoaded]);
     const formatDate = (dateString: string | null) => {
       if (!dateString) return '';
-      const date = new Date(dateString);
+      const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(dateString) ? dateString + 'T00:00:00' : dateString);
       return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
     };
 
