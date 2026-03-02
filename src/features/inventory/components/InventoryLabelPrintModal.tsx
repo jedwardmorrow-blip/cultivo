@@ -138,7 +138,7 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: '0.05in' }}>
+      <div style={{ textAlign: 'center', marginBottom: '0.03in' }}>
         {logoDataUrl && (
           <img
             src={logoDataUrl}
@@ -147,7 +147,7 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
               width: '1.1in',
               height: 'auto',
               display: 'block',
-              margin: '0 auto 0.05in auto',
+              margin: '0 auto 0.03in auto',
             }}
           />
         )}
@@ -157,12 +157,12 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.08in',
+        gap: '0.05in',
         fontSize: '9pt',
       }}>
         <div style={{
           borderBottom: '1px solid #333',
-          paddingBottom: '0.04in',
+          paddingBottom: '0.03in',
         }}>
           <div style={{
             fontSize: '7pt',
@@ -174,7 +174,7 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
             Strain
           </div>
           <div style={{
-            fontSize: '11pt',
+            fontSize: '10pt',
             fontWeight: 'bold',
             marginTop: '0.02in',
           }}>
@@ -184,8 +184,8 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '0.05in',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '0.04in',
         }}>
           <div>
             <div style={{
@@ -197,7 +197,7 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
               Batch ID
             </div>
             <div style={{
-              fontSize: '9pt',
+              fontSize: '8pt',
               fontWeight: 'bold',
               marginTop: '0.01in',
             }}>
@@ -215,36 +215,37 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
               Weight
             </div>
             <div style={{
-              fontSize: '9pt',
+              fontSize: '8pt',
               fontWeight: 'bold',
               marginTop: '0.01in',
             }}>
               {labelData.weight_grams.toFixed(1)}g
             </div>
           </div>
-        </div>
 
-        <div>
-          <div style={{
-            fontSize: '6pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-            Package ID
-          </div>
-          <div style={{
-            fontSize: '9pt',
-            fontWeight: 'bold',
-            marginTop: '0.01in',
-          }}>
-            {labelData.package_id}
+          <div>
+            <div style={{
+              fontSize: '6pt',
+              color: '#666',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+            }}>
+              Pkg ID
+            </div>
+            <div style={{
+              fontSize: '7pt',
+              fontWeight: 'bold',
+              marginTop: '0.01in',
+              wordBreak: 'break-all',
+            }}>
+              {labelData.package_id}
+            </div>
           </div>
         </div>
 
         <div style={{
           borderTop: '1px solid #ddd',
-          paddingTop: '0.04in',
+          paddingTop: '0.03in',
         }}>
           <div style={{
             fontSize: '6pt',
@@ -287,7 +288,7 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         fontSize: '5pt',
         color: '#999',
         textAlign: 'center',
-        marginTop: '0.05in',
+        marginTop: '0.03in',
         borderTop: '1px solid #eee',
         paddingTop: '0.02in',
       }}>

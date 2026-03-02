@@ -204,9 +204,12 @@ export function LabelGenerator() {
         JsBarcode(canvas, data, {
           format: 'CODE128',
           width: 2,
-          height: 70,
-          displayValue: false,
-          margin: 0
+          height: 45,
+          displayValue: true,
+          margin: 0,
+          font: 'Arial',
+          fontSize: 8,
+          textMargin: 1,
         });
         const dataUrl = canvas.toDataURL();
         setBarcodeUrl(dataUrl);
@@ -233,10 +236,11 @@ export function LabelGenerator() {
         JsBarcode(canvas, upcCode, {
           format: format,
           width: 2,
-          height: 35,
+          height: 28,
           displayValue: true,
-          fontSize: 9,
-          margin: 0
+          fontSize: 7,
+          margin: 0,
+          textMargin: 1,
         });
         const dataUrl = canvas.toDataURL();
         setUpcBarcodeUrl(dataUrl);
@@ -550,7 +554,7 @@ export function LabelGenerator() {
           display: 'flex',
           flexDirection: 'column',
           border: forPrint ? 'none' : '1px solid #ddd',
-          overflow: 'visible'
+          overflow: 'hidden'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.01in' }}>
             <div style={{ flex: 1 }}>
@@ -582,8 +586,8 @@ export function LabelGenerator() {
                   src={qrCodeUrl}
                   alt="QR Code"
                   style={{
-                    width: '0.55in',
-                    height: '0.55in',
+                    width: '0.48in',
+                    height: '0.48in',
                     display: 'block'
                   }}
                 />
@@ -608,7 +612,7 @@ export function LabelGenerator() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.08in', marginBottom: '0.01in' }}>
+          <div style={{ display: 'flex', gap: '0.05in', marginBottom: '0.005in' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '5pt' }}>
                 <strong>Batch:</strong>
@@ -635,11 +639,7 @@ export function LabelGenerator() {
             </div>
           </div>
 
-          <div style={{ fontSize: '4.5pt', marginBottom: '0.005in' }}>
-            <strong>Pkg: </strong>{selectedLabel.package_id}
-          </div>
-
-          <div style={{ fontSize: '4.5pt', marginBottom: '0.008in', lineHeight: '1.25' }}>
+          <div style={{ fontSize: '4.5pt', marginBottom: '0.004in', lineHeight: '1.25' }}>
             <div><strong>Additives:</strong> Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B</div>
             <div style={{ marginTop: '0.005in' }}><strong>License:</strong> (Kind Meds Inc.) {selectedLabel.compliance_uid}</div>
           </div>

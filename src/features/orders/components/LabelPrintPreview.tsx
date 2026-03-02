@@ -160,10 +160,12 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         JsBarcode(canvas, data, {
           format: 'CODE128',
           width: 2,
-          height: 70,
-          displayValue: false,
+          height: 45,
+          displayValue: true,
           margin: 0,
           font: 'Arial',
+          fontSize: 8,
+          textMargin: 1,
         });
         setBarcodeUrl(canvas.toDataURL());
         resolve();
@@ -264,7 +266,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.01in' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {logoDataUrl && (
-            <img src={logoDataUrl} alt="Logo" style={{ width: '0.75in', height: 'auto', display: 'block', marginBottom: '0.01in' }} />
+            <img src={logoDataUrl} alt="Logo" style={{ width: '0.7in', height: 'auto', display: 'block', marginBottom: '0.01in' }} />
           )}
           <div style={{ fontSize: '6.5pt', fontWeight: 'bold', lineHeight: '1.15', marginBottom: '0.005in' }}>
             {label.product_name}
@@ -277,7 +279,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         </div>
         <div style={{ marginLeft: '0.04in', flexShrink: 0 }}>
           {qrCodeUrl && (
-            <img src={qrCodeUrl} alt="QR" style={{ width: '0.5in', height: '0.5in', display: 'block' }} />
+            <img src={qrCodeUrl} alt="QR" style={{ width: '0.45in', height: '0.45in', display: 'block' }} />
           )}
         </div>
       </div>
@@ -296,13 +298,13 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+      <div style={{ display: 'flex', gap: '0.04in', marginBottom: '0.005in' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>MMJ Net Weight: {label.net_weight_grams} Grams</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+      <div style={{ display: 'flex', gap: '0.04in', marginBottom: '0.005in' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>Batch:</div>
           <div style={{ fontSize: '5.5pt', fontWeight: 'bold' }}>{label.batch_id}</div>
@@ -315,10 +317,6 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>CBD:</div>
           <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{formatCbd(label.cbd_percentage)}</div>
         </div>
-      </div>
-
-      <div style={{ fontSize: '4.5pt', marginBottom: '0.005in' }}>
-        <span style={{ fontWeight: 'bold' }}>Pkg: </span>{label.package_id}
       </div>
 
       <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
