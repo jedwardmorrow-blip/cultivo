@@ -1,0 +1,7 @@
+-- product_stages: 4 rows
+-- Extracted: 2026-03-02T21:40:34.949Z
+
+INSERT INTO product_stages (id, name, sort_order, default_pricing_unit, allows_fractional_quantity, description, is_active, created_at, updated_at) VALUES ('30be0d52-a3b2-482d-a462-1803054cf792', 'Trimmed', 30, 'unit', false, 'Trimmed flower, ready for packaging or bulk sale', true, '2026-01-14 15:18:22.125723+00', '2026-01-14 15:18:22.125723+00');
+INSERT INTO product_stages (id, name, sort_order, default_pricing_unit, allows_fractional_quantity, description, is_active, created_at, updated_at) VALUES ('323ee0fe-1342-4b26-9379-c373f3cabbb9', 'Packaged', 40, 'unit', false, 'Consumer-ready packaged products', true, '2025-10-12 14:10:45.031979+00', '2025-10-12 14:10:45.031979+00');
+INSERT INTO product_stages (id, name, sort_order, default_pricing_unit, allows_fractional_quantity, description, is_active, created_at, updated_at) VALUES ('35d07a66-851d-4b2d-be18-290b03b91d2d', 'Bucked', 20, 'lb', true, 'Stems removed, ready for trimming', true, '2025-10-12 14:10:45.031979+00', '2025-10-12 14:10:45.031979+00');
+INSERT INTO product_stages (id, name, sort_order, default_pricing_unit, allows_fractional_quantity, description, is_active, created_at, updated_at) VALUES ('c360e356-eb78-4512-8777-ee47c328157d', 'Binned', 10, 'lb', true, 'Raw harvest, wet weight', true, '2025-10-12 14:10:45.031979+00', '2025-10-12 14:10:45.031979+00');

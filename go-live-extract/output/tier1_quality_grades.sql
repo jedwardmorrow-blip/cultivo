@@ -1,0 +1,8 @@
+-- quality_grades: 5 rows
+-- Extracted: 2026-03-02T21:40:34.715Z
+
+INSERT INTO quality_grades (id, code, label, sort_order, color_class, description, is_active, created_at, updated_at) VALUES ('6151fcbb-b62a-4231-bd72-c32a208b6d4c', 'UNDEFINED', 'Ungraded', 0, 'gray', 'Not yet graded - inventory moves through the system normally', true, '2026-02-26 13:54:27.699033+00', '2026-02-26 13:54:27.699033+00');
+INSERT INTO quality_grades (id, code, label, sort_order, color_class, description, is_active, created_at, updated_at) VALUES ('ae8c62c0-dbe3-4838-81ab-46beb9ff3c46', 'CULT', 'CULT', 1, 'emerald', 'Top-tier quality - premium flower meeting the highest standards', true, '2026-02-26 13:54:27.699033+00', '2026-02-26 13:54:27.699033+00');
+INSERT INTO quality_grades (id, code, label, sort_order, color_class, description, is_active, created_at, updated_at) VALUES ('e436b83a-8609-4c59-ad76-b8994c8bbab4', 'B', 'B Grade', 2, 'sky', 'Good quality flower suitable for standard distribution', true, '2026-02-26 13:54:27.699033+00', '2026-02-26 13:54:27.699033+00');
+INSERT INTO quality_grades (id, code, label, sort_order, color_class, description, is_active, created_at, updated_at) VALUES ('00e0211f-6b47-4f1e-98d6-767a3d8fd6dd', 'C', 'C Grade', 3, 'amber', 'Acceptable quality - may have minor cosmetic issues', true, '2026-02-26 13:54:27.699033+00', '2026-02-26 13:54:27.699033+00');
+INSERT INTO quality_grades (id, code, label, sort_order, color_class, description, is_active, created_at, updated_at) VALUES ('c0957e97-882d-431f-b6d4-26dbc385e650', 'D', 'D Grade', 4, 'rose', 'Below standard - suitable for extraction or secondary processing', true, '2026-02-26 13:54:27.699033+00', '2026-02-26 13:54:27.699033+00');
