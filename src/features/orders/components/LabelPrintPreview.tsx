@@ -159,10 +159,9 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         const canvas = document.createElement('canvas');
         JsBarcode(canvas, data, {
           format: 'CODE128',
-          width: 3,
-          height: 90,
-          displayValue: true,
-          fontSize: 14,
+          width: 2,
+          height: 70,
+          displayValue: false,
           margin: 0,
           font: 'Arial',
         });
@@ -306,7 +305,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
       <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>Batch:</div>
-          <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{label.batch_id}</div>
+          <div style={{ fontSize: '5.5pt', fontWeight: 'bold' }}>{label.batch_id}</div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>THC:</div>
@@ -316,6 +315,10 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>CBD:</div>
           <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{formatCbd(label.cbd_percentage)}</div>
         </div>
+      </div>
+
+      <div style={{ fontSize: '4.5pt', marginBottom: '0.005in' }}>
+        <span style={{ fontWeight: 'bold' }}>Pkg: </span>{label.package_id}
       </div>
 
       <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>

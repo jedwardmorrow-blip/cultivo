@@ -224,6 +224,24 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
           </div>
         </div>
 
+        <div>
+          <div style={{
+            fontSize: '6pt',
+            color: '#666',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+          }}>
+            Package ID
+          </div>
+          <div style={{
+            fontSize: '9pt',
+            fontWeight: 'bold',
+            marginTop: '0.01in',
+          }}>
+            {labelData.package_id}
+          </div>
+        </div>
+
         <div style={{
           borderTop: '1px solid #ddd',
           paddingTop: '0.04in',

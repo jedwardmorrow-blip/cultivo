@@ -153,7 +153,7 @@ export function LabelGenerator() {
 
       Promise.all([
         generateQRCode(selectedLabel.qr_code_data),
-        generateBarcode(`${selectedLabel.package_id}${selectedLabel.batch_id}`),
+        generateBarcode(selectedLabel.package_id),
         generateUPCBarcode(upcCode),
         createLogoDataUrl()
       ]).then(() => {
@@ -203,10 +203,9 @@ export function LabelGenerator() {
         const canvas = document.createElement('canvas');
         JsBarcode(canvas, data, {
           format: 'CODE128',
-          width: 3.0,
-          height: 100,
-          displayValue: true,
-          fontSize: 12,
+          width: 2,
+          height: 70,
+          displayValue: false,
           margin: 0
         });
         const dataUrl = canvas.toDataURL();
@@ -634,6 +633,10 @@ export function LabelGenerator() {
                 {selectedLabel.cbd_percentage.toFixed(2)}%
               </div>
             </div>
+          </div>
+
+          <div style={{ fontSize: '4.5pt', marginBottom: '0.005in' }}>
+            <strong>Pkg: </strong>{selectedLabel.package_id}
           </div>
 
           <div style={{ fontSize: '4.5pt', marginBottom: '0.008in', lineHeight: '1.25' }}>
