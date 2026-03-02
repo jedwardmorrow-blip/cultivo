@@ -70,7 +70,7 @@ export function InventoryLabelPrintModal({
             </div>
           </div>
 
-          <div className="p-16 bg-cult-surface flex items-center justify-center" style={{ minHeight: '600px' }}>
+          <div className="p-8 bg-cult-surface flex items-center justify-center" style={{ minHeight: '500px' }}>
             {isLoading && (
               <div className="text-cult-text-faint text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-border-strong mx-auto mb-4"></div>
@@ -87,9 +87,8 @@ export function InventoryLabelPrintModal({
 
             {!isLoading && !error && labelData && (
               <div style={{
-                transform: 'scale(3)',
+                transform: 'scale(2.5)',
                 transformOrigin: 'center',
-                margin: '80px'
               }}>
                 <LabelContent
                   labelData={labelData}
@@ -122,6 +121,15 @@ interface LabelContentProps {
 }
 
 const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) => {
+  const labelStyle: React.CSSProperties = {
+    fontSize: '5.5pt',
+    color: '#666',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
+    lineHeight: '1',
+  };
+
   return (
     <div
       style={{
@@ -129,54 +137,48 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         height: '2in',
         backgroundColor: 'white',
         color: 'black',
-        padding: '0.1in',
+        padding: '0.08in',
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
         display: 'flex',
         flexDirection: 'column',
         border: forPrint ? 'none' : '1px solid #ddd',
-        justifyContent: 'space-between',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: '0.03in' }}>
+      <div style={{ textAlign: 'center', marginBottom: '0.02in' }}>
         {logoDataUrl && (
           <img
             src={logoDataUrl}
             alt="CULT Logo"
             style={{
-              width: '1.1in',
+              width: '0.85in',
               height: 'auto',
               display: 'block',
-              margin: '0 auto 0.03in auto',
+              margin: '0 auto',
             }}
           />
         )}
       </div>
 
       <div style={{
-        flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.05in',
-        fontSize: '9pt',
+        gap: '0.03in',
+        flex: 1,
       }}>
         <div style={{
           borderBottom: '1px solid #333',
-          paddingBottom: '0.03in',
+          paddingBottom: '0.02in',
         }}>
-          <div style={{
-            fontSize: '7pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
+          <div style={labelStyle}>
             Strain
           </div>
           <div style={{
-            fontSize: '10pt',
+            fontSize: '8.5pt',
             fontWeight: 'bold',
-            marginTop: '0.02in',
+            marginTop: '0.01in',
+            lineHeight: '1.1',
           }}>
             {labelData.strain}
           </div>
@@ -185,57 +187,41 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '0.04in',
+          gap: '0.03in',
+          borderBottom: '1px solid #ddd',
+          paddingBottom: '0.03in',
         }}>
           <div>
+            <div style={labelStyle}>Batch ID</div>
             <div style={{
-              fontSize: '6pt',
-              color: '#666',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}>
-              Batch ID
-            </div>
-            <div style={{
-              fontSize: '8pt',
+              fontSize: '6.5pt',
               fontWeight: 'bold',
               marginTop: '0.01in',
+              lineHeight: '1.15',
             }}>
               {labelData.batch_id}
             </div>
           </div>
 
           <div>
+            <div style={labelStyle}>Weight</div>
             <div style={{
-              fontSize: '6pt',
-              color: '#666',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}>
-              Weight
-            </div>
-            <div style={{
-              fontSize: '8pt',
+              fontSize: '6.5pt',
               fontWeight: 'bold',
               marginTop: '0.01in',
+              lineHeight: '1.15',
             }}>
               {labelData.weight_grams.toFixed(1)}g
             </div>
           </div>
 
           <div>
+            <div style={labelStyle}>Pkg ID</div>
             <div style={{
               fontSize: '6pt',
-              color: '#666',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}>
-              Pkg ID
-            </div>
-            <div style={{
-              fontSize: '7pt',
               fontWeight: 'bold',
               marginTop: '0.01in',
+              lineHeight: '1.15',
               wordBreak: 'break-all',
             }}>
               {labelData.package_id}
@@ -244,53 +230,44 @@ const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) =
         </div>
 
         <div style={{
-          borderTop: '1px solid #ddd',
-          paddingTop: '0.03in',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '0.03in',
         }}>
-          <div style={{
-            fontSize: '6pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-            Product Type
+          <div>
+            <div style={labelStyle}>Product Type</div>
+            <div style={{
+              fontSize: '7pt',
+              fontWeight: '600',
+              marginTop: '0.01in',
+              lineHeight: '1.15',
+            }}>
+              {labelData.product_type}
+            </div>
           </div>
-          <div style={{
-            fontSize: '8pt',
-            fontWeight: '500',
-            marginTop: '0.01in',
-            lineHeight: '1.2',
-          }}>
-            {labelData.product_type}
-          </div>
-        </div>
 
-        <div>
-          <div style={{
-            fontSize: '6pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-            Harvest Date
-          </div>
-          <div style={{
-            fontSize: '8pt',
-            fontWeight: '500',
-            marginTop: '0.01in',
-          }}>
-            {labelData.harvest_date}
+          <div>
+            <div style={labelStyle}>Harvest Date</div>
+            <div style={{
+              fontSize: '7pt',
+              fontWeight: '600',
+              marginTop: '0.01in',
+              lineHeight: '1.15',
+            }}>
+              {labelData.harvest_date}
+            </div>
           </div>
         </div>
       </div>
 
       <div style={{
-        fontSize: '5pt',
+        fontSize: '4.5pt',
         color: '#999',
         textAlign: 'center',
-        marginTop: '0.03in',
+        marginTop: '0.02in',
         borderTop: '1px solid #eee',
         paddingTop: '0.02in',
+        lineHeight: '1',
       }}>
         INTERNAL USE ONLY - {labelData.package_id}
       </div>
