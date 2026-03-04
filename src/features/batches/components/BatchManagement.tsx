@@ -377,7 +377,7 @@ export function BatchManagement() {
                       {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="py-3 px-4 text-cult-white">
-                      {batch.initial_weight_grams ? `${batch.initial_weight_grams.toFixed(1)}g` : 'Not Set'}
+                      {batch.initial_weight_grams ? `${batch.initial_weight_grams.toFixed(1)}g` : '0g'}
                     </td>
                     <td className="py-3 px-4">{getCOAStatusBadge(batch.coa_status)}</td>
                     <td className="py-3 px-4 text-cult-white font-medium">
