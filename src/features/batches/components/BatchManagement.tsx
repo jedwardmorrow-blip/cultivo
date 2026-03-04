@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Package, Plus, AlertTriangle, CheckCircle, XCircle, Upload } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Package, Plus, AlertTriangle, CheckCircle, XCircle, Upload, Archive } from 'lucide-react';
 import { batchService } from '../services/batch.service';
 import type {
   BatchAllocationSummary,
@@ -12,11 +12,44 @@ import { QualityGradeBadge } from '@/shared/components';
 import { supabase } from '@/lib/supabase';
 import { COAUploadModal } from './COAUploadModal';
 
+type ActiveTab = 'active' | 'archived';
+
+const LIFECYCLE_DISPLAY: Record<string, { label: string; color: string }> = {
+  pre_harvest: { label: 'Pre-Harvest', color: 'text-sky-400 bg-sky-900/20 border-sky-700' },
+  created: { label: 'Created', color: 'text-blue-400 bg-blue-900/20 border-blue-700' },
+  bucked: { label: 'Bucked', color: 'text-teal-400 bg-teal-900/20 border-teal-700' },
+  in_trim: { label: 'In Trim', color: 'text-cyan-400 bg-cyan-900/20 border-cyan-700' },
+  bulk_available: { label: 'Bulk Available', color: 'text-green-400 bg-green-900/20 border-green-700' },
+  in_packaging: { label: 'Packaging', color: 'text-emerald-400 bg-emerald-900/20 border-emerald-700' },
+  packaged: { label: 'Packaged', color: 'text-green-300 bg-green-900/20 border-green-700' },
+  partially_depleted: { label: 'Partial', color: 'text-amber-400 bg-amber-900/20 border-amber-700' },
+  depleted: { label: 'Depleted', color: 'text-orange-400 bg-orange-900/20 border-orange-700' },
+  quarantined: { label: 'Quarantined', color: 'text-red-400 bg-red-900/20 border-red-700' },
+  archived: { label: 'Archived', color: 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray' },
+};
+
+function isArchivedBatch(batch: BatchWithCOAStatus): boolean {
+  return batch.lifecycle_state === 'archived' || batch.batch_status === 'archived';
+}
+
+function getLifecycleBadge(state: string) {
+  const display = LIFECYCLE_DISPLAY[state] || {
+    label: state.replace(/_/g, ' '),
+    color: 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray',
+  };
+  return (
+    <span className={`px-2 py-1 text-xs uppercase tracking-wider border ${display.color}`}>
+      {display.label}
+    </span>
+  );
+}
+
 export function BatchManagement() {
   const [batches, setBatches] = useState<BatchWithCOAStatus[]>([]);
   const [allocationSummaries, setAllocationSummaries] = useState<BatchAllocationSummary[]>([]);
   const [warnings, setWarnings] = useState<BatchAllocationWarning[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('active');
   const [showNewBatchForm, setShowNewBatchForm] = useState(false);
   const [filterCOAStatus, setFilterCOAStatus] = useState<'all' | 'active' | 'missing'>('all');
   const [coaUploadState, setCOAUploadState] = useState<{
@@ -122,10 +155,17 @@ export function BatchManagement() {
     }
   }
 
-  const filteredBatches = batches.filter(batch => {
+  const activeBatches = useMemo(() => batches.filter(b => !isArchivedBatch(b)), [batches]);
+  const archivedBatches = useMemo(() => batches.filter(b => isArchivedBatch(b)), [batches]);
+
+  const tabBatches = activeTab === 'active' ? activeBatches : archivedBatches;
+
+  const filteredBatches = tabBatches.filter(batch => {
     if (filterCOAStatus === 'all') return true;
     return batch.coa_status === filterCOAStatus;
   });
+
+  const isActive = activeTab === 'active';
 
   if (loading) {
     return (
@@ -145,16 +185,53 @@ export function BatchManagement() {
               Batch Management
             </h2>
           </div>
+          {isActive && (
+            <button
+              onClick={() => setShowNewBatchForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider"
+            >
+              <Plus className="w-4 h-4" />
+              New Batch
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-3 mb-6">
           <button
-            onClick={() => setShowNewBatchForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider"
+            onClick={() => setActiveTab('active')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wider transition-all ${
+              isActive
+                ? 'bg-cult-white text-cult-black'
+                : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            New Batch
+            <Package className="w-4 h-4" />
+            Active
+            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
+              isActive ? 'bg-cult-black/10' : 'bg-cult-medium-gray/30'
+            }`}>
+              {activeBatches.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wider transition-all ${
+              !isActive
+                ? 'bg-cult-white text-cult-black'
+                : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+            }`}
+          >
+            <Archive className="w-4 h-4" />
+            Archived
+            <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
+              !isActive ? 'bg-cult-black/10' : 'bg-cult-medium-gray/30'
+            }`}>
+              {archivedBatches.length}
+            </span>
           </button>
         </div>
 
-        {warnings.length > 0 && (
+        {isActive && warnings.length > 0 && (
           <div className="mb-6 p-4 bg-amber-900/20 border border-amber-700">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -179,7 +256,7 @@ export function BatchManagement() {
           </div>
         )}
 
-        {showNewBatchForm && (
+        {isActive && showNewBatchForm && (
           <div className="mb-6 p-6 bg-cult-black border border-cult-medium-gray">
             <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-4">
               Create New Batch
@@ -343,15 +420,19 @@ export function BatchManagement() {
                 <th className="text-center py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
                   Grade
                 </th>
+                {isActive && (
+                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                    Allocation
+                  </th>
+                )}
                 <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
-                  Allocation
+                  Stage
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
-                  Actions
-                </th>
+                {isActive && (
+                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -385,10 +466,10 @@ export function BatchManagement() {
                     </td>
                     <td className="py-3 px-4 text-center">
                       <QualityGradeBadge
-                        gradeId={(batch as any).quality_grade_id}
-                        editable
+                        gradeId={batch.quality_grade_id}
+                        editable={isActive}
                         size="md"
-                        onGradeChange={async (newGradeId) => {
+                        onGradeChange={isActive ? async (newGradeId) => {
                           try {
                             const { data: { user } } = await supabase.auth.getUser();
                             const { cascadedCount } = await qualityGradeService.assignBatchGrade(
@@ -404,49 +485,47 @@ export function BatchManagement() {
                             console.error('Failed to update batch grade:', err);
                             notificationService.error('Failed to update grade');
                           }
-                        }}
+                        } : undefined}
                       />
                     </td>
-                    <td className="py-3 px-4">
-                      {summary && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-cult-medium-gray rounded-full overflow-hidden">
-                            <div
-                              className={`h-full transition-all ${
-                                summary.allocation_percentage >= (summary.over_allocation_critical_threshold || 120)
-                                  ? 'bg-red-500'
-                                  : summary.allocation_percentage >= (summary.over_allocation_warning_threshold || 100)
-                                  ? 'bg-amber-500'
-                                  : 'bg-green-500'
-                              }`}
-                              style={{ width: `${Math.min(summary.allocation_percentage, 100)}%` }}
-                            />
+                    {isActive && (
+                      <td className="py-3 px-4">
+                        {summary && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-cult-medium-gray rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  summary.allocation_percentage >= (summary.over_allocation_critical_threshold || 120)
+                                    ? 'bg-red-500'
+                                    : summary.allocation_percentage >= (summary.over_allocation_warning_threshold || 100)
+                                    ? 'bg-amber-500'
+                                    : 'bg-green-500'
+                                }`}
+                                style={{ width: `${Math.min(summary.allocation_percentage, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-cult-light-gray whitespace-nowrap">
+                              {summary.allocation_percentage.toFixed(0)}%
+                            </span>
                           </div>
-                          <span className="text-xs text-cult-light-gray whitespace-nowrap">
-                            {summary.allocation_percentage.toFixed(0)}%
-                          </span>
-                        </div>
-                      )}
-                    </td>
+                        )}
+                      </td>
+                    )}
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-1 text-xs uppercase tracking-wider border ${
-                        batch.batch_status === 'active'
-                          ? 'text-green-400 bg-green-900/20 border-green-700'
-                          : 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray'
-                      }`}>
-                        {batch.batch_status}
-                      </span>
+                      {getLifecycleBadge(batch.lifecycle_state)}
                     </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleUploadCOA(batch.batch_id, batch.batch_number, batch.strain)}
-                        className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={batch.coa_status === 'active'}
-                      >
-                        <Upload className="w-4 h-4" />
-                        {batch.coa_status === 'active' ? 'COA Active' : 'Upload COA'}
-                      </button>
-                    </td>
+                    {isActive && (
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => handleUploadCOA(batch.batch_id, batch.batch_number, batch.strain)}
+                          className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={batch.coa_status === 'active'}
+                        >
+                          <Upload className="w-4 h-4" />
+                          {batch.coa_status === 'active' ? 'COA Active' : 'Upload COA'}
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
@@ -456,13 +535,23 @@ export function BatchManagement() {
 
         {filteredBatches.length === 0 && (
           <div className="py-12 text-center">
-            <Package className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+            {isActive ? (
+              <Package className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+            ) : (
+              <Archive className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+            )}
             <p className="text-cult-light-gray">
-              {filterCOAStatus === 'missing'
-                ? 'No batches missing COA'
+              {isActive
+                ? filterCOAStatus === 'missing'
+                  ? 'No active batches missing COA'
+                  : filterCOAStatus === 'active'
+                  ? 'No active batches with active COA'
+                  : 'No active batches found'
+                : filterCOAStatus === 'missing'
+                ? 'No archived batches missing COA'
                 : filterCOAStatus === 'active'
-                ? 'No batches with active COA'
-                : 'No batches found'}
+                ? 'No archived batches with active COA'
+                : 'No archived batches'}
             </p>
           </div>
         )}
