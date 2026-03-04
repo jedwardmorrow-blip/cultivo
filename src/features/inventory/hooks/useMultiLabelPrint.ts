@@ -7,8 +7,8 @@ function buildLabelData(item: InventoryItem): InternalInventoryLabel {
   return {
     package_id: item.package_id || item.id,
     strain: item.strain || 'Unknown',
-    batch_id: item.batch || 'N/A',
-    product_type: item.category || 'Unknown',
+    batch_id: item.batch || item.batch_number || 'N/A',
+    product_type: item.category ? item.category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Unknown',
     harvest_date: item.created_at
       ? new Date(item.created_at).toLocaleDateString()
       : new Date().toLocaleDateString(),
