@@ -1,0 +1,1 @@
+export { SalesInventoryDashboard } from './components';
