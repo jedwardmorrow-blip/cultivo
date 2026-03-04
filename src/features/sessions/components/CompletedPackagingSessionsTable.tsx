@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle, XCircle, Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard as Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
 import type { PackagingSession } from '../types';
 
 function getConversionStatus(session: PackagingSession): 'none' | 'pending' | 'converted' {

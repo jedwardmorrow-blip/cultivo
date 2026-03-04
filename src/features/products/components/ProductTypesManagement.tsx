@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Box, CreditCard as Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
 import { productsService } from '../services/products.service';
 
 interface ProductType {
