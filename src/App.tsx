@@ -42,7 +42,6 @@ const AccountsList = lazy(() => import('./features/crm').then((m) => ({ default:
 const AccountDetail = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountDetail })));
 const SalesQueue = lazy(() => import('./features/crm').then((m) => ({ default: m.SalesQueue })));
 const VisitCalendar = lazy(() => import('./features/crm').then((m) => ({ default: m.VisitCalendar })));
-const SalesInventoryDashboard = lazy(() => import('./features/sales-dashboard').then((m) => ({ default: m.SalesInventoryDashboard })));
 
 function ViewFallback() {
   return (
@@ -234,8 +233,6 @@ function AppContent() {
         return <EODSummary />;
       case 'crm-dashboard':
         return <CRMDashboard onViewChange={handleViewChange} onCreateOrder={(customerId) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />;
-      case 'sales-inventory-dashboard':
-        return <SalesInventoryDashboard />;
       case 'crm-queue':
         return <SalesQueue />;
       case 'crm-visit-calendar':
