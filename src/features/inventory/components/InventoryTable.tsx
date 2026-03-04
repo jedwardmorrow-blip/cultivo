@@ -1,6 +1,7 @@
-import { ReactNode, useState, useMemo } from 'react';
+import { ReactNode, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Package, Filter } from 'lucide-react';
 import { useQualityGrades } from '@/hooks/useQualityGrades';
+import { useShiftSelect } from '@/shared/hooks';
 import { GRADE_COLOR_MAP } from '@/types';
 import type { InventoryItem } from '../types';
 
@@ -134,12 +135,19 @@ export function InventoryTable({
     }
   };
 
-  const handleSelectItem = (itemId: string) => {
+  const getItemKey = useCallback((item: InventoryItem) => item.id, []);
+
+  const { handleItemClick: shiftSelectClick } = useShiftSelect({
+    items: sortedItems,
+    getKey: getItemKey,
+    selectedIds,
+    onSelectionChange: onSelectionChange || (() => {}),
+    isSelectable,
+  });
+
+  const handleSelectItem = (itemId: string, shiftKey: boolean) => {
     if (!onSelectionChange) return;
-    const newSelection = new Set(selectedIds);
-    if (newSelection.has(itemId)) newSelection.delete(itemId);
-    else newSelection.add(itemId);
-    onSelectionChange(newSelection);
+    shiftSelectClick(itemId, shiftKey);
   };
 
   if (items.length === 0 && !searchQuery) {
@@ -318,7 +326,7 @@ export function InventoryTable({
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => handleSelectItem(item.id)}
+                            onChange={(e) => handleSelectItem(item.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
                             className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
                           />
                         ) : (

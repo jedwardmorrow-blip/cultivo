@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useShiftSelect } from '@/shared/hooks';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
 import { getNextStatus, getTransitionLabel } from '../utils/orderTransitions';
@@ -14,7 +15,7 @@ interface OrderTableProps {
   selectedOrderId: string | null;
   selectedIds: Set<string>;
   onSelectOrder: (orderId: string) => void;
-  onToggleSelect: (orderId: string) => void;
+  onSelectionChange: (ids: Set<string>) => void;
   onToggleSelectAll: () => void;
   onStatusChange?: (orderId: string, newStatus: string) => void;
 }
@@ -55,7 +56,7 @@ export function OrderTable({
   selectedOrderId,
   selectedIds,
   onSelectOrder,
-  onToggleSelect,
+  onSelectionChange,
   onToggleSelectAll,
   onStatusChange,
 }: OrderTableProps) {
@@ -106,6 +107,15 @@ export function OrderTable({
     });
     return sorted;
   }, [orders, sortField, sortDirection]);
+
+  const getOrderKey = useCallback((order: Order) => order.id, []);
+
+  const { handleItemClick: shiftSelectClick } = useShiftSelect({
+    items: sortedOrders,
+    getKey: getOrderKey,
+    selectedIds,
+    onSelectionChange,
+  });
 
   const allSelected = orders.length > 0 && selectedIds.size === orders.length;
 
@@ -171,7 +181,7 @@ export function OrderTable({
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => onToggleSelect(order.id)}
+                      onChange={(e) => shiftSelectClick(order.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
                       className="w-3.5 h-3.5 rounded border-cult-charcoal bg-cult-near-black text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
                     />
                   </td>

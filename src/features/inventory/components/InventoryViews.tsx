@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Package, Scale, Leaf, Clock, Printer, Box, Scissors } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Package, Scale, Leaf, Clock, Printer, Box, Scissors, X } from 'lucide-react';
 import { DailyInventoryActivity } from './DailyInventoryActivity';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
@@ -42,6 +42,24 @@ function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLa
   );
 }
 
+function SelectionSummary({ count, onClear }: { count: number; onClear: () => void }) {
+  if (count === 0) return null;
+  return (
+    <div className="bg-blue-900/15 border border-blue-800/40 rounded-lg p-3 mb-6 flex items-center justify-between">
+      <span className="text-sm text-blue-300 font-medium">
+        {count} package{count !== 1 ? 's' : ''} selected
+      </span>
+      <button
+        onClick={onClear}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cult-silver hover:text-cult-white bg-cult-medium-gray/40 hover:bg-cult-medium-gray/60 rounded-md transition-colors"
+      >
+        <X className="w-3 h-3" />
+        Clear
+      </button>
+    </div>
+  );
+}
+
 function GradeColumn(onDataRefresh?: () => void) {
   return {
     header: 'Grade',
@@ -74,6 +92,7 @@ interface BinnedViewProps {
 
 export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewProps) {
   const labelHook = useInventoryLabel();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const sortedItems = useMemo(() =>
     [...items].sort((a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()),
@@ -104,11 +123,16 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
         </div>
       )}
 
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+
       <InventoryTable
         items={sortedItems}
         searchable
         searchPlaceholder="Search binned inventory..."
         gradeFilterable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -156,6 +180,7 @@ interface BuckedViewProps {
 
 export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewProps) {
   const labelHook = useInventoryLabel();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   return (
     <>
@@ -165,11 +190,16 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
         <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
       </div>
 
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+
       <InventoryTable
         items={items}
         searchable
         searchPlaceholder="Search bucked inventory..."
         gradeFilterable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -224,6 +254,7 @@ function getBulkTabCount(items: InventoryItem[], tab: BulkSubTab): number {
 
 export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onDataRefresh }: BulkViewProps) {
   const labelHook = useInventoryLabel();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const filteredItems = useMemo(() => items.filter(item => {
     const name = item.product_name?.toLowerCase() || '';
@@ -267,11 +298,16 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
         })}
       </div>
 
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+
       <InventoryTable
         items={filteredItems}
         searchable
         searchPlaceholder={`Search bulk ${subTab}...`}
         gradeFilterable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
@@ -302,6 +338,7 @@ interface PackagedViewProps {
 
 export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedViewProps) {
   const labelHook = useInventoryLabel();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   return (
     <>
@@ -311,11 +348,16 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
         <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
       </div>
 
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+
       <InventoryTable
         items={items}
         searchable
         searchPlaceholder="Search packaged inventory..."
         gradeFilterable
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         columns={[
           { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
           { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },

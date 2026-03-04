@@ -56,18 +56,6 @@ export function UnifiedOrders({
     setDrawerOrderId(null);
   }, []);
 
-  const handleToggleSelect = useCallback((orderId: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(orderId)) {
-        next.delete(orderId);
-      } else {
-        next.add(orderId);
-      }
-      return next;
-    });
-  }, []);
-
   const handleToggleSelectAll = useCallback(() => {
     setSelectedIds(prev => {
       if (prev.size === filteredOrders.length) {
@@ -147,7 +135,7 @@ export function UnifiedOrders({
         selectedOrderId={drawerOrderId}
         selectedIds={selectedIds}
         onSelectOrder={handleSelectOrder}
-        onToggleSelect={handleToggleSelect}
+        onSelectionChange={setSelectedIds}
         onToggleSelectAll={handleToggleSelectAll}
         onStatusChange={actions.updateOrderStatus}
       />
