@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Package, Plus, AlertTriangle, CheckCircle, XCircle, Upload, Archive } from 'lucide-react';
+import { Package, Plus, AlertTriangle, CheckCircle, XCircle, Upload, Archive, Search, X } from 'lucide-react';
 import { batchService } from '../services/batch.service';
 import type {
   BatchAllocationSummary,
@@ -52,6 +52,7 @@ export function BatchManagement() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('active');
   const [showNewBatchForm, setShowNewBatchForm] = useState(false);
   const [filterCOAStatus, setFilterCOAStatus] = useState<'all' | 'active' | 'missing'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [coaUploadState, setCOAUploadState] = useState<{
     isOpen: boolean;
     batchId: string | null;
@@ -160,10 +161,23 @@ export function BatchManagement() {
 
   const tabBatches = activeTab === 'active' ? activeBatches : archivedBatches;
 
-  const filteredBatches = tabBatches.filter(batch => {
-    if (filterCOAStatus === 'all') return true;
-    return batch.coa_status === filterCOAStatus;
-  });
+  const filteredBatches = useMemo(() => {
+    let result = tabBatches;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      result = result.filter(batch => {
+        const fields = [batch.batch_number, batch.strain, batch.lifecycle_state, batch.batch_id];
+        return fields.some(f => f?.toLowerCase().includes(q));
+      });
+    }
+
+    if (filterCOAStatus !== 'all') {
+      result = result.filter(batch => batch.coa_status === filterCOAStatus);
+    }
+
+    return result;
+  }, [tabBatches, searchTerm, filterCOAStatus]);
 
   const isActive = activeTab === 'active';
 
@@ -357,40 +371,67 @@ export function BatchManagement() {
           </div>
         )}
 
-        <div className="mb-4 flex items-center gap-4">
-          <label className="text-sm text-cult-light-gray uppercase tracking-wider">Filter by COA Status:</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilterCOAStatus('all')}
-              className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
-                filterCOAStatus === 'all'
-                  ? 'bg-cult-white text-cult-black'
-                  : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilterCOAStatus('active')}
-              className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
-                filterCOAStatus === 'active'
-                  ? 'bg-cult-white text-cult-black'
-                  : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
-              }`}
-            >
-              With COA
-            </button>
-            <button
-              onClick={() => setFilterCOAStatus('missing')}
-              className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
-                filterCOAStatus === 'missing'
-                  ? 'bg-cult-white text-cult-black'
-                  : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
-              }`}
-            >
-              Missing COA
-            </button>
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cult-silver w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search by batch number or strain..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 bg-cult-near-black border border-cult-charcoal text-cult-off-white placeholder-cult-lighter-gray text-sm focus:outline-none focus:border-cult-white focus:ring-1 focus:ring-cult-white/20 transition-all"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-lighter-gray hover:text-cult-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-cult-light-gray uppercase tracking-wider whitespace-nowrap">COA:</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilterCOAStatus('all')}
+                className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
+                  filterCOAStatus === 'all'
+                    ? 'bg-cult-white text-cult-black'
+                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterCOAStatus('active')}
+                className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
+                  filterCOAStatus === 'active'
+                    ? 'bg-cult-white text-cult-black'
+                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                }`}
+              >
+                With COA
+              </button>
+              <button
+                onClick={() => setFilterCOAStatus('missing')}
+                className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
+                  filterCOAStatus === 'missing'
+                    ? 'bg-cult-white text-cult-black'
+                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                }`}
+              >
+                Missing COA
+              </button>
+            </div>
+          </div>
+
+          {(searchTerm || filterCOAStatus !== 'all') && (
+            <span className="text-xs text-cult-lighter-gray whitespace-nowrap">
+              {filteredBatches.length} of {tabBatches.length} batches
+            </span>
+          )}
         </div>
       </div>
 
@@ -535,13 +576,17 @@ export function BatchManagement() {
 
         {filteredBatches.length === 0 && (
           <div className="py-12 text-center">
-            {isActive ? (
+            {searchTerm ? (
+              <Search className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+            ) : isActive ? (
               <Package className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
             ) : (
               <Archive className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
             )}
             <p className="text-cult-light-gray">
-              {isActive
+              {searchTerm
+                ? `No batches matching "${searchTerm}"`
+                : isActive
                 ? filterCOAStatus === 'missing'
                   ? 'No active batches missing COA'
                   : filterCOAStatus === 'active'
@@ -553,6 +598,14 @@ export function BatchManagement() {
                 ? 'No archived batches with active COA'
                 : 'No archived batches'}
             </p>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="mt-3 text-sm text-cult-lighter-gray hover:text-cult-white transition-colors underline underline-offset-2"
+              >
+                Clear search
+              </button>
+            )}
           </div>
         )}
       </div>
