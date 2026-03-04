@@ -259,7 +259,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
               {isBulk ? (
                 <>
                   <div className="text-2xl font-bold text-cult-white">
-                    {session.output_weight?.toFixed(0) || 0}
+                    {session.output_weight != null ? session.output_weight.toFixed(0) : 0}
                     <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
                   </div>
                   <div className="text-xs text-cult-text-muted mt-1">

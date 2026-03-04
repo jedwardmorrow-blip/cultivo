@@ -377,11 +377,11 @@ export function BatchManagement() {
                       {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="py-3 px-4 text-cult-white">
-                      {batch.initial_weight_grams ? `${batch.initial_weight_grams.toFixed(1)}g` : '0g'}
+                      {batch.initial_weight_grams != null ? `${batch.initial_weight_grams.toFixed(1)}g` : '0g'}
                     </td>
                     <td className="py-3 px-4">{getCOAStatusBadge(batch.coa_status)}</td>
                     <td className="py-3 px-4 text-cult-white font-medium">
-                      {batch.thc_percentage ? `${batch.thc_percentage.toFixed(2)}%` : '-'}
+                      {batch.thc_percentage != null ? `${batch.thc_percentage.toFixed(2)}%` : '-'}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <QualityGradeBadge

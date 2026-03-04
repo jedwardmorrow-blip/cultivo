@@ -462,8 +462,8 @@ export function COAManagement() {
                     <td className="py-3 px-4 text-cult-lighter-gray text-sm">
                       {coa.harvest_date ? new Date(coa.harvest_date).toLocaleDateString() : '-'}
                     </td>
-                    <td className="py-3 px-4 text-cult-white font-medium">{coa.thc_percentage?.toFixed(2) || '-'}%</td>
-                    <td className="py-3 px-4 text-cult-white font-medium">{coa.cbd_percentage?.toFixed(2) || '-'}%</td>
+                    <td className="py-3 px-4 text-cult-white font-medium">{coa.thc_percentage != null ? `${coa.thc_percentage.toFixed(2)}%` : '-'}</td>
+                    <td className="py-3 px-4 text-cult-white font-medium">{coa.cbd_percentage != null ? `${coa.cbd_percentage.toFixed(2)}%` : '-'}</td>
                     <td className="py-3 px-4">
                       <button
                         onClick={() => handleToggleActive(coa)}

@@ -40,7 +40,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                   <td className="px-4 py-3 text-sm font-medium text-cult-white">{session.packager_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
                   <td className="px-4 py-3 text-sm text-cult-light-gray">{session.package_id}</td>
-                  <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pull_weight?.toFixed(1) || '-'}</td>
+                  <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pull_weight != null ? session.pull_weight.toFixed(1) : '-'}</td>
                   <td className="px-4 py-3 text-sm text-center font-medium text-cult-green">
                     {formatElapsedTime(session.started_at)}
                   </td>

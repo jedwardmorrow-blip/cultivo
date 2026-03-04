@@ -40,7 +40,7 @@ export function ActiveSessionsTable({ sessions, onComplete, onCancel }: ActiveSe
                   <td className="px-4 py-3 text-sm font-medium text-cult-white">{session.trimmer_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
                   <td className="px-4 py-3 text-sm text-cult-light-gray">{session.package_id}</td>
-                  <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pulled_weight?.toFixed(1) || '0.0'}</td>
+                  <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pulled_weight != null ? session.pulled_weight.toFixed(1) : '0.0'}</td>
                   <td className="px-4 py-3 text-sm text-center font-medium text-cult-green">
                     {formatElapsedTime(session.started_at)}
                   </td>

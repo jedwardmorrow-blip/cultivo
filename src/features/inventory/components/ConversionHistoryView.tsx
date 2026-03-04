@@ -368,10 +368,10 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
                 </div>
               </td>
               <td className="px-4 py-3 text-sm text-cult-white text-right">
-                {item.total_weight ? `${item.total_weight.toFixed(1)}g` : `${item.total_units} units`}
+                {item.total_weight != null ? `${item.total_weight.toFixed(1)}g` : `${item.total_units} units`}
               </td>
               <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">
-                {item.duration_minutes ? `${item.duration_minutes.toFixed(0)}m` : '-'}
+                {item.duration_minutes != null ? `${item.duration_minutes.toFixed(0)}m` : '-'}
               </td>
               <td className="px-4 py-3 text-sm text-cult-text-secondary">{item.converted_by_name}</td>
               <td className="px-4 py-3 text-sm text-center">

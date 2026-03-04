@@ -189,11 +189,11 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
           {isBulk ? (
             <>
               <div className="text-2xl font-bold text-cult-white">
-                {lot.remaining_weight?.toFixed(0) || 0}
+                {lot.remaining_weight != null ? lot.remaining_weight.toFixed(0) : 0}
                 <span className="text-sm font-normal text-cult-silver ml-1">g</span>
               </div>
               <div className="text-xs text-cult-silver mt-1">
-                of {lot.total_weight?.toFixed(0) || 0}g total
+                of {lot.total_weight != null ? lot.total_weight.toFixed(0) : 0}g total
               </div>
             </>
           ) : (

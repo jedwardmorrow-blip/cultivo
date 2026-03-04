@@ -276,7 +276,7 @@ export async function finalizeConversion(params: {
 
     // Create inventory_items for each package
     const inventoryItems = createdPackages.map((pkg) => {
-      const quantity = pkg.weight || pkg.units || 0;
+      const quantity = pkg.weight != null ? pkg.weight : (pkg.units ?? 0);
       return {
         package_id: pkg.package_id,
         batch_id: pkg.batch_id,
@@ -291,7 +291,7 @@ export async function finalizeConversion(params: {
         on_hand_qty: quantity,
         available_qty: quantity,
         reserved_qty: 0,
-        unit: pkg.weight ? 'g' : 'unit',
+        unit: pkg.weight != null ? 'g' : 'unit',
         status: 'Available',
         package_date: new Date().toISOString().split('T')[0],
       };
@@ -358,8 +358,8 @@ export async function finalizeConversion(params: {
       const movementResult = await inventoryMovementService.recordMovement({
         movement_kind: 'PRODUCE',
         dest_item_id: invItem.id,
-        qty: pkg.weight || pkg.units || 0,
-        unit: pkg.weight ? 'g' : 'unit',
+        qty: pkg.weight != null ? pkg.weight : (pkg.units ?? 0),
+        unit: pkg.weight != null ? 'g' : 'unit',
         reason_code: 'session_finalization',
         notes: `Finalized from ${params.session_ids.length} ${params.session_type} session(s)`,
       });
@@ -934,8 +934,8 @@ export async function finalizeConversionPackages(
       const stageName = stageMap.get(product.stage_id) || 'Unknown';
       const typeName = typeMap.get(product.type_id) || 'Flower';
 
-      const quantity = pkg.weight || pkg.units || 0;
-      const unit = pkg.weight ? 'g' : 'unit';
+      const quantity = pkg.weight != null ? pkg.weight : (pkg.units ?? 0);
+      const unit = pkg.weight != null ? 'g' : 'unit';
       const category = stageName;
       const productName = `${stageName} - ${strainName} - ${typeName}`;
 

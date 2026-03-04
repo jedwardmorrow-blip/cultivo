@@ -201,8 +201,8 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       <div className="text-xs text-blue-700 mb-1">Output Quantity</div>
                       <div className="text-2xl font-bold text-blue-900">
                         {isBulk
-                          ? `${session.output_weight?.toFixed(0) || 0}g`
-                          : `${session.output_units || 0} units`}
+                          ? `${session.output_weight != null ? session.output_weight.toFixed(0) : 0}g`
+                          : `${session.output_units ?? 0} units`}
                       </div>
                     </div>
                     <div>
@@ -315,8 +315,8 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       <div className="bg-white rounded p-3 mb-3">
                         <div className="text-2xl font-bold text-blue-900 mb-1">
                           {isBulk
-                            ? `${session.output_weight?.toFixed(0) || 0}g`
-                            : `${session.output_units || 0} units`}
+                            ? `${session.output_weight != null ? session.output_weight.toFixed(0) : 0}g`
+                            : `${session.output_units ?? 0} units`}
                         </div>
                         <div className="text-sm text-blue-700">
                           {session.product_name} from {sessionTypeLabel} session

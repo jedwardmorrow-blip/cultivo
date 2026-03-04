@@ -106,8 +106,8 @@ export function CompletedPackagingSessionsTable({
                 <td className="px-4 py-3 text-sm text-right text-cult-white">{session.units_3_5g || 0}</td>
                 <td className="px-4 py-3 text-sm text-right text-cult-white">{session.units_14g || 0}</td>
                 <td className="px-4 py-3 text-sm text-right text-cult-white">{session.units_454g || 0}</td>
-                <td className="px-4 py-3 text-sm text-right text-cult-white">{session.minutes_packaged?.toFixed(0) || '-'}</td>
-                <td className="px-4 py-3 text-sm text-right font-medium text-cult-white">{session.units_per_hour?.toFixed(1) || '-'}</td>
+                <td className="px-4 py-3 text-sm text-right text-cult-white">{session.minutes_packaged != null ? session.minutes_packaged.toFixed(0) : '-'}</td>
+                <td className="px-4 py-3 text-sm text-right font-medium text-cult-white">{session.units_per_hour != null ? session.units_per_hour.toFixed(1) : '-'}</td>
                 {isAdmin && (
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-center gap-2">
