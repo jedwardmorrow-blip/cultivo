@@ -26,6 +26,8 @@ import type {
   DryRoom,
   BinningSession,
   BinningSessionStatus,
+  BinEntry,
+  CreateBinEntryInput,
   CreateDryRoomInput,
   UpdateDryRoomInput,
   CreateBinningSessionInput,
@@ -33,6 +35,11 @@ import type {
   AddIndividualPlantInput,
   BulkImportPlantResult,
 } from '../types';
+import { inventoryMovementService } from '@/services';
+import {
+  getProductStageIdFromProductName,
+  getCategoryFromProductName,
+} from '@/features/inventory/services/conversions.service';
 
 const CUT_SESSION_SELECT = `
   id, plant_group_id, mother_plant_group_id, cut_count, cut_date, notes, created_at, created_by,
@@ -87,6 +94,21 @@ const HARVEST_SESSION_SELECT = `
 `;
 
 const ROOM_SECTION_SELECT = 'id, room_table_id, section_label, section_sqft, is_active, created_at, created_by, flip_date, projected_harvest_date';
+
+const BINNING_SESSION_SELECT = `
+  id, harvest_session_id, dry_room_id, batch_registry_id,
+  dry_weight_grams, water_loss_grams, bin_date, session_status,
+  completed_at, completed_by, cancelled_at, cancelled_by,
+  notes, created_at, created_by,
+  harvest_sessions (
+    harvest_date, wet_weight_grams, adjusted_weight_grams,
+    plant_groups (
+      strains (name, abbreviation)
+    )
+  ),
+  dry_rooms (name, room_code),
+  batch_registry (batch_number)
+`;
 
 function throwError(error: { message: string } | null, context: string): never {
   throw new Error(error?.message ?? `Unknown error in ${context}`);
@@ -615,20 +637,7 @@ export const cultivationService = {
   async listBinningSessions(filter?: { status?: BinningSessionStatus }): Promise<BinningSession[]> {
     let query = supabase
       .from('binning_sessions')
-      .select(`
-        id, harvest_session_id, dry_room_id, batch_registry_id,
-        dry_weight_grams, bin_date, session_status,
-        completed_at, completed_by, cancelled_at, cancelled_by,
-        notes, created_at, created_by,
-        harvest_sessions (
-          harvest_date, wet_weight_grams, adjusted_weight_grams,
-          plant_groups (
-            strains (name, abbreviation)
-          )
-        ),
-        dry_rooms (name, room_code),
-        batch_registry (batch_number)
-      `);
+      .select(BINNING_SESSION_SELECT);
     if (filter?.status) {
       query = query.eq('session_status', filter.status);
     }
@@ -699,49 +708,107 @@ export const cultivationService = {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from('binning_sessions')
-      .insert({ ...input, session_status: 'active', created_by: user?.id ?? null })
-      .select(`
-        id, harvest_session_id, dry_room_id, batch_registry_id,
-        dry_weight_grams, bin_date, session_status,
-        completed_at, completed_by, cancelled_at, cancelled_by,
-        notes, created_at, created_by,
-        harvest_sessions (
-          harvest_date, wet_weight_grams, adjusted_weight_grams,
-          plant_groups (
-            strains (name, abbreviation)
-          )
-        ),
-        dry_rooms (name, room_code),
-        batch_registry (batch_number)
-      `)
+      .insert({ ...input, dry_weight_grams: input.dry_weight_grams ?? 0, session_status: 'active', created_by: user?.id ?? null })
+      .select(BINNING_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'createBinningSession');
     return data as unknown as BinningSession;
   },
 
   async completeBinningSession(id: string): Promise<BinningSession> {
+    const entries = await cultivationService.listBinEntries(id);
+    if (entries.length === 0) {
+      throw new Error('Cannot complete binning session: no bin entries recorded.');
+    }
+
+    const totalDryWeight = entries.reduce((sum, e) => sum + Number(e.bin_weight_grams), 0);
+
+    const { data: sessionRow } = await supabase
+      .from('binning_sessions')
+      .select('batch_registry_id, harvest_sessions(wet_weight_grams, adjusted_weight_grams, plant_groups(strains(name, abbreviation)))')
+      .eq('id', id)
+      .single();
+    if (!sessionRow) throw new Error('Binning session not found');
+
+    const harvest = sessionRow.harvest_sessions as { wet_weight_grams: number; adjusted_weight_grams: number | null; plant_groups: { strains: { name: string; abbreviation: string | null } } | null } | null;
+    const wetWeight = harvest?.adjusted_weight_grams ?? harvest?.wet_weight_grams ?? 0;
+    const waterLoss = Math.max(0, wetWeight - totalDryWeight);
+
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from('binning_sessions')
-      .update({ session_status: 'completed', completed_at: new Date().toISOString(), completed_by: user?.id ?? null })
+      .update({
+        dry_weight_grams: totalDryWeight,
+        water_loss_grams: waterLoss,
+        session_status: 'completed',
+        completed_at: new Date().toISOString(),
+        completed_by: user?.id ?? null,
+      })
       .eq('id', id)
-      .select(`
-        id, harvest_session_id, dry_room_id, batch_registry_id,
-        dry_weight_grams, bin_date, session_status,
-        completed_at, completed_by, cancelled_at, cancelled_by,
-        notes, created_at, created_by,
-        harvest_sessions (
-          harvest_date, wet_weight_grams, adjusted_weight_grams,
-          plant_groups (
-            strains (name, abbreviation)
-          )
-        ),
-        dry_rooms (name, room_code),
-        batch_registry (batch_number)
-      `)
+      .select(BINNING_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'completeBinningSession');
-    return data as unknown as BinningSession;
+
+    const session = data as unknown as BinningSession;
+    const batchId = session.batch_registry_id;
+
+    const { data: batchData, error: batchError } = await supabase
+      .from('batch_registry')
+      .select('batch_number, strain_id, strains(name)')
+      .eq('id', batchId)
+      .single();
+    if (batchError || !batchData) throw new Error(`Batch not found: ${batchId}`);
+
+    const strainName = (batchData.strains as { name: string } | null)?.name ?? 'Unknown';
+    const productName = `Binned - ${strainName} - Flower`;
+
+    const { generateNextPackageId } = await import('@/features/inventory/services/conversions.service');
+    const packageId = await generateNextPackageId(batchId);
+    const inventoryStageId = await getProductStageIdFromProductName(productName);
+    const inventoryCategory = getCategoryFromProductName(productName);
+
+    const inventoryRow = {
+      package_id: packageId,
+      batch_id: batchId,
+      batch_number: batchData.batch_number,
+      batch: batchData.batch_number,
+      strain_id: batchData.strain_id,
+      strain: strainName,
+      product_stage_id: inventoryStageId,
+      product_name: productName,
+      category: inventoryCategory,
+      net_weight: null as number | null,
+      on_hand_qty: totalDryWeight,
+      available_qty: totalDryWeight,
+      reserved_qty: 0,
+      unit: 'g',
+      status: 'Available',
+      package_date: new Date().toISOString().split('T')[0],
+    };
+
+    const { error: invError } = await supabase
+      .from('inventory_items')
+      .insert(inventoryRow);
+    if (invError) throw new Error(`Failed to create inventory item: ${invError.message}`);
+
+    const { data: invItem } = await supabase
+      .from('inventory_items')
+      .select('id')
+      .eq('package_id', packageId)
+      .single();
+
+    if (invItem) {
+      await inventoryMovementService.recordMovement({
+        movement_kind: 'PRODUCE',
+        dest_item_id: invItem.id,
+        qty: totalDryWeight,
+        unit: 'g',
+        reason_code: 'session_finalization',
+        notes: `Binning session completed — ${entries.length} bin(s), ${totalDryWeight}g dry weight`,
+      });
+    }
+
+    return session;
   },
 
   async cancelBinningSession(id: string): Promise<BinningSession> {
@@ -750,23 +817,54 @@ export const cultivationService = {
       .from('binning_sessions')
       .update({ session_status: 'cancelled', cancelled_at: new Date().toISOString(), cancelled_by: user?.id ?? null })
       .eq('id', id)
-      .select(`
-        id, harvest_session_id, dry_room_id, batch_registry_id,
-        dry_weight_grams, bin_date, session_status,
-        completed_at, completed_by, cancelled_at, cancelled_by,
-        notes, created_at, created_by,
-        harvest_sessions (
-          harvest_date, wet_weight_grams, adjusted_weight_grams,
-          plant_groups (
-            strains (name, abbreviation)
-          )
-        ),
-        dry_rooms (name, room_code),
-        batch_registry (batch_number)
-      `)
+      .select(BINNING_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'cancelBinningSession');
     return data as unknown as BinningSession;
+  },
+
+  async listBinEntries(binningSessionId: string): Promise<BinEntry[]> {
+    const { data, error } = await supabase
+      .from('bin_entries')
+      .select('id, binning_session_id, bin_weight_grams, entry_order, notes, created_at, created_by')
+      .eq('binning_session_id', binningSessionId)
+      .order('entry_order');
+    if (error) throwError(error, 'listBinEntries');
+    return data as BinEntry[];
+  },
+
+  async createBinEntry(input: CreateBinEntryInput): Promise<BinEntry> {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data: existing } = await supabase
+      .from('bin_entries')
+      .select('entry_order')
+      .eq('binning_session_id', input.binning_session_id)
+      .order('entry_order', { ascending: false })
+      .limit(1);
+    const nextOrder = input.entry_order ?? ((existing?.[0] as { entry_order: number } | undefined)?.entry_order ?? 0) + 1;
+
+    const { data, error } = await supabase
+      .from('bin_entries')
+      .insert({
+        binning_session_id: input.binning_session_id,
+        bin_weight_grams: input.bin_weight_grams,
+        entry_order: nextOrder,
+        notes: input.notes ?? null,
+        created_by: user?.id ?? null,
+      })
+      .select('id, binning_session_id, bin_weight_grams, entry_order, notes, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'createBinEntry');
+    return data as BinEntry;
+  },
+
+  async deleteBinEntry(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('bin_entries')
+      .delete()
+      .eq('id', id);
+    if (error) throwError(error, 'deleteBinEntry');
   },
 
   async listIndividualPlants(plantGroupId: string): Promise<IndividualPlant[]> {

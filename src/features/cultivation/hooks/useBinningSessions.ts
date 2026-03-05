@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { cultivationService } from '../services';
-import type { BinningSession, BinningSessionStatus, CreateBinningSessionInput, HarvestSession } from '../types';
+import type { BinningSession, BinningSessionStatus, BinEntry, CreateBinningSessionInput, CreateBinEntryInput, HarvestSession } from '../types';
 
 export function useBinningSessions(filter?: { status?: BinningSessionStatus }) {
   const [sessions, setSessions] = useState<BinningSession[]>([]);
@@ -47,6 +47,18 @@ export function useBinningSessions(filter?: { status?: BinningSessionStatus }) {
     return session;
   }
 
+  async function listBinEntries(sessionId: string): Promise<BinEntry[]> {
+    return cultivationService.listBinEntries(sessionId);
+  }
+
+  async function addBinEntry(input: CreateBinEntryInput): Promise<BinEntry> {
+    return cultivationService.createBinEntry(input);
+  }
+
+  async function removeBinEntry(id: string): Promise<void> {
+    return cultivationService.deleteBinEntry(id);
+  }
+
   return {
     sessions,
     unbinnedHarvests,
@@ -56,5 +68,8 @@ export function useBinningSessions(filter?: { status?: BinningSessionStatus }) {
     createSession,
     completeSession,
     cancelSession,
+    listBinEntries,
+    addBinEntry,
+    removeBinEntry,
   };
 }

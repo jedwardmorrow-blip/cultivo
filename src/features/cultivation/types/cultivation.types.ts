@@ -237,12 +237,26 @@ export interface DryRoom {
   created_by: string | null;
 }
 
+export interface BinEntry {
+  id: string;
+  binning_session_id: string;
+  bin_weight_grams: number;
+  entry_order: number;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export type CreateBinEntryInput = Pick<BinEntry, 'binning_session_id' | 'bin_weight_grams'> &
+  Partial<Pick<BinEntry, 'entry_order' | 'notes'>>;
+
 export interface BinningSession {
   id: string;
   harvest_session_id: string;
   dry_room_id: string;
   batch_registry_id: string;
   dry_weight_grams: number;
+  water_loss_grams: number | null;
   bin_date: string;
   session_status: BinningSessionStatus;
   completed_at: string | null;
@@ -266,8 +280,8 @@ export type CreateDryRoomInput = Pick<DryRoom, 'name' | 'room_code'> &
 
 export type UpdateDryRoomInput = Partial<Pick<DryRoom, 'name' | 'capacity_lbs' | 'is_active'>>;
 
-export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'dry_weight_grams' | 'bin_date'> &
-  Partial<Pick<BinningSession, 'notes'>>;
+export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'bin_date'> &
+  Partial<Pick<BinningSession, 'dry_weight_grams' | 'notes'>>;
 
 export interface IndividualPlant {
   id: string;
