@@ -19,6 +19,8 @@ import { PendingConversionSession } from '@/types';
 import { VarianceReason, VarianceReasonLabels } from '../types/conversions.types';
 import { useBulkBagPackageId } from '../hooks/useBulkBagPackageId';
 
+const VARIANCE_THRESHOLD_GRAMS = 1;
+
 interface BulkBag {
   id: string;
   weight: number;
@@ -131,7 +133,7 @@ export function BulkBagCreationModal({
       return;
     }
 
-    const hasVariance = bags.length > 0 && Math.abs(remainingWeight) > 0.5;
+    const hasVariance = bags.length > 0 && Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS;
 
     if (hasVariance && !varianceReason) {
       setError('Variance reason is required when bag weights do not match available weight');
@@ -191,6 +193,7 @@ export function BulkBagCreationModal({
   const totalAllocated = bags.reduce((sum, bag) => sum + bag.weight, 0);
   const isOverAllocated = totalAllocated > availableWeight;
   const isUnderAllocated = totalAllocated < availableWeight && bags.length > 0;
+  const hasVarianceAtThreshold = bags.length > 0 && Math.abs(availableWeight - totalAllocated) > VARIANCE_THRESHOLD_GRAMS;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -414,7 +417,7 @@ export function BulkBagCreationModal({
               </div>
             )}
 
-            {bags.length > 0 && Math.abs(remainingWeight) > 0.5 && (
+            {bags.length > 0 && Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && (
               <div className="space-y-4">
                 <div className="p-4 rounded-lg border bg-red-50 border-red-200">
                   <div className="flex items-center justify-between">
@@ -492,19 +495,28 @@ export function BulkBagCreationModal({
             </button>
             <button
               onClick={handleConfirm}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                hasVarianceAtThreshold
+                  ? 'bg-amber-600 hover:bg-amber-700'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
               disabled={
                 isSubmitting ||
                 bags.length === 0 ||
                 isOverAllocated ||
                 isLoadingIds ||
-                (Math.abs(remainingWeight) > 0.5 && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
+                (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
               }
             >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Creating...
+                </>
+              ) : hasVarianceAtThreshold ? (
+                <>
+                  <AlertTriangle className="w-4 h-4" />
+                  Finalize with Variance
                 </>
               ) : (
                 <>

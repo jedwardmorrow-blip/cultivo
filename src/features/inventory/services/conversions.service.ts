@@ -10,7 +10,6 @@
 import { supabase } from '@/lib/supabase';
 import {
   ConversionPackage,
-  ConversionVariance,
   CreatePackageInput,
   VarianceReason,
   ConsolidatedPackageInput,
@@ -627,58 +626,51 @@ export function calculateVariance(
 }
 
 /**
- * Log a variance with required reason and acknowledgment
+ * Log a conversion variance to the canonical variance_log table.
+ * Uses source_type='session_conversion' so it appears in variance reports.
  */
 export async function logVariance(data: {
   batch_id: string;
-  product_id?: string;
-  package_id?: string;
+  batch_name: string;
+  strain_name: string;
+  product_name: string;
   expected_weight?: number;
   actual_weight?: number;
-  expected_units?: number;
-  actual_units?: number;
   variance_reason: VarianceReason;
   variance_note?: string;
-}): Promise<ConversionVariance> {
+}): Promise<void> {
   const userId = (await supabase.auth.getUser()).data.user?.id;
   if (!userId) {
     throw new Error('User not authenticated');
   }
 
-  const weight_variance = data.expected_weight && data.actual_weight
-    ? data.actual_weight - data.expected_weight
-    : null;
+  const expected = data.expected_weight ?? 0;
+  const actual = data.actual_weight ?? 0;
+  const varianceQty = actual - expected;
+  const variancePct = expected === 0 ? 0 : (varianceQty / expected) * 100;
 
-  const unit_variance = data.expected_units && data.actual_units
-    ? data.actual_units - data.expected_units
-    : null;
-
-  const { data: result, error } = await supabase
-    .from('conversion_variance_log')
+  const { error } = await supabase
+    .from('variance_log')
     .insert({
-      batch_id: data.batch_id,
-      product_id: data.product_id || null,
-      package_id: data.package_id || null,
-      expected_weight: data.expected_weight || null,
-      actual_weight: data.actual_weight || null,
-      weight_variance,
-      expected_units: data.expected_units || null,
-      actual_units: data.actual_units || null,
-      unit_variance,
+      source_type: 'session_conversion',
+      source_id: data.batch_id,
+      package_id: data.batch_name,
+      expected_qty: expected,
+      actual_qty: actual,
+      variance_qty: varianceQty,
+      variance_percentage: Math.round(variancePct * 100) / 100,
+      unit: 'g',
       variance_reason: data.variance_reason,
-      variance_note: data.variance_note || null,
-      acknowledged: true,
-      acknowledged_by: userId,
-      acknowledged_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
+      notes: data.variance_note || null,
+      strain: data.strain_name,
+      batch: data.batch_name,
+      product_name: data.product_name,
+      user_id: userId,
+    });
 
   if (error) {
     throw new Error(`Failed to log variance: ${error.message}`);
   }
-
-  return result;
 }
 
 /**
@@ -826,16 +818,26 @@ export async function createConsolidatedPackage(
     throw new Error(`Failed to create consolidated package: ${error.message}`);
   }
 
-  // Log variance if provided
   if (input.variance_reason && (input.weight || input.units)) {
+    const { data: batchInfo } = await supabase
+      .from('batch_registry')
+      .select('batch_number, strains(name)')
+      .eq('id', input.batch_id)
+      .maybeSingle();
+
+    const { data: productInfo } = await supabase
+      .from('products')
+      .select('name')
+      .eq('id', input.product_id)
+      .maybeSingle();
+
     await logVariance({
       batch_id: input.batch_id,
-      product_id: input.product_id,
-      package_id: input.package_id,
+      batch_name: batchInfo?.batch_number || input.batch_id,
+      strain_name: batchInfo?.strains?.name || 'Unknown',
+      product_name: productInfo?.name || 'Unknown',
       expected_weight: input.expected_weight,
       actual_weight: input.weight,
-      expected_units: input.expected_units,
-      actual_units: input.units,
       variance_reason: input.variance_reason,
       variance_note: input.variance_notes,
     });

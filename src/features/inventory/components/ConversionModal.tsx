@@ -63,7 +63,9 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
         try {
           await logVariance({
             batch_id: session.batch_id,
-            product_id: session.product_id || undefined,
+            batch_name: session.batch_name,
+            strain_name: session.strain_name,
+            product_name: session.product_name,
             expected_weight: variance.expected_weight,
             actual_weight: variance.actual_weight,
             variance_reason: variance.variance_reason,
