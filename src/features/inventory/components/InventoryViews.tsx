@@ -1,30 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Package, Scale, Leaf, Clock, Printer, Box, Scissors, X } from 'lucide-react';
 import { DailyInventoryActivity } from './DailyInventoryActivity';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
+import { MultiLabelPrintModal } from './MultiLabelPrintModal';
+import { RowActionMenu } from './RowActionMenu';
+import type { RowAction } from './RowActionMenu';
 import { QualityGradeBadge } from '@/shared/components';
 import { qualityGradeService } from '@/services';
 import { supabase } from '@/lib/supabase';
 import { useInventoryLabel } from '../hooks';
+import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
 import type { InventoryItem, InventoryStats, BulkStats, PackagedStats, BulkSubTab } from '../types';
 
 function formatWeight(grams: number): string {
   if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
   return `${grams.toFixed(0)}g`;
-}
-
-function LabelPrintButton({ item, labelHook }: { item: InventoryItem; labelHook: ReturnType<typeof useInventoryLabel> }) {
-  return (
-    <button
-      onClick={() => labelHook.openLabel(item)}
-      className="p-1.5 rounded-md hover:bg-cult-medium-gray/60 text-cult-lighter-gray hover:text-cult-white transition-colors"
-      title="Print Label"
-    >
-      <Printer className="w-4 h-4" />
-    </button>
-  );
 }
 
 function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLabel> }) {
@@ -42,20 +34,31 @@ function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLa
   );
 }
 
-function SelectionSummary({ count, onClear }: { count: number; onClear: () => void }) {
+function SelectionSummary({ count, onClear, onPrintLabels }: { count: number; onClear: () => void; onPrintLabels?: () => void }) {
   if (count === 0) return null;
   return (
     <div className="bg-blue-900/15 border border-blue-800/40 rounded-lg p-3 mb-6 flex items-center justify-between">
       <span className="text-sm text-blue-300 font-medium">
         {count} package{count !== 1 ? 's' : ''} selected
       </span>
-      <button
-        onClick={onClear}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cult-silver hover:text-cult-white bg-cult-medium-gray/40 hover:bg-cult-medium-gray/60 rounded-md transition-colors"
-      >
-        <X className="w-3 h-3" />
-        Clear
-      </button>
+      <div className="flex items-center gap-2">
+        {onPrintLabels && (
+          <button
+            onClick={onPrintLabels}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-500 rounded-md transition-colors"
+          >
+            <Printer className="w-3 h-3" />
+            Print Labels
+          </button>
+        )}
+        <button
+          onClick={onClear}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cult-silver hover:text-cult-white bg-cult-medium-gray/40 hover:bg-cult-medium-gray/60 rounded-md transition-colors"
+        >
+          <X className="w-3 h-3" />
+          Clear
+        </button>
+      </div>
     </div>
   );
 }
@@ -92,12 +95,25 @@ interface BinnedViewProps {
 
 export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const sortedItems = useMemo(() =>
     [...items].sort((a, b) => new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime()),
     [items]
   );
+
+  const handlePrintLabelsClick = useCallback(() => {
+    const selected = sortedItems.filter((item) => selectedIds.has(item.id));
+    if (selected.length > 0) multiLabelHook.openMultiLabel(selected);
+  }, [sortedItems, selectedIds, multiLabelHook]);
+
+  const renderRowActions = useCallback((item: InventoryItem) => {
+    const actions: RowAction[] = [
+      { label: 'Print Label', icon: <Printer className="w-4 h-4" />, onClick: () => labelHook.openLabel(item) },
+    ];
+    return <RowActionMenu actions={actions} />;
+  }, [labelHook]);
 
   return (
     <>
@@ -123,7 +139,7 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
         </div>
       )}
 
-      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />
 
       <InventoryTable
         items={sortedItems}
@@ -153,14 +169,8 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
             }
           },
           GradeColumn(onDataRefresh),
-          {
-            header: '',
-            accessor: (item) => item,
-            align: 'center',
-            sortable: false,
-            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
-          },
         ]}
+        renderRowActions={renderRowActions}
         emptyMessage="No binned inventory"
         rowClassName={(item) => {
           const days = Math.floor((Date.now() - new Date(item.last_updated).getTime()) / (1000 * 60 * 60 * 24));
@@ -168,6 +178,16 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
         }}
       />
       <LabelModal labelHook={labelHook} />
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
+      />
     </>
   );
 }
@@ -180,7 +200,20 @@ interface BuckedViewProps {
 
 export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handlePrintLabelsClick = useCallback(() => {
+    const selected = items.filter((item) => selectedIds.has(item.id));
+    if (selected.length > 0) multiLabelHook.openMultiLabel(selected);
+  }, [items, selectedIds, multiLabelHook]);
+
+  const renderRowActions = useCallback((item: InventoryItem) => {
+    const actions: RowAction[] = [
+      { label: 'Print Label', icon: <Printer className="w-4 h-4" />, onClick: () => labelHook.openLabel(item) },
+    ];
+    return <RowActionMenu actions={actions} />;
+  }, [labelHook]);
 
   return (
     <>
@@ -190,7 +223,7 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
         <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
       </div>
 
-      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />
 
       <InventoryTable
         items={items}
@@ -213,17 +246,21 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
             format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400">{val || 'Ready'}</span>
           },
           GradeColumn(onDataRefresh),
-          {
-            header: '',
-            accessor: (item) => item,
-            align: 'center',
-            sortable: false,
-            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
-          },
         ]}
+        renderRowActions={renderRowActions}
         emptyMessage="No bucked inventory"
       />
       <LabelModal labelHook={labelHook} />
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
+      />
     </>
   );
 }
@@ -254,6 +291,7 @@ function getBulkTabCount(items: InventoryItem[], tab: BulkSubTab): number {
 
 export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onDataRefresh }: BulkViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const filteredItems = useMemo(() => items.filter(item => {
@@ -263,6 +301,18 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
     if (subTab === 'trim') return name.includes('trim');
     return false;
   }), [items, subTab]);
+
+  const handlePrintLabelsClick = useCallback(() => {
+    const selected = filteredItems.filter((item) => selectedIds.has(item.id));
+    if (selected.length > 0) multiLabelHook.openMultiLabel(selected);
+  }, [filteredItems, selectedIds, multiLabelHook]);
+
+  const renderRowActions = useCallback((item: InventoryItem) => {
+    const actions: RowAction[] = [
+      { label: 'Print Label', icon: <Printer className="w-4 h-4" />, onClick: () => labelHook.openLabel(item) },
+    ];
+    return <RowActionMenu actions={actions} />;
+  }, [labelHook]);
 
   return (
     <>
@@ -298,7 +348,7 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
         })}
       </div>
 
-      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />
 
       <InventoryTable
         items={filteredItems}
@@ -315,17 +365,21 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
           GradeColumn(onDataRefresh),
-          {
-            header: '',
-            accessor: (item) => item,
-            align: 'center',
-            sortable: false,
-            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
-          },
         ]}
+        renderRowActions={renderRowActions}
         emptyMessage={`No bulk ${subTab} inventory`}
       />
       <LabelModal labelHook={labelHook} />
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
+      />
     </>
   );
 }
@@ -338,7 +392,20 @@ interface PackagedViewProps {
 
 export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handlePrintLabelsClick = useCallback(() => {
+    const selected = items.filter((item) => selectedIds.has(item.id));
+    if (selected.length > 0) multiLabelHook.openMultiLabel(selected);
+  }, [items, selectedIds, multiLabelHook]);
+
+  const renderRowActions = useCallback((item: InventoryItem) => {
+    const actions: RowAction[] = [
+      { label: 'Print Label', icon: <Printer className="w-4 h-4" />, onClick: () => labelHook.openLabel(item) },
+    ];
+    return <RowActionMenu actions={actions} />;
+  }, [labelHook]);
 
   return (
     <>
@@ -348,7 +415,7 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
         <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
       </div>
 
-      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+      <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />
 
       <InventoryTable
         items={items}
@@ -365,17 +432,21 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
           { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
           { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
           GradeColumn(onDataRefresh),
-          {
-            header: '',
-            accessor: (item) => item,
-            align: 'center',
-            sortable: false,
-            format: (_, item) => <LabelPrintButton item={item} labelHook={labelHook} />
-          },
         ]}
+        renderRowActions={renderRowActions}
         emptyMessage="No packaged inventory"
       />
       <LabelModal labelHook={labelHook} />
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
+      />
     </>
   );
 }
