@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock, ExternalLink, Trash2, Package } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock, ExternalLink, Trash2, Package, Loader2 } from 'lucide-react';
 import { useBinningSessions } from '../hooks/useBinningSessions';
-import { useDryRooms } from '../hooks/useDryRooms';
 import { formatWeight, formatDate } from '../utils';
 import type { BinningSession, BinningSessionStatus, BinEntry, CreateBinningSessionInput, HarvestSession } from '../types';
 
@@ -26,32 +25,33 @@ interface NewBinningFormProps {
 }
 
 function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFormProps) {
-  const { activeRooms, loading: roomsLoading } = useDryRooms();
   const { createSession } = useBinningSessions();
 
   const [harvestSessionId, setHarvestSessionId] = useState('');
-  const [dryRoomId, setDryRoomId] = useState('');
   const [binDate, setBinDate] = useState(new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedHarvest = unbinnedHarvests.find((h) => h.id === harvestSessionId);
+  const dryRoomName = selectedHarvest?.dry_rooms?.name;
+  const dryRoomCode = selectedHarvest?.dry_rooms?.room_code;
 
   const canSave =
     harvestSessionId &&
-    dryRoomId &&
+    selectedHarvest?.dry_room_id &&
+    selectedHarvest?.batch_registry_id &&
     binDate &&
     !saving;
 
   async function handleSubmit() {
-    if (!canSave || !selectedHarvest?.batch_registry_id) return;
+    if (!canSave || !selectedHarvest?.batch_registry_id || !selectedHarvest?.dry_room_id) return;
     setSaving(true);
     setError(null);
     try {
       const input: CreateBinningSessionInput = {
         harvest_session_id: harvestSessionId,
-        dry_room_id: dryRoomId,
+        dry_room_id: selectedHarvest.dry_room_id,
         batch_registry_id: selectedHarvest.batch_registry_id,
         bin_date: binDate,
         notes: notes.trim() || undefined,
@@ -105,23 +105,22 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-cult-light-gray mb-1">Dry Room *</label>
-          {roomsLoading ? (
-            <div className="text-xs text-cult-medium-gray py-2">Loading...</div>
+          <label className="block text-xs font-medium text-cult-light-gray mb-1">Dry Room</label>
+          {selectedHarvest ? (
+            selectedHarvest.dry_room_id ? (
+              <div className="rounded-md bg-cult-black border border-cult-medium-gray px-3 py-2 text-sm text-cult-white">
+                {dryRoomName ?? 'Assigned'} {dryRoomCode ? <span className="text-cult-medium-gray font-mono ml-1">({dryRoomCode})</span> : null}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-md bg-amber-950 border border-amber-700 px-3 py-2 text-xs text-amber-400">
+                <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                No dry room assigned to this harvest.
+              </div>
+            )
           ) : (
-            <select
-              value={dryRoomId}
-              onChange={(e) => setDryRoomId(e.target.value)}
-              className="w-full rounded-md bg-cult-black border border-cult-medium-gray text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-white"
-            >
-              <option value="">Select a dry room...</option>
-              {activeRooms.map((r) => (
-                <option key={r.id} value={r.id}>{r.name} ({r.room_code})</option>
-              ))}
-            </select>
-          )}
-          {activeRooms.length === 0 && !roomsLoading && (
-            <p className="mt-1 text-xs text-amber-400">No active dry rooms -- add one in Settings first.</p>
+            <div className="rounded-md bg-cult-black border border-cult-medium-gray px-3 py-2 text-sm text-cult-medium-gray">
+              Select a harvest first
+            </div>
           )}
         </div>
 
@@ -157,7 +156,7 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
       <div className="flex gap-3 pt-1">
         <button
           onClick={handleSubmit}
-          disabled={!canSave || !selectedHarvest?.batch_registry_id}
+          disabled={!canSave}
           className="px-4 py-2 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {saving ? 'Creating...' : 'Start Binning Session'}
@@ -509,35 +508,65 @@ function SessionCard({ session, onComplete, onCancel, onViewBatch, listBinEntrie
 
 interface PendingHarvestRowProps {
   harvest: HarvestSession;
-  onStartBinning: (harvest: HarvestSession) => void;
+  onStartBinning: (harvest: HarvestSession) => Promise<void>;
+  startingId: string | null;
+  rowError: string | null;
 }
 
-function PendingHarvestRow({ harvest, onStartBinning }: PendingHarvestRowProps) {
+function PendingHarvestRow({ harvest, onStartBinning, startingId, rowError }: PendingHarvestRowProps) {
   const strainName = harvest.plant_groups?.strains?.name ?? 'Unknown Strain';
   const batchNumber = harvest.batch_registry?.batch_number ?? '--';
   const wetWeight = harvest.adjusted_weight_grams ?? harvest.wet_weight_grams;
+  const dryRoomLabel = harvest.dry_rooms ? `${harvest.dry_rooms.name} (${harvest.dry_rooms.room_code})` : null;
+  const isStarting = startingId === harvest.id;
+  const missingRequirements = !harvest.batch_registry_id || !harvest.dry_room_id;
 
   return (
-    <div className="flex items-center justify-between rounded-md border border-cult-medium-gray bg-cult-dark-gray px-4 py-3 gap-4">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <Leaf className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-cult-white">{strainName}</span>
+    <div className="rounded-md border border-cult-medium-gray bg-cult-dark-gray px-4 py-3 space-y-2">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <Leaf className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
+            <span className="text-sm font-medium text-cult-white">{strainName}</span>
+          </div>
+          <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-medium-gray flex-wrap">
+            <span>Batch: <span className="font-mono text-cult-light-gray">{batchNumber}</span></span>
+            <span>Harvested: {formatDate(harvest.harvest_date)}</span>
+            <span>Wet: {formatWeight(wetWeight)}</span>
+            {harvest.adjusted_weight_grams && <span className="text-amber-400">(adjusted)</span>}
+            {dryRoomLabel && <span>Dry room: <span className="text-cult-light-gray">{dryRoomLabel}</span></span>}
+          </div>
         </div>
-        <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-medium-gray">
-          <span>Batch: <span className="font-mono text-cult-light-gray">{batchNumber}</span></span>
-          <span>Harvested: {formatDate(harvest.harvest_date)}</span>
-          <span>Wet: {formatWeight(wetWeight)}</span>
-          {harvest.adjusted_weight_grams && <span className="text-amber-400">(adjusted)</span>}
-        </div>
+        <button
+          onClick={() => onStartBinning(harvest)}
+          disabled={isStarting || missingRequirements}
+          className="flex items-center gap-1.5 flex-shrink-0 text-xs px-3 py-1.5 rounded-md bg-cult-white text-cult-black font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {isStarting ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Starting...
+            </>
+          ) : (
+            <>
+              <Wind className="h-3.5 w-3.5" />
+              Start Binning
+            </>
+          )}
+        </button>
       </div>
-      <button
-        onClick={() => onStartBinning(harvest)}
-        className="flex items-center gap-1.5 flex-shrink-0 text-xs px-3 py-1.5 rounded-md bg-cult-white text-cult-black font-medium hover:bg-cult-light-gray transition-colors"
-      >
-        <Wind className="h-3.5 w-3.5" />
-        Start Binning
-      </button>
+      {rowError && startingId === harvest.id && (
+        <div className="flex items-center gap-2 rounded-md bg-red-950 border border-red-700 px-3 py-1.5 text-xs text-red-400">
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>{rowError}</span>
+        </div>
+      )}
+      {missingRequirements && (
+        <div className="flex items-center gap-2 text-xs text-amber-400">
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+          {!harvest.batch_registry_id ? 'No batch linked.' : 'No dry room assigned.'} Complete the harvest first.
+        </div>
+      )}
     </div>
   );
 }
@@ -549,9 +578,10 @@ interface BinningSessionsViewProps {
 export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps = {}) {
   const [activeTab, setActiveTab] = useState<TabKey>('pending');
   const [showNewForm, setShowNewForm] = useState(false);
-  const [preselectedHarvest, setPreselectedHarvest] = useState<HarvestSession | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
 
-  const { sessions, unbinnedHarvests, loading, error, reload, completeSession, cancelSession, listBinEntries, addBinEntry, removeBinEntry } = useBinningSessions();
+  const { sessions, unbinnedHarvests, loading, error, reload, createSession, completeSession, cancelSession, listBinEntries, addBinEntry, removeBinEntry } = useBinningSessions();
 
   const sessionsByTab: Record<Exclude<TabKey, 'pending'>, BinningSession[]> = {
     active: sessions.filter((s) => s.session_status === 'active'),
@@ -566,15 +596,28 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
     cancelled: sessionsByTab.cancelled.length,
   };
 
-  function handleStartBinning(harvest: HarvestSession) {
-    setPreselectedHarvest(harvest);
-    setShowNewForm(true);
-    setActiveTab('active');
+  async function handleStartBinning(harvest: HarvestSession) {
+    if (!harvest.dry_room_id || !harvest.batch_registry_id) return;
+    setStartingId(harvest.id);
+    setStartError(null);
+    try {
+      const input: CreateBinningSessionInput = {
+        harvest_session_id: harvest.id,
+        dry_room_id: harvest.dry_room_id,
+        batch_registry_id: harvest.batch_registry_id,
+        bin_date: new Date().toISOString().slice(0, 10),
+      };
+      await createSession(input);
+      setActiveTab('active');
+    } catch (e: unknown) {
+      setStartError(e instanceof Error ? e.message : 'Failed to start binning session');
+    } finally {
+      setStartingId(null);
+    }
   }
 
   function handleFormSuccess() {
     setShowNewForm(false);
-    setPreselectedHarvest(null);
     setActiveTab('active');
     reload();
   }
@@ -587,7 +630,7 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
           <p className="text-sm text-cult-medium-gray mt-0.5">Record dry weights after the drying process. Add bin entries, then complete to create inventory.</p>
         </div>
         <button
-          onClick={() => { setShowNewForm(true); setPreselectedHarvest(null); }}
+          onClick={() => setShowNewForm(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
         >
           <Plus className="h-4 w-4" />
@@ -605,9 +648,9 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
 
       {showNewForm && (
         <NewBinningForm
-          unbinnedHarvests={preselectedHarvest ? [preselectedHarvest, ...unbinnedHarvests.filter((h) => h.id !== preselectedHarvest.id)] : unbinnedHarvests}
+          unbinnedHarvests={unbinnedHarvests}
           onSuccess={handleFormSuccess}
-          onCancel={() => { setShowNewForm(false); setPreselectedHarvest(null); }}
+          onCancel={() => setShowNewForm(false)}
         />
       )}
 
@@ -652,6 +695,8 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
                     key={harvest.id}
                     harvest={harvest}
                     onStartBinning={handleStartBinning}
+                    startingId={startingId}
+                    rowError={startError}
                   />
                 ))
               )}
