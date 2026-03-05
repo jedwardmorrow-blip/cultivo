@@ -348,7 +348,7 @@ function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, removeBinEn
           <div className="flex items-center gap-3">
             <span className="text-xs text-cult-light-gray">
               {confirmAction === 'complete'
-                ? `Complete session with ${entries.length} bin(s) totaling ${formatWeight(totalWeight)}?`
+                ? `Complete session and create ${entries.length} individual package${entries.length !== 1 ? 's' : ''} totaling ${formatWeight(totalWeight)}?`
                 : 'Cancel this session? No inventory will be created.'}
             </span>
             <button

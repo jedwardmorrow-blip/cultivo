@@ -763,49 +763,54 @@ export const cultivationService = {
     const productName = `Binned - ${strainName} - Flower`;
 
     const { generateNextPackageId } = await import('@/features/inventory/services/conversions.service');
-    const packageId = await generateNextPackageId(batchId);
     const inventoryStageId = await getProductStageIdFromProductName(productName);
     const inventoryCategory = getCategoryFromProductName(productName);
+    const packageDate = new Date().toISOString().split('T')[0];
 
-    const inventoryRow = {
-      package_id: packageId,
-      batch_id: batchId,
-      batch_number: batchData.batch_number,
-      batch: batchData.batch_number,
-      strain_id: batchData.strain_id,
-      strain: strainName,
-      product_stage_id: inventoryStageId,
-      product_name: productName,
-      category: inventoryCategory,
-      net_weight: null as number | null,
-      on_hand_qty: totalDryWeight,
-      available_qty: totalDryWeight,
-      reserved_qty: 0,
-      unit: 'g',
-      status: 'Available',
-      package_date: new Date().toISOString().split('T')[0],
-    };
+    for (const entry of entries) {
+      const entryWeight = Number(entry.bin_weight_grams);
+      const packageId = await generateNextPackageId(batchId);
 
-    const { error: invError } = await supabase
-      .from('inventory_items')
-      .insert(inventoryRow);
-    if (invError) throw new Error(`Failed to create inventory item: ${invError.message}`);
-
-    const { data: invItem } = await supabase
-      .from('inventory_items')
-      .select('id')
-      .eq('package_id', packageId)
-      .single();
-
-    if (invItem) {
-      await inventoryMovementService.recordMovement({
-        movement_kind: 'PRODUCE',
-        dest_item_id: invItem.id,
-        qty: totalDryWeight,
+      const inventoryRow = {
+        package_id: packageId,
+        batch_id: batchId,
+        batch_number: batchData.batch_number,
+        batch: batchData.batch_number,
+        strain_id: batchData.strain_id,
+        strain: strainName,
+        product_stage_id: inventoryStageId,
+        product_name: productName,
+        category: inventoryCategory,
+        net_weight: null as number | null,
+        on_hand_qty: entryWeight,
+        available_qty: entryWeight,
+        reserved_qty: 0,
         unit: 'g',
-        reason_code: 'session_finalization',
-        notes: `Binning session completed — ${entries.length} bin(s), ${totalDryWeight}g dry weight`,
-      });
+        status: 'Available',
+        package_date: packageDate,
+      };
+
+      const { error: invError } = await supabase
+        .from('inventory_items')
+        .insert(inventoryRow);
+      if (invError) throw new Error(`Failed to create inventory item: ${invError.message}`);
+
+      const { data: invItem } = await supabase
+        .from('inventory_items')
+        .select('id')
+        .eq('package_id', packageId)
+        .single();
+
+      if (invItem) {
+        await inventoryMovementService.recordMovement({
+          movement_kind: 'PRODUCE',
+          dest_item_id: invItem.id,
+          qty: entryWeight,
+          unit: 'g',
+          reason_code: 'session_finalization',
+          notes: `Binning entry ${entry.entry_order} of ${entries.length} — ${entryWeight}g`,
+        });
+      }
     }
 
     return session;
