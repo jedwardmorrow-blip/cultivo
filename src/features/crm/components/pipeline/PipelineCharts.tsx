@@ -62,6 +62,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
     { label: 'Binned', value: st.binned, color: STAGE_COLORS.binned },
     { label: 'Bucked', value: st.bucked, color: STAGE_COLORS.bucked },
     { label: 'Trimmed', value: st.trimmed, color: STAGE_COLORS.trimmed },
+    { label: 'Byproduct', value: st.byproduct, color: STAGE_COLORS.byproduct },
   ];
   const pipelineTotal = pipelineStages.reduce((s, p) => s + p.value, 0);
 

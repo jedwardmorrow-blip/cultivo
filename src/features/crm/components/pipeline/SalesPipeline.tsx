@@ -64,7 +64,7 @@ export function SalesPipeline() {
         <div>
           <h1 className="text-lg font-extrabold text-white tracking-tight">Inventory Pipeline</h1>
           <p className="text-[10px] text-neutral-600 font-semibold tracking-wide">
-            {summary.strainCount.total} strains &middot; Real-time supply &amp; demand
+            {summary.strainCount.total} strains &middot; {summary.strainCount.withActiveDemand} with active demand
           </p>
         </div>
         <div className="flex items-center gap-2">
