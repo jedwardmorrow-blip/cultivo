@@ -59,6 +59,12 @@ export function useBinningSessions(filter?: { status?: BinningSessionStatus }) {
     return cultivationService.deleteBinEntry(id);
   }
 
+  async function addBinToCompleted(sessionId: string, binWeightGrams: number, notes?: string): Promise<BinEntry> {
+    const entry = await cultivationService.addBinToCompletedSession(sessionId, binWeightGrams, notes);
+    await load();
+    return entry;
+  }
+
   return {
     sessions,
     unbinnedHarvests,
@@ -71,5 +77,6 @@ export function useBinningSessions(filter?: { status?: BinningSessionStatus }) {
     listBinEntries,
     addBinEntry,
     removeBinEntry,
+    addBinToCompleted,
   };
 }

@@ -816,6 +816,94 @@ export const cultivationService = {
     return session;
   },
 
+  async addBinToCompletedSession(sessionId: string, binWeightGrams: number, notes?: string): Promise<BinEntry> {
+    const { data: sessionRow } = await supabase
+      .from('binning_sessions')
+      .select('id, session_status, batch_registry_id, harvest_sessions(wet_weight_grams, adjusted_weight_grams, plant_groups(strains(name, abbreviation)))')
+      .eq('id', sessionId)
+      .single();
+    if (!sessionRow) throw new Error('Binning session not found');
+    if (sessionRow.session_status !== 'completed') throw new Error('Session must be completed to add post-completion bins');
+
+    const entry = await cultivationService.createBinEntry({
+      binning_session_id: sessionId,
+      bin_weight_grams: binWeightGrams,
+      notes: notes || undefined,
+    });
+
+    const batchId = sessionRow.batch_registry_id;
+    const { data: batchData, error: batchError } = await supabase
+      .from('batch_registry')
+      .select('batch_number, strain_id, strains(name)')
+      .eq('id', batchId)
+      .single();
+    if (batchError || !batchData) throw new Error(`Batch not found: ${batchId}`);
+
+    const strainName = (batchData.strains as { name: string } | null)?.name ?? 'Unknown';
+    const productName = `Binned - ${strainName} - Flower`;
+
+    const { generateNextPackageId } = await import('@/features/inventory/services/conversions.service');
+    const inventoryStageId = await getProductStageIdFromProductName(productName);
+    const inventoryCategory = getCategoryFromProductName(productName);
+    const packageDate = new Date().toISOString().split('T')[0];
+    const entryWeight = Number(binWeightGrams);
+    const packageId = await generateNextPackageId(batchId);
+
+    const inventoryRow = {
+      package_id: packageId,
+      batch_id: batchId,
+      batch_number: batchData.batch_number,
+      batch: batchData.batch_number,
+      strain_id: batchData.strain_id,
+      strain: strainName,
+      product_stage_id: inventoryStageId,
+      product_name: productName,
+      category: inventoryCategory,
+      net_weight: null as number | null,
+      on_hand_qty: entryWeight,
+      available_qty: entryWeight,
+      reserved_qty: 0,
+      unit: 'g',
+      status: 'Available',
+      package_date: packageDate,
+    };
+
+    const { error: invError } = await supabase
+      .from('inventory_items')
+      .insert(inventoryRow);
+    if (invError) throw new Error(`Failed to create inventory item: ${invError.message}`);
+
+    const { data: invItem } = await supabase
+      .from('inventory_items')
+      .select('id')
+      .eq('package_id', packageId)
+      .single();
+
+    if (invItem) {
+      await inventoryMovementService.recordMovement({
+        movement_kind: 'PRODUCE',
+        dest_item_id: invItem.id,
+        qty: entryWeight,
+        unit: 'g',
+        reason_code: 'session_finalization',
+        notes: `Post-completion bin entry — ${entryWeight}g`,
+      });
+    }
+
+    const allEntries = await cultivationService.listBinEntries(sessionId);
+    const totalDryWeight = allEntries.reduce((sum, e) => sum + Number(e.bin_weight_grams), 0);
+    const harvest = sessionRow.harvest_sessions as { wet_weight_grams: number; adjusted_weight_grams: number | null } | null;
+    const wetWeight = harvest?.adjusted_weight_grams ?? harvest?.wet_weight_grams ?? 0;
+    const waterLoss = Math.max(0, wetWeight - totalDryWeight);
+
+    await supabase
+      .from('binning_sessions')
+      .update({ dry_weight_grams: totalDryWeight, water_loss_grams: waterLoss })
+      .eq('id', sessionId);
+
+    return entry;
+  },
+
   async cancelBinningSession(id: string): Promise<BinningSession> {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
