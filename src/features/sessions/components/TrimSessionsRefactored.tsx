@@ -9,6 +9,8 @@ import { SessionStats } from './SessionStats';
 import { TrimSessionStartForm } from './TrimSessionStartForm';
 import { TrimSessionCompleteModal } from './TrimSessionCompleteModal';
 import { TrimSessionCancelModal } from './TrimSessionCancelModal';
+import { AdminSessionEditModal } from './AdminSessionEditModal';
+import { AdminSessionDeleteModal } from './AdminSessionDeleteModal';
 import { ActiveSessionsTable } from './ActiveSessionsTable';
 import { CompletedSessionsTable } from './CompletedSessionsTable';
 import type { TrimSession } from '../types';
@@ -21,8 +23,8 @@ export function TrimSessionsRefactored() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [completingSession, setCompletingSession] = useState<TrimSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<TrimSession | null>(null);
-  const [_editingSession, setEditingSession] = useState<TrimSession | null>(null);
-  const [_deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
+  const [editingSession, setEditingSession] = useState<TrimSession | null>(null);
+  const [deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
 
   const handleSessionStarted = () => {
     setShowStartForm(false);
@@ -91,6 +93,22 @@ export function TrimSessionsRefactored() {
           buckedPackages={buckedPackages}
           onSuccess={handleSessionCompleted}
           onCancel={() => setCompletingSession(null)}
+        />
+      )}
+
+      {editingSession && (
+        <AdminSessionEditModal
+          session={editingSession}
+          onClose={() => setEditingSession(null)}
+          onUpdate={fetchSessions}
+        />
+      )}
+
+      {deletingSession && (
+        <AdminSessionDeleteModal
+          session={deletingSession}
+          onClose={() => setDeletingSession(null)}
+          onDelete={fetchSessions}
         />
       )}
 
