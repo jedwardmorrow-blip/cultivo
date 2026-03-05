@@ -2,16 +2,19 @@ import { useState, useCallback } from 'react';
 import type { InternalInventoryLabel, InventoryItem } from '../types';
 import { saveInternalLabel } from '../services/inventory.service';
 import { logoService } from '@/features/settings/services';
+import { supabase } from '@/lib/supabase';
 
-function buildLabelData(item: InventoryItem): InternalInventoryLabel {
+function buildLabelData(
+  item: InventoryItem,
+  harvestDateMap: Record<string, string>,
+): InternalInventoryLabel {
+  const harvestDateStr = (item.batch_id && harvestDateMap[item.batch_id]) || 'N/A';
   return {
     package_id: item.package_id || item.id,
     strain: item.strain || 'Unknown',
     batch_id: item.batch || item.batch_number || 'N/A',
     product_type: item.category ? item.category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Unknown',
-    harvest_date: item.created_at
-      ? new Date(item.created_at).toLocaleDateString()
-      : new Date().toLocaleDateString(),
+    harvest_date: harvestDateStr,
     weight_grams: parseFloat(item.on_hand_qty?.toString() || '0'),
   };
 }
@@ -68,7 +71,24 @@ export function useMultiLabelPrint() {
       setError(null);
       setIsOpen(true);
 
-      setLabels(items.map(buildLabelData));
+      const batchIds = [...new Set(items.map(i => i.batch_id).filter(Boolean))] as string[];
+      const harvestDateMap: Record<string, string> = {};
+      if (batchIds.length > 0) {
+        const { data: batches } = await supabase
+          .from('batch_registry')
+          .select('id, harvest_date')
+          .in('id', batchIds);
+        if (batches) {
+          for (const b of batches) {
+            if (b.harvest_date) {
+              const d = new Date(b.harvest_date + 'T00:00:00');
+              harvestDateMap[b.id] = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+            }
+          }
+        }
+      }
+
+      setLabels(items.map(item => buildLabelData(item, harvestDateMap)));
 
       const logo = await loadLogoDataUrl();
       setLogoDataUrl(logo);
