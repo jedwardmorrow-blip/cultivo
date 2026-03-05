@@ -42,6 +42,7 @@ const AccountsList = lazy(() => import('./features/crm').then((m) => ({ default:
 const AccountDetail = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountDetail })));
 const SalesQueue = lazy(() => import('./features/crm').then((m) => ({ default: m.SalesQueue })));
 const VisitCalendar = lazy(() => import('./features/crm').then((m) => ({ default: m.VisitCalendar })));
+const SalesPipeline = lazy(() => import('./features/crm').then((m) => ({ default: m.SalesPipeline })));
 
 function ViewFallback() {
   return (
@@ -237,6 +238,8 @@ function AppContent() {
         return <SalesQueue />;
       case 'crm-visit-calendar':
         return <VisitCalendar onSelectOrder={handleSelectOrder} />;
+      case 'crm-pipeline':
+        return <SalesPipeline />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':
