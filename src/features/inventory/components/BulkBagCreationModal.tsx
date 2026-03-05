@@ -14,8 +14,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, AlertTriangle, CheckCircle, Package } from 'lucide-react';
+import { X, Plus, Trash2, AlertTriangle, CheckCircle, Package, AlertCircle, TrendingDown } from 'lucide-react';
 import { PendingConversionSession } from '@/types';
+import { VarianceReason, VarianceReasonLabels } from '../types/conversions.types';
 import { useBulkBagPackageId } from '../hooks/useBulkBagPackageId';
 
 interface BulkBag {
@@ -23,11 +24,18 @@ interface BulkBag {
   weight: number;
 }
 
+export interface BulkBagVarianceData {
+  expected_weight: number;
+  actual_weight: number;
+  variance_reason: VarianceReason;
+  variance_note: string;
+}
+
 interface BulkBagCreationModalProps {
   session: PendingConversionSession;
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (bags: { package_id: string; weight: number }[]) => Promise<void>;
+  onConfirm: (bags: { package_id: string; weight: number }[], variance?: BulkBagVarianceData) => Promise<void>;
 }
 
 export function BulkBagCreationModal({
@@ -39,6 +47,8 @@ export function BulkBagCreationModal({
   const [bags, setBags] = useState<BulkBag[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [varianceReason, setVarianceReason] = useState<VarianceReason | ''>('');
+  const [varianceNote, setVarianceNote] = useState('');
 
   // Available weight comes directly from VIEW - no need for service call
   // The pending_conversion_sessions VIEW already calculates remaining weight
@@ -56,11 +66,12 @@ export function BulkBagCreationModal({
     setRemainingWeight(availableWeight - totalAllocated);
   }, [bags, availableWeight]);
 
-  // Reset bags when modal opens with new session
   useEffect(() => {
     if (isOpen) {
       setBags([]);
       setError(null);
+      setVarianceReason('');
+      setVarianceNote('');
     }
   }, [isOpen, session.aggregation_id]);
 
@@ -98,7 +109,6 @@ export function BulkBagCreationModal({
   const handleConfirm = async () => {
     setError(null);
 
-    // Validation
     if (bags.length === 0) {
       setError('Please add at least one bag');
       return;
@@ -121,22 +131,44 @@ export function BulkBagCreationModal({
       return;
     }
 
+    const hasVariance = bags.length > 0 && Math.abs(remainingWeight) > 0.5;
+
+    if (hasVariance && !varianceReason) {
+      setError('Variance reason is required when bag weights do not match available weight');
+      return;
+    }
+
+    if (hasVariance && (!varianceNote || varianceNote.trim().length < 10)) {
+      setError('Variance notes are required (minimum 10 characters)');
+      return;
+    }
+
+    if (hasVariance && varianceReason === 'other' && varianceNote.trim().length < 20) {
+      setError('For "Other" reason, please provide detailed notes (minimum 20 characters)');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
-      // Generate package IDs for all bags
       const packageIds = await generateBatchIds(bags.length);
 
-      // Create bag objects with package IDs
       const bagsWithIds = bags.map((bag, index) => ({
         package_id: packageIds[index],
         weight: bag.weight,
       }));
 
-      // Call parent's confirm handler
-      await onConfirm(bagsWithIds);
+      const varianceData: BulkBagVarianceData | undefined = hasVariance && varianceReason
+        ? {
+            expected_weight: availableWeight,
+            actual_weight: totalWeight,
+            variance_reason: varianceReason,
+            variance_note: varianceNote.trim(),
+          }
+        : undefined;
 
-      // Close modal
+      await onConfirm(bagsWithIds, varianceData);
+
       onClose();
     } catch (err) {
       console.error('Error creating bulk bags:', err);
@@ -149,6 +181,8 @@ export function BulkBagCreationModal({
   const handleClose = () => {
     setBags([]);
     setError(null);
+    setVarianceReason('');
+    setVarianceNote('');
     onClose();
   };
 
@@ -346,9 +380,8 @@ export function BulkBagCreationModal({
               )}
             </div>
 
-            {/* Summary */}
             {bags.length > 0 && (
-              <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4">
+              <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4 mb-6">
                 <h4 className="text-sm font-medium text-cult-text-primary mb-3">Summary</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -380,6 +413,72 @@ export function BulkBagCreationModal({
                 </div>
               </div>
             )}
+
+            {bags.length > 0 && Math.abs(remainingWeight) > 0.5 && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border bg-red-50 border-red-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <TrendingDown className="h-5 w-5 text-red-600 mr-2" />
+                      <div>
+                        <div className="text-xs font-medium text-red-900">
+                          Weight Variance
+                        </div>
+                        <div className="text-xl font-bold text-red-600">
+                          {remainingWeight > 0 ? '-' : '+'}{Math.abs(remainingWeight).toFixed(1)}g
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {availableWeight > 0 ? (Math.abs(remainingWeight) / availableWeight * 100).toFixed(1) : '0.0'}%
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-cult-text-primary mb-2">
+                    Variance Reason <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={varianceReason}
+                    onChange={(e) => setVarianceReason(e.target.value as VarianceReason)}
+                    disabled={isSubmitting}
+                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select a reason...</option>
+                    {(Object.entries(VarianceReasonLabels) as [VarianceReason, string][]).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-cult-text-primary mb-2">
+                    Notes <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={varianceNote}
+                    onChange={(e) => setVarianceNote(e.target.value)}
+                    disabled={isSubmitting}
+                    rows={3}
+                    placeholder="Explain the reason for this variance..."
+                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+
+                {availableWeight > 0 && (Math.abs(remainingWeight) / availableWeight * 100) >= 5 && (
+                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-amber-800">
+                        <p className="font-medium mb-0.5">High Variance Warning</p>
+                        <p>This adjustment represents a variance of {(Math.abs(remainingWeight) / availableWeight * 100).toFixed(1)}%, which exceeds the critical threshold.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -394,7 +493,13 @@ export function BulkBagCreationModal({
             <button
               onClick={handleConfirm}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              disabled={isSubmitting || bags.length === 0 || isOverAllocated || isLoadingIds}
+              disabled={
+                isSubmitting ||
+                bags.length === 0 ||
+                isOverAllocated ||
+                isLoadingIds ||
+                (Math.abs(remainingWeight) > 0.5 && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
+              }
             >
               {isSubmitting ? (
                 <>

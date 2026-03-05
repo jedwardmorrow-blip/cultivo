@@ -10,8 +10,9 @@ import { useState } from 'react';
 import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { PendingConversionSession, CreatePackageInput } from '@/types';
+import { logVariance } from '../services/conversions.service';
 import { useFinalizationWorkflow } from '../hooks';
-import { BulkBagCreationModal } from './BulkBagCreationModal';
+import { BulkBagCreationModal, BulkBagVarianceData } from './BulkBagCreationModal';
 
 interface ConversionModalProps {
   session: PendingConversionSession;
@@ -39,7 +40,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     setShowBulkBagModal(true);
   };
 
-  const handleBulkBagsConfirm = async (bags: { package_id: string; weight: number }[]) => {
+  const handleBulkBagsConfirm = async (bags: { package_id: string; weight: number }[], variance?: BulkBagVarianceData) => {
     const packages: CreatePackageInput[] = bags.map(bag => ({
       package_id: bag.package_id,
       weight: bag.weight,
@@ -58,6 +59,22 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     });
 
     if (result && result.length > 0) {
+      if (variance) {
+        try {
+          await logVariance({
+            batch_id: session.batch_id,
+            product_id: session.product_id || undefined,
+            expected_weight: variance.expected_weight,
+            actual_weight: variance.actual_weight,
+            variance_reason: variance.variance_reason,
+            variance_note: variance.variance_note,
+          });
+        } catch (err) {
+          console.error('Failed to log variance:', err);
+          notificationService.warning('Packages created but variance log failed to save');
+        }
+      }
+
       setShowBulkBagModal(false);
       setStep('success');
       setTimeout(() => {
