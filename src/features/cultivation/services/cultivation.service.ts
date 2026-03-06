@@ -786,7 +786,7 @@ export const cultivationService = {
         available_qty: entryWeight,
         reserved_qty: 0,
         unit: 'g',
-        status: 'Available',
+        status: 'available',
         package_date: packageDate,
       };
 
@@ -864,7 +864,7 @@ export const cultivationService = {
       available_qty: entryWeight,
       reserved_qty: 0,
       unit: 'g',
-      status: 'Available',
+      status: 'available',
       package_date: packageDate,
     };
 

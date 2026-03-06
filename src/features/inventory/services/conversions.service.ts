@@ -291,7 +291,7 @@ export async function finalizeConversion(params: {
         available_qty: quantity,
         reserved_qty: 0,
         unit: pkg.weight != null ? 'g' : 'unit',
-        status: 'Available',
+        status: 'available',
         package_date: new Date().toISOString().split('T')[0],
       };
     });
@@ -959,7 +959,7 @@ export async function finalizeConversionPackages(
           available_qty: quantity,
           unit: unit,
           package_date: new Date().toISOString().split('T')[0],
-          status: 'Available',
+          status: 'available',
         })
         .select('id')
         .single();
