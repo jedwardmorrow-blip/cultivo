@@ -38,6 +38,8 @@ interface BulkBagCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (bags: { package_id: string; weight: number }[], variance?: BulkBagVarianceData) => Promise<void>;
+  adjustedAvailableWeight?: number;
+  writeOffGrams?: number;
 }
 
 export function BulkBagCreationModal({
@@ -45,6 +47,8 @@ export function BulkBagCreationModal({
   isOpen,
   onClose,
   onConfirm,
+  adjustedAvailableWeight,
+  writeOffGrams,
 }: BulkBagCreationModalProps) {
   const [bags, setBags] = useState<BulkBag[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,9 +56,7 @@ export function BulkBagCreationModal({
   const [varianceReason, setVarianceReason] = useState<VarianceReason | ''>('');
   const [varianceNote, setVarianceNote] = useState('');
 
-  // Available weight comes directly from VIEW - no need for service call
-  // The pending_conversion_sessions VIEW already calculates remaining weight
-  const availableWeight = session.output_weight || 0;
+  const availableWeight = adjustedAvailableWeight ?? (session.output_weight || 0);
   const [remainingWeight, setRemainingWeight] = useState<number>(availableWeight);
 
   const { generateBatchIds, isLoading: isLoadingIds } = useBulkBagPackageId(
@@ -224,7 +226,6 @@ export function BulkBagCreationModal({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
-            {/* Available Weight */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <h3 className="text-sm font-medium text-blue-900 mb-2">Available Weight</h3>
               <div className="flex items-baseline gap-2">
@@ -233,6 +234,11 @@ export function BulkBagCreationModal({
                   from {session.session_count} session{session.session_count !== 1 ? 's' : ''}
                 </div>
               </div>
+              {writeOffGrams != null && writeOffGrams > 0 && (
+                <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1 inline-block">
+                  After {writeOffGrams}g water loss write-off (original: {session.output_weight}g)
+                </div>
+              )}
             </div>
 
             {/* Remaining Weight Indicator */}

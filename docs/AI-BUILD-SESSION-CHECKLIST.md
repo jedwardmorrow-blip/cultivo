@@ -14,38 +14,37 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-02
-**Session:** Go-Live Plan v4.0 Documentation
+**Date:** 2026-03-06
+**Session:** Water Loss Write-Off on Conversions
 **Status:** COMPLETE
 
 **What was done:**
 
-Created GO-LIVE-PLAN-v4.0.md documenting the schema-first migration strategy from Bolt.new instance to cult-ops Supabase instance. This is a documentation-only session -- no code or database changes.
+Added upstream water loss write-off to the ConversionModal review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, or write off an entire small amount without creating bags at all. No database migration needed -- uses existing `variance_log` table and `logVariance()` service.
 
-**Key changes from v3.4 strategy:**
-- Changed from soft-reset (27-table FK-ordered DELETE in place) to schema-first migration (export DDL, deploy to clean instance, import production data only)
-- Target is cult-ops Supabase instance (`fhjcvdimdgzwrijotmxg`), not the Bolt.new instance
-- Bolt.new instance (`fonreynkfeqywshijqpi`) remains untouched as backup
-- Simpler execution: no FK-ordered DELETE, no trigger disable/enable dance for deletes
-- Still requires trigger disable for inventory upload (4 triggers on inventory_items)
-- Auth user UUID preservation is the key risk -- documented two mitigation options
+**Key changes:**
+- ConversionModal review screen now has a collapsible "Adjust for Water Loss / Variance" section for bulk products
+- Write-off form includes grams input, reason dropdown (defaults to `moisture_loss`), and notes field
+- Adjusted weight is passed through to BulkBagCreationModal as `adjustedAvailableWeight` prop
+- The adjusted `output_weight` flows to `handleFinalize()` so bags totaling the adjusted weight trigger full finalization (Architecture Decision 9)
+- "Write Off Entire Amount" button allows clearing small leftover conversions without creating any bags
+- Write-off variance is logged separately from any in-modal bag variance
 
-**Files created/modified:**
-- `docs/GO-LIVE-PLAN-v4.0.md` — New plan (supersedes v3.4)
+**Files modified:**
+- `src/features/inventory/components/ConversionModal.tsx` — Write-off UI, adjusted weight passthrough, entire-amount write-off handler
+- `src/features/inventory/components/BulkBagCreationModal.tsx` — New `adjustedAvailableWeight` and `writeOffGrams` props, adjusted available weight display
+- `docs/ARCHITECTURE-DECISIONS.md` — Added Decision 20 (Upstream Water Loss Write-Off)
+- `docs/AI-SESSION-BRIEF.md` — Updated last sessions list
 - `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off section
-- `docs/AI-SESSION-BRIEF.md` — Added go-live plan reference
 - `CHANGELOG.md` — Session entry added
 
-**Build status:** PASSES (no code changes)
+**Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
 - Pre-existing tsc errors -- not blocking
 - `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
 
-**Next steps (go-live execution):**
-1. **Phase 1: Schema export** -- Query Bolt.new DB catalog to generate complete DDL
-2. **Phase 2: Deploy schema** -- Run DDL on cult-ops via SQL Editor
-3. **Phase 3-6: Data migration** -- Export production data, upload audit data, re-link strains
-4. **Phase 7: Cutover** -- Update .env, redeploy edge functions, verify
+**Next steps:**
+- Go-live plan execution (phases 1-7 in GO-LIVE-PLAN-v4.0.md)
 
 ---
 

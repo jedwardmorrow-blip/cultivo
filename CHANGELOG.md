@@ -4,6 +4,24 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-06 - Water Loss Write-Off on Conversions
+
+**Type:** Feature
+**Module:** Inventory / Conversions
+**Status:** COMPLETE
+
+Added upstream water loss write-off to the conversion review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, eliminating the need to create bags just to submit a variance form.
+
+- **Write-Off Section:** Collapsible "Adjust for Water Loss / Variance" panel on ConversionModal review screen with grams input, reason dropdown (defaults to moisture loss), and notes field.
+- **Adjusted Weight Flow:** Write-off amount reduces the available weight passed to the bag creation modal and to the finalization service, so bags totaling the adjusted weight are treated as full finalization.
+- **Write Off Entire Amount:** For small leftover conversions (e.g., 16g remaining from evaporation), a single button logs the variance and finalizes with zero packages, clearing the item from the pending list.
+- **Dual Variance Logging:** Write-off variance is logged separately from any in-modal bag variance. Both go to the existing `variance_log` table.
+- **No Database Migration:** Uses existing `variance_log` table and `logVariance()` service function.
+- **Modified Files:** ConversionModal.tsx, BulkBagCreationModal.tsx
+- **Architecture Decision:** 20 (Upstream Water Loss Write-Off)
+
+---
+
 ## 2026-03-02 - Go-Live Plan v4.0 Documentation
 
 **Type:** Documentation

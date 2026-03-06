@@ -409,3 +409,24 @@ Mirrors the same-batch wet weight pattern (see Decision 11).
 - Fulfilled assignments cannot be removed (service-layer guard + UI disabled state)
 
 **Reference:** ORDERS.md v2.0, migrations `remove_legacy_allocation_system`, `add_package_assignment_reservation_system`, `create_inventory_reservation_views`, `create_order_fulfillment_triggers`
+
+## 20. Upstream Water Loss Write-Off on Conversion Review Screen (2026-03-06)
+
+**Context:** Cannabis flower loses weight between session completion and bagging due to moisture evaporation. Previously, operators had to create bags first, then fill in variance forms to account for the weight difference. This was cumbersome -- the variance form in BulkBagCreationModal required filling in a reason and notes before the submit button was enabled, and the real issue (known water loss) was better handled before entering the bagging flow.
+
+**Decision:** Add a water loss write-off section to the ConversionModal review screen (the first screen shown when clicking a pending conversion). Operators can declare known weight loss before creating bags, or write off an entire small remainder without creating bags at all.
+
+**Implementation:**
+1. **Write-off form on review screen** (`ConversionModal.tsx`): collapsible section with grams input, reason dropdown (defaults to `moisture_loss`), and notes field
+2. **Adjusted weight passthrough**: `adjustedAvailableWeight` prop passed to `BulkBagCreationModal` -- the bag modal uses this as its effective available weight instead of `session.output_weight`
+3. **Adjusted output_weight in finalization**: The `output_weight` passed to `handleFinalize()` is reduced by the write-off amount, which controls the `isFullFinalization` check in `finalizeConversion()` (Architecture Decision 9). Bags totaling the adjusted weight are treated as full finalization.
+4. **Write-off variance logging**: `logVariance()` called with `expected_weight: session.output_weight`, `actual_weight: session.output_weight - writeOffGrams`
+5. **Write off entire amount**: For small remainders (e.g., 16g left from evaporation), a "Write Off Entire Amount" button logs the full amount as variance and calls finalization with empty packages and `output_weight: 0`, marking all sessions finalized
+
+**Key rules:**
+- Write-off variance is logged separately from any in-modal bag variance (both can coexist)
+- Any write-off amount is allowed as long as a reason is provided (no percentage cap)
+- The BulkBagCreationModal variance form remains as a safety net for unexpected discrepancies during bagging
+- No database migration required -- uses existing `variance_log` table and `logVariance()` service function
+
+**Reference:** ConversionModal.tsx, BulkBagCreationModal.tsx, conversions.service.ts (logVariance)
