@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   X,
   MapPin,
@@ -188,7 +188,25 @@ export function OrderDrawer({
 }: OrderDrawerProps) {
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [tempDate, setTempDate] = useState('');
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const { orderDetails, loading } = useOrdersContext();
+
+  const deliveryDate = order.scheduled_delivery_date || order.requested_delivery_date;
+
+  const handleDateSave = useCallback(async (newDate: string) => {
+    if (newDate && newDate !== deliveryDate) {
+      await onUpdateDeliveryDate(order.id, newDate);
+    }
+    setIsEditingDate(false);
+    setTempDate('');
+  }, [deliveryDate, onUpdateDeliveryDate, order.id]);
+
+  const handleDateEditStart = useCallback(() => {
+    setIsEditingDate(true);
+    setTempDate(deliveryDate || '');
+  }, [deliveryDate]);
 
   const items = orderDetails?.get(order.id) || [];
   const isLoadingItems = loading?.orderDetails?.has(order.id) || false;
@@ -291,15 +309,35 @@ export function OrderDrawer({
                   <Clock className="w-3 h-3" />
                   Created {getOrderAge(order.created_at)}
                 </span>
-                {(order.scheduled_delivery_date || order.requested_delivery_date) && (
-                  <span className="flex items-center gap-1">
+                {isEditingDate ? (
+                  <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <Calendar className="w-3 h-3" />
-                    Delivery: {new Date((order.scheduled_delivery_date || order.requested_delivery_date) + (order.requested_delivery_date && !order.scheduled_delivery_date ? 'T00:00:00' : '')).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                    <input
+                      ref={dateInputRef}
+                      type="date"
+                      value={tempDate}
+                      onChange={(e) => setTempDate(e.target.value)}
+                      onBlur={(e) => handleDateSave(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleDateSave(tempDate);
+                        if (e.key === 'Escape') { setIsEditingDate(false); setTempDate(''); }
+                      }}
+                      autoFocus
+                      className="bg-cult-charcoal border border-cult-silver/30 rounded px-1.5 py-0.5 text-xs text-cult-off-white outline-none focus:border-cult-green transition-colors"
+                      style={{ colorScheme: 'dark' }}
+                    />
                   </span>
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDateEditStart(); }}
+                    className="flex items-center gap-1 hover:text-cult-green transition-colors group/date"
+                  >
+                    <Calendar className="w-3 h-3" />
+                    {deliveryDate
+                      ? <>Delivery: {new Date(deliveryDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>
+                      : <span className="text-cult-lighter-gray group-hover/date:text-cult-green">Set delivery date</span>
+                    }
+                  </button>
                 )}
               </div>
               <span className="font-bold text-green-400 text-sm">
