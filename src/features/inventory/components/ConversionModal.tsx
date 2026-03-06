@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes, Droplets, Trash2 } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes, Droplets, Trash2, Check } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { PendingConversionSession, CreatePackageInput } from '@/types';
 import { VarianceReason, VarianceReasonLabels } from '../types/conversions.types';
@@ -35,6 +35,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
   const [writeOffReason, setWriteOffReason] = useState<VarianceReason | ''>('moisture_loss');
   const [writeOffNote, setWriteOffNote] = useState('Moisture loss prior to bagging');
   const [isWritingOff, setIsWritingOff] = useState(false);
+  const [writeOffApplied, setWriteOffApplied] = useState(false);
 
   const isBulk = session.output_weight !== null && session.output_weight > 0;
   const adjustedWeight = isBulk ? (session.output_weight || 0) - writeOffGrams : null;
@@ -218,6 +219,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     setWriteOffGrams(0);
     setWriteOffReason('moisture_loss');
     setWriteOffNote('Moisture loss prior to bagging');
+    setWriteOffApplied(false);
     onClose();
   };
 
@@ -347,10 +349,16 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       <div className="flex items-center gap-2">
                         <Droplets className="w-4 h-4 text-blue-600" />
                         <span className="text-sm font-medium text-cult-text-primary">
-                          Adjust for Water Loss / Variance
+                          Adjust for Loss / Variance
                         </span>
+                        {writeOffApplied && writeOffGrams > 0 && (
+                          <span className="flex items-center gap-1 text-xs font-medium text-cult-success bg-cult-success/10 px-2 py-0.5 rounded-full">
+                            <Check className="w-3 h-3" />
+                            -{writeOffGrams}g applied
+                          </span>
+                        )}
                       </div>
-                      <span className="text-xs text-cult-text-faint">
+                      <span className="text-xs text-cult-text-muted">
                         {showWriteOff ? 'Collapse' : 'Expand'}
                       </span>
                     </button>
@@ -427,6 +435,29 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                             className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                           />
                         </div>
+
+                        {writeOffGrams > 0 && writeOffGrams < (session.output_weight || 0) && (
+                          <button
+                            onClick={() => {
+                              if (!writeOffReason) {
+                                notificationService.warning('Please select a reason');
+                                return;
+                              }
+                              if (writeOffNote.trim().length < 10) {
+                                notificationService.warning('Please provide notes (minimum 10 characters)');
+                                return;
+                              }
+                              setWriteOffApplied(true);
+                              setShowWriteOff(false);
+                              notificationService.success(`Loss of ${writeOffGrams}g applied. Available weight adjusted to ${adjustedWeight !== null ? adjustedWeight.toFixed(1) : 0}g.`);
+                            }}
+                            disabled={!writeOffValid}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                          >
+                            <Check className="w-4 h-4" />
+                            Apply Loss / Variance (-{writeOffGrams}g)
+                          </button>
+                        )}
 
                         {writeOffGrams > 0 && writeOffGrams >= (session.output_weight || 0) && (
                           <button
