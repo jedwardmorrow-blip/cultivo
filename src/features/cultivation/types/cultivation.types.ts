@@ -585,12 +585,19 @@ export interface PlantMortalityLog {
 export type CreateMortalityLogInput = Pick<PlantMortalityLog, 'plant_group_id' | 'room_id'> &
   Partial<Pick<PlantMortalityLog, 'mortality_date' | 'reported_by' | 'quantity' | 'cause' | 'cause_detail' | 'notes'>>;
 
+export interface RoomSummaryStrain {
+  name: string;
+  plant_count: number;
+}
+
 export interface RoomSummary {
   room_id: string;
   room_name: string;
   room_code: string;
-  strains: string[];
+  room_type: RoomType;
+  strains: RoomSummaryStrain[];
   earliest_projected_harvest: string | null;
+  earliest_flip_date: string | null;
   total_plant_count: number;
   groups: { id: string; strain: string; stage: GrowthStage; plant_count: number; days_in_stage: number }[];
 }
