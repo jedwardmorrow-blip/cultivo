@@ -30,3 +30,5 @@ export { HarvestCountdown } from './HarvestCountdown';
 export { RoomGroup } from './RoomGroup';
 export { SectionMap } from './SectionMap';
 export { DailyDigestView } from './DailyDigestView';
+export { AnnotationInput } from './AnnotationInput';
+export { DigestSlackPreview } from './DigestSlackPreview';
