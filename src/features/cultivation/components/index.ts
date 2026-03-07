@@ -18,5 +18,7 @@ export { ExpandedPlantsList } from './ExpandedPlantsList';
 export { HarvestWorkflow } from './harvest';
 export { DailyTaskBoard } from './DailyTaskBoard';
 export { TaskCard } from './TaskCard';
+export { TaskCompletionForm } from './TaskCompletionForm';
+export { DeadPlantForm } from './DeadPlantForm';
 export { WorkerCheckIn } from './WorkerCheckIn';
 export { RoomCalendar } from './RoomCalendar';

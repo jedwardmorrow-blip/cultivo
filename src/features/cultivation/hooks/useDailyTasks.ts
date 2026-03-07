@@ -57,5 +57,28 @@ export function useDailyTasks(taskDate: string) {
     return data as DailyTaskInstance;
   }
 
-  return { tasks, loading, error, refetch: load, updateStatus, assignWorker };
+  async function completeWithLog(
+    id: string,
+    refTable: string,
+    refId: string,
+    durationEstimate?: string,
+  ): Promise<DailyTaskInstance> {
+    const { data, error: err } = await supabase
+      .from('daily_task_instances')
+      .update({
+        status: 'completed' as TaskStatus,
+        completed_at: new Date().toISOString(),
+        completion_ref_table: refTable,
+        completion_ref_id: refId,
+        estimated_duration: durationEstimate ?? null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    if (err) throw err;
+    await load();
+    return data as DailyTaskInstance;
+  }
+
+  return { tasks, loading, error, refetch: load, updateStatus, assignWorker, completeWithLog };
 }

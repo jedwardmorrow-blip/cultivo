@@ -17,6 +17,8 @@ import {
   GitBranch,
   ArrowRightLeft,
   Clock,
+  Skull,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
@@ -27,6 +29,8 @@ import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
 import { TaskCard } from './TaskCard';
 import type { TaskCardData } from './TaskCard';
+import { TaskCompletionForm } from './TaskCompletionForm';
+import { DeadPlantForm } from './DeadPlantForm';
 
 type TabId = 'calendar' | 'board' | 'types' | 'workers';
 
@@ -130,7 +134,7 @@ export function DailyTaskBoard() {
   const [selectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
-  const { tasks: dbTasks } = useDailyTasks(selectedDate);
+  const { tasks: dbTasks, completeWithLog, refetch: refetchTasks } = useDailyTasks(selectedDate);
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
 
   const rooms = useMemo(() => {
@@ -200,6 +204,10 @@ export function DailyTaskBoard() {
           attendance={attendance}
           date={selectedDate}
           onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
+          onCompleteWithLog={async (taskId, refTable, refId, dur) => {
+            await completeWithLog(taskId, refTable, refId, dur ?? undefined);
+            await refetchTasks();
+          }}
         />
       )}
       {activeTab === 'types' && <TaskTypesTab />}
@@ -217,11 +225,17 @@ interface DailyBoardTabProps {
   attendance: ReturnType<typeof useAttendance>['records'];
   date: string;
   onUpsertAttendance: (input: Parameters<ReturnType<typeof useAttendance>['upsertAttendance']>[0]) => Promise<void>;
+  onCompleteWithLog: (taskId: string, refTable: string, refId: string, duration: string | null) => Promise<void>;
 }
 
-function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendance }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
+  const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
+  const [showDeadPlantForm, setShowDeadPlantForm] = useState(false);
+  const [deadPlantRoomId, setDeadPlantRoomId] = useState<string | null>(null);
+  const [showFabMenu, setShowFabMenu] = useState(false);
+  const fabRef = useRef<HTMLDivElement>(null);
 
   const tasksByRoom = useMemo(() => {
     const map = new Map<string, TaskCardData[]>();
@@ -261,7 +275,30 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
   function openAddTask(roomId?: string) {
     setAddTaskRoomId(roomId ?? null);
     setShowAddTask(true);
+    setShowFabMenu(false);
   }
+
+  function openDeadPlantForm(roomId?: string) {
+    setDeadPlantRoomId(roomId ?? null);
+    setShowDeadPlantForm(true);
+    setShowFabMenu(false);
+  }
+
+  function openCompletionForm(task: TaskCardData) {
+    const roomMatch = rooms.find((r) => r.room_code === task.room_name);
+    setCompletingTask({ task, roomId: roomMatch?.id ?? '' });
+  }
+
+  useEffect(() => {
+    if (!showFabMenu) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (fabRef.current && !fabRef.current.contains(e.target as Node)) {
+        setShowFabMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFabMenu]);
 
   return (
     <div className="space-y-4 relative">
@@ -290,6 +327,14 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
               <span className="text-[10px] text-cult-light-gray">{roomTasks.length} task{roomTasks.length !== 1 ? 's' : ''}</span>
               <button
                 type="button"
+                onClick={() => openDeadPlantForm(room.id)}
+                className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors text-cult-medium-gray hover:text-red-400"
+                title="Log dead plant"
+              >
+                <Skull className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
                 onClick={() => openAddTask(room.id)}
                 className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors text-cult-medium-gray hover:text-cult-light-gray"
               >
@@ -299,19 +344,41 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
           </div>
           <div className="divide-y divide-cult-dark-gray/30">
             {roomTasks.map((t) => (
-              <TaskCard key={t.id} task={t} />
+              <TaskCard key={t.id} task={t} onClick={() => openCompletionForm(t)} />
             ))}
           </div>
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={() => openAddTask()}
-        className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-cult-accent hover:bg-cult-accent-hover text-white rounded-full shadow-glow flex items-center justify-center transition-colors"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
+      <div ref={fabRef} className="fixed bottom-6 right-6 z-40">
+        {showFabMenu && (
+          <div className="absolute bottom-14 right-0 w-44 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in">
+            <button
+              type="button"
+              onClick={() => openAddTask()}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-cult-light-gray hover:bg-cult-charcoal transition-colors text-left"
+            >
+              <Plus className="w-3.5 h-3.5 text-cult-accent" />
+              Add Task
+            </button>
+            <button
+              type="button"
+              onClick={() => openDeadPlantForm()}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-cult-light-gray hover:bg-cult-charcoal transition-colors text-left border-t border-cult-dark-gray"
+            >
+              <Skull className="w-3.5 h-3.5 text-red-400" />
+              Log Dead Plant
+            </button>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setShowFabMenu((v) => !v)}
+          className="w-12 h-12 bg-cult-accent hover:bg-cult-accent-hover text-white rounded-full shadow-glow flex items-center justify-center transition-colors"
+        >
+          {showFabMenu ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+        </button>
+      </div>
 
       {showAddTask && (
         <AddTaskModal
@@ -320,6 +387,28 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
           preSelectedRoomId={addTaskRoomId}
           onClose={() => setShowAddTask(false)}
           onSave={() => setShowAddTask(false)}
+        />
+      )}
+
+      {completingTask && (
+        <TaskCompletionForm
+          task={completingTask.task}
+          roomId={completingTask.roomId}
+          onComplete={async (refTable, refId, dur) => {
+            await onCompleteWithLog(completingTask.task.id, refTable, refId, dur);
+            setCompletingTask(null);
+          }}
+          onNavigateHarvest={() => setCompletingTask(null)}
+          onNavigateClone={() => setCompletingTask(null)}
+          onClose={() => setCompletingTask(null)}
+        />
+      )}
+
+      {showDeadPlantForm && (
+        <DeadPlantForm
+          prefilledRoomId={deadPlantRoomId}
+          onComplete={() => setShowDeadPlantForm(false)}
+          onClose={() => setShowDeadPlantForm(false)}
         />
       )}
     </div>
