@@ -1,0 +1,624 @@
+import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  Calendar,
+  ClipboardList,
+  Layers,
+  Users,
+  Plus,
+  X,
+  Scissors,
+  Droplets,
+  Search,
+  SprayCan,
+  Sparkles,
+  Wheat,
+  Sprout,
+  Wrench,
+  GitBranch,
+  ArrowRightLeft,
+  Clock,
+} from 'lucide-react';
+import { Button } from '@/shared/components';
+import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
+import { TASK_TYPE_CONFIG } from '../types';
+import type { TaskType, TaskStatus, RoomType } from '../types';
+import { RoomCalendar } from './RoomCalendar';
+import { WorkerCheckIn } from './WorkerCheckIn';
+import type { StaffMember } from './WorkerCheckIn';
+import { TaskCard } from './TaskCard';
+import type { TaskCardData } from './TaskCard';
+
+type TabId = 'calendar' | 'board' | 'types' | 'workers';
+
+const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
+  { id: 'calendar', label: 'Room Calendar', icon: Calendar },
+  { id: 'board', label: 'Daily Board', icon: ClipboardList },
+  { id: 'types', label: 'Task Types', icon: Layers },
+  { id: 'workers', label: 'Workers', icon: Users },
+];
+
+const SAMPLE_STAFF: StaffMember[] = [
+  { id: 's1', first_name: 'Andrew', role: 'manager', hourly_rate: 35 },
+  { id: 's2', first_name: 'Greg', role: 'cultivator', hourly_rate: 22 },
+  { id: 's3', first_name: 'Laura', role: 'cultivator', hourly_rate: 20 },
+  { id: 's4', first_name: 'Leo', role: 'cultivator', hourly_rate: 20 },
+  { id: 's5', first_name: 'Roxy', role: 'cultivator', hourly_rate: 20 },
+  { id: 's6', first_name: 'Sam', role: 'cultivator', hourly_rate: 20 },
+  { id: 's7', first_name: 'Skye', role: 'cultivator', hourly_rate: 20 },
+  { id: 's8', first_name: 'Viana', role: 'cultivator', hourly_rate: 20 },
+  { id: 's9', first_name: 'Justin', role: 'operations', hourly_rate: 30 },
+];
+
+const SAMPLE_ROOMS: { id: string; name: string; room_type: RoomType; room_code: string }[] = [
+  { id: 'r1', name: 'MTH-01', room_type: 'mother', room_code: 'MTH-01' },
+  { id: 'r2', name: 'VEG-01', room_type: 'veg', room_code: 'VEG-01' },
+  { id: 'r3', name: 'VEG-02', room_type: 'veg', room_code: 'VEG-02' },
+  { id: 'r4', name: 'VEG-03', room_type: 'veg', room_code: 'VEG-03' },
+  { id: 'r5', name: 'FLW-01', room_type: 'flower', room_code: 'FLW-01' },
+  { id: 'r6', name: 'FLW-02', room_type: 'flower', room_code: 'FLW-02' },
+  { id: 'r7', name: 'FLW-03', room_type: 'flower', room_code: 'FLW-03' },
+  { id: 'r8', name: 'FLW-05', room_type: 'flower', room_code: 'FLW-05' },
+  { id: 'r9', name: 'FLW-06', room_type: 'flower', room_code: 'FLW-06' },
+  { id: 'r10', name: 'FLW-07', room_type: 'flower', room_code: 'FLW-07' },
+  { id: 'r11', name: 'FLW-08', room_type: 'flower', room_code: 'FLW-08' },
+];
+
+const SAMPLE_TASKS: TaskCardData[] = [
+  { id: 't1', task_type: 'ipm_spray', room_name: 'FLW-06', assigned_to_name: 'Greg', status: 'pending', estimated_duration: '45m', notes: null },
+  { id: 't2', task_type: 'defoliation', room_name: 'FLW-03', assigned_to_name: 'Laura', status: 'in_progress', estimated_duration: '2h', notes: null, scope: 'multi_day', progress_current: 2, progress_total: 4 },
+  { id: 't3', task_type: 'feeding', room_name: 'VEG-01', assigned_to_name: 'Sam', status: 'completed', estimated_duration: '30m', notes: null },
+  { id: 't4', task_type: 'scouting', room_name: 'FLW-08', assigned_to_name: 'Skye', status: 'pending', estimated_duration: '20m', notes: null },
+  { id: 't5', task_type: 'cleaning', room_name: 'FLW-01', assigned_to_name: 'Roxy', status: 'carry_forward', estimated_duration: '1h', notes: 'Carried from yesterday' },
+  { id: 't6', task_type: 'training', room_name: 'VEG-02', assigned_to_name: 'Leo', status: 'pending', estimated_duration: '1h', notes: null },
+];
+
+const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
+  ipm_spray: 'Apply integrated pest management sprays and treatments to prevent or control pests and diseases.',
+  defoliation: 'Remove excess fan leaves to improve light penetration and airflow through the canopy.',
+  transplant: 'Move plants from smaller containers to larger ones as they outgrow their current pots.',
+  cleaning: 'Sanitize surfaces, floors, and equipment. Remove debris and dead plant material.',
+  harvest: 'Cut, hang, and process mature plants at peak trichome development.',
+  feeding: 'Prepare and deliver nutrient solution. Record EC, pH, volume, and water temperature.',
+  scouting: 'Inspect plants for pests, disease, nutrient deficiencies, and overall plant health.',
+  training: 'Apply low-stress or high-stress training techniques to shape plant structure.',
+  clone_cutting: 'Take cuttings from mother plants for propagation. Dip, place in trays, label.',
+  custom: 'General-purpose task for activities that do not fit standard categories.',
+};
+
+const TASK_TYPE_FIELDS: Record<TaskType, string[]> = {
+  ipm_spray: ['Product', 'Method', 'Target Pest', 'Re-entry Hours'],
+  defoliation: ['Type', 'Sections', 'Progress'],
+  transplant: ['From Size', 'To Size', 'Count'],
+  cleaning: ['Type', 'Notes'],
+  harvest: ['Wet Weight', 'Plant Count', 'Waste'],
+  feeding: ['EC', 'pH', 'Volume (gal)', 'Water Temp'],
+  scouting: ['Pests', 'Disease', 'Nutrient Issues', 'Health Rating'],
+  training: ['Type', 'Plant Count', 'Sections'],
+  clone_cutting: ['Mother ID', 'Cut Count', 'Tray'],
+  custom: ['Task Name', 'Description'],
+};
+
+const ICON_MAP: Record<string, typeof Scissors> = {
+  SprayCan,
+  Scissors,
+  ArrowRightLeft,
+  Sparkles,
+  Wheat,
+  Droplets,
+  Search,
+  GitBranch,
+  Sprout,
+  Wrench,
+};
+
+const ROOM_TYPE_ORDER: Record<string, number> = { mother: 0, veg: 1, flower: 2, clone: 3, mixed: 4 };
+const ROOM_TYPE_BORDER: Record<string, string> = {
+  mother: 'border-l-amber-600',
+  veg: 'border-l-green-600',
+  flower: 'border-l-rose-600',
+  clone: 'border-l-sky-600',
+  mixed: 'border-l-cult-medium-gray',
+};
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function DailyTaskBoard() {
+  const [activeTab, setActiveTab] = useState<TabId>('board');
+  const [selectedDate] = useState(todayIso);
+
+  const { rooms: dbRooms } = useGrowRooms();
+  const { tasks: dbTasks } = useDailyTasks(selectedDate);
+  const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
+
+  const rooms = useMemo(() => {
+    if (dbRooms.length > 0) return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
+    return SAMPLE_ROOMS;
+  }, [dbRooms]);
+
+  const taskCards: TaskCardData[] = useMemo(() => {
+    if (dbTasks.length > 0) {
+      return dbTasks.map((t) => {
+        const room = rooms.find((r) => r.id === t.room_id);
+        const staff = SAMPLE_STAFF.find((s) => s.id === t.assigned_to);
+        return {
+          id: t.id,
+          task_type: t.task_type,
+          room_name: room?.room_code ?? 'Unknown',
+          assigned_to_name: staff?.first_name ?? t.assigned_to,
+          status: t.status,
+          estimated_duration: t.estimated_duration,
+          notes: t.notes,
+          scope: t.scope,
+          progress_current: (t.progress_data as Record<string, number>)?.current,
+          progress_total: (t.progress_data as Record<string, number>)?.total,
+        };
+      });
+    }
+    return SAMPLE_TASKS;
+  }, [dbTasks, rooms]);
+
+  return (
+    <div className="space-y-6 pb-8">
+      <div>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Task Board</h1>
+        <p className="text-cult-light-gray mt-1">Daily cultivation operations hub</p>
+      </div>
+
+      <div className="bg-cult-surface-overlay border-b border-cult-dark-gray overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-0 min-w-max">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-px flex-shrink-0 ${
+                  isActive
+                    ? 'text-cult-white border-cult-accent'
+                    : 'text-cult-medium-gray hover:text-cult-light-gray border-transparent'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {activeTab === 'calendar' && <RoomCalendar rooms={rooms} />}
+      {activeTab === 'board' && (
+        <DailyBoardTab
+          rooms={rooms}
+          staff={SAMPLE_STAFF}
+          tasks={taskCards}
+          attendance={attendance}
+          date={selectedDate}
+          onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
+        />
+      )}
+      {activeTab === 'types' && <TaskTypesTab />}
+      {activeTab === 'workers' && (
+        <WorkersTab staff={SAMPLE_STAFF} tasks={taskCards} attendance={attendance} />
+      )}
+    </div>
+  );
+}
+
+interface DailyBoardTabProps {
+  rooms: { id: string; name: string; room_type: RoomType; room_code: string }[];
+  staff: StaffMember[];
+  tasks: TaskCardData[];
+  attendance: ReturnType<typeof useAttendance>['records'];
+  date: string;
+  onUpsertAttendance: (input: Parameters<ReturnType<typeof useAttendance>['upsertAttendance']>[0]) => Promise<void>;
+}
+
+function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendance }: DailyBoardTabProps) {
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
+
+  const tasksByRoom = useMemo(() => {
+    const map = new Map<string, TaskCardData[]>();
+    for (const t of tasks) {
+      const roomMatch = rooms.find((r) => r.room_code === t.room_name);
+      const key = roomMatch?.id ?? t.room_name;
+      const list = map.get(key) ?? [];
+      list.push(t);
+      map.set(key, list);
+    }
+    for (const [, list] of map) {
+      list.sort((a, b) => {
+        const cfg_a = TASK_TYPE_CONFIG[a.task_type];
+        const cfg_b = TASK_TYPE_CONFIG[b.task_type];
+        const pa = PRIORITY_ORDER[(cfg_a as Record<string, unknown>)?.priority as string] ?? 1;
+        const pb = PRIORITY_ORDER[(cfg_b as Record<string, unknown>)?.priority as string] ?? 1;
+        if (a.status === 'carry_forward' && b.status !== 'carry_forward') return -1;
+        if (b.status === 'carry_forward' && a.status !== 'carry_forward') return 1;
+        return pa - pb;
+      });
+    }
+    return map;
+  }, [tasks, rooms]);
+
+  const sortedRoomEntries = useMemo(() => {
+    const entries: { room: typeof rooms[0]; tasks: TaskCardData[] }[] = [];
+    for (const room of rooms) {
+      const roomTasks = tasksByRoom.get(room.id);
+      if (roomTasks && roomTasks.length > 0) {
+        entries.push({ room, tasks: roomTasks });
+      }
+    }
+    entries.sort((a, b) => (ROOM_TYPE_ORDER[a.room.room_type] ?? 9) - (ROOM_TYPE_ORDER[b.room.room_type] ?? 9));
+    return entries;
+  }, [rooms, tasksByRoom]);
+
+  function openAddTask(roomId?: string) {
+    setAddTaskRoomId(roomId ?? null);
+    setShowAddTask(true);
+  }
+
+  return (
+    <div className="space-y-4 relative">
+      <WorkerCheckIn
+        staff={staff}
+        rooms={rooms.map((r) => ({ id: r.id, room_code: r.room_code }))}
+        attendance={attendance}
+        date={date}
+        onUpsertAttendance={onUpsertAttendance}
+      />
+
+      {sortedRoomEntries.length === 0 && (
+        <div className="text-center py-12 text-cult-medium-gray text-sm">
+          No tasks scheduled for today
+        </div>
+      )}
+
+      {sortedRoomEntries.map(({ room, tasks: roomTasks }) => (
+        <div key={room.id} className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_BORDER[room.room_type] ?? ''}`}>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
+              <span className="text-[10px] text-cult-medium-gray uppercase">{room.room_type}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-cult-light-gray">{roomTasks.length} task{roomTasks.length !== 1 ? 's' : ''}</span>
+              <button
+                type="button"
+                onClick={() => openAddTask(room.id)}
+                className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors text-cult-medium-gray hover:text-cult-light-gray"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-cult-dark-gray/30">
+            {roomTasks.map((t) => (
+              <TaskCard key={t.id} task={t} />
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={() => openAddTask()}
+        className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-cult-accent hover:bg-cult-accent-hover text-white rounded-full shadow-glow flex items-center justify-center transition-colors"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+
+      {showAddTask && (
+        <AddTaskModal
+          rooms={rooms}
+          staff={staff}
+          preSelectedRoomId={addTaskRoomId}
+          onClose={() => setShowAddTask(false)}
+          onSave={() => setShowAddTask(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+interface AddTaskModalProps {
+  rooms: { id: string; room_code: string; room_type: RoomType }[];
+  staff: StaffMember[];
+  preSelectedRoomId: string | null;
+  onClose: () => void;
+  onSave: () => void;
+}
+
+function AddTaskModal({ rooms, staff, preSelectedRoomId, onClose, onSave }: AddTaskModalProps) {
+  const [taskType, setTaskType] = useState<TaskType>('feeding');
+  const [roomId, setRoomId] = useState(preSelectedRoomId ?? '');
+  const [assignedTo, setAssignedTo] = useState('');
+  const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await new Promise((r) => setTimeout(r, 200));
+      onSave();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const TASK_TYPES = Object.keys(TASK_TYPE_CONFIG) as TaskType[];
+
+  if (isMobile) {
+    return (
+      <div
+        ref={backdropRef}
+        className="fixed inset-0 z-50 flex items-end bg-black/60"
+        onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+      >
+        <div className="w-full bg-cult-near-black border-t border-cult-medium-gray rounded-t-xl animate-slide-in p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Add Task</h3>
+            <button type="button" onClick={onClose} className="p-1"><X className="w-4 h-4 text-cult-medium-gray" /></button>
+          </div>
+          <AddTaskFormFields
+            taskType={taskType} setTaskType={setTaskType}
+            roomId={roomId} setRoomId={setRoomId}
+            assignedTo={assignedTo} setAssignedTo={setAssignedTo}
+            notes={notes} setNotes={setNotes}
+            rooms={rooms} staff={staff} taskTypes={TASK_TYPES}
+          />
+          <Button onClick={handleSave} disabled={saving || !roomId} className="w-full">
+            {saving ? 'Saving...' : 'Add Task'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={backdropRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+    >
+      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-5 space-y-3 animate-fade-in">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Add Task</h3>
+          <button type="button" onClick={onClose} className="p-1"><X className="w-4 h-4 text-cult-medium-gray" /></button>
+        </div>
+        <AddTaskFormFields
+          taskType={taskType} setTaskType={setTaskType}
+          roomId={roomId} setRoomId={setRoomId}
+          assignedTo={assignedTo} setAssignedTo={setAssignedTo}
+          notes={notes} setNotes={setNotes}
+          rooms={rooms} staff={staff} taskTypes={TASK_TYPES}
+        />
+        <Button onClick={handleSave} disabled={saving || !roomId} className="w-full">
+          {saving ? 'Saving...' : 'Add Task'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface AddTaskFormFieldsProps {
+  taskType: TaskType;
+  setTaskType: (v: TaskType) => void;
+  roomId: string;
+  setRoomId: (v: string) => void;
+  assignedTo: string;
+  setAssignedTo: (v: string) => void;
+  notes: string;
+  setNotes: (v: string) => void;
+  rooms: { id: string; room_code: string }[];
+  staff: StaffMember[];
+  taskTypes: TaskType[];
+}
+
+function AddTaskFormFields({
+  taskType, setTaskType, roomId, setRoomId, assignedTo, setAssignedTo,
+  notes, setNotes, rooms, staff, taskTypes,
+}: AddTaskFormFieldsProps) {
+  const selectClass = 'w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-2 px-2 rounded-sm focus:outline-none focus:border-cult-accent';
+  return (
+    <>
+      <div>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
+        <select value={taskType} onChange={(e) => setTaskType(e.target.value as TaskType)} className={selectClass}>
+          {taskTypes.map((t) => <option key={t} value={t}>{TASK_TYPE_CONFIG[t].label}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Room</label>
+        <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={selectClass}>
+          <option value="">Select room...</option>
+          {rooms.map((r) => <option key={r.id} value={r.id}>{r.room_code}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Assign To</label>
+        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={selectClass}>
+          <option value="">Unassigned</option>
+          {staff.map((s) => <option key={s.id} value={s.id}>{s.first_name}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-2 px-2 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
+          placeholder="Optional notes..."
+        />
+      </div>
+    </>
+  );
+}
+
+function TaskTypesTab() {
+  const types = Object.entries(TASK_TYPE_CONFIG) as [TaskType, typeof TASK_TYPE_CONFIG[TaskType]][];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      {types.map(([key, config]) => {
+        const Icon = ICON_MAP[config.icon] ?? Wrench;
+        const fields = TASK_TYPE_FIELDS[key] ?? [];
+        return (
+          <div key={key} className="bg-cult-near-black border border-cult-dark-gray p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `${config.color}20` }}
+              >
+                <Icon className="w-4 h-4" style={{ color: config.color }} />
+              </div>
+              <span className="text-xs font-semibold text-cult-white uppercase tracking-wider">{config.label}</span>
+            </div>
+            <p className="text-[10px] text-cult-light-gray leading-relaxed">
+              {TASK_TYPE_DESCRIPTIONS[key]}
+            </p>
+            {fields.length > 0 && (
+              <div className="pt-2 border-t border-cult-dark-gray/50">
+                <span className="text-[9px] text-cult-medium-gray uppercase tracking-wider">Fields</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {fields.map((f) => (
+                    <span key={f} className="px-1.5 py-0.5 text-[9px] bg-cult-charcoal text-cult-light-gray rounded-sm">{f}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+interface WorkersTabProps {
+  staff: StaffMember[];
+  tasks: TaskCardData[];
+  attendance: ReturnType<typeof useAttendance>['records'];
+}
+
+function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
+  const attendanceMap = useMemo(() => {
+    const map = new Map<string, (typeof attendance)[0]>();
+    for (const a of attendance) map.set(a.staff_id, a);
+    return map;
+  }, [attendance]);
+
+  const taskCountByWorker = useMemo(() => {
+    const map = new Map<string, { total: number; completed: number }>();
+    for (const t of tasks) {
+      if (!t.assigned_to_name) continue;
+      const match = staff.find((s) => s.first_name === t.assigned_to_name);
+      if (!match) continue;
+      const curr = map.get(match.id) ?? { total: 0, completed: 0 };
+      curr.total++;
+      if (t.status === 'completed') curr.completed++;
+      map.set(match.id, curr);
+    }
+    return map;
+  }, [tasks, staff]);
+
+  const totalPresent = attendance.filter((a) => a.is_present).length;
+  const totalTasksAssigned = tasks.length;
+  const totalCompleted = tasks.filter((t) => t.status === 'completed').length;
+  const totalHours = attendance.reduce((sum, a) => sum + (a.is_present ? (a.hours_worked ?? 8) : 0), 0);
+
+  const ROLE_BADGE: Record<string, string> = {
+    manager: 'bg-amber-950 text-amber-400 border border-amber-800',
+    cultivator: 'bg-green-950 text-green-400 border border-green-800',
+    operations: 'bg-sky-950 text-sky-400 border border-sky-800',
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <SummaryCard label="Present" value={`${totalPresent} / ${staff.length}`} />
+        <SummaryCard label="Tasks Assigned" value={String(totalTasksAssigned)} />
+        <SummaryCard label="Completed" value={String(totalCompleted)} />
+        <SummaryCard label="Total Hours" value={String(totalHours)} />
+      </div>
+
+      <div className="bg-cult-near-black border border-cult-dark-gray divide-y divide-cult-dark-gray/50">
+        {staff.map((s) => {
+          const rec = attendanceMap.get(s.id);
+          const isPresent = rec?.is_present ?? false;
+          const hours = rec?.hours_worked ?? 0;
+          const roomAssignments = rec?.room_assignments ?? [];
+          const counts = taskCountByWorker.get(s.id) ?? { total: 0, completed: 0 };
+
+          return (
+            <div key={s.id} className={`px-4 py-3 flex items-center justify-between gap-3 ${!isPresent ? 'opacity-40' : ''}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-8 h-8 rounded-full bg-cult-charcoal flex items-center justify-center text-sm font-bold text-cult-white flex-shrink-0">
+                  {s.first_name.charAt(0)}
+                </span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-cult-white font-medium">{s.first_name}</span>
+                    <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
+                      {s.role}
+                    </span>
+                    {!isPresent && (
+                      <span className="text-[10px] text-zinc-500 uppercase">Absent</span>
+                    )}
+                  </div>
+                  {isPresent && roomAssignments.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {roomAssignments.map((rid) => (
+                        <span key={rid} className="px-1.5 py-0.5 text-[9px] font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {isPresent && (
+                <div className="flex items-center gap-4 flex-shrink-0 text-xs">
+                  <div className="text-center">
+                    <div className="text-cult-white font-semibold">{counts.total}</div>
+                    <div className="text-[9px] text-cult-medium-gray uppercase">Tasks</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-cult-green font-semibold">{counts.completed}</div>
+                    <div className="text-[9px] text-cult-medium-gray uppercase">Done</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-cult-white font-semibold">{hours}h</div>
+                    <div className="text-[9px] text-cult-medium-gray uppercase">Hours</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-cult-near-black border border-cult-dark-gray p-3">
+      <div className="text-lg font-bold text-cult-white">{value}</div>
+      <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider mt-0.5">{label}</div>
+    </div>
+  );
+}

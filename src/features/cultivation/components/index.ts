@@ -16,3 +16,7 @@ export { IndividualPlantsTab } from './IndividualPlantsTab';
 export { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 export { ExpandedPlantsList } from './ExpandedPlantsList';
 export { HarvestWorkflow } from './harvest';
+export { DailyTaskBoard } from './DailyTaskBoard';
+export { TaskCard } from './TaskCard';
+export { WorkerCheckIn } from './WorkerCheckIn';
+export { RoomCalendar } from './RoomCalendar';
