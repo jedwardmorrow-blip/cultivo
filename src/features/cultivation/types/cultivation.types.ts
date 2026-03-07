@@ -304,3 +304,303 @@ export type BulkImportPlantResult = {
   skipped: string[];
   errors: { state_plant_id: string; reason: string }[];
 };
+
+export type TaskType =
+  | 'ipm_spray'
+  | 'defoliation'
+  | 'transplant'
+  | 'cleaning'
+  | 'harvest'
+  | 'feeding'
+  | 'scouting'
+  | 'training'
+  | 'clone_cutting'
+  | 'custom';
+
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'skipped' | 'carry_forward';
+
+export type AnnotationCategory = 'observation' | 'concern' | 'decision' | 'action_taken' | 'note';
+
+export type AnnotationSeverity = 'info' | 'warning' | 'critical';
+
+export type TaskTypeConfigEntry = {
+  label: string;
+  color: string;
+  icon: string;
+};
+
+export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
+  ipm_spray: { label: 'IPM Spray', color: '#0EA5E9', icon: 'SprayCan' },
+  defoliation: { label: 'Defoliation', color: '#10B981', icon: 'Scissors' },
+  transplant: { label: 'Transplant', color: '#8B5CF6', icon: 'ArrowRightLeft' },
+  cleaning: { label: 'Cleaning', color: '#6B7280', icon: 'Sparkles' },
+  harvest: { label: 'Harvest', color: '#F43F5E', icon: 'Wheat' },
+  feeding: { label: 'Feeding', color: '#F59E0B', icon: 'Droplets' },
+  scouting: { label: 'Scouting', color: '#EC4899', icon: 'Search' },
+  training: { label: 'Training', color: '#14B8A6', icon: 'GitBranch' },
+  clone_cutting: { label: 'Clone Cutting', color: '#0EA5E9', icon: 'Sprout' },
+  custom: { label: 'Custom', color: '#A6A6A6', icon: 'Wrench' },
+};
+
+export interface RoomTaskSchedule {
+  id: string;
+  room_id: string;
+  task_type: TaskType;
+  recurrence: string;
+  day_of_week: number[] | null;
+  start_date: string;
+  end_date: string | null;
+  default_config: Record<string, unknown>;
+  scope: string;
+  priority: string;
+  notes: string | null;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CreateTaskScheduleInput = Pick<
+  RoomTaskSchedule,
+  'room_id' | 'task_type' | 'recurrence' | 'start_date'
+> &
+  Partial<Pick<RoomTaskSchedule, 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes'>>;
+
+export type UpdateTaskScheduleInput = Partial<
+  Pick<RoomTaskSchedule, 'recurrence' | 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes' | 'is_active'>
+>;
+
+export interface DailyTaskInstance {
+  id: string;
+  schedule_id: string | null;
+  room_id: string;
+  task_date: string;
+  task_type: TaskType;
+  assigned_to: string | null;
+  assigned_by: string | null;
+  status: TaskStatus;
+  scope: string;
+  progress_data: Record<string, unknown>;
+  completion_ref_table: string | null;
+  completion_ref_id: string | null;
+  estimated_duration: string | null;
+  task_config: Record<string, unknown>;
+  notes: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyAttendance {
+  id: string;
+  staff_id: string;
+  attendance_date: string;
+  is_present: boolean;
+  hours_worked: number | null;
+  room_assignments: string[] | null;
+  checked_in_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type UpsertAttendanceInput = Pick<DailyAttendance, 'staff_id' | 'attendance_date' | 'is_present'> &
+  Partial<Pick<DailyAttendance, 'hours_worked' | 'room_assignments'>>;
+
+export interface IpmSprayLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  applied_at: string;
+  applied_by: string | null;
+  product_name: string;
+  product_type: string;
+  concentration: string | null;
+  volume_applied: string | null;
+  application_method: string;
+  target_pest: string | null;
+  tables_sprayed: string[] | null;
+  re_entry_hours: number | null;
+  pre_harvest_days: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateSprayLogInput = Pick<
+  IpmSprayLog,
+  'room_id' | 'product_name' | 'product_type' | 'application_method'
+> &
+  Partial<
+    Pick<
+      IpmSprayLog,
+      'task_instance_id' | 'applied_by' | 'concentration' | 'volume_applied' | 'target_pest' | 'tables_sprayed' | 're_entry_hours' | 'pre_harvest_days' | 'notes'
+    >
+  >;
+
+export interface FeedingLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  fed_at: string;
+  fed_by: string | null;
+  reservoir_id: string | null;
+  nutrient_mix: string | null;
+  ec_value: number | null;
+  ph_value: number | null;
+  volume_gallons: number | null;
+  water_temp_f: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateFeedingLogInput = Pick<FeedingLog, 'room_id'> &
+  Partial<
+    Pick<
+      FeedingLog,
+      'task_instance_id' | 'fed_by' | 'reservoir_id' | 'nutrient_mix' | 'ec_value' | 'ph_value' | 'volume_gallons' | 'water_temp_f' | 'notes'
+    >
+  >;
+
+export interface DefoliationLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  performed_at: string;
+  performed_by: string | null;
+  defoliation_type: string;
+  sections_completed: string[] | null;
+  sections_total: string[] | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateDefoliationLogInput = Pick<DefoliationLog, 'room_id' | 'defoliation_type'> &
+  Partial<
+    Pick<DefoliationLog, 'task_instance_id' | 'performed_by' | 'sections_completed' | 'sections_total' | 'notes'>
+  >;
+
+export interface CleaningLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  cleaned_at: string;
+  cleaned_by: string | null;
+  cleaning_type: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateCleaningLogInput = Pick<CleaningLog, 'room_id' | 'cleaning_type'> &
+  Partial<Pick<CleaningLog, 'task_instance_id' | 'cleaned_by' | 'notes'>>;
+
+export interface ScoutingLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  scouted_at: string;
+  scouted_by: string | null;
+  pest_found: boolean;
+  pest_type: string | null;
+  pest_severity: string | null;
+  disease_found: boolean;
+  disease_type: string | null;
+  nutrient_issues: string | null;
+  overall_health: string | null;
+  sections_scouted: string[] | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateScoutingLogInput = Pick<ScoutingLog, 'room_id'> &
+  Partial<
+    Pick<
+      ScoutingLog,
+      'task_instance_id' | 'scouted_by' | 'pest_found' | 'pest_type' | 'pest_severity' | 'disease_found' | 'disease_type' | 'nutrient_issues' | 'overall_health' | 'sections_scouted' | 'notes'
+    >
+  >;
+
+export interface TrainingLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  trained_at: string;
+  trained_by: string | null;
+  training_type: string;
+  plant_count: number | null;
+  sections_trained: string[] | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateTrainingLogInput = Pick<TrainingLog, 'room_id' | 'training_type'> &
+  Partial<Pick<TrainingLog, 'task_instance_id' | 'trained_by' | 'plant_count' | 'sections_trained' | 'notes'>>;
+
+export interface CustomTaskLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string | null;
+  performed_at: string;
+  performed_by: string | null;
+  task_name: string;
+  description: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateCustomTaskLogInput = Pick<CustomTaskLog, 'task_name'> &
+  Partial<Pick<CustomTaskLog, 'task_instance_id' | 'room_id' | 'performed_by' | 'description' | 'notes'>>;
+
+export interface DailyLogAnnotation {
+  id: string;
+  room_id: string;
+  annotation_date: string;
+  created_by: string | null;
+  category: AnnotationCategory;
+  severity: AnnotationSeverity;
+  title: string;
+  body: string | null;
+  related_task_id: string | null;
+  photo_urls: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CreateAnnotationInput = Pick<DailyLogAnnotation, 'room_id' | 'category' | 'title'> &
+  Partial<Pick<DailyLogAnnotation, 'annotation_date' | 'severity' | 'body' | 'related_task_id' | 'photo_urls'>>;
+
+export type UpdateAnnotationInput = Partial<Pick<DailyLogAnnotation, 'category' | 'severity' | 'title' | 'body' | 'photo_urls'>>;
+
+export interface PlantMortalityLog {
+  id: string;
+  plant_group_id: string;
+  room_id: string;
+  mortality_date: string;
+  reported_by: string | null;
+  quantity: number;
+  cause: string | null;
+  cause_detail: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type CreateMortalityLogInput = Pick<PlantMortalityLog, 'plant_group_id' | 'room_id'> &
+  Partial<Pick<PlantMortalityLog, 'mortality_date' | 'reported_by' | 'quantity' | 'cause' | 'cause_detail' | 'notes'>>;
+
+export interface RoomSummary {
+  room_id: string;
+  room_name: string;
+  room_code: string;
+  strains: string[];
+  earliest_projected_harvest: string | null;
+  total_plant_count: number;
+  groups: { id: string; strain: string; stage: GrowthStage; plant_count: number; days_in_stage: number }[];
+}
+
+export interface DailyDigest {
+  date: string;
+  completedTasks: DailyTaskInstance[];
+  attendance: DailyAttendance[];
+  annotations: DailyLogAnnotation[];
+  sprayLogs: IpmSprayLog[];
+  feedingLogs: FeedingLog[];
+  mortalityLogs: PlantMortalityLog[];
+}
