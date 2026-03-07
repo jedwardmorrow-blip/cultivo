@@ -49,13 +49,12 @@ export const sectionDefinitions: SectionDefinition[] = [
     icon: Sprout,
     defaultView: 'cultivation-dashboard',
     items: [
-      { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'primary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'primary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'primary' },
       { id: 'cultivation-taskboard', label: 'Task Board', icon: ClipboardList, group: 'primary' },
-      { id: 'cultivation-rooms', label: 'Grow Rooms', icon: Sprout, group: 'secondary' },
-      { id: 'cultivation-dry-rooms', label: 'Dry Rooms', icon: Wind, group: 'secondary' },
+      { id: 'cultivation-digest', label: 'Digest', icon: FileText, group: 'primary' },
     ],
   },
   {

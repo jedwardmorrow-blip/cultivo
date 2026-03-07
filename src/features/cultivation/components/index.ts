@@ -22,8 +22,6 @@ export { TaskCompletionForm } from './TaskCompletionForm';
 export { DeadPlantForm } from './DeadPlantForm';
 export { WorkerCheckIn } from './WorkerCheckIn';
 export { RoomCalendar } from './RoomCalendar';
-export { TabBar } from './TabBar';
-export type { CultivationTab } from './TabBar';
 export { StrainPills } from './StrainPills';
 export { FlowerRunProgress } from './FlowerRunProgress';
 export { HarvestCountdown } from './HarvestCountdown';
