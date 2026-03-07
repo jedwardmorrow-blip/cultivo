@@ -1,0 +1,1 @@
+export { RosinLabModule } from './RosinLabModule';

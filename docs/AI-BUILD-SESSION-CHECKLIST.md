@@ -14,37 +14,49 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-06
-**Session:** Water Loss Write-Off on Conversions
+**Date:** 2026-03-07
+**Session:** Rosin Lab Module Shell + Navigation
 **Status:** COMPLETE
 
 **What was done:**
 
-Added upstream water loss write-off to the ConversionModal review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, or write off an entire small amount without creating bags at all. No database migration needed -- uses existing `variance_log` table and `logVariance()` service.
+Created the Rosin Lab module shell — a new top-level section in the app with a left-sidebar subnav, pipeline visualization, stats cards, and active work table on the dashboard. All other screens show "Coming Soon" placeholders. No database schema exists yet for rosin lab tables; service queries gracefully return empty data.
 
 **Key changes:**
-- ConversionModal review screen now has a collapsible "Adjust for Water Loss / Variance" section for bulk products
-- Write-off form includes grams input, reason dropdown (defaults to `moisture_loss`), and notes field
-- Adjusted weight is passed through to BulkBagCreationModal as `adjustedAvailableWeight` prop
-- The adjusted `output_weight` flows to `handleFinalize()` so bags totaling the adjusted weight trigger full finalization (Architecture Decision 9)
-- "Write Off Entire Amount" button allows clearing small leftover conversions without creating any bags
-- Write-off variance is logged separately from any in-modal bag variance
+- New `rosin-lab` section in `sectionNavigation.ts` with 8 sub-items (Dashboard, Fresh Frozen, Hash, Rosin, New Wash, Press, Press & Cure Log, Analytics)
+- `RosinLabModule` renders a 220px left sidebar + content area, derives active screen from `currentView` prop (no internal useState needed)
+- Left sidebar nav (`RosinLabNav`) shows active accent border, inactive secondary text, and colored dot indicators for Wash/Press/Cure when `activeCounts > 0`
+- Pipeline cards (`PipelineStages`) are clickable, show live counts, stage-color top borders, and arrows between stages
+- Dashboard stats row (4 stat cards) and active work table with stage-colored row left borders
+- 6 new Tailwind color tokens: `cult-stage-ff`, `cult-stage-wash`, `cult-stage-fd`, `cult-stage-hash`, `cult-stage-press`, `cult-stage-rosin`
+- App.tsx: `RosinLabModule` lazy-loaded; handled in `default` branch via `currentView.startsWith('rosin-lab')`
+
+**Files created:**
+- `src/features/rosin-lab/RosinLabModule.tsx`
+- `src/features/rosin-lab/components/PipelineStages.tsx`
+- `src/features/rosin-lab/components/RosinLabNav.tsx`
+- `src/features/rosin-lab/screens/RosinDashboard.tsx`
+- `src/features/rosin-lab/services/rosinLabService.ts`
+- `src/features/rosin-lab/types/rosin-lab.types.ts`
+- `src/features/rosin-lab/index.ts`
 
 **Files modified:**
-- `src/features/inventory/components/ConversionModal.tsx` — Write-off UI, adjusted weight passthrough, entire-amount write-off handler
-- `src/features/inventory/components/BulkBagCreationModal.tsx` — New `adjustedAvailableWeight` and `writeOffGrams` props, adjusted available weight display
-- `docs/ARCHITECTURE-DECISIONS.md` — Added Decision 20 (Upstream Water Loss Write-Off)
-- `docs/AI-SESSION-BRIEF.md` — Updated last sessions list
-- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off section
-- `CHANGELOG.md` — Session entry added
+- `App.tsx` — lazy import + rosin-lab default case
+- `tailwind.config.js` — 6 new stage color tokens
+- `src/shared/components/navigation/sectionNavigation.ts` — new section + 6 new icon imports
+- `CHANGELOG.md` — session entry added
 
-**Build status:** PASSES
+**Build status:** PASSES (✓ clean, 0 errors)
 **Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors -- not blocking
+- Pre-existing tsc errors -- not blocking (baseline ~501 as of 2026-02-18)
 - `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
+- Rosin lab DB tables (`wash_runs`, `press_runs`, `fresh_frozen_packages`, etc.) do not exist yet; service uses `as any` cast and returns empty defaults
 
 **Next steps:**
-- Go-live plan execution (phases 1-7 in GO-LIVE-PLAN-v4.0.md)
+- Prompt #2: Fresh Frozen intake form + storage table
+- Prompt #3: Wash run form (select FF batch, log input/output/yield)
+- Prompt #4: Press run form + cure session creation
+- Database migration needed: create rosin lab schema (wash_runs, press_runs, fresh_frozen_packages, rosin_cure_sessions, v_rosin_pipeline_status view)
 
 ---
 
