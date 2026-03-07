@@ -30,3 +30,4 @@ export { SectionMap } from './SectionMap';
 export { DailyDigestView } from './DailyDigestView';
 export { AnnotationInput } from './AnnotationInput';
 export { DigestSlackPreview } from './DigestSlackPreview';
+export { HarvestMetricsDashboard } from './harvest-metrics';
