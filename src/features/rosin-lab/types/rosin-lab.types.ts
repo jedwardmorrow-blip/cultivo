@@ -1,3 +1,28 @@
+export interface FreshFrozenPackage {
+  id: string;
+  batch_id: string;
+  strain_id: string | null;
+  package_number: number;
+  weight_grams: number;
+  vacuum_sealed_at: string | null;
+  frozen_at: string | null;
+  freezer_location: string | null;
+  status: 'stored' | 'allocated' | 'washed' | 'sold';
+  sold_price_per_gram: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  batch: {
+    batch_number: string;
+    harvest_date: string;
+    strain: string;
+  } | null;
+  strain: {
+    name: string;
+    abbreviation: string;
+  } | null;
+}
+
 export type RosinLabScreen =
   | 'dashboard'
   | 'fresh-frozen'

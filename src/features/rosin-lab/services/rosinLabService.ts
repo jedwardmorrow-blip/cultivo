@@ -1,5 +1,5 @@
 import { supabase } from '@lib/supabase';
-import type { ActivePipelineItem, DashboardStats } from '../types/rosin-lab.types';
+import type { ActivePipelineItem, DashboardStats, FreshFrozenPackage } from '../types/rosin-lab.types';
 
 // Rosin lab tables do not exist in the DB schema yet.
 // Using `any` cast so TypeScript compiles while the schema is being built.
@@ -109,5 +109,36 @@ export async function getPipelineStageCounts(): Promise<Record<string, number>> 
     };
   } catch {
     return { ff: 0, wash: 0, fd: 0, press: 0, cure: 0 };
+  }
+}
+
+export async function getFreshFrozenPackages(
+  statusFilter?: string
+): Promise<{ data: FreshFrozenPackage[] | null; error: unknown }> {
+  try {
+    let query = db
+      .from('fresh_frozen_packages')
+      .select(`
+        *,
+        batch:batch_registry!batch_id (
+          batch_number,
+          harvest_date,
+          strain
+        ),
+        strain:strains!strain_id (
+          name,
+          abbreviation
+        )
+      `)
+      .order('frozen_at', { ascending: false, nullsFirst: false });
+
+    if (statusFilter && statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error } = await query;
+    return { data: data as FreshFrozenPackage[] | null, error };
+  } catch (err) {
+    return { data: null, error: err };
   }
 }
