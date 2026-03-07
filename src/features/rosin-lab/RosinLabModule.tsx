@@ -2,6 +2,7 @@ import { FlaskConical } from 'lucide-react';
 import { RosinLabNav } from './components/RosinLabNav';
 import { RosinDashboard } from './screens/RosinDashboard';
 import { FreshFrozenInventory } from './screens/FreshFrozenInventory';
+import { HashInventory } from './screens/HashInventory';
 import type { RosinLabScreen } from './types/rosin-lab.types';
 
 function viewToScreen(view: string): RosinLabScreen {
@@ -50,7 +51,7 @@ export function RosinLabModule({ setCurrentView, currentView }: RosinLabModulePr
       case 'fresh-frozen':
         return <FreshFrozenInventory onNavigate={handleNavigate} />;
       case 'hash':
-        return <ComingSoon label="Hash" />;
+        return <HashInventory onNavigate={handleNavigate} />;
       case 'rosin':
         return <ComingSoon label="Rosin" />;
       case 'wash':

@@ -12,6 +12,10 @@ const DEFAULT_COLOR_MAP: Record<string, string> = {
   completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   failed: 'bg-red-500/10 text-red-400 border-red-500/20',
   curing: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  available: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  partial: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  depleted: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  reserved: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
 };
 
 const FALLBACK_CLASS = 'bg-gray-500/10 text-gray-400 border-gray-500/20';

@@ -1,3 +1,28 @@
+export interface HashPackage {
+  id: string;
+  wash_run_id: string;
+  freeze_dry_run_id: string | null;
+  strain_id: string;
+  package_id: string;
+  weight_grams: number;
+  remaining_weight_grams: number;
+  dried_date: string | null;
+  status: 'available' | 'partial' | 'depleted' | 'reserved';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  wash_run: {
+    id: string;
+    batch: {
+      batch_number: string;
+    } | null;
+  } | null;
+  strain: {
+    name: string;
+    abbreviation: string;
+  } | null;
+}
+
 export interface FreshFrozenPackage {
   id: string;
   batch_id: string;
