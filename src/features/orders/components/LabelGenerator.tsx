@@ -153,7 +153,7 @@ export function LabelGenerator() {
 
       Promise.all([
         generateQRCode(selectedLabel.qr_code_data),
-        generateBarcode(`${selectedLabel.package_id}${selectedLabel.batch_id}`),
+        generateBarcode(selectedLabel.package_id),
         generateUPCBarcode(upcCode),
         createLogoDataUrl()
       ]).then(() => {
@@ -203,11 +203,13 @@ export function LabelGenerator() {
         const canvas = document.createElement('canvas');
         JsBarcode(canvas, data, {
           format: 'CODE128',
-          width: 3.0,
-          height: 100,
+          width: 2,
+          height: 45,
           displayValue: true,
-          fontSize: 12,
-          margin: 0
+          margin: 0,
+          font: 'Arial',
+          fontSize: 8,
+          textMargin: 1,
         });
         const dataUrl = canvas.toDataURL();
         setBarcodeUrl(dataUrl);
@@ -234,10 +236,11 @@ export function LabelGenerator() {
         JsBarcode(canvas, upcCode, {
           format: format,
           width: 2,
-          height: 35,
+          height: 28,
           displayValue: true,
-          fontSize: 9,
-          margin: 0
+          fontSize: 7,
+          margin: 0,
+          textMargin: 1,
         });
         const dataUrl = canvas.toDataURL();
         setUpcBarcodeUrl(dataUrl);
@@ -551,7 +554,7 @@ export function LabelGenerator() {
           display: 'flex',
           flexDirection: 'column',
           border: forPrint ? 'none' : '1px solid #ddd',
-          overflow: 'visible'
+          overflow: 'hidden'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.01in' }}>
             <div style={{ flex: 1 }}>
@@ -583,8 +586,8 @@ export function LabelGenerator() {
                   src={qrCodeUrl}
                   alt="QR Code"
                   style={{
-                    width: '0.55in',
-                    height: '0.55in',
+                    width: '0.48in',
+                    height: '0.48in',
                     display: 'block'
                   }}
                 />
@@ -609,7 +612,7 @@ export function LabelGenerator() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.08in', marginBottom: '0.01in' }}>
+          <div style={{ display: 'flex', gap: '0.05in', marginBottom: '0.005in' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '5pt' }}>
                 <strong>Batch:</strong>
@@ -636,7 +639,7 @@ export function LabelGenerator() {
             </div>
           </div>
 
-          <div style={{ fontSize: '4.5pt', marginBottom: '0.008in', lineHeight: '1.25' }}>
+          <div style={{ fontSize: '4.5pt', marginBottom: '0.004in', lineHeight: '1.25' }}>
             <div><strong>Additives:</strong> Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B</div>
             <div style={{ marginTop: '0.005in' }}><strong>License:</strong> (Kind Meds Inc.) {selectedLabel.compliance_uid}</div>
           </div>
@@ -677,7 +680,7 @@ export function LabelGenerator() {
   };
 
   if (loading) {
-    return <div className="text-gray-400">Loading labels...</div>;
+    return <div className="text-cult-text-muted">Loading labels...</div>;
   }
 
   return (
@@ -694,15 +697,15 @@ export function LabelGenerator() {
       </div>
 
       {showNewLabelForm && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">New Label Batch</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Product</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Product</label>
               <select
                 value={formData.product_id}
                 onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               >
                 <option value="">Select Product</option>
                 {products.map(product => (
@@ -714,31 +717,31 @@ export function LabelGenerator() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Batch ID</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Batch ID</label>
               <input
                 type="text"
                 value={formData.batch_id}
                 onChange={(e) => setFormData({ ...formData, batch_id: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="25064H"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Package ID Prefix</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Package ID Prefix</label>
               <input
                 type="text"
                 value={formData.package_id}
                 onChange={(e) => setFormData({ ...formData, package_id: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="072125"
               />
               {packageIdPreview.length > 0 && (
                 <div className="mt-2 text-xs">
-                  <div className="text-gray-400 mb-1">Will generate:</div>
+                  <div className="text-cult-text-muted mb-1">Will generate:</div>
                   <div className="flex flex-wrap gap-1">
                     {packageIdPreview.map(id => (
-                      <span key={id} className="px-2 py-1 bg-gray-800 rounded text-gray-300 font-mono">
+                      <span key={id} className="px-2 py-1 bg-cult-surface-raised rounded text-cult-text-secondary font-mono">
                         {id}
                       </span>
                     ))}
@@ -753,113 +756,113 @@ export function LabelGenerator() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Net Weight (grams)</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Net Weight (grams)</label>
               <input
                 type="number"
                 step="0.1"
                 value={formData.net_weight_grams}
                 onChange={(e) => setFormData({ ...formData, net_weight_grams: parseFloat(e.target.value) })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">THC %</label>
+              <label className="block text-sm text-cult-text-muted mb-1">THC %</label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.thc_percentage}
                 onChange={(e) => setFormData({ ...formData, thc_percentage: parseFloat(e.target.value) })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">CBD %</label>
+              <label className="block text-sm text-cult-text-muted mb-1">CBD %</label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.cbd_percentage}
                 onChange={(e) => setFormData({ ...formData, cbd_percentage: parseFloat(e.target.value) })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Product Category</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Product Category</label>
               <input
                 type="text"
                 value={formData.product_category}
                 onChange={(e) => setFormData({ ...formData, product_category: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="Indica Hybrid"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Lineage</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Lineage</label>
               <input
                 type="text"
                 value={formData.lineage}
                 onChange={(e) => setFormData({ ...formData, lineage: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="(Face Off OG x Kush Mints) x (Biscotti x Sherb BX)"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Harvest Date</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Harvest Date</label>
               <input
                 type="date"
                 value={formData.harvest_date}
                 onChange={(e) => setFormData({ ...formData, harvest_date: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Package Date</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Package Date</label>
               <input
                 type="date"
                 value={formData.package_date}
                 onChange={(e) => setFormData({ ...formData, package_date: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Compliance UID</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Compliance UID</label>
               <input
                 type="text"
                 value={formData.compliance_uid}
                 onChange={(e) => setFormData({ ...formData, compliance_uid: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder={DEFAULT_LICENSE_NUMBER}
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">UPC Code (Optional)</label>
+              <label className="block text-sm text-cult-text-muted mb-1">UPC Code (Optional)</label>
               <input
                 type="text"
                 value={formData.upc_code}
                 onChange={(e) => setFormData({ ...formData, upc_code: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="12-digit UPC-A or 8-digit EAN-8"
                 maxLength={12}
               />
-              <p className="text-xs text-gray-500 mt-1">Leave blank to auto-generate from product info</p>
+              <p className="text-xs text-cult-text-muted mt-1">Leave blank to auto-generate from product info</p>
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Quantity to Generate</label>
+              <label className="block text-sm text-cult-text-muted mb-1">Quantity to Generate</label>
               <input
                 type="number"
                 min="1"
                 max="100"
                 value={formData.quantity_to_generate}
                 onChange={(e) => setFormData({ ...formData, quantity_to_generate: parseInt(e.target.value) })}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white"
+                className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
           </div>
@@ -873,7 +876,7 @@ export function LabelGenerator() {
             </button>
             <button
               onClick={() => setShowNewLabelForm(false)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+              className="px-4 py-2 bg-cult-surface-overlay hover:bg-cult-surface-overlay text-white rounded transition-colors"
             >
               Cancel
             </button>
@@ -881,33 +884,33 @@ export function LabelGenerator() {
         </div>
       )}
 
-      <div className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+      <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-900/50 border-b border-gray-700">
+            <thead className="bg-cult-surface/50 border-b border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Label #</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Product</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Batch ID</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Package ID</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Weight</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">THC/CBD</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Label #</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Product</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Batch ID</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Package ID</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Weight</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">THC/CBD</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-cult-text-muted">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-cult-border">
               {labels.map(label => (
-                <tr key={label.id} className="hover:bg-gray-900/30">
+                <tr key={label.id} className="hover:bg-cult-surface/30">
                   <td className="px-4 py-3 text-white font-mono text-sm">{label.label_number}</td>
                   <td className="px-4 py-3">
                     <div className="text-white">{label.product_name}</div>
-                    <div className="text-sm text-gray-400">{label.strain}</div>
+                    <div className="text-sm text-cult-text-muted">{label.strain}</div>
                   </td>
-                  <td className="px-4 py-3 text-gray-400">{label.batch_id}</td>
-                  <td className="px-4 py-3 text-gray-400">{label.package_id}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{label.batch_id}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{label.package_id}</td>
                   <td className="px-4 py-3 text-white">{label.net_weight_grams}g</td>
-                  <td className="px-4 py-3 text-gray-400">
+                  <td className="px-4 py-3 text-cult-text-muted">
                     {label.thc_percentage.toFixed(2)}% / {label.cbd_percentage.toFixed(2)}%
                   </td>
                   <td className="px-4 py-3">
@@ -928,18 +931,18 @@ export function LabelGenerator() {
                           setSelectedLabel(label);
                           setShowPreview(true);
                         }}
-                        className="p-2 hover:bg-gray-700 rounded transition-colors"
+                        className="p-2 hover:bg-cult-surface-overlay rounded transition-colors"
                         title="Preview & Print"
                       >
-                        <Eye className="w-4 h-4 text-gray-400" />
+                        <Eye className="w-4 h-4 text-cult-text-muted" />
                       </button>
                       {!label.printed_at && (
                         <button
                           onClick={() => markAsPrinted(label.id)}
-                          className="p-2 hover:bg-gray-700 rounded transition-colors"
+                          className="p-2 hover:bg-cult-surface-overlay rounded transition-colors"
                           title="Mark as Printed"
                         >
-                          <Printer className="w-4 h-4 text-gray-400" />
+                          <Printer className="w-4 h-4 text-cult-text-muted" />
                         </button>
                       )}
                     </div>
@@ -1027,8 +1030,8 @@ export function LabelGenerator() {
           `}</style>
 
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 no-print">
-            <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 p-4 border-b border-gray-700 flex items-center justify-between no-print bg-gray-900 z-10">
+            <div className="bg-cult-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 p-4 border-b border-cult-border flex items-center justify-between no-print bg-cult-surface z-10">
                 <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
                 <div className="flex gap-2">
                   <button
@@ -1044,14 +1047,14 @@ export function LabelGenerator() {
                       setShowPreview(false);
                       setSelectedLabel(null);
                     }}
-                    className="text-gray-400 hover:text-white px-4"
+                    className="text-cult-text-muted hover:text-white px-4"
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              <div className="p-16 bg-gray-100 flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
+              <div className="p-16 bg-cult-surface flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
                 {imageError && (
                   <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
                     {imageError}

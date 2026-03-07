@@ -78,8 +78,10 @@ export interface BatchAllocationSummary {
 
 // Batch with COA status
 export interface BatchWithCOAStatus extends BatchRegistry {
-  batch_id: string; // Explicit batch_id for clarity
+  batch_id: string;
   batch_status: string;
+  lifecycle_state: string;
+  quality_grade_id: string | null;
   coa_status: 'active' | 'inactive' | 'pending' | 'none';
   coa_active: boolean;
   coa_url?: string;

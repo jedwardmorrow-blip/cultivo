@@ -87,10 +87,10 @@ export function ConversionsView() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Package className="w-6 h-6 text-white" />
-            <h2 className="text-2xl font-bold text-white">Conversions</h2>
+            <Package className="w-6 h-6 text-cult-white" />
+            <h2 className="text-2xl font-bold text-cult-white">Conversions</h2>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-cult-text-muted text-sm">
             Create packages from completed sessions and finalize to immediately available inventory
           </p>
         </div>
@@ -141,7 +141,7 @@ export function ConversionsView() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-cult-white">
               Pending Finalization ({pendingSessions.length})
             </h3>
           </div>
@@ -156,10 +156,10 @@ export function ConversionsView() {
           </div>
         </div>
       ) : (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-lg p-8 text-center">
           <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-300 mb-1">All sessions finalized</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-lg font-medium text-cult-text-secondary mb-1">All sessions finalized</h3>
+          <p className="text-sm text-cult-text-muted">
             No sessions awaiting finalization. Complete production sessions to create pending conversions.
           </p>
         </div>
@@ -220,10 +220,10 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             {/* Main info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-white truncate">
+                <h3 className="text-base font-semibold text-cult-white truncate">
                   {session.strain_name}
                 </h3>
-                <span className="text-xs font-medium text-gray-400">
+                <span className="text-xs font-medium text-cult-text-muted">
                   {session.batch_name}
                 </span>
                 {isAggregated && (
@@ -234,13 +234,13 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
               </div>
 
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-gray-300">{session.product_name}</span>
+                <span className="text-sm text-cult-text-secondary">{session.product_name}</span>
                 <span className="text-xs px-2 py-0.5 bg-blue-900/40 border border-blue-700 rounded text-blue-300">
                   {sessionTypeLabel}
                 </span>
               </div>
 
-              <div className="flex items-center gap-4 text-xs text-gray-400">
+              <div className="flex items-center gap-4 text-xs text-cult-text-muted">
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   <span>Last completed {daysSinceCompleted}d ago</span>
@@ -258,11 +258,11 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             <div className="text-right shrink-0">
               {isBulk ? (
                 <>
-                  <div className="text-2xl font-bold text-white">
-                    {session.output_weight?.toFixed(0) || 0}
-                    <span className="text-sm font-normal text-gray-400 ml-1">g</span>
+                  <div className="text-2xl font-bold text-cult-white">
+                    {session.output_weight != null ? session.output_weight.toFixed(0) : 0}
+                    <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-cult-text-muted mt-1">
                     {session.has_partial_packages
                       ? 'remaining'
                       : isAggregated ? 'total from sessions' : 'bulk weight'}
@@ -270,11 +270,11 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-bold text-cult-white">
                     {session.output_units || 0}
-                    <span className="text-sm font-normal text-gray-400 ml-1">units</span>
+                    <span className="text-sm font-normal text-cult-text-muted ml-1">units</span>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-cult-text-muted mt-1">
                     {session.has_partial_packages
                       ? 'remaining'
                       : isAggregated ? 'total from sessions' : 'packaged'}
@@ -300,7 +300,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             aria-label={isExpanded ? 'Collapse session breakdown' : 'Expand session breakdown'}
           >
             <ChevronDown
-              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+              className={`w-4 h-4 text-cult-text-muted transition-transform duration-200 ${
                 isExpanded ? 'rotate-180' : ''
               }`}
             />
@@ -369,12 +369,12 @@ function SessionBreakdownPanel({
 
   return (
     <div className={`border-t ${borderTop} ${bg} px-4 py-3`}>
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+      <p className="text-xs font-semibold text-cult-text-muted uppercase tracking-wide mb-2">
         Session Breakdown
       </p>
       <table className="w-full text-xs">
         <thead>
-          <tr className="text-gray-500">
+          <tr className="text-cult-text-muted">
             <th className="text-left pb-1.5 font-medium">Operator</th>
             <th className="text-left pb-1.5 font-medium">Completed</th>
             <th className="text-left pb-1.5 font-medium">Source Pkg</th>
@@ -383,16 +383,16 @@ function SessionBreakdownPanel({
         </thead>
         <tbody className="divide-y divide-white/5">
           {contributions.map((c) => (
-            <tr key={c.id} className="text-gray-300">
+            <tr key={c.id} className="text-cult-text-secondary">
               <td className="py-1.5">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-3 h-3 text-gray-500 shrink-0" />
+                  <User className="w-3 h-3 text-cult-text-muted shrink-0" />
                   <span className="truncate max-w-[140px]">{c.operator_name || '—'}</span>
                 </div>
               </td>
               <td className="py-1.5">
-                <div className="flex items-center gap-1.5 text-gray-400">
-                  <CalendarDays className="w-3 h-3 text-gray-500 shrink-0" />
+                <div className="flex items-center gap-1.5 text-cult-text-muted">
+                  <CalendarDays className="w-3 h-3 text-cult-text-muted shrink-0" />
                   <span>
                     {c.completed_at
                       ? new Date(c.completed_at).toLocaleDateString('en-US', {
@@ -405,10 +405,10 @@ function SessionBreakdownPanel({
               </td>
               <td className="py-1.5">
                 {c.source_package_id
-                  ? <span className="font-mono text-gray-400 text-[11px]">{c.source_package_id}</span>
-                  : <span className="text-gray-600">—</span>}
+                  ? <span className="font-mono text-cult-text-muted text-[11px]">{c.source_package_id}</span>
+                  : <span className="text-cult-text-faint">—</span>}
               </td>
-              <td className="py-1.5 text-right font-medium text-white">
+              <td className="py-1.5 text-right font-medium text-cult-white">
                 {isBulk
                   ? `${(c.output_weight || 0).toFixed(0)}g`
                   : `${c.output_units || 0}`}
@@ -418,8 +418,8 @@ function SessionBreakdownPanel({
         </tbody>
         <tfoot>
           <tr className={`border-t ${isUrgent ? 'border-amber-700/40' : 'border-white/10'}`}>
-            <td colSpan={3} className="pt-2 text-gray-400 font-medium">Total</td>
-            <td className="pt-2 text-right font-bold text-white">
+            <td colSpan={3} className="pt-2 text-cult-text-muted font-medium">Total</td>
+            <td className="pt-2 text-right font-bold text-cult-white">
               {isBulk ? `${total.toFixed(0)}g` : `${total}`}
             </td>
           </tr>

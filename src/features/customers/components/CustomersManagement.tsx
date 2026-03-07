@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { LoadingSpinner, ErrorDisplay } from '@/shared/components';
+import { Button, LoadingSpinner, ErrorDisplay } from '@/shared/components';
 import { useCustomers } from '../hooks/useCustomers';
 import { useCustomerMutations } from '../hooks/useCustomerMutations';
 import { CustomersList } from './CustomersList';
@@ -85,13 +85,12 @@ export function CustomersManagement() {
             Manage dispensary customers and delivery information
           </p>
         </div>
-        <button
+        <Button
           onClick={handleCreate}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition"
+          icon={<Plus className="w-5 h-5" />}
         >
-          <Plus className="w-5 h-5" />
           Add Customer
-        </button>
+        </Button>
       </div>
 
       <CustomersFilters

@@ -602,8 +602,8 @@ These movements affect ATP calculation but NOT on_hand_qty:
 
 | Movement Kind | Effect on ATP | Use Case |
 |---------------|---------------|----------|
-| **RESERVE** | Decrements ATP | Batch allocated to order (soft hold) |
-| **RELEASE** | Increments ATP | Allocation cancelled or converted to fulfillment |
+| **RESERVE** | Decrements ATP | Package assigned to order or session started (soft hold) |
+| **RELEASE** | Increments ATP | Assignment removed, order cancelled, or session cancelled |
 
 **ATP Calculation:**
 ```sql

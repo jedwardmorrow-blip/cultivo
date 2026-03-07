@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-27
+updated: 2026-03-01
 priority: Working document - update every session
 ---
 
@@ -14,39 +14,37 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-27
-**Session:** Fix 14g Smalls Naming & Finalization Status Sync
+**Date:** 2026-03-06
+**Session:** Water Loss Write-Off on Conversions
 **Status:** COMPLETE
 
 **What was done:**
 
-Fixed a bug where the packaging trigger named 14g items "14g Flower" instead of "14g Smalls", causing package assignment failures for orders (e.g., Story Bell). Also fixed a finalization status sync gap in the RPC.
+Added upstream water loss write-off to the ConversionModal review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, or write off an entire small amount without creating bags at all. No database migration needed -- uses existing `variance_log` table and `logVariance()` service.
 
-**1. Trigger Fix (database)**
-- `set_packaging_product_names()` — Changed `'14g Flower'` to `'14g Smalls'` in the 14g product name template. Convention: 14g = Smalls system-wide (products catalog, `productNaming.ts`, all historical 14g sessions sourced from Bulk Smalls).
+**Key changes:**
+- ConversionModal review screen now has a collapsible "Adjust for Water Loss / Variance" section for bulk products
+- Write-off form includes grams input, reason dropdown (defaults to `moisture_loss`), and notes field
+- Adjusted weight is passed through to BulkBagCreationModal as `adjustedAvailableWeight` prop
+- The adjusted `output_weight` flows to `handleFinalize()` so bags totaling the adjusted weight trigger full finalization (Architecture Decision 9)
+- "Write Off Entire Amount" button allows clearing small leftover conversions without creating any bags
+- Write-off variance is logged separately from any in-modal bag variance
 
-**2. RPC Fix (database)**
-- `finalize_session_aggregated()` — Packaging path now also sets product-specific finalization columns (`finalization_status_14g`, `_3_5g`, `_1lb`) alongside the generic `finalization_status_packaged`. Prevents `pending_conversion_sessions` view from showing already-finalized sessions as pending.
-
-**3. Data Backfill (database)**
-- 3 packaging sessions: `output_product_14g_name` corrected from `'14g Flower'` to `'14g Smalls'`
-- 1 inventory item (`260227-BLM-001`): `product_name` corrected
-- 1 session (Black Maple): `finalization_status_14g` synced to `'finalized'` to match its `finalization_status_packaged`
-
-**Migration:** `fix_14g_naming_and_finalization_sync`
-**No frontend changes.** Inventory names now match order product names.
+**Files modified:**
+- `src/features/inventory/components/ConversionModal.tsx` — Write-off UI, adjusted weight passthrough, entire-amount write-off handler
+- `src/features/inventory/components/BulkBagCreationModal.tsx` — New `adjustedAvailableWeight` and `writeOffGrams` props, adjusted available weight display
+- `docs/ARCHITECTURE-DECISIONS.md` — Added Decision 20 (Upstream Water Loss Write-Off)
+- `docs/AI-SESSION-BRIEF.md` — Updated last sessions list
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off section
+- `CHANGELOG.md` — Session entry added
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors — not blocking
-- `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
-- White Devil 14g session (`e8091c75`) still pending in both columns — never finalized, no inventory created yet. Will finalize naturally when operator processes it.
+- Pre-existing tsc errors -- not blocking
+- `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
 
-**Next recommendations (in order):**
-1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
-2. **Export/reporting capabilities** — Account data export, revenue reports
-3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-4. **Cultivation: Move to Room action** — split plants into new group in different room
+**Next steps:**
+- Go-live plan execution (phases 1-7 in GO-LIVE-PLAN-v4.0.md)
 
 ---
 

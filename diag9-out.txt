@@ -1,0 +1,120 @@
+L1: import { useState, useEffect } from 'react';
+L2: import {
+L3:   Scissors,
+L4:   Leaf,
+L5:   Box,
+L6:   Clock,
+L7:   CheckCircle,
+L8:   ArrowRight,
+L9:   Activity,
+L10: } from 'lucide-react';
+L11: import { supabase } from '@/lib/supabase';
+L12: import { formatElapsedTime } from '../utils';
+L13: import type { BuckingSession, TrimSession, PackagingSession } from '../types';
+L14: import {
+L15:   getActiveBuckingSessions,
+L16:   getActiveTrimSessions,
+L17:   getActivePackagingSessions,
+L18:   getBuckingSessions,
+L19:   getTrimSessions,
+L20:   getPackagingSessions,
+L21: } from '../services/sessions.service';
+L22: 
+L23: interface ProductionDashboardProps {
+L24:   onViewChange: (view: string) => void;
+L25: }
+L26: 
+L27: interface ActiveSessionRow {
+L28:   id: string;
+L29:   type: 'bucking' | 'trim' | 'packaging';
+L30:   worker: string;
+L31:   strain: string;
+L32:   packageId: string;
+L33:   startedAt: string;
+L34: }
+L35: 
+L36: interface TodaySummary {
+L37:   buckingCompleted: number;
+L38:   trimCompleted: number;
+L39:   packagingCompleted: number;
+L40:   totalFlowerBucked: number;
+L41:   totalFlowerTrimmed: number;
+L42:   totalUnitsPackaged: number;
+L43: }
+L44: 
+L45: function normalizeActiveSessions(
+L46:   bucking: BuckingSession[],
+L47:   trim: TrimSession[],
+L48:   packaging: PackagingSession[]
+L49: ): ActiveSessionRow[] {
+L50:   const rows: ActiveSessionRow[] = [];
+L51: 
+L52:   bucking.forEach((s) =>
+L53:     rows.push({
+L54:       id: s.id,
+L55:       type: 'bucking',
+L56:       worker: s.bucker_name || '',
+L57:       strain: s.strain || '',
+L58:       packageId: s.binned_package_id || '',
+L59:       startedAt: s.started_at,
+L60:     })
+L61:   );
+L62: 
+L63:   trim.forEach((s) =>
+L64:     rows.push({
+L65:       id: s.id,
+L66:       type: 'trim',
+L67:       worker: s.trimmer_name || '',
+L68:       strain: s.strain || '',
+L69:       packageId: s.package_id || '',
+L70:       startedAt: s.started_at,
+L71:     })
+L72:   );
+L73: 
+L74:   packaging.forEach((s) =>
+L75:     rows.push({
+L76:       id: s.id,
+L77:       type: 'packaging',
+L78:       worker: s.packager_name || '',
+L79:       strain: s.strain || '',
+L80:       packageId: s.package_id || '',
+L81:       startedAt: s.started_at,
+L82:     })
+L83:   );
+L84: 
+L85:   rows.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+L86:   return rows;
+L87: }
+L88: 
+L89: function computeTodaySummary(
+L90:   buckingAll: BuckingSession[],
+L91:   trimAll: TrimSession[],
+L92:   packagingAll: PackagingSession[]
+L93: ): TodaySummary {
+L94:   const today = new Date().toISOString().split('T')[0];
+L95: 
+L96:   const buckingToday = buckingAll.filter(
+L97:     (s) => s.session_date === today && s.session_status === 'completed'
+L98:   );
+L99:   const trimToday = trimAll.filter(
+L100:     (s) => s.session_date === today && s.session_status === 'completed'
+L101:   );
+L102:   const packagingToday = packagingAll.filter(
+L103:     (s) => s.session_date === today && s.session_status === 'completed'
+L104:   );
+L105: 
+L106:   return {
+L107:     buckingCompleted: buckingToday.length,
+L108:     trimCompleted: trimToday.length,
+L109:     packagingCompleted: packagingToday.length,
+L110:     totalFlowerBucked: buckingToday.reduce((sum, s) => sum + (s.bucked_flower_grams || 0), 0),
+L111:     totalFlowerTrimmed: trimToday.reduce((sum, s) => sum + (s.big_buds_grams || 0), 0),
+L112:     totalUnitsPackaged: packagingToday.reduce(
+L113:       (sum, s) => sum + (s.units_3_5g || 0) + (s.units_14g || 0) + (s.units_454g || 0),
+L114:       0
+L115:     ),
+L116:   };
+L117: }
+L118: 
+L119: const TYPE_CONFIG = {
+L120:   bucking: { label: 'Bucking', icon: Scissors, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },

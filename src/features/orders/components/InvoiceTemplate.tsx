@@ -68,7 +68,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
     }, [invoiceData.company_logo_path, onImagesLoaded]);
     const formatDate = (dateString: string | null) => {
       if (!dateString) return '';
-      const date = new Date(dateString);
+      const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(dateString) ? dateString + 'T00:00:00' : dateString);
       return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
     };
 
@@ -139,7 +139,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                 </tr>
                 <tr>
                   <td className="font-bold pr-4 py-1">Est Delivery:</td>
-                  <td>{formatDate(invoiceData.estimated_delivery_date)}</td>
+                  <td>{formatDate(invoiceData.estimated_delivery_date) || 'TBD'}</td>
                 </tr>
               </tbody>
             </table>
@@ -181,10 +181,10 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                   <td className="py-2 px-2 text-sm align-top">
                     <div className="product-name font-semibold">{productDisplay}</div>
                     {strainInfo && (
-                      <div className="strain-info text-xs text-gray-700 mt-0.5">{strainInfo}</div>
+                      <div className="strain-info text-xs text-cult-text-muted mt-0.5">{strainInfo}</div>
                     )}
                     {batchInfo && (
-                      <div className="batch-info text-xs text-gray-600 mt-0.5 font-medium">{batchInfo}</div>
+                      <div className="batch-info text-xs text-cult-text-faint mt-0.5 font-medium">{batchInfo}</div>
                     )}
                   </td>
                   <td className="text-right py-2 px-2 text-sm align-top">
@@ -214,7 +214,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             {invoiceData.notes && (
               <div>
                 <div className="notes-title font-bold text-sm mb-1">Notes:</div>
-                <div className="notes-content text-sm text-gray-700">{invoiceData.notes}</div>
+                <div className="notes-content text-sm text-cult-text-muted">{invoiceData.notes}</div>
               </div>
             )}
             <div className="originator-license mt-4">

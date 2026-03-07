@@ -82,7 +82,7 @@ export function VarianceLogViewer({
     if (abs >= 5) return 'text-red-600 font-bold';
     if (abs >= 3) return 'text-orange-600 font-semibold';
     if (abs >= 1) return 'text-yellow-600';
-    return 'text-gray-600';
+    return 'text-cult-text-faint';
   };
 
   const formatDate = (dateString: string) => {
@@ -110,13 +110,13 @@ export function VarianceLogViewer({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-cult-text-muted" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search by package ID, product..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <button
@@ -124,7 +124,7 @@ export function VarianceLogViewer({
             className={`flex items-center px-4 py-2 border rounded-lg transition-colors ${
               showFilters || activeFiltersCount > 0
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
             }`}
           >
             <Filter className="h-5 w-5 mr-2" />
@@ -149,30 +149,30 @@ export function VarianceLogViewer({
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-4">
+        <div className="p-4 bg-cult-surface-sunken border border-cult-border-subtle rounded-lg space-y-4">
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-cult-text-primary mb-2">
               <Calendar className="h-4 w-4 inline mr-1" />
               Date Range
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                <label className="block text-xs text-cult-text-faint mb-1">Start Date</label>
                 <input
                   type="date"
                   value={filters.start_date?.split('T')[0] || ''}
                   onChange={(e) => handleDateRangeChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                <label className="block text-xs text-cult-text-faint mb-1">End Date</label>
                 <input
                   type="date"
                   value={filters.end_date?.split('T')[0] || ''}
                   onChange={(e) => handleDateRangeChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -180,7 +180,7 @@ export function VarianceLogViewer({
 
           {/* Source Type */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">Source Type</label>
+            <label className="block text-sm font-semibold text-cult-text-primary mb-2">Source Type</label>
             <div className="flex flex-wrap gap-2">
               {sourceTypes.map(source => (
                 <button
@@ -189,7 +189,7 @@ export function VarianceLogViewer({
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.source_type?.includes(source.value)
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
                   {source.label}
@@ -200,7 +200,7 @@ export function VarianceLogViewer({
 
           {/* Variance Reason */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">Variance Reason</label>
+            <label className="block text-sm font-semibold text-cult-text-primary mb-2">Variance Reason</label>
             <div className="flex flex-wrap gap-2">
               {varianceReasons.map(reason => (
                 <button
@@ -209,7 +209,7 @@ export function VarianceLogViewer({
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.variance_reason?.includes(reason.value)
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
                   {reason.label}
@@ -222,7 +222,7 @@ export function VarianceLogViewer({
           <div className="flex justify-end pt-2">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 font-medium"
+              className="px-4 py-2 text-sm text-cult-text-muted hover:text-cult-text-primary font-medium"
             >
               Clear All Filters
             </button>
@@ -231,34 +231,34 @@ export function VarianceLogViewer({
       )}
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
+      <div className="flex items-center justify-between text-sm text-cult-text-faint">
         <div>
-          Showing <span className="font-semibold text-gray-900">{entries.length}</span> of{' '}
-          <span className="font-semibold text-gray-900">{totalCount}</span> variance entries
+          Showing <span className="font-semibold text-cult-text-primary">{entries.length}</span> of{' '}
+          <span className="font-semibold text-cult-text-primary">{totalCount}</span> variance entries
         </div>
       </div>
 
       {/* Table */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-cult-border-subtle rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-cult-border-subtle">
+            <thead className="bg-cult-surface-sunken">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Timestamp</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Source</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Package ID</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Product</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Expected</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Actual</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Variance</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Reason</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">User</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">Timestamp</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">Source</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">Package ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">Product</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase">Expected</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase">Actual</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-cult-text-primary uppercase">Variance</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">Reason</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-cult-text-primary uppercase">User</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-cult-border-subtle">
               {entries.map(entry => (
-                <tr key={entry.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">
+                <tr key={entry.id} className="hover:bg-cult-surface-sunken">
+                  <td className="px-4 py-3 text-sm text-cult-text-primary">
                     {formatDate(entry.timestamp)}
                   </td>
                   <td className="px-4 py-3 text-sm">
@@ -267,21 +267,21 @@ export function VarianceLogViewer({
                         ? 'bg-blue-100 text-blue-800'
                         : entry.source_type === 'session_conversion'
                         ? 'bg-purple-100 text-purple-800'
-                        : 'bg-gray-100 text-gray-800'
+                        : 'bg-cult-surface text-cult-text-primary'
                     }`}>
                       {entry.source_type === 'audit_reconciliation' ? 'Audit' :
                        entry.source_type === 'session_conversion' ? 'Session' : 'Manual'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-mono text-gray-900">{entry.package_id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm font-mono text-cult-text-primary">{entry.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-cult-text-primary">
                     <div>{entry.product_name}</div>
-                    {entry.strain && <div className="text-xs text-gray-500">{entry.strain}</div>}
+                    {entry.strain && <div className="text-xs text-cult-text-muted">{entry.strain}</div>}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-900">
+                  <td className="px-4 py-3 text-sm text-right text-cult-text-primary">
                     {entry.expected_qty.toFixed(2)} {entry.unit}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-900">
+                  <td className="px-4 py-3 text-sm text-right text-cult-text-primary">
                     {entry.actual_qty.toFixed(2)} {entry.unit}
                   </td>
                   <td className={`px-4 py-3 text-sm text-right ${getVarianceClass(entry.variance_percentage)}`}>
@@ -297,10 +297,10 @@ export function VarianceLogViewer({
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-cult-text-primary">
                     {entry.variance_reason.replace(/_/g, ' ')}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-cult-text-primary">
                     {entry.user_full_name || entry.user_email || 'System'}
                   </td>
                 </tr>
@@ -310,7 +310,7 @@ export function VarianceLogViewer({
         </div>
 
         {entries.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-cult-text-muted">
             <p>No variance entries found</p>
           </div>
         )}

@@ -239,7 +239,7 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">My Queue</h1>
-          <p className="text-cult-light-gray mt-1">Tasks and visits requiring your attention</p>
+          <p className="text-cult-light-gray mt-2">Tasks and visits requiring your attention</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -421,7 +421,7 @@ function QueueSection({
 function StatBlock({ label, value, accent }: { label: string; value: number; accent?: 'red' | 'amber' }) {
   const valueColor = accent === 'red' ? 'text-red-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
       <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
       <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
     </div>

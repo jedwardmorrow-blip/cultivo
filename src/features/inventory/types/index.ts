@@ -18,6 +18,9 @@ export * from './conversions.types';
 // Export combine packages types
 export * from './combine.types';
 
+// Export rebalance types
+export * from './rebalance.types';
+
 export interface InventoryStats {
   totalPackages: number;
   totalWeight: number;

@@ -159,12 +159,13 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         const canvas = document.createElement('canvas');
         JsBarcode(canvas, data, {
           format: 'CODE128',
-          width: 3,
-          height: 90,
+          width: 2,
+          height: 45,
           displayValue: true,
-          fontSize: 14,
           margin: 0,
           font: 'Arial',
+          fontSize: 8,
+          textMargin: 1,
         });
         setBarcodeUrl(canvas.toDataURL());
         resolve();
@@ -222,7 +223,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
     return createPortal(
       <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
         <div className="bg-white rounded-lg p-8">
-          <div className="text-center text-gray-700">Loading label preview...</div>
+          <div className="text-center text-cult-text-muted">Loading label preview...</div>
         </div>
       </div>,
       document.body
@@ -235,8 +236,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         <div className="bg-white rounded-lg p-8 max-w-md">
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
-            <p className="text-gray-700 mb-4">{error || 'Label not found'}</p>
-            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
+            <p className="text-cult-text-muted mb-4">{error || 'Label not found'}</p>
+            <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>
         </div>
       </div>,
@@ -265,7 +266,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.01in' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {logoDataUrl && (
-            <img src={logoDataUrl} alt="Logo" style={{ width: '0.75in', height: 'auto', display: 'block', marginBottom: '0.01in' }} />
+            <img src={logoDataUrl} alt="Logo" style={{ width: '0.7in', height: 'auto', display: 'block', marginBottom: '0.01in' }} />
           )}
           <div style={{ fontSize: '6.5pt', fontWeight: 'bold', lineHeight: '1.15', marginBottom: '0.005in' }}>
             {label.product_name}
@@ -278,7 +279,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         </div>
         <div style={{ marginLeft: '0.04in', flexShrink: 0 }}>
           {qrCodeUrl && (
-            <img src={qrCodeUrl} alt="QR" style={{ width: '0.5in', height: '0.5in', display: 'block' }} />
+            <img src={qrCodeUrl} alt="QR" style={{ width: '0.45in', height: '0.45in', display: 'block' }} />
           )}
         </div>
       </div>
@@ -297,16 +298,16 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+      <div style={{ display: 'flex', gap: '0.04in', marginBottom: '0.005in' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>MMJ Net Weight: {label.net_weight_grams} Grams</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.06in', marginBottom: '0.008in' }}>
+      <div style={{ display: 'flex', gap: '0.04in', marginBottom: '0.005in' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>Batch:</div>
-          <div style={{ fontSize: '6pt', fontWeight: 'bold' }}>{label.batch_id}</div>
+          <div style={{ fontSize: '5.5pt', fontWeight: 'bold' }}>{label.batch_id}</div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '5pt', fontWeight: 'bold' }}>THC:</div>
@@ -336,8 +337,8 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
 
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-[70] flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 p-4 border-b border-gray-700 flex items-center justify-between bg-gray-900 z-10">
+      <div className="bg-cult-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 p-4 border-b border-cult-border flex items-center justify-between bg-cult-surface z-10">
           <h3 className="text-xl font-bold text-white">Label Preview (1.5" x 2")</h3>
           <div className="flex gap-2">
             <button
@@ -348,17 +349,17 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
               <Printer className="w-4 h-4" />
               {isPrinting ? 'Printing...' : imagesReady ? 'Print Label' : 'Loading...'}
             </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-white px-3">
+            <button onClick={onClose} className="text-cult-text-muted hover:text-white px-3">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
-        <div className="p-12 bg-gray-100 flex items-center justify-center overflow-hidden" style={{ minHeight: '600px' }}>
+        <div className="p-12 bg-cult-surface flex items-center justify-center overflow-hidden" style={{ minHeight: '600px' }}>
           <div style={{ transform: 'scale(2.8)', transformOrigin: 'center', margin: '80px' }}>
             {labelContent}
           </div>
         </div>
-        <div className="p-4 bg-yellow-50 border-t-2 border-yellow-300 text-xs text-gray-700">
+        <div className="p-4 bg-yellow-50 border-t-2 border-yellow-300 text-xs text-cult-text-muted">
           <p className="font-semibold mb-1">Preview Mode - Not to Scale</p>
           <p>This preview shows label content. Actual printed size: 1.5" x 2"</p>
         </div>
@@ -410,7 +411,7 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg p-8">
-          <div className="text-center text-gray-700">Loading {labelIds.length} labels...</div>
+          <div className="text-center text-cult-text-muted">Loading {labelIds.length} labels...</div>
         </div>
       </div>
     );
@@ -422,8 +423,8 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
         <div className="bg-white rounded-lg p-8 max-w-md">
           <div className="text-center">
             <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
-            <p className="text-gray-700 mb-4">{error || 'No labels found'}</p>
-            <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded">Close</button>
+            <p className="text-cult-text-muted mb-4">{error || 'No labels found'}</p>
+            <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>
         </div>
       </div>
@@ -435,7 +436,7 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
       <div className="print:hidden sticky top-4 left-0 right-0 z-60 flex justify-center gap-2 mb-4">
         <button
           onClick={onClose}
-          className="px-6 py-3 bg-gray-600 text-white hover:bg-gray-700 transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
+          className="px-6 py-3 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded flex items-center gap-2 font-medium shadow-lg"
         >
           <X className="w-5 h-5" />
           Close

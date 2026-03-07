@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Plus } from 'lucide-react';
+import { Button, PageSkeleton } from '@/shared/components';
 import { useTrimSessions } from '../hooks/useTrimSessions';
 import { useSessionData } from '../hooks/useSessionData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -8,6 +9,8 @@ import { SessionStats } from './SessionStats';
 import { TrimSessionStartForm } from './TrimSessionStartForm';
 import { TrimSessionCompleteModal } from './TrimSessionCompleteModal';
 import { TrimSessionCancelModal } from './TrimSessionCancelModal';
+import { AdminSessionEditModal } from './AdminSessionEditModal';
+import { AdminSessionDeleteModal } from './AdminSessionDeleteModal';
 import { ActiveSessionsTable } from './ActiveSessionsTable';
 import { CompletedSessionsTable } from './CompletedSessionsTable';
 import type { TrimSession } from '../types';
@@ -20,8 +23,8 @@ export function TrimSessionsRefactored() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [completingSession, setCompletingSession] = useState<TrimSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<TrimSession | null>(null);
-  const [_editingSession, setEditingSession] = useState<TrimSession | null>(null);
-  const [_deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
+  const [editingSession, setEditingSession] = useState<TrimSession | null>(null);
+  const [deletingSession, setDeletingSession] = useState<TrimSession | null>(null);
 
   const handleSessionStarted = () => {
     setShowStartForm(false);
@@ -47,23 +50,22 @@ export function TrimSessionsRefactored() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading trim sessions...</div>;
+    return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Trim Sessions</h1>
-          <p className="text-gray-300 mt-1">Start bins and log completions</p>
+          <h1 className="text-3xl font-bold text-cult-white">Trim Sessions</h1>
+          <p className="text-cult-text-secondary mt-1">Start bins and log completions</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowStartForm(!showStartForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg"
+          icon={<Plus className="w-5 h-5" />}
         >
-          <Plus className="w-5 h-5" />
           Start New Bin
-        </button>
+        </Button>
       </div>
 
       <SessionStats stats={stats} />
@@ -91,6 +93,22 @@ export function TrimSessionsRefactored() {
           buckedPackages={buckedPackages}
           onSuccess={handleSessionCompleted}
           onCancel={() => setCompletingSession(null)}
+        />
+      )}
+
+      {editingSession && (
+        <AdminSessionEditModal
+          session={editingSession}
+          onClose={() => setEditingSession(null)}
+          onUpdate={fetchSessions}
+        />
+      )}
+
+      {deletingSession && (
+        <AdminSessionDeleteModal
+          session={deletingSession}
+          onClose={() => setDeletingSession(null)}
+          onDelete={fetchSessions}
         />
       )}
 

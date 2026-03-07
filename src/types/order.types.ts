@@ -35,30 +35,14 @@ export interface FulfillmentChecklist {
   updated_at: string;
 }
 
-export interface Allocation {
-  id: string;
-  order_item_id: string;
-  inventory_type: string;
-  inventory_id: string;
-  allocated_quantity: number;
-  allocation_status: string;
-  workflow_stage: string;
-  active_trim_session_id: string | null;
-  active_packaging_session_id: string | null;
-  batch?: string | null;
-  package_id?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type PackageAssignmentStatus = 'reserved' | 'fulfilled' | 'released';
 
 export interface WorkflowSummary {
   order_id: string;
   total_quantity: number;
-  allocated_quantity: number;
-  trimming_quantity: number;
-  packaging_quantity: number;
-  ready_quantity: number;
-  unallocated_quantity: number;
+  assigned_quantity: number;
+  fulfilled_quantity: number;
+  remaining_quantity: number;
 }
 
 export interface StatusGroup {

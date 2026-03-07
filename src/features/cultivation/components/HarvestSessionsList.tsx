@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { formatWeight, formatDate } from '../utils';
 import { HarvestWorkflow } from './harvest';
@@ -83,14 +84,14 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
         </div>
 
         <div className="flex gap-3 mt-5">
-          <button
+          <Button
             onClick={handleSave}
             disabled={!parseFloat(adjustedWeight) || !reason.trim() || saving}
-            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            size="sm"
+            icon={<Scale className="w-4 h-4" />}
           >
-            <Scale className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Adjustment'}
-          </button>
+          </Button>
           <button
             onClick={onCancel}
             className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
@@ -345,16 +346,15 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Harvests</h1>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Harvests</h1>
           <p className="text-cult-light-gray mt-2">Record harvests by room and create batches</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowWorkflow(true)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg text-sm"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Start Harvest
-        </button>
+        </Button>
       </div>
 
       {error && (

@@ -43,10 +43,10 @@ export function CombinePackagesModal({
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border-subtle">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Combine Packages</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-cult-text-primary">Combine Packages</h2>
+              <p className="text-sm text-cult-text-faint mt-1">
                 {workflow.step === 'select_packages' && 'Review selected packages'}
                 {workflow.step === 'generate_id' && 'Generate new package ID'}
                 {workflow.step === 'confirm_variance' && 'Confirm details'}
@@ -57,27 +57,27 @@ export function CombinePackagesModal({
             <button
               onClick={onClose}
               disabled={workflow.step === 'completing'}
-              className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              className="text-cult-text-muted hover:text-cult-text-faint transition-colors disabled:opacity-50"
             >
               <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Progress indicator */}
-          <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="px-6 py-3 bg-cult-surface-sunken border-b border-cult-border-subtle">
             <div className="flex items-center gap-2 text-sm">
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'select_packages' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'select_packages' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>1. Review</span>
                 {workflow.step !== 'select_packages' && <CheckCircle className="w-4 h-4 text-green-600" />}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'generate_id' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'generate_id' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>2. ID</span>
@@ -85,10 +85,10 @@ export function CombinePackagesModal({
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 )}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'confirm_variance' ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'confirm_variance' ? 'text-blue-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>3. Confirm</span>
@@ -96,10 +96,10 @@ export function CombinePackagesModal({
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 )}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-cult-text-muted" />
               <div
                 className={`flex items-center gap-1 ${
-                  workflow.step === 'complete' ? 'text-green-600 font-medium' : 'text-gray-500'
+                  workflow.step === 'complete' ? 'text-green-600 font-medium' : 'text-cult-text-muted'
                 }`}
               >
                 <span>4. Done</span>
@@ -133,7 +133,7 @@ export function CombinePackagesModal({
                 {workflow.isValidating ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                    <span className="ml-3 text-sm text-gray-600">Validating packages...</span>
+                    <span className="ml-3 text-sm text-cult-text-faint">Validating packages...</span>
                   </div>
                 ) : (
                   <>
@@ -184,28 +184,28 @@ export function CombinePackagesModal({
 
                     {/* Package list */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      <h4 className="text-sm font-medium text-cult-text-primary mb-2">
                         Selected Packages ({selectedPackages.length})
                       </h4>
-                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="border border-cult-border-subtle rounded-lg overflow-hidden">
                         <table className="w-full text-sm">
-                          <thead className="bg-gray-50 border-b border-gray-200">
+                          <thead className="bg-cult-surface-sunken border-b border-cult-border-subtle">
                             <tr>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                              <th className="px-3 py-2 text-left text-xs font-medium text-cult-text-muted uppercase">
                                 Package ID
                               </th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                              <th className="px-3 py-2 text-right text-xs font-medium text-cult-text-muted uppercase">
                                 Quantity
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
+                          <tbody className="bg-white divide-y divide-cult-border-subtle">
                             {selectedPackages.map((pkg) => (
-                              <tr key={pkg.id} className="hover:bg-gray-50">
-                                <td className="px-3 py-2 font-mono text-gray-900">
+                              <tr key={pkg.id} className="hover:bg-cult-surface-sunken">
+                                <td className="px-3 py-2 font-mono text-cult-text-primary">
                                   {pkg.package_id}
                                 </td>
-                                <td className="px-3 py-2 text-right font-medium text-gray-900">
+                                <td className="px-3 py-2 text-right font-medium text-cult-text-primary">
                                   {pkg.on_hand_qty.toFixed(1)}
                                   {pkg.unit}
                                 </td>
@@ -232,7 +232,7 @@ export function CombinePackagesModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2">
                     Package ID
                   </label>
                   <div className="flex gap-2">
@@ -241,26 +241,26 @@ export function CombinePackagesModal({
                       value={workflow.newPackageId}
                       onChange={(e) => workflow.setNewPackageId(e.target.value)}
                       placeholder="YYMMDD-STRAIN-###"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                      className="flex-1 px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
                     />
                     <button
                       type="button"
                       onClick={workflow.generatePackageId}
-                      className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="px-3 py-2 bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-raised transition-colors"
                       title="Regenerate ID"
                     >
-                      <RefreshCw className="w-4 h-4 text-gray-600" />
+                      <RefreshCw className="w-4 h-4 text-cult-text-faint" />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-cult-text-muted mt-1">
                     Format: YYMMDD-STRAIN-### (must be unique)
                   </p>
                 </div>
 
                 {summary && (
-                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Will Combine</h4>
-                    <div className="text-sm text-gray-700 space-y-1">
+                  <div className="border border-cult-border-subtle rounded-lg p-4 bg-cult-surface-sunken">
+                    <h4 className="text-sm font-medium text-cult-text-primary mb-2">Will Combine</h4>
+                    <div className="text-sm text-cult-text-muted space-y-1">
                       <div>
                         <span className="font-medium">{summary.total_packages}</span> packages →{' '}
                         <span className="font-medium">1</span> combined package
@@ -287,30 +287,30 @@ export function CombinePackagesModal({
 
                 {/* Summary */}
                 {summary && (
-                  <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="border border-cult-border-subtle rounded-lg p-4">
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">New Package ID:</span>
-                        <span className="text-sm font-mono font-semibold text-gray-900">
+                        <span className="text-sm text-cult-text-faint">New Package ID:</span>
+                        <span className="text-sm font-mono font-semibold text-cult-text-primary">
                           {workflow.newPackageId}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Source Packages:</span>
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-sm text-cult-text-faint">Source Packages:</span>
+                        <span className="text-sm font-semibold text-cult-text-primary">
                           {summary.total_packages}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Total Quantity:</span>
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-sm text-cult-text-faint">Total Quantity:</span>
+                        <span className="text-sm font-semibold text-cult-text-primary">
                           {summary.total_qty.toFixed(1)}
                           {summary.unit}
                         </span>
                       </div>
-                      <div className="pt-3 border-t border-gray-200">
-                        <div className="text-xs text-gray-600 mb-1">Batch & Product</div>
-                        <div className="text-sm text-gray-900">
+                      <div className="pt-3 border-t border-cult-border-subtle">
+                        <div className="text-xs text-cult-text-faint mb-1">Batch & Product</div>
+                        <div className="text-sm text-cult-text-primary">
                           {summary.batch_number} · {summary.strain} · {summary.product_name}
                         </div>
                       </div>
@@ -319,19 +319,19 @@ export function CombinePackagesModal({
                 )}
 
                 {/* Optional variance reason */}
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                <div className="border border-cult-border-subtle rounded-lg p-4 bg-cult-surface-sunken">
+                  <h4 className="text-sm font-medium text-cult-text-primary mb-3">
                     Variance Tracking (Optional)
                   </h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Variance Reason</label>
+                      <label className="block text-sm text-cult-text-muted mb-1">Variance Reason</label>
                       <select
                         value={workflow.varianceReason || ''}
                         onChange={(e) =>
                           workflow.setVarianceReason((e.target.value as VarianceReason) || null)
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                       >
                         <option value="">None</option>
                         {(Object.keys(VarianceReasonLabels) as VarianceReason[]).map((reason) => (
@@ -342,13 +342,13 @@ export function CombinePackagesModal({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Notes</label>
+                      <label className="block text-sm text-cult-text-muted mb-1">Notes</label>
                       <textarea
                         value={workflow.varianceNote}
                         onChange={(e) => workflow.setVarianceNote(e.target.value)}
                         rows={2}
                         placeholder="Optional notes about this combination..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+                        className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
                       />
                     </div>
                   </div>
@@ -362,10 +362,10 @@ export function CombinePackagesModal({
                 {workflow.step === 'completing' ? (
                   <div className="text-center">
                     <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-cult-text-primary mb-2">
                       Combining Packages...
                     </h3>
-                    <p className="text-sm text-gray-600">This may take a moment</p>
+                    <p className="text-sm text-cult-text-faint">This may take a moment</p>
                   </div>
                 ) : (
                   <div className="text-center">
@@ -374,7 +374,7 @@ export function CombinePackagesModal({
                       Packages Combined Successfully!
                     </h3>
                     {workflow.result && (
-                      <div className="text-sm text-gray-700 space-y-1">
+                      <div className="text-sm text-cult-text-muted space-y-1">
                         <p>
                           New Package: <span className="font-mono font-semibold">{workflow.result.new_package_id}</span>
                         </p>
@@ -383,7 +383,7 @@ export function CombinePackagesModal({
                         </p>
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 mt-4">Closing automatically...</p>
+                    <p className="text-xs text-cult-text-muted mt-4">Closing automatically...</p>
                   </div>
                 )}
               </div>
@@ -392,10 +392,10 @@ export function CombinePackagesModal({
 
           {/* Footer */}
           {workflow.step !== 'completing' && workflow.step !== 'complete' && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
               <button
                 onClick={workflow.step === 'select_packages' ? onClose : workflow.previousStep}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors"
               >
                 {workflow.step === 'select_packages' ? 'Cancel' : 'Back'}
               </button>

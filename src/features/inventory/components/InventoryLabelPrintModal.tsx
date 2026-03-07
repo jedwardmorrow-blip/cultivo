@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { Printer, X } from 'lucide-react';
 import type { InternalInventoryLabel } from '../types';
+import { LabelContent } from './LabelContent';
 
 interface InventoryLabelPrintModalProps {
   isOpen: boolean;
@@ -48,8 +49,8 @@ export function InventoryLabelPrintModal({
   return (
     <>
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-cult-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-4 border-b border-cult-border flex items-center justify-between">
             <h3 className="text-xl font-bold text-white">Internal Inventory Label (1.5" x 2")</h3>
             <div className="flex gap-2">
               <button
@@ -62,7 +63,7 @@ export function InventoryLabelPrintModal({
               </button>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white p-2 rounded hover:bg-gray-800 transition-colors"
+                className="text-cult-text-muted hover:text-white p-2 rounded hover:bg-cult-surface-raised transition-colors"
                 title="Close"
               >
                 <X className="w-5 h-5" />
@@ -70,10 +71,10 @@ export function InventoryLabelPrintModal({
             </div>
           </div>
 
-          <div className="p-16 bg-gray-100 flex items-center justify-center" style={{ minHeight: '600px' }}>
+          <div className="p-8 bg-cult-surface flex items-center justify-center" style={{ minHeight: '500px' }}>
             {isLoading && (
-              <div className="text-gray-600 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+              <div className="text-cult-text-faint text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-border-strong mx-auto mb-4"></div>
                 <p>Loading label data...</p>
               </div>
             )}
@@ -87,9 +88,8 @@ export function InventoryLabelPrintModal({
 
             {!isLoading && !error && labelData && (
               <div style={{
-                transform: 'scale(3)',
+                transform: 'scale(2.5)',
                 transformOrigin: 'center',
-                margin: '80px'
               }}>
                 <LabelContent
                   labelData={labelData}
@@ -114,167 +114,3 @@ export function InventoryLabelPrintModal({
     </>
   );
 }
-
-interface LabelContentProps {
-  labelData: InternalInventoryLabel;
-  logoDataUrl: string;
-  forPrint: boolean;
-}
-
-const LabelContent = ({ labelData, logoDataUrl, forPrint }: LabelContentProps) => {
-  return (
-    <div
-      style={{
-        width: '1.5in',
-        height: '2in',
-        backgroundColor: 'white',
-        color: 'black',
-        padding: '0.1in',
-        boxSizing: 'border-box',
-        fontFamily: 'Arial, sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-        border: forPrint ? 'none' : '1px solid #ddd',
-        justifyContent: 'space-between',
-      }}
-    >
-      <div style={{ textAlign: 'center', marginBottom: '0.05in' }}>
-        {logoDataUrl && (
-          <img
-            src={logoDataUrl}
-            alt="CULT Logo"
-            style={{
-              width: '1.1in',
-              height: 'auto',
-              display: 'block',
-              margin: '0 auto 0.05in auto',
-            }}
-          />
-        )}
-      </div>
-
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.08in',
-        fontSize: '9pt',
-      }}>
-        <div style={{
-          borderBottom: '1px solid #333',
-          paddingBottom: '0.04in',
-        }}>
-          <div style={{
-            fontSize: '7pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            Strain
-          </div>
-          <div style={{
-            fontSize: '11pt',
-            fontWeight: 'bold',
-            marginTop: '0.02in',
-          }}>
-            {labelData.strain}
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '0.05in',
-        }}>
-          <div>
-            <div style={{
-              fontSize: '6pt',
-              color: '#666',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}>
-              Batch ID
-            </div>
-            <div style={{
-              fontSize: '9pt',
-              fontWeight: 'bold',
-              marginTop: '0.01in',
-            }}>
-              {labelData.batch_id}
-            </div>
-          </div>
-
-          <div>
-            <div style={{
-              fontSize: '6pt',
-              color: '#666',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}>
-              Weight
-            </div>
-            <div style={{
-              fontSize: '9pt',
-              fontWeight: 'bold',
-              marginTop: '0.01in',
-            }}>
-              {labelData.weight_grams.toFixed(1)}g
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          borderTop: '1px solid #ddd',
-          paddingTop: '0.04in',
-        }}>
-          <div style={{
-            fontSize: '6pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-            Product Type
-          </div>
-          <div style={{
-            fontSize: '8pt',
-            fontWeight: '500',
-            marginTop: '0.01in',
-            lineHeight: '1.2',
-          }}>
-            {labelData.product_type}
-          </div>
-        </div>
-
-        <div>
-          <div style={{
-            fontSize: '6pt',
-            color: '#666',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-            Harvest Date
-          </div>
-          <div style={{
-            fontSize: '8pt',
-            fontWeight: '500',
-            marginTop: '0.01in',
-          }}>
-            {labelData.harvest_date}
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        fontSize: '5pt',
-        color: '#999',
-        textAlign: 'center',
-        marginTop: '0.05in',
-        borderTop: '1px solid #eee',
-        paddingTop: '0.02in',
-      }}>
-        INTERNAL USE ONLY - {labelData.package_id}
-      </div>
-    </div>
-  );
-};

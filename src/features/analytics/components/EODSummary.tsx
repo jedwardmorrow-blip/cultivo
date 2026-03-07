@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Package, ChevronDown, ChevronRight, FileText, Printer } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { getConsolidatedPackages, getPackageSources, type ConsolidatedPackage, type PackageSource } from '../services';
 
 export function EODSummary() {
@@ -81,15 +82,15 @@ export function EODSummary() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">End of Day Summary</h1>
-          <p className="text-gray-300 mt-1">Consolidated packages ready for Dutchie conversion</p>
+          <p className="text-cult-text-secondary mt-1">Consolidated packages ready for Dutchie conversion</p>
         </div>
-        <button
+        <Button
           onClick={handlePrint}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg print:hidden"
+          icon={<Printer className="w-5 h-5" />}
+          className="print:hidden"
         >
-          <Printer className="w-5 h-5" />
           Print Report
-        </button>
+        </Button>
       </div>
 
       <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray mb-6 print:hidden">

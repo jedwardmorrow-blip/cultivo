@@ -1,17 +1,18 @@
 ---
 title: AI Session Brief
 category: AI Development
-version: 2.4
-updated: 2026-02-25 (CRM Phase 2.5 — chain hierarchy & delivery model)
+version: 2.6
+updated: 2026-03-02 (Go-Live Plan v4.0 Documentation)
 priority: READ THIS FIRST
 ---
 
 # AI Session Brief - CULT Seed-to-Sale System
 
 > **Read this first when starting any work session.**
-> **Last Updated:** 2026-02-25 (Session: CRM Phase 2.5 — chain hierarchy & delivery model)
-> **Last Migration:** 2026-02-25 (CRM Phase 2.5: delivery_model column, crm_chain_location_performance view)
+> **Last Updated:** 2026-03-02 (Session: Go-Live Plan v4.0 Documentation)
+> **Last Migration:** 2026-03-01 (Reservation triggers, legacy allocation removal, fulfillment triggers)
 > **Build Status:** Passing
+> **Go-Live Plan:** See [GO-LIVE-PLAN-v4.0.md](./GO-LIVE-PLAN-v4.0.md) -- schema-first migration to cult-ops Supabase
 
 ---
 
@@ -39,18 +40,18 @@ Cannabis seed-to-sale tracking and production management system.
 The system is **feature-complete** and in **production use**. All core workflows are operational:
 
 - Sessions (Trim, Bucking, Packaging) - fully operational
-- Conversions (unpivoted by product type, per-product finalization) - working
+- Conversions (unpivoted by product type, per-product finalization, upstream water loss write-off) - working
 - Inventory (event-driven ledger, ATP constraint, audit system) - working
 - Batches (lifecycle management, COA linkage) - working
-- Orders (pipeline, fulfillment, invoicing, manifests) - working
+- Orders (pipeline, package assignment reservation, fulfillment triggers, invoicing, manifests) - working
 - Customers, Analytics, Settings, Delivery - working
 
 **Last 5 sessions (most recent first):**
-1. 2026-02-25: CRM Phase 2.5 — Chain hierarchy & delivery model (delivery_model column, crm_chain_location_performance view, expand/collapse chain rows, combined revenue sorting)
-2. 2026-02-25: CRM Phase 2 — Sales activity management (crm_tasks, crm_visit_schedule, health scores, product mix, Sales Queue, Visit Calendar, Account deep-dive)
-3. 2026-02-20: Documentation alignment — E-1/D-14 constraint fix + cross-doc sync
-4. 2026-02-19: Cultivation doc pass — updated all cultivation docs to reflect C-2/C-3 complete
-5. 2026-02-19: Session C-2/C-3 — Cultivation module full implementation
+1. 2026-03-06: Water Loss Write-Off on Conversions — Upstream variance write-off on ConversionModal review screen. Declare water loss before bagging, or write off entire small amounts without creating bags. Architecture Decision 20.
+2. 2026-03-02: Go-Live Plan v4.0 Documentation — Schema-first migration strategy from Bolt.new to cult-ops Supabase (docs only, no code changes)
+3. 2026-03-01: Package Assignment Reservation System — Removed legacy allocation system, added trigger-based inventory reservation on package assignments, fulfillment on order completion, release on cancellation
+4. 2026-03-01: Order Status Workflow Overhaul — Bi-directional status controls, transition validation, StatusActionPanel
+5. 2026-02-25: CRM Phase 2.5 — Chain hierarchy & delivery model
 
 **Known deferred items:**
 - **Cultivation module** — Sessions C-1/C-2/C-3 all COMPLETE. Fully operational.

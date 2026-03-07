@@ -672,12 +672,16 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
       expect(result[0].id).toBe('hs-001');
     });
 
-    it('when binned IDs exist, uses .not() filter to exclude them', async () => {
-      const binnedIds = [{ harvest_session_id: 'hs-binned-001' }, { harvest_session_id: 'hs-binned-002' }];
-      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
-      const mockNotFilter = vi.fn().mockReturnValue({ order: mockOrderFinal });
-      const mockEqFilter = vi.fn().mockReturnValue({ order: mockOrderFinal, not: mockNotFilter });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter, not: mockNotFilter });
+    it('when binned IDs exist, excludes them from returned harvests via JS filter', async () => {
+      const binnedIds = [{ harvest_session_id: 'hs-binned-001' }];
+      const allHarvests = [
+        { ...mockCompletedHarvest, id: 'hs-binned-001' },
+        { ...mockCompletedHarvest, id: 'hs-unbinned-002' },
+      ];
+      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess(allHarvests));
+      const mockNotIs = vi.fn().mockReturnValue({ order: mockOrderFinal });
+      const mockEqFilter = vi.fn().mockReturnValue({ not: mockNotIs, order: mockOrderFinal });
+      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter });
       const mockSelectBinned = vi.fn().mockReturnValue({
         not: vi.fn().mockResolvedValue(mockSupabaseSuccess(binnedIds)),
       });
@@ -687,21 +691,19 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
         return { select: mockSelectHarvest };
       });
 
-      await cultivationService.listUnbinnedHarvestSessions();
+      const result = await cultivationService.listUnbinnedHarvestSessions();
 
-      expect(mockNotFilter).toHaveBeenCalledWith(
-        'id',
-        'in',
-        expect.stringContaining('hs-binned-001')
-      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('hs-unbinned-002');
     });
 
-    it('UUID exclusion list uses quoted format: ("uuid1","uuid2")', async () => {
-      const binnedIds = [{ harvest_session_id: 'abc-123' }];
-      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
-      const mockNotFilter = vi.fn().mockReturnValue({ order: mockOrderFinal });
-      const mockEqFilter = vi.fn().mockReturnValue({ order: mockOrderFinal, not: mockNotFilter });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter, not: mockNotFilter });
+    it('returns empty list when all harvests are already binned', async () => {
+      const binnedIds = [{ harvest_session_id: 'hs-001' }];
+      const allHarvests = [{ ...mockCompletedHarvest, id: 'hs-001' }];
+      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess(allHarvests));
+      const mockNotIs = vi.fn().mockReturnValue({ order: mockOrderFinal });
+      const mockEqFilter = vi.fn().mockReturnValue({ not: mockNotIs, order: mockOrderFinal });
+      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter });
       const mockSelectBinned = vi.fn().mockReturnValue({
         not: vi.fn().mockResolvedValue(mockSupabaseSuccess(binnedIds)),
       });
@@ -711,10 +713,9 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
         return { select: mockSelectHarvest };
       });
 
-      await cultivationService.listUnbinnedHarvestSessions();
+      const result = await cultivationService.listUnbinnedHarvestSessions();
 
-      const notCall = (mockNotFilter as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(notCall[2]).toBe('("abc-123")');
+      expect(result).toHaveLength(0);
     });
   });
 

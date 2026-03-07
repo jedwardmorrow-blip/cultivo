@@ -15,8 +15,8 @@ export function BatchComplianceTable({
 }: BatchComplianceTableProps) {
   if (!batches || batches.length === 0) {
     return (
-      <div className="border-2 border-gray-300 bg-white p-8 text-center compliance-section">
-        <p className="text-gray-600 text-lg">
+      <div className="border-2 border-cult-border bg-white p-8 text-center compliance-section">
+        <p className="text-cult-text-faint text-lg">
           No batch information available. Packages have not been assigned to this order.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function BatchComplianceTable({
             {batches.map((batch, index) => (
               <tr
                 key={`${batch.batch_id}-${index}`}
-                className="border-b border-gray-300 last:border-b-0"
+                className="border-b border-cult-border last:border-b-0"
               >
                 <td className="py-3 px-4">
                   <div className="font-medium">
@@ -99,7 +99,7 @@ export function BatchComplianceTable({
                         View
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">N/A</span>
+                      <span className="text-cult-text-muted text-sm">N/A</span>
                     )}
                   </td>
                 )}

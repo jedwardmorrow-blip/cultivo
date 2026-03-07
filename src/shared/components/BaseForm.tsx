@@ -1,5 +1,5 @@
 import { ReactNode, FormEvent } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Button } from './Button';
 
 interface BaseFormProps {
   children: ReactNode;
@@ -32,22 +32,23 @@ export function BaseForm({
       {children}
 
       <div className="flex justify-end gap-3 pt-6 border-t border-cult-medium-gray">
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="px-6 py-2 border border-cult-medium-gray text-cult-white hover:bg-cult-medium-gray transition-all font-medium uppercase tracking-wider disabled:opacity-50"
         >
           {cancelLabel}
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
+          size="sm"
           disabled={isSubmitting || !isValid}
-          className="px-6 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider disabled:opacity-50 flex items-center gap-2"
+          loading={isSubmitting}
         >
-          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
           {submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   );

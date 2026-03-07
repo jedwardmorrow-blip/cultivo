@@ -19,7 +19,7 @@ export async function getActiveSessionCounts() {
       supabase
         .from('trim_sessions')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'in_progress'),
+        .eq('session_status', 'active'),
       supabase
         .from('packaging_sessions')
         .select('id', { count: 'exact', head: true })

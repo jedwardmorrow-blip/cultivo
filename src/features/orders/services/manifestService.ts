@@ -175,53 +175,53 @@ export async function generateManifestData(
     throw new Error('Customer not found for this order');
   }
 
-  const allocationsResult = await supabase
-    .from('order_item_allocations')
+  const assignmentsResult = await supabase
+    .from('package_assignments')
     .select(`
       order_item_id,
-      inventory_type,
-      inventory_id,
-      allocated_quantity
+      package_id,
+      quantity_assigned,
+      status
     `)
     .eq('order_id', orderId)
-    .in('allocation_status', ['reserved', 'confirmed', 'consumed']);
+    .in('status', ['reserved', 'fulfilled']);
 
-  const allocationsMap = new Map<string, any[]>();
-  allocationsResult.data?.forEach(alloc => {
-    const existing = allocationsMap.get(alloc.order_item_id) || [];
-    allocationsMap.set(alloc.order_item_id, [...existing, alloc]);
+  const assignmentsMap = new Map<string, any[]>();
+  assignmentsResult.data?.forEach(pa => {
+    const existing = assignmentsMap.get(pa.order_item_id) || [];
+    assignmentsMap.set(pa.order_item_id, [...existing, pa]);
   });
 
-  const inventoryIds = Array.from(new Set(
-    allocationsResult.data?.map(a => a.inventory_id) || []
+  const assignedPackageIds = Array.from(new Set(
+    assignmentsResult.data?.map(a => a.package_id) || []
   ));
 
   let inventoryMap = new Map<string, any>();
-  if (inventoryIds.length > 0) {
+  if (assignedPackageIds.length > 0) {
     const { data: inventoryData } = await supabase
       .from('inventory_items')
-      .select('id, package_id, batch, net_weight')
-      .in('id', inventoryIds);
+      .select('id, package_id, batch, batch_number, net_weight')
+      .in('package_id', assignedPackageIds);
 
     inventoryData?.forEach(inv => {
-      inventoryMap.set(inv.id, inv);
+      inventoryMap.set(inv.package_id, inv);
     });
   }
 
   const lineItems: ManifestLineItem[] = items.map((item, index) => {
     const product = item.products;
-    const allocations = allocationsMap.get(item.id) || [];
+    const assignments = assignmentsMap.get(item.id) || [];
 
     let packageId = null;
     let batchNumber = null;
     let netWeight = 0;
 
-    if (allocations.length > 0) {
-      const firstAllocation = allocations[0];
-      const inventory = inventoryMap.get(firstAllocation.inventory_id);
+    if (assignments.length > 0) {
+      const firstAssignment = assignments[0];
+      const inventory = inventoryMap.get(firstAssignment.package_id);
       if (inventory) {
         packageId = inventory.package_id;
-        batchNumber = inventory.batch;
+        batchNumber = inventory.batch_number || inventory.batch;
         netWeight = inventory.net_weight || 0;
       }
     }

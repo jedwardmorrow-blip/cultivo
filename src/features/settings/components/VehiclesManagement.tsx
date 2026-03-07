@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Car, Plus, Edit2, Trash2, Check, X } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { settingsService } from '../services/settings.service';
 
 interface Vehicle {
@@ -166,13 +167,13 @@ export function VehiclesManagement() {
             Delivery Vehicles
           </h2>
         </div>
-        <button
+        <Button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+          size="sm"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           Add Vehicle
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -227,7 +228,7 @@ export function VehiclesManagement() {
                       className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium uppercase tracking-wider transition-all ${
                         vehicle.is_active
                           ? 'bg-green-900/30 text-green-400 border border-green-600 hover:bg-green-900/50'
-                          : 'bg-gray-900/30 text-gray-400 border border-gray-600 hover:bg-gray-900/50'
+                          : 'bg-cult-surface/30 text-cult-text-muted border border-cult-border-strong hover:bg-cult-surface/50'
                       }`}
                     >
                       {vehicle.is_active ? (
@@ -362,19 +363,16 @@ export function VehiclesManagement() {
               )}
 
               <div className="flex items-center justify-end gap-3 pt-4">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-3 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-white text-black hover:bg-gray-200 transition-all duration-200 font-medium uppercase tracking-wider text-sm"
-                >
+                </Button>
+                <Button type="submit">
                   {editingVehicle ? 'Update' : 'Add'} Vehicle
-                </button>
+                </Button>
               </div>
             </form>
           </div>

@@ -64,14 +64,14 @@ export function VarianceConfirmation({
 
       {/* Reason selection */}
       <div>
-        <label htmlFor="variance-reason" className="block text-sm font-medium text-gray-900 mb-2">
+        <label htmlFor="variance-reason" className="block text-sm font-medium text-cult-text-primary mb-2">
           Variance Reason <span className="text-red-500">*</span>
         </label>
         <select
           id="variance-reason"
           value={varianceReason || ''}
           onChange={(e) => onReasonChange(e.target.value as VarianceReason)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent"
         >
           <option value="">Select a reason...</option>
           {(Object.keys(VarianceReasonLabels) as VarianceReason[]).map((reason) => (
@@ -84,7 +84,7 @@ export function VarianceConfirmation({
 
       {/* Additional notes */}
       <div>
-        <label htmlFor="variance-note" className="block text-sm font-medium text-gray-900 mb-2">
+        <label htmlFor="variance-note" className="block text-sm font-medium text-cult-text-primary mb-2">
           Additional Notes {varianceReason === 'other' && <span className="text-red-500">*</span>}
         </label>
         <textarea
@@ -93,7 +93,7 @@ export function VarianceConfirmation({
           onChange={(e) => onNoteChange(e.target.value)}
           rows={3}
           placeholder="Provide additional context about this variance..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
         />
       </div>
 
@@ -104,13 +104,13 @@ export function VarianceConfirmation({
             type="checkbox"
             checked={varianceAcknowledged}
             onChange={(e) => onAcknowledge(e.target.checked)}
-            className="mt-1 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+            className="mt-1 rounded border-cult-border text-amber-600 focus:ring-amber-500"
           />
           <div className="flex-1">
-            <div className="text-sm font-medium text-gray-900 mb-1">
+            <div className="text-sm font-medium text-cult-text-primary mb-1">
               I acknowledge this variance
             </div>
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-cult-text-faint">
               By checking this box, I confirm that I have reviewed the variance details
               and provided an accurate reason for the discrepancy. This action will be
               logged for compliance purposes.

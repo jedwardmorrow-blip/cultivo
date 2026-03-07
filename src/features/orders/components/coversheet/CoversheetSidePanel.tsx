@@ -40,11 +40,11 @@ export function CoversheetSidePanel({ accessToken, onClose }: CoversheetSidePane
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="sticky top-0 z-10 bg-gray-900 text-white px-6 py-3 flex items-center justify-between print:hidden">
+        <div className="sticky top-0 z-10 bg-cult-surface text-white px-6 py-3 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-4">
             <button
               onClick={handleClose}
-              className="p-1.5 hover:bg-gray-700 rounded transition-colors"
+              className="p-1.5 hover:bg-cult-surface-overlay rounded transition-colors"
               title="Close panel"
             >
               <X className="w-5 h-5" />
@@ -57,7 +57,7 @@ export function CoversheetSidePanel({ accessToken, onClose }: CoversheetSidePane
             href={newTabPath}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-cult-text-secondary hover:text-white transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             Open in New Tab

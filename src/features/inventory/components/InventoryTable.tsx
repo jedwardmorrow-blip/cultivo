@@ -1,6 +1,7 @@
-import { ReactNode, useState, useMemo } from 'react';
+import { ReactNode, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Package, Filter } from 'lucide-react';
 import { useQualityGrades } from '@/hooks/useQualityGrades';
+import { useShiftSelect } from '@/shared/hooks';
 import { GRADE_COLOR_MAP } from '@/types';
 import type { InventoryItem } from '../types';
 
@@ -28,6 +29,7 @@ interface InventoryTableProps {
   onSelectionChange?: (selectedIds: Set<string>) => void;
   isSelectable?: (item: InventoryItem) => boolean;
   gradeFilterable?: boolean;
+  renderRowActions?: (item: InventoryItem) => ReactNode;
 }
 
 function getRawValue(item: InventoryItem, accessor: Column['accessor']): any {
@@ -49,6 +51,7 @@ export function InventoryTable({
   onSelectionChange,
   isSelectable = () => true,
   gradeFilterable = false,
+  renderRowActions,
 }: InventoryTableProps) {
   const [sortColumnIdx, setSortColumnIdx] = useState<number | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -132,12 +135,19 @@ export function InventoryTable({
     }
   };
 
-  const handleSelectItem = (itemId: string) => {
+  const getItemKey = useCallback((item: InventoryItem) => item.id, []);
+
+  const { handleItemClick: shiftSelectClick } = useShiftSelect({
+    items: sortedItems,
+    getKey: getItemKey,
+    selectedIds,
+    onSelectionChange: onSelectionChange || (() => {}),
+    isSelectable,
+  });
+
+  const handleSelectItem = (itemId: string, shiftKey: boolean) => {
     if (!onSelectionChange) return;
-    const newSelection = new Set(selectedIds);
-    if (newSelection.has(itemId)) newSelection.delete(itemId);
-    else newSelection.add(itemId);
-    onSelectionChange(newSelection);
+    shiftSelectClick(itemId, shiftKey);
   };
 
   if (items.length === 0 && !searchQuery) {
@@ -288,12 +298,13 @@ export function InventoryTable({
                   </th>
                 );
               })}
+              {renderRowActions && <th className="px-2 py-3 w-12" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-medium-gray/50">
             {sortedItems.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (selectable ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
+                <td colSpan={columns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
                   No results match your search
                 </td>
               </tr>
@@ -315,7 +326,7 @@ export function InventoryTable({
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => handleSelectItem(item.id)}
+                            onChange={(e) => handleSelectItem(item.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
                             className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
                           />
                         ) : (
@@ -345,6 +356,11 @@ export function InventoryTable({
                         </td>
                       );
                     })}
+                    {renderRowActions && (
+                      <td className="px-2 py-3 w-12">
+                        {renderRowActions(item)}
+                      </td>
+                    )}
                   </tr>
                 );
               })

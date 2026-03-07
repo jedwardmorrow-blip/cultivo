@@ -1,0 +1,53 @@
+=== FILE EXISTENCE ===
+src/lib/database.ts: NOT FOUND
+src/lib/database.d.ts: NOT FOUND
+src/services/index.ts: EXISTS
+src/services.ts: NOT FOUND
+src/lib/supabase.ts: EXISTS
+src/lib/supabase/index.ts: NOT FOUND
+
+=== src/services/index.ts ===
+L1: export { notificationService } from './notification.service';
+L2: export type { NotificationOptions } from './notification.service';
+L3: export { errorService } from './error.service';
+L4: export { inventoryMovementService } from './inventoryMovement.service';
+L5: export { qualityGradeService } from './qualityGrade.service';
+L6: export * from './movementHandlers';
+L7: 
+L8: export { settingsService, logoService, validateImageFile } from '../features/settings/services';
+L9: export type { LogoVariant, LogoSettings } from '../features/settings/types';
+L10: 
+L11: import { logoService as importedLogoService } from '../features/settings/services';
+L12: 
+L13: export const uploadLogo = (file: File, variant: any) => importedLogoService.uploadLogo(file, variant);
+L14: export const deleteLogo = (variant: any) => importedLogoService.deleteLogo(variant);
+L15: export const getLogoUrl = (variant: any) => importedLogoService.getLogoUrl(variant);
+L16: export const getLogoSettings = () => importedLogoService.getLogoSettings();
+L17: export {
+L18:   generateCoversheet,
+L19:   getCoversheetByToken,
+L20:   getCoversheetByOrderId,
+L21:   getAllActiveCoversheets,
+L22:   updateCoversheetAccessCount,
+L23:   toggleCoversheetActive,
+L24:   getCoversheetPublicUrl
+L25: } from '../features/orders/services';
+L26: 
+L27: export { batchService, batchAllocationService } from '../features/batches/services';
+L28: 
+L29: export {
+L30:   fetchOrderableProducts,
+L31:   isProductOrderable,
+L32:   getCategoryBadge,
+L33:   formatProductPrice,
+L34:   groupProductsByCategory
+L35: } from './products.service';
+L36: 
+
+=== MODIFYING src/features/sessions/components/ProductionDashboard.tsx ===
+Original size: 15069 bytes
+Added: import React
+Inserted ErrorBoundary class
+Renamed to ProductionDashboardInner
+Added wrapper export
+File written. New size: 16415 bytes

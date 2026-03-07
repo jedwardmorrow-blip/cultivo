@@ -89,19 +89,18 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
   const packagingCount = pendingSessions.filter(s => s.session_type === 'packaging').length;
   const buckingCount = pendingSessions.filter(s => s.session_type === 'bucking').length;
 
-  // Find oldest pending session
-  const oldestSession = pendingSessions.reduce((oldest, session) => {
-    if (!oldest || new Date(session.completed_at) < new Date(oldest.completed_at)) {
-      return session;
-    }
+  const oldestTimestamp = pendingSessions.reduce<string | null>((oldest, session) => {
+    const ts = session.first_completed_at || session.last_completed_at;
+    if (!ts) return oldest;
+    if (!oldest || new Date(ts) < new Date(oldest)) return ts;
     return oldest;
-  }, pendingSessions[0]);
+  }, null);
 
-  const daysSinceOldest = oldestSession
-    ? Math.floor((Date.now() - new Date(oldestSession.completed_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  const daysSinceOldest = oldestTimestamp
+    ? Math.floor((Date.now() - new Date(oldestTimestamp).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
 
-  const isUrgent = daysSinceOldest > 3;
+  const isUrgent = daysSinceOldest !== null && daysSinceOldest > 3;
 
   return (
     <div>
@@ -178,10 +177,16 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
           <div className={`text-3xl font-bold ${
             isUrgent ? 'text-amber-400' : 'text-cult-white'
           }`}>
-            {daysSinceOldest}
-            <span className="text-base font-normal ml-1">
-              day{daysSinceOldest !== 1 ? 's' : ''}
-            </span>
+            {daysSinceOldest !== null ? (
+              <>
+                {daysSinceOldest}
+                <span className="text-base font-normal ml-1">
+                  day{daysSinceOldest !== 1 ? 's' : ''}
+                </span>
+              </>
+            ) : (
+              <span className="text-cult-light-gray">&mdash;</span>
+            )}
           </div>
           {isUrgent && (
             <div className="flex items-center gap-1 text-xs text-amber-400 mt-1">

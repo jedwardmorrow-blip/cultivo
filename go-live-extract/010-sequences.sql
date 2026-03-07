@@ -1,0 +1,7 @@
+-- ============================================================
+-- Sequences
+-- Source: https://fonreynkfeqywshijqpi.supabase.co
+-- Extracted: 2026-03-02
+-- Count: 0
+-- ============================================================
+-- No public sequences (schema uses UUID primary keys via gen_random_uuid())

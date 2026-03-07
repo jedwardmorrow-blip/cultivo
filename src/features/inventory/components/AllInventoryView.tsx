@@ -1,15 +1,27 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2, Archive } from 'lucide-react';
+import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2, Archive, SlidersHorizontal, ArrowLeftRight } from 'lucide-react';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
+import { MultiLabelPrintModal } from './MultiLabelPrintModal';
 import { CombinePackagesModal } from './CombinePackagesModal';
+import { QuickAdjustmentModal } from './QuickAdjustmentModal';
+import { RebalanceWeightModal } from './RebalanceWeightModal';
+import { RowActionMenu } from './RowActionMenu';
+import type { RowAction } from './RowActionMenu';
 import { QualityGradeBadge } from '@/shared/components';
 import { qualityGradeService } from '@/services';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
 import { useInventoryLabel } from '../hooks';
+import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
+import { useAdjustment } from '../hooks/useAdjustment';
 import { getItemStage } from '../hooks/useInventoryFilters';
-import type { InventoryItem, AllInventoryStats, StageFilter } from '../types';
+import {
+  validateAdjustment as validateAdjustmentInput,
+  calculateVariance,
+} from '../types/adjustment.types';
+import type { InventoryItem, AllInventoryStats, StageFilter, QuickAdjustmentModalState, VarianceReason } from '../types';
 import type { SelectedPackage } from '../types/combine.types';
 
 interface AllInventoryViewProps {
@@ -39,14 +51,42 @@ const stageBreakdownConfig = [
   { key: 'packagedCount' as const, label: 'Packaged', icon: Package, color: 'text-teal-400', borderColor: 'border-teal-800/40' },
 ];
 
+const defaultAdjustmentState: QuickAdjustmentModalState = {
+  isOpen: false,
+  inventoryItemId: null,
+  currentQty: 0,
+  packageId: '',
+  productName: '',
+  strain: null,
+  batch: null,
+  stage: '',
+  unit: 'g',
+  newQty: '',
+  varianceReason: '',
+  notes: '',
+  varianceQty: 0,
+  variancePercentage: 0,
+  isLoading: false,
+  isSaving: false,
+  error: null,
+  validation: { isValid: false, errors: {} },
+};
+
 export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: AllInventoryViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
+  const { isAdmin } = useAuth();
+  const { applyAdjustment } = useAdjustment();
 
   const [selectedPackageIds, setSelectedPackageIds] = useState<Set<string>>(new Set());
   const [showCombineModal, setShowCombineModal] = useState(false);
   const [combineError, setCombineError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  const [adjustmentState, setAdjustmentState] = useState<QuickAdjustmentModalState>(defaultAdjustmentState);
+  const [rebalanceSource, setRebalanceSource] = useState<InventoryItem | null>(null);
+  const [showRebalanceModal, setShowRebalanceModal] = useState(false);
 
   const filteredItems = useMemo(() => {
     if (stageFilter === 'all') return items;
@@ -132,6 +172,112 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
     setShowCombineModal(false);
   }, []);
 
+  const handlePrintLabelsClick = useCallback(() => {
+    const selectedItems = filteredItems.filter((item) => selectedPackageIds.has(item.id));
+    if (selectedItems.length > 0) {
+      multiLabelHook.openMultiLabel(selectedItems);
+    }
+  }, [filteredItems, selectedPackageIds, multiLabelHook]);
+
+  const openAdjustmentModal = useCallback((item: InventoryItem) => {
+    const stage = getItemStage(item) || 'unknown';
+    setAdjustmentState({
+      ...defaultAdjustmentState,
+      isOpen: true,
+      inventoryItemId: item.id,
+      currentQty: item.on_hand_qty || 0,
+      packageId: item.package_id,
+      productName: item.product_name || '',
+      strain: item.strain || null,
+      batch: item.batch_number || null,
+      stage,
+      unit: stage === 'packaged' ? 'unit' : 'g',
+    });
+  }, []);
+
+  const closeAdjustmentModal = useCallback(() => {
+    setAdjustmentState(defaultAdjustmentState);
+  }, []);
+
+  const handleNewQtyChange = useCallback((value: string) => {
+    setAdjustmentState(prev => {
+      const qty = parseFloat(value);
+      const { varianceQty, variancePercentage } = isNaN(qty)
+        ? { varianceQty: 0, variancePercentage: 0 }
+        : calculateVariance(prev.currentQty, qty);
+      const validation = validateAdjustmentInput(value, prev.varianceReason, prev.notes, prev.currentQty);
+      return { ...prev, newQty: value, varianceQty, variancePercentage, validation };
+    });
+  }, []);
+
+  const handleVarianceReasonChange = useCallback((reason: VarianceReason | '') => {
+    setAdjustmentState(prev => {
+      const validation = validateAdjustmentInput(prev.newQty, reason, prev.notes, prev.currentQty);
+      return { ...prev, varianceReason: reason, validation };
+    });
+  }, []);
+
+  const handleNotesChange = useCallback((notes: string) => {
+    setAdjustmentState(prev => {
+      const validation = validateAdjustmentInput(prev.newQty, prev.varianceReason, notes, prev.currentQty);
+      return { ...prev, notes, validation };
+    });
+  }, []);
+
+  const handleAdjustmentSubmit = useCallback(async () => {
+    if (!adjustmentState.inventoryItemId) return;
+    setAdjustmentState(prev => ({ ...prev, isSaving: true, error: null }));
+    try {
+      await applyAdjustment({
+        inventory_item_id: adjustmentState.inventoryItemId,
+        new_qty: parseFloat(adjustmentState.newQty),
+        variance_reason: adjustmentState.varianceReason as VarianceReason,
+        notes: adjustmentState.notes,
+      });
+      closeAdjustmentModal();
+      onDataRefresh?.();
+    } catch {
+      setAdjustmentState(prev => ({ ...prev, isSaving: false, error: 'Failed to apply adjustment' }));
+    }
+  }, [adjustmentState, applyAdjustment, closeAdjustmentModal, onDataRefresh]);
+
+  const openRebalanceModal = useCallback((item: InventoryItem) => {
+    setRebalanceSource(item);
+    setShowRebalanceModal(true);
+  }, []);
+
+  const closeRebalanceModal = useCallback(() => {
+    setRebalanceSource(null);
+    setShowRebalanceModal(false);
+  }, []);
+
+  const handleRebalanceComplete = useCallback(() => {
+    onDataRefresh?.();
+  }, [onDataRefresh]);
+
+  const renderRowActions = useCallback((item: InventoryItem) => {
+    const actions: RowAction[] = [
+      {
+        label: 'Print Label',
+        icon: <Printer className="w-4 h-4" />,
+        onClick: () => labelHook.openLabel(item),
+      },
+      {
+        label: 'Adjust Quantity',
+        icon: <SlidersHorizontal className="w-4 h-4" />,
+        onClick: () => openAdjustmentModal(item),
+        visible: isAdmin,
+      },
+      {
+        label: 'Rebalance Weight',
+        icon: <ArrowLeftRight className="w-4 h-4" />,
+        onClick: () => openRebalanceModal(item),
+        visible: isAdmin && (item.on_hand_qty || 0) > 0,
+      },
+    ];
+    return <RowActionMenu actions={actions} />;
+  }, [labelHook, openAdjustmentModal, openRebalanceModal, isAdmin]);
+
   useEffect(() => {
     if (combineError && selectedPackageIds.size > 0) {
       setCombineError(null);
@@ -209,6 +355,13 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={handlePrintLabelsClick}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all flex items-center gap-2 text-sm font-medium"
+              >
+                <Printer className="w-4 h-4" />
+                Print Labels
+              </button>
+              <button
                 onClick={handleCombineClick}
                 disabled={isValidating}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
@@ -284,11 +437,6 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
           },
           {
-            header: 'Room',
-            accessor: 'room',
-            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
-          },
-          {
             header: 'Available Qty',
             accessor: 'available_qty',
             align: 'right',
@@ -345,22 +493,8 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               );
             },
           },
-          {
-            header: '',
-            accessor: (item) => item,
-            align: 'center',
-            sortable: false,
-            format: (_, item) => (
-              <button
-                onClick={() => labelHook.openLabel(item)}
-                className="p-1.5 rounded-md hover:bg-cult-medium-gray/60 text-cult-lighter-gray hover:text-cult-white transition-colors"
-                title="Print Label"
-              >
-                <Printer className="w-4 h-4" />
-              </button>
-            ),
-          },
         ]}
+        renderRowActions={renderRowActions}
         emptyMessage="No inventory found"
         emptySubtext="Import inventory or complete sessions to populate"
       />
@@ -376,11 +510,39 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
         onPrint={labelHook.printLabel}
       />
 
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
+      />
+
       <CombinePackagesModal
         isOpen={showCombineModal}
         onClose={handleCombineClose}
         onComplete={handleCombineComplete}
         preselected_packages={selectedPackages}
+      />
+
+      <QuickAdjustmentModal
+        state={adjustmentState}
+        onClose={closeAdjustmentModal}
+        onNewQtyChange={handleNewQtyChange}
+        onVarianceReasonChange={handleVarianceReasonChange}
+        onNotesChange={handleNotesChange}
+        onSubmit={handleAdjustmentSubmit}
+      />
+
+      <RebalanceWeightModal
+        isOpen={showRebalanceModal}
+        sourceItem={rebalanceSource}
+        allItems={filteredItems}
+        onClose={closeRebalanceModal}
+        onComplete={handleRebalanceComplete}
       />
     </>
   );

@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { X, Printer, Loader2 } from 'lucide-react';
+import { Button } from '@/shared/components';
 import JsBarcode from 'jsbarcode';
 import type { PlantLabelData } from '../hooks/usePlantGroupLabel';
 
@@ -327,18 +328,14 @@ export function PlantGroupLabelPrintModal({
         </div>
 
         <div className="px-5 py-4 border-t border-cult-medium-gray flex-shrink-0 flex gap-3">
-          <button
+          <Button
             onClick={() => onPrint(printRef.current)}
             disabled={isLoading || isPrinting || !!error || !labelData}
-            className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            size="sm"
+            icon={isPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
           >
-            {isPrinting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Printer className="w-4 h-4" />
-            )}
             {isPrinting ? 'Printing...' : 'Print'}
-          </button>
+          </Button>
           <button
             onClick={onClose}
             className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"

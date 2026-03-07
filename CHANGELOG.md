@@ -4,6 +4,148 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-06 - Water Loss Write-Off on Conversions
+
+**Type:** Feature
+**Module:** Inventory / Conversions
+**Status:** COMPLETE
+
+Added upstream water loss write-off to the conversion review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, eliminating the need to create bags just to submit a variance form.
+
+- **Write-Off Section:** Collapsible "Adjust for Water Loss / Variance" panel on ConversionModal review screen with grams input, reason dropdown (defaults to moisture loss), and notes field.
+- **Adjusted Weight Flow:** Write-off amount reduces the available weight passed to the bag creation modal and to the finalization service, so bags totaling the adjusted weight are treated as full finalization.
+- **Write Off Entire Amount:** For small leftover conversions (e.g., 16g remaining from evaporation), a single button logs the variance and finalizes with zero packages, clearing the item from the pending list.
+- **Dual Variance Logging:** Write-off variance is logged separately from any in-modal bag variance. Both go to the existing `variance_log` table.
+- **No Database Migration:** Uses existing `variance_log` table and `logVariance()` service function.
+- **Modified Files:** ConversionModal.tsx, BulkBagCreationModal.tsx
+- **Architecture Decision:** 20 (Upstream Water Loss Write-Off)
+
+---
+
+## 2026-03-02 - Go-Live Plan v4.0 Documentation
+
+**Type:** Documentation
+**Module:** Operations / Go-Live
+**Status:** COMPLETE
+
+Created the v4.0 go-live plan documenting a schema-first migration strategy from the Bolt.new Supabase instance to the cult-ops Supabase instance. This replaces the v3.4 soft-reset approach.
+
+- **Strategy Change:** Migrating to cult-ops instance (`fhjcvdimdgzwrijotmxg`) instead of resetting data in place on Bolt.new instance (`fonreynkfeqywshijqpi`). Cleaner and safer -- no 27-table FK-ordered DELETE sequence needed.
+- **8-Phase Plan:** Schema export, schema deploy, data cleanup, production data import, fresh audit data upload, strain re-linking, environment cutover, verification.
+- **Production Data Preserved:** 23 tables (~2,545 rows) of real business data (orders, customers, products, settings, etc.) carry forward.
+- **Test Data Left Behind:** All session, inventory, batch, and cultivation test data stays on Bolt.new. Fresh audit data uploaded to clean database.
+- **Rollback:** Bolt.new instance is never modified -- serves as live backup. Revert by changing .env back.
+- **New File:** `docs/GO-LIVE-PLAN-v4.0.md`
+- **Updated Files:** `docs/AI-SESSION-BRIEF.md`, `docs/AI-BUILD-SESSION-CHECKLIST.md`
+
+---
+
+## 2026-03-01 - Sessions & Conversions Styling Uniformity Audit
+
+**Type:** Styling Fix
+**Module:** Sessions / Inventory (Conversions)
+**Status:** COMPLETE
+
+Comprehensive styling audit and fix across all session and conversion components to enforce dark-mode consistency and visual uniformity.
+
+- **SessionStats:** Fixed first stat card using light-mode colors (bg-blue-50, text-blue-700) to match the dark theme used by the other three cards.
+- **ConversionLotsList:** Converted entire component from light-mode styling (bg-white, bg-green-50, bg-blue-50, text-blue-700, text-amber-700) to dark-mode equivalents using cult-* tokens.
+- **Bucking Table Headers:** Wrapped ActiveBuckingSessionsTable and CompletedBuckingSessionsTable headers inside card containers with border-b separators, matching the trim and packaging table pattern.
+- **Table Header Text Colors:** Standardized all session and conversion table headers from mixed text-cult-light-gray / text-cult-text-muted to text-cult-silver with tracking-wider.
+- **Action Buttons:** Unified bucking session action buttons to match trim/packaging pattern (bg-white text-black font-bold uppercase).
+- **Loading States:** Replaced plain-text loading messages in all three session pages (trim, bucking, packaging) with PageSkeleton component.
+- **Color Tokens:** Replaced all raw text-white with text-cult-white in ConversionsView, ConversionHistoryView, and session page headings for token consistency.
+- **Hover Interactions:** Standardized all table row hovers to hover:bg-cult-dark-gray/50 transition-colors across all session and conversion tables.
+- **Status Badges:** Unified bucking completed/cancelled badges to use the bordered badge pattern (bg-green-900/30 border-green-600) matching trim and packaging.
+- **Modified Files:** SessionStats.tsx, ConversionLotsList.tsx, ActiveBuckingSessionsTable.tsx, CompletedBuckingSessionsTable.tsx, ActiveSessionsTable.tsx, ActivePackagingSessionsTable.tsx, CompletedSessionsTable.tsx, CompletedPackagingSessionsTable.tsx, TrimSessionsRefactored.tsx, BuckingSessionsRefactored.tsx, PackagingSessionsRefactored.tsx, ConversionsView.tsx, ConversionHistoryView.tsx
+
+---
+
+## 2026-03-01 - Package Assignment Reservation System
+
+**Type:** Feature / Architecture
+**Module:** Orders / Inventory
+**Status:** COMPLETE
+
+Implemented trigger-based inventory reservation on package assignments, replacing the unused legacy allocation system. Inventory is now automatically reserved when packages are assigned to orders and permanently deducted when orders are completed.
+
+- **Legacy Removal:** Dropped `order_item_allocations` table, `inventory_transactions` table, 10 legacy functions, and 4 legacy triggers that were no longer in use.
+- **Reservation Triggers:** Added `status` column ('reserved'/'fulfilled'/'released') to `package_assignments`. INSERT trigger reserves inventory (decrements available_qty, increments reserved_qty). DELETE trigger releases reservation.
+- **Order Completion:** Trigger on orders status change to 'completed' converts all reservations to FULFILLMENT movements (permanent on_hand_qty deduction). Cancellation releases all reservations.
+- **Revert Support:** If order status reverts from 'completed', RETURN movements restore inventory and re-reserve.
+- **Views:** Created `inventory_reservation_summary` and `package_assignments_with_reservations` for reservation visibility.
+- **Service Migration:** Updated `invoiceService.ts` and `manifestService.ts` to use `package_assignments` instead of legacy `order_item_allocations`.
+- **Type Updates:** Removed `Allocation` interface, added `PackageAssignmentStatus` type. Fixed `fulfillmentValidation.service.ts` column name mismatches.
+- **UI:** Assignment badges show Reserved (blue) or Fulfilled (green) status. Fulfilled assignments cannot be removed. Completion and cancellation hints explain inventory effects.
+- **Migrations:** `remove_legacy_allocation_system`, `add_package_assignment_reservation_system`, `create_inventory_reservation_views`, `create_order_fulfillment_triggers`
+- **Modified Files:** `invoiceService.ts`, `manifestService.ts`, `order.types.ts`, `orders.types.ts`, `packageAssignment.service.ts`, `fulfillmentValidation.service.ts`, `AssignedPackagesDisplay.tsx`, `StatusActionPanel.tsx`
+- **Documentation:** Updated ORDERS.md (v2.0 rewrite), ARCHITECTURE-DECISIONS.md (Decision 19), AI-SESSION-BRIEF.md, AI-BUILD-SESSION-CHECKLIST.md
+
+---
+
+## 2026-03-01 - Order Status Workflow Overhaul
+
+**Type:** Feature Improvement
+**Module:** Orders / Distribution
+**Status:** COMPLETE
+
+Replaced the hidden chevron-based status cycling with intentional, bi-directional status controls including forward advance, step-back, cancel, and reopen actions.
+
+- **Transition Utility:** New `orderTransitions.ts` defines the full transition map with forward/backward/cancel/reopen paths, labels, and validation helpers.
+- **OrderTable:** Removed left/right chevron cycling. Status badge is now read-only with a single forward-advance arrow button (visible on hover) for non-terminal statuses.
+- **OrderDrawer:** Removed the `<select>` dropdown from the header. Added a dedicated Status Action Panel below the timeline with a primary forward button, secondary revert button, and cancel link (all gated behind confirmation dialogs where appropriate). Delivery date is prompted inline when advancing to ready_for_delivery without one set.
+- **Toast Notifications:** All status changes now produce feedback via the existing notification service — success for forward moves, info for reverts, warning for cancellations, error for invalid transitions.
+- **Transition Validation:** `OrdersContext.updateOrderStatus` validates transitions before executing and blocks invalid moves with an error toast.
+- **BulkActionBar:** Now receives selected orders and computes valid common transitions. Dropdown shows grouped Advance/Revert/Cancel options. Cancellation requires confirmation dialog.
+- **Database Fix:** Changed `orders.status` column default from 'pending' (which violated the CHECK constraint) to 'submitted'.
+- **New Files:** `orderTransitions.ts`, `StatusActionPanel.tsx`
+- **Modified Files:** `OrderTable.tsx`, `OrderDrawer.tsx`, `BulkActionBar.tsx`, `UnifiedOrders.tsx`, `OrdersContext.tsx`
+- **Migration:** `fix_orders_status_default_to_submitted`
+
+---
+
+## 2026-03-01 - Typography, Animation & Loading State Overhaul
+
+**Type:** UI Polish
+**Module:** Global
+**Status:** COMPLETE
+
+Systematic pass across the entire application to standardize typography hierarchy, tighten animations, and replace plain-text loading states with skeleton shimmer screens.
+
+- **Page Titles:** Standardized all page-level headings from text-4xl to text-3xl across 17 files (Dashboard, Orders, Inventory, Sessions, CRM, Cultivation, Delivery, Settings, Analytics).
+- **Section Headers:** Standardized card/section headers to text-sm font-semibold uppercase tracking-wider across Dashboard, Analytics, Production, and Settings pages. Calendar/display labels intentionally left larger.
+- **Table Headers:** Standardized table column headers to text-xs font-medium uppercase tracking-wide across Orders, Delivery, Production, and Distribution Calendar.
+- **Cultivation Headers:** Bumped dashboard section labels from text-xs to text-sm for readability (Dry Rooms, Plants by Stage, Active Harvests, Grow Rooms).
+- **Page Transition:** Tightened fade-in from 300ms ease-in-out to 150ms ease-out with upward-slide from 4px instead of downward-slide from -10px.
+- **Stagger Animation:** Reduced child stagger delays from 60ms to 50ms increments and shortened base duration from 400ms to 300ms.
+- **Tab Transition:** Added new tab-content-enter CSS animation class for tab switch content.
+- **Stat Card Hover:** Added hover:scale-[1.01] micro-interaction to all stat card variants (shared StatCard, inventory StatsCard, and local stat cards in Production, Distribution, Visit Calendar, Sales Queue).
+- **Skeleton Loading:** Created shared PageSkeleton component with shimmer animation. Replaced plain-text and spinner loading states in Production, Orders, CRM Dashboard, Cultivation Dashboard, and Inventory views.
+- **New Files:** PageSkeleton.tsx
+- **Modified Files:** index.css, StatCard.tsx, StatsCard.tsx, Dashboard.tsx, AnalyticsDashboard.tsx, ProductionDashboard.tsx, Settings.tsx, UnifiedOrders.tsx, CRMDashboard.tsx, CultivationDashboard.tsx, DistributionCalendar.tsx, DeliverySchedule.tsx, OrderTable.tsx, InventoryViewsSimplified.tsx, VisitCalendar.tsx, SalesQueue.tsx, PlantGroupsList.tsx, HarvestSessionsList.tsx, GrowRoomsManagement.tsx, shared/components/index.ts
+
+---
+
+## 2026-02-28 - Inventory Row Actions: Quick Adjust, Rebalance Weight, Combine Packages
+
+**Type:** Feature Addition
+**Module:** Inventory
+**Status:** COMPLETE
+
+Added a three-dot row action menu to the All Inventory table, surfacing three per-item operations: Print Label (all users), Quick Adjustment (admin), and Rebalance Weight (admin). Combine Packages was already wired from a previous session.
+
+- **RowActionMenu Component:** New reusable `RowActionMenu.tsx` renders a three-dot icon (MoreVertical) with a dropdown of context-sensitive actions. Supports visibility toggles, destructive action styling, outside-click and Escape dismissal.
+- **Quick Adjustment Restyle:** Rewrote `QuickAdjustmentModal.tsx` from light theme to dark theme (cult-* color system). Variance display uses emerald for increases, red for decreases. High variance warning at 5%+ threshold.
+- **Rebalance Weight Feature:** New `RebalanceWeightModal.tsx` allows transferring weight between two inventory items of the same unit type. Searchable destination picker, live before/after preview, 50%+ source depletion warning. Reason code and notes required. Calls `fn_rebalance_inventory_weight` RPC.
+- **AllInventoryView Wiring:** Replaced the inline printer icon column with the RowActionMenu. Admin users see Adjust Quantity and Rebalance Weight actions. All users see Print Label. Both modals wired with proper state management and data refresh on completion.
+- **useAdjustment Hook Fix:** Fixed broken import (`AdjustmentRequest` -> `QuickAdjustmentRequest`) and added userId passthrough to the adjustment service.
+- **InventoryTable Enhancement:** Added `renderRowActions` prop for per-row action rendering, with proper colspan accounting for empty states.
+- **Database Migration (previous session):** `fn_combine_inventory_packages` and `fn_rebalance_inventory_weight` RPCs. Extended `variance_source` enum with `combine_packages` and `weight_rebalance`.
+- **New Files:** `rebalance.types.ts`, `rebalance.service.ts`, `RebalanceWeightModal.tsx`, `RowActionMenu.tsx`
+- **Modified Files:** `QuickAdjustmentModal.tsx`, `useAdjustment.ts`, `InventoryTable.tsx`, `AllInventoryView.tsx`, index exports
+
+---
+
 ## 2026-02-27 - Fix 14g Smalls Naming & Finalization Status Sync
 
 **Type:** Bug Fix

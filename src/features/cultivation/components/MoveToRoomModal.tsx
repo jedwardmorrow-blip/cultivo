@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowRight, AlertTriangle, MapPin } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import type { GrowRoom, PlantGroup, RoomTable } from '../types';
 
@@ -125,14 +126,14 @@ export function MoveToRoomModal({ group, rooms, onMove, onCancel }: MoveToRoomMo
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handleRoomContinue}
                 disabled={!toRoomId || saving || availableRooms.length === 0 || loadingTables}
-                className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                size="sm"
+                icon={<ArrowRight className="w-4 h-4" />}
               >
-                <ArrowRight className="w-4 h-4" />
                 {hasSections ? 'Continue' : saving ? 'Moving...' : 'Move'}
-              </button>
+              </Button>
               <button
                 onClick={onCancel}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
@@ -188,14 +189,14 @@ export function MoveToRoomModal({ group, rooms, onMove, onCancel }: MoveToRoomMo
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handleMove}
                 disabled={saving}
-                className="flex items-center gap-2 bg-white text-cult-black px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                size="sm"
+                icon={<ArrowRight className="w-4 h-4" />}
               >
-                <ArrowRight className="w-4 h-4" />
                 {saving ? 'Moving...' : 'Confirm Move'}
-              </button>
+              </Button>
               <button
                 onClick={() => setStep('room')}
                 disabled={saving}

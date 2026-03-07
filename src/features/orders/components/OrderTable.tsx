@@ -1,28 +1,21 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ChevronLeft, ChevronRight, Gift } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useShiftSelect } from '@/shared/hooks';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
+import { getNextStatus, getTransitionLabel } from '../utils/orderTransitions';
 import type { Order } from '../types';
 
 type SortField = 'order_number' | 'customer_name' | 'status' | 'delivery_date' | 'total_amount' | 'created_at';
 type SortDirection = 'asc' | 'desc';
-
-const STATUS_CYCLE: string[] = [
-  'submitted',
-  'accepted',
-  'processing',
-  'ready_for_delivery',
-  'completed',
-  'cancelled',
-];
 
 interface OrderTableProps {
   orders: Order[];
   selectedOrderId: string | null;
   selectedIds: Set<string>;
   onSelectOrder: (orderId: string) => void;
-  onToggleSelect: (orderId: string) => void;
+  onSelectionChange: (ids: Set<string>) => void;
   onToggleSelectAll: () => void;
   onStatusChange?: (orderId: string, newStatus: string) => void;
 }
@@ -63,7 +56,7 @@ export function OrderTable({
   selectedOrderId,
   selectedIds,
   onSelectOrder,
-  onToggleSelect,
+  onSelectionChange,
   onToggleSelectAll,
   onStatusChange,
 }: OrderTableProps) {
@@ -115,9 +108,18 @@ export function OrderTable({
     return sorted;
   }, [orders, sortField, sortDirection]);
 
+  const getOrderKey = useCallback((order: Order) => order.id, []);
+
+  const { handleItemClick: shiftSelectClick } = useShiftSelect({
+    items: sortedOrders,
+    getKey: getOrderKey,
+    selectedIds,
+    onSelectionChange,
+  });
+
   const allSelected = orders.length > 0 && selectedIds.size === orders.length;
 
-  const thClass = 'px-3 py-3 text-left text-[11px] font-bold text-cult-silver uppercase tracking-wider cursor-pointer hover:text-cult-white transition-colors select-none';
+  const thClass = 'px-3 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide cursor-pointer hover:text-cult-white transition-colors select-none';
   const thSortable = (field: SortField, label: string, align?: string) => (
     <th
       className={`${thClass} ${align === 'right' ? 'text-right' : ''}`}
@@ -163,6 +165,7 @@ export function OrderTable({
               const age = getOrderAge(order.created_at);
               const ageColor = getOrderAgeColor(order.created_at, order.status);
               const statusColors = getStatusColor(order.status || 'submitted');
+              const nextStatus = getNextStatus(order.status || 'submitted');
 
               return (
                 <tr
@@ -178,7 +181,7 @@ export function OrderTable({
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => onToggleSelect(order.id)}
+                      onChange={(e) => shiftSelectClick(order.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
                       className="w-3.5 h-3.5 rounded border-cult-charcoal bg-cult-near-black text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
                     />
                   </td>
@@ -213,39 +216,23 @@ export function OrderTable({
                     )}
                   </td>
                   <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                    {onStatusChange ? (
-                      <div className="inline-flex items-center gap-0.5 group/status">
-                        <button
-                          title="Previous status"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const idx = STATUS_CYCLE.indexOf(order.status || 'submitted');
-                            if (idx > 0) onStatusChange(order.id, STATUS_CYCLE[idx - 1]);
-                          }}
-                          className="p-0.5 rounded opacity-0 group-hover/status:opacity-100 hover:bg-white/10 transition-all text-cult-lighter-gray hover:text-cult-white"
-                        >
-                          <ChevronLeft className="w-3 h-3" />
-                        </button>
-                        <span className={`inline-block px-2 py-1 text-[11px] font-bold border rounded uppercase tracking-wider cursor-default select-none ${statusColors}`}>
-                          {STATUS_LABELS[order.status || 'submitted'] || order.status}
-                        </span>
-                        <button
-                          title="Next status"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const idx = STATUS_CYCLE.indexOf(order.status || 'submitted');
-                            if (idx < STATUS_CYCLE.length - 1) onStatusChange(order.id, STATUS_CYCLE[idx + 1]);
-                          }}
-                          className="p-0.5 rounded opacity-0 group-hover/status:opacity-100 hover:bg-white/10 transition-all text-cult-lighter-gray hover:text-cult-white"
-                        >
-                          <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <span className={`inline-block px-2 py-1 text-[11px] font-bold border rounded uppercase tracking-wider ${statusColors}`}>
+                    <div className="inline-flex items-center gap-1">
+                      <span className={`inline-block px-2 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
                         {STATUS_LABELS[order.status || 'submitted'] || order.status}
                       </span>
-                    )}
+                      {onStatusChange && nextStatus && (
+                        <button
+                          title={getTransitionLabel(order.status || 'submitted', nextStatus)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onStatusChange(order.id, nextStatus);
+                          }}
+                          className="p-1 rounded hover:bg-white/10 transition-all text-cult-lighter-gray hover:text-cult-green opacity-0 group-hover:opacity-100"
+                        >
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className="px-3 py-3">
                     <span className="text-sm text-cult-off-white">

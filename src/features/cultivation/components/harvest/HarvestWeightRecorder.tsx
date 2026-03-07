@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { useHarvestWeightEntries } from '../../hooks/useHarvestWeightEntries';
 import { formatWeight } from '../../utils';
 import type { PlantGroup, HarvestSession } from '../../types';
@@ -79,14 +80,14 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
             className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
           />
         </div>
-        <button
+        <Button
           onClick={handleAdd}
           disabled={!canSave}
-          className="flex items-center gap-1.5 bg-white text-cult-black px-3 py-1.5 text-xs font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          size="xs"
+          icon={<Plus className="w-3.5 h-3.5" />}
         >
-          <Plus className="w-3.5 h-3.5" />
           {saving ? '...' : 'Add'}
-        </button>
+        </Button>
       </div>
     </div>
   );

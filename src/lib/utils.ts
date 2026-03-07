@@ -1,3 +1,31 @@
+import { lazy, ComponentType } from 'react';
+
+type ModuleWithDefault = { default: ComponentType<any> };
+
+export function lazyRetry<T extends Record<string, ComponentType<any>>>(
+  importFn: () => Promise<T>,
+  namedExport: keyof T
+) {
+  return lazy(() => {
+    const sessionKey = `chunk_retry_${String(namedExport)}`;
+    const hasRefreshed = sessionStorage.getItem(sessionKey) === 'true';
+
+    return (importFn() as Promise<T>)
+      .then((module) => {
+        sessionStorage.removeItem(sessionKey);
+        return { default: module[namedExport] } as ModuleWithDefault;
+      })
+      .catch((error: Error) => {
+        if (!hasRefreshed) {
+          sessionStorage.setItem(sessionKey, 'true');
+          window.location.reload();
+          return new Promise<ModuleWithDefault>(() => {});
+        }
+        throw error;
+      });
+  });
+}
+
 export function getSiteUrl(): string {
   const configured = import.meta.env.VITE_PUBLIC_SITE_URL;
   if (configured) return configured.replace(/\/+$/, '');

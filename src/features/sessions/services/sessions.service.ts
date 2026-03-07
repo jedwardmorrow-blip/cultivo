@@ -390,26 +390,25 @@ export async function undoCompletedSession(
   sessionType: 'trim' | 'bucking' | 'packaging'
 ) {
   try {
-    const { data: existingPackages, error: pkgError } = await supabase
-      .from('conversion_packages')
-      .select('id')
-      .contains('source_session_ids', [sessionId])
-      .limit(1);
-
-    if (pkgError) throw pkgError;
-
-    if (existingPackages && existingPackages.length > 0) {
-      throw new Error(
-        'Cannot undo: this session has already been finalized into conversion packages. ' +
-        'Void the conversion first before undoing the session.'
-      );
-    }
-
     const tableName = `${sessionType}_sessions`;
+
+    const { data: session, error: fetchError } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const finalizationBlocked = checkFinalizationBlock(session, sessionType);
+    if (finalizationBlocked) {
+      throw new Error(finalizationBlocked);
+    }
 
     const { data, error } = await supabase
       .from(tableName)
       .update({
+        session_status: 'active',
         completed_at: null,
         updated_at: new Date().toISOString(),
       })
@@ -422,5 +421,106 @@ export async function undoCompletedSession(
   } catch (error) {
     errorService.handle(error, `Failed to undo completed ${sessionType} session`);
     return { data: null, error };
+  }
+}
+
+function checkFinalizationBlock(session: any, sessionType: string): string | null {
+  if (sessionType === 'trim') {
+    const finalized: string[] = [];
+    if (session.finalization_status_bigs === 'finalized') finalized.push('Flower');
+    if (session.finalization_status_smalls === 'finalized') finalized.push('Smalls');
+    if (session.finalization_status_trim === 'finalized') finalized.push('Trim');
+    if (finalized.length > 0) {
+      return `Cannot undo: ${finalized.join(', ')} output has been finalized. Void the conversion first.`;
+    }
+  } else if (sessionType === 'packaging') {
+    const finalized: string[] = [];
+    if (session.finalization_status_3_5g === 'finalized') finalized.push('3.5g');
+    if (session.finalization_status_14g === 'finalized') finalized.push('14g');
+    if (session.finalization_status_1lb === 'finalized') finalized.push('1lb');
+    if (session.finalization_status_packaged === 'finalized') finalized.push('Packaged');
+    if (finalized.length > 0) {
+      return `Cannot undo: ${finalized.join(', ')} output has been finalized. Void the conversion first.`;
+    }
+  } else if (sessionType === 'bucking') {
+    const finalized: string[] = [];
+    if (session.finalization_status_bucked === 'finalized') finalized.push('Bucked Flower');
+    if (session.finalization_status_smalls === 'finalized') finalized.push('Smalls');
+    if (session.finalization_status === 'finalized') finalized.push('Output');
+    if (finalized.length > 0) {
+      return `Cannot undo: ${finalized.join(', ')} output has been finalized. Void the conversion first.`;
+    }
+  }
+  return null;
+}
+
+export async function updateTrimSession(
+  sessionId: string,
+  updates: TrimSessionUpdate
+) {
+  try {
+    const { data: session, error: fetchError } = await supabase
+      .from('trim_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const finalizationBlocked = checkFinalizationBlock(session, 'trim');
+    if (finalizationBlocked) {
+      throw new Error(finalizationBlocked.replace('Cannot undo', 'Cannot edit'));
+    }
+
+    const { data, error } = await supabase
+      .from('trim_sessions')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to update trim session');
+    return { data: null, error };
+  }
+}
+
+export async function deleteTrimSession(sessionId: string) {
+  try {
+    const { data: session, error: fetchError } = await supabase
+      .from('trim_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const finalizationBlocked = checkFinalizationBlock(session, 'trim');
+    if (finalizationBlocked) {
+      throw new Error(finalizationBlocked.replace('Cannot undo', 'Cannot delete'));
+    }
+
+    const { error: srcError } = await supabase
+      .from('consolidated_package_sources')
+      .delete()
+      .eq('session_id', sessionId);
+
+    if (srcError) throw srcError;
+
+    const { error } = await supabase
+      .from('trim_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to delete trim session');
+    return { error };
   }
 }
