@@ -7,12 +7,6 @@ import { useRoomSummaries } from '../hooks/useRoomSummaries';
 import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
-import { PlantGroupsList } from './PlantGroupsList';
-import { HarvestSessionsList } from './HarvestSessionsList';
-import { DryRoomsManagement } from './DryRoomsManagement';
-import { DailyTaskBoard } from './DailyTaskBoard';
-import { DailyDigestView } from './DailyDigestView';
-import { TabBar } from './TabBar';
 import { RoomGroup } from './RoomGroup';
 import { StrainPills } from './StrainPills';
 import { FlowerRunProgress } from './FlowerRunProgress';
@@ -20,7 +14,6 @@ import { HarvestCountdown } from './HarvestCountdown';
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup, GrowthStage, RoomType, RoomSummary } from '../types';
-import type { CultivationTab } from './TabBar';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -125,7 +118,6 @@ export function CultivationDashboard() {
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
   const { summaries, loading: summariesLoading } = useRoomSummaries();
 
-  const [activeTab, setActiveTab] = useState<CultivationTab>('rooms');
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [advanceError, setAdvanceError] = useState<string | null>(null);
@@ -224,65 +216,55 @@ export function CultivationDashboard() {
         </div>
       )}
 
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {activeTab === 'rooms' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Active Rooms"
-              value={activeRooms.length}
-              icon={<Package className="w-4 h-4" />}
-            />
-            <StatCard
-              label="Active Groups"
-              value={groups.length}
-              icon={<Sprout className="w-4 h-4" />}
-              subtitle={`${totalPlants.toLocaleString()} total plants`}
-            />
-            <StatCard
-              label="Active Harvests"
-              value={sessions.length}
-              icon={<Scissors className="w-4 h-4" />}
-              variant={sessions.length > 0 ? 'accent' : 'default'}
-            />
-            <StatCard
-              label="Next Harvest"
-              value={renderNextHarvestLabel()}
-              icon={<Calendar className="w-4 h-4" />}
-              variant={nextHarvestDays !== null && nextHarvestDays <= 7 ? 'accent' : 'default'}
-            />
-          </div>
-
-          {activeRooms.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <Package className="w-10 h-10 text-cult-medium-gray" />
-              <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {roomsByType.map(({ type, rooms: typeRooms }) => (
-                <RoomGroup key={type} roomType={type} count={typeRooms.length}>
-                  {typeRooms.map((room) => (
-                    <EnhancedRoomCard
-                      key={room.id}
-                      room={room}
-                      summary={summaryMap.get(room.id)}
-                      onClick={() => setSelectedRoom(room)}
-                    />
-                  ))}
-                </RoomGroup>
-              ))}
-            </div>
-          )}
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            label="Active Rooms"
+            value={activeRooms.length}
+            icon={<Package className="w-4 h-4" />}
+          />
+          <StatCard
+            label="Active Groups"
+            value={groups.length}
+            icon={<Sprout className="w-4 h-4" />}
+            subtitle={`${totalPlants.toLocaleString()} total plants`}
+          />
+          <StatCard
+            label="Active Harvests"
+            value={sessions.length}
+            icon={<Scissors className="w-4 h-4" />}
+            variant={sessions.length > 0 ? 'accent' : 'default'}
+          />
+          <StatCard
+            label="Next Harvest"
+            value={renderNextHarvestLabel()}
+            icon={<Calendar className="w-4 h-4" />}
+            variant={nextHarvestDays !== null && nextHarvestDays <= 7 ? 'accent' : 'default'}
+          />
         </div>
-      )}
 
-      {activeTab === 'plant-groups' && <PlantGroupsList />}
-      {activeTab === 'harvests' && <HarvestSessionsList />}
-      {activeTab === 'drying' && <DryRoomsManagement />}
-      {activeTab === 'task-board' && <DailyTaskBoard />}
-      {activeTab === 'digest' && <DailyDigestView />}
+        {activeRooms.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Package className="w-10 h-10 text-cult-medium-gray" />
+            <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {roomsByType.map(({ type, rooms: typeRooms }) => (
+              <RoomGroup key={type} roomType={type} count={typeRooms.length}>
+                {typeRooms.map((room) => (
+                  <EnhancedRoomCard
+                    key={room.id}
+                    room={room}
+                    summary={summaryMap.get(room.id)}
+                    onClick={() => setSelectedRoom(room)}
+                  />
+                ))}
+              </RoomGroup>
+            ))}
+          </div>
+        )}
+      </div>
 
       {selectedRoom && (
         <RoomDetailDrawer

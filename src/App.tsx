@@ -39,6 +39,7 @@ const BinningSessionsView = lazyRetry(() => import('./features/cultivation'), 'B
 const GrowRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'GrowRoomsManagement');
 const DryRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'DryRoomsManagement');
 const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyTaskBoard');
+const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
 const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
 const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
@@ -198,6 +199,8 @@ function AppContent() {
         return <BinningSessionsView onViewChange={handleViewChange} />;
       case 'cultivation-taskboard':
         return <DailyTaskBoard />;
+      case 'cultivation-digest':
+        return <DailyDigestView />;
       case 'cultivation-rooms':
         return <GrowRoomsManagement />;
       case 'cultivation-dry-rooms':

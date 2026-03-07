@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { formatWeight, formatDate } from '../utils';
 import { HarvestWorkflow } from './harvest';
+import { HarvestMetricsDashboard } from './harvest-metrics';
 import type { HarvestSession } from '../types';
 
 type TabKey = 'active' | 'completed' | 'cancelled';
@@ -268,6 +269,7 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
 
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [showWorkflow, setShowWorkflow] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
   const [completingSession, setCompletingSession] = useState<HarvestSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<HarvestSession | null>(null);
   const [adjustingSession, setAdjustingSession] = useState<HarvestSession | null>(null);
@@ -342,6 +344,10 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
     );
   }
 
+  if (showMetrics) {
+    return <HarvestMetricsDashboard onBack={() => setShowMetrics(false)} />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -349,12 +355,22 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Harvests</h1>
           <p className="text-cult-light-gray mt-2">Record harvests by room and create batches</p>
         </div>
-        <Button
-          onClick={() => setShowWorkflow(true)}
-          icon={<Plus className="w-4 h-4" />}
-        >
-          Start Harvest
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowMetrics(true)}
+            variant="secondary"
+            size="sm"
+            icon={<BarChart3 className="w-4 h-4" />}
+          >
+            Metrics
+          </Button>
+          <Button
+            onClick={() => setShowWorkflow(true)}
+            icon={<Plus className="w-4 h-4" />}
+          >
+            Start Harvest
+          </Button>
+        </div>
       </div>
 
       {error && (
