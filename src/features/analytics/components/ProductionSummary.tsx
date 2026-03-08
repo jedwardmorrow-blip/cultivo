@@ -73,7 +73,7 @@ export function ProductionSummary() {
       <div className="flex justify-between items-center mb-6 print:mb-4">
         <div>
           <h1 className="text-3xl font-bold text-white print:text-black">Daily Production Summary</h1>
-          <p className="text-gray-300 mt-1 print:text-gray-700">Complete activity report for Dutchie entry</p>
+          <p className="text-cult-text-secondary mt-1 print:text-cult-text-muted">Complete activity report for Dutchie entry</p>
         </div>
         <div className="flex items-center gap-3 print:hidden">
           <input
@@ -93,10 +93,10 @@ export function ProductionSummary() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 print:mb-4">
-        <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray print:text-gray-600">Trim Sessions</p>
+              <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Trim Sessions</p>
               <p className="text-2xl font-bold text-cult-white print:text-black">{totals.trimSessions}</p>
               {totals.trimPending > 0 && (
                 <p className="text-xs text-orange-400 print:text-orange-600">{totals.trimPending} pending entry</p>
@@ -105,10 +105,10 @@ export function ProductionSummary() {
             <FileText className="w-8 h-8 text-green-500 print:text-green-600" />
           </div>
         </div>
-        <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray print:text-gray-600">Packaging Sessions</p>
+              <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Packaging Sessions</p>
               <p className="text-2xl font-bold text-cult-white print:text-black">{totals.packagingSessions}</p>
               {totals.packagingPending > 0 && (
                 <p className="text-xs text-orange-400 print:text-orange-600">{totals.packagingPending} pending entry</p>
@@ -117,44 +117,44 @@ export function ProductionSummary() {
             <FileText className="w-8 h-8 text-blue-500 print:text-blue-600" />
           </div>
         </div>
-        <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div>
-            <p className="text-sm text-cult-light-gray print:text-gray-600">Flower Output</p>
+            <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Flower Output</p>
             <p className="text-2xl font-bold text-green-500 print:text-green-700">{totals.totalFlower.toFixed(0)}g</p>
           </div>
         </div>
-        <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div>
-            <p className="text-sm text-cult-light-gray print:text-gray-600">Total Units Packaged</p>
+            <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Total Units Packaged</p>
             <p className="text-2xl font-bold text-blue-500 print:text-blue-700">{totals.total_3_5g + totals.total_14g + totals.total_454g}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 rounded-lg shadow border border-cult-medium-gray mb-6">
-        <div className="p-4 border-b border-cult-medium-gray print:border-gray-300">
+      <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border rounded-lg shadow border border-cult-medium-gray mb-6">
+        <div className="p-4 border-b border-cult-medium-gray print:border-cult-border">
           <h2 className="text-xl font-bold text-cult-white print:text-black">Trim Activity</h2>
-          <p className="text-sm text-cult-light-gray print:text-gray-600">Bucked material converted to bulk inventory</p>
+          <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Bucked material converted to bulk inventory</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cult-dark-gray print:bg-gray-100 border-b border-cult-medium-gray print:border-gray-300">
+            <thead className="bg-cult-dark-gray print:bg-cult-surface border-b border-cult-medium-gray print:border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Trimmer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Strain</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Source Pkg</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Pulled</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Output</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Room</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Trimmer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Strain</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Source Pkg</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Pulled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Output</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Room</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cult-medium-gray print:divide-gray-200">
+            <tbody className="divide-y divide-cult-medium-gray print:divide-cult-border-subtle">
               {trimSessions.map((session) => (
                 <tr key={session.id} className="hover:bg-cult-dark-gray print:hover:bg-transparent">
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.trimmer_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.strain}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">{session.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">{session.package_id}</td>
                   <td className="px-4 py-3 text-sm text-right text-cult-white print:text-black">{session.pulled_weight}g</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
@@ -171,14 +171,14 @@ export function ProductionSummary() {
                         </div>
                       )}
                       {session.trim_grams && session.trim_grams > 0 && (
-                        <div className="text-cult-light-gray print:text-gray-600">
+                        <div className="text-cult-light-gray print:text-cult-text-faint">
                           T: {session.trim_grams.toFixed(1)}g
                           {/* Package ID auto-generated, see EOD Summary */}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700">Holding</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
                       <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
@@ -191,38 +191,38 @@ export function ProductionSummary() {
             </tbody>
           </table>
           {trimSessions.length === 0 && (
-            <div className="text-center py-8 text-cult-light-gray print:text-gray-600">
+            <div className="text-center py-8 text-cult-light-gray print:text-cult-text-faint">
               No trim sessions completed on this date
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 rounded-lg shadow border border-cult-medium-gray mb-6">
-        <div className="p-4 border-b border-cult-medium-gray print:border-gray-300">
+      <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border rounded-lg shadow border border-cult-medium-gray mb-6">
+        <div className="p-4 border-b border-cult-medium-gray print:border-cult-border">
           <h2 className="text-xl font-bold text-cult-white print:text-black">Packaging Activity</h2>
-          <p className="text-sm text-cult-light-gray print:text-gray-600">Bulk inventory packaged into retail units</p>
+          <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Bulk inventory packaged into retail units</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cult-dark-gray print:bg-gray-100 border-b border-cult-medium-gray print:border-gray-300">
+            <thead className="bg-cult-dark-gray print:bg-cult-surface border-b border-cult-medium-gray print:border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Packager</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Strain</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Source Pkg</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Pulled</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Units Created</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Dest Pkg</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Room</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-gray-700 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Packager</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Strain</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Source Pkg</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Pulled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Units Created</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Dest Pkg</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Room</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray print:text-cult-text-muted uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cult-medium-gray print:divide-gray-200">
+            <tbody className="divide-y divide-cult-medium-gray print:divide-cult-border-subtle">
               {packagingSessions.map((session) => (
                 <tr key={session.id} className="hover:bg-cult-dark-gray print:hover:bg-transparent">
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.packager_name}</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">{session.strain}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">{session.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">{session.package_id}</td>
                   <td className="px-4 py-3 text-sm text-right text-cult-white print:text-black">{session.pull_weight}g</td>
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
@@ -237,8 +237,8 @@ export function ProductionSummary() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700 font-mono text-xs">See EOD Summary</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-gray-700">Holding</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted font-mono text-xs">See EOD Summary</td>
+                  <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
                       <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
@@ -251,27 +251,27 @@ export function ProductionSummary() {
             </tbody>
           </table>
           {packagingSessions.length === 0 && (
-            <div className="text-center py-8 text-cult-light-gray print:text-gray-600">
+            <div className="text-center py-8 text-cult-light-gray print:text-cult-text-faint">
               No packaging sessions completed on this date
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-cult-near-black print:bg-white print:border print:border-gray-300 rounded-lg shadow border border-cult-medium-gray print:break-before-page">
-        <div className="p-4 border-b border-cult-medium-gray print:border-gray-300">
+      <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border rounded-lg shadow border border-cult-medium-gray print:break-before-page">
+        <div className="p-4 border-b border-cult-medium-gray print:border-cult-border">
           <h2 className="text-xl font-bold text-cult-white print:text-black flex items-center gap-2">
             <CheckSquare className="w-5 h-5" />
             Dutchie Entry Checklist
           </h2>
-          <p className="text-sm text-cult-light-gray print:text-gray-600">Manual conversions to enter in Dutchie</p>
+          <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Manual conversions to enter in Dutchie</p>
         </div>
         <div className="p-6">
           {totals.trimPending === 0 && totals.packagingPending === 0 ? (
             <div className="text-center py-8">
               <CheckSquare className="w-12 h-12 text-green-500 mx-auto mb-3" />
               <p className="text-cult-white print:text-black font-medium">All sessions have been recorded in Dutchie!</p>
-              <p className="text-sm text-cult-light-gray print:text-gray-600 mt-1">No pending entries for this date.</p>
+              <p className="text-sm text-cult-light-gray print:text-cult-text-faint mt-1">No pending entries for this date.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -280,9 +280,9 @@ export function ProductionSummary() {
                   <h3 className="font-bold text-cult-white print:text-black mb-3">Trim Conversions ({trimSessions.filter(s => !s.recorded_in_dutchie).length})</h3>
                   <div className="space-y-4">
                     {trimSessions.filter(s => !s.recorded_in_dutchie).map((session, idx) => (
-                      <div key={session.id} className="bg-cult-dark-gray print:bg-gray-50 p-4 rounded border border-cult-medium-gray print:border-gray-300">
+                      <div key={session.id} className="bg-cult-dark-gray print:bg-cult-surface-sunken p-4 rounded border border-cult-medium-gray print:border-cult-border">
                         <p className="font-medium text-cult-white print:text-black mb-2">{idx + 1}. {session.strain}</p>
-                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-gray-700">
+                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-cult-text-muted">
                           <li>☐ Deduct {session.pulled_weight}g from {session.package_id}</li>
                           {session.big_buds_grams && session.big_buds_grams > 0 && (
                             <li className="ml-4">☐ Add {session.big_buds_grams.toFixed(1)}g Flower to [See EOD Summary]</li>
@@ -305,9 +305,9 @@ export function ProductionSummary() {
                   <h3 className="font-bold text-cult-white print:text-black mb-3">Packaging Conversions ({packagingSessions.filter(s => !s.recorded_in_dutchie).length})</h3>
                   <div className="space-y-4">
                     {packagingSessions.filter(s => !s.recorded_in_dutchie).map((session, idx) => (
-                      <div key={session.id} className="bg-cult-dark-gray print:bg-gray-50 p-4 rounded border border-cult-medium-gray print:border-gray-300">
+                      <div key={session.id} className="bg-cult-dark-gray print:bg-cult-surface-sunken p-4 rounded border border-cult-medium-gray print:border-cult-border">
                         <p className="font-medium text-cult-white print:text-black mb-2">{idx + 1}. {session.strain}</p>
-                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-gray-700">
+                        <ul className="space-y-1 text-sm text-cult-light-gray print:text-cult-text-muted">
                           <li>☐ Deduct {session.pull_weight}g from {session.package_id}</li>
                           {session.units_3_5g && session.units_3_5g > 0 && (
                             <li className="ml-4">☐ Add {session.units_3_5g} units 3.5g to [See EOD Summary]</li>

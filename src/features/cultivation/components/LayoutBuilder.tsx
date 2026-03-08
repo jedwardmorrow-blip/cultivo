@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Archive, RotateCcw, AlertTriangle, Layers } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { useRoomSections } from '../hooks/useRoomSections';
 import type { RoomTable, RoomSection } from '../types';
 
@@ -56,13 +57,13 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
           disabled={saving}
           className="w-24 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
         />
-        <button
+        <Button
           onClick={handleAdd}
           disabled={saving || !label.trim()}
-          className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          size="xs"
         >
           {saving ? '...' : 'Save'}
-        </button>
+        </Button>
         <button
           onClick={onCancel}
           disabled={saving}
@@ -302,13 +303,13 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
           disabled={saving}
           className="w-24 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
         />
-        <button
+        <Button
           onClick={handleAdd}
           disabled={saving || !num}
-          className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-white text-cult-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          size="xs"
         >
           {saving ? '...' : 'Add Table'}
-        </button>
+        </Button>
       </div>
       {error && (
         <div className="flex items-center gap-1 text-xs text-red-400">

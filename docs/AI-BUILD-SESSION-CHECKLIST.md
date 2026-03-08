@@ -1,7 +1,7 @@
 ---
 title: AI Build Session Checklist
 category: AI Development
-updated: 2026-02-27
+updated: 2026-03-01
 priority: Working document - update every session
 ---
 
@@ -14,47 +14,37 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-02-28
-**Session:** Inventory Row Actions — Quick Adjust, Rebalance Weight, Combine Packages
+**Date:** 2026-03-06
+**Session:** Water Loss Write-Off on Conversions
 **Status:** COMPLETE
 
 **What was done:**
 
-Added a three-dot row action menu to the All Inventory table with three per-item operations. Database RPCs were applied in a prior session; this session built all frontend code.
+Added upstream water loss write-off to the ConversionModal review screen. Operators can now declare known weight loss (moisture evaporation) before entering the bag creation flow, or write off an entire small amount without creating bags at all. No database migration needed -- uses existing `variance_log` table and `logVariance()` service.
 
-**1. RowActionMenu component** (new)
-- `RowActionMenu.tsx` — Reusable three-dot dropdown with visibility toggles, destructive styling, click-outside/Escape dismissal.
+**Key changes:**
+- ConversionModal review screen now has a collapsible "Adjust for Water Loss / Variance" section for bulk products
+- Write-off form includes grams input, reason dropdown (defaults to `moisture_loss`), and notes field
+- Adjusted weight is passed through to BulkBagCreationModal as `adjustedAvailableWeight` prop
+- The adjusted `output_weight` flows to `handleFinalize()` so bags totaling the adjusted weight trigger full finalization (Architecture Decision 9)
+- "Write Off Entire Amount" button allows clearing small leftover conversions without creating any bags
+- Write-off variance is logged separately from any in-modal bag variance
 
-**2. Quick Adjustment restyle** (rewrite)
-- `QuickAdjustmentModal.tsx` — Full dark theme restyle (cult-* colors). Variance display: emerald for increases, red for decreases. 5%+ high variance warning.
-
-**3. Rebalance Weight feature** (new)
-- `rebalance.types.ts` — RebalanceRequest, RebalanceResult, RebalanceValidation interfaces
-- `rebalance.service.ts` — validateRebalance() client-side checks + executeRebalance() calls `fn_rebalance_inventory_weight` RPC
-- `RebalanceWeightModal.tsx` — Searchable destination picker, live before/after preview, 50%+ warning, reason + notes fields
-
-**4. AllInventoryView wiring** (modified)
-- Replaced inline printer column with RowActionMenu (Print Label, Adjust Qty [admin], Rebalance [admin])
-- Added QuickAdjustmentModal and RebalanceWeightModal with full state management
-- Data refresh on completion of any action
-
-**5. Bug fix: useAdjustment hook**
-- Fixed broken import `AdjustmentRequest` -> `QuickAdjustmentRequest`
-- Added userId passthrough to adjustment service
-
-**6. InventoryTable enhancement**
-- Added `renderRowActions` prop with proper colspan accounting
+**Files modified:**
+- `src/features/inventory/components/ConversionModal.tsx` — Write-off UI, adjusted weight passthrough, entire-amount write-off handler
+- `src/features/inventory/components/BulkBagCreationModal.tsx` — New `adjustedAvailableWeight` and `writeOffGrams` props, adjusted available weight display
+- `docs/ARCHITECTURE-DECISIONS.md` — Added Decision 20 (Upstream Water Loss Write-Off)
+- `docs/AI-SESSION-BRIEF.md` — Updated last sessions list
+- `docs/AI-BUILD-SESSION-CHECKLIST.md` — This hand-off section
+- `CHANGELOG.md` — Session entry added
 
 **Build status:** PASSES
 **Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors — not blocking
-- `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
+- Pre-existing tsc errors -- not blocking
+- `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
 
-**Next recommendations (in order):**
-1. **Sales rep performance dashboard** — Per-rep metrics, deal tracking, quota progress
-2. **Export/reporting capabilities** — Account data export, revenue reports
-3. **Cultivation: Move to Group action** — plant-level workflow with strain validation
-4. **Cultivation: Move to Room action** — split plants into new group in different room
+**Next steps:**
+- Go-live plan execution (phases 1-7 in GO-LIVE-PLAN-v4.0.md)
 
 ---
 

@@ -1,0 +1,1346 @@
+{
+  "count": 335,
+  "totalBytes": 2164672,
+  "files": [
+    {
+      "name": "20251010031618_create_post_production_schema.sql",
+      "size": 18807
+    },
+    {
+      "name": "20251010034324_populate_strain_catalog.sql",
+      "size": 18280
+    },
+    {
+      "name": "20251010134506_fix_order_items_rls_for_anon.sql",
+      "size": 2764
+    },
+    {
+      "name": "20251010135050_add_order_item_status.sql",
+      "size": 1752
+    },
+    {
+      "name": "20251010140830_add_order_status_and_archive.sql",
+      "size": 1835
+    },
+    {
+      "name": "20251010141735_update_order_pipeline_view_with_archived.sql",
+      "size": 769
+    },
+    {
+      "name": "20251010150414_add_delete_policies_for_anon.sql",
+      "size": 1070
+    },
+    {
+      "name": "20251010153046_add_anon_update_orders_policy.sql",
+      "size": 576
+    },
+    {
+      "name": "20251010160000_create_inventory_and_trim_workflow.sql",
+      "size": 16528
+    },
+    {
+      "name": "20251010183047_create_inventory_and_trim_workflow.sql",
+      "size": 16527
+    },
+    {
+      "name": "20251010190000_update_trim_sessions_for_2step_workflow.sql",
+      "size": 4388
+    },
+    {
+      "name": "20251010204951_update_trim_sessions_for_2step_workflow.sql",
+      "size": 4387
+    },
+    {
+      "name": "20251010210757_create_packaging_sessions.sql",
+      "size": 8072
+    },
+    {
+      "name": "20251010210858_create_packaging_sessions.sql",
+      "size": 8072
+    },
+    {
+      "name": "20251010213003_create_app_settings_table.sql",
+      "size": 2876
+    },
+    {
+      "name": "20251010233459_populate_dispensary_customers.sql",
+      "size": 10472
+    },
+    {
+      "name": "20251011000433_add_sku_to_products.sql",
+      "size": 6611
+    },
+    {
+      "name": "20251011000535_add_sku_to_products.sql",
+      "size": 6610
+    },
+    {
+      "name": "20251011000716_add_anon_insert_orders_policy.sql",
+      "size": 505
+    },
+    {
+      "name": "20251011001019_add_ato_number_to_customers.sql",
+      "size": 1190
+    },
+    {
+      "name": "20251011002000_add_anon_update_customers_policy.sql",
+      "size": 539
+    },
+    {
+      "name": "20251011003000_add_bulk_flower_products.sql",
+      "size": 2593
+    },
+    {
+      "name": "20251011195022_add_anon_update_order_items_policy.sql",
+      "size": 673
+    },
+    {
+      "name": "20251011215147_add_dispensary_code_to_customers.sql",
+      "size": 3965
+    },
+    {
+      "name": "20251011215208_add_dispensary_code_constraints.sql",
+      "size": 801
+    },
+    {
+      "name": "20251011215233_update_order_number_generation_with_dispensary_code.sql",
+      "size": 2964
+    },
+    {
+      "name": "20251011215254_create_monthly_delivery_view.sql",
+      "size": 2476
+    },
+    {
+      "name": "20251011230000_add_product_pricing_and_category_fields.sql",
+      "size": 2382
+    },
+    {
+      "name": "20251011234340_20251011230000_add_product_pricing_and_category_fields.sql",
+      "size": 2382
+    },
+    {
+      "name": "20251012000000_create_inventory_snapshots.sql",
+      "size": 5186
+    },
+    {
+      "name": "20251012015148_20251012000000_create_inventory_snapshots.sql",
+      "size": 5185
+    },
+    {
+      "name": "20251012024203_create_user_profiles_and_roles.sql",
+      "size": 3034
+    },
+    {
+      "name": "20251012024305_remove_anon_policies_add_auth_only.sql",
+      "size": 8624
+    },
+    {
+      "name": "20251012025840_add_self_insert_policy_for_profiles.sql",
+      "size": 523
+    },
+    {
+      "name": "20251012030227_fix_user_profile_trigger_with_error_handling.sql",
+      "size": 1522
+    },
+    {
+      "name": "20251012030930_disable_public_signups.sql",
+      "size": 581
+    },
+    {
+      "name": "20251012032831_fix_user_profiles_rls_circular_dependency.sql",
+      "size": 1907
+    },
+    {
+      "name": "20251012033017_simplify_user_profiles_rls_policies.sql",
+      "size": 3956
+    },
+    {
+      "name": "20251012140958_create_product_catalog_system.sql",
+      "size": 7331
+    },
+    {
+      "name": "20251012141044_seed_strains_stages_and_types.sql",
+      "size": 5326
+    },
+    {
+      "name": "20251012150537_create_internal_inventory_tracking_system.sql",
+      "size": 13801
+    },
+    {
+      "name": "20251012150620_add_trim_session_inventory_triggers.sql",
+      "size": 8791
+    },
+    {
+      "name": "20251012150701_add_packaging_session_inventory_triggers.sql",
+      "size": 10630
+    },
+    {
+      "name": "20251012153719_create_order_item_allocations_system.sql",
+      "size": 12218
+    },
+    {
+      "name": "20251012161215_add_inventory_deduction_on_ready_for_delivery.sql",
+      "size": 11381
+    },
+    {
+      "name": "20251012163312_fix_allocation_views_to_use_inventory_items.sql",
+      "size": 4167
+    },
+    {
+      "name": "20251012164611_add_package_tracking_enhancements.sql",
+      "size": 6479
+    },
+    {
+      "name": "20251012174622_20251012235500_create_packaging_yield_system_final.sql",
+      "size": 7246
+    },
+    {
+      "name": "20251012200043_20251012240000_workflow_driven_order_status.sql",
+      "size": 13888
+    },
+    {
+      "name": "20251012220000_add_inventory_deduction_on_ready_for_delivery.sql",
+      "size": 11381
+    },
+    {
+      "name": "20251012230934_create_analytics_and_documents_system.sql",
+      "size": 13963
+    },
+    {
+      "name": "20251012231917_add_lineage_field_to_labels.sql",
+      "size": 456
+    },
+    {
+      "name": "20251012235000_create_packaging_yield_tracking_system.sql",
+      "size": 16752
+    },
+    {
+      "name": "20251012250000_create_analytics_and_documents_system.sql",
+      "size": 13963
+    },
+    {
+      "name": "20251013000000_add_upc_and_barcode_fields_to_labels.sql",
+      "size": 1221
+    },
+    {
+      "name": "20251013005701_add_upc_and_barcode_fields_to_labels.sql",
+      "size": 1221
+    },
+    {
+      "name": "20251013032058_add_invoice_fields_and_settings.sql",
+      "size": 4110
+    },
+    {
+      "name": "20251013070000_add_session_cancellation_support.sql",
+      "size": 9800
+    },
+    {
+      "name": "20251013140350_add_session_cancellation_support.sql",
+      "size": 9800
+    },
+    {
+      "name": "20251013153928_add_bucked_smalls_tracking_to_trim_sessions.sql",
+      "size": 3679
+    },
+    {
+      "name": "20251013154409_fix_allocation_health_and_completed_orders_v2.sql",
+      "size": 3893
+    },
+    {
+      "name": "20251013155237_fix_allocation_views_use_actual_inventory_v2.sql",
+      "size": 5804
+    },
+    {
+      "name": "20251013155344_fix_partial_allocation_order_visibility_v2.sql",
+      "size": 7723
+    },
+    {
+      "name": "20251013155847_enable_multi_stage_order_visibility.sql",
+      "size": 5607
+    },
+    {
+      "name": "20251013160000_add_allocation_transformation_system.sql",
+      "size": 12000
+    },
+    {
+      "name": "20251013160100_add_allocation_transformation_triggers.sql",
+      "size": 15663
+    },
+    {
+      "name": "20251013165439_fix_bulk_inventory_exclude_bucked_and_add_projections.sql",
+      "size": 2227
+    },
+    {
+      "name": "20251013170000_enable_multi_stage_order_visibility.sql",
+      "size": 5607
+    },
+    {
+      "name": "20251013172853_add_cancellation_movement_types.sql",
+      "size": 709
+    },
+    {
+      "name": "20251013174128_add_authenticated_access_to_strain_metadata.sql",
+      "size": 700
+    },
+    {
+      "name": "20251013214840_fix_order_pipeline_view_add_scheduled_date.sql",
+      "size": 848
+    },
+    {
+      "name": "20251013221148_add_license_name_to_customers.sql",
+      "size": 663
+    },
+    {
+      "name": "20251013230516_add_public_order_form_access.sql",
+      "size": 1914
+    },
+    {
+      "name": "20251014013607_create_draft_orders_table.sql",
+      "size": 3171
+    },
+    {
+      "name": "20251015220143_create_consolidated_packages_system.sql",
+      "size": 17653
+    },
+    {
+      "name": "20251015220208_add_consolidation_triggers_to_sessions.sql",
+      "size": 3329
+    },
+    {
+      "name": "20251015230000_add_admin_session_management.sql",
+      "size": 17108
+    },
+    {
+      "name": "20251017002142_add_azdhs_invoice_fields.sql",
+      "size": 3438
+    },
+    {
+      "name": "20251017005542_fix_packaging_cancellation_trigger_v2.sql",
+      "size": 3695
+    },
+    {
+      "name": "20251017010000_create_manifest_system.sql",
+      "size": 6932
+    },
+    {
+      "name": "20251017012033_create_delivery_drivers_table.sql",
+      "size": 1067
+    },
+    {
+      "name": "20251017012042_create_delivery_vehicles_table.sql",
+      "size": 1121
+    },
+    {
+      "name": "20251017012104_add_gross_weight_to_products.sql",
+      "size": 585
+    },
+    {
+      "name": "20251017012112_add_company_phone_setting.sql",
+      "size": 273
+    },
+    {
+      "name": "20251017012615_add_net_weight_to_products.sql",
+      "size": 823
+    },
+    {
+      "name": "20251017020000_create_routing_system.sql",
+      "size": 9490
+    },
+    {
+      "name": "20251017022949_add_geocoding_to_customers.sql",
+      "size": 961
+    },
+    {
+      "name": "20251017024616_add_missing_app_settings_policies.sql",
+      "size": 1356
+    },
+    {
+      "name": "20251017024710_create_routing_system_with_customer_lookup.sql",
+      "size": 5175
+    },
+    {
+      "name": "20251017034033_create_logo_storage_bucket.sql",
+      "size": 3031
+    },
+    {
+      "name": "20251017034841_add_eye_logo_setting.sql",
+      "size": 616
+    },
+    {
+      "name": "20251017040000_enhance_manifests_for_multi_stop.sql",
+      "size": 1430
+    },
+    {
+      "name": "20251017162344_add_facility_coordinates_to_settings.sql",
+      "size": 1460
+    },
+    {
+      "name": "20251017163000_support_location_based_route_origins.sql",
+      "size": 3361
+    },
+    {
+      "name": "20251017163241_20251017163000_support_location_based_route_origins.sql",
+      "size": 3361
+    },
+    {
+      "name": "20251017174809_fix_address_field_consolidation.sql",
+      "size": 1391
+    },
+    {
+      "name": "20251017185216_fix_delivery_routes_constraints.sql",
+      "size": 1756
+    },
+    {
+      "name": "20251017191344_create_coa_system.sql",
+      "size": 4958
+    },
+    {
+      "name": "20251017191409_create_coa_storage_bucket.sql",
+      "size": 328
+    },
+    {
+      "name": "20251017200000_add_order_coversheet_integration.sql",
+      "size": 2115
+    },
+    {
+      "name": "20251017202020_create_batch_management_foundation.sql",
+      "size": 13812
+    },
+    {
+      "name": "20251017202115_create_batch_management_views_and_functions.sql",
+      "size": 11369
+    },
+    {
+      "name": "20251017220406_20251017230000_fix_order_pipeline_use_trigger_total.sql",
+      "size": 1810
+    },
+    {
+      "name": "20251017220449_20251017231000_add_order_total_validation.sql",
+      "size": 4109
+    },
+    {
+      "name": "20251017230000_fix_order_pipeline_use_trigger_total.sql",
+      "size": 1810
+    },
+    {
+      "name": "20251017231000_add_order_total_validation.sql",
+      "size": 4109
+    },
+    {
+      "name": "20251020000000_phase1_batch_centric_foundation.sql",
+      "size": 18195
+    },
+    {
+      "name": "20251020000100_phase1_batch_lifecycle_triggers.sql",
+      "size": 20346
+    },
+    {
+      "name": "20251020000200_phase1_data_backfill.sql",
+      "size": 12809
+    },
+    {
+      "name": "20251020150614_20251020000000_phase1_batch_centric_foundation.sql",
+      "size": 4670
+    },
+    {
+      "name": "20251020161901_create_batch_hierarchical_allocation_system.sql",
+      "size": 18107
+    },
+    {
+      "name": "20251020163325_create_batch_selection_view.sql",
+      "size": 2694
+    },
+    {
+      "name": "20251020163932_fix_batch_selection_view_use_inventory.sql",
+      "size": 2288
+    },
+    {
+      "name": "20251020163950_improve_batch_selection_display_stage.sql",
+      "size": 2130
+    },
+    {
+      "name": "20251020165802_implement_strain_aware_batch_selection.sql",
+      "size": 14857
+    },
+    {
+      "name": "20251020170000_implement_strain_aware_batch_selection.sql",
+      "size": 16253
+    },
+    {
+      "name": "20251020190645_fix_get_batches_for_strain_function.sql",
+      "size": 3704
+    },
+    {
+      "name": "20251020204021_20251020220000_consolidate_strain_tables.sql",
+      "size": 11243
+    },
+    {
+      "name": "20251020204835_20251020230000_deprecate_internal_inventory_system.sql",
+      "size": 9116
+    },
+    {
+      "name": "20251020213156_add_bulk_stage_validation_and_clarity.sql",
+      "size": 10691
+    },
+    {
+      "name": "20251020220000_consolidate_strain_tables.sql",
+      "size": 11243
+    },
+    {
+      "name": "20251020230000_deprecate_internal_inventory_system.sql",
+      "size": 9116
+    },
+    {
+      "name": "20251020240000_add_bulk_stage_validation_and_clarity.sql",
+      "size": 10691
+    },
+    {
+      "name": "20251020250000_add_binned_stage_support.sql",
+      "size": 15388
+    },
+    {
+      "name": "20251021000000_event_driven_inventory_schema_enhancements.sql",
+      "size": 10789
+    },
+    {
+      "name": "20251021000100_event_driven_inventory_new_tables.sql",
+      "size": 10113
+    },
+    {
+      "name": "20251021000200_event_driven_inventory_stage_seeding.sql",
+      "size": 9405
+    },
+    {
+      "name": "20251021000300_event_driven_inventory_triggers.sql",
+      "size": 10419
+    },
+    {
+      "name": "20251021000400_event_driven_inventory_views.sql",
+      "size": 11409
+    },
+    {
+      "name": "20251021000500_event_driven_inventory_server_functions.sql",
+      "size": 13304
+    },
+    {
+      "name": "20251021000600_event_driven_inventory_snapshot_functions.sql",
+      "size": 11484
+    },
+    {
+      "name": "20251021000700_event_driven_inventory_data_backfill.sql",
+      "size": 11005
+    },
+    {
+      "name": "20251021202255_20251021000000_event_driven_inventory_schema_enhancements.sql",
+      "size": 10789
+    },
+    {
+      "name": "20251021215626_import_consolidated_inventory_items.sql",
+      "size": 274
+    },
+    {
+      "name": "20251021222134_20251021230000_import_inventory_consolidated_csv.sql",
+      "size": 9202
+    },
+    {
+      "name": "20251021225903_simplify_batch_coa_relationships.sql",
+      "size": 7784
+    },
+    {
+      "name": "20251021234512_fix_coa_storage_policies.sql",
+      "size": 1620
+    },
+    {
+      "name": "20251021235000_add_batch_id_to_coa.sql",
+      "size": 1387
+    },
+    {
+      "name": "20251021235000_simplify_batch_coa_relationships.sql",
+      "size": 11900
+    },
+    {
+      "name": "20251021235614_add_batch_id_to_coa.sql",
+      "size": 1040
+    },
+    {
+      "name": "20251022202444_fix_inventory_product_naming_convention.sql",
+      "size": 3850
+    },
+    {
+      "name": "20251022202510_fix_remaining_inventory_naming_issues.sql",
+      "size": 2568
+    },
+    {
+      "name": "20251022223454_fix_order_pipeline_anon_access.sql",
+      "size": 847
+    },
+    {
+      "name": "20251023133500_fix_postgrest_schema_cache_and_simplify_views.sql",
+      "size": 8153
+    },
+    {
+      "name": "20251023133611_fix_postgrest_schema_cache_and_simplify_views.sql",
+      "size": 8153
+    },
+    {
+      "name": "20251023161654_drop_broken_allocation_views.sql",
+      "size": 1674
+    },
+    {
+      "name": "20251023170000_drop_broken_allocation_views.sql",
+      "size": 1675
+    },
+    {
+      "name": "20251024000000_add_order_source_tracking.sql",
+      "size": 1889
+    },
+    {
+      "name": "20251024203432_add_order_source_tracking.sql",
+      "size": 1889
+    },
+    {
+      "name": "20251024210000_create_conversions_system_foundation.sql",
+      "size": 21363
+    },
+    {
+      "name": "20251024211000_create_conversion_triggers.sql",
+      "size": 11871
+    },
+    {
+      "name": "20251024220000_add_package_date_tracking.sql",
+      "size": 8764
+    },
+    {
+      "name": "20251024235708_add_package_date_tracking.sql",
+      "size": 8764
+    },
+    {
+      "name": "20251025000852_create_inventory_internal_labels_table.sql",
+      "size": 2072
+    },
+    {
+      "name": "20251026000000_create_inventory_audit_system.sql",
+      "size": 20679
+    },
+    {
+      "name": "20251026203019_create_inventory_audit_system.sql",
+      "size": 20664
+    },
+    {
+      "name": "20251027000000_create_package_assignments.sql",
+      "size": 7143
+    },
+    {
+      "name": "20251027010000_enhance_coversheets_for_compliance.sql",
+      "size": 7221
+    },
+    {
+      "name": "20251027020000_create_inventory_reservation_system.sql",
+      "size": 16014
+    },
+    {
+      "name": "20251027030000_add_label_voiding_system.sql",
+      "size": 12009
+    },
+    {
+      "name": "20251027152417_enhance_coversheets_for_compliance.sql",
+      "size": 7220
+    },
+    {
+      "name": "20251027163209_20251027020000_create_inventory_reservation_system.sql",
+      "size": 2071
+    },
+    {
+      "name": "20251027163242_20251027030000_add_label_voiding_system.sql",
+      "size": 1627
+    },
+    {
+      "name": "20251027174747_create_automatic_product_sync_system.sql",
+      "size": 6044
+    },
+    {
+      "name": "20251027180000_create_automatic_product_sync_system.sql",
+      "size": 11634
+    },
+    {
+      "name": "20251027183430_add_product_archive_and_standardize_catalog.sql",
+      "size": 10241
+    },
+    {
+      "name": "20251027183515_update_product_sync_for_canonical_types_only.sql",
+      "size": 8480
+    },
+    {
+      "name": "20251027213350_drop_deprecated_packaging_inventory_triggers.sql",
+      "size": 2572
+    },
+    {
+      "name": "20251027213415_drop_deprecated_packaging_inventory_triggers.sql",
+      "size": 2572
+    },
+    {
+      "name": "20251027220000_create_session_inventory_reservation_system.sql",
+      "size": 15008
+    },
+    {
+      "name": "20251027221000_fix_packaging_conversion_trigger.sql",
+      "size": 9098
+    },
+    {
+      "name": "20251027223257_20251027220000_create_session_inventory_reservation_system.sql",
+      "size": 7938
+    },
+    {
+      "name": "20251027232057_fix_database_security_and_performance_issues.sql",
+      "size": 26824
+    },
+    {
+      "name": "20251110020150_20251107000001_backfill_inventory_batch_ids.sql",
+      "size": 1602
+    },
+    {
+      "name": "20251110020305_20251107000002_add_batch_id_constraints.sql",
+      "size": 1857
+    },
+    {
+      "name": "20251110030000_add_combine_packages_feature.sql",
+      "size": 9784
+    },
+    {
+      "name": "20251112130023_20251107000003_fix_lifecycle_state_timing.sql",
+      "size": 621
+    },
+    {
+      "name": "20251124173726_create_test_mode_system.sql",
+      "size": 6665
+    },
+    {
+      "name": "20251124212640_create_movement_trigger.sql",
+      "size": 4077
+    },
+    {
+      "name": "20251124212702_add_ledger_immutability.sql",
+      "size": 3540
+    },
+    {
+      "name": "20251124212728_add_trigger_validation.sql",
+      "size": 5916
+    },
+    {
+      "name": "20251124212803_add_trigger_monitoring.sql",
+      "size": 8252
+    },
+    {
+      "name": "20251124212859_add_trigger_testing_utilities.sql",
+      "size": 11345
+    },
+    {
+      "name": "20251126153118_20251126000000_create_test_portal_audit_log.sql",
+      "size": 4726
+    },
+    {
+      "name": "20251126205237_add_cancelled_at_columns_only.sql",
+      "size": 5923
+    },
+    {
+      "name": "20251126213102_fix_session_batch_registry_id_mapping.sql",
+      "size": 4383
+    },
+    {
+      "name": "20251126214731_add_batch_registry_id_to_sessions.sql",
+      "size": 3199
+    },
+    {
+      "name": "20251126221813_fix_reserve_inventory_session_name_handling.sql",
+      "size": 3240
+    },
+    {
+      "name": "20251126221828_fix_release_inventory_session_name_handling.sql",
+      "size": 2367
+    },
+    {
+      "name": "20251126222155_fix_reserve_inventory_dynamic_column_access.sql",
+      "size": 3611
+    },
+    {
+      "name": "20251126222206_fix_release_inventory_dynamic_column_access.sql",
+      "size": 2593
+    },
+    {
+      "name": "20251126224507_fix_inventory_reservation_movement_kind.sql",
+      "size": 4262
+    },
+    {
+      "name": "20251126224524_fix_inventory_release_movement_kind.sql",
+      "size": 2837
+    },
+    {
+      "name": "20251126235347_fix_reserve_inventory_event_driven_fields.sql",
+      "size": 4902
+    },
+    {
+      "name": "20251126235407_fix_release_inventory_event_driven_fields.sql",
+      "size": 3874
+    },
+    {
+      "name": "20251127011512_allow_null_movement_type_for_inventory_operations.sql",
+      "size": 3190
+    },
+    {
+      "name": "20251127011540_fix_reserve_inventory_movement_type_null.sql",
+      "size": 4787
+    },
+    {
+      "name": "20251127011603_fix_release_inventory_movement_type_null.sql",
+      "size": 4305
+    },
+    {
+      "name": "20251128144022_fix_bucking_reserve_inventory_dynamic_columns.sql",
+      "size": 5291
+    },
+    {
+      "name": "20251128144054_fix_bucking_release_inventory_dynamic_columns.sql",
+      "size": 4807
+    },
+    {
+      "name": "20251128153927_consolidate_event_driven_triggers.sql",
+      "size": 10868
+    },
+    {
+      "name": "20251128154002_fix_reserve_release_atp_handling.sql",
+      "size": 3835
+    },
+    {
+      "name": "20251128154224_drop_legacy_inventory_movement_columns.sql",
+      "size": 5557
+    },
+    {
+      "name": "20251128154252_add_reference_fields_to_inventory_movements.sql",
+      "size": 2067
+    },
+    {
+      "name": "20251128155443_fix_validation_trigger_movement_kinds.sql",
+      "size": 1919
+    },
+    {
+      "name": "20251128155535_fix_movement_kind_check_constraint.sql",
+      "size": 1178
+    },
+    {
+      "name": "20251128155629_fix_update_trigger_security_context.sql",
+      "size": 3479
+    },
+    {
+      "name": "20251128162724_migrate_inventory_items_to_strain_fk.sql",
+      "size": 9421
+    },
+    {
+      "name": "20251202002509_fix_trim_session_pulled_weight_column_name.sql",
+      "size": 6673
+    },
+    {
+      "name": "20251202174716_fix_trim_session_pulled_weight_column_name.sql",
+      "size": 6673
+    },
+    {
+      "name": "20251202180122_fix_reserve_inventory_on_session_start_pulled_weight.sql",
+      "size": 4595
+    },
+    {
+      "name": "20251202181833_fix_legacy_session_triggers.sql",
+      "size": 9945
+    },
+    {
+      "name": "20251202182329_drop_legacy_session_start_complete_functions.sql",
+      "size": 5992
+    },
+    {
+      "name": "20251202183222_fix_trim_complete_trigger_column_names.sql",
+      "size": 3735
+    },
+    {
+      "name": "20251202183628_fix_trim_complete_trigger_handle_null_batch.sql",
+      "size": 3846
+    },
+    {
+      "name": "20251202184115_fix_packaging_complete_trigger_null_and_validation.sql",
+      "size": 3597
+    },
+    {
+      "name": "20251202204925_enable_trim_and_packaging_conversions.sql",
+      "size": 13099
+    },
+    {
+      "name": "20251202211328_create_conversion_lots_aggregation_trigger.sql",
+      "size": 8855
+    },
+    {
+      "name": "20251202212233_fix_conversion_aggregation_batch_field.sql",
+      "size": 4336
+    },
+    {
+      "name": "20251202222124_manually_aggregate_pending_conversions.sql",
+      "size": 2576
+    },
+    {
+      "name": "20251202223539_fix_conversion_trigger_use_correct_field_names.sql",
+      "size": 4542
+    },
+    {
+      "name": "20251203131311_complete_strain_fk_migration_for_sessions.sql",
+      "size": 9809
+    },
+    {
+      "name": "20251203232712_enable_bucking_session_conversions.sql",
+      "size": 6877
+    },
+    {
+      "name": "20251203233241_add_bucking_to_pending_conversions_constraint.sql",
+      "size": 1024
+    },
+    {
+      "name": "20251203233335_fix_conversion_lot_aggregation_weight_vs_units.sql",
+      "size": 5432
+    },
+    {
+      "name": "20251203233424_remove_duplicate_conversion_lot_trigger.sql",
+      "size": 1371
+    },
+    {
+      "name": "20251204001933_fix_conversions_show_all_active_v2.sql",
+      "size": 2085
+    },
+    {
+      "name": "20251204002022_fix_conversions_status_type.sql",
+      "size": 1867
+    },
+    {
+      "name": "20251204020635_add_finalization_status_to_conversions.sql",
+      "size": 3562
+    },
+    {
+      "name": "20251204020850_fix_conversion_lot_summary_status_type.sql",
+      "size": 3073
+    },
+    {
+      "name": "20251204140402_fix_package_id_generation_function.sql",
+      "size": 2939
+    },
+    {
+      "name": "20260112233251_create_conversion_views_hybrid_architecture_v2.sql",
+      "size": 8971
+    },
+    {
+      "name": "20260113023946_add_manual_finalization_workflow.sql",
+      "size": 12965
+    },
+    {
+      "name": "20260113035748_20260113030000_fix_session_finalization_status_v2.sql",
+      "size": 13880
+    },
+    {
+      "name": "20260113043919_add_conversion_aggregation_by_batch_product.sql",
+      "size": 18089
+    },
+    {
+      "name": "20260113060051_add_performance_indexes.sql",
+      "size": 8476
+    },
+    {
+      "name": "20260113160112_drop_obsolete_conversion_triggers_and_functions.sql",
+      "size": 5999
+    },
+    {
+      "name": "20260114151821_standardize_product_stages_to_canonical_names.sql",
+      "size": 7509
+    },
+    {
+      "name": "20260114151842_update_conversion_views_for_trimmed_stage.sql",
+      "size": 741
+    },
+    {
+      "name": "20260114153845_fix_conversions_unpivot_product_types.sql",
+      "size": 7670
+    },
+    {
+      "name": "20260115180316_fix_conversion_views_remove_review_status.sql",
+      "size": 2269
+    },
+    {
+      "name": "20260115180332_add_aggregation_id_to_conversion_packages.sql",
+      "size": 1259
+    },
+    {
+      "name": "20260115183823_drop_phantom_review_status_constraint.sql",
+      "size": 1163
+    },
+    {
+      "name": "20260115230412_fix_pending_conversions_show_remaining_weight.sql",
+      "size": 9363
+    },
+    {
+      "name": "20260115234146_merge_unpivot_and_remaining_weight_fixes.sql",
+      "size": 11541
+    },
+    {
+      "name": "20260116042437_add_product_name_columns_to_sessions.sql",
+      "size": 2816
+    },
+    {
+      "name": "20260116042505_backfill_session_product_names.sql",
+      "size": 1900
+    },
+    {
+      "name": "20260116042534_add_triggers_for_session_product_names.sql",
+      "size": 3940
+    },
+    {
+      "name": "20260116042643_simplify_pending_conversions_view_use_product_names.sql",
+      "size": 11444
+    },
+    {
+      "name": "20260116042751_simplify_finalization_rpcs_use_product_names.sql",
+      "size": 13296
+    },
+    {
+      "name": "20260119221551_add_coa_validation_before_packaging.sql",
+      "size": 2776
+    },
+    {
+      "name": "20260120212857_fix_trim_session_batch_id_format.sql",
+      "size": 2876
+    },
+    {
+      "name": "20260120220832_20260120_fix_finalization_rpc_logic_or_condition.sql",
+      "size": 10365
+    },
+    {
+      "name": "20260120224413_fix_broken_available_qty_bug.sql",
+      "size": 5841
+    },
+    {
+      "name": "20260120224901_fix_atp_violations_bucking_sessions.sql",
+      "size": 3544
+    },
+    {
+      "name": "20260120224915_add_atp_consistency_constraint.sql",
+      "size": 1914
+    },
+    {
+      "name": "20260120231731_add_complete_session_lifecycle_trigger_system.sql",
+      "size": 12754
+    },
+    {
+      "name": "20260120231828_repair_batch_lifecycle_states_from_session_history.sql",
+      "size": 8643
+    },
+    {
+      "name": "20260120233212_fix_trim_completion_handle_intermediate_state.sql",
+      "size": 5737
+    },
+    {
+      "name": "20260121005036_add_trim_product_name_to_sessions.sql",
+      "size": 1925
+    },
+    {
+      "name": "20260121005052_update_trigger_for_trim_product_names.sql",
+      "size": 2301
+    },
+    {
+      "name": "20260121005106_backfill_trim_product_names.sql",
+      "size": 1596
+    },
+    {
+      "name": "20260121005202_add_trim_branch_to_pending_conversions_view.sql",
+      "size": 12551
+    },
+    {
+      "name": "20260121005236_update_finalization_rpc_for_trim.sql",
+      "size": 6475
+    },
+    {
+      "name": "20260121021616_20260121020000_add_per_output_finalization_tracking.sql",
+      "size": 10184
+    },
+    {
+      "name": "20260121021721_20260121020100_update_finalization_rpcs_per_output.sql",
+      "size": 13958
+    },
+    {
+      "name": "20260121021832_20260121020200_update_pending_conversions_view_per_output.sql",
+      "size": 13496
+    },
+    {
+      "name": "20260121024334_20260122000000_repair_session_batch_references.sql",
+      "size": 5019
+    },
+    {
+      "name": "20260121024432_20260122000100_add_batch_id_format_constraints.sql",
+      "size": 3582
+    },
+    {
+      "name": "20260121141643_fix_batch_coa_view_join.sql",
+      "size": 3305
+    },
+    {
+      "name": "20260121214818_add_inventory_creation_to_finalization.sql",
+      "size": 10444
+    },
+    {
+      "name": "20260121220602_fix_finalize_session_aggregated_group_by.sql",
+      "size": 9039
+    },
+    {
+      "name": "20260121221451_fix_uuid_aggregation_in_finalization.sql",
+      "size": 9816
+    },
+    {
+      "name": "20260121222255_fix_movement_validation_allow_unit_type.sql",
+      "size": 4291
+    },
+    {
+      "name": "20260121223141_fix_packaging_finalization_atp_constraint.sql",
+      "size": 11970
+    },
+    {
+      "name": "20260127133321_fix_ghost_finalization_with_transaction_control.sql",
+      "size": 16437
+    },
+    {
+      "name": "20260127142935_fix_ghost_finalization_with_constraint_trigger.sql",
+      "size": 16414
+    },
+    {
+      "name": "20260127151632_simplify_finalization_treat_as_creation.sql",
+      "size": 19024
+    },
+    {
+      "name": "20260127160911_add_packaging_per_product_finalization_tracking.sql",
+      "size": 9215
+    },
+    {
+      "name": "20260127161004_update_packaging_trigger_set_product_names_per_type.sql",
+      "size": 4278
+    },
+    {
+      "name": "20260127161125_unpivot_packaging_products_in_pending_conversions.sql",
+      "size": 17459
+    },
+    {
+      "name": "20260127161301_update_finalization_rpc_per_product_packaging.sql",
+      "size": 17530
+    },
+    {
+      "name": "20260127161333_backfill_packaged_inventory_category.sql",
+      "size": 4366
+    },
+    {
+      "name": "20260205151313_fix_pending_conversions_filter_packages_by_session.sql",
+      "size": 20523
+    },
+    {
+      "name": "20260215143652_add_source_consumption_on_session_complete.sql",
+      "size": 6863
+    },
+    {
+      "name": "20260215143853_fix_consume_trigger_and_cleanup_stale_reservations_v2.sql",
+      "size": 7255
+    },
+    {
+      "name": "20260215143949_fix_consume_trigger_use_audit_only_movement.sql",
+      "size": 4271
+    },
+    {
+      "name": "20260215155147_add_label_print_history.sql",
+      "size": 3889
+    },
+    {
+      "name": "20260215225624_add_void_fields_and_strain_id_to_labels.sql",
+      "size": 1706
+    },
+    {
+      "name": "20260215231914_backfill_inventory_null_fields.sql",
+      "size": 2052
+    },
+    {
+      "name": "20260215232044_fix_rpc_set_missing_inventory_fields.sql",
+      "size": 10560
+    },
+    {
+      "name": "20260215233810_add_dominance_type_to_labels.sql",
+      "size": 1116
+    },
+    {
+      "name": "20260216000933_add_precomputed_coversheet_compliance_data.sql",
+      "size": 1828
+    },
+    {
+      "name": "20260216051253_fix_get_batches_for_strain_show_all_active.sql",
+      "size": 3140
+    },
+    {
+      "name": "20260216181700_repair_swf_partial_finalization_status.sql",
+      "size": 2055
+    },
+    {
+      "name": "20260216184328_fix_pending_conversions_view_row_multiplication.sql",
+      "size": 18961
+    },
+    {
+      "name": "20260216184742_fix_pending_conversions_view_session_scoped_packages.sql",
+      "size": 30783
+    },
+    {
+      "name": "20260216184831_repair_session_195fdd62_finalization_status.sql",
+      "size": 995
+    },
+    {
+      "name": "20260216184916_backfill_missing_produce_movements_for_conversion_items.sql",
+      "size": 1736
+    },
+    {
+      "name": "20260218185535_add_created_by_to_batch_registry.sql",
+      "size": 1354
+    },
+    {
+      "name": "20260219035027_create_cultivation_schema.sql",
+      "size": 10094
+    },
+    {
+      "name": "20260219035113_create_cultivation_triggers.sql",
+      "size": 11060
+    },
+    {
+      "name": "20260219041551_20260219040000_create_room_tables_and_sections.sql",
+      "size": 4362
+    },
+    {
+      "name": "20260219043338_20260219050000_add_run_dates_to_room_sections.sql",
+      "size": 2033
+    },
+    {
+      "name": "20260219144544_20260219060000_add_plant_group_placement_columns.sql",
+      "size": 4621
+    },
+    {
+      "name": "20260219165749_create_dry_rooms_and_binning_sessions.sql",
+      "size": 7559
+    },
+    {
+      "name": "20260219233326_add_individual_plants_and_batch_at_clone_time.sql",
+      "size": 4228
+    },
+    {
+      "name": "20260219233359_update_cultivation_triggers_batch_at_clone_time.sql",
+      "size": 5816
+    },
+    {
+      "name": "20260219234859_add_pre_harvest_to_lifecycle_state_constraint.sql",
+      "size": 803
+    },
+    {
+      "name": "20260220124945_add_cultivation_performance_indexes.sql",
+      "size": 1181
+    },
+    {
+      "name": "20260220131259_20260220130000_auto_generate_individual_plants_on_veg.sql",
+      "size": 5068
+    },
+    {
+      "name": "20260220135500_add_waste_grams_to_harvest_sessions.sql",
+      "size": 904
+    },
+    {
+      "name": "20260220141827_add_multi_mother_clone_support.sql",
+      "size": 4775
+    },
+    {
+      "name": "20260220151816_backfill_missing_individual_plants.sql",
+      "size": 1189
+    },
+    {
+      "name": "20260220165027_add_harvest_weight_entries_and_room_tracking.sql",
+      "size": 3711
+    },
+    {
+      "name": "20260220210646_relax_harvest_session_check_constraints.sql",
+      "size": 1529
+    },
+    {
+      "name": "20260225184802_create_crm_schema.sql",
+      "size": 10945
+    },
+    {
+      "name": "20260225184834_create_crm_analytics_views.sql",
+      "size": 4859
+    },
+    {
+      "name": "20260225192954_create_crm_sales_activity_system.sql",
+      "size": 13943
+    },
+    {
+      "name": "20260225195605_fix_activity_log_user_id_fk_to_user_profiles.sql",
+      "size": 1448
+    },
+    {
+      "name": "20260225220938_add_pinned_column_to_activity_log.sql",
+      "size": 816
+    },
+    {
+      "name": "20260226003744_expand_crm_customer_summary_with_address_fields.sql",
+      "size": 3607
+    },
+    {
+      "name": "20260226012026_create_crm_date_range_rpc_functions.sql",
+      "size": 8491
+    },
+    {
+      "name": "20260226135427_create_quality_grades_system.sql",
+      "size": 5085
+    },
+    {
+      "name": "20260226142251_enable_realtime_publication_for_subscribed_tables.sql",
+      "size": 2034
+    },
+    {
+      "name": "20260227220232_fix_14g_naming_and_finalization_sync.sql",
+      "size": 12334
+    },
+    {
+      "name": "20260301173603_fix_orders_status_default_to_submitted.sql",
+      "size": 481
+    },
+    {
+      "name": "20260301175209_update_order_status_transition_validation.sql",
+      "size": 2354
+    },
+    {
+      "name": "20260301183248_fix_mark_coversheet_outdated_trigger_order_id_field.sql",
+      "size": 1125
+    },
+    {
+      "name": "20260301191354_remove_legacy_allocation_system.sql",
+      "size": 4790
+    },
+    {
+      "name": "20260301191434_add_package_assignment_reservation_system.sql",
+      "size": 5927
+    },
+    {
+      "name": "20260301191456_create_inventory_reservation_views.sql",
+      "size": 2475
+    },
+    {
+      "name": "20260301191539_create_order_fulfillment_triggers.sql",
+      "size": 10204
+    },
+    {
+      "name": "20260301225843_add_over_allocation_prevention.sql",
+      "size": 1764
+    },
+    {
+      "name": "20260301230247_fix_fulfillment_trigger_atp_constraint.sql",
+      "size": 11366
+    }
+  ]
+}

@@ -8,6 +8,7 @@ export enum ErrorType {
   NOT_FOUND = 'NOT_FOUND',
   TIMEOUT = 'TIMEOUT',
   CONSTRAINT = 'CONSTRAINT',
+  AUTH = 'AUTH',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -32,6 +33,8 @@ class ErrorService {
   private errorLog: StructuredError[] = [];
   private maxLogSize = 100;
   private isDebugMode = import.meta.env.DEV;
+  private authErrorShownAt = 0;
+  private static AUTH_DEDUP_WINDOW_MS = 5000;
 
   handle(error: unknown, context?: string | ErrorContext): StructuredError {
     const errorMessage = this.extractErrorMessage(error);
@@ -57,8 +60,16 @@ class ErrorService {
     }
 
     if (showNotification && !silent) {
-      const displayMessage = this.formatUserMessage(errorMessage, operation);
-      notificationService.error(displayMessage, this.getErrorTitle(errorType));
+      if (errorType === ErrorType.AUTH) {
+        const now = Date.now();
+        if (now - this.authErrorShownAt > ErrorService.AUTH_DEDUP_WINDOW_MS) {
+          this.authErrorShownAt = now;
+          notificationService.error('Your session has expired. Please sign in again.', 'Session Expired');
+        }
+      } else {
+        const displayMessage = this.formatUserMessage(errorMessage, operation);
+        notificationService.error(displayMessage, this.getErrorTitle(errorType));
+      }
     }
 
     return structuredError;
@@ -105,6 +116,16 @@ class ErrorService {
       ) {
         return ErrorType.CONSTRAINT;
       }
+      if (
+        err.message?.includes('JWT expired') ||
+        err.message?.includes('token is expired') ||
+        err.message?.includes('invalid claim: missing sub claim') ||
+        err.code === 'PGRST301' && err.message?.includes('expired') ||
+        err.status === 401 ||
+        err.code === 'session_not_found'
+      ) {
+        return ErrorType.AUTH;
+      }
       if (err.code === 'PGRST200' || err.message?.includes('schema cache')) {
         return ErrorType.DATABASE;
       }
@@ -137,6 +158,7 @@ class ErrorService {
       [ErrorType.NOT_FOUND]: 'Not Found',
       [ErrorType.TIMEOUT]: 'Request Timeout',
       [ErrorType.CONSTRAINT]: 'Constraint Violation',
+      [ErrorType.AUTH]: 'Session Expired',
       [ErrorType.UNKNOWN]: 'Error',
     };
     return titles[type] || 'Error';

@@ -6,6 +6,7 @@ export * from './useFinalizationWorkflow';
 export * from './useInventoryData';
 export * from './useInventoryFilters';
 export * from './useInventoryLabel';
+export * from './useMultiLabelPrint';
 export * from './useInventoryOversight';
 export * from './useInventorySearch';
 export * from './usePackageIdGenerator';

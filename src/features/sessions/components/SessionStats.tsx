@@ -19,15 +19,15 @@ interface SessionStatsProps {
 export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
+      <div className="bg-cult-near-black p-4 rounded-lg shadow border border-sky-500/30">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-blue-700 font-medium">
+            <p className="text-sm text-cult-light-gray font-medium">
               {type === 'trim' ? 'Active Bins' : type === 'bucking' ? 'Active Totes' : 'Active Sessions'}
             </p>
-            <p className="text-2xl font-bold text-blue-900">{stats.activeSessions}</p>
+            <p className="text-2xl font-bold text-cult-white">{stats.activeSessions}</p>
           </div>
-          <Clock className="w-8 h-8 text-blue-500" />
+          <Clock className="w-8 h-8 text-sky-400" />
         </div>
       </div>
       <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">

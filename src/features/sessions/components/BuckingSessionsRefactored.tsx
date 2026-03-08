@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { Button, PageSkeleton } from '@/shared/components';
 import { useBuckingSessions } from '../hooks/useBuckingSessions';
 import { useBuckingData } from '../hooks/useBuckingData';
 import { undoCompletedSession } from '../services/sessions.service';
@@ -43,23 +44,22 @@ export function BuckingSessionsRefactored() {
   };
 
   if (loading) {
-    return <div className="p-6">Loading bucking sessions...</div>;
+    return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Bucking Sessions</h1>
-          <p className="text-gray-300 mt-1">Process binned material into bucked flower and smalls</p>
+          <h1 className="text-3xl font-bold text-cult-white">Bucking Sessions</h1>
+          <p className="text-cult-text-secondary mt-1">Process binned material into bucked flower and smalls</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowStartForm(!showStartForm)}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-gray-100 transition-all shadow-lg"
+          icon={<Plus className="w-5 h-5" />}
         >
-          <Plus className="w-5 h-5" />
           Start New Tote
-        </button>
+        </Button>
       </div>
 
       <SessionStats stats={stats} type="bucking" />

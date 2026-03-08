@@ -119,22 +119,22 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b">
+        <div className="grid grid-cols-4 gap-4 p-6 bg-cult-surface-sunken border-b">
           <div className="text-center">
             <div className="text-3xl font-bold text-cult-black">{stats.total}</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">Total</div>
+            <div className="text-sm text-cult-text-faint uppercase tracking-wide">Total</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">Pending</div>
+            <div className="text-sm text-cult-text-faint uppercase tracking-wide">Pending</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">{stats.printed}</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">Printed</div>
+            <div className="text-sm text-cult-text-faint uppercase tracking-wide">Printed</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-red-600">{stats.voided}</div>
-            <div className="text-sm text-gray-600 uppercase tracking-wide">Voided</div>
+            <div className="text-sm text-cult-text-faint uppercase tracking-wide">Voided</div>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
             <button
               onClick={refetchLabels}
               disabled={loading}
-              className="px-4 py-2 bg-gray-200 text-gray-800 hover:bg-gray-300 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-cult-surface-raised text-cult-text-primary hover:bg-cult-surface-overlay transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -192,7 +192,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                   >
                     <div>
                       <div className="font-medium text-cult-black">{assignment.package_id}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-cult-text-faint">
                         {assignment.product_name} • {assignment.strain || 'Unknown strain'}
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                           ? 'bg-red-50 border-red-200 opacity-60'
                           : isPrinted
                           ? 'bg-green-50 border-green-200'
-                          : 'bg-white border-gray-200'
+                          : 'bg-white border-cult-border-subtle'
                       }`}
                     >
                       <div className="flex-1">
@@ -257,11 +257,11 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-cult-text-faint">
                           Package: {label.package_id} • {label.product_name}
                         </div>
                         {label.strain && (
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-cult-text-faint">
                             Strain: {label.strain} • Batch: {label.batch_number || 'N/A'}
                           </div>
                         )}
@@ -318,7 +318,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           )}
 
           {labels.length === 0 && unlabeledAssignments.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-cult-text-muted">
               <Tag className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg">No package assignments found for this order.</p>
               <p className="text-sm mt-2">Assign packages to order items to generate labels.</p>

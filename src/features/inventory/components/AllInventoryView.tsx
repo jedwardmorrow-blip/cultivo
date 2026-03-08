@@ -3,6 +3,7 @@ import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2,
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
+import { MultiLabelPrintModal } from './MultiLabelPrintModal';
 import { CombinePackagesModal } from './CombinePackagesModal';
 import { QuickAdjustmentModal } from './QuickAdjustmentModal';
 import { RebalanceWeightModal } from './RebalanceWeightModal';
@@ -13,6 +14,7 @@ import { qualityGradeService } from '@/services';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { useInventoryLabel } from '../hooks';
+import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
 import { useAdjustment } from '../hooks/useAdjustment';
 import { getItemStage } from '../hooks/useInventoryFilters';
 import {
@@ -72,6 +74,7 @@ const defaultAdjustmentState: QuickAdjustmentModalState = {
 
 export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: AllInventoryViewProps) {
   const labelHook = useInventoryLabel();
+  const multiLabelHook = useMultiLabelPrint();
   const { isAdmin } = useAuth();
   const { applyAdjustment } = useAdjustment();
 
@@ -168,6 +171,13 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
   const handleCombineClose = useCallback(() => {
     setShowCombineModal(false);
   }, []);
+
+  const handlePrintLabelsClick = useCallback(() => {
+    const selectedItems = filteredItems.filter((item) => selectedPackageIds.has(item.id));
+    if (selectedItems.length > 0) {
+      multiLabelHook.openMultiLabel(selectedItems);
+    }
+  }, [filteredItems, selectedPackageIds, multiLabelHook]);
 
   const openAdjustmentModal = useCallback((item: InventoryItem) => {
     const stage = getItemStage(item) || 'unknown';
@@ -345,6 +355,13 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={handlePrintLabelsClick}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all flex items-center gap-2 text-sm font-medium"
+              >
+                <Printer className="w-4 h-4" />
+                Print Labels
+              </button>
+              <button
                 onClick={handleCombineClick}
                 disabled={isValidating}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
@@ -420,11 +437,6 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
           },
           {
-            header: 'Room',
-            accessor: 'room',
-            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
-          },
-          {
             header: 'Available Qty',
             accessor: 'available_qty',
             align: 'right',
@@ -496,6 +508,17 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
         error={labelHook.error}
         onClose={labelHook.closeLabel}
         onPrint={labelHook.printLabel}
+      />
+
+      <MultiLabelPrintModal
+        isOpen={multiLabelHook.isOpen}
+        isLoading={multiLabelHook.isLoading}
+        isPrinting={multiLabelHook.isPrinting}
+        labels={multiLabelHook.labels}
+        logoDataUrl={multiLabelHook.logoDataUrl}
+        error={multiLabelHook.error}
+        onClose={multiLabelHook.closeMultiLabel}
+        onPrint={multiLabelHook.printLabels}
       />
 
       <CombinePackagesModal

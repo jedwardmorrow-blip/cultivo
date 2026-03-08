@@ -1,1 +1,1 @@
-export { CRMDashboard, AccountsList, AccountDetail, SalesQueue, VisitCalendar } from './components';
+export { CRMDashboard, AccountsList, AccountDetail, SalesQueue, VisitCalendar, SalesPipeline } from './components';

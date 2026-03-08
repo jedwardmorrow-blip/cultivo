@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import { PageSkeleton } from '@/shared/components';
 import { useSharedInventoryData } from '../context/InventoryDataContext';
 import { useInventoryFilters } from '../hooks/useInventoryFilters';
 import { AllInventoryView } from './AllInventoryView';
@@ -19,8 +19,8 @@ function ViewShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-cult-white tracking-tight">{title}</h1>
-        <p className="text-cult-silver text-sm mt-1">{subtitle}</p>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">{title}</h1>
+        <p className="text-cult-light-gray text-sm mt-2">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -28,14 +28,7 @@ function ViewShell({ title, subtitle, children }: { title: string; subtitle: str
 }
 
 function InventoryLoadingState() {
-  return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="flex items-center gap-3 text-cult-silver">
-        <Loader2 className="w-5 h-5 animate-spin" />
-        <span className="text-sm">Loading inventory...</span>
-      </div>
-    </div>
-  );
+  return <PageSkeleton variant="table" />;
 }
 
 function useInventoryContext() {

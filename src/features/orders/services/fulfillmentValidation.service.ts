@@ -97,10 +97,10 @@ export class FulfillmentValidationService {
       assignmentId: a.id,
       packageId: a.package_id,
       quantityAssigned: Number(a.quantity_assigned),
-      reservationStatus: a.reservation_status as any,
+      reservationStatus: (a.assignment_status || 'reserved') as any,
       labelId: a.label_id,
-      inventoryAvailable: a.inventory_available_qty ? Number(a.inventory_available_qty) : undefined,
-      inventoryReserved: a.inventory_reserved_qty ? Number(a.inventory_reserved_qty) : undefined,
+      inventoryAvailable: a.available_qty ? Number(a.available_qty) : undefined,
+      inventoryReserved: a.reserved_qty ? Number(a.reserved_qty) : undefined,
     })) || [];
 
     const summary = this.calculateFulfillmentSummary(
@@ -211,7 +211,7 @@ export class FulfillmentValidationService {
       packageId: inventory.package_id,
       productName: inventory.product_name || '',
       strain: inventory.strain || '',
-      batch: inventory.batch || '',
+      batch: inventory.batch_number || '',
       totalQuantity,
       availableQuantity,
       reservedQuantity,
@@ -301,7 +301,7 @@ export class FulfillmentValidationService {
       .from('package_assignments')
       .select('quantity_assigned')
       .eq('order_item_id', orderItemId)
-      .eq('reservation_status', 'reserved');
+      .in('status', ['reserved', 'fulfilled']);
 
     if (error) {
       console.error('Error fetching total assigned quantity:', error);

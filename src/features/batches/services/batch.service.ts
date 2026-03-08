@@ -292,7 +292,7 @@ export async function fetchBatchWithCOAStatus(): Promise<BatchWithCOAStatus[]> {
   const { data, error } = await supabase
     .from('batch_with_coa_status')
     .select('*')
-    .order('batch_number')
+    .order('created_at', { ascending: false })
     .returns<BatchWithCOAStatus[]>();
 
   if (error) throw error;

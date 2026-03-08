@@ -6,6 +6,13 @@ export interface AttentionFlag {
   severity: 'high' | 'medium';
 }
 
+const FLAG_PRIORITY: Record<AttentionFlag['type'], number> = {
+  overdue: 0,
+  awaiting_acceptance: 1,
+  delivery_soon: 2,
+  unfulfilled: 3,
+};
+
 export function getAttentionFlags(order: Order): AttentionFlag[] {
   const flags: AttentionFlag[] = [];
   const now = new Date();
@@ -67,7 +74,9 @@ export function getAttentionFlags(order: Order): AttentionFlag[] {
     });
   }
 
-  return flags;
+  if (flags.length <= 1) return flags;
+  flags.sort((a, b) => FLAG_PRIORITY[a.type] - FLAG_PRIORITY[b.type]);
+  return [flags[0]];
 }
 
 export function hasAttentionFlags(order: Order): boolean {

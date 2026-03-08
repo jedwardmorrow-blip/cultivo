@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { TrendingUp, TrendingDown, Minus, Calculator, BarChart3, AlertCircle } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { productsService } from '../services/products.service';

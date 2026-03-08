@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Leaf } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { supabase } from '@/lib/supabase';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
 import { usePlantGroups } from '../../hooks/usePlantGroups';
@@ -202,12 +203,11 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
           {activeSessions > 0 && (
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => setStep('review')}
-                className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all text-sm"
               >
                 Review & Finalize
-              </button>
+              </Button>
               <button
                 onClick={() => setStep('select-room')}
                 className="px-6 py-3 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"

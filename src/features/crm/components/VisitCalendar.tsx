@@ -134,7 +134,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Visit Calendar</h1>
-          <p className="text-cult-light-gray mt-1">Schedule and track account visits</p>
+          <p className="text-cult-light-gray mt-2">Schedule and track account visits</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -329,7 +329,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
 
 function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; value: number; icon: typeof MapPin; iconColor: string }) {
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 flex items-center gap-3">
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 flex items-center gap-3 transition-all duration-200 hover:scale-[1.01]">
       <div className={`p-2 rounded-lg bg-cult-dark-gray ${iconColor}`}>
         <Icon className="w-4 h-4" />
       </div>

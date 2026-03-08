@@ -154,7 +154,7 @@ export function AuditManagement() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Inventory Audits</h1>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Inventory Audits</h1>
           <button
             onClick={() => setShowInitModal(true)}
             disabled={!!activeAudit}
@@ -166,13 +166,13 @@ export function AuditManagement() {
         </div>
 
         {/* View Tabs */}
-        <div className="flex space-x-2 border-b border-gray-200">
+        <div className="flex space-x-2 border-b border-cult-border-subtle">
           <button
             onClick={() => setView('current')}
             className={`px-4 py-2 font-medium transition-colors ${
               view === 'current'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-cult-text-faint hover:text-cult-text-primary'
             }`}
           >
             Current Audit
@@ -182,7 +182,7 @@ export function AuditManagement() {
             className={`px-4 py-2 font-medium transition-colors ${
               view === 'history'
                 ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-cult-text-faint hover:text-cult-text-primary'
             }`}
           >
             History
@@ -196,15 +196,15 @@ export function AuditManagement() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading audit...</p>
+              <p className="mt-4 text-cult-text-faint">Loading audit...</p>
             </div>
           ) : audit ? (
             <div className="space-y-6">
               {/* Audit Header */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-cult-border-subtle rounded-lg p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{audit.audit_number}</h2>
+                    <h2 className="text-2xl font-bold text-cult-text-primary mb-2">{audit.audit_number}</h2>
                     <div className="flex items-center space-x-4">
                       {getStatusBadge(audit.status)}
                       {audit.is_locked && (
@@ -274,34 +274,34 @@ export function AuditManagement() {
                 {/* Audit Info */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <div className="text-sm text-gray-600">Created</div>
+                    <div className="text-sm text-cult-text-faint">Created</div>
                     <div className="font-medium">{new Date(audit.created_at).toLocaleDateString()}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600">Stages</div>
+                    <div className="text-sm text-cult-text-faint">Stages</div>
                     <div className="font-medium">{audit.selected_stages.join(', ')}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600">Total Lines</div>
+                    <div className="text-sm text-cult-text-faint">Total Lines</div>
                     <div className="font-medium">{audit.total_lines}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600">Variances</div>
+                    <div className="text-sm text-cult-text-faint">Variances</div>
                     <div className="font-medium">{audit.variance_count}</div>
                   </div>
                 </div>
 
                 {audit.notes && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="text-sm text-gray-600 mb-1">Notes:</div>
-                    <div className="text-sm text-gray-900">{audit.notes}</div>
+                  <div className="p-3 bg-cult-surface-sunken rounded-lg">
+                    <div className="text-sm text-cult-text-faint mb-1">Notes:</div>
+                    <div className="text-sm text-cult-text-primary">{audit.notes}</div>
                   </div>
                 )}
               </div>
 
               {/* Audit Lines */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Audit Lines</h3>
+              <div className="bg-white border border-cult-border-subtle rounded-lg p-6">
+                <h3 className="text-lg font-bold text-cult-text-primary mb-4">Audit Lines</h3>
                 <AuditLineEditor
                   lines={lines}
                   onUpdateLine={handleUpdateLine}
@@ -310,9 +310,9 @@ export function AuditManagement() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">No active audit</p>
+            <div className="text-center py-12 bg-white border border-cult-border-subtle rounded-lg">
+              <FileText className="h-16 w-16 text-cult-text-muted mx-auto mb-4" />
+              <p className="text-cult-text-faint mb-4">No active audit</p>
               <button
                 onClick={() => setShowInitModal(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -326,8 +326,8 @@ export function AuditManagement() {
 
       {/* History View */}
       {view === 'history' && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Audit History</h3>
+        <div className="bg-white border border-cult-border-subtle rounded-lg p-6">
+          <h3 className="text-lg font-bold text-cult-text-primary mb-4">Audit History</h3>
           {historyLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -335,18 +335,18 @@ export function AuditManagement() {
           ) : historyAudits.length > 0 ? (
             <div className="space-y-3">
               {historyAudits.map(historyAudit => (
-                <div key={historyAudit.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <div key={historyAudit.id} className="p-4 border border-cult-border-subtle rounded-lg hover:bg-cult-surface-sunken">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-gray-900">{historyAudit.audit_number}</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-semibold text-cult-text-primary">{historyAudit.audit_number}</div>
+                      <div className="text-sm text-cult-text-faint">
                         {new Date(historyAudit.created_at).toLocaleDateString()} • {historyAudit.selected_stages.join(', ')}
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="text-right text-sm">
-                        <div className="text-gray-600">Lines: {historyAudit.total_lines}</div>
-                        <div className="text-gray-600">Variances: {historyAudit.variance_count}</div>
+                        <div className="text-cult-text-faint">Lines: {historyAudit.total_lines}</div>
+                        <div className="text-cult-text-faint">Variances: {historyAudit.variance_count}</div>
                       </div>
                       {getStatusBadge(historyAudit.status)}
                     </div>
@@ -355,7 +355,7 @@ export function AuditManagement() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-cult-text-muted">
               <p>No audit history</p>
             </div>
           )}

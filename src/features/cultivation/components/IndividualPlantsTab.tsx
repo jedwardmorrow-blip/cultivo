@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Plus, Upload, CircleOff, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import type { IndividualPlant, BulkImportPlantResult } from '../types';
 
@@ -175,14 +176,14 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             />
           </div>
           <div className="flex gap-2 pt-1">
-            <button
+            <Button
               onClick={handleAdd}
               disabled={addSaving}
-              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40"
+              size="xs"
+              icon={addSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
             >
-              {addSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
               {addSaving ? 'Saving...' : 'Save'}
-            </button>
+            </Button>
             <button
               onClick={() => { setShowAddForm(false); setAddValue(''); setAddError(null); }}
               className="text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 uppercase tracking-wider hover:border-cult-lighter-gray hover:text-cult-white transition-all"
@@ -204,14 +205,14 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-3 py-2 text-xs font-mono focus:outline-none focus:border-cult-lighter-gray resize-y"
           />
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handleImport}
               disabled={importing || !importText.trim()}
-              className="flex items-center gap-1.5 text-xs bg-white text-cult-black px-3 py-1.5 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40"
+              size="xs"
+              icon={importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
             >
-              {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
               {importing ? 'Importing...' : 'Import'}
-            </button>
+            </Button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 uppercase tracking-wider hover:border-cult-lighter-gray hover:text-cult-white transition-all"

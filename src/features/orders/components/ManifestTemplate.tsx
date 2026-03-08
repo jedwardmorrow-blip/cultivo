@@ -98,20 +98,20 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             </div>
           </div>
 
-          <div className="border-b-2 border-black bg-gray-50">
+          <div className="border-b-2 border-black bg-cult-surface-sunken">
             <div className="p-4">
-              <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Route Origin</div>
+              <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Route Origin</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Starting Location</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Starting Location</div>
                   <div className="text-sm font-semibold">{manifestData.origin_location_name}</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Stop Number</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Stop Number</div>
                   <div className="text-sm font-semibold">{manifestData.stop_number}</div>
                 </div>
-                <div className="col-span-2 border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Address</div>
+                <div className="col-span-2 border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Address</div>
                   <div className="text-sm">{manifestData.origin_location_address}</div>
                 </div>
               </div>
@@ -120,18 +120,18 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
 
           <div className="border-b-2 border-black bg-white">
             <div className="p-4">
-              <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Company Information</div>
+              <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Company Information</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <div className="border border-gray-300 p-2 bg-gray-50">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Company</div>
+                <div className="border border-cult-border p-2 bg-cult-surface-sunken">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Company</div>
                   <div className="text-sm">{manifestData.originating_entity_name}</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-gray-50">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">License Number</div>
+                <div className="border border-cult-border p-2 bg-cult-surface-sunken">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">License Number</div>
                   <div className="text-sm">{manifestData.originating_entity_license}</div>
                 </div>
-                <div className="col-span-2 border border-gray-300 p-2 bg-gray-50">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Facility Address</div>
+                <div className="col-span-2 border border-cult-border p-2 bg-cult-surface-sunken">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Facility Address</div>
                   <div className="text-sm">{manifestData.originating_entity_address}</div>
                   <div className="text-sm">{manifestData.originating_entity_city}, {manifestData.originating_entity_state} {manifestData.originating_entity_postal_code}</div>
                 </div>
@@ -141,53 +141,53 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
 
           <div className="border-b-2 border-black">
             <div className="p-4">
-              <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Transport Information</div>
+              <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Transport Information</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <div className="border border-gray-300 p-2 bg-gray-50">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Delivery Person</div>
+                <div className="border border-cult-border p-2 bg-cult-surface-sunken">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Delivery Person</div>
                   <div className="text-sm">{manifestData.driver.first_name} {manifestData.driver.last_name}</div>
-                  <div className="text-xs text-gray-600">FA: {manifestData.driver.fa_number}</div>
+                  <div className="text-xs text-cult-text-faint">FA: {manifestData.driver.fa_number}</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-gray-50">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Vehicle</div>
+                <div className="border border-cult-border p-2 bg-cult-surface-sunken">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Vehicle</div>
                   <div className="text-sm">{manifestData.vehicle.year} {manifestData.vehicle.make} {manifestData.vehicle.model}</div>
-                  <div className="text-xs text-gray-600">License: {manifestData.vehicle.license_plate}</div>
-                  <div className="text-xs text-gray-600">VIN: {manifestData.vehicle.vin}</div>
+                  <div className="text-xs text-cult-text-faint">License: {manifestData.vehicle.license_plate}</div>
+                  <div className="text-xs text-cult-text-faint">VIN: {manifestData.vehicle.vin}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-b-2 border-black bg-gray-50">
+          <div className="border-b-2 border-black bg-cult-surface-sunken">
             <div className="p-4">
-              <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Destination Information</div>
+              <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Destination Information</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Destination Entity</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Destination Entity</div>
                   <div className="text-sm">{manifestData.destination_entity_name}</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">License Number</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">License Number</div>
                   <div className="text-sm">{manifestData.destination_entity_license}</div>
                 </div>
-                <div className="col-span-2 border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Address</div>
+                <div className="col-span-2 border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Address</div>
                   <div className="text-sm">{manifestData.destination_entity_address}</div>
                   <div className="text-sm">{manifestData.destination_entity_city}, {manifestData.destination_entity_state} {manifestData.destination_entity_postal_code}</div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-x-3">
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Departure Time</div>
-                  <div className="border-b border-gray-400 mt-2 pb-1">______________</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Departure Time</div>
+                  <div className="border-b border-cult-border mt-2 pb-1">______________</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Arrival Time</div>
-                  <div className="border-b border-gray-400 mt-2 pb-1">______________</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Arrival Time</div>
+                  <div className="border-b border-cult-border mt-2 pb-1">______________</div>
                 </div>
-                <div className="border border-gray-300 p-2 bg-white">
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Stop Number</div>
-                  <div className="border-b border-gray-400 mt-2 pb-1">______________</div>
+                <div className="border border-cult-border p-2 bg-white">
+                  <div className="font-semibold text-xs text-cult-text-faint mb-1">Stop Number</div>
+                  <div className="border-b border-cult-border mt-2 pb-1">______________</div>
                 </div>
               </div>
             </div>
@@ -196,23 +196,23 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           {manifestData.route_map_url && manifestData.route_map_url.startsWith('data:image') ? (
             <div className="border-b-2 border-black bg-white">
               <div className="p-4">
-                <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2 flex items-center justify-between">
+                <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2 flex items-center justify-between">
                   <span>Route Visualization</span>
                   {manifestData.route_distance && manifestData.route_duration && (
-                    <span className="text-xs font-normal text-gray-600">
+                    <span className="text-xs font-normal text-cult-text-faint">
                       Distance: {manifestData.route_distance} | Est. Time: {manifestData.route_duration}
                     </span>
                   )}
                 </div>
-                <div className="flex justify-center bg-gray-50 p-4">
+                <div className="flex justify-center bg-cult-surface-sunken p-4">
                   <img
                     src={manifestData.route_map_url}
                     alt="Route Map"
-                    className="border-2 border-gray-300 max-w-full"
+                    className="border-2 border-cult-border max-w-full"
                     style={{ width: '600px', height: '400px', objectFit: 'contain' }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-gray-600 text-center">
+                <div className="mt-2 text-xs text-cult-text-faint text-center">
                   <span className="inline-flex items-center gap-2">
                     <span className="inline-block w-3 h-3 rounded-full bg-green-500 border border-white"></span>
                     Origin: {manifestData.origin_location_name}
@@ -224,16 +224,16 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
               </div>
             </div>
           ) : manifestData.route_distance && manifestData.route_duration ? (
-            <div className="border-b-2 border-black bg-gray-50">
+            <div className="border-b-2 border-black bg-cult-surface-sunken">
               <div className="p-4">
-                <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Route Information</div>
+                <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Route Information</div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="border border-gray-300 p-2 bg-white">
-                    <div className="font-semibold text-xs text-gray-600 mb-1">Distance</div>
+                  <div className="border border-cult-border p-2 bg-white">
+                    <div className="font-semibold text-xs text-cult-text-faint mb-1">Distance</div>
                     <div className="text-base font-semibold">{manifestData.route_distance}</div>
                   </div>
-                  <div className="border border-gray-300 p-2 bg-white">
-                    <div className="font-semibold text-xs text-gray-600 mb-1">Estimated Time</div>
+                  <div className="border border-cult-border p-2 bg-white">
+                    <div className="font-semibold text-xs text-cult-text-faint mb-1">Estimated Time</div>
                     <div className="text-base font-semibold">{manifestData.route_duration}</div>
                   </div>
                 </div>
@@ -244,10 +244,10 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           {manifestData.route_instructions && manifestData.route_instructions.length > 0 && (
             <div className="border-b-2 border-black bg-white">
               <div className="p-4">
-                <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2 flex items-center justify-between">
+                <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2 flex items-center justify-between">
                   <span>Turn-by-Turn Directions</span>
                   {manifestData.route_distance && manifestData.route_duration && !manifestData.route_map_url && (
-                    <span className="text-xs font-normal text-gray-600">
+                    <span className="text-xs font-normal text-cult-text-faint">
                       Distance: {manifestData.route_distance} | Est. Time: {manifestData.route_duration}
                     </span>
                   )}
@@ -255,11 +255,11 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                 <ol className="space-y-1.5 text-xs">
                   {manifestData.route_instructions.map((instruction, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <span className="font-bold text-gray-700 min-w-[1.5rem]">{instruction.step_number}.</span>
+                      <span className="font-bold text-cult-text-muted min-w-[1.5rem]">{instruction.step_number}.</span>
                       <div className="flex-1">
                         <span>{instruction.instruction_text}</span>
                         {instruction.distance_meters > 0 && (
-                          <span className="text-gray-600 ml-2">
+                          <span className="text-cult-text-faint ml-2">
                             ({(instruction.distance_meters / 1609.34).toFixed(1)} mi)
                           </span>
                         )}
@@ -296,7 +296,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                     <td className="border-r border-black p-2 align-top">
                       <div className="font-semibold">{productDisplay}</div>
                       {packageInfo && (
-                        <div className="text-xs text-gray-700 mt-0.5">{packageInfo}</div>
+                        <div className="text-xs text-cult-text-muted mt-0.5">{packageInfo}</div>
                       )}
                     </td>
                     <td className="border-r border-black p-2 text-right align-top">
@@ -335,9 +335,9 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             </tbody>
           </table>
 
-          <div className="border-t-2 border-black p-4 bg-gray-50">
-            <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Delivery Verification</div>
-            <div className="border border-gray-300 p-3 bg-white">
+          <div className="border-t-2 border-black p-4 bg-cult-surface-sunken">
+            <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Delivery Verification</div>
+            <div className="border border-cult-border p-3 bg-white">
               <div className="mb-4">
                 <div className="font-bold text-sm mb-2">Delivery Person Information</div>
                 <div className="text-sm">{manifestData.driver.first_name} {manifestData.driver.last_name}, FA: {manifestData.driver.fa_number}</div>
@@ -350,30 +350,30 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           </div>
 
           <div className="border-t-2 border-black p-4 bg-white">
-            <div className="font-bold text-base mb-3 uppercase border-b border-gray-300 pb-2">Receiver Verification</div>
-            <div className="text-xs italic mb-3 text-gray-700">
+            <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Receiver Verification</div>
+            <div className="text-xs italic mb-3 text-cult-text-muted">
               I confirm that the contents of this shipment match weight and quantity records entered above, and I agree to take custody of this shipment as indicated.
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="border border-gray-300 p-2 bg-gray-50">
+              <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Name of Receiver</div>
                 <div className="mt-6 border-b-2 border-black"></div>
               </div>
-              <div className="border border-gray-300 p-2 bg-gray-50">
+              <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Receiver FA #</div>
                 <div className="mt-6 border-b-2 border-black"></div>
               </div>
             </div>
             <div className="grid grid-cols-[2fr,1fr,1fr] gap-3">
-              <div className="border border-gray-300 p-2 bg-gray-50">
+              <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Signature of Receiver</div>
                 <div className="mt-8 border-b-2 border-black"></div>
               </div>
-              <div className="border border-gray-300 p-2 bg-gray-50">
+              <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Date</div>
                 <div className="mt-8 border-b-2 border-black"></div>
               </div>
-              <div className="border border-gray-300 p-2 bg-gray-50">
+              <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Page</div>
                 <div className="mt-8 text-sm">1 of 1</div>
               </div>

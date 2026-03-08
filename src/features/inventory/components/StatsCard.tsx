@@ -21,7 +21,7 @@ export function StatsCard({
   accentColor = 'border-cult-medium-gray',
 }: StatsCardProps) {
   return (
-    <div className={`relative bg-cult-near-black rounded-lg border ${accentColor} overflow-hidden transition-all duration-200 hover:border-cult-lighter-gray group`}>
+    <div className={`relative bg-cult-near-black rounded-lg border ${accentColor} overflow-hidden transition-all duration-200 hover:border-cult-lighter-gray hover:scale-[1.01] group`}>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">

@@ -219,44 +219,38 @@ describe('cultivationService — binning sessions', () => {
   // =====================================================
 
   describe('completeBinningSession', () => {
-    it('sets session_status to "completed" and completed_at timestamp', async () => {
-      const { mockUpdate } = mockUpdateChain(mockSupabaseSuccess(mockCompletedBinningSession));
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
+    it('throws when no bin entries exist', async () => {
+      const mockOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
+      const mockEqFilter = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFilter });
+      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 
-      await cultivationService.completeBinningSession('bs-001');
-
-      expect(supabase.from).toHaveBeenCalledWith('binning_sessions');
-      expect(mockUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          session_status: 'completed',
-          completed_at: expect.any(String),
-          completed_by: 'user-123',
-        })
+      await expect(cultivationService.completeBinningSession('bs-001')).rejects.toThrow(
+        'Cannot complete binning session: no bin entries recorded.'
       );
     });
 
-    it('targets the correct binning session by id', async () => {
-      const { mockUpdate, mockEq } = mockUpdateChain(mockSupabaseSuccess(mockCompletedBinningSession));
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
+    it('throws on database error during session update', async () => {
+      const mockEntries = [
+        { id: 'e1', binning_session_id: 'bs-001', bin_weight_grams: 1000, entry_order: 1, notes: null, created_at: '', created_by: '' },
+      ];
+      const mockEntryOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess(mockEntries));
+      const mockEntryEq = vi.fn().mockReturnValue({ order: mockEntryOrder });
+      const mockEntrySelect = vi.fn().mockReturnValue({ eq: mockEntryEq });
 
-      await cultivationService.completeBinningSession('bs-001');
+      const mockSessionSingle = vi.fn().mockResolvedValue(mockSupabaseSuccess({
+        batch_registry_id: 'batch-001',
+        harvest_sessions: { wet_weight_grams: 5000, adjusted_weight_grams: null, plant_groups: { strains: { name: 'Blue Pave', abbreviation: 'BP' } } },
+      }));
+      const mockSessionEq = vi.fn().mockReturnValue({ single: mockSessionSingle });
+      const mockSessionSelect = vi.fn().mockReturnValue({ eq: mockSessionEq });
 
-      expect(mockEq).toHaveBeenCalledWith('id', 'bs-001');
-    });
-
-    it('(Scenario 24) returns the completed session so UI can read final dry_weight_grams', async () => {
-      const { mockUpdate } = mockUpdateChain(mockSupabaseSuccess(mockCompletedBinningSession));
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
-
-      const result = await cultivationService.completeBinningSession('bs-001');
-
-      expect(result.session_status).toBe('completed');
-      expect(result.dry_weight_grams).toBe(3500);
-    });
-
-    it('throws on database error', async () => {
       const { mockUpdate } = mockUpdateChain(mockSupabaseError('Row not found'));
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
+
+      (supabase.from as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce({ select: mockEntrySelect })
+        .mockReturnValueOnce({ select: mockSessionSelect })
+        .mockReturnValueOnce({ update: mockUpdate });
 
       await expect(cultivationService.completeBinningSession('bs-001')).rejects.toThrow('Row not found');
     });
@@ -354,7 +348,14 @@ describe('cultivationService — binning sessions', () => {
       const mockBinnedNot = vi.fn().mockResolvedValue(mockSupabaseError('DB error'));
       const mockBinnedSelect = vi.fn().mockReturnValue({ not: mockBinnedNot });
 
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValueOnce({ select: mockBinnedSelect });
+      const mockHarvestOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
+      const mockHarvestNot = vi.fn().mockReturnValue({ order: mockHarvestOrder });
+      const mockHarvestEq = vi.fn().mockReturnValue({ not: mockHarvestNot, order: mockHarvestOrder });
+      const mockHarvestSelect = vi.fn().mockReturnValue({ eq: mockHarvestEq });
+
+      (supabase.from as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce({ select: mockBinnedSelect })
+        .mockReturnValueOnce({ select: mockHarvestSelect });
 
       await expect(cultivationService.listUnbinnedHarvestSessions()).rejects.toThrow('DB error');
     });

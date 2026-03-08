@@ -7,11 +7,13 @@
  */
 
 import { useState } from 'react';
-import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, XCircle, Package, Boxes, Droplets, Trash2, Check } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { PendingConversionSession, CreatePackageInput } from '@/types';
+import { VarianceReason, VarianceReasonLabels } from '../types/conversions.types';
+import { logVariance } from '../services/conversions.service';
 import { useFinalizationWorkflow } from '../hooks';
-import { BulkBagCreationModal } from './BulkBagCreationModal';
+import { BulkBagCreationModal, BulkBagVarianceData } from './BulkBagCreationModal';
 
 interface ConversionModalProps {
   session: PendingConversionSession;
@@ -28,6 +30,16 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
   const [showBulkBagModal, setShowBulkBagModal] = useState(false);
   const [voidReason, setVoidReason] = useState('');
 
+  const [showWriteOff, setShowWriteOff] = useState(false);
+  const [writeOffGrams, setWriteOffGrams] = useState<number>(0);
+  const [writeOffReason, setWriteOffReason] = useState<VarianceReason | ''>('moisture_loss');
+  const [writeOffNote, setWriteOffNote] = useState('Moisture loss prior to bagging');
+  const [isWritingOff, setIsWritingOff] = useState(false);
+  const [writeOffApplied, setWriteOffApplied] = useState(false);
+
+  const isBulk = session.output_weight !== null && session.output_weight > 0;
+  const adjustedWeight = isBulk ? (session.output_weight || 0) - writeOffGrams : null;
+
   const {
     isLoading,
     error,
@@ -39,11 +51,15 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     setShowBulkBagModal(true);
   };
 
-  const handleBulkBagsConfirm = async (bags: { package_id: string; weight: number }[]) => {
+  const handleBulkBagsConfirm = async (bags: { package_id: string; weight: number }[], variance?: BulkBagVarianceData) => {
     const packages: CreatePackageInput[] = bags.map(bag => ({
       package_id: bag.package_id,
       weight: bag.weight,
     }));
+
+    const effectiveOutputWeight = writeOffGrams > 0 && adjustedWeight !== null
+      ? adjustedWeight
+      : session.output_weight;
 
     const result = await handleFinalize({
       batch_id: session.batch_id,
@@ -53,16 +69,100 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
       session_ids: session.session_ids,
       aggregation_id: session.aggregation_id,
       packages,
-      output_weight: session.output_weight,
+      output_weight: effectiveOutputWeight,
       output_units: session.output_units,
     });
 
     if (result && result.length > 0) {
+      if (writeOffGrams > 0 && writeOffReason) {
+        try {
+          await logVariance({
+            batch_id: session.batch_id,
+            batch_name: session.batch_name,
+            strain_name: session.strain_name,
+            product_name: session.product_name,
+            expected_weight: session.output_weight || 0,
+            actual_weight: (session.output_weight || 0) - writeOffGrams,
+            variance_reason: writeOffReason,
+            variance_note: writeOffNote.trim() || 'Water loss write-off',
+          });
+        } catch (err) {
+          console.error('Failed to log write-off variance:', err);
+        }
+      }
+
+      if (variance) {
+        try {
+          await logVariance({
+            batch_id: session.batch_id,
+            batch_name: session.batch_name,
+            strain_name: session.strain_name,
+            product_name: session.product_name,
+            expected_weight: variance.expected_weight,
+            actual_weight: variance.actual_weight,
+            variance_reason: variance.variance_reason,
+            variance_note: variance.variance_note,
+          });
+        } catch (err) {
+          console.error('Failed to log variance:', err);
+          notificationService.warning('Packages created but variance log failed to save');
+        }
+      }
+
       setShowBulkBagModal(false);
       setStep('success');
       setTimeout(() => {
         onComplete();
       }, 2000);
+    }
+  };
+
+  const handleWriteOffEntireAmount = async () => {
+    if (!writeOffReason) {
+      notificationService.warning('Please select a reason for the write-off');
+      return;
+    }
+    if (writeOffNote.trim().length < 10) {
+      notificationService.warning('Please provide notes (minimum 10 characters)');
+      return;
+    }
+
+    setIsWritingOff(true);
+    try {
+      await logVariance({
+        batch_id: session.batch_id,
+        batch_name: session.batch_name,
+        strain_name: session.strain_name,
+        product_name: session.product_name,
+        expected_weight: session.output_weight || 0,
+        actual_weight: 0,
+        variance_reason: writeOffReason,
+        variance_note: writeOffNote.trim(),
+      });
+
+      const result = await handleFinalize({
+        batch_id: session.batch_id,
+        product_id: session.product_id,
+        product_name: session.product_name,
+        session_type: session.session_type,
+        session_ids: session.session_ids,
+        aggregation_id: session.aggregation_id,
+        packages: [],
+        output_weight: 0,
+        output_units: session.output_units,
+      });
+
+      if (result && result.length >= 0) {
+        setStep('success');
+        setTimeout(() => {
+          onComplete();
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Failed to write off:', err);
+      notificationService.error('Failed to write off amount');
+    } finally {
+      setIsWritingOff(false);
     }
   };
 
@@ -115,13 +215,18 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
     setStep('review');
     setShowVoidConfirm(false);
     setVoidReason('');
+    setShowWriteOff(false);
+    setWriteOffGrams(0);
+    setWriteOffReason('moisture_loss');
+    setWriteOffNote('Moisture loss prior to bagging');
+    setWriteOffApplied(false);
     onClose();
   };
 
   if (!isOpen) return null;
 
-  const isBulk = session.output_weight !== null && session.output_weight > 0;
   const sessionTypeLabel = session.session_type.charAt(0).toUpperCase() + session.session_type.slice(1);
+  const writeOffValid = writeOffReason !== '' && writeOffNote.trim().length >= 10;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -134,19 +239,19 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border-subtle">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-cult-text-primary">
                 {step === 'success' ? 'Finalization Complete' : 'Review Session Output'}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-cult-text-faint mt-1">
                 {session.strain_name} · {session.batch_name} · {sessionTypeLabel}
               </p>
             </div>
             {step !== 'success' && (
               <button
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-cult-text-muted hover:text-cult-text-faint transition-colors"
                 disabled={isLoading}
               >
                 <X className="w-6 h-6" />
@@ -201,8 +306,8 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       <div className="text-xs text-blue-700 mb-1">Output Quantity</div>
                       <div className="text-2xl font-bold text-blue-900">
                         {isBulk
-                          ? `${session.output_weight?.toFixed(0) || 0}g`
-                          : `${session.output_units || 0} units`}
+                          ? `${session.output_weight != null ? session.output_weight.toFixed(0) : 0}g`
+                          : `${session.output_units ?? 0} units`}
                       </div>
                     </div>
                     <div>
@@ -235,8 +340,151 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                   </div>
                 </div>
 
+                {isBulk && (
+                  <div className="border border-cult-border-subtle rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setShowWriteOff(!showWriteOff)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-cult-surface-sunken hover:bg-cult-surface transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Droplets className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-cult-text-primary">
+                          Adjust for Loss / Variance
+                        </span>
+                        {writeOffApplied && writeOffGrams > 0 && (
+                          <span className="flex items-center gap-1 text-xs font-medium text-cult-success bg-cult-success/10 px-2 py-0.5 rounded-full">
+                            <Check className="w-3 h-3" />
+                            -{writeOffGrams}g applied
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-cult-text-muted">
+                        {showWriteOff ? 'Collapse' : 'Expand'}
+                      </span>
+                    </button>
+
+                    {showWriteOff && (
+                      <div className="px-4 py-4 space-y-4 border-t border-cult-border-subtle">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <label className="block text-xs font-medium text-cult-text-muted mb-1">
+                              Write-Off Amount (grams)
+                            </label>
+                            <input
+                              type="number"
+                              value={writeOffGrams || ''}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                const max = session.output_weight || 0;
+                                setWriteOffGrams(Math.min(Math.max(val, 0), max));
+                              }}
+                              className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0"
+                              min="0"
+                              max={session.output_weight || 0}
+                              step="0.1"
+                            />
+                          </div>
+                          <button
+                            onClick={() => setWriteOffGrams(session.output_weight || 0)}
+                            className="mt-5 text-xs px-3 py-2 bg-cult-surface text-cult-text-muted rounded-lg border border-cult-border hover:bg-cult-surface-raised transition-colors"
+                          >
+                            Use Entire Amount
+                          </button>
+                        </div>
+
+                        {writeOffGrams > 0 && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="flex items-baseline justify-between">
+                              <div className="text-xs text-blue-700">Adjusted Available Weight</div>
+                              <div className="text-lg font-bold text-blue-900">
+                                {adjustedWeight !== null ? adjustedWeight.toFixed(1) : 0}g
+                              </div>
+                            </div>
+                            <div className="text-xs text-blue-600 mt-1">
+                              {session.output_weight}g original - {writeOffGrams}g write-off
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-xs font-medium text-cult-text-muted mb-1">
+                            Reason <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={writeOffReason}
+                            onChange={(e) => setWriteOffReason(e.target.value as VarianceReason)}
+                            className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          >
+                            <option value="">Select a reason...</option>
+                            {(Object.entries(VarianceReasonLabels) as [VarianceReason, string][]).map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-cult-text-muted mb-1">
+                            Notes <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            value={writeOffNote}
+                            onChange={(e) => setWriteOffNote(e.target.value)}
+                            rows={2}
+                            placeholder="Explain the reason for this write-off..."
+                            className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                          />
+                        </div>
+
+                        {writeOffGrams > 0 && writeOffGrams < (session.output_weight || 0) && (
+                          <button
+                            onClick={() => {
+                              if (!writeOffReason) {
+                                notificationService.warning('Please select a reason');
+                                return;
+                              }
+                              if (writeOffNote.trim().length < 10) {
+                                notificationService.warning('Please provide notes (minimum 10 characters)');
+                                return;
+                              }
+                              setWriteOffApplied(true);
+                              setShowWriteOff(false);
+                              notificationService.success(`Loss of ${writeOffGrams}g applied. Available weight adjusted to ${adjustedWeight !== null ? adjustedWeight.toFixed(1) : 0}g.`);
+                            }}
+                            disabled={!writeOffValid}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                          >
+                            <Check className="w-4 h-4" />
+                            Apply Loss / Variance (-{writeOffGrams}g)
+                          </button>
+                        )}
+
+                        {writeOffGrams > 0 && writeOffGrams >= (session.output_weight || 0) && (
+                          <button
+                            onClick={handleWriteOffEntireAmount}
+                            disabled={isWritingOff || isLoading || !writeOffValid}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                          >
+                            {isWritingOff ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Writing off...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="w-4 h-4" />
+                                Write Off Entire Amount ({session.output_weight}g)
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Void Option */}
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-cult-border-subtle pt-4">
                   <button
                     onClick={() => setShowVoidConfirm(true)}
                     className="text-sm text-red-600 hover:text-red-700 font-medium"
@@ -266,7 +514,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2">
                     Reason for voiding (required)
                   </label>
                   <textarea
@@ -274,7 +522,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                     onChange={(e) => setVoidReason(e.target.value)}
                     placeholder="Enter reason for voiding this session..."
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   />
                 </div>
 
@@ -284,7 +532,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       setShowVoidConfirm(false);
                       setVoidReason('');
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-2 border border-cult-border text-cult-text-muted rounded-lg hover:bg-cult-surface-sunken transition-colors"
                   >
                     Cancel
                   </button>
@@ -315,8 +563,8 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                       <div className="bg-white rounded p-3 mb-3">
                         <div className="text-2xl font-bold text-blue-900 mb-1">
                           {isBulk
-                            ? `${session.output_weight?.toFixed(0) || 0}g`
-                            : `${session.output_units || 0} units`}
+                            ? `${session.output_weight != null ? session.output_weight.toFixed(0) : 0}g`
+                            : `${session.output_units ?? 0} units`}
                         </div>
                         <div className="text-sm text-blue-700">
                           {session.product_name} from {sessionTypeLabel} session
@@ -333,13 +581,13 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
             {step === 'review' && !showVoidConfirm && (
               <>
                 <button
                   onClick={handleCloseModal}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -370,7 +618,7 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
                 <button
                   onClick={() => setStep('review')}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>
@@ -406,13 +654,14 @@ export function ConversionModal({ session, isOpen, onClose, onComplete }: Conver
         </div>
       </div>
 
-      {/* Bulk Bag Creation Modal */}
       {isBulk && (
         <BulkBagCreationModal
           session={session}
           isOpen={showBulkBagModal}
           onClose={() => setShowBulkBagModal(false)}
           onConfirm={handleBulkBagsConfirm}
+          adjustedAvailableWeight={writeOffGrams > 0 && adjustedWeight !== null ? adjustedWeight : undefined}
+          writeOffGrams={writeOffGrams > 0 ? writeOffGrams : undefined}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Box, CreditCard as Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
 import { productsService } from '../services/products.service';
 
 interface ProductType {
@@ -425,7 +425,7 @@ export function ProductTypesManagement() {
                         Base Weight
                       </span>
                       <p className="text-cult-white mt-1 font-medium">
-                        {type.base_weight ? `${type.base_weight} ${type.base_unit}` : 'N/A'}
+                        {type.base_weight != null ? `${type.base_weight} ${type.base_unit}` : 'N/A'}
                       </p>
                     </div>
 

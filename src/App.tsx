@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ErrorBoundary, Layout } from './lib/components';
 import { Login, ResetPassword } from './features/auth';
@@ -10,38 +10,42 @@ import { StandaloneOrderFormRefactored } from './features/order-form';
 import { NewOrderForm } from './features/orders';
 import { InventoryDataProvider } from './features/inventory/context/InventoryDataContext';
 import { createActivity } from './features/crm/services/crm.service';
+import { lazyRetry } from './lib/utils';
 
-const Dashboard = lazy(() => import('./features/dashboard').then((m) => ({ default: m.Dashboard })));
-const OrdersContainer = lazy(() => import('./features/orders').then((m) => ({ default: m.OrdersContainer })));
-const DistributionCalendar = lazy(() => import('./features/delivery').then((m) => ({ default: m.DistributionCalendar })));
-const ProductionDashboard = lazy(() => import('./features/sessions').then((m) => ({ default: m.ProductionDashboard })));
-const BuckingSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.BuckingSessionsRefactored })));
-const TrimSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.TrimSessionsRefactored })));
-const PackagingSessionsRefactored = lazy(() => import('./features/sessions').then((m) => ({ default: m.PackagingSessionsRefactored })));
-const BatchManagement = lazy(() => import('./features/batches').then((m) => ({ default: m.BatchManagement })));
-const AllInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.AllInventoryViewWrapper })));
-const BinnedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BinnedInventoryViewWrapper })));
-const BuckedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BuckedInventoryViewWrapper })));
-const BulkInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.BulkInventoryViewWrapper })));
-const PackagedInventoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.PackagedInventoryViewWrapper })));
-const DailyActivityViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.DailyActivityViewWrapper })));
-const ConversionsViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.ConversionsViewWrapper })));
-const ConversionHistoryViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.ConversionHistoryViewWrapper })));
-const AuditsViewWrapper = lazy(() => import('./features/inventory').then((m) => ({ default: m.AuditsViewWrapper })));
-const Settings = lazy(() => import('./features/settings').then((m) => ({ default: m.Settings })));
-const AnalyticsDashboard = lazy(() => import('./features/analytics').then((m) => ({ default: m.AnalyticsDashboard })));
-const EODSummary = lazy(() => import('./features/analytics').then((m) => ({ default: m.EODSummary })));
-const CultivationDashboard = lazy(() => import('./features/cultivation').then((m) => ({ default: m.CultivationDashboard })));
-const PlantGroupsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.PlantGroupsList })));
-const HarvestSessionsList = lazy(() => import('./features/cultivation').then((m) => ({ default: m.HarvestSessionsList })));
-const BinningSessionsView = lazy(() => import('./features/cultivation').then((m) => ({ default: m.BinningSessionsView })));
-const GrowRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.GrowRoomsManagement })));
-const DryRoomsManagement = lazy(() => import('./features/cultivation').then((m) => ({ default: m.DryRoomsManagement })));
-const CRMDashboard = lazy(() => import('./features/crm').then((m) => ({ default: m.CRMDashboard })));
-const AccountsList = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountsList })));
-const AccountDetail = lazy(() => import('./features/crm').then((m) => ({ default: m.AccountDetail })));
-const SalesQueue = lazy(() => import('./features/crm').then((m) => ({ default: m.SalesQueue })));
-const VisitCalendar = lazy(() => import('./features/crm').then((m) => ({ default: m.VisitCalendar })));
+const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
+const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
+const DistributionCalendar = lazyRetry(() => import('./features/delivery'), 'DistributionCalendar');
+const ProductionDashboard = lazyRetry(() => import('./features/sessions'), 'ProductionDashboard');
+const BuckingSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'BuckingSessionsRefactored');
+const TrimSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'TrimSessionsRefactored');
+const PackagingSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'PackagingSessionsRefactored');
+const BatchManagement = lazyRetry(() => import('./features/batches'), 'BatchManagement');
+const AllInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'AllInventoryViewWrapper');
+const BinnedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BinnedInventoryViewWrapper');
+const BuckedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BuckedInventoryViewWrapper');
+const BulkInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BulkInventoryViewWrapper');
+const PackagedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'PackagedInventoryViewWrapper');
+const DailyActivityViewWrapper = lazyRetry(() => import('./features/inventory'), 'DailyActivityViewWrapper');
+const ConversionsViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionsViewWrapper');
+const ConversionHistoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionHistoryViewWrapper');
+const AuditsViewWrapper = lazyRetry(() => import('./features/inventory'), 'AuditsViewWrapper');
+const Settings = lazyRetry(() => import('./features/settings'), 'Settings');
+const AnalyticsDashboard = lazyRetry(() => import('./features/analytics'), 'AnalyticsDashboard');
+const EODSummary = lazyRetry(() => import('./features/analytics'), 'EODSummary');
+const CultivationDashboard = lazyRetry(() => import('./features/cultivation'), 'CultivationDashboard');
+const PlantGroupsList = lazyRetry(() => import('./features/cultivation'), 'PlantGroupsList');
+const HarvestSessionsList = lazyRetry(() => import('./features/cultivation'), 'HarvestSessionsList');
+const BinningSessionsView = lazyRetry(() => import('./features/cultivation'), 'BinningSessionsView');
+const GrowRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'GrowRoomsManagement');
+const DryRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'DryRoomsManagement');
+const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyTaskBoard');
+const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
+const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
+const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
+const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
+const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
+const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
+const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
 
 function ViewFallback() {
   return (
@@ -193,6 +197,10 @@ function AppContent() {
         return <HarvestSessionsList onViewChange={handleViewChange} />;
       case 'cultivation-binning':
         return <BinningSessionsView onViewChange={handleViewChange} />;
+      case 'cultivation-taskboard':
+        return <DailyTaskBoard />;
+      case 'cultivation-digest':
+        return <DailyDigestView />;
       case 'cultivation-rooms':
         return <GrowRoomsManagement />;
       case 'cultivation-dry-rooms':
@@ -237,6 +245,8 @@ function AppContent() {
         return <SalesQueue />;
       case 'crm-visit-calendar':
         return <VisitCalendar onSelectOrder={handleSelectOrder} />;
+      case 'crm-pipeline':
+        return <SalesPipeline />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':
@@ -253,9 +263,11 @@ function AppContent() {
   return (
     <>
       <Layout currentView={currentView} onViewChange={handleViewChange}>
-        <Suspense fallback={<ViewFallback />}>
-          {renderView()}
-        </Suspense>
+        <ErrorBoundary resetKeys={[currentView]}>
+          <Suspense fallback={<ViewFallback />}>
+            {renderView()}
+          </Suspense>
+        </ErrorBoundary>
       </Layout>
       {showNewOrderForm && (
         <NewOrderForm

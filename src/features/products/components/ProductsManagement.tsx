@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database';
 import { Package, Edit2, Save, X, Filter } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';

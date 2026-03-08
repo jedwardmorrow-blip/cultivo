@@ -19,6 +19,33 @@ export default {
           red: '#B81D24',
           green: '#10B981',
           'green-bright': '#34D399',
+                      // Semantic Surface Tokens
+                      'surface': '#0A0A0A',
+                      'surface-raised': '#111111',
+                      'surface-overlay': '#1C1C1C',
+                      'surface-sunken': '#1A1A1A',
+                      // Semantic Border Tokens
+                      'border': '#2E2E2E',
+                      'border-strong': '#404040',
+                      'border-subtle': '#1C1C1C',
+                      // Semantic Text Tokens
+                      'text-primary': '#FFFFFF',
+                      'text-secondary': '#A6A6A6',
+                      'text-muted': '#666666',
+                      'text-faint': '#404040',
+                      // Interactive Tokens
+                      'accent': '#B81D24',
+                      'accent-hover': '#D42029',
+                      'success': '#10B981',
+                      'success-bright': '#34D399',
+                      'danger': '#B81D24',
+                      // Cannabis Stage Colors
+                      'stage-clone': '#0EA5E9',
+                      'stage-veg': '#10B981',
+                      'stage-flower': '#F43F5E',
+                      'stage-harvest': '#F59E0B',
+                      'stage-cure': '#8B5CF6',
+                      'stage-package': '#6366F1',
         },
       },
       fontFamily: {

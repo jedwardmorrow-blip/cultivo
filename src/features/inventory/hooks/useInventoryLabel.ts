@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import type { InternalInventoryLabel, InventoryItem } from '../types';
 import { saveInternalLabel } from '../services/inventory.service';
 import { logoService } from '@/features/settings/services';
+import { supabase } from '@/lib/supabase';
 
 /**
  * useInventoryLabel
@@ -30,13 +31,25 @@ export function useInventoryLabel() {
       setError(null);
       setIsOpen(true);
 
-      // Create label data from inventory item
+      let harvestDateStr = 'N/A';
+      if (item.batch_id) {
+        const { data: batch } = await supabase
+          .from('batch_registry')
+          .select('harvest_date')
+          .eq('id', item.batch_id)
+          .maybeSingle();
+        if (batch?.harvest_date) {
+          const d = new Date(batch.harvest_date + 'T00:00:00');
+          harvestDateStr = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        }
+      }
+
       const newLabelData: InternalInventoryLabel = {
         package_id: item.package_id || item.id,
         strain: item.strain || 'Unknown',
-        batch_id: item.batch || 'N/A',
-        product_type: item.category || 'Unknown',
-        harvest_date: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+        batch_id: item.batch || item.batch_number || 'N/A',
+        product_type: item.category ? item.category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Unknown',
+        harvest_date: harvestDateStr,
         weight_grams: parseFloat(item.on_hand_qty?.toString() || '0'),
       };
 

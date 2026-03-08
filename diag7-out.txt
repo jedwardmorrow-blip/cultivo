@@ -1,0 +1,364 @@
+=== Lines containing cult- ===
+L186: <div className="text-cult-light-gray">Loading production overview...</div>
+L194: <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">
+L197: <p className="text-cult-light-gray mt-2">Real-time floor activity across all session types</p>
+L205: icon={<Activity className="w-5 h-5 text-cult-green" />}
+L226: <div className="bg-cult-near-black border border-cult-medium-gray">
+L227: <div className="px-6 py-4 border-b border-cult-medium-gray flex items-center justify-between">
+L229: <div className={`w-2 h-2 rounded-full ${totalActive > 0 ? 'bg-cult-green animate-pulse' : 'bg-cult-medium-gray'}`} />
+L230: <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+L234: <span className="text-xs font-bold bg-cult-green/20 text-cult-green px-2 py-0.5 rounded-full">
+L242: <Clock className="w-10 h-10 text-cult-medium-gray mx-auto mb-3" />
+L243: <p className="text-cult-light-gray text-sm">No active sessions on the floor</p>
+L244: <p className="text-cult-silver text-xs mt-1">Start a session from the buttons below</p>
+L249: <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+L251: <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L254: <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L257: <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L260: <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L263: <th className="px-5 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+L268: <tbody className="divide-y divide-cult-medium-gray/50">
+L273: <tr key={row.id} className="hover:bg-cult-dark-gray/50 transition-colors">
+L280: <td className="px-5 py-3 text-sm font-medium text-cult-white">
+L283: <td className="px-5 py-3 text-sm text-cult-white">
+L286: <td className="px-5 py-3 text-sm text-cult-silver font-mono">
+L289: <td className="px-5 py-3 text-sm text-center font-medium text-cult-green">
+L326: <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+L327: <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">
+L367: <div className={`bg-cult-near-black border p-5 ${highlight ? 'border-cult-green/30' : 'border-cult-medium-gray'}`}>
+L369: <p className="text-xs text-cult-silver uppercase tracking-wider font-medium">{label}</p>
+L372: <p className={`text-3xl font-bold ${highlight ? 'text-cult-green' : 'text-cult-white'}`}>
+L398: className="bg-cult-near-black border border-cult-medium-gray p-5 text-left hover:border-cult-light-gray transition-colors group"
+L405: <ArrowRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+L407: <p className="text-2xl font-bold text-cult-white">{count} completed</p>
+L408: <p className="text-sm text-cult-silver mt-1">{metric}</p>
+L433: className={`flex items-center gap-3 px-5 py-4 bg-cult-black border border-cult-medium-gray text-cult-white font-bold uppercase tracking-wider text-sm transition-all duration-200 ${hoverMap[accentColor]}`}
+
+=== Lines 120-200 (getActiveSessions / render logic) ===
+L120:   bucking: { label: 'Bucking', icon: Scissors, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
+L121:   trim: { label: 'Trim', icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
+L122:   packaging: { label: 'Packaging', icon: Box, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
+L123: } as const;
+L124: 
+L125: export function ProductionDashboard({ onViewChange }: ProductionDashboardProps) {
+L126:   const [activeBucking, setActiveBucking] = useState<BuckingSession[]>([]);
+L127:   const [activeTrim, setActiveTrim] = useState<TrimSession[]>([]);
+L128:   const [activePackaging, setActivePackaging] = useState<PackagingSession[]>([]);
+L129:   const [allBucking, setAllBucking] = useState<BuckingSession[]>([]);
+L130:   const [allTrim, setAllTrim] = useState<TrimSession[]>([]);
+L131:   const [allPackaging, setAllPackaging] = useState<PackagingSession[]>([]);
+L132:   const [loading, setLoading] = useState(true);
+L133:   const [, setTick] = useState(0);
+L134: 
+L135:   useEffect(() => {
+L136:     fetchAll();
+L137: 
+L138:     const channel = supabase
+L139:       .channel('production-dashboard')
+L140:       .on('postgres_changes', { event: '*', schema: 'public', table: 'bucking_sessions' }, fetchAll)
+L141:       .on('postgres_changes', { event: '*', schema: 'public', table: 'trim_sessions' }, fetchAll)
+L142:       .on('postgres_changes', { event: '*', schema: 'public', table: 'packaging_sessions' }, fetchAll)
+L143:       .subscribe();
+L144: 
+L145:     const timer = setInterval(() => setTick((t) => t + 1), 30000);
+L146: 
+L147:     return () => {
+L148:       supabase.removeChannel(channel);
+L149:       clearInterval(timer);
+L150:     };
+L151:   }, []);
+L152: 
+L153:   async function fetchAll() {
+L154:     try {
+L155:       const [ab, at, ap, allB, allT, allP] = await Promise.all([
+L156:         getActiveBuckingSessions(),
+L157:         getActiveTrimSessions(),
+L158:         getActivePackagingSessions(),
+L159:         getBuckingSessions(),
+L160:         getTrimSessions(),
+L161:         getPackagingSessions(),
+L162:       ]);
+L163: 
+L164:       setActiveBucking(ab.data || []);
+L165:       setActiveTrim((at.data || []).filter((s: any) => s.session_status === 'active'));
+L166:       setActivePackaging(ap.data || []);
+L167:       setAllBucking(allB.data || []);
+L168:       setAllTrim(allT.data || []);
+L169:       setAllPackaging(allP.data || []);
+L170:     } catch (err) {
+L171:       console.error('Error loading production dashboard:', err);
+L172:     } finally {
+L173:       setLoading(false);
+L174:     }
+L175:   }
+L176: 
+L177:   const activeRows = normalizeActiveSessions(activeBucking, activeTrim, activePackaging);
+L178:   const totalActive = activeRows.length;
+L179:   const todaySummary = computeTodaySummary(allBucking, allTrim, allPackaging);
+L180:   const totalCompletedToday =
+L181:     todaySummary.buckingCompleted + todaySummary.trimCompleted + todaySummary.packagingCompleted;
+L182: 
+L183:   if (loading) {
+L184:     return (
+L185:       <div className="p-6 flex items-center justify-center min-h-[400px]">
+L186:         <div className="text-cult-light-gray">Loading production overview...</div>
+L187:       </div>
+L188:     );
+L189:   }
+L190: 
+L191:   return (
+L192:     <div className="p-6 max-w-[1800px] mx-auto space-y-6">
+L193:       <div>
+L194:         <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">
+L195:           Production
+L196:         </h1>
+L197:         <p className="text-cult-light-gray mt-2">Real-time floor activity across all session types</p>
+L198:       </div>
+L199: 
+L200:       {/* Aggregate Stats */}
+
+=== Lines 200-300 (JSX render) ===
+L200:       {/* Aggregate Stats */}
+L201:       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+L202:         <StatCard
+L203:           label="Active Sessions"
+L204:           value={totalActive}
+L205:           icon={<Activity className="w-5 h-5 text-cult-green" />}
+L206:           highlight={totalActive > 0}
+L207:         />
+L208:         <StatCard
+L209:           label="Completed Today"
+L210:           value={totalCompletedToday}
+L211:           icon={<CheckCircle className="w-5 h-5 text-emerald-400" />}
+L212:         />
+L213:         <StatCard
+L214:           label="Flower Bucked"
+L215:           value={`${(todaySummary.totalFlowerBucked / 1000).toFixed(1)} kg`}
+L216:           icon={<Scissors className="w-5 h-5 text-amber-400" />}
+L217:         />
+L218:         <StatCard
+L219:           label="Units Packaged"
+L220:           value={todaySummary.totalUnitsPackaged}
+L221:           icon={<Box className="w-5 h-5 text-sky-400" />}
+L222:         />
+L223:       </div>
+L224: 
+L225:       {/* Active Sessions */}
+L226:       <div className="bg-cult-near-black border border-cult-medium-gray">
+L227:         <div className="px-6 py-4 border-b border-cult-medium-gray flex items-center justify-between">
+L228:           <div className="flex items-center gap-3">
+L229:             <div className={`w-2 h-2 rounded-full ${totalActive > 0 ? 'bg-cult-green animate-pulse' : 'bg-cult-medium-gray'}`} />
+L230:             <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+L231:               Active Sessions
+L232:             </h2>
+L233:             {totalActive > 0 && (
+L234:               <span className="text-xs font-bold bg-cult-green/20 text-cult-green px-2 py-0.5 rounded-full">
+L235:                 {totalActive} LIVE
+L236:               </span>
+L237:             )}
+L238:           </div>
+L239:         </div>
+L240:         {activeRows.length === 0 ? (
+L241:           <div className="px-6 py-16 text-center">
+L242:             <Clock className="w-10 h-10 text-cult-medium-gray mx-auto mb-3" />
+L243:             <p className="text-cult-light-gray text-sm">No active sessions on the floor</p>
+L244:             <p className="text-cult-silver text-xs mt-1">Start a session from the buttons below</p>
+L245:           </div>
+L246:         ) : (
+L247:           <div className="overflow-x-auto">
+L248:             <table className="w-full">
+L249:               <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+L250:                 <tr>
+L251:                   <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L252:                     Type
+L253:                   </th>
+L254:                   <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L255:                     Worker
+L256:                   </th>
+L257:                   <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L258:                     Strain
+L259:                   </th>
+L260:                   <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+L261:                     Package ID
+L262:                   </th>
+L263:                   <th className="px-5 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+L264:                     Elapsed
+L265:                   </th>
+L266:                 </tr>
+L267:               </thead>
+L268:               <tbody className="divide-y divide-cult-medium-gray/50">
+L269:                 {activeRows.map((row) => {
+L270:                   const cfg = TYPE_CONFIG[row.type];
+L271:                   const TypeIcon = cfg.icon;
+L272:                   return (
+L273:                     <tr key={row.id} className="hover:bg-cult-dark-gray/50 transition-colors">
+L274:                       <td className="px-5 py-3">
+L275:                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded ${cfg.bg} ${cfg.color} ${cfg.border} border`}>
+L276:                           <TypeIcon className="w-3.5 h-3.5" />
+L277:                           {cfg.label}
+L278:                         </span>
+L279:                       </td>
+L280:                       <td className="px-5 py-3 text-sm font-medium text-cult-white">
+L281:                         {row.worker}
+L282:                       </td>
+L283:                       <td className="px-5 py-3 text-sm text-cult-white">
+L284:                         {row.strain}
+L285:                       </td>
+L286:                       <td className="px-5 py-3 text-sm text-cult-silver font-mono">
+L287:                         {row.packageId || '-'}
+L288:                       </td>
+L289:                       <td className="px-5 py-3 text-sm text-center font-medium text-cult-green">
+L290:                         {formatElapsedTime(row.startedAt)}
+L291:                       </td>
+L292:                     </tr>
+L293:                   );
+L294:                 })}
+L295:               </tbody>
+L296:             </table>
+L297:           </div>
+L298:         )}
+L299:       </div>
+L300: 
+
+=== Lines 300-440 (rest) ===
+L300: 
+L301:       {/* Today's Completed Summary */}
+L302:       {totalCompletedToday > 0 && (
+L303:         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+L304:           <CompletedCard
+L305:             type="bucking"
+L306:             count={todaySummary.buckingCompleted}
+L307:             metric={`${(todaySummary.totalFlowerBucked / 1000).toFixed(1)} kg flower`}
+L308:             onNavigate={() => onViewChange('bucking-sessions')}
+L309:           />
+L310:           <CompletedCard
+L311:             type="trim"
+L312:             count={todaySummary.trimCompleted}
+L313:             metric={`${todaySummary.totalFlowerTrimmed.toFixed(0)}g flower`}
+L314:             onNavigate={() => onViewChange('trim-sessions')}
+L315:           />
+L316:           <CompletedCard
+L317:             type="packaging"
+L318:             count={todaySummary.packagingCompleted}
+L319:             metric={`${todaySummary.totalUnitsPackaged} units`}
+L320:             onNavigate={() => onViewChange('packaging-sessions')}
+L321:           />
+L322:         </div>
+L323:       )}
+L324: 
+L325:       {/* Quick Actions */}
+L326:       <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+L327:         <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">
+L328:           Start Session
+L329:         </h2>
+L330:         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+L331:           <QuickActionButton
+L332:             label="Bucking Session"
+L333:             icon={<Scissors className="w-5 h-5" />}
+L334:             onClick={() => onViewChange('bucking-sessions')}
+L335:             accentColor="amber"
+L336:           />
+L337:           <QuickActionButton
+L338:             label="Trim Session"
+L339:             icon={<Leaf className="w-5 h-5" />}
+L340:             onClick={() => onViewChange('trim-sessions')}
+L341:             accentColor="emerald"
+L342:           />
+L343:           <QuickActionButton
+L344:             label="Packaging Session"
+L345:             icon={<Box className="w-5 h-5" />}
+L346:             onClick={() => onViewChange('packaging-sessions')}
+L347:             accentColor="sky"
+L348:           />
+L349:         </div>
+L350:       </div>
+L351:     </div>
+L352:   );
+L353: }
+L354: 
+L355: function StatCard({
+L356:   label,
+L357:   value,
+L358:   icon,
+L359:   highlight,
+L360: }: {
+L361:   label: string;
+L362:   value: number | string;
+L363:   icon: React.ReactNode;
+L364:   highlight?: boolean;
+L365: }) {
+L366:   return (
+L367:     <div className={`bg-cult-near-black border p-5 ${highlight ? 'border-cult-green/30' : 'border-cult-medium-gray'}`}>
+L368:       <div className="flex items-center justify-between mb-3">
+L369:         <p className="text-xs text-cult-silver uppercase tracking-wider font-medium">{label}</p>
+L370:         {icon}
+L371:       </div>
+L372:       <p className={`text-3xl font-bold ${highlight ? 'text-cult-green' : 'text-cult-white'}`}>
+L373:         {value}
+L374:       </p>
+L375:     </div>
+L376:   );
+L377: }
+L378: 
+L379: function CompletedCard({
+L380:   type,
+L381:   count,
+L382:   metric,
+L383:   onNavigate,
+L384: }: {
+L385:   type: 'bucking' | 'trim' | 'packaging';
+L386:   count: number;
+L387:   metric: string;
+L388:   onNavigate: () => void;
+L389: }) {
+L390:   const cfg = TYPE_CONFIG[type];
+L391:   const TypeIcon = cfg.icon;
+L392: 
+L393:   if (count === 0) return null;
+L394: 
+L395:   return (
+L396:     <button
+L397:       onClick={onNavigate}
+L398:       className="bg-cult-near-black border border-cult-medium-gray p-5 text-left hover:border-cult-light-gray transition-colors group"
+L399:     >
+L400:       <div className="flex items-center justify-between mb-2">
+L401:         <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${cfg.color}`}>
+L402:           <TypeIcon className="w-3.5 h-3.5" />
+L403:           {cfg.label}
+L404:         </span>
+L405:         <ArrowRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+L406:       </div>
+L407:       <p className="text-2xl font-bold text-cult-white">{count} completed</p>
+L408:       <p className="text-sm text-cult-silver mt-1">{metric}</p>
+L409:     </button>
+L410:   );
+L411: }
+L412: 
+L413: function QuickActionButton({
+L414:   label,
+L415:   icon,
+L416:   onClick,
+L417:   accentColor,
+L418: }: {
+L419:   label: string;
+L420:   icon: React.ReactNode;
+L421:   onClick: () => void;
+L422:   accentColor: 'amber' | 'emerald' | 'sky';
+L423: }) {
+L424:   const hoverMap = {
+L425:     amber: 'hover:border-amber-400/40 hover:bg-amber-400/5',
+L426:     emerald: 'hover:border-emerald-400/40 hover:bg-emerald-400/5',
+L427:     sky: 'hover:border-sky-400/40 hover:bg-sky-400/5',
+L428:   };
+L429: 
+L430:   return (
+L431:     <button
+L432:       onClick={onClick}
+L433:       className={`flex items-center gap-3 px-5 py-4 bg-cult-black border border-cult-medium-gray text-cult-white font-bold uppercase tracking-wider text-sm transition-all duration-200 ${hoverMap[accentColor]}`}
+L434:     >
+L435:       {icon}
+L436:       {label}
+L437:     </button>
+L438:   );
+L439: }
+L440: 

@@ -23,6 +23,7 @@ export interface PackageAssignment {
   order_item_id: string;
   package_id: string;
   quantity_assigned: number;
+  status: 'reserved' | 'fulfilled' | 'released';
   label_id: string | null;
   notes: string | null;
   assigned_by: string | null;
@@ -32,6 +33,7 @@ export interface PackageAssignment {
 }
 
 export interface PackageAssignmentWithDetails extends PackageAssignment {
+  assignment_status: string;
   order_number: string;
   customer_id: string;
   scheduled_delivery_date: string | null;
@@ -193,6 +195,30 @@ export const packageAssignmentService = {
         );
       }
 
+      // Validate against over-allocation
+      const { data: orderItem, error: orderItemError } = await supabase
+        .from('order_items')
+        .select('quantity')
+        .eq('id', orderItemId)
+        .maybeSingle();
+
+      if (orderItemError || !orderItem) {
+        throw new PackageAssignmentServiceError(
+          'Could not verify order item quantity',
+          orderItemError,
+          'ORDER_ITEM_NOT_FOUND'
+        );
+      }
+
+      const totalAlreadyAssigned = await this.getTotalAssignedQuantity(orderItemId);
+      if (totalAlreadyAssigned + quantityAssigned > orderItem.quantity) {
+        throw new PackageAssignmentServiceError(
+          `Cannot assign ${quantityAssigned} units: would exceed ordered quantity of ${orderItem.quantity} (already assigned: ${totalAlreadyAssigned})`,
+          null,
+          'OVER_ALLOCATION'
+        );
+      }
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -323,12 +349,22 @@ export const packageAssignmentService = {
     });
 
     try {
+      const { data: existing } = await supabase
+        .from('package_assignments')
+        .select('status, label_id')
+        .eq('id', assignmentId)
+        .single();
+
+      if (existing?.status === 'fulfilled') {
+        throw new PackageAssignmentServiceError(
+          'Cannot remove a fulfilled assignment. The order has been completed.',
+          null,
+          'FULFILLED_ASSIGNMENT'
+        );
+      }
+
       if (voidLabel) {
-        const { data: assignment } = await supabase
-          .from('package_assignments')
-          .select('label_id')
-          .eq('id', assignmentId)
-          .single();
+        const assignment = existing;
 
         if (assignment?.label_id) {
           const { data: { user } } = await supabase.auth.getUser();
@@ -376,7 +412,8 @@ export const packageAssignmentService = {
       const { data, error } = await supabase
         .from('package_assignments')
         .select('quantity_assigned')
-        .eq('order_item_id', orderItemId);
+        .eq('order_item_id', orderItemId)
+        .in('status', ['reserved', 'fulfilled']);
 
       if (error) {
         throw new PackageAssignmentServiceError(

@@ -10,6 +10,7 @@ import {
 import type { DateRange } from '@/shared/utils/dateRange';
 import { computeDateRange } from '@/shared/utils/dateRange';
 import type { AccountSummary } from '../types';
+import { ensureValidSession } from '@/lib/sessionGuard';
 
 const DEFAULT_RANGE = computeDateRange('30d');
 
@@ -26,6 +27,9 @@ export function useCRMDashboard() {
 
   const fetchDashboard = useCallback(async (range: DateRange, isInitial = false) => {
     try {
+      const sessionValid = await ensureValidSession();
+      if (!sessionValid) return;
+
       if (isInitial) setLoading(true);
       else setIsRefreshing(true);
 

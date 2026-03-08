@@ -21,6 +21,7 @@ import {
   Building2,
   ClipboardList,
   CalendarDays,
+  GitBranch,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -48,12 +49,12 @@ export const sectionDefinitions: SectionDefinition[] = [
     icon: Sprout,
     defaultView: 'cultivation-dashboard',
     items: [
-      { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'primary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'primary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'primary' },
-      { id: 'cultivation-rooms', label: 'Grow Rooms', icon: Sprout, group: 'primary' },
-      { id: 'cultivation-dry-rooms', label: 'Dry Rooms', icon: Wind, group: 'secondary' },
+      { id: 'cultivation-taskboard', label: 'Task Board', icon: ClipboardList, group: 'primary' },
+      { id: 'cultivation-digest', label: 'Digest', icon: FileText, group: 'primary' },
     ],
   },
   {
@@ -106,6 +107,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-dashboard', label: 'Sales Dashboard', icon: BarChart3, group: 'primary' },
       { id: 'crm-queue', label: 'My Queue', icon: ClipboardList, group: 'primary' },
       { id: 'crm-visit-calendar', label: 'Visit Calendar', icon: CalendarDays, group: 'primary' },
+      { id: 'crm-pipeline', label: 'Inventory Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
     ],
   },

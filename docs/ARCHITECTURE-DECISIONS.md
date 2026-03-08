@@ -1,7 +1,7 @@
 ---
 title: Architecture Decisions Record
 category: Architecture Reference
-updated: 2026-02-25
+updated: 2026-03-01
 ---
 
 # Architecture Decisions Record
@@ -376,3 +376,57 @@ Mirrors the same-batch wet weight pattern (see Decision 11).
 **Zone assignment logic:** Distance < 10mi = Local, Distance > 80mi + bearing S/SE = Tucson, Distance > 80mi + other bearings = Northern AZ, 10-80mi + bearing E/SE = East Valley, 10-80mi + bearing W/NW = West Valley.
 
 **Reference:** CHANGELOG 2026-02-26, `src/features/delivery/utils/routeZones.ts`
+
+---
+
+## 19. Package Assignment Reservation System Replaces Legacy Allocations (2026-03-01)
+
+**Context:** The system had two parallel allocation mechanisms: a legacy `order_item_allocations` table (with related triggers/functions) and a newer `package_assignments` table. The legacy system was dead code with only 2 rows and no active UI references. Inventory was never automatically reserved or deducted when packages were assigned to orders.
+
+**Decision:** Remove the entire legacy allocation system and implement trigger-based inventory reservation on the `package_assignments` table.
+
+**Implementation:**
+1. **Removed:** `order_item_allocations`, `inventory_transactions` tables; 10 legacy functions; 4 legacy triggers
+2. **Added `status` column** to `package_assignments`: `'reserved'` | `'fulfilled'` | `'released'`
+3. **Reservation trigger** (`fn_reserve_inventory_on_assignment`, AFTER INSERT): decrements `available_qty`, increments `reserved_qty`, creates RESERVE movement
+4. **Release trigger** (`fn_release_inventory_on_unassignment`, BEFORE DELETE): restores available_qty for non-fulfilled assignments
+5. **Order completion trigger** (`fn_fulfill_inventory_on_order_complete`): converts reservations to FULFILLMENT movements (permanent on_hand_qty deduction)
+6. **Order cancellation trigger** (`fn_release_inventory_on_order_cancel`): releases all reservations
+7. **Revert trigger** (`fn_reverse_fulfillment_on_order_revert`): creates RETURN movements if order leaves 'completed' status
+8. **Views:** `inventory_reservation_summary`, `package_assignments_with_reservations`
+
+**Why trigger-based, not service-layer?**
+- Matches the existing session reservation pattern (`reserve_inventory_on_session_start`, `release_inventory_on_session_cancel`)
+- Guarantees consistency even if app layer bypassed (direct DB edits, edge functions)
+- Movement trigger (`fn_update_inventory_on_hand`) already handles FULFILLMENT/RETURN kinds
+- RESERVE/RELEASE are ATP-only operations (no on_hand change), handled directly in the reservation triggers
+
+**Key invariants:**
+- `available_qty = on_hand_qty - reserved_qty` (enforced by ATP constraint trigger)
+- Package assignment INSERT always creates a RESERVE movement
+- Package assignment DELETE always creates a RELEASE movement (if status = 'reserved')
+- Order completion always creates FULFILLMENT movements for all reserved assignments
+- Fulfilled assignments cannot be removed (service-layer guard + UI disabled state)
+
+**Reference:** ORDERS.md v2.0, migrations `remove_legacy_allocation_system`, `add_package_assignment_reservation_system`, `create_inventory_reservation_views`, `create_order_fulfillment_triggers`
+
+## 20. Upstream Water Loss Write-Off on Conversion Review Screen (2026-03-06)
+
+**Context:** Cannabis flower loses weight between session completion and bagging due to moisture evaporation. Previously, operators had to create bags first, then fill in variance forms to account for the weight difference. This was cumbersome -- the variance form in BulkBagCreationModal required filling in a reason and notes before the submit button was enabled, and the real issue (known water loss) was better handled before entering the bagging flow.
+
+**Decision:** Add a water loss write-off section to the ConversionModal review screen (the first screen shown when clicking a pending conversion). Operators can declare known weight loss before creating bags, or write off an entire small remainder without creating bags at all.
+
+**Implementation:**
+1. **Write-off form on review screen** (`ConversionModal.tsx`): collapsible section with grams input, reason dropdown (defaults to `moisture_loss`), and notes field
+2. **Adjusted weight passthrough**: `adjustedAvailableWeight` prop passed to `BulkBagCreationModal` -- the bag modal uses this as its effective available weight instead of `session.output_weight`
+3. **Adjusted output_weight in finalization**: The `output_weight` passed to `handleFinalize()` is reduced by the write-off amount, which controls the `isFullFinalization` check in `finalizeConversion()` (Architecture Decision 9). Bags totaling the adjusted weight are treated as full finalization.
+4. **Write-off variance logging**: `logVariance()` called with `expected_weight: session.output_weight`, `actual_weight: session.output_weight - writeOffGrams`
+5. **Write off entire amount**: For small remainders (e.g., 16g left from evaporation), a "Write Off Entire Amount" button logs the full amount as variance and calls finalization with empty packages and `output_weight: 0`, marking all sessions finalized
+
+**Key rules:**
+- Write-off variance is logged separately from any in-modal bag variance (both can coexist)
+- Any write-off amount is allowed as long as a reason is provided (no percentage cap)
+- The BulkBagCreationModal variance form remains as a safety net for unexpected discrepancies during bagging
+- No database migration required -- uses existing `variance_log` table and `logVariance()` service function
+
+**Reference:** ConversionModal.tsx, BulkBagCreationModal.tsx, conversions.service.ts (logVariance)

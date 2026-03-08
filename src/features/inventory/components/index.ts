@@ -7,6 +7,8 @@ export * from './ConversionHistoryView';
 export * from './BulkBagCreationModal';
 export * from './DailyInventoryActivity';
 export * from './InventoryLabelPrintModal';
+export * from './LabelContent';
+export * from './MultiLabelPrintModal';
 export * from './InventoryOversightDashboard';
 export * from './InventoryTable';
 export * from './InventoryViews';

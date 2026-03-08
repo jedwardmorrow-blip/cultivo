@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cultivationService } from '@/features/cultivation/services/cultivation.service';
 import { supabase } from '@/lib/supabase';
-import { mockSupabaseError } from '../../../mocks/supabase';
+import { mockSupabaseError, mockSupabaseSuccess } from '../../../mocks/supabase';
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -166,11 +166,30 @@ describe('cultivationService — error path coverage', () => {
   });
 
   describe('completeBinningSession — status guard', () => {
+    function mockBinEntriesCall(entries: Array<{ id: string; bin_weight_grams: number; entry_order: number }>) {
+      const mockOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess(entries.map((e) => ({
+        ...e, binning_session_id: 'bs-001', notes: null, created_at: '', created_by: '',
+      }))));
+      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+      return { select: vi.fn().mockReturnValue({ eq: mockEq }) };
+    }
+
+    function mockSessionLookupCall() {
+      const mockSingle = vi.fn().mockResolvedValue(mockSupabaseSuccess({
+        batch_registry_id: 'batch-001',
+        harvest_sessions: { wet_weight_grams: 5000, adjusted_weight_grams: null, plant_groups: { strains: { name: 'Test', abbreviation: 'TST' } } },
+      }));
+      return { select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: mockSingle }) }) };
+    }
+
     it('throws when binning session is already completed', async () => {
       const { mockUpdate } = mockUpdateChain(
         mockSupabaseError('Cannot complete binning session: session is already in "completed" status', 'P0001')
       );
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
+      (supabase.from as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockBinEntriesCall([{ id: 'e1', bin_weight_grams: 1000, entry_order: 1 }]))
+        .mockReturnValueOnce(mockSessionLookupCall())
+        .mockReturnValueOnce({ update: mockUpdate });
 
       await expect(cultivationService.completeBinningSession('bs-done')).rejects.toThrow(
         'already in "completed" status'
@@ -181,7 +200,10 @@ describe('cultivationService — error path coverage', () => {
       const { mockUpdate } = mockUpdateChain(
         mockSupabaseError('Cannot complete binning session: session has been cancelled', 'P0001')
       );
-      (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ update: mockUpdate });
+      (supabase.from as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(mockBinEntriesCall([{ id: 'e1', bin_weight_grams: 1000, entry_order: 1 }]))
+        .mockReturnValueOnce(mockSessionLookupCall())
+        .mockReturnValueOnce({ update: mockUpdate });
 
       await expect(cultivationService.completeBinningSession('bs-cancelled')).rejects.toThrow(
         'session has been cancelled'

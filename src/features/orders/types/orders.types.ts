@@ -1,5 +1,5 @@
 // Re-export Order types from canonical location (Phase 1: Type Consolidation)
-export type { Order, OrderInsert, OrderUpdate, OrderItem, WorkflowSummary, StatusGroup, MonthGroup } from '@/types/order.types';
+export type { Order, OrderInsert, OrderUpdate, OrderItem, WorkflowSummary, StatusGroup, MonthGroup, PackageAssignmentStatus } from '@/types/order.types';
 
 // Feature-specific OrderItem extension for orders feature
 // Extends canonical OrderItem with additional display fields

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { BadgeCounts } from '../shared/components/navigation/types';
+import { ensureValidSession } from '../lib/sessionGuard';
 
 const CACHE_DURATION = 30000;
 
@@ -27,6 +28,9 @@ export function useBadgeCounts(enabled: boolean = true) {
     const fetchCounts = async () => {
       const now = Date.now();
       if (now - lastFetchRef.current < CACHE_DURATION) return;
+
+      const sessionValid = await ensureValidSession();
+      if (!sessionValid) return;
 
       setLoading(true);
       try {

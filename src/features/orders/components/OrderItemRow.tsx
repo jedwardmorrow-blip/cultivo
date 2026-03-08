@@ -73,7 +73,7 @@ export function OrderItemRow({
   const [showLabelPrintModal, setShowLabelPrintModal] = useState(false);
   const [batchGradeId, setBatchGradeId] = useState<string | null>(null);
 
-  const { totalAssigned, loading: loadingAssigned } = useTotalAssignedQuantity(item.id);
+  const { totalAssigned, loading: loadingAssigned, refetch: refetchAssigned } = useTotalAssignedQuantity(item.id);
   const { stats, loading: labelsLoading } = useOrderItemLabels(item.id);
 
   const remainingToAssign = item.quantity - totalAssigned;
@@ -419,6 +419,10 @@ export function OrderItemRow({
       <PackageAssignmentModal
         isOpen={showAssignmentModal}
         onClose={() => setShowAssignmentModal(false)}
+        onAssignmentComplete={async () => {
+          await refetchAssigned();
+          setShowAssignmentModal(false);
+        }}
         orderId={orderId}
         orderItemId={item.id}
         productName={item.product_name}

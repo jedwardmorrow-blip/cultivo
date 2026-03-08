@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, AlertTriangle, Wind } from 'lucide-react';
+import { Button } from '@/shared/components';
 import { formatWeight } from '../../utils';
 import type { DryRoom, HarvestSession, PlantGroup } from '../../types';
 
@@ -163,14 +164,13 @@ export function HarvestReviewFinalize({
       </div>
 
       <div className="flex gap-3">
-        <button
+        <Button
           onClick={handleFinalize}
           disabled={!canFinalize}
-          className="flex items-center gap-2 bg-white text-cult-black px-6 py-3 font-bold uppercase tracking-wider hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+          icon={<CheckCircle className="w-4 h-4" />}
         >
-          <CheckCircle className="w-4 h-4" />
           {saving ? 'Finalizing...' : 'Finalize Harvest'}
-        </button>
+        </Button>
         <button
           onClick={onBack}
           disabled={saving}
