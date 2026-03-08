@@ -3,6 +3,7 @@ import { RosinLabNav } from './components/RosinLabNav';
 import { RosinDashboard } from './screens/RosinDashboard';
 import { FreshFrozenInventory } from './screens/FreshFrozenInventory';
 import { HashInventory } from './screens/HashInventory';
+import { RosinInventory } from './screens/RosinInventory';
 import type { RosinLabScreen } from './types/rosin-lab.types';
 
 function viewToScreen(view: string): RosinLabScreen {
@@ -53,7 +54,7 @@ export function RosinLabModule({ setCurrentView, currentView }: RosinLabModulePr
       case 'hash':
         return <HashInventory onNavigate={handleNavigate} />;
       case 'rosin':
-        return <ComingSoon label="Rosin" />;
+        return <RosinInventory onNavigate={handleNavigate} />;
       case 'wash':
         return <ComingSoon label="New Wash" />;
       case 'press':

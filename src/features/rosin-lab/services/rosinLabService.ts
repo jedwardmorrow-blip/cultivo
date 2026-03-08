@@ -1,5 +1,5 @@
 import { supabase } from '@lib/supabase';
-import type { ActivePipelineItem, DashboardStats, FreshFrozenPackage, HashPackage } from '../types/rosin-lab.types';
+import type { ActivePipelineItem, DashboardStats, FreshFrozenPackage, HashPackage, RosinPackage } from '../types/rosin-lab.types';
 
 // Rosin lab tables do not exist in the DB schema yet.
 // Using `any` cast so TypeScript compiles while the schema is being built.
@@ -139,6 +139,48 @@ export async function getHashPackages(
 
     const { data, error } = await query;
     return { data: data as HashPackage[] | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getRosinPackages(
+  destinationFilter?: string,
+  statusFilter?: string
+): Promise<{ data: RosinPackage[] | null; error: unknown }> {
+  try {
+    let query = db
+      .from('rosin_packages')
+      .select(`
+        *,
+        press_run:press_runs!press_run_id (
+          id,
+          batch:batch_registry!batch_id (
+            batch_number
+          )
+        ),
+        strain:strains!strain_id (
+          name,
+          abbreviation
+        ),
+        cure_session:rosin_cure_sessions!cure_session_id (
+          status,
+          target_consistency,
+          start_date,
+          target_end_date
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (destinationFilter && destinationFilter !== 'all') {
+      query = query.eq('destination', destinationFilter);
+    }
+    if (statusFilter && statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error } = await query;
+    return { data: data as RosinPackage[] | null, error };
   } catch (err) {
     return { data: null, error: err };
   }

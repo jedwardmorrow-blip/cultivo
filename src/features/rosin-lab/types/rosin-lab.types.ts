@@ -48,6 +48,40 @@ export interface FreshFrozenPackage {
   } | null;
 }
 
+export type RosinDestination = 'badder' | 'jam' | 'sauce' | 'fresh_press';
+export type RosinStatus = 'fresh' | 'curing' | 'cured' | 'packaged' | 'sold';
+
+export interface RosinPackage {
+  id: string;
+  press_run_id: string;
+  strain_id: string;
+  package_id: string;
+  weight_grams: number;
+  destination: RosinDestination;
+  cure_session_id: string | null;
+  inventory_item_id: string | null;
+  status: RosinStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  press_run: {
+    id: string;
+    batch: {
+      batch_number: string;
+    } | null;
+  } | null;
+  strain: {
+    name: string;
+    abbreviation: string;
+  } | null;
+  cure_session: {
+    status: string;
+    target_consistency: string;
+    start_date: string | null;
+    target_end_date: string | null;
+  } | null;
+}
+
 export type RosinLabScreen =
   | 'dashboard'
   | 'fresh-frozen'
