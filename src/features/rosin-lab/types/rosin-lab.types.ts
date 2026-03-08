@@ -286,3 +286,47 @@ export const CURE_TIME_ESTIMATES: Record<string, number> = {
   jam: 14,
   sauce: 21,
 };
+
+export type AnalyticsTimeRange = '7d' | '30d' | '90d' | 'all';
+
+export interface AnalyticsKpis {
+  totalRuns: number;
+  avgYield: number;
+  totalOutput: number;
+  avgCureLoss: number;
+  activeStrains: number;
+}
+
+export interface YieldTrendPoint {
+  id: string;
+  press_date: string;
+  yield_percentage: number;
+  input_weight_grams: number;
+  output_weight_grams: number;
+  strain_name: string;
+}
+
+export interface ThroughputBucket {
+  label: string;
+  totalGrams: number;
+  runCount: number;
+}
+
+export interface ConsistencyBreakdownItem {
+  destination: string;
+  totalWeight: number;
+  count: number;
+}
+
+export interface StrainLeaderboardEntry {
+  strain_id: string;
+  strain_name: string;
+  strain_abbreviation: string;
+  total_runs: number;
+  avg_yield_percentage: number;
+  min_yield_percentage: number;
+  max_yield_percentage: number;
+  last_pressed: string;
+  total_input_grams?: number;
+  total_output_grams?: number;
+}

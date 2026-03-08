@@ -1,7 +1,9 @@
 import { supabase } from '@lib/supabase';
 import type {
   ActivePipelineItem,
+  AnalyticsKpis,
   BatchWithFF,
+  ConsistencyBreakdownItem,
   CureSession,
   DashboardStats,
   FreezeDryRun,
@@ -10,9 +12,12 @@ import type {
   PressRun,
   RosinLabEquipment,
   RosinPackage,
+  StrainLeaderboardEntry,
   WashRun,
   WashRunInput,
+  YieldTrendPoint,
 } from '../types/rosin-lab.types';
+import { getDateFrom } from '../utils/analyticsHelpers';
 
 // Rosin lab tables do not exist in the DB schema yet.
 // Using `any` cast so TypeScript compiles while the schema is being built.
@@ -904,5 +909,259 @@ export async function getCureSessionStats(): Promise<{ count: number; avgCureLos
     return { count: rows.length, avgCureLoss };
   } catch {
     return { count: 0, avgCureLoss: 0 };
+  }
+}
+
+export async function getAnalyticsKpis(
+  dateFrom: string,
+  dateTo: string
+): Promise<AnalyticsKpis> {
+  try {
+    const [runsResult, yieldResult, outputResult, cureResult, strainResult] = await Promise.all([
+      db
+        .from('press_runs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed')
+        .gte('press_date', dateFrom)
+        .lte('press_date', dateTo),
+      db
+        .from('press_runs')
+        .select('yield_percentage')
+        .eq('status', 'completed')
+        .not('yield_percentage', 'is', null)
+        .gte('press_date', dateFrom)
+        .lte('press_date', dateTo),
+      db
+        .from('press_runs')
+        .select('output_weight_grams')
+        .eq('status', 'completed')
+        .not('output_weight_grams', 'is', null)
+        .gte('press_date', dateFrom)
+        .lte('press_date', dateTo),
+      db
+        .from('rosin_cure_sessions')
+        .select('cure_loss_percentage')
+        .eq('status', 'completed')
+        .not('cure_loss_percentage', 'is', null)
+        .gte('start_time', dateFrom)
+        .lte('start_time', dateTo),
+      db
+        .from('press_runs')
+        .select('wash_run:wash_runs!wash_run_id ( strain_id )')
+        .eq('status', 'completed')
+        .gte('press_date', dateFrom)
+        .lte('press_date', dateTo),
+    ]);
+
+    const totalRuns = (runsResult.count as number) || 0;
+
+    const yieldRows = (yieldResult.data ?? []) as Array<{ yield_percentage: number }>;
+    const avgYield =
+      yieldRows.length > 0
+        ? yieldRows.reduce((sum, r) => sum + (r.yield_percentage || 0), 0) / yieldRows.length
+        : 0;
+
+    const outputRows = (outputResult.data ?? []) as Array<{ output_weight_grams: number }>;
+    const totalOutput = outputRows.reduce((sum, r) => sum + (r.output_weight_grams || 0), 0);
+
+    const cureRows = (cureResult.data ?? []) as Array<{ cure_loss_percentage: number }>;
+    const avgCureLoss =
+      cureRows.length > 0
+        ? cureRows.reduce((sum, r) => sum + (r.cure_loss_percentage || 0), 0) / cureRows.length
+        : 0;
+
+    const strainRows = (strainResult.data ?? []) as Array<{
+      wash_run: { strain_id: string } | null;
+    }>;
+    const uniqueStrains = new Set(
+      strainRows.map((r) => r.wash_run?.strain_id).filter(Boolean)
+    );
+
+    return { totalRuns, avgYield, totalOutput, avgCureLoss, activeStrains: uniqueStrains.size };
+  } catch {
+    return { totalRuns: 0, avgYield: 0, totalOutput: 0, avgCureLoss: 0, activeStrains: 0 };
+  }
+}
+
+export async function getYieldTrendData(
+  dateFrom: string,
+  dateTo: string
+): Promise<{ data: YieldTrendPoint[] | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('press_runs')
+      .select(`
+        id,
+        press_date,
+        yield_percentage,
+        input_weight_grams,
+        output_weight_grams,
+        wash_run:wash_runs!wash_run_id (
+          strain:strains!strain_id ( name )
+        )
+      `)
+      .eq('status', 'completed')
+      .not('yield_percentage', 'is', null)
+      .gte('press_date', dateFrom)
+      .lte('press_date', dateTo)
+      .order('press_date', { ascending: true });
+
+    if (!data) return { data: null, error };
+
+    const points: YieldTrendPoint[] = (data as Array<{
+      id: string;
+      press_date: string;
+      yield_percentage: number;
+      input_weight_grams: number;
+      output_weight_grams: number;
+      wash_run: { strain: { name: string } | null } | null;
+    }>).map((r) => ({
+      id: r.id,
+      press_date: r.press_date,
+      yield_percentage: r.yield_percentage,
+      input_weight_grams: r.input_weight_grams,
+      output_weight_grams: r.output_weight_grams,
+      strain_name: r.wash_run?.strain?.name ?? 'Unknown',
+    }));
+
+    return { data: points, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getThroughputData(
+  dateFrom: string,
+  dateTo: string
+): Promise<{
+  data: Array<{ press_date: string; output_weight_grams: number }> | null;
+  error: unknown;
+}> {
+  try {
+    const { data, error } = await db
+      .from('press_runs')
+      .select('press_date, output_weight_grams')
+      .eq('status', 'completed')
+      .not('output_weight_grams', 'is', null)
+      .gte('press_date', dateFrom)
+      .lte('press_date', dateTo)
+      .order('press_date', { ascending: true });
+
+    return { data: data ?? null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getConsistencyBreakdown(
+  dateFrom: string,
+  dateTo: string
+): Promise<{ data: ConsistencyBreakdownItem[]; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('rosin_packages')
+      .select('destination, weight_grams')
+      .gte('created_at', dateFrom)
+      .lte('created_at', dateTo);
+
+    if (!data) return { data: [], error };
+
+    const agg: Record<string, ConsistencyBreakdownItem> = {};
+    for (const pkg of data as Array<{ destination: string; weight_grams: number }>) {
+      const dest = pkg.destination;
+      if (!agg[dest]) agg[dest] = { destination: dest, totalWeight: 0, count: 0 };
+      agg[dest].totalWeight += pkg.weight_grams || 0;
+      agg[dest].count += 1;
+    }
+
+    return { data: Object.values(agg), error: null };
+  } catch (err) {
+    return { data: [], error: err };
+  }
+}
+
+export async function getStrainLeaderboard(
+  timeRange: string
+): Promise<{ data: StrainLeaderboardEntry[]; error: unknown }> {
+  try {
+    if (timeRange === 'all') {
+      const { data, error } = await db
+        .from('v_rosin_strain_yields')
+        .select('*')
+        .order('avg_yield_percentage', { ascending: false });
+      return { data: (data ?? []) as StrainLeaderboardEntry[], error };
+    }
+
+    const dateFrom = getDateFrom(timeRange);
+    const { data, error } = await db
+      .from('press_runs')
+      .select(`
+        yield_percentage,
+        press_date,
+        wash_run:wash_runs!wash_run_id (
+          strain_id,
+          strain:strains!strain_id ( name, abbreviation )
+        )
+      `)
+      .eq('status', 'completed')
+      .not('yield_percentage', 'is', null)
+      .gte('press_date', dateFrom);
+
+    if (!data) return { data: [], error };
+
+    const strainMap = new Map<string, {
+      strain_id: string;
+      strain_name: string;
+      strain_abbreviation: string;
+      yields: number[];
+      last_pressed: string;
+    }>();
+
+    for (const run of data as Array<{
+      yield_percentage: number;
+      press_date: string;
+      wash_run: {
+        strain_id: string;
+        strain: { name: string; abbreviation: string } | null;
+      } | null;
+    }>) {
+      const strainId = run.wash_run?.strain_id;
+      const strainName = run.wash_run?.strain?.name;
+      if (!strainId || !strainName) continue;
+
+      if (!strainMap.has(strainId)) {
+        strainMap.set(strainId, {
+          strain_id: strainId,
+          strain_name: strainName,
+          strain_abbreviation: run.wash_run?.strain?.abbreviation || '',
+          yields: [],
+          last_pressed: run.press_date,
+        });
+      }
+
+      const entry = strainMap.get(strainId)!;
+      entry.yields.push(run.yield_percentage);
+      if (run.press_date > entry.last_pressed) {
+        entry.last_pressed = run.press_date;
+      }
+    }
+
+    const leaderboard: StrainLeaderboardEntry[] = Array.from(strainMap.values()).map((entry) => ({
+      strain_id: entry.strain_id,
+      strain_name: entry.strain_name,
+      strain_abbreviation: entry.strain_abbreviation,
+      total_runs: entry.yields.length,
+      avg_yield_percentage:
+        entry.yields.reduce((a, b) => a + b, 0) / entry.yields.length,
+      min_yield_percentage: Math.min(...entry.yields),
+      max_yield_percentage: Math.max(...entry.yields),
+      last_pressed: entry.last_pressed,
+    }));
+
+    leaderboard.sort((a, b) => b.avg_yield_percentage - a.avg_yield_percentage);
+
+    return { data: leaderboard, error: null };
+  } catch (err) {
+    return { data: [], error: err };
   }
 }
