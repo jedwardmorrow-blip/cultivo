@@ -1,5 +1,16 @@
 import { supabase } from '@lib/supabase';
-import type { ActivePipelineItem, DashboardStats, FreshFrozenPackage, HashPackage, RosinPackage } from '../types/rosin-lab.types';
+import type {
+  ActivePipelineItem,
+  BatchWithFF,
+  DashboardStats,
+  FreezeDryRun,
+  FreshFrozenPackage,
+  HashPackage,
+  RosinLabEquipment,
+  RosinPackage,
+  WashRun,
+  WashRunInput,
+} from '../types/rosin-lab.types';
 
 // Rosin lab tables do not exist in the DB schema yet.
 // Using `any` cast so TypeScript compiles while the schema is being built.
@@ -214,5 +225,276 @@ export async function getFreshFrozenPackages(
     return { data: data as FreshFrozenPackage[] | null, error };
   } catch (err) {
     return { data: null, error: err };
+  }
+}
+
+export async function getBatchesWithFreshFrozen(): Promise<BatchWithFF[]> {
+  try {
+    const { data } = await db
+      .from('fresh_frozen_packages')
+      .select(`
+        batch_id,
+        batch:batch_registry!batch_id (
+          id,
+          batch_number,
+          strain,
+          strain_id
+        )
+      `)
+      .eq('status', 'stored');
+
+    if (!data) return [];
+    const seen = new Set<string>();
+    const unique: BatchWithFF[] = [];
+    for (const row of data) {
+      if (!seen.has(row.batch_id) && row.batch) {
+        seen.add(row.batch_id);
+        unique.push(row.batch as BatchWithFF);
+      }
+    }
+    return unique;
+  } catch {
+    return [];
+  }
+}
+
+export async function getFreshFrozenForBatch(batchId: string): Promise<FreshFrozenPackage[]> {
+  try {
+    const { data } = await db
+      .from('fresh_frozen_packages')
+      .select('*')
+      .eq('batch_id', batchId)
+      .eq('status', 'stored')
+      .order('package_number');
+    return (data ?? []) as FreshFrozenPackage[];
+  } catch {
+    return [];
+  }
+}
+
+export async function createWashRun(
+  washRun: Partial<WashRun>,
+  inputs: { fresh_frozen_package_id: string; weight_grams: number }[]
+): Promise<{ data: WashRun | null; error: unknown }> {
+  try {
+    const { data: run, error: runError } = await db
+      .from('wash_runs')
+      .insert(washRun)
+      .select()
+      .single();
+
+    if (runError || !run) return { data: null, error: runError };
+
+    const inputRows = inputs.map((i) => ({ wash_run_id: run.id, ...i }));
+    const { error: inputError } = await db.from('wash_run_inputs').insert(inputRows);
+    if (inputError) return { data: run as WashRun, error: inputError };
+
+    const packageIds = inputs.map((i) => i.fresh_frozen_package_id);
+    await db
+      .from('fresh_frozen_packages')
+      .update({ status: 'allocated' })
+      .in('id', packageIds);
+
+    return { data: run as WashRun, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getActiveWashRuns(): Promise<WashRun[]> {
+  try {
+    const { data } = await db
+      .from('wash_runs')
+      .select(`
+        *,
+        batch:batch_registry!batch_id ( batch_number, strain ),
+        strain:strains!strain_id ( name ),
+        equipment:rosin_lab_equipment!equipment_id ( id, name ),
+        inputs:wash_run_inputs (
+          id,
+          weight_grams,
+          package:fresh_frozen_packages!fresh_frozen_package_id ( id, package_number, freezer_location )
+        ),
+        freeze_dry:freeze_dry_runs!wash_run_id ( id, status )
+      `)
+      .eq('status', 'in_progress')
+      .order('wash_date', { ascending: false });
+    return (data ?? []) as WashRun[];
+  } catch {
+    return [];
+  }
+}
+
+export async function completeWashRun(
+  runId: string,
+  output: {
+    total_output_weight_grams: number;
+    waste_weight_grams: number;
+    yield_percentage: number;
+    micron_grades?: Record<string, number>;
+  }
+): Promise<{ data: WashRun | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('wash_runs')
+      .update({ ...output, status: 'completed' })
+      .eq('id', runId)
+      .select()
+      .single();
+    return { data: data as WashRun | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getActiveFreezeDryRuns(): Promise<FreezeDryRun[]> {
+  try {
+    const { data } = await db
+      .from('freeze_dry_runs')
+      .select(`
+        *,
+        wash_run:wash_runs!wash_run_id (
+          id,
+          batch:batch_registry!batch_id ( batch_number, strain ),
+          strain:strains!strain_id ( name )
+        ),
+        equipment:rosin_lab_equipment!equipment_id ( id, name )
+      `)
+      .eq('status', 'in_progress')
+      .order('start_time', { ascending: false });
+    return (data ?? []) as FreezeDryRun[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getRecentCompletedFreezeDryRuns(): Promise<FreezeDryRun[]> {
+  try {
+    const { data } = await db
+      .from('freeze_dry_runs')
+      .select(`
+        *,
+        wash_run:wash_runs!wash_run_id (
+          id,
+          batch:batch_registry!batch_id ( batch_number, strain ),
+          strain:strains!strain_id ( name )
+        )
+      `)
+      .eq('status', 'completed')
+      .order('end_time', { ascending: false })
+      .limit(5);
+    return (data ?? []) as FreezeDryRun[];
+  } catch {
+    return [];
+  }
+}
+
+export async function createFreezeDryRun(
+  washRunId: string,
+  inputWeight: number,
+  equipmentId?: string
+): Promise<{ data: FreezeDryRun | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('freeze_dry_runs')
+      .insert({
+        wash_run_id: washRunId,
+        input_weight_grams: inputWeight,
+        equipment_id: equipmentId ?? null,
+        start_time: new Date().toISOString(),
+        status: 'in_progress',
+      })
+      .select()
+      .single();
+    return { data: data as FreezeDryRun | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function completeFreezeDryRun(
+  runId: string,
+  output: {
+    output_weight_grams: number;
+    waste_weight_grams: number;
+    moisture_loss_percentage: number;
+  }
+): Promise<{ data: FreezeDryRun | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('freeze_dry_runs')
+      .update({ ...output, end_time: new Date().toISOString(), status: 'completed' })
+      .eq('id', runId)
+      .select()
+      .single();
+    return { data: data as FreezeDryRun | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getCompletedWashRuns(
+  limit = 20,
+  offset = 0
+): Promise<{ data: WashRun[]; count: number }> {
+  try {
+    const { data, count } = await db
+      .from('wash_runs')
+      .select(
+        `
+        *,
+        batch:batch_registry!batch_id ( batch_number, strain ),
+        strain:strains!strain_id ( name ),
+        freeze_dry:freeze_dry_runs!wash_run_id ( id, status )
+      `,
+        { count: 'exact' }
+      )
+      .eq('status', 'completed')
+      .order('wash_date', { ascending: false })
+      .range(offset, offset + limit - 1);
+    return { data: (data ?? []) as WashRun[], count: (count ?? 0) as number };
+  } catch {
+    return { data: [], count: 0 };
+  }
+}
+
+export async function getWashingMachines(): Promise<RosinLabEquipment[]> {
+  try {
+    const { data } = await db
+      .from('rosin_lab_equipment')
+      .select('id, name, equipment_type, status')
+      .eq('equipment_type', 'washing_machine')
+      .eq('status', 'active');
+    return (data ?? []) as RosinLabEquipment[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getFreezeDryers(): Promise<RosinLabEquipment[]> {
+  try {
+    const { data } = await db
+      .from('rosin_lab_equipment')
+      .select('id, name, equipment_type, status')
+      .eq('equipment_type', 'freeze_dryer')
+      .eq('status', 'active');
+    return (data ?? []) as RosinLabEquipment[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getWashRunInputs(washRunId: string): Promise<WashRunInput[]> {
+  try {
+    const { data } = await db
+      .from('wash_run_inputs')
+      .select(`
+        *,
+        package:fresh_frozen_packages!fresh_frozen_package_id ( id, package_number, freezer_location )
+      `)
+      .eq('wash_run_id', washRunId);
+    return (data ?? []) as WashRunInput[];
+  } catch {
+    return [];
   }
 }

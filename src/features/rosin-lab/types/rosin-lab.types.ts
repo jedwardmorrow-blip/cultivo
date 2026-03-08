@@ -138,3 +138,78 @@ export const STAGE_NAV_MAP: Record<string, RosinLabScreen> = {
   press: 'press',
   cure: 'rosin',
 };
+
+export interface BatchWithFF {
+  id: string;
+  batch_number: string;
+  strain: string;
+  strain_id: string | null;
+}
+
+export interface WashRunInput {
+  id: string;
+  wash_run_id: string;
+  fresh_frozen_package_id: string;
+  weight_grams: number;
+  created_at: string;
+  package?: {
+    id: string;
+    package_number: number;
+    freezer_location: string | null;
+  } | null;
+}
+
+export interface WashRun {
+  id: string;
+  batch_id: string;
+  strain_id: string | null;
+  wash_date: string;
+  operator_id: string | null;
+  equipment_id: string | null;
+  water_temp_f: number | null;
+  num_washes: number | null;
+  total_input_weight_grams: number | null;
+  total_output_weight_grams: number | null;
+  waste_weight_grams: number | null;
+  yield_percentage: number | null;
+  micron_grades: Record<string, number> | null;
+  notes: string | null;
+  status: 'in_progress' | 'completed' | 'failed';
+  created_at: string;
+  updated_at: string;
+  batch?: { batch_number: string; strain: string } | null;
+  strain?: { name: string } | null;
+  equipment?: { id: string; name: string } | null;
+  inputs?: WashRunInput[];
+  freeze_dry?: { id: string; status: string }[] | null;
+}
+
+export interface FreezeDryRun {
+  id: string;
+  wash_run_id: string;
+  equipment_id: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  input_weight_grams: number;
+  output_weight_grams: number | null;
+  waste_weight_grams: number | null;
+  moisture_loss_percentage: number | null;
+  temperature_f: number | null;
+  notes: string | null;
+  status: 'in_progress' | 'completed' | 'failed';
+  created_at: string;
+  updated_at: string;
+  wash_run?: {
+    id: string;
+    batch?: { batch_number: string; strain: string } | null;
+    strain?: { name: string } | null;
+  } | null;
+  equipment?: { id: string; name: string } | null;
+}
+
+export interface RosinLabEquipment {
+  id: string;
+  name: string;
+  equipment_type: string;
+  status: string;
+}
