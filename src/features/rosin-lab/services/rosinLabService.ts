@@ -772,3 +772,137 @@ export async function getPackagingBadgeCount(): Promise<number> {
     return 0;
   }
 }
+
+export async function getCompletedPressRuns(
+  limit = 20,
+  offset = 0,
+  statusFilter?: string,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<{ data: PressRun[]; count: number }> {
+  try {
+    const statuses =
+      statusFilter && statusFilter !== 'all' ? [statusFilter] : ['completed', 'failed'];
+
+    let query = db
+      .from('press_runs')
+      .select(
+        `
+        *,
+        wash_run:wash_runs!wash_run_id (
+          id,
+          batch:batch_registry!batch_id ( batch_number ),
+          strain:strains!strain_id ( name, abbreviation )
+        ),
+        equipment:rosin_lab_equipment!equipment_id ( name ),
+        inputs:press_run_inputs (
+          id,
+          weight_grams,
+          hash_package:hash_packages!hash_package_id (
+            package_id,
+            strain:strains!strain_id ( name, abbreviation )
+          )
+        ),
+        rosin_packages ( id, package_id, weight_grams, destination, status )
+      `,
+        { count: 'exact' }
+      )
+      .in('status', statuses)
+      .order('press_date', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (dateFrom) query = query.gte('press_date', dateFrom);
+    if (dateTo) query = query.lte('press_date', dateTo);
+
+    const { data, count } = await query;
+    return { data: (data ?? []) as PressRun[], count: (count ?? 0) as number };
+  } catch {
+    return { data: [], count: 0 };
+  }
+}
+
+export async function getCompletedCureSessions(
+  limit = 20,
+  offset = 0,
+  statusFilter?: string,
+  consistencyFilter?: string
+): Promise<{ data: CureSession[]; count: number }> {
+  try {
+    const statuses =
+      statusFilter && statusFilter !== 'all' ? [statusFilter] : ['completed', 'failed'];
+
+    let query = db
+      .from('rosin_cure_sessions')
+      .select(
+        `
+        *,
+        press_run:press_runs!press_run_id (
+          id,
+          press_date,
+          wash_run:wash_runs!wash_run_id (
+            batch:batch_registry!batch_id ( batch_number ),
+            strain:strains!strain_id ( name, abbreviation )
+          )
+        ),
+        rosin_packages:rosin_packages!cure_session_id (
+          id,
+          package_id,
+          weight_grams,
+          destination,
+          status,
+          strain:strains!strain_id ( name, abbreviation )
+        )
+      `,
+        { count: 'exact' }
+      )
+      .in('status', statuses)
+      .order('start_time', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (consistencyFilter && consistencyFilter !== 'all') {
+      query = query.eq('target_consistency', consistencyFilter);
+    }
+
+    const { data, count } = await query;
+    return { data: (data ?? []) as CureSession[], count: (count ?? 0) as number };
+  } catch {
+    return { data: [], count: 0 };
+  }
+}
+
+export async function getPressRunStats(): Promise<{ count: number; avgYield: number }> {
+  try {
+    const { data } = await db
+      .from('press_runs')
+      .select('yield_percentage')
+      .eq('status', 'completed')
+      .not('yield_percentage', 'is', null);
+
+    if (!data || data.length === 0) return { count: 0, avgYield: 0 };
+
+    const rows = data as Array<{ yield_percentage: number }>;
+    const avgYield = rows.reduce((sum, r) => sum + (r.yield_percentage ?? 0), 0) / rows.length;
+    return { count: rows.length, avgYield };
+  } catch {
+    return { count: 0, avgYield: 0 };
+  }
+}
+
+export async function getCureSessionStats(): Promise<{ count: number; avgCureLoss: number }> {
+  try {
+    const { data } = await db
+      .from('rosin_cure_sessions')
+      .select('cure_loss_percentage')
+      .eq('status', 'completed')
+      .not('cure_loss_percentage', 'is', null);
+
+    if (!data || data.length === 0) return { count: 0, avgCureLoss: 0 };
+
+    const rows = data as Array<{ cure_loss_percentage: number }>;
+    const avgCureLoss =
+      rows.reduce((sum, r) => sum + (r.cure_loss_percentage ?? 0), 0) / rows.length;
+    return { count: rows.length, avgCureLoss };
+  } catch {
+    return { count: 0, avgCureLoss: 0 };
+  }
+}
