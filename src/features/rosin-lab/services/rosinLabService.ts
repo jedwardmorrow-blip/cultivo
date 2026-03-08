@@ -2,10 +2,12 @@ import { supabase } from '@lib/supabase';
 import type {
   ActivePipelineItem,
   BatchWithFF,
+  CureSession,
   DashboardStats,
   FreezeDryRun,
   FreshFrozenPackage,
   HashPackage,
+  PressRun,
   RosinLabEquipment,
   RosinPackage,
   WashRun,
@@ -496,5 +498,277 @@ export async function getWashRunInputs(washRunId: string): Promise<WashRunInput[
     return (data ?? []) as WashRunInput[];
   } catch {
     return [];
+  }
+}
+
+export async function getHashPackagesForPressing(): Promise<HashPackage[]> {
+  try {
+    const { data } = await db
+      .from('hash_packages')
+      .select(`
+        *,
+        strain:strains!strain_id ( name, abbreviation ),
+        wash_run:wash_runs!wash_run_id (
+          id,
+          batch:batch_registry!batch_id ( batch_number )
+        )
+      `)
+      .in('status', ['available', 'partial'])
+      .order('dried_date', { ascending: false, nullsFirst: false });
+    return (data ?? []) as HashPackage[];
+  } catch {
+    return [];
+  }
+}
+
+export async function createPressRun(
+  pressRun: Partial<PressRun>,
+  inputs: { hash_package_id: string; weight_grams: number }[]
+): Promise<{ data: PressRun | null; error: unknown }> {
+  try {
+    const { data: run, error: runError } = await db
+      .from('press_runs')
+      .insert(pressRun)
+      .select()
+      .single();
+
+    if (runError || !run) return { data: null, error: runError };
+
+    const inputRows = inputs.map((i) => ({ press_run_id: run.id, ...i }));
+    await db.from('press_run_inputs').insert(inputRows);
+
+    for (const input of inputs) {
+      const { data: pkg } = await db
+        .from('hash_packages')
+        .select('remaining_weight_grams')
+        .eq('id', input.hash_package_id)
+        .single();
+
+      if (pkg) {
+        const newRemaining = (pkg.remaining_weight_grams as number) - input.weight_grams;
+        const newStatus = newRemaining <= 0 ? 'depleted' : 'partial';
+        await db
+          .from('hash_packages')
+          .update({
+            remaining_weight_grams: Math.max(0, newRemaining),
+            status: newStatus,
+          })
+          .eq('id', input.hash_package_id);
+      }
+    }
+
+    return { data: run as PressRun, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getRosinPresses(): Promise<RosinLabEquipment[]> {
+  try {
+    const { data } = await db
+      .from('rosin_lab_equipment')
+      .select('id, name, equipment_type, status')
+      .eq('equipment_type', 'rosin_press')
+      .eq('status', 'active');
+    return (data ?? []) as RosinLabEquipment[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getPressRunsForPackaging(): Promise<PressRun[]> {
+  try {
+    const { data } = await db
+      .from('press_runs')
+      .select(`
+        *,
+        wash_run:wash_runs!wash_run_id (
+          strain_id,
+          batch:batch_registry!batch_id ( batch_number ),
+          strain:strains!strain_id ( name, abbreviation )
+        ),
+        equipment:rosin_lab_equipment!equipment_id ( name ),
+        rosin_packages ( id, package_id, weight_grams, destination, status )
+      `)
+      .eq('status', 'completed')
+      .order('press_date', { ascending: false });
+
+    const runs = (data ?? []) as PressRun[];
+    return runs.filter((run) => {
+      if (run.output_weight_grams == null) return true;
+      const packaged = (run.rosin_packages ?? []).reduce((sum, p) => sum + (p.weight_grams ?? 0), 0);
+      return packaged < (run.output_weight_grams ?? 0) - 0.01;
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function recordPressOutput(
+  runId: string,
+  output: {
+    output_weight_grams: number;
+    waste_weight_grams: number;
+    yield_percentage: number;
+  }
+): Promise<{ data: PressRun | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('press_runs')
+      .update(output)
+      .eq('id', runId)
+      .select()
+      .single();
+    return { data: data as PressRun | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function createRosinPackages(
+  packages: {
+    press_run_id: string;
+    strain_id: string;
+    package_id: string;
+    weight_grams: number;
+    destination: string;
+    status: string;
+  }[]
+): Promise<{ data: RosinPackage[] | null; error: unknown }> {
+  try {
+    const { data, error } = await db
+      .from('rosin_packages')
+      .insert(packages)
+      .select();
+    return { data: data as RosinPackage[] | null, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function createCureSession(
+  session: {
+    press_run_id: string;
+    target_consistency: string;
+    input_weight_grams: number;
+    cure_temp_f?: number;
+  },
+  rosinPackageIds: string[]
+): Promise<{ data: CureSession | null; error: unknown }> {
+  try {
+    const { data: cure, error } = await db
+      .from('rosin_cure_sessions')
+      .insert({
+        ...session,
+        start_time: new Date().toISOString(),
+        status: 'curing',
+      })
+      .select()
+      .single();
+
+    if (error || !cure) return { data: null, error };
+
+    await db
+      .from('rosin_packages')
+      .update({ cure_session_id: cure.id, status: 'curing' })
+      .in('id', rosinPackageIds);
+
+    return { data: cure as CureSession, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getActiveCureSessions(): Promise<CureSession[]> {
+  try {
+    const { data } = await db
+      .from('rosin_cure_sessions')
+      .select(`
+        *,
+        press_run:press_runs!press_run_id (
+          id,
+          wash_run:wash_runs!wash_run_id (
+            batch:batch_registry!batch_id ( batch_number )
+          )
+        ),
+        rosin_packages:rosin_packages!cure_session_id (
+          id,
+          package_id,
+          weight_grams,
+          destination,
+          status,
+          strain:strains!strain_id ( name, abbreviation )
+        )
+      `)
+      .eq('status', 'curing')
+      .order('start_time', { ascending: false });
+    return (data ?? []) as CureSession[];
+  } catch {
+    return [];
+  }
+}
+
+export async function completeCureSession(
+  sessionId: string,
+  output: {
+    output_weight_grams: number;
+    waste_weight_grams: number;
+    cure_loss_percentage: number;
+    actual_consistency: string;
+  }
+): Promise<{ data: CureSession | null; error: unknown }> {
+  try {
+    const { data: cure, error } = await db
+      .from('rosin_cure_sessions')
+      .update({
+        ...output,
+        end_time: new Date().toISOString(),
+        status: 'completed',
+      })
+      .eq('id', sessionId)
+      .select()
+      .single();
+
+    if (error) return { data: null, error };
+
+    await db
+      .from('rosin_packages')
+      .update({ status: 'cured' })
+      .eq('cure_session_id', sessionId);
+
+    return { data: cure as CureSession, error: null };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function getRecentCompletedCures(limit = 5): Promise<CureSession[]> {
+  try {
+    const { data } = await db
+      .from('rosin_cure_sessions')
+      .select(`
+        *,
+        press_run:press_runs!press_run_id (
+          wash_run:wash_runs!wash_run_id (
+            batch:batch_registry!batch_id ( batch_number ),
+            strain:strains!strain_id ( name )
+          )
+        )
+      `)
+      .eq('status', 'completed')
+      .order('end_time', { ascending: false })
+      .limit(limit);
+    return (data ?? []) as CureSession[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getPackagingBadgeCount(): Promise<number> {
+  try {
+    const runs = await getPressRunsForPackaging();
+    return runs.length;
+  } catch {
+    return 0;
   }
 }

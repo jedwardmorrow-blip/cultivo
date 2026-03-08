@@ -213,3 +213,76 @@ export interface RosinLabEquipment {
   equipment_type: string;
   status: string;
 }
+
+export interface PressRun {
+  id: string;
+  freeze_dry_run_id: string | null;
+  wash_run_id: string | null;
+  equipment_id: string | null;
+  press_date: string;
+  operator_id: string | null;
+  temperature_f: number | null;
+  pressure_psi: number | null;
+  press_time_seconds: number | null;
+  bag_micron: number | null;
+  input_weight_grams: number | null;
+  output_weight_grams: number | null;
+  waste_weight_grams: number | null;
+  yield_percentage: number | null;
+  notes: string | null;
+  status: 'in_progress' | 'completed' | 'failed';
+  created_at: string;
+  updated_at: string;
+  wash_run?: {
+    strain_id?: string | null;
+    batch?: { batch_number: string } | null;
+    strain?: { name: string; abbreviation: string } | null;
+  } | null;
+  equipment?: { name: string } | null;
+  rosin_packages?: RosinPackage[];
+}
+
+export interface PressRunInput {
+  id: string;
+  press_run_id: string;
+  hash_package_id: string;
+  weight_grams: number;
+  created_at: string;
+  hash_package?: {
+    package_id: string;
+    remaining_weight_grams: number;
+    strain?: { name: string } | null;
+  } | null;
+}
+
+export interface CureSession {
+  id: string;
+  press_run_id: string | null;
+  wash_run_id: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  cure_temp_f: number | null;
+  target_consistency: 'badder' | 'jam' | 'sauce';
+  actual_consistency: 'badder' | 'jam' | 'sauce' | null;
+  input_weight_grams: number | null;
+  output_weight_grams: number | null;
+  waste_weight_grams: number | null;
+  cure_loss_percentage: number | null;
+  notes: string | null;
+  status: 'curing' | 'completed' | 'failed';
+  created_at: string;
+  updated_at: string;
+  press_run?: {
+    id: string;
+    wash_run?: {
+      batch?: { batch_number: string } | null;
+    } | null;
+  } | null;
+  rosin_packages?: RosinPackage[];
+}
+
+export const CURE_TIME_ESTIMATES: Record<string, number> = {
+  badder: 7,
+  jam: 14,
+  sauce: 21,
+};
