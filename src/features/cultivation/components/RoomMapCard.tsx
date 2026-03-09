@@ -1,3 +1,4 @@
+// Build cache bust: 2026-03-09T20
 import { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Flower2, Settings, MapPin } from 'lucide-react';
 import { cultivationService } from '../services';
