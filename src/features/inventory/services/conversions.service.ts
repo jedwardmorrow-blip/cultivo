@@ -88,42 +88,68 @@ export async function getProductStageIdFromProductName(productName: string): Pro
 /**
  * Map product name to category for inventory UI filtering
  *
- * The inventory UI uses the category field to determine which tab to display items in.
- * This field is REQUIRED for packages to be visible in the inventory views.
+ * Returns snake_case category values matching the chk_inventory_category_valid
+ * CHECK constraint on inventory_items. The category encodes both the product type
+ * (flower, smalls, trim) and the pipeline stage (binned, bucked, bulk, packaged).
  *
- * Category Mapping:
- * - "Binned" products → 'Binned' category
- * - "Bucked" products → 'Bucked' category
- * - "Bulk" or "Trimmed" products → 'Bulk' category
- * - "Packaged" products → 'Packaged' category
+ * Valid categories: flower_binned, flower_bucked, flower_bulk, flower_packaged,
+ *   smalls_bucked, smalls_bulk, trim_bulk, binned, fresh_frozen,
+ *   rosin_badder, rosin_jam, rosin_aio
+ *
+ * Handles both naming formats:
+ *   New: "Stage - Strain - Type" (e.g. "Bulk - Violet Fog - Flower")
+ *   Legacy: "Bulk Flower (Trimmed)" / "Bulk Smalls (Bucked)"
  *
  * @param productName - The product name from session output
- * @returns Category string for inventory_items.category field
+ * @returns snake_case category string for inventory_items.category field
  */
 export function getCategoryFromProductName(productName: string): string {
   const lower = productName.toLowerCase();
 
-  // Check in order of specificity
+  // --- Specialty types (no stage prefix) ---
+  if (lower.includes('fresh_frozen') || lower.includes('fresh frozen')) {
+    return 'fresh_frozen';
+  }
+  if (lower.includes('rosin')) {
+    if (lower.includes('badder')) return 'rosin_badder';
+    if (lower.includes('jam')) return 'rosin_jam';
+    if (lower.includes('aio')) return 'rosin_aio';
+    return 'rosin_badder'; // safe default for rosin
+  }
+
+  // --- Determine product type (flower / smalls / trim) ---
+  let type = 'flower'; // default
+  if (lower.includes('smalls')) {
+    type = 'smalls';
+  } else if (lower.includes('trim') && !lower.includes('trimmed')) {
+    // "Trim" (the product type) vs "Trimmed" (the conversion step)
+    type = 'trim';
+  }
+
+  // --- Determine pipeline stage ---
+  let stage = 'bulk'; // default (bulk/trimmed both map here)
+
   if (lower.includes('binned')) {
-    return 'Binned';
+    stage = 'binned';
+  } else if (lower.includes('bucked')) {
+    stage = 'bucked';
+  } else if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) {
+    stage = 'packaged';
+  }
+  // bulk / trimmed → 'bulk' (default)
+
+  // Trim products only exist in bulk stage
+  if (type === 'trim') {
+    return 'trim_bulk';
   }
 
-  if (lower.includes('bucked')) {
-    return 'Bucked';
+  // Standalone binned (legacy records without type suffix)
+  // e.g. "Animal Tsunami - Binned" (no "Flower" or "Smalls")
+  if (stage === 'binned' && !lower.includes('flower') && !lower.includes('smalls')) {
+    return 'binned';
   }
 
-  // Packaged must be checked before Bulk to avoid "Bulk" false positives
-  if (lower.includes('packaged') || lower.includes('1lb') || lower.includes('454')) {
-    return 'Packaged';
-  }
-
-  // Bulk and Trimmed map to same category
-  if (lower.includes('bulk') || lower.includes('trimmed')) {
-    return 'Bulk';
-  }
-
-  // Default to Bulk (safest for visibility)
-  return 'Bulk';
+  return `${type}_${stage}`;
 }
 
 // =====================================================
@@ -938,8 +964,8 @@ export async function finalizeConversionPackages(
 
       const quantity = pkg.weight != null ? pkg.weight : (pkg.units ?? 0);
       const unit = pkg.weight != null ? 'g' : 'unit';
-      const category = stageName;
       const productName = `${stageName} - ${strainName} - ${typeName}`;
+      const category = getCategoryFromProductName(productName);
 
       const { data: inventoryItem, error: itemError } = await supabase
         .from('inventory_items')
