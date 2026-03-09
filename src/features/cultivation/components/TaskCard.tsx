@@ -21,6 +21,7 @@ export interface TaskCardData {
   scope?: string;
   progress_current?: number;
   progress_total?: number;
+  estimated_cost?: number;
 }
 
 interface TaskCardProps {
@@ -73,6 +74,11 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           <span className="flex items-center gap-1 text-cult-medium-gray">
             <Clock className="w-3 h-3" />
             {task.estimated_duration}
+          </span>
+        )}
+        {task.estimated_cost != null && task.estimated_cost > 0 && (
+          <span className="text-cult-medium-gray font-mono">
+            ${task.estimated_cost.toFixed(0)}
           </span>
         )}
       </div>

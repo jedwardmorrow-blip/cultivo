@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { X, Flower2, MapPin, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { X, Flower2, MapPin, Settings, ChevronDown, ChevronRight, Layers } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
@@ -239,6 +239,7 @@ export function RoomDetailDrawer({
   const [fetchedGroups, setFetchedGroups] = useState<PlantGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showFlipModal, setShowFlipModal] = useState(false);
+  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const label = usePlantGroupLabel();
 
@@ -423,82 +424,156 @@ export function RoomDetailDrawer({
               </>
             )}
 
-            {groups.length > 0 && (
-              <div>
-                <h3 className="text-xs text-cult-light-gray uppercase tracking-wider mb-3">
-                  All Groups in Room
-                </h3>
-                <div className="space-y-1">
-                  {groups.map((g) => {
-                    const daysInStage = Math.floor(
-                      (Date.now() - new Date(g.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
-                    );
-                    const isExpanded = expandedGroupId === g.id;
-                    return (
-                      <div
-                        key={g.id}
-                        className="border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors overflow-hidden"
-                      >
+            {groups.length > 0 && (() => {
+              // Build batch-grouped structure
+              const batchMap = new Map<string, PlantGroup[]>();
+              for (const g of groups) {
+                const bn = g.batch_registry?.batch_number ?? g.id;
+                if (!batchMap.has(bn)) batchMap.set(bn, []);
+                batchMap.get(bn)!.push(g);
+              }
+              const batchEntries = [...batchMap.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+              return (
+                <div>
+                  <h3 className="text-xs text-cult-light-gray uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5" />
+                    Batches in Room
+                    <span className="text-cult-medium-gray font-mono">({batchEntries.length})</span>
+                  </h3>
+                  <div className="space-y-1">
+                    {batchEntries.map(([batchNumber, batchGroups]) => {
+                      const first = batchGroups[0];
+                      const abbr = first.strains?.abbreviation ?? '???';
+                      const strainName = first.strains?.name ?? 'Unknown';
+                      const stage = first.growth_stage;
+                      const totalPlants = batchGroups.reduce((s, g) => s + g.plant_count, 0);
+                      const isBatchExpanded = expandedBatchId === batchNumber;
+                      const displayBatch = first.batch_registry?.batch_number ?? '—';
+
+                      return (
                         <div
-                          className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
-                          onClick={() => setExpandedGroupId(isExpanded ? null : g.id)}
+                          key={batchNumber}
+                          className="border border-cult-dark-gray bg-cult-black overflow-hidden"
                         >
-                          <div className="flex-shrink-0 text-cult-medium-gray">
-                            {isExpanded
-                              ? <ChevronDown className="w-4 h-4" />
-                              : <ChevronRight className="w-4 h-4" />
-                            }
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono text-sm font-bold text-cult-white">
-                                {g.batch_registry?.batch_number ?? '—'}
-                              </span>
-                              <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
-                                {g.growth_stage}
-                              </span>
-                              {g.is_mother && (
-                                <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
-                                  Mother
+                          {/* ── Batch-level row ── */}
+                          <div
+                            className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-cult-near-black transition-colors"
+                            onClick={() => {
+                              setExpandedBatchId(isBatchExpanded ? null : batchNumber);
+                              if (isBatchExpanded) setExpandedGroupId(null);
+                            }}
+                          >
+                            <div className="flex-shrink-0 text-cult-medium-gray">
+                              {isBatchExpanded
+                                ? <ChevronDown className="w-4 h-4" />
+                                : <ChevronRight className="w-4 h-4" />
+                              }
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-sm font-bold text-cult-white">
+                                  {displayBatch}
                                 </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-xs text-cult-light-gray">{g.strains?.name ?? 'Unknown'}</span>
-                              <span className="text-cult-medium-gray text-xs">·</span>
-                              <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
-                              <span className="text-cult-medium-gray text-xs">·</span>
-                              <span className="text-xs text-cult-medium-gray">{daysInStage}d in stage</span>
+                                <span className="font-mono text-xs font-bold text-rose-300">
+                                  {abbr}
+                                </span>
+                                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[stage] ?? STAGE_BADGE.clone}`}>
+                                  {stage}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span className="text-xs text-cult-light-gray">{strainName}</span>
+                                <span className="text-cult-medium-gray text-xs">·</span>
+                                <span className="text-xs text-cult-medium-gray">{totalPlants} plants</span>
+                                {batchGroups.length > 1 && (
+                                  <>
+                                    <span className="text-cult-medium-gray text-xs">·</span>
+                                    <span className="text-xs text-cult-medium-gray">{batchGroups.length} groups</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <PlantGroupActionsMenu
-                              group={g}
-                              onDetail={() => handleGroupAction(g, 'detail')}
-                              onMove={() => handleGroupAction(g, 'move')}
-                              onAdvance={() => handleGroupAction(g, 'advance')}
-                              onToggleMother={() => handleGroupAction(g, 'mother')}
-                              onViewPlants={() => handleGroupAction(g, 'plants')}
-                              onPrintGroupLabel={() => handleGroupAction(g, 'printGroup')}
-                              onPrintPlantLabels={() => handleGroupAction(g, 'printPlants')}
-                              onRefresh={handleRefresh}
-                            />
-                          </div>
+
+                          {/* ── Expanded: group rows within this batch ── */}
+                          {isBatchExpanded && (
+                            <div className="border-t border-cult-dark-gray bg-cult-near-black">
+                              {batchGroups.map((g) => {
+                                const daysInStage = Math.floor(
+                                  (Date.now() - new Date(g.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
+                                );
+                                const isGroupExpanded = expandedGroupId === g.id;
+
+                                // Resolve table/section placement labels
+                                const tableObj = tables.find((t) => t.id === g.room_table_id);
+                                const sectionObj = tableObj?.sections.find((s) => s.id === g.room_section_id);
+                                const placement = tableObj
+                                  ? `T${tableObj.table_number}${sectionObj ? ` · ${sectionObj.section_label}` : ''}`
+                                  : null;
+
+                                return (
+                                  <div key={g.id} className="border-t border-cult-dark-gray/50 overflow-hidden">
+                                    <div
+                                      className="flex items-center gap-3 pl-10 pr-4 py-2.5 cursor-pointer select-none hover:bg-cult-black/60 transition-colors"
+                                      onClick={() => setExpandedGroupId(isGroupExpanded ? null : g.id)}
+                                    >
+                                      <div className="flex-shrink-0 text-cult-dark-gray">
+                                        {isGroupExpanded
+                                          ? <ChevronDown className="w-3.5 h-3.5" />
+                                          : <ChevronRight className="w-3.5 h-3.5" />
+                                        }
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                                        <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
+                                        {g.is_mother && (
+                                          <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                                            Mother
+                                          </span>
+                                        )}
+                                        {placement && (
+                                          <span className="text-xs font-mono text-cult-medium-gray">
+                                            {placement}
+                                          </span>
+                                        )}
+                                        <span className="text-xs text-cult-dark-gray">{daysInStage}d in stage</span>
+                                      </div>
+                                      <div onClick={(e) => e.stopPropagation()}>
+                                        <PlantGroupActionsMenu
+                                          group={g}
+                                          onDetail={() => handleGroupAction(g, 'detail')}
+                                          onMove={() => handleGroupAction(g, 'move')}
+                                          onAdvance={() => handleGroupAction(g, 'advance')}
+                                          onToggleMother={() => handleGroupAction(g, 'mother')}
+                                          onViewPlants={() => handleGroupAction(g, 'plants')}
+                                          onPrintGroupLabel={() => handleGroupAction(g, 'printGroup')}
+                                          onPrintPlantLabels={() => handleGroupAction(g, 'printPlants')}
+                                          onRefresh={handleRefresh}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* ── Innermost: individual plant IDs ── */}
+                                    {isGroupExpanded && (
+                                      <ExpandedPlantsList
+                                        group={g}
+                                        onPrintSinglePlant={(plant) => { void label.openSinglePlantLabel(plant, g); }}
+                                        onPrintSelectedPlants={(plants) => { void label.openSelectedPlantLabels(plants, g); }}
+                                        onPrintAllPlants={() => { void label.openPlantLabels(g); }}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                        {isExpanded && (
-                          <ExpandedPlantsList
-                            group={g}
-                            onPrintSinglePlant={(plant) => { void label.openSinglePlantLabel(plant, g); }}
-                            onPrintSelectedPlants={(plants) => { void label.openSelectedPlantLabels(plants, g); }}
-                            onPrintAllPlants={() => { void label.openPlantLabels(g); }}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>

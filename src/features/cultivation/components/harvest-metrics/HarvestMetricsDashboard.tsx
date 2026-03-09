@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { BarChart3, Leaf, Home, ArrowLeft } from 'lucide-react';
+import { BarChart3, Leaf, Home, DollarSign, ArrowLeft } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useHarvestMetrics } from '../../hooks/useHarvestMetrics';
 import { MetricsScorecard } from './MetricsScorecard';
 import { StrainBreakdown } from './StrainBreakdown';
 import { RoomLeaderboard } from './RoomLeaderboard';
 import { StrainLeaderboard } from './StrainLeaderboard';
+import { CostAnalysis } from './CostAnalysis';
 
-type MetricsTab = 'scorecard' | 'strains' | 'rooms';
+type MetricsTab = 'scorecard' | 'strains' | 'rooms' | 'cost';
 
 const TAB_CONFIG: { key: MetricsTab; label: string; icon: typeof BarChart3 }[] = [
   { key: 'scorecard', label: 'Scorecard', icon: BarChart3 },
   { key: 'strains', label: 'Strains', icon: Leaf },
   { key: 'rooms', label: 'Rooms', icon: Home },
+  { key: 'cost', label: 'Cost', icon: DollarSign },
 ];
 
 interface HarvestMetricsDashboardProps {
@@ -102,6 +104,10 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
           <p className="text-cult-light-gray text-sm">Rooms ranked by total dry weight output</p>
           <RoomLeaderboard roomAggregates={roomAggregates} />
         </div>
+      )}
+
+      {activeTab === 'cost' && (
+        <CostAnalysis rows={rows} totals={totals} strainAggregates={strainAggregates} roomAggregates={roomAggregates} />
       )}
     </div>
   );

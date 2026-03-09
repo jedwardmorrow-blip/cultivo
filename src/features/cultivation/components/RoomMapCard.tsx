@@ -74,37 +74,80 @@ function GridCell({ groups, onClick }: GridCellProps) {
   );
 }
 
-interface StrainLegendProps {
+interface BatchEntry {
+  batchNumber: string;
+  abbr: string | null;
+  strainName: string;
+  totalPlants: number;
+  groupCount: number;
+}
+
+function buildBatchSummary(groups: PlantGroup[]): BatchEntry[] {
+  const map = new Map<string, BatchEntry>();
+  for (const g of groups) {
+    const bn = g.batch_registry?.batch_number ?? g.id;
+    if (!map.has(bn)) {
+      map.set(bn, {
+        batchNumber: g.batch_registry?.batch_number ?? '—',
+        abbr: g.strains?.abbreviation ?? null,
+        strainName: g.strains?.name ?? 'Unknown',
+        totalPlants: 0,
+        groupCount: 0,
+      });
+    }
+    const entry = map.get(bn)!;
+    entry.totalPlants += g.plant_count;
+    entry.groupCount += 1;
+  }
+  return [...map.values()].sort((a, b) => a.batchNumber.localeCompare(b.batchNumber));
+}
+
+const MAX_BATCH_CHIPS = 4;
+
+interface BatchSummaryChipsProps {
   groups: PlantGroup[];
 }
 
-function StrainLegend({ groups }: StrainLegendProps) {
-  const strainMap = new Map<string, { name: string; abbr: string | null; count: number; groupNums: string[] }>();
-  for (const g of groups) {
-    const key = g.strain_id;
-    if (!strainMap.has(key)) {
-      strainMap.set(key, {
-        name: g.strains?.name ?? g.strain_id,
-        abbr: g.strains?.abbreviation ?? null,
-        count: 0,
-        groupNums: [],
-      });
-    }
-    const entry = strainMap.get(key)!;
-    entry.count += g.plant_count;
-    if (g.batch_registry?.batch_number) entry.groupNums.push(g.batch_registry.batch_number);
-  }
+function BatchSummaryChips({ groups }: BatchSummaryChipsProps) {
+  const batches = buildBatchSummary(groups);
+  if (batches.length === 0) return null;
 
-  if (strainMap.size === 0) return null;
+  const visible = batches.slice(0, MAX_BATCH_CHIPS);
+  const overflow = batches.length - MAX_BATCH_CHIPS;
+
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
+      {visible.map((b) => (
+        <span key={b.batchNumber} className="flex items-center gap-1 border border-cult-dark-gray bg-cult-near-black px-2 py-0.5">
+          <span className="font-mono text-xs font-bold text-rose-300">{b.abbr ?? '???'}</span>
+          <span className="text-xs text-cult-medium-gray">×{b.totalPlants}</span>
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="text-xs text-cult-medium-gray self-center">+{overflow} more</span>
+      )}
+    </div>
+  );
+}
+
+interface BatchLegendProps {
+  groups: PlantGroup[];
+}
+
+function BatchLegend({ groups }: BatchLegendProps) {
+  const batches = buildBatchSummary(groups);
+  if (batches.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2 mt-3">
-      {[...strainMap.values()].map((s) => (
-        <div key={s.name} className="flex items-center gap-1.5 border border-rose-900 bg-rose-950/20 px-2 py-1">
-          <span className="font-mono text-xs font-bold text-rose-300">{s.abbr ?? '???'}</span>
-          <span className="text-xs text-cult-light-gray">{s.name}</span>
-          <span className="text-xs text-cult-medium-gray">{s.count} plants</span>
-          <span className="text-xs text-cult-medium-gray opacity-60">{s.groupNums.join(', ')}</span>
+      {batches.map((b) => (
+        <div key={b.batchNumber} className="flex items-center gap-1.5 border border-rose-900 bg-rose-950/20 px-2 py-1">
+          <span className="font-mono text-xs font-bold text-rose-300">{b.abbr ?? '???'}</span>
+          <span className="text-xs text-cult-light-gray">{b.strainName}</span>
+          <span className="text-xs text-cult-medium-gray">×{b.totalPlants}</span>
+          {b.groupCount > 1 && (
+            <span className="text-xs text-cult-medium-gray opacity-60">({b.groupCount} grps)</span>
+          )}
         </div>
       ))}
     </div>
@@ -174,7 +217,7 @@ function RoomMapGrid({ tables, groups, onGroupClick }: RoomMapGridProps) {
         </tbody>
       </table>
 
-      <StrainLegend groups={groups.filter((g) => g.room_table_id && g.room_section_id)} />
+      <BatchLegend groups={groups.filter((g) => g.room_table_id && g.room_section_id)} />
     </div>
   );
 }
@@ -302,10 +345,17 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
                   {room.room_type}
                 </span>
                 {groups.length > 0 && (
-                  <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
+                  <>
+                    <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
+                    <span className="text-xs text-cult-light-gray font-mono">{groups.reduce((s, g) => s + g.plant_count, 0)} plants</span>
+                  </>
                 )}
               </div>
               <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
+
+              {!expanded && groups.length > 0 && (
+                <BatchSummaryChips groups={groups} />
+              )}
 
               <div className="flex items-center gap-2 flex-wrap mt-0.5">
                 {isFlower && dayOfRun !== null && (
