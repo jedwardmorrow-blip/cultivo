@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, X, Trash2, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useTaskSchedules } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
@@ -65,6 +65,7 @@ function doesScheduleOccur(schedule: RoomTaskSchedule, date: Date): boolean {
 
 export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date());
+  const [calendarMode, setCalendarMode] = useState<'gantt' | 'month'>('gantt');
   const [editorState, setEditorState] = useState<{ roomId: string; roomCode: string } | null>(null);
 
   const { schedules, createSchedule, updateSchedule, deleteSchedule } = useTaskSchedules();
@@ -128,72 +129,102 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
             <ChevronRight className="w-5 h-5 text-cult-light-gray" />
           </button>
         </div>
-        <button
-          type="button"
-          onClick={goToday}
-          className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-medium-gray hover:bg-cult-charcoal rounded-sm transition-colors"
-        >
-          Today
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex border border-cult-medium-gray rounded-sm overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setCalendarMode('gantt')}
+              className={`p-1.5 transition-colors ${calendarMode === 'gantt' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              title="Gantt view"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendarMode('month')}
+              className={`p-1.5 transition-colors ${calendarMode === 'month' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              title="Month view"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={goToday}
+            className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-medium-gray hover:bg-cult-charcoal rounded-sm transition-colors"
+          >
+            Today
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto scrollbar-hide">
-        <table className="w-full border-collapse min-w-[800px]">
-          <thead>
-            <tr>
-              <th className="sticky left-0 z-10 bg-cult-black text-left px-3 py-2 text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold w-24">
-                Room
-              </th>
-              {days.map((d) => (
-                <th
-                  key={d.num}
-                  className={`px-0.5 py-2 text-center text-[10px] uppercase tracking-wider font-semibold min-w-[28px] ${
-                    d.iso === today ? 'text-cult-accent' : 'text-cult-medium-gray'
-                  }`}
-                >
-                  <div>{d.dayOfWeek}</div>
-                  <div className="text-[11px]">{d.num}</div>
+      {calendarMode === 'gantt' ? (
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full border-collapse min-w-[800px]">
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-10 bg-cult-black text-left px-3 py-2 text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold w-24">
+                  Room
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedRooms.map((room) => (
-              <tr key={room.id} className="border-t border-cult-dark-gray/50 hover:bg-cult-charcoal/20">
-                <td className={`sticky left-0 z-10 bg-cult-black px-3 py-2 font-mono text-xs font-bold text-cult-white border-l-2 ${ROOM_TYPE_DOT[room.room_type] ?? ''}`}>
-                  {room.room_code}
-                </td>
-                {days.map((d) => {
-                  const dots = getDotsForCell(room.id, d.date);
-                  const isToday = d.iso === today;
-                  return (
-                    <td
-                      key={d.num}
-                      className={`px-0.5 py-1.5 text-center cursor-pointer hover:bg-cult-charcoal/40 transition-colors ${
-                        isToday ? 'bg-cult-accent/5' : ''
-                      }`}
-                      onClick={() => setEditorState({ roomId: room.id, roomCode: room.room_code })}
-                    >
-                      {dots.length > 0 && (
-                        <div className="flex flex-wrap justify-center gap-[2px]">
-                          {dots.slice(0, 4).map((t) => (
-                            <span
-                              key={t}
-                              className="block w-[6px] h-[6px] rounded-full"
-                              style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                              title={TASK_TYPE_CONFIG[t].label}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
+                {days.map((d) => (
+                  <th
+                    key={d.num}
+                    className={`px-0.5 py-2 text-center text-[10px] uppercase tracking-wider font-semibold min-w-[28px] ${
+                      d.iso === today ? 'text-cult-accent' : 'text-cult-medium-gray'
+                    }`}
+                  >
+                    <div>{d.dayOfWeek}</div>
+                    <div className="text-[11px]">{d.num}</div>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {sortedRooms.map((room) => (
+                <tr key={room.id} className="border-t border-cult-dark-gray/50 hover:bg-cult-charcoal/20">
+                  <td className={`sticky left-0 z-10 bg-cult-black px-3 py-2 font-mono text-xs font-bold text-cult-white border-l-2 ${ROOM_TYPE_DOT[room.room_type] ?? ''}`}>
+                    {room.room_code}
+                  </td>
+                  {days.map((d) => {
+                    const dots = getDotsForCell(room.id, d.date);
+                    const isToday = d.iso === today;
+                    return (
+                      <td
+                        key={d.num}
+                        className={`px-0.5 py-1.5 text-center cursor-pointer hover:bg-cult-charcoal/40 transition-colors ${
+                          isToday ? 'bg-cult-accent/5' : ''
+                        }`}
+                        onClick={() => setEditorState({ roomId: room.id, roomCode: room.room_code })}
+                      >
+                        {dots.length > 0 && (
+                          <div className="flex flex-wrap justify-center gap-[2px]">
+                            {dots.slice(0, 4).map((t) => (
+                              <span
+                                key={t}
+                                className="block w-[6px] h-[6px] rounded-full"
+                                style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                                title={TASK_TYPE_CONFIG[t].label}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <MonthCalendarGrid
+          year={year}
+          month={month}
+          today={today}
+          rooms={sortedRooms}
+          schedulesByRoom={schedulesByRoom}
+        />
+      )}
 
       {editorState && (
         <ScheduleEditorDrawer
@@ -206,6 +237,131 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           onDelete={deleteSchedule}
         />
       )}
+    </div>
+  );
+}
+
+/* ── Month Calendar Grid ─────────────────────────────────── */
+
+interface MonthCalendarGridProps {
+  year: number;
+  month: number;
+  today: string;
+  rooms: RoomCalendarRoom[];
+  schedulesByRoom: Map<string, RoomTaskSchedule[]>;
+}
+
+function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: MonthCalendarGridProps) {
+  const daysCount = getDaysInMonth(year, month);
+  const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
+
+  // Build day cells: leading blanks + actual days
+  const cells: (null | { num: number; date: Date; iso: string })[] = [];
+  for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
+  for (let d = 1; d <= daysCount; d++) {
+    const date = new Date(year, month, d);
+    cells.push({ num: d, date, iso: toIsoDate(date) });
+  }
+
+  // Aggregate all task types across all rooms for a given date
+  function getTaskTypesForDay(date: Date): TaskType[] {
+    const types = new Set<TaskType>();
+    for (const room of rooms) {
+      const roomSchedules = schedulesByRoom.get(room.id) ?? [];
+      for (const s of roomSchedules) {
+        if (doesScheduleOccur(s, date)) types.add(s.task_type);
+      }
+    }
+    return Array.from(types);
+  }
+
+  // Count rooms with tasks on a given date
+  function getRoomCountForDay(date: Date): number {
+    let count = 0;
+    for (const room of rooms) {
+      const roomSchedules = schedulesByRoom.get(room.id) ?? [];
+      if (roomSchedules.some((s) => doesScheduleOccur(s, date))) count++;
+    }
+    return count;
+  }
+
+  return (
+    <div>
+      {/* Day-of-week header */}
+      <div className="grid grid-cols-7 border-b border-cult-dark-gray">
+        {DAY_NAMES.map((name) => (
+          <div key={name} className="py-2 text-center text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
+            {name}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7">
+        {cells.map((cell, idx) => {
+          if (!cell) {
+            return <div key={`blank-${idx}`} className="min-h-[80px] border-b border-r border-cult-dark-gray/30" />;
+          }
+          const isToday = cell.iso === today;
+          const taskTypes = getTaskTypesForDay(cell.date);
+          const roomCount = taskTypes.length > 0 ? getRoomCountForDay(cell.date) : 0;
+          const isWeekend = cell.date.getDay() === 0 || cell.date.getDay() === 6;
+
+          return (
+            <div
+              key={cell.num}
+              className={`min-h-[80px] border-b border-r border-cult-dark-gray/30 p-1.5 transition-colors hover:bg-cult-charcoal/20 ${
+                isToday ? 'bg-cult-accent/5' : isWeekend ? 'bg-cult-charcoal/5' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span
+                  className={`text-xs font-mono ${
+                    isToday
+                      ? 'bg-cult-accent text-white w-6 h-6 rounded-full flex items-center justify-center font-bold'
+                      : 'text-cult-light-gray'
+                  }`}
+                >
+                  {cell.num}
+                </span>
+                {roomCount > 0 && (
+                  <span className="text-[9px] text-cult-medium-gray">
+                    {roomCount}r
+                  </span>
+                )}
+              </div>
+              {taskTypes.length > 0 && (
+                <div className="flex flex-wrap gap-[3px] mt-1">
+                  {taskTypes.slice(0, 6).map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-0.5 px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wider rounded-sm"
+                      style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}20`, color: TASK_TYPE_CONFIG[t].color }}
+                      title={TASK_TYPE_CONFIG[t].label}
+                    >
+                      <span
+                        className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                        style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                      />
+                      {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-cult-dark-gray">
+        {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
+          <div key={t} className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
+            <span className="text-[10px] text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

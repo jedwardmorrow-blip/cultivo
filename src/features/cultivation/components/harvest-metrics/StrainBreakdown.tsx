@@ -1,7 +1,61 @@
 import { ArrowUpDown, TrendingUp, TrendingDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { formatWeight } from '../../utils';
 import type { StrainAggregate, HarvestMetricRow } from '../../hooks/useHarvestMetrics';
+
+/* ── Inline SVG Sparkline ─────────────────────────────────── */
+
+interface SparklineProps {
+  values: number[];
+  width?: number;
+  height?: number;
+  color?: string;
+  avgColor?: string;
+}
+
+function YieldSparkline({ values, width = 120, height = 28, color = '#22c55e', avgColor = '#525252' }: SparklineProps) {
+  if (values.length < 2) {
+    return (
+      <div style={{ width, height }} className="flex items-center justify-center">
+        <span className="text-[9px] text-cult-medium-gray">—</span>
+      </div>
+    );
+  }
+
+  const padding = 2;
+  const innerW = width - padding * 2;
+  const innerH = height - padding * 2;
+  const min = Math.min(...values) * 0.9;
+  const max = Math.max(...values) * 1.1 || 1;
+  const range = max - min || 1;
+  const avg = values.reduce((s, v) => s + v, 0) / values.length;
+
+  const points = values.map((v, i) => {
+    const x = padding + (i / (values.length - 1)) * innerW;
+    const y = padding + innerH - ((v - min) / range) * innerH;
+    return `${x},${y}`;
+  });
+
+  const avgY = padding + innerH - ((avg - min) / range) * innerH;
+  const lastVal = values[values.length - 1];
+  const firstVal = values[0];
+  const trending = lastVal >= firstVal;
+
+  return (
+    <svg width={width} height={height} className="block">
+      {/* avg reference line */}
+      <line x1={padding} y1={avgY} x2={width - padding} y2={avgY} stroke={avgColor} strokeWidth={0.5} strokeDasharray="2,2" />
+      {/* sparkline path */}
+      <polyline fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" points={points.join(' ')} />
+      {/* end dot */}
+      {values.length > 0 && (() => {
+        const lx = padding + ((values.length - 1) / (values.length - 1)) * innerW;
+        const ly = padding + innerH - ((lastVal - min) / range) * innerH;
+        return <circle cx={lx} cy={ly} r={2} fill={trending ? '#22c55e' : '#ef4444'} />;
+      })()}
+    </svg>
+  );
+}
 
 type SortField = 'strain_name' | 'harvest_count' | 'total_plants' | 'total_wet_grams' | 'total_dry_grams' | 'avg_yield_pct' | 'avg_dry_per_plant';
 
@@ -33,7 +87,17 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
     return sortAsc ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
   });
 
-  const maxDry = Math.max(...strainAggregates.map((s) => s.total_dry_grams || s.total_wet_grams), 1);
+  // Pre-compute yield sparkline data per strain (sorted by date ascending)
+  const yieldByStrain = useMemo(() => {
+    const map = new Map<string, number[]>();
+    for (const strain of strainAggregates) {
+      const sRows = rows
+        .filter((r) => r.strain_name === strain.strain_name && r.harvest_status === 'completed' && r.yield_percentage != null)
+        .sort((a, b) => a.harvest_date.localeCompare(b.harvest_date));
+      map.set(strain.strain_name, sRows.map((r) => r.yield_percentage!));
+    }
+    return map;
+  }, [strainAggregates, rows]);
 
   function SortButton({ field, label }: { field: SortField; label: string }) {
     const isActive = sortField === field;
@@ -69,7 +133,7 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
               <th className="text-right py-3 px-3"><SortButton field="total_dry_grams" label="Dry" /></th>
               <th className="text-right py-3 px-3"><SortButton field="avg_yield_pct" label="Yield %" /></th>
               <th className="text-right py-3 px-3"><SortButton field="avg_dry_per_plant" label="Dry/Plant" /></th>
-              <th className="py-3 px-3 w-32"></th>
+              <th className="py-3 px-3 w-32 text-right text-cult-medium-gray">Trend</th>
             </tr>
           </thead>
           <tbody>
@@ -78,15 +142,13 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
               const strainRows = rows.filter(
                 (r) => r.strain_name === strain.strain_name && r.harvest_status === 'completed'
               );
-              const barWidth = ((strain.total_dry_grams || strain.total_wet_grams) / maxDry) * 100;
-
               return (
                 <StrainRow
                   key={strain.strain_name}
                   strain={strain}
-                  barWidth={barWidth}
                   isExpanded={isExpanded}
                   strainRows={strainRows}
+                  yieldValues={yieldByStrain.get(strain.strain_name) ?? []}
                   onToggle={() => setExpandedStrain(isExpanded ? null : strain.strain_name)}
                 />
               );
@@ -100,13 +162,13 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
 
 interface StrainRowProps {
   strain: StrainAggregate;
-  barWidth: number;
   isExpanded: boolean;
   strainRows: HarvestMetricRow[];
+  yieldValues: number[];
   onToggle: () => void;
 }
 
-function StrainRow({ strain, barWidth, isExpanded, strainRows, onToggle }: StrainRowProps) {
+function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: StrainRowProps) {
   return (
     <>
       <tr
@@ -139,13 +201,8 @@ function StrainRow({ strain, barWidth, isExpanded, strainRows, onToggle }: Strai
         <td className="text-right py-3 px-3 text-cult-light-gray font-mono">
           {strain.avg_dry_per_plant != null ? formatWeight(strain.avg_dry_per_plant) : '—'}
         </td>
-        <td className="py-3 px-3">
-          <div className="w-full bg-cult-dark-gray h-2 overflow-hidden">
-            <div
-              className="h-full bg-green-600 transition-all"
-              style={{ width: `${barWidth}%` }}
-            />
-          </div>
+        <td className="py-3 px-3 text-right">
+          <YieldSparkline values={yieldValues} />
         </td>
       </tr>
 

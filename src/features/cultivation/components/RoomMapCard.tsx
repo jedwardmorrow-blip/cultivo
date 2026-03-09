@@ -1,3 +1,4 @@
+// Build cache bust: 2026-03-09T20
 import { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Flower2, Settings, MapPin } from 'lucide-react';
 import { cultivationService } from '../services';
@@ -74,37 +75,97 @@ function GridCell({ groups, onClick }: GridCellProps) {
   );
 }
 
-interface StrainLegendProps {
+interface BatchEntry {
+  batchNumber: string;
+  abbr: string | null;
+  strainName: string;
+  totalPlants: number;
+  groupCount: number;
+}
+
+function buildBatchSummary(groups: PlantGroup[]): BatchEntry[] {
+  const map = new Map<string, BatchEntry>();
+  for (const g of groups) {
+    const bn = g.batch_registry?.batch_number ?? g.id;
+    if (!map.has(bn)) {
+      map.set(bn, {
+        batchNumber: g.batch_registry?.batch_number ?? '—',
+        abbr: g.strains?.abbreviation ?? null,
+        strainName: g.strains?.name ?? 'Unknown',
+        totalPlants: 0,
+        groupCount: 0,
+      });
+    }
+    const entry = map.get(bn)!;
+    entry.totalPlants += g.plant_count;
+    entry.groupCount += 1;
+  }
+  return [...map.values()].sort((a, b) => a.batchNumber.localeCompare(b.batchNumber));
+}
+
+const MAX_BATCH_CHIPS = 6;
+
+const CHIP_STAGE_COLORS: Record<string, string> = {
+  clone: 'border-sky-600 bg-sky-950/40 text-sky-300',
+  veg: 'border-green-600 bg-green-950/40 text-green-300',
+  flower: 'border-rose-600 bg-rose-950/40 text-rose-300',
+  mother: 'border-amber-600 bg-amber-950/40 text-amber-300',
+  mixed: 'border-cult-medium-gray bg-cult-near-black text-cult-light-gray',
+};
+
+const INNER_GLOW: Record<string, string> = {
+  clone: 'inset 0 0 30px rgba(14,165,233,0.06)',
+  veg: 'inset 0 0 30px rgba(16,185,129,0.06)',
+  flower: 'inset 0 0 30px rgba(244,63,94,0.06)',
+  mother: 'inset 0 0 30px rgba(245,158,11,0.06)',
+};
+
+interface BatchSummaryChipsProps {
+  groups: PlantGroup[];
+  roomType: string;
+}
+
+function BatchSummaryChips({ groups, roomType }: BatchSummaryChipsProps) {
+  const batches = buildBatchSummary(groups);
+  if (batches.length === 0) return null;
+
+  const visible = batches.slice(0, MAX_BATCH_CHIPS);
+  const overflow = batches.length - MAX_BATCH_CHIPS;
+  const chipColor = CHIP_STAGE_COLORS[roomType] ?? CHIP_STAGE_COLORS.mixed;
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {visible.map((b) => (
+        <span key={b.batchNumber} className={`flex items-center gap-1.5 border rounded px-2.5 py-1 ${chipColor}`}>
+          <span className="font-mono text-sm font-bold tracking-wide w-10 text-center inline-block">{b.abbr ?? '???'}</span>
+          <span className="text-sm opacity-70">×{b.totalPlants}</span>
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="text-sm text-cult-medium-gray self-center font-medium">+{overflow} more</span>
+      )}
+    </div>
+  );
+}
+
+interface BatchLegendProps {
   groups: PlantGroup[];
 }
 
-function StrainLegend({ groups }: StrainLegendProps) {
-  const strainMap = new Map<string, { name: string; abbr: string | null; count: number; groupNums: string[] }>();
-  for (const g of groups) {
-    const key = g.strain_id;
-    if (!strainMap.has(key)) {
-      strainMap.set(key, {
-        name: g.strains?.name ?? g.strain_id,
-        abbr: g.strains?.abbreviation ?? null,
-        count: 0,
-        groupNums: [],
-      });
-    }
-    const entry = strainMap.get(key)!;
-    entry.count += g.plant_count;
-    if (g.batch_registry?.batch_number) entry.groupNums.push(g.batch_registry.batch_number);
-  }
-
-  if (strainMap.size === 0) return null;
+function BatchLegend({ groups }: BatchLegendProps) {
+  const batches = buildBatchSummary(groups);
+  if (batches.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2 mt-3">
-      {[...strainMap.values()].map((s) => (
-        <div key={s.name} className="flex items-center gap-1.5 border border-rose-900 bg-rose-950/20 px-2 py-1">
-          <span className="font-mono text-xs font-bold text-rose-300">{s.abbr ?? '???'}</span>
-          <span className="text-xs text-cult-light-gray">{s.name}</span>
-          <span className="text-xs text-cult-medium-gray">{s.count} plants</span>
-          <span className="text-xs text-cult-medium-gray opacity-60">{s.groupNums.join(', ')}</span>
+      {batches.map((b) => (
+        <div key={b.batchNumber} className="flex items-center gap-1.5 border border-rose-900 bg-rose-950/20 px-2 py-1">
+          <span className="font-mono text-xs font-bold text-rose-300">{b.abbr ?? '???'}</span>
+          <span className="text-xs text-cult-light-gray">{b.strainName}</span>
+          <span className="text-xs text-cult-medium-gray">×{b.totalPlants}</span>
+          {b.groupCount > 1 && (
+            <span className="text-xs text-cult-medium-gray opacity-60">({b.groupCount} grps)</span>
+          )}
         </div>
       ))}
     </div>
@@ -174,7 +235,7 @@ function RoomMapGrid({ tables, groups, onGroupClick }: RoomMapGridProps) {
         </tbody>
       </table>
 
-      <StrainLegend groups={groups.filter((g) => g.room_table_id && g.room_section_id)} />
+      <BatchLegend groups={groups.filter((g) => g.room_table_id && g.room_section_id)} />
     </div>
   );
 }
@@ -287,25 +348,38 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
     if (!preloadedGroups) void loadGroups();
   }
 
+  const totalPlants = groups.reduce((s, g) => s + g.plant_count, 0);
+  const isEmpty = groups.length === 0;
+
   return (
     <>
-      <div className={`border ${typeBorder}`}>
+      <div
+        className={`border ${isEmpty ? 'border-dashed border-cult-dark-gray opacity-50' : typeBorder}`}
+        style={!isEmpty ? { boxShadow: INNER_GLOW[room.room_type] ?? 'none' } : undefined}
+      >
         <div
-          className="p-4 cursor-pointer select-none"
+          className={`${isEmpty ? 'p-3' : 'p-5'} cursor-pointer select-none`}
           onClick={() => setExpanded((v) => !v)}
         >
           <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-                <span className="text-xs border border-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider text-cult-medium-gray">
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="font-mono text-base font-bold text-cult-white">{room.room_code}</span>
+                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[room.room_type] ?? 'text-cult-medium-gray border-cult-medium-gray'}`}>
                   {room.room_type}
                 </span>
                 {groups.length > 0 && (
                   <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
                 )}
+                {isEmpty && (
+                  <span className="text-xs text-cult-dark-gray italic">Empty</span>
+                )}
               </div>
-              <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
+              <span className={`text-sm font-semibold truncate ${isEmpty ? 'text-cult-medium-gray' : 'text-cult-white'}`}>{room.name}</span>
+
+              {!expanded && groups.length > 0 && (
+                <BatchSummaryChips groups={groups} roomType={room.room_type} />
+              )}
 
               <div className="flex items-center gap-2 flex-wrap mt-0.5">
                 {isFlower && dayOfRun !== null && (
@@ -319,7 +393,10 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
               </div>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {totalPlants > 0 && (
+                <span className="text-2xl font-bold font-mono text-cult-white leading-none">{totalPlants}</span>
+              )}
               {expanded ? (
                 <ChevronDown className="w-4 h-4 text-cult-medium-gray" />
               ) : (

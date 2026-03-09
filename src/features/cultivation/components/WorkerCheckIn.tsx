@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, MapPin } from 'lucide-react';
 import type { DailyAttendance, UpsertAttendanceInput } from '../types';
 
 export interface StaffMember {
@@ -211,6 +211,119 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
               );
             })}
           </div>
+
+          {/* Per-room allocation breakdown */}
+          <RoomAllocationBreakdown staff={staff} rooms={rooms} attendance={attendance} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Per-Room Allocation Breakdown ───────────────────────── */
+
+interface RoomAllocation {
+  room_code: string;
+  workers: { name: string; hours: number; cost: number }[];
+  totalHours: number;
+  totalCost: number;
+}
+
+function RoomAllocationBreakdown({
+  staff,
+  rooms,
+  attendance,
+}: {
+  staff: StaffMember[];
+  rooms: RoomOption[];
+  attendance: DailyAttendance[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const allocations = useMemo(() => {
+    const attendMap = new Map<string, DailyAttendance>();
+    for (const a of attendance) attendMap.set(a.staff_id, a);
+
+    const roomMap = new Map<string, RoomAllocation>();
+
+    for (const s of staff) {
+      const rec = attendMap.get(s.id);
+      if (!rec?.is_present) continue;
+
+      const assignedRoomIds = rec.room_assignments ?? [];
+      if (assignedRoomIds.length === 0) continue;
+
+      const hours = rec.hours_worked ?? 8;
+      // Split hours evenly across assigned rooms
+      const hoursPerRoom = hours / assignedRoomIds.length;
+      const costPerRoom = hoursPerRoom * s.hourly_rate;
+
+      for (const roomId of assignedRoomIds) {
+        const room = rooms.find((r) => r.id === roomId);
+        if (!room) continue;
+
+        const existing = roomMap.get(roomId) ?? {
+          room_code: room.room_code,
+          workers: [],
+          totalHours: 0,
+          totalCost: 0,
+        };
+        existing.workers.push({ name: s.first_name, hours: hoursPerRoom, cost: costPerRoom });
+        existing.totalHours += hoursPerRoom;
+        existing.totalCost += costPerRoom;
+        roomMap.set(roomId, existing);
+      }
+    }
+
+    return Array.from(roomMap.values()).sort((a, b) => b.totalCost - a.totalCost);
+  }, [staff, rooms, attendance]);
+
+  if (allocations.length === 0) return null;
+
+  return (
+    <div className="border-t border-cult-dark-gray">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-cult-charcoal/30 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <MapPin className="w-3.5 h-3.5 text-cult-medium-gray" />
+          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
+            Room Allocation Breakdown
+          </span>
+        </div>
+        <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${expanded ? '' : '-rotate-90'}`} />
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-3 space-y-2">
+          {allocations.map((alloc) => (
+            <div key={alloc.room_code} className="bg-cult-charcoal/30 border border-cult-dark-gray p-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-mono text-xs font-bold text-cult-white">{alloc.room_code}</span>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="text-cult-light-gray">{alloc.totalHours.toFixed(1)} hrs</span>
+                  <span className="text-cult-white font-semibold">${alloc.totalCost.toFixed(0)}</span>
+                </div>
+              </div>
+              <div className="space-y-0.5">
+                {alloc.workers.map((w) => (
+                  <div key={w.name} className="flex items-center justify-between text-[10px]">
+                    <span className="text-cult-light-gray">{w.name}</span>
+                    <span className="text-cult-medium-gray font-mono">{w.hours.toFixed(1)}h · ${w.cost.toFixed(0)}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Cost bar proportional to max room */}
+              <div className="mt-1.5 w-full h-1 bg-cult-dark-gray rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-cult-green rounded-full"
+                  style={{ width: `${Math.min(100, (alloc.totalCost / Math.max(...allocations.map((a) => a.totalCost))) * 100)}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

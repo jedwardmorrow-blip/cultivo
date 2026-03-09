@@ -58,7 +58,10 @@ function ViewFallback() {
 
 function AppContent() {
   const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState(() => {
+    const hash = window.location.hash.replace('#', '');
+    return hash || 'dashboard';
+  });
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
   const [cloneFromOrder, setCloneFromOrder] = useState<any>(null);
   const [preSelectedCustomerId, setPreSelectedCustomerId] = useState<string | null>(null);
@@ -90,6 +93,27 @@ function AppContent() {
       setCurrentView('public-menu');
     }
   }, []);
+
+  // Sync URL hash ↔ currentView for shareable deep-links & browser back/forward
+  useEffect(() => {
+    const newHash = currentView === 'dashboard' ? '' : currentView;
+    if (window.location.hash.replace('#', '') !== newHash) {
+      window.history.replaceState(null, '', newHash ? `#${newHash}` : window.location.pathname);
+    }
+  }, [currentView]);
+
+  useEffect(() => {
+    function onHashChange() {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && hash !== currentView) {
+        setCurrentView(hash);
+      } else if (!hash && currentView !== 'dashboard') {
+        setCurrentView('dashboard');
+      }
+    }
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [currentView]);
 
   if (loading) {
     return (
@@ -125,6 +149,8 @@ function AppContent() {
   }
 
   function handleViewChange(view: string) {
+    const newHash = view === 'dashboard' ? '' : view;
+    window.history.pushState(null, '', newHash ? `#${newHash}` : window.location.pathname);
     setCurrentView(view);
     setShowNewOrderForm(false);
     setSelectedOrderId(null);

@@ -19,6 +19,8 @@ import {
   Clock,
   Skull,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
@@ -68,12 +70,12 @@ const SAMPLE_ROOMS: { id: string; name: string; room_type: RoomType; room_code: 
 ];
 
 const SAMPLE_TASKS: TaskCardData[] = [
-  { id: 't1', task_type: 'ipm_spray', room_name: 'FLW-06', assigned_to_name: 'Greg', status: 'pending', estimated_duration: '45m', notes: null },
-  { id: 't2', task_type: 'defoliation', room_name: 'FLW-03', assigned_to_name: 'Laura', status: 'in_progress', estimated_duration: '2h', notes: null, scope: 'multi_day', progress_current: 2, progress_total: 4 },
-  { id: 't3', task_type: 'feeding', room_name: 'VEG-01', assigned_to_name: 'Sam', status: 'completed', estimated_duration: '30m', notes: null },
-  { id: 't4', task_type: 'scouting', room_name: 'FLW-08', assigned_to_name: 'Skye', status: 'pending', estimated_duration: '20m', notes: null },
-  { id: 't5', task_type: 'cleaning', room_name: 'FLW-01', assigned_to_name: 'Roxy', status: 'carry_forward', estimated_duration: '1h', notes: 'Carried from yesterday' },
-  { id: 't6', task_type: 'training', room_name: 'VEG-02', assigned_to_name: 'Leo', status: 'pending', estimated_duration: '1h', notes: null },
+  { id: 't1', task_type: 'ipm_spray', room_name: 'FLW-06', assigned_to_name: 'Greg', status: 'pending', estimated_duration: '45m', notes: null, estimated_cost: 17 },
+  { id: 't2', task_type: 'defoliation', room_name: 'FLW-03', assigned_to_name: 'Laura', status: 'in_progress', estimated_duration: '2h', notes: null, scope: 'multi_day', progress_current: 2, progress_total: 4, estimated_cost: 40 },
+  { id: 't3', task_type: 'feeding', room_name: 'VEG-01', assigned_to_name: 'Sam', status: 'completed', estimated_duration: '30m', notes: null, estimated_cost: 10 },
+  { id: 't4', task_type: 'scouting', room_name: 'FLW-08', assigned_to_name: 'Skye', status: 'pending', estimated_duration: '20m', notes: null, estimated_cost: 7 },
+  { id: 't5', task_type: 'cleaning', room_name: 'FLW-01', assigned_to_name: 'Roxy', status: 'carry_forward', estimated_duration: '1h', notes: 'Carried from yesterday', estimated_cost: 20 },
+  { id: 't6', task_type: 'training', room_name: 'VEG-02', assigned_to_name: 'Leo', status: 'pending', estimated_duration: '1h', notes: null, estimated_cost: 20 },
 ];
 
 const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
@@ -131,7 +133,7 @@ function todayIso(): string {
 
 export function DailyTaskBoard() {
   const [activeTab, setActiveTab] = useState<TabId>('board');
-  const [selectedDate] = useState(todayIso);
+  const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
   const { tasks: dbTasks, completeWithLog, refetch: refetchTasks } = useDailyTasks(selectedDate);
@@ -147,6 +149,10 @@ export function DailyTaskBoard() {
       return dbTasks.map((t) => {
         const room = rooms.find((r) => r.id === t.room_id);
         const staff = SAMPLE_STAFF.find((s) => s.id === t.assigned_to);
+        const durationHours = t.estimated_duration
+          ? parseFloat(t.estimated_duration.replace(/[^0-9.]/g, '')) || 0
+          : 0;
+        const cost = staff ? durationHours * staff.hourly_rate : undefined;
         return {
           id: t.id,
           task_type: t.task_type,
@@ -158,6 +164,7 @@ export function DailyTaskBoard() {
           scope: t.scope,
           progress_current: (t.progress_data as Record<string, number>)?.current,
           progress_total: (t.progress_data as Record<string, number>)?.total,
+          estimated_cost: cost,
         };
       });
     }
@@ -166,9 +173,65 @@ export function DailyTaskBoard() {
 
   return (
     <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Task Board</h1>
-        <p className="text-cult-light-gray mt-1">Daily cultivation operations hub</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Task Board</h1>
+          <p className="text-cult-light-gray mt-1">Daily cultivation operations hub</p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() - 1);
+              setSelectedDate(d.toISOString().slice(0, 10));
+            }}
+            className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedDate(todayIso())}
+            className={`px-3 py-1.5 text-sm font-semibold uppercase tracking-wider transition-colors border ${
+              selectedDate === todayIso()
+                ? 'bg-cult-charcoal text-cult-white border-cult-medium-gray'
+                : 'bg-transparent text-cult-light-gray border-cult-dark-gray hover:border-cult-medium-gray'
+            }`}
+          >
+            {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() + 1);
+              setSelectedDate(d.toISOString().slice(0, 10));
+            }}
+            className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+            aria-label="Next day"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {selectedDate !== todayIso() && (
+            <button
+              type="button"
+              onClick={() => setSelectedDate(todayIso())}
+              className="ml-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-cult-accent border border-cult-accent/30 hover:bg-cult-accent/10 transition-colors"
+            >
+              Today
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-cult-surface-overlay border-b border-cult-dark-gray overflow-x-auto scrollbar-hide">
@@ -605,6 +668,8 @@ interface WorkersTabProps {
 }
 
 function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
+  const [expandedWorker, setExpandedWorker] = useState<string | null>(null);
+
   const attendanceMap = useMemo(() => {
     const map = new Map<string, (typeof attendance)[0]>();
     for (const a of attendance) map.set(a.staff_id, a);
@@ -625,10 +690,31 @@ function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
     return map;
   }, [tasks, staff]);
 
+  const tasksByWorker = useMemo(() => {
+    const map = new Map<string, TaskCardData[]>();
+    for (const t of tasks) {
+      if (!t.assigned_to_name) continue;
+      const match = staff.find((s) => s.first_name === t.assigned_to_name);
+      if (!match) continue;
+      const list = map.get(match.id) ?? [];
+      list.push(t);
+      map.set(match.id, list);
+    }
+    return map;
+  }, [tasks, staff]);
+
   const totalPresent = attendance.filter((a) => a.is_present).length;
   const totalTasksAssigned = tasks.length;
   const totalCompleted = tasks.filter((t) => t.status === 'completed').length;
   const totalHours = attendance.reduce((sum, a) => sum + (a.is_present ? (a.hours_worked ?? 8) : 0), 0);
+
+  const STATUS_DOT: Record<TaskStatus, string> = {
+    pending: 'bg-zinc-500',
+    in_progress: 'bg-sky-400',
+    completed: 'bg-green-400',
+    skipped: 'bg-zinc-600',
+    carry_forward: 'bg-amber-400',
+  };
 
   const ROLE_BADGE: Record<string, string> = {
     manager: 'bg-amber-950 text-amber-400 border border-amber-800',
@@ -652,46 +738,100 @@ function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
           const hours = rec?.hours_worked ?? 0;
           const roomAssignments = rec?.room_assignments ?? [];
           const counts = taskCountByWorker.get(s.id) ?? { total: 0, completed: 0 };
+          const isExpanded = expandedWorker === s.id;
+          const workerTasks = tasksByWorker.get(s.id) ?? [];
+          const workerCost = isPresent ? s.hourly_rate * (hours || 8) : 0;
 
           return (
-            <div key={s.id} className={`px-4 py-3 flex items-center justify-between gap-3 ${!isPresent ? 'opacity-40' : ''}`}>
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="w-8 h-8 rounded-full bg-cult-charcoal flex items-center justify-center text-sm font-bold text-cult-white flex-shrink-0">
-                  {s.first_name.charAt(0)}
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-cult-white font-medium">{s.first_name}</span>
-                    <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
-                      {s.role}
-                    </span>
-                    {!isPresent && (
-                      <span className="text-[10px] text-zinc-500 uppercase">Absent</span>
+            <div key={s.id}>
+              <button
+                type="button"
+                onClick={() => isPresent && setExpandedWorker(isExpanded ? null : s.id)}
+                className={`w-full text-left px-4 py-3 flex items-center justify-between gap-3 transition-colors ${
+                  !isPresent ? 'opacity-40' : 'hover:bg-cult-charcoal/20 active:bg-cult-charcoal/30'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-8 h-8 rounded-full bg-cult-charcoal flex items-center justify-center text-sm font-bold text-cult-white flex-shrink-0">
+                    {s.first_name.charAt(0)}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-cult-white font-medium">{s.first_name}</span>
+                      <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
+                        {s.role}
+                      </span>
+                      {!isPresent && (
+                        <span className="text-[10px] text-zinc-500 uppercase">Absent</span>
+                      )}
+                    </div>
+                    {isPresent && roomAssignments.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {roomAssignments.map((rid) => (
+                          <span key={rid} className="px-1.5 py-0.5 text-[9px] font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  {isPresent && roomAssignments.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {roomAssignments.map((rid) => (
-                        <span key={rid} className="px-1.5 py-0.5 text-[9px] font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              </div>
 
-              {isPresent && (
-                <div className="flex items-center gap-4 flex-shrink-0 text-xs">
-                  <div className="text-center">
-                    <div className="text-cult-white font-semibold">{counts.total}</div>
-                    <div className="text-[9px] text-cult-medium-gray uppercase">Tasks</div>
+                {isPresent && (
+                  <div className="flex items-center gap-3 flex-shrink-0 text-xs">
+                    <div className="text-center">
+                      <div className="text-cult-white font-semibold">{counts.total}</div>
+                      <div className="text-[9px] text-cult-medium-gray uppercase">Tasks</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-cult-green font-semibold">{counts.completed}</div>
+                      <div className="text-[9px] text-cult-medium-gray uppercase">Done</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-cult-white font-semibold">{hours}h</div>
+                      <div className="text-[9px] text-cult-medium-gray uppercase">Hours</div>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-cult-medium-gray transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
-                  <div className="text-center">
-                    <div className="text-cult-green font-semibold">{counts.completed}</div>
-                    <div className="text-[9px] text-cult-medium-gray uppercase">Done</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-cult-white font-semibold">{hours}h</div>
-                    <div className="text-[9px] text-cult-medium-gray uppercase">Hours</div>
+                )}
+              </button>
+
+              {isExpanded && isPresent && (
+                <div className="px-4 pb-4 bg-cult-black/50">
+                  <div className="pl-11 space-y-2">
+                    {/* Worker cost summary */}
+                    <div className="flex items-center gap-4 text-xs text-cult-medium-gray pb-2 border-b border-cult-dark-gray/50">
+                      <span>${s.hourly_rate}/hr</span>
+                      <span>{hours || 8}h shift</span>
+                      <span className="text-cult-white font-semibold">${workerCost.toFixed(0)} est. cost</span>
+                    </div>
+
+                    {workerTasks.length === 0 ? (
+                      <div className="py-3 text-xs text-cult-medium-gray italic">No tasks assigned</div>
+                    ) : (
+                      workerTasks.map((t) => {
+                        const config = TASK_TYPE_CONFIG[t.task_type] ?? TASK_TYPE_CONFIG.custom;
+                        return (
+                          <div key={t.id} className="flex items-center gap-3 py-2">
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[t.status] ?? 'bg-zinc-500'}`} />
+                            <span
+                              className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
+                              style={{ backgroundColor: `${config.color}20`, color: config.color }}
+                            >
+                              {config.label}
+                            </span>
+                            <span className="text-xs font-mono text-cult-white">{t.room_name}</span>
+                            {t.estimated_duration && (
+                              <span className="flex items-center gap-1 text-[10px] text-cult-medium-gray ml-auto">
+                                <Clock className="w-3 h-3" />
+                                {t.estimated_duration}
+                              </span>
+                            )}
+                            {t.estimated_cost != null && t.estimated_cost > 0 && (
+                              <span className="text-[10px] text-cult-medium-gray font-mono">${t.estimated_cost.toFixed(0)}</span>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               )}
