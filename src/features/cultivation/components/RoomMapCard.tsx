@@ -102,29 +102,39 @@ function buildBatchSummary(groups: PlantGroup[]): BatchEntry[] {
   return [...map.values()].sort((a, b) => a.batchNumber.localeCompare(b.batchNumber));
 }
 
-const MAX_BATCH_CHIPS = 4;
+const MAX_BATCH_CHIPS = 6;
+
+const CHIP_STAGE_COLORS: Record<string, string> = {
+  clone: 'border-sky-600 bg-sky-950/40 text-sky-300',
+  veg: 'border-green-600 bg-green-950/40 text-green-300',
+  flower: 'border-rose-600 bg-rose-950/40 text-rose-300',
+  mother: 'border-amber-600 bg-amber-950/40 text-amber-300',
+  mixed: 'border-cult-medium-gray bg-cult-near-black text-cult-light-gray',
+};
 
 interface BatchSummaryChipsProps {
   groups: PlantGroup[];
+  roomType: string;
 }
 
-function BatchSummaryChips({ groups }: BatchSummaryChipsProps) {
+function BatchSummaryChips({ groups, roomType }: BatchSummaryChipsProps) {
   const batches = buildBatchSummary(groups);
   if (batches.length === 0) return null;
 
   const visible = batches.slice(0, MAX_BATCH_CHIPS);
   const overflow = batches.length - MAX_BATCH_CHIPS;
+  const chipColor = CHIP_STAGE_COLORS[roomType] ?? CHIP_STAGE_COLORS.mixed;
 
   return (
-    <div className="flex flex-wrap gap-1.5 mt-1.5">
+    <div className="flex flex-wrap gap-2 mt-2">
       {visible.map((b) => (
-        <span key={b.batchNumber} className="flex items-center gap-1 border border-cult-dark-gray bg-cult-near-black px-2 py-0.5">
-          <span className="font-mono text-xs font-bold text-rose-300">{b.abbr ?? '???'}</span>
-          <span className="text-xs text-cult-medium-gray">×{b.totalPlants}</span>
+        <span key={b.batchNumber} className={`flex items-center gap-1.5 border rounded px-2.5 py-1 ${chipColor}`}>
+          <span className="font-mono text-sm font-bold tracking-wide">{b.abbr ?? '???'}</span>
+          <span className="text-sm opacity-70">×{b.totalPlants}</span>
         </span>
       ))}
       {overflow > 0 && (
-        <span className="text-xs text-cult-medium-gray self-center">+{overflow} more</span>
+        <span className="text-sm text-cult-medium-gray self-center font-medium">+{overflow} more</span>
       )}
     </div>
   );
@@ -334,27 +344,27 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
     <>
       <div className={`border ${typeBorder}`}>
         <div
-          className="p-4 cursor-pointer select-none"
+          className="p-5 cursor-pointer select-none"
           onClick={() => setExpanded((v) => !v)}
         >
           <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-                <span className="text-xs border border-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider text-cult-medium-gray">
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="font-mono text-base font-bold text-cult-white">{room.room_code}</span>
+                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[room.room_type] ?? 'text-cult-medium-gray border-cult-medium-gray'}`}>
                   {room.room_type}
                 </span>
                 {groups.length > 0 && (
                   <>
                     <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
-                    <span className="text-xs text-cult-light-gray font-mono">{groups.reduce((s, g) => s + g.plant_count, 0)} plants</span>
+                    <span className="text-sm text-cult-light-gray font-mono font-semibold">{groups.reduce((s, g) => s + g.plant_count, 0)} plants</span>
                   </>
                 )}
               </div>
               <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
 
               {!expanded && groups.length > 0 && (
-                <BatchSummaryChips groups={groups} />
+                <BatchSummaryChips groups={groups} roomType={room.room_type} />
               )}
 
               <div className="flex items-center gap-2 flex-wrap mt-0.5">
