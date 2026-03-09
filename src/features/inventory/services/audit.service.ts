@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import { getCategoryFromProductName } from './conversions.service';
 import type {
   InventoryAudit,
   InventoryAuditLine,
@@ -343,7 +344,8 @@ export async function addPackageToAudit(
           room: request.room,
           product_stage_id: stageData.id,
           on_hand_qty: request.actual_qty,
-          unit: request.unit
+          unit: request.unit,
+          category: getCategoryFromProductName(request.product_name)
         })
         .select('id')
         .single();
