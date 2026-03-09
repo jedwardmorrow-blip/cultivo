@@ -112,6 +112,13 @@ const CHIP_STAGE_COLORS: Record<string, string> = {
   mixed: 'border-cult-medium-gray bg-cult-near-black text-cult-light-gray',
 };
 
+const INNER_GLOW: Record<string, string> = {
+  clone: 'inset 0 0 30px rgba(14,165,233,0.06)',
+  veg: 'inset 0 0 30px rgba(16,185,129,0.06)',
+  flower: 'inset 0 0 30px rgba(244,63,94,0.06)',
+  mother: 'inset 0 0 30px rgba(245,158,11,0.06)',
+};
+
 interface BatchSummaryChipsProps {
   groups: PlantGroup[];
   roomType: string;
@@ -129,7 +136,7 @@ function BatchSummaryChips({ groups, roomType }: BatchSummaryChipsProps) {
     <div className="flex flex-wrap gap-2 mt-2">
       {visible.map((b) => (
         <span key={b.batchNumber} className={`flex items-center gap-1.5 border rounded px-2.5 py-1 ${chipColor}`}>
-          <span className="font-mono text-sm font-bold tracking-wide">{b.abbr ?? '???'}</span>
+          <span className="font-mono text-sm font-bold tracking-wide w-10 text-center inline-block">{b.abbr ?? '???'}</span>
           <span className="text-sm opacity-70">×{b.totalPlants}</span>
         </span>
       ))}
@@ -340,11 +347,17 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
     if (!preloadedGroups) void loadGroups();
   }
 
+  const totalPlants = groups.reduce((s, g) => s + g.plant_count, 0);
+  const isEmpty = groups.length === 0;
+
   return (
     <>
-      <div className={`border ${typeBorder}`}>
+      <div
+        className={`border ${isEmpty ? 'border-dashed border-cult-dark-gray opacity-50' : typeBorder}`}
+        style={!isEmpty ? { boxShadow: INNER_GLOW[room.room_type] ?? 'none' } : undefined}
+      >
         <div
-          className="p-5 cursor-pointer select-none"
+          className={`${isEmpty ? 'p-3' : 'p-5'} cursor-pointer select-none`}
           onClick={() => setExpanded((v) => !v)}
         >
           <div className="flex items-start justify-between gap-2">
@@ -355,13 +368,13 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
                   {room.room_type}
                 </span>
                 {groups.length > 0 && (
-                  <>
-                    <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
-                    <span className="text-sm text-cult-light-gray font-mono font-semibold">{groups.reduce((s, g) => s + g.plant_count, 0)} plants</span>
-                  </>
+                  <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
+                )}
+                {isEmpty && (
+                  <span className="text-xs text-cult-dark-gray italic">Empty</span>
                 )}
               </div>
-              <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
+              <span className={`text-sm font-semibold truncate ${isEmpty ? 'text-cult-medium-gray' : 'text-cult-white'}`}>{room.name}</span>
 
               {!expanded && groups.length > 0 && (
                 <BatchSummaryChips groups={groups} roomType={room.room_type} />
@@ -379,7 +392,10 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
               </div>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {totalPlants > 0 && (
+                <span className="text-2xl font-bold font-mono text-cult-white leading-none">{totalPlants}</span>
+              )}
               {expanded ? (
                 <ChevronDown className="w-4 h-4 text-cult-medium-gray" />
               ) : (
