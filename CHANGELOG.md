@@ -4,6 +4,27 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-07 - Rosin Lab Module Shell
+
+**Type:** Feature
+**Module:** Rosin Lab (new)
+**Status:** COMPLETE — Shell/Dashboard only; subsequent screens pending
+
+Created the Rosin Lab module shell with left-sidebar navigation and a live dashboard screen.
+
+- **New Section:** "Rosin Lab" added to global `SectionTabs` navigation; 8 sub-nav items visible in the global `SubNavBar`.
+- **Left Sidebar Nav:** 220px fixed-width `RosinLabNav` with active accent-border highlight and colored dot indicators for Wash, Press, and Cure when work items are active.
+- **Pipeline Visualization:** 6 clickable stage cards (Fresh Frozen → Wash → Freeze Dry → Hash → Press → Cure) with stage-color top borders and live counts. Clicking a card navigates to the relevant screen.
+- **Stats Row:** 4 stat cards — Avg Wash Yield, Avg Press Yield, Total Rosin (30d), Needs Attention.
+- **Active Work Table:** Flush-flush table with stage-colored left-border rows, relative timestamps, status badges, and "View →" links.
+- **Empty State:** Centered FlaskConical icon + message when no active pipeline work.
+- **Service Layer:** `rosinLabService.ts` with full query logic for all three data needs; gracefully returns empty defaults when rosin DB tables don't exist yet.
+- **New Tailwind Tokens:** `cult-stage-ff`, `cult-stage-wash`, `cult-stage-fd`, `cult-stage-hash`, `cult-stage-press`, `cult-stage-rosin` added to design system.
+- **New Files:** `src/features/rosin-lab/RosinLabModule.tsx`, `components/PipelineStages.tsx`, `components/RosinLabNav.tsx`, `screens/RosinDashboard.tsx`, `services/rosinLabService.ts`, `types/rosin-lab.types.ts`, `index.ts`
+- **Modified Files:** `App.tsx`, `tailwind.config.js`, `src/shared/components/navigation/sectionNavigation.ts`
+
+---
+
 ## 2026-03-06 - Water Loss Write-Off on Conversions
 
 **Type:** Feature

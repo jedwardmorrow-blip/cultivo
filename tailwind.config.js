@@ -46,6 +46,13 @@ export default {
                       'stage-harvest': '#F59E0B',
                       'stage-cure': '#8B5CF6',
                       'stage-package': '#6366F1',
+                      // Rosin Lab Stage Colors
+                      'stage-ff': '#06B6D4',
+                      'stage-wash': '#3B82F6',
+                      'stage-fd': '#94A3B8',
+                      'stage-hash': '#F59E0B',
+                      'stage-press': '#F97316',
+                      'stage-rosin': '#6366F1',
         },
       },
       fontFamily: {

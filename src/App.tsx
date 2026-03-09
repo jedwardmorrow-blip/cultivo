@@ -46,6 +46,7 @@ const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail')
 const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
 const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
+const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 
 function ViewFallback() {
   return (
@@ -255,6 +256,9 @@ function AppContent() {
         if (currentView.startsWith('crm-account-detail:')) {
           const acctId = currentView.replace('crm-account-detail:', '');
           return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />;
+        }
+        if (currentView === 'rosin-lab' || currentView.startsWith('rosin-lab-')) {
+          return <RosinLabModule setCurrentView={handleViewChange} currentView={currentView} />;
         }
         return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
     }
