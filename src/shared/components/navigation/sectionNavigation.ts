@@ -22,6 +22,12 @@ import {
   ClipboardList,
   CalendarDays,
   GitBranch,
+  FlaskConical,
+  Snowflake,
+  Circle,
+  Droplet,
+  Waves,
+  ArrowDownToLine,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -111,6 +117,22 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
     ],
   },
+  {
+    id: 'rosin-lab',
+    label: 'Rosin Lab',
+    icon: FlaskConical,
+    defaultView: 'rosin-lab',
+    items: [
+      { id: 'rosin-lab', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
+      { id: 'rosin-lab-fresh-frozen', label: 'Fresh Frozen', icon: Snowflake, group: 'primary' },
+      { id: 'rosin-lab-hash', label: 'Hash', icon: Circle, group: 'primary' },
+      { id: 'rosin-lab-rosin', label: 'Rosin', icon: Droplet, group: 'primary' },
+      { id: 'rosin-lab-wash', label: 'New Wash', icon: Waves, group: 'primary' },
+      { id: 'rosin-lab-press', label: 'Press', icon: ArrowDownToLine, group: 'primary' },
+      { id: 'rosin-lab-log', label: 'Press & Cure Log', icon: ClipboardList, group: 'secondary' },
+      { id: 'rosin-lab-analytics', label: 'Analytics', icon: BarChart3, group: 'secondary' },
+    ],
+  },
 ];
 
 export function getSectionForView(viewId: string): SectionDefinition | undefined {
@@ -120,6 +142,10 @@ export function getSectionForView(viewId: string): SectionDefinition | undefined
   return sectionDefinitions.find((section) =>
     section.items.some((item) => item.id === viewId)
   );
+}
+
+export function isRosinLabView(viewId: string): boolean {
+  return viewId === 'rosin-lab' || viewId.startsWith('rosin-lab-');
 }
 
 export function getActiveSectionId(currentView: string): string | null {
