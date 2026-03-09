@@ -124,8 +124,11 @@ export function BulkBagCreationModal({
       return;
     }
 
-    if (totalWeight > availableWeight) {
-      setError(`Total weight (${totalWeight}g) exceeds available weight (${availableWeight}g)`);
+    // Allow upward variance (actual > recorded) with reason/notes,
+    // but hard-block if over by more than 50% (likely data entry error)
+    const overagePercent = availableWeight > 0 ? ((totalWeight - availableWeight) / availableWeight) * 100 : 0;
+    if (totalWeight > availableWeight && overagePercent > 50) {
+      setError(`Total weight (${totalWeight}g) exceeds available weight (${availableWeight}g) by more than 50%. Please verify your entries.`);
       return;
     }
 
@@ -283,7 +286,7 @@ export function BulkBagCreationModal({
                     }`}
                   >
                     {isOverAllocated
-                      ? 'Over-allocated! Reduce bag weights.'
+                      ? 'Over-allocated — provide a variance reason below to continue'
                       : isUnderAllocated
                       ? 'Some weight remaining - you can create more bags later'
                       : 'All weight allocated'}
@@ -509,7 +512,6 @@ export function BulkBagCreationModal({
               disabled={
                 isSubmitting ||
                 bags.length === 0 ||
-                isOverAllocated ||
                 isLoadingIds ||
                 (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
               }
