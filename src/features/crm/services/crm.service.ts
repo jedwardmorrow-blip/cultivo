@@ -18,6 +18,8 @@ import type {
   RevenuePipelineItem,
   CRMDashboardStats,
   TopAccountByRange,
+  ProspectPipelineItem,
+  PipelineStage,
 } from '../types';
 
 export async function getAccountSummaries() {
@@ -610,6 +612,49 @@ export async function updateAccountInfo(
     return { error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to update account info');
+    return { error };
+  }
+}
+
+export async function getProspectPipeline() {
+  try {
+    const { data, error } = await supabase
+      .from('crm_prospect_pipeline')
+      .select('*');
+
+    if (error) throw error;
+    return { data: data as ProspectPipelineItem[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load prospect pipeline');
+    return { data: null, error };
+  }
+}
+
+export async function updatePipelineStage(customerId: string, stage: PipelineStage) {
+  try {
+    const { error } = await supabase
+      .from('customers')
+      .update({
+        pipeline_stage: stage,
+        pipeline_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', customerId);
+
+    if (error) throw error;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('customer_activity_log').insert([{
+      customer_id: customerId,
+      user_id: user?.id,
+      activity_type: 'note',
+      subject: `Pipeline stage updated to ${stage.replace(/_/g, ' ')}`,
+      body: null,
+    }]);
+
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to update pipeline stage');
     return { error };
   }
 }

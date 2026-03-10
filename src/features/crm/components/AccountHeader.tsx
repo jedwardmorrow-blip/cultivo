@@ -1,7 +1,9 @@
-import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart, Gift, Pencil } from 'lucide-react';
-import type { AccountSummary, AccountHealthScore } from '../types';
+import { useState } from 'react';
+import { Building2, MapPin, Phone, Mail, FileText, Shield, Package, Truck, Network, ShoppingCart, Gift, Pencil, ChevronDown } from 'lucide-react';
+import type { AccountSummary, AccountHealthScore, PipelineStage } from '../types';
 import { AccountHealthBadge } from './AccountHealthBadge';
 import { RevenueSparkline } from '@/shared/components';
+import { updatePipelineStage } from '../services/crm.service';
 
 interface AccountHeaderProps {
   account: AccountSummary;
@@ -10,7 +12,18 @@ interface AccountHeaderProps {
   onCreateOrder?: () => void;
   onCreateSampleOrder?: () => void;
   onEdit?: () => void;
+  onAccountUpdated?: () => void;
 }
+
+const PIPELINE_STAGES: { key: PipelineStage; label: string; color: string }[] = [
+  { key: 'lead', label: 'Lead', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
+  { key: 'contacted', label: 'Contacted', color: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
+  { key: 'meeting_set', label: 'Meeting Set', color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
+  { key: 'sample_sent', label: 'Sample Sent', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  { key: 'negotiating', label: 'Negotiating', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  { key: 'closed_won', label: 'Closed Won', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { key: 'closed_lost', label: 'Closed Lost', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+];
 
 function getStatusColor(status: string): string {
   switch (status) {
@@ -26,10 +39,23 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
 }
 
-export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder, onCreateSampleOrder, onEdit }: AccountHeaderProps) {
+export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOrder, onCreateSampleOrder, onEdit, onAccountUpdated }: AccountHeaderProps) {
   const isHubParent = account.account_type === 'hub_parent';
+  const isProspect = account.account_status === 'prospect';
   const chainRevenue = Number(account.total_revenue) + (account.child_total_revenue || 0);
   const chainOrders = account.order_count + (account.child_total_orders || 0);
+  const [showPipelineMenu, setShowPipelineMenu] = useState(false);
+  const [updatingStage, setUpdatingStage] = useState(false);
+
+  const currentPipelineStage = PIPELINE_STAGES.find((s) => s.key === account.pipeline_stage);
+
+  const handlePipelineChange = async (stage: PipelineStage) => {
+    setUpdatingStage(true);
+    setShowPipelineMenu(false);
+    await updatePipelineStage(account.id, stage);
+    onAccountUpdated?.();
+    setUpdatingStage(false);
+  };
 
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
@@ -73,6 +99,36 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
               </span>
             )}
             {healthScore && <AccountHealthBadge healthScore={healthScore} size="md" />}
+            {isProspect && currentPipelineStage && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowPipelineMenu(!showPipelineMenu)}
+                  disabled={updatingStage}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-semibold rounded-full border transition-all ${currentPipelineStage.color} ${updatingStage ? 'opacity-50' : 'hover:opacity-80 cursor-pointer'}`}
+                >
+                  {updatingStage ? 'Updating...' : currentPipelineStage.label}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                {showPipelineMenu && (
+                  <div className="absolute top-full left-0 mt-1 z-50 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl p-1.5 min-w-[160px]">
+                    <p className="px-2 py-1 text-[10px] text-cult-silver uppercase tracking-wider">Pipeline Stage</p>
+                    {PIPELINE_STAGES.map((s) => (
+                      <button
+                        key={s.key}
+                        onClick={() => handlePipelineChange(s.key)}
+                        className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors ${
+                          s.key === account.pipeline_stage
+                            ? `${s.color} font-bold`
+                            : 'text-cult-light-gray hover:bg-cult-dark-gray hover:text-cult-white'
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
