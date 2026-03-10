@@ -180,6 +180,9 @@ export async function getSalesOverview() {
     const { data, error } = await supabase
       .from('order_pipeline')
       .select('*')
+      .eq('archived', false)
+      .eq('is_sample', false)
+      .not('status', 'eq', 'cancelled')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
