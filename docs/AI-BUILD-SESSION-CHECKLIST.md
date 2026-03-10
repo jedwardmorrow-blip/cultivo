@@ -14,49 +14,45 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-07
-**Session:** Rosin Lab Module Shell + Navigation
+**Date:** 2026-03-09
+**Session:** L10/EOS Personal Todos System — Pages, Hooks & Types
 **Status:** COMPLETE
 
 **What was done:**
 
-Created the Rosin Lab module shell — a new top-level section in the app with a left-sidebar subnav, pipeline visualization, stats cards, and active work table on the dashboard. All other screens show "Coming Soon" placeholders. No database schema exists yet for rosin lab tables; service queries gracefully return empty data.
+Added the L10/EOS personal todos system front-end: calendar page, dashboard page, personal todos page, admin panel, usePersonalTodos hook, and L10/EOS type definitions in `types/index.ts`. Fixed a build-breaking issue where the types barrel file lost its original re-exports.
 
 **Key changes:**
-- New `rosin-lab` section in `sectionNavigation.ts` with 8 sub-items (Dashboard, Fresh Frozen, Hash, Rosin, New Wash, Press, Press & Cure Log, Analytics)
-- `RosinLabModule` renders a 220px left sidebar + content area, derives active screen from `currentView` prop (no internal useState needed)
-- Left sidebar nav (`RosinLabNav`) shows active accent border, inactive secondary text, and colored dot indicators for Wash/Press/Cure when `activeCounts > 0`
-- Pipeline cards (`PipelineStages`) are clickable, show live counts, stage-color top borders, and arrows between stages
-- Dashboard stats row (4 stat cards) and active work table with stage-colored row left borders
-- 6 new Tailwind color tokens: `cult-stage-ff`, `cult-stage-wash`, `cult-stage-fd`, `cult-stage-hash`, `cult-stage-press`, `cult-stage-rosin`
-- App.tsx: `RosinLabModule` lazy-loaded; handled in `default` branch via `currentView.startsWith('rosin-lab')`
+- `CalendarPage.tsx` — Monthly calendar view with personal + team todos, drag-drop support
+- `DashboardPage.tsx` — Main dashboard with north star, goals, rocks, todos, issues overview + Claude Recommendations widget
+- `PersonalTodosPage.tsx` — Full personal todos management with recurring items, categories, priorities
+- `AdminPanel.tsx` — Admin panel for team todo management
+- `usePersonalTodos.ts` — Hook for personal todo CRUD operations (create, update, toggle, delete, reorder)
+- `types/index.ts` — Added L10/EOS interfaces (Profile, Business, Plan, Goal, Rock, ScorecardMetric, ScorecardEntry, Meeting, Issue, Todo, Checkin, PersonalTodo, PersonalTodoCompletion, ClaudeRecommendation) while preserving original barrel re-exports
 
 **Files created:**
-- `src/features/rosin-lab/RosinLabModule.tsx`
-- `src/features/rosin-lab/components/PipelineStages.tsx`
-- `src/features/rosin-lab/components/RosinLabNav.tsx`
-- `src/features/rosin-lab/screens/RosinDashboard.tsx`
-- `src/features/rosin-lab/services/rosinLabService.ts`
-- `src/features/rosin-lab/types/rosin-lab.types.ts`
-- `src/features/rosin-lab/index.ts`
+- `src/pages/CalendarPage.tsx`
+- `src/pages/DashboardPage.tsx`
+- `src/pages/PersonalTodosPage.tsx`
+- `src/pages/AdminPanel.tsx` (note: overwrites existing if present)
+- `src/hooks/usePersonalTodos.ts`
 
 **Files modified:**
-- `App.tsx` — lazy import + rosin-lab default case
-- `tailwind.config.js` — 6 new stage color tokens
-- `src/shared/components/navigation/sectionNavigation.ts` — new section + 6 new icon imports
-- `CHANGELOG.md` — session entry added
+- `src/types/index.ts` — appended L10/EOS type interfaces (preserved all existing re-exports)
 
-**Build status:** PASSES (✓ clean, 0 errors)
+**Build status:** PASSES (✓ Vercel deployment READY, commit 7bb7e98)
 **Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors -- not blocking (baseline ~501 as of 2026-02-18)
-- `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
-- Rosin lab DB tables (`wash_runs`, `press_runs`, `fresh_frozen_packages`, etc.) do not exist yet; service uses `as any` cast and returns empty defaults
+- Pre-existing tsc errors — not blocking (baseline ~501 as of 2026-02-18)
+- `customer_price_lists` RLS uses `USING (true)` — pre-existing, not changed this session
+- Rosin lab DB tables do not exist yet; service uses `as any` cast and returns empty defaults
+- L10/EOS Supabase tables (plans, goals, rocks, scorecard_metrics, meetings, etc.) need to be created via migration
+- New pages not yet wired into router (App.tsx routes not updated this session)
 
 **Next steps:**
-- Prompt #2: Fresh Frozen intake form + storage table
-- Prompt #3: Wash run form (select FF batch, log input/output/yield)
-- Prompt #4: Press run form + cure session creation
-- Database migration needed: create rosin lab schema (wash_runs, press_runs, fresh_frozen_packages, rosin_cure_sessions, v_rosin_pipeline_status view)
+- Wire new pages into App.tsx router (routes for /calendar, /todos, /admin, /dashboard)
+- Create Supabase migrations for L10/EOS tables (plans, goals, rocks, scorecard_metrics, scorecard_entries, meetings, issues, todos, checkins, personal_todos, personal_todo_completions, claude_recommendations)
+- Add RLS policies for L10/EOS tables
+- Rosin Lab Prompt #2: Fresh Frozen intake form + storage table
 
 ---
 
