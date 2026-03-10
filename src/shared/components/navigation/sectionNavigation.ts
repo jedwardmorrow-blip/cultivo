@@ -28,6 +28,7 @@ import {
   Droplet,
   Waves,
   ArrowDownToLine,
+  TrendingUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -117,6 +118,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
       { id: 'crm-health', label: 'Account Health', icon: Activity, group: 'secondary' },
       { id: 'crm-cadence', label: 'Visit Cadence', icon: CalendarDays, group: 'secondary' },
+      { id: 'crm-revenue', label: 'Revenue Tracking', icon: TrendingUp, group: 'secondary' },
     ],
   },
   {

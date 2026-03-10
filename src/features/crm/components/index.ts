@@ -8,3 +8,4 @@ export { SalesPipeline } from './pipeline';
 export { ProspectPipeline } from './ProspectPipeline';
 export { AccountHealthDashboard } from './AccountHealthDashboard';
 export { VisitCadenceDashboard } from './VisitCadenceDashboard';
+export { RevenueTrackingDashboard } from './RevenueTrackingDashboard';

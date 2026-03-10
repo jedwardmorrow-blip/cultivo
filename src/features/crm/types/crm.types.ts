@@ -393,6 +393,39 @@ export interface ProspectPipelineItem {
   last_activity_at: string | null;
 }
 
+// ── Revenue Tracking ──────────────────────────────────────────────
+export interface RevenueTrackingItem {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  current_month_realized: number;
+  current_month_tentative: number;
+  current_month_unresolved: number;
+  current_month_orders: number;
+  prior_month_realized: number;
+  prior_month_orders: number;
+  mom_change_pct: number | null;
+  rolling_90d_realized: number;
+  rolling_90d_tentative: number;
+  rolling_90d_order_count: number;
+  lifetime_revenue: number;
+  lifetime_order_count: number;
+  first_order_date: string | null;
+  last_order_date: string | null;
+  total_unresolved_revenue: number;
+  total_unresolved_orders: number;
+}
+
+export interface RevenueWeeklyItem {
+  customer_id: string;
+  customer_name: string;
+  revenue_week: string;
+  realized_revenue: number;
+  tentative_revenue: number;
+  realized_orders: number;
+  tentative_orders: number;
+}
+
 export type AccountTier = 'top_10' | 'mid_tier' | 'tail' | 'prospect';
 export type ComplianceStatus = 'on_track' | 'due_soon' | 'overdue' | 'never_visited' | 'scheduled';
 
