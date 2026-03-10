@@ -289,6 +289,41 @@ export interface AccountHealthScore {
   last_visit_date: string | null;
 }
 
+export interface AccountHealthDashboardItem {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  account_type: AccountType;
+  account_status: AccountStatus;
+  city: string | null;
+  state: string | null;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  tags: string[];
+  health_score: number;
+  health_label: 'healthy' | 'cooling' | 'at_risk' | 'dormant';
+  recency_score: number;
+  frequency_score: number;
+  trend_score: number;
+  engagement_score: number;
+  days_since_last_order: number | null;
+  orders_30d: number;
+  orders_90d: number;
+  revenue_30d: number;
+  revenue_90d: number;
+  lifetime_revenue: number;
+  avg_order_value_90d: number;
+  revenue_trend: 'growing' | 'stable' | 'declining' | 'inactive';
+  open_task_count: number;
+  tasks_completed_30d: number;
+  oldest_overdue_task: string | null;
+  last_visit_date: string | null;
+  visits_30d: number;
+  next_scheduled_visit: string | null;
+  last_activity_at: string | null;
+}
+
 export interface CustomerProductMix {
   customer_id: string;
   customer_name: string;
