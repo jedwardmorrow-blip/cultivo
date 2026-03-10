@@ -22,6 +22,8 @@ import type {
   ProspectPipelineItem,
   PipelineStage,
   VisitCadenceItem,
+  RevenueTrackingItem,
+  RevenueWeeklyItem,
 } from '../types';
 
 export async function getAccountSummaries() {
@@ -700,6 +702,66 @@ export async function getVisitCadence(): Promise<{ data: VisitCadenceItem[]; err
     return { data: (data || []) as VisitCadenceItem[], error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to load visit cadence data');
+    return { data: [], error };
+  }
+}
+
+// ── Revenue Tracking ──────────────────────────────────────────────
+
+export async function getRevenueTracking(): Promise<{ data: RevenueTrackingItem[]; error: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('crm_revenue_tracking')
+      .select('*')
+      .order('lifetime_revenue', { ascending: false });
+
+    if (error) throw error;
+
+    const items: RevenueTrackingItem[] = (data || []).map((row: any) => ({
+      ...row,
+      current_month_realized: Number(row.current_month_realized) || 0,
+      current_month_tentative: Number(row.current_month_tentative) || 0,
+      current_month_unresolved: Number(row.current_month_unresolved) || 0,
+      current_month_orders: Number(row.current_month_orders) || 0,
+      prior_month_realized: Number(row.prior_month_realized) || 0,
+      prior_month_orders: Number(row.prior_month_orders) || 0,
+      mom_change_pct: row.mom_change_pct != null ? Number(row.mom_change_pct) : null,
+      rolling_90d_realized: Number(row.rolling_90d_realized) || 0,
+      rolling_90d_tentative: Number(row.rolling_90d_tentative) || 0,
+      rolling_90d_order_count: Number(row.rolling_90d_order_count) || 0,
+      lifetime_revenue: Number(row.lifetime_revenue) || 0,
+      lifetime_order_count: Number(row.lifetime_order_count) || 0,
+      total_unresolved_revenue: Number(row.total_unresolved_revenue) || 0,
+      total_unresolved_orders: Number(row.total_unresolved_orders) || 0,
+    }));
+
+    return { data: items, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load revenue tracking');
+    return { data: [], error };
+  }
+}
+
+export async function getRevenueWeekly(): Promise<{ data: RevenueWeeklyItem[]; error: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('crm_revenue_weekly')
+      .select('*')
+      .order('revenue_week', { ascending: false });
+
+    if (error) throw error;
+
+    const items: RevenueWeeklyItem[] = (data || []).map((row: any) => ({
+      ...row,
+      realized_revenue: Number(row.realized_revenue) || 0,
+      tentative_revenue: Number(row.tentative_revenue) || 0,
+      realized_orders: Number(row.realized_orders) || 0,
+      tentative_orders: Number(row.tentative_orders) || 0,
+    }));
+
+    return { data: items, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load weekly revenue');
     return { data: [], error };
   }
 }
