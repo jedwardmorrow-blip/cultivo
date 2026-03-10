@@ -7,6 +7,7 @@ import {
 import type {
   AccountSummary,
   AccountInfoInput,
+  AccountHealthDashboardItem,
   ChainLocationPerformance,
   CustomerContact,
   CustomerContactInput,
@@ -613,6 +614,35 @@ export async function updateAccountInfo(
   } catch (error) {
     errorService.handle(error, 'Failed to update account info');
     return { error };
+  }
+}
+
+export async function getAccountHealthDashboard() {
+  try {
+    const { data, error } = await supabase
+      .from('crm_account_health_dashboard')
+      .select('*')
+      .order('health_score', { ascending: true });
+
+    if (error) throw error;
+
+    const items: AccountHealthDashboardItem[] = (data || []).map((row: any) => ({
+      ...row,
+      health_score: Number(row.health_score) || 0,
+      recency_score: Number(row.recency_score) || 0,
+      frequency_score: Number(row.frequency_score) || 0,
+      trend_score: Number(row.trend_score) || 0,
+      engagement_score: Number(row.engagement_score) || 0,
+      revenue_30d: Number(row.revenue_30d) || 0,
+      revenue_90d: Number(row.revenue_90d) || 0,
+      lifetime_revenue: Number(row.lifetime_revenue) || 0,
+      avg_order_value_90d: Number(row.avg_order_value_90d) || 0,
+    }));
+
+    return { data: items, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load account health dashboard');
+    return { data: null, error };
   }
 }
 

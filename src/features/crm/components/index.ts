@@ -6,3 +6,4 @@ export { SalesQueue } from './SalesQueue';
 export { VisitCalendar } from './VisitCalendar';
 export { SalesPipeline } from './pipeline';
 export { ProspectPipeline } from './ProspectPipeline';
+export { AccountHealthDashboard } from './AccountHealthDashboard';
