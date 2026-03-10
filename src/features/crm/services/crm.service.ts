@@ -21,6 +21,7 @@ import type {
   TopAccountByRange,
   ProspectPipelineItem,
   PipelineStage,
+  VisitCadenceItem,
 } from '../types';
 
 export async function getAccountSummaries() {
@@ -686,5 +687,19 @@ export async function updatePipelineStage(customerId: string, stage: PipelineSta
   } catch (error) {
     errorService.handle(error, 'Failed to update pipeline stage');
     return { error };
+  }
+}
+
+export async function getVisitCadence(): Promise<{ data: VisitCadenceItem[]; error: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('crm_visit_cadence')
+      .select('*');
+
+    if (error) throw error;
+    return { data: (data || []) as VisitCadenceItem[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load visit cadence data');
+    return { data: [], error };
   }
 }

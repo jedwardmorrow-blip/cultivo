@@ -7,3 +7,4 @@ export { VisitCalendar } from './VisitCalendar';
 export { SalesPipeline } from './pipeline';
 export { ProspectPipeline } from './ProspectPipeline';
 export { AccountHealthDashboard } from './AccountHealthDashboard';
+export { VisitCadenceDashboard } from './VisitCadenceDashboard';
