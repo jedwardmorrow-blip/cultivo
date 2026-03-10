@@ -3,6 +3,7 @@ export type AccountStatus = 'active' | 'inactive' | 'prospect' | 'churned';
 export type ActivityType = 'call' | 'email' | 'visit' | 'sample' | 'note' | 'follow_up';
 export type DeliveryModel = 'direct_to_each' | 'hub_and_spoke';
 export type ChainHealthLabel = 'healthy' | 'cooling' | 'at_risk' | 'dormant' | 'no_orders';
+export type PipelineStage = 'lead' | 'contacted' | 'meeting_set' | 'sample_sent' | 'negotiating' | 'closed_won' | 'closed_lost';
 
 export interface AccountSummary {
   id: string;
@@ -45,6 +46,8 @@ export interface AccountSummary {
   delivery_model: DeliveryModel;
   child_total_revenue: number;
   child_total_orders: number;
+  pipeline_stage: PipelineStage | null;
+  pipeline_updated_at: string | null;
 }
 
 export interface AccountInfoInput {
@@ -332,4 +335,25 @@ export interface ChainLocationPerformance {
   revenue_share_pct: number;
   health_label: ChainHealthLabel;
   revenue_rank: number;
+}
+
+export interface ProspectPipelineItem {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  state: string | null;
+  account_status: AccountStatus;
+  pipeline_stage: PipelineStage | null;
+  pipeline_updated_at: string | null;
+  created_at: string;
+  notes: string | null;
+  tags: string[];
+  days_in_stage: number;
+  stage_order: number;
+  task_count: number;
+  open_task_count: number;
+  last_activity_at: string | null;
 }

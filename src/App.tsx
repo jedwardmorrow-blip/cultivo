@@ -46,6 +46,7 @@ const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail')
 const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
 const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
+const ProspectPipeline = lazyRetry(() => import('./features/crm'), 'ProspectPipeline');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 
 function ViewFallback() {
@@ -274,6 +275,8 @@ function AppContent() {
         return <VisitCalendar onSelectOrder={handleSelectOrder} />;
       case 'crm-pipeline':
         return <SalesPipeline />;
+      case 'crm-prospect-pipeline':
+        return <ProspectPipeline onViewChange={handleViewChange} />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':

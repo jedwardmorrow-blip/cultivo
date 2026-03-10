@@ -5,3 +5,4 @@ export { AccountInfoEditModal } from './AccountInfoEditModal';
 export { SalesQueue } from './SalesQueue';
 export { VisitCalendar } from './VisitCalendar';
 export { SalesPipeline } from './pipeline';
+export { ProspectPipeline } from './ProspectPipeline';

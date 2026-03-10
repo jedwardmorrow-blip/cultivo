@@ -1,4 +1,4 @@
-import { ShoppingCart, MessageSquare, Calendar, ArrowRight } from 'lucide-react';
+import { ShoppingCart, MessageSquare, Calendar, Users, ArrowRight } from 'lucide-react';
 
 interface DashboardQuickActionsProps {
   onCreateOrder: () => void;
@@ -28,10 +28,17 @@ export function DashboardQuickActions({ onCreateOrder, onViewChange }: Dashboard
       color: 'bg-teal-500/15 text-teal-400 border-teal-500/30 hover:bg-teal-500/25',
       onClick: () => onViewChange('crm-visit-calendar'),
     },
+    {
+      label: 'Prospect Pipeline',
+      description: 'Track prospects through stages',
+      icon: Users,
+      color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/25',
+      onClick: () => onViewChange('crm-prospect-pipeline'),
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {actions.map((action) => {
         const Icon = action.icon;
         return (
