@@ -116,6 +116,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-pipeline', label: 'Inventory Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
       { id: 'crm-health', label: 'Account Health', icon: Activity, group: 'secondary' },
+      { id: 'crm-cadence', label: 'Visit Cadence', icon: CalendarDays, group: 'secondary' },
     ],
   },
   {

@@ -392,3 +392,38 @@ export interface ProspectPipelineItem {
   open_task_count: number;
   last_activity_at: string | null;
 }
+
+export type AccountTier = 'top_10' | 'mid_tier' | 'tail' | 'prospect';
+export type ComplianceStatus = 'on_track' | 'due_soon' | 'overdue' | 'never_visited' | 'scheduled';
+
+export interface VisitCadenceItem {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  account_type: AccountType;
+  account_status: AccountStatus;
+  city: string | null;
+  state: string | null;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  tags: string[];
+  lifetime_revenue: number;
+  last_order_date: string | null;
+  days_since_last_order: number | null;
+  revenue_rank: number;
+  account_tier: AccountTier;
+  required_frequency_days: number;
+  frequency_label: string;
+  last_completed_visit: string | null;
+  days_since_last_visit: number | null;
+  next_scheduled_visit: string | null;
+  visits_completed_30d: number;
+  visits_completed_7d: number;
+  upcoming_scheduled: number;
+  total_visits_completed: number;
+  last_visit_outcome: string | null;
+  compliance_status: ComplianceStatus;
+  days_until_due: number;
+  compliance_pct_30d: number;
+}
