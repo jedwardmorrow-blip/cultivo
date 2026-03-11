@@ -6,7 +6,8 @@ import { ProductsManagement, StagesManagement, ProductTypesManagement, StrainsMa
 import { UserManagement } from './UserManagement';
 import { CustomersManagement } from '../../customers/components/CustomersManagement';
 import { AdminTrimSessionManagement } from '../../sessions/components/AdminTrimSessionManagement';
-import { DriversManagement } from './DriversManagement';
+import { DriversManagement } from './DriversManagemen';
+import { StaffManagement } from './StaffManagement';
 import { VehiclesManagement } from './VehiclesManagement';
 import { RouteTestingTool } from './RouteTestingTool';
 import { BatchManagement } from '../../batches';
@@ -264,6 +265,7 @@ export function Settings() {
     { id: 'routing', label: 'Routing', icon: Navigation },
     { id: 'customers', label: 'Customers', icon: Building2 },
     { id: 'drivers', label: 'Drivers', icon: Truck },
+    { id: 'staff', label: 'Staff', icon: Users },
     { id: 'vehicles', label: 'Vehicles', icon: Car },
     { id: 'stages', label: 'Stages', icon: Layers },
     { id: 'types', label: 'Product Types', icon: Box },
@@ -697,6 +699,8 @@ export function Settings() {
       {activeTab === 'vehicles' && <VehiclesManagement />}
 
       {activeTab === 'stages' && <StagesManagement />}
+
+      {activeTab === 'staff' && <StaffManagement />}
 
       {activeTab === 'types' && <ProductTypesManagement />}
 
