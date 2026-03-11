@@ -6,7 +6,7 @@ import { ProductsManagement, StagesManagement, ProductTypesManagement, StrainsMa
 import { UserManagement } from './UserManagement';
 import { CustomersManagement } from '../../customers/components/CustomersManagement';
 import { AdminTrimSessionManagement } from '../../sessions/components/AdminTrimSessionManagement';
-import { DriversManagement } from './DriversManagemen';
+import { DriversManagement } from './DriversManagement';
 import { StaffManagement } from './StaffManagement';
 import { VehiclesManagement } from './VehiclesManagement';
 import { RouteTestingTool } from './RouteTestingTool';
