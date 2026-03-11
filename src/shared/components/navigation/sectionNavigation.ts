@@ -122,6 +122,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-revenue', label: 'Revenue Tracking', icon: TrendingUp, group: 'secondary' },
       { id: 'crm-tasks', label: 'Task Engine', icon: Zap, group: 'secondary' },
       { id: 'crm-scorecard', label: 'Store Scorecard', icon: ClipboardList, group: 'secondary' },
+      { id: 'crm-forecast', label: 'Forecast', icon: TrendingUp, group: 'secondary' },
     ],
   },
   {

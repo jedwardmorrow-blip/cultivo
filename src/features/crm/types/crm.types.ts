@@ -510,3 +510,27 @@ export interface StoreScorecard {
   visits_30d: number;
   last_activity_at: string | null;
 }
+
+// ── Revenue Forecasting ──────────────────────────────────────────
+export type ForecastType = 'reorder' | 'pipeline';
+export type ForecastConfidence = 'high' | 'medium' | 'low' | 'none' | 'prospect';
+
+export interface RevenueForecastItem {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  forecast_type: ForecastType;
+  last_3mo_revenue: number;
+  last_3mo_orders: number;
+  months_with_orders: number;
+  current_month_realized: number;
+  current_month_pipeline: number;
+  avg_monthly_revenue: number;
+  reorder_probability: number;
+  monthly_forecast: number;
+  current_month_expected_additional: number;
+  days_since_last_order: number | null;
+  last_completed_order: string | null;
+  confidence: ForecastConfidence;
+  monthly_target: number;
+}
