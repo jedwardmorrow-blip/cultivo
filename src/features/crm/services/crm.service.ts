@@ -13,6 +13,7 @@ import type {
   CustomerContactInput,
   CustomerActivity,
   CustomerActivityInput,
+  CRMTask,
   DeliveryModel,
   MonthlyRevenue,
   SKUPerformance,
@@ -763,5 +764,76 @@ export async function getRevenueWeekly(): Promise<{ data: RevenueWeeklyItem[]; e
   } catch (error) {
     errorService.handle(error, 'Failed to load weekly revenue');
     return { data: [], error };
+  }
+}
+
+// ── Automated Task Engine ─────────────────────────────────────────
+
+export async function getTaskSummary(filters?: {
+  status?: string;
+  taskType?: string;
+  triggerSource?: string;
+  priority?: string;
+}): Promise<{ data: CRMTask[]; error: any }> {
+  try {
+    let query = supabase
+      .from('crm_task_summary')
+      .select('*')
+      .order('priority', { ascending: false })
+      .order('due_date', { ascending: true });
+
+    if (filters?.status) query = query.eq('status', filters.status);
+    if (filters?.taskType) query = query.eq('task_type', filters.taskType);
+    if (filters?.triggerSource) query = query.eq('trigger_source', filters.triggerSource);
+    if (filters?.priority) query = query.eq('priority', filters.priority);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return { data: (data || []) as CRMTask[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load task summary');
+    return { data: [], error };
+  }
+}
+
+export async function completeTask(taskId: string): Promise<{ error: any }> {
+  try {
+    const { error } = await supabase
+      .from('crm_tasks')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('id', taskId);
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to complete task');
+    return { error };
+  }
+}
+
+export async function dismissTask(taskId: string): Promise<{ error: any }> {
+  try {
+    const { error } = await supabase
+      .from('crm_tasks')
+      .update({ status: 'auto_closed', completed_at: new Date().toISOString() })
+      .eq('id', taskId);
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to dismiss task');
+    return { error };
+  }
+}
+
+export async function runTaskEngine(): Promise<{ data: any; error: any }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('crm-task-engine', {
+      method: 'POST',
+      body: {},
+    });
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to run task engine');
+    return { data: null, error };
   }
 }

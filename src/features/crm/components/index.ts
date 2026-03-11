@@ -9,3 +9,4 @@ export { ProspectPipeline } from './ProspectPipeline';
 export { AccountHealthDashboard } from './AccountHealthDashboard';
 export { VisitCadenceDashboard } from './VisitCadenceDashboard';
 export { RevenueTrackingDashboard } from './RevenueTrackingDashboard';
+export { AutomatedTaskEngine } from './AutomatedTaskEngine';

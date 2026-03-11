@@ -212,9 +212,10 @@ export interface TopAccountByRange {
   days_since_last_order: number | null;
 }
 
-export type TaskType = 'callback' | 'visit_reminder' | 'sample_drop' | 'reorder_prompt' | 'general';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TaskStatus = 'open' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskType = 'general' | 'visit_follow_up' | 'reorder_reminder' | 'prospect_advancement' | 'visit_overdue';
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'open' | 'completed' | 'auto_closed' | 'expired';
+export type TriggerSource = 'manual' | 'auto';
 
 export interface CRMTask {
   id: string;
@@ -228,11 +229,15 @@ export interface CRMTask {
   status: TaskStatus;
   completed_at: string | null;
   related_activity_id: string | null;
+  trigger_source: TriggerSource;
+  trigger_key: string | null;
   created_at: string;
   updated_at: string;
   customer_name?: string;
   dispensary_code?: string;
   assigned_user_name?: string;
+  is_overdue?: boolean;
+  days_overdue?: number;
 }
 
 export interface CRMTaskInput {
