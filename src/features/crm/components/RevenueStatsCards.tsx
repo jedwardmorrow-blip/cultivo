@@ -1,4 +1,4 @@
-import { DollarSign, ShoppingCart, Users, TrendingUp, AlertTriangle, UserPlus } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, TrendingUp, AlertTriangle, UserPlus, CalendarRange } from 'lucide-react';
 import { StatsCard } from '@/features/inventory/components/StatsCard';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import type { CRMDashboardStats } from '../types';
@@ -25,6 +25,12 @@ export function RevenueStatsCards({ stats, periodLabel, compareEnabled = false }
   const orderTrend = compareEnabled ? computeTrend(stats.periodOrders, stats.prevPeriodOrders) : null;
   const avgTrend = compareEnabled ? computeTrend(stats.periodAvgOrder, stats.prevPeriodAvgOrder) : null;
 
+  // Show projected month card when projected differs from period actuals
+  // (i.e. there are future-dated deliveries this month beyond the current range)
+  const showProjected =
+    stats.projectedMonthRevenue > 0 &&
+    stats.projectedMonthRevenue !== stats.periodRevenue;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       <StatsCard
@@ -36,6 +42,15 @@ export function RevenueStatsCards({ stats, periodLabel, compareEnabled = false }
         trend={revTrend?.trend}
         trendValue={revTrend?.value}
       />
+      {showProjected && (
+        <StatsCard
+          label="Month Projected"
+          value={formatCurrencyShort(stats.projectedMonthRevenue)}
+          icon={<CalendarRange className="w-5 h-5" />}
+          subtitle={`${stats.projectedMonthOrders} orders scheduled`}
+          accentColor="border-emerald-600/20"
+        />
+      )}
       <StatsCard
         label="Orders"
         value={stats.periodOrders}

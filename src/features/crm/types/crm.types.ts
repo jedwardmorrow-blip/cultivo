@@ -193,6 +193,8 @@ export interface CRMDashboardStats {
   atRiskCount: number;
   prospectCount: number;
   uniqueCustomersInPeriod: number;
+  projectedMonthRevenue: number;
+  projectedMonthOrders: number;
 }
 
 export interface TopAccountByRange {

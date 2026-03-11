@@ -298,6 +298,8 @@ export async function getDashboardStatsByRange(
         atRiskCount: Number(raw.at_risk_count) || 0,
         prospectCount: Number(raw.prospect_count) || 0,
         uniqueCustomersInPeriod: Number(raw.unique_customers_in_period) || 0,
+        projectedMonthRevenue: Number(raw.projected_month_revenue) || 0,
+        projectedMonthOrders: Number(raw.projected_month_orders) || 0,
       },
       error: null,
     };
