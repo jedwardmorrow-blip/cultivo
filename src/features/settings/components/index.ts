@@ -3,3 +3,4 @@ export { UserManagement } from './UserManagement';
 export { DriversManagement } from './DriversManagement';
 export { VehiclesManagement } from './VehiclesManagement';
 export { RouteTestingTool } from './RouteTestingTool';
+export { StaffManagement } from './StaffManagement';
