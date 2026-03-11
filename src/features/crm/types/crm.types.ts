@@ -233,6 +233,7 @@ export interface CRMTask {
   related_activity_id: string | null;
   trigger_source: TriggerSource;
   trigger_key: string | null;
+  focus_today: boolean;
   created_at: string;
   updated_at: string;
   customer_name?: string;

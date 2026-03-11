@@ -103,7 +103,7 @@ export async function createTask(input: CRMTaskInput) {
 
 export async function updateTask(id: string, updates: Partial<CRMTask>) {
   try {
-    const { id: _id, created_at: _ca, customer_name: _cn, dispensary_code: _dc, assigned_user_name: _aun, ...cleanUpdates } = updates as any;
+    const { id: _id, created_at: _ca, customer_name: _cn, dispensary_code: _dc, assigned_user_name: _aun, is_overdue: _io, days_overdue: _do, ...cleanUpdates } = updates as any;
     const { data, error } = await supabase
       .from('crm_tasks')
       .update(cleanUpdates)
@@ -119,7 +119,7 @@ export async function updateTask(id: string, updates: Partial<CRMTask>) {
   }
 }
 
-export async function completeTask(taskId: string) {
+export async function completeTask(taskId: string, completionNotes?: string) {
   try {
     const { data: task, error: fetchError } = await supabase
       .from('crm_tasks')
@@ -140,6 +140,10 @@ export async function completeTask(taskId: string) {
     if (updateError) throw updateError;
 
     const { data: { user } } = await supabase.auth.getUser();
+    const bodyText = completionNotes
+      ? `${completionNotes}${task.description ? `\n\nOriginal task: ${task.description}` : ''}`
+      : task.description || null;
+
     const { data: activity, error: actError } = await supabase
       .from('customer_activity_log')
       .insert([{
@@ -147,7 +151,7 @@ export async function completeTask(taskId: string) {
         user_id: user?.id || null,
         activity_type: 'follow_up',
         subject: `Task completed: ${task.title}`,
-        body: task.description || null,
+        body: bodyText,
         completed: true,
         linked_task_id: taskId,
       }])
