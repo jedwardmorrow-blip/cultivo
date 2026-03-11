@@ -879,33 +879,3 @@ export async function runTaskEngine(): Promise<{ data: any; error: any }> {
 
 // ── Revenue Forecasting ─────────────────────────────────────────
 
-export async function getRevenueForecast(): Promise<{ data: RevenueForecastItem[]; error: any }> {
-  try {
-    const { data, error } = await supabase
-      .from('crm_revenue_forecast')
-      .select('*')
-      .order('monthly_forecast', { ascending: false });
-
-    if (error) throw error;
-
-    const items: RevenueForecastItem[] = (data || []).map((row: any) => ({
-      ...row,
-      last_3mo_revenue: Number(row.last_3mo_revenue) || 0,
-      last_3mo_orders: Number(row.last_3mo_orders) || 0,
-      months_with_orders: Number(row.months_with_orders) || 0,
-      current_month_realized: Number(row.current_month_realized) || 0,
-      current_month_pipeline: Number(row.current_month_pipeline) || 0,
-      avg_monthly_revenue: Number(row.avg_monthly_revenue) || 0,
-      reorder_probability: Number(row.reorder_probability) || 0,
-      monthly_forecast: Number(row.monthly_forecast) || 0,
-      current_month_expected_additional: Number(row.current_month_expected_additional) || 0,
-      days_since_last_order: row.days_since_last_order != null ? Number(row.days_since_last_order) : null,
-      monthly_target: Number(row.monthly_target) || 0,
-    }));
-
-    return { data: items, error: null };
-  } catch (error) {
-    errorService.handle(error, 'Failed to load revenue forecast');
-    return { data: [], error };
-  }
-}
