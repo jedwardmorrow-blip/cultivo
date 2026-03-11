@@ -51,6 +51,7 @@ const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'Accoun
 const VisitCadenceDashboard = lazyRetry(() => import('./features/crm'), 'VisitCadenceDashboard');
 const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
 const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
+const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 
 function ViewFallback() {
@@ -289,6 +290,8 @@ function AppContent() {
         return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
       case 'crm-tasks':
         return <AutomatedTaskEngine onViewChange={handleViewChange} />;
+      case 'crm-scorecard':
+        return <StorePerformanceScorecard onViewChange={handleViewChange} />;
       case 'crm-accounts':
         return <AccountsList onViewChange={handleViewChange} />;
       case 'settings':

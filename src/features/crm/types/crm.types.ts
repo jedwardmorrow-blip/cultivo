@@ -467,3 +467,46 @@ export interface VisitCadenceItem {
   days_until_due: number;
   compliance_pct_30d: number;
 }
+
+// ── Store Performance Scorecard ────────────────────────────────────
+export type OrderFrequencyLabel = 'high' | 'medium' | 'low' | 'none';
+export type ProductMixLabel = 'full' | 'moderate' | 'narrow' | 'none';
+
+export interface StoreScorecard {
+  customer_id: string;
+  customer_name: string;
+  dispensary_code: string;
+  account_type: AccountType;
+  account_status: AccountStatus;
+  city: string | null;
+  state: string | null;
+  tags: string[];
+  health_score: number;
+  health_label: 'healthy' | 'cooling' | 'at_risk' | 'dormant';
+  revenue_30d: number;
+  revenue_90d: number;
+  lifetime_revenue: number;
+  avg_order_value_90d: number;
+  revenue_trend: 'growing' | 'stable' | 'declining' | 'inactive';
+  orders_30d: number;
+  orders_90d: number;
+  days_since_last_order: number | null;
+  order_frequency_label: OrderFrequencyLabel;
+  product_types_purchased: number;
+  distinct_skus_purchased: number;
+  product_mix_label: ProductMixLabel;
+  visit_compliance_status: string;
+  visit_compliance_pct: number;
+  days_since_last_visit: number | null;
+  last_completed_visit: string | null;
+  account_tier: AccountTier | null;
+  visit_frequency_required: string | null;
+  open_task_count: number;
+  tasks_completed_30d: number;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  last_visit_date: string | null;
+  visits_30d: number;
+  last_activity_at: string | null;
+}

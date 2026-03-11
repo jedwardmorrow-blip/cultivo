@@ -25,6 +25,7 @@ import type {
   VisitCadenceItem,
   RevenueTrackingItem,
   RevenueWeeklyItem,
+  StoreScorecard,
 } from '../types';
 
 export async function getAccountSummaries() {
@@ -765,6 +766,41 @@ export async function getRevenueWeekly(): Promise<{ data: RevenueWeeklyItem[]; e
     return { data: items, error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to load weekly revenue');
+    return { data: [], error };
+  }
+}
+
+// ── Store Performance Scorecard ───────────────────────────────────
+
+export async function getStoreScorecard(): Promise<{ data: StoreScorecard[]; error: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('crm_store_scorecard')
+      .select('*')
+      .order('lifetime_revenue', { ascending: false });
+
+    if (error) throw error;
+
+    const items: StoreScorecard[] = (data || []).map((row: any) => ({
+      ...row,
+      health_score: Number(row.health_score) || 0,
+      revenue_30d: Number(row.revenue_30d) || 0,
+      revenue_90d: Number(row.revenue_90d) || 0,
+      lifetime_revenue: Number(row.lifetime_revenue) || 0,
+      avg_order_value_90d: Number(row.avg_order_value_90d) || 0,
+      orders_30d: Number(row.orders_30d) || 0,
+      orders_90d: Number(row.orders_90d) || 0,
+      product_types_purchased: Number(row.product_types_purchased) || 0,
+      distinct_skus_purchased: Number(row.distinct_skus_purchased) || 0,
+      visit_compliance_pct: Number(row.visit_compliance_pct) || 0,
+      open_task_count: Number(row.open_task_count) || 0,
+      tasks_completed_30d: Number(row.tasks_completed_30d) || 0,
+      visits_30d: Number(row.visits_30d) || 0,
+    }));
+
+    return { data: items, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load store scorecard');
     return { data: [], error };
   }
 }
