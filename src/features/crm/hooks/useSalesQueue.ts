@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { CRMTask, VisitSchedule } from '../types';
-import { getOpenTasks, completeTask, snoozeTask, cancelTask } from '../services/tasks.service';
+import { getOpenTasks, completeTask, snoozeTask, cancelTask, updateTask } from '../services/tasks.service';
 import { getVisits, completeVisit } from '../services/visits.service';
 
 function formatDateLocal(date: Date): string {
@@ -9,6 +9,20 @@ function formatDateLocal(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+const priorityOrder: Record<string, number> = {
+  urgent: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+function sortByPriorityThenDate(a: CRMTask, b: CRMTask): number {
+  const pa = priorityOrder[a.priority] ?? 99;
+  const pb = priorityOrder[b.priority] ?? 99;
+  if (pa !== pb) return pa - pb;
+  return a.due_date.localeCompare(b.due_date);
 }
 
 export function useSalesQueue() {
@@ -63,9 +77,27 @@ export function useSalesQueue() {
     };
   }, [fetchData]);
 
-  const overdueTasks = tasks.filter((t) => t.due_date < today);
-  const todayTasks = tasks.filter((t) => t.due_date === today);
-  const upcomingTasks = tasks.filter((t) => t.due_date > today && t.due_date <= weekEnd);
+  // Categorize tasks with focus_today logic and priority sorting
+  const overdueTasks = useMemo(
+    () => tasks
+      .filter((t) => t.due_date < today && !t.focus_today)
+      .sort(sortByPriorityThenDate),
+    [tasks, today]
+  );
+
+  const todayTasks = useMemo(
+    () => tasks
+      .filter((t) => t.due_date === today || t.focus_today)
+      .sort(sortByPriorityThenDate),
+    [tasks, today]
+  );
+
+  const upcomingTasks = useMemo(
+    () => tasks
+      .filter((t) => t.due_date > today && t.due_date <= weekEnd && !t.focus_today)
+      .sort(sortByPriorityThenDate),
+    [tasks, today, weekEnd]
+  );
 
   const todayVisits = upcomingVisits.filter((v) => v.visit_date === today);
   const weekVisits = upcomingVisits.filter((v) => v.visit_date > today);
@@ -82,10 +114,32 @@ export function useSalesQueue() {
     error,
     reload: fetchData,
     actions: {
-      completeTask: async (taskId: string) => { await completeTask(taskId); await fetchData(); },
-      snoozeTask: async (taskId: string, days: number) => { await snoozeTask(taskId, days); await fetchData(); },
-      cancelTask: async (taskId: string) => { await cancelTask(taskId); await fetchData(); },
-      completeVisit: async (visitId: string, notes: string) => { await completeVisit(visitId, notes); await fetchData(); },
+      completeTask: async (taskId: string, completionNotes?: string) => {
+        await completeTask(taskId, completionNotes);
+        await fetchData();
+      },
+      snoozeTask: async (taskId: string, days: number) => {
+        await snoozeTask(taskId, days);
+        await fetchData();
+      },
+      cancelTask: async (taskId: string) => {
+        await cancelTask(taskId);
+        await fetchData();
+      },
+      completeVisit: async (visitId: string, notes: string) => {
+        await completeVisit(visitId, notes);
+        await fetchData();
+      },
+      toggleFocusToday: async (taskId: string) => {
+        const task = tasks.find((t) => t.id === taskId);
+        if (!task) return;
+        await updateTask(taskId, { focus_today: !task.focus_today } as Partial<CRMTask>);
+        await fetchData();
+      },
+      updateTask: async (taskId: string, updates: Partial<CRMTask>) => {
+        await updateTask(taskId, updates);
+        await fetchData();
+      },
     },
   };
 }

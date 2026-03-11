@@ -11,7 +11,10 @@ import {
   Package,
   RefreshCw,
   ChevronRight,
+  ChevronDown,
   Timer,
+  Star,
+  X,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
 import { useSalesQueue } from '../hooks';
@@ -69,93 +72,221 @@ function daysOverdue(dueDate: string): number {
 function TaskRow({
   task,
   isOverdue,
+  isExpanded,
   onComplete,
   onSnooze,
   onCancel,
   onNavigate,
+  onToggleFocus,
+  onToggleExpand,
+  onUpdateTask,
 }: {
   task: CRMTask;
   isOverdue: boolean;
+  isExpanded: boolean;
   onComplete: () => void;
   onSnooze: (days: number) => void;
   onCancel: () => void;
   onNavigate: () => void;
+  onToggleFocus: () => void;
+  onToggleExpand: () => void;
+  onUpdateTask: (updates: Partial<CRMTask>) => void;
 }) {
   const [showActions, setShowActions] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const [editPriority, setEditPriority] = useState(task.priority);
+  const [editDueDate, setEditDueDate] = useState(task.due_date);
+  const [editDescription, setEditDescription] = useState(task.description || '');
+  const [saving, setSaving] = useState(false);
+
   const Icon = taskTypeIcons[task.task_type] || ClipboardList;
   const overdueDays = isOverdue ? daysOverdue(task.due_date) : 0;
+  const ExpandIcon = isExpanded ? ChevronDown : ChevronRight;
+
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    const updates: Partial<CRMTask> = {};
+    if (editTitle !== task.title) updates.title = editTitle;
+    if (editPriority !== task.priority) updates.priority = editPriority;
+    if (editDueDate !== task.due_date) updates.due_date = editDueDate;
+    if (editDescription !== (task.description || '')) updates.description = editDescription || null;
+    if (Object.keys(updates).length > 0) {
+      onUpdateTask(updates);
+    }
+    setSaving(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditTitle(task.title);
+    setEditPriority(task.priority);
+    setEditDueDate(task.due_date);
+    setEditDescription(task.description || '');
+    onToggleExpand();
+  };
 
   return (
-    <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
-      <div className={`p-1.5 rounded flex-shrink-0 ${priorityColors[task.priority]}`}>
-        <Icon className="w-3.5 h-3.5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={onNavigate}
-            className="text-sm font-medium text-cult-white hover:text-sky-400 transition-colors truncate"
-          >
-            {task.title}
-          </button>
-          <span className="text-[10px] text-cult-silver">{taskTypeLabels[task.task_type]}</span>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-cult-silver">
-          <span className="text-cult-light-gray">{task.customer_name}</span>
-          {task.dispensary_code && (
-            <span className="font-mono text-cult-medium-gray">{task.dispensary_code}</span>
-          )}
-          {isOverdue && (
-            <span className="text-red-400 font-medium">{overdueDays}d overdue</span>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-1 flex-shrink-0">
+    <div className={`transition-colors ${task.focus_today ? 'border-l-2 border-l-amber-400' : ''}`}>
+      <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
+        {/* Star / Focus Today button */}
         <button
-          onClick={onComplete}
-          className="p-1.5 text-cult-medium-gray hover:text-emerald-400 transition-colors"
-          title="Complete"
+          onClick={onToggleFocus}
+          className={`p-0.5 flex-shrink-0 transition-colors ${
+            task.focus_today
+              ? 'text-amber-400 hover:text-amber-300'
+              : 'text-cult-charcoal hover:text-amber-400/60'
+          }`}
+          title={task.focus_today ? 'Remove from Today focus' : 'Focus Today'}
         >
-          <CheckCircle2 className="w-4 h-4" />
+          <Star className="w-3.5 h-3.5" fill={task.focus_today ? 'currentColor' : 'none'} />
         </button>
-        <div className="relative">
+
+        <div className={`p-1.5 rounded flex-shrink-0 ${priorityColors[task.priority]}`}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={onNavigate}
+              className="text-sm font-medium text-cult-white hover:text-sky-400 transition-colors truncate"
+            >
+              {task.title}
+            </button>
+            <span className="text-[10px] text-cult-silver">{taskTypeLabels[task.task_type]}</span>
+            {task.focus_today && (
+              <span className="text-[10px] text-amber-400 font-medium">★ Focus</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-cult-silver">
+            <span className="text-cult-light-gray">{task.customer_name}</span>
+            {task.dispensary_code && (
+              <span className="font-mono text-cult-medium-gray">{task.dispensary_code}</span>
+            )}
+            {isOverdue && (
+              <span className="text-red-400 font-medium">{overdueDays}d overdue</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Expand / Edit button */}
           <button
-            onClick={() => setShowActions(!showActions)}
+            onClick={onToggleExpand}
             className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+            title="Edit task"
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <ExpandIcon className="w-4 h-4" />
           </button>
-          {showActions && (
-            <div className="absolute right-0 top-8 z-20 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl py-1 w-40">
-              <button
-                onClick={() => { onSnooze(1); setShowActions(false); }}
-                className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
-              >
-                Snooze 1 day
-              </button>
-              <button
-                onClick={() => { onSnooze(3); setShowActions(false); }}
-                className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
-              >
-                Snooze 3 days
-              </button>
-              <button
-                onClick={() => { onSnooze(7); setShowActions(false); }}
-                className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
-              >
-                Snooze 1 week
-              </button>
-              <div className="border-t border-cult-charcoal my-1" />
-              <button
-                onClick={() => { onCancel(); setShowActions(false); }}
-                className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                Cancel task
-              </button>
-            </div>
-          )}
+          <button
+            onClick={onComplete}
+            className="p-1.5 text-cult-medium-gray hover:text-emerald-400 transition-colors"
+            title="Complete"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowActions(!showActions)}
+              className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {showActions && (
+              <div className="absolute right-0 top-8 z-20 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl py-1 w-40">
+                <button
+                  onClick={() => { onSnooze(1); setShowActions(false); }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                >
+                  Snooze 1 day
+                </button>
+                <button
+                  onClick={() => { onSnooze(3); setShowActions(false); }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                >
+                  Snooze 3 days
+                </button>
+                <button
+                  onClick={() => { onSnooze(7); setShowActions(false); }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                >
+                  Snooze 1 week
+                </button>
+                <div className="border-t border-cult-charcoal my-1" />
+                <button
+                  onClick={() => { onCancel(); setShowActions(false); }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  Cancel task
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Expandable inline edit panel */}
+      {isExpanded && (
+        <div className="px-4 pb-4 pt-1 bg-cult-dark-gray/30 border-t border-cult-charcoal/50 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Priority</label>
+                <select
+                  value={editPriority}
+                  onChange={(e) => setEditPriority(e.target.value as CRMTask['priority'])}
+                  className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Due Date</label>
+                <input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Notes / Description</label>
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              rows={2}
+              placeholder="Add notes about this task..."
+              className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSaveEdit}
+              disabled={saving}
+              className="px-3 py-1.5 text-xs font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              className="px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -217,6 +348,9 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [completingVisitId, setCompletingVisitId] = useState<string | null>(null);
   const [visitNotes, setVisitNotes] = useState('');
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const [taskNotes, setTaskNotes] = useState('');
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   const totalToday = todayTasks.length + todayVisits.length;
   const totalWeek = todayTasks.length + upcomingTasks.length + todayVisits.length + weekVisits.length;
@@ -231,6 +365,36 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
     setCompletingVisitId(null);
     setVisitNotes('');
   };
+
+  const handleCompleteTask = async () => {
+    if (!completingTaskId) return;
+    await actions.completeTask(completingTaskId, taskNotes || undefined);
+    setCompletingTaskId(null);
+    setTaskNotes('');
+  };
+
+  const handleSkipCompleteTask = async () => {
+    if (!completingTaskId) return;
+    await actions.completeTask(completingTaskId);
+    setCompletingTaskId(null);
+    setTaskNotes('');
+  };
+
+  const renderTaskRow = (task: CRMTask, isOverdue: boolean) => (
+    <TaskRow
+      key={task.id}
+      task={task}
+      isOverdue={isOverdue}
+      isExpanded={expandedTaskId === task.id}
+      onComplete={() => setCompletingTaskId(task.id)}
+      onSnooze={(days) => actions.snoozeTask(task.id, days)}
+      onCancel={() => actions.cancelTask(task.id)}
+      onNavigate={() => navigateToAccount(task.customer_id)}
+      onToggleFocus={() => actions.toggleFocusToday(task.id)}
+      onToggleExpand={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
+      onUpdateTask={(updates) => actions.updateTask(task.id, updates)}
+    />
+  );
 
   if (loading) return <LoadingSpinner />;
 
@@ -272,17 +436,7 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
           count={overdueTasks.length}
           accentBorder="border-red-500/30"
         >
-          {overdueTasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              isOverdue
-              onComplete={() => actions.completeTask(task.id)}
-              onSnooze={(days) => actions.snoozeTask(task.id, days)}
-              onCancel={() => actions.cancelTask(task.id)}
-              onNavigate={() => navigateToAccount(task.customer_id)}
-            />
-          ))}
+          {overdueTasks.map((task) => renderTaskRow(task, true))}
         </QueueSection>
       )}
 
@@ -292,17 +446,7 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
         iconColor="text-amber-400"
         count={totalToday}
       >
-        {todayTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            isOverdue={false}
-            onComplete={() => actions.completeTask(task.id)}
-            onSnooze={(days) => actions.snoozeTask(task.id, days)}
-            onCancel={() => actions.cancelTask(task.id)}
-            onNavigate={() => navigateToAccount(task.customer_id)}
-          />
-        ))}
+        {todayTasks.map((task) => renderTaskRow(task, false))}
         {todayVisits.map((visit) => (
           <VisitRow
             key={visit.id}
@@ -324,17 +468,7 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
         iconColor="text-cult-silver"
         count={upcomingTasks.length + weekVisits.length}
       >
-        {upcomingTasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            isOverdue={false}
-            onComplete={() => actions.completeTask(task.id)}
-            onSnooze={(days) => actions.snoozeTask(task.id, days)}
-            onCancel={() => actions.cancelTask(task.id)}
-            onNavigate={() => navigateToAccount(task.customer_id)}
-          />
-        ))}
+        {upcomingTasks.map((task) => renderTaskRow(task, false))}
         {weekVisits.map((visit) => (
           <VisitRow
             key={visit.id}
@@ -350,6 +484,46 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
         )}
       </QueueSection>
 
+      {/* Task completion notes modal */}
+      {completingTaskId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-cult-white">Complete Task</h3>
+              <button
+                onClick={() => { setCompletingTaskId(null); setTaskNotes(''); }}
+                className="p-1 text-cult-silver hover:text-cult-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <textarea
+              value={taskNotes}
+              onChange={(e) => setTaskNotes(e.target.value)}
+              placeholder="What happened? Any notes? (optional)"
+              rows={4}
+              autoFocus
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+            />
+            <div className="flex items-center gap-2 mt-4">
+              <button
+                onClick={handleCompleteTask}
+                className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors"
+              >
+                Complete with Notes
+              </button>
+              <button
+                onClick={handleSkipCompleteTask}
+                className="px-4 py-2 text-sm text-cult-silver hover:text-cult-white transition-colors"
+              >
+                Skip &amp; Complete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Visit completion notes modal */}
       {completingVisitId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 w-full max-w-md mx-4">
