@@ -29,8 +29,8 @@ import type {
   AccountType,
   AccountHealthDashboardItem,
 } from '../types/crm.types';
-import RevenueTrackingDashboard from './RevenueTrackingDashboard';
-import VisitCadenceDashboard from './VisitCadenceDashboard';
+import { RevenueTrackingDashboard } from './RevenueTrackingDashboard';
+import { VisitCadenceDashboard } from './VisitCadenceDashboard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
