@@ -294,15 +294,9 @@ function AppContent() {
         return <VisitCadenceDashboard onViewChange={handleViewChange} />;
       case 'crm-revenue':
         return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
-      case 'crm-tasks':
-        return <AutomatedTaskEngine onViewChange={handleViewChange} />;
       case 'crm-scorecard':
         return <StorePerformanceScorecard onViewChange={handleViewChange} />;
       case 'crm-accounts':
-      case 'crm-health':
-      case 'crm-cadence':
-      case 'crm-revenue':
-      case 'crm-scorecard':
         handleViewChange('crm-accounts-hub');
         return null;
       case 'settings':
