@@ -583,7 +583,7 @@ function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void })
   );
 }
 
-// ─── Main AccountsHub Component ──────────────────────────────────────────────
+// ──┈ Main AccountsHub Component ──────────────────────────────────────────────
 
 interface AccountsHubProps {
   onViewChange: (view: string) => void;
