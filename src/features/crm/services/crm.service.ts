@@ -182,6 +182,37 @@ export async function deleteContact(id: string) {
   }
 }
 
+
+export async function getAllContacts(searchQuery?: string) {
+  try {
+    let query = supabase
+      .from('customer_contacts')
+      .select(`
+        *,
+        customer:customers!customer_id (
+          id,
+          name,
+          city,
+          state,
+          customer_type
+        )
+      `)
+      .order('is_primary', { ascending: false })
+      .order('name');
+
+    if (searchQuery && searchQuery.trim()) {
+      query = query.or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,title.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return { data: data as (CustomerContact & { customer: { id: string; name: string; city: string; state: string; customer_type: string } })[], error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to load all contacts');
+    return { data: null, error };
+  }
+}
+
 export async function getActivityLog(customerId: string) {
   try {
     const { data, error } = await supabase
@@ -711,7 +742,7 @@ export async function getVisitCadence(): Promise<{ data: VisitCadenceItem[]; err
   }
 }
 
-// ── Revenue Tracking ──────────────────────────────────────────────
+// ââ Revenue Tracking ââââââââââââââââââââââââââââââââââââââââââââââ
 
 export async function getRevenueTracking(): Promise<{ data: RevenueTrackingItem[]; error: any }> {
   try {
@@ -771,7 +802,7 @@ export async function getRevenueWeekly(): Promise<{ data: RevenueWeeklyItem[]; e
   }
 }
 
-// ── Store Performance Scorecard ───────────────────────────────────
+// ââ Store Performance Scorecard âââââââââââââââââââââââââââââââââââ
 
 export async function getStoreScorecard(): Promise<{ data: StoreScorecard[]; error: any }> {
   try {
@@ -806,7 +837,7 @@ export async function getStoreScorecard(): Promise<{ data: StoreScorecard[]; err
   }
 }
 
-// ── Automated Task Engine ─────────────────────────────────────────
+// ââ Automated Task Engine âââââââââââââââââââââââââââââââââââââââââ
 
 export async function getTaskSummary(filters?: {
   status?: string;
@@ -877,5 +908,5 @@ export async function runTaskEngine(): Promise<{ data: any; error: any }> {
   }
 }
 
-// ── Revenue Forecasting ─────────────────────────────────────────
+// ââ Revenue Forecasting âââââââââââââââââââââââââââââââââââââââââ
 
