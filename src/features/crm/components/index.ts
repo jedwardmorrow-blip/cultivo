@@ -12,3 +12,4 @@ export { RevenueTrackingDashboard } from './RevenueTrackingDashboard';
 export { AutomatedTaskEngine } from './AutomatedTaskEngine';
 export { StorePerformanceScorecard } from './StorePerformanceScorecard';
 export { RevenueForecastingEngine } from './RevenueForecastingEngine';
+export { default as AccountsHub } from './AccountsHub';
