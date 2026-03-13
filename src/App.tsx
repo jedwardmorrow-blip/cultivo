@@ -42,18 +42,17 @@ const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyT
 const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
 const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
-const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
 const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
 const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
 const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
 const ProspectPipeline = lazyRetry(() => import('./features/crm'), 'ProspectPipeline');
+const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
 const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'AccountHealthDashboard');
 const VisitCadenceDashboard = lazyRetry(() => import('./features/crm'), 'VisitCadenceDashboard');
 const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
 const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
-const RevenueForecastingEngine = lazyRetry(() => import('./features/crm'), 'RevenueForecastingEngine');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 
 function ViewFallback() {
@@ -286,10 +285,9 @@ function AppContent() {
         return <ProspectPipeline onViewChange={handleViewChange} />;
       case 'crm-tasks':
         return <AutomatedTaskEngine onViewChange={handleViewChange} />;
-      case 'crm-forecast':
-        return <RevenueForecastingEngine onViewChange={handleViewChange} />;
       case 'crm-accounts-hub':
         return <AccountsHub onViewChange={handleViewChange} />;
+
       case 'crm-accounts':
       case 'crm-health':
       case 'crm-cadence':
