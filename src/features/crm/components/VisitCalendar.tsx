@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,10 +10,16 @@ import {
   X,
   Truck,
   ExternalLink,
+  AlertTriangle,
+  CalendarClock,
+  ChevronRight,
+  Users,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
 import { formatCurrency } from '@/shared/utils/format';
 import { getOrderStatusStyle, isOrderReadyStatus } from '@/features/delivery/utils';
+import { getVisitCadence } from '../services/crm.service';
+import type { VisitCadenceItem, ComplianceStatus } from '../types/crm.types';
 import { useVisitCalendar } from '../hooks';
 import type { VisitSchedule, VisitType, CRMCalendarOrder } from '../types';
 import { VisitScheduleModal } from './VisitScheduleModal';
@@ -31,6 +37,17 @@ const visitTypeLabels: Record<VisitType, string> = {
   new_pitch: 'New Pitch',
   relationship: 'Relationship',
 };
+
+
+const COMPLIANCE_CONFIG: Record<ComplianceStatus, { label: string; color: string; bg: string; border: string; order: number }> = {
+  overdue: { label: 'Overdue', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30', order: 0 },
+  never_visited: { label: 'Never Visited', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30', order: 1 },
+  due_soon: { label: 'Due Soon', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30', order: 2 },
+  scheduled: { label: 'Scheduled', color: 'text-sky-400', bg: 'bg-sky-500/15', border: 'border-sky-500/30', order: 3 },
+  on_track: { label: 'On Track', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', order: 4 },
+};
+
+const CADENCE_LS_KEY = 'cult-crm-calendar-showCadence';
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -56,7 +73,7 @@ interface VisitCalendarProps {
   onSelectOrder?: (orderId: string) => void;
 }
 
-export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
+export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProps) {
   const {
     visitsByDate,
     ordersByDate,
@@ -84,6 +101,58 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
     const stored = localStorage.getItem(LS_KEY);
     return stored === null ? true : stored === 'true';
   });
+
+
+  // Cadence panel state
+  const [cadenceAccounts, setCadenceAccounts] = useState<VisitCadenceItem[]>([]);
+  const [cadenceLoading, setCadenceLoading] = useState(false);
+  const [showCadencePanel, setShowCadencePanel] = useState(() => {
+    const stored = localStorage.getItem(CADENCE_LS_KEY);
+    return stored === null ? false : stored === 'true';
+  });
+
+  // Load cadence data
+  const loadCadence = useCallback(async () => {
+    setCadenceLoading(true);
+    try {
+      const { data, error } = await getVisitCadence();
+      if (data && !error) {
+        // Sort by compliance urgency
+        const sorted = [...data].sort((a, b) => {
+          const orderA = COMPLIANCE_CONFIG[a.compliance_status]?.order ?? 99;
+          const orderB = COMPLIANCE_CONFIG[b.compliance_status]?.order ?? 99;
+          if (orderA !== orderB) return orderA - orderB;
+          return (a.days_until_due ?? 999) - (b.days_until_due ?? 999);
+        });
+        setCadenceAccounts(sorted);
+      }
+    } catch (err) {
+      console.error('Failed to load cadence data:', err);
+    } finally {
+      setCadenceLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showCadencePanel) loadCadence();
+  }, [showCadencePanel, loadCadence]);
+
+  const toggleCadencePanel = () => {
+    setShowCadencePanel(prev => {
+      const next = !prev;
+      localStorage.setItem(CADENCE_LS_KEY, String(next));
+      return next;
+    });
+  };
+
+  // Cadence summary stats
+  const cadenceStats = {
+    overdue: cadenceAccounts.filter(a => a.compliance_status === 'overdue').length,
+    dueSoon: cadenceAccounts.filter(a => a.compliance_status === 'due_soon').length,
+    neverVisited: cadenceAccounts.filter(a => a.compliance_status === 'never_visited').length,
+    onTrack: cadenceAccounts.filter(a => a.compliance_status === 'on_track' || a.compliance_status === 'scheduled').length,
+    total: cadenceAccounts.length,
+  };
 
   const toggleDeliveries = () => {
     setShowDeliveries(prev => {
@@ -130,7 +199,8 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="flex gap-4">
+      <div className="flex-1 min-w-0 space-y-6 pb-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Visit Calendar</h1>
@@ -337,6 +407,90 @@ function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; val
         <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">{label}</p>
         <p className="text-xl font-bold text-cult-white">{value}</p>
       </div>
+    </div>
+
+      {/* Cadence Side Panel */}
+      {showCadencePanel && (
+        <div className="w-80 shrink-0 bg-cult-dark-gray border border-cult-medium-gray rounded-xl p-4 h-fit max-h-[calc(100vh-8rem)] flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-cult-white flex items-center gap-2">
+              <CalendarClock className="w-5 h-5 text-sky-400" />
+              Visit Cadence
+            </h3>
+            <button
+              onClick={loadCadence}
+              className="p-1 text-cult-silver hover:text-cult-white transition-colors"
+              title="Refresh cadence data"
+            >
+              <RefreshCw className={`w-4 h-4 ${cadenceLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+              <div className="text-red-400 text-lg font-bold">{cadenceStats.overdue}</div>
+              <div className="text-red-400/70 text-xs">Overdue</div>
+            </div>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+              <div className="text-amber-400 text-lg font-bold">{cadenceStats.dueSoon}</div>
+              <div className="text-amber-400/70 text-xs">Due Soon</div>
+            </div>
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2">
+              <div className="text-orange-400 text-lg font-bold">{cadenceStats.neverVisited}</div>
+              <div className="text-orange-400/70 text-xs">Never Visited</div>
+            </div>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+              <div className="text-emerald-400 text-lg font-bold">{cadenceStats.onTrack}</div>
+              <div className="text-emerald-400/70 text-xs">On Track</div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-1.5 min-h-0">
+            {cadenceLoading ? (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner />
+              </div>
+            ) : cadenceAccounts.length === 0 ? (
+              <p className="text-cult-silver text-sm text-center py-4">No accounts found</p>
+            ) : (
+              cadenceAccounts.map(account => {
+                const config = COMPLIANCE_CONFIG[account.compliance_status] || COMPLIANCE_CONFIG.on_track;
+                return (
+                  <button
+                    key={account.customer_id}
+                    onClick={() => onViewChange?.(`crm-accounts-hub:account:${account.customer_id}`)}
+                    className="w-full text-left p-2.5 rounded-lg bg-cult-charcoal/50 hover:bg-cult-charcoal border border-transparent hover:border-cult-medium-gray transition-colors group"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-cult-white truncate pr-2">
+                        {account.customer_name}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-cult-silver opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${config.bg} ${config.color} border ${config.border}`}>
+                        {config.label}
+                      </span>
+                      {account.days_until_due !== null && account.days_until_due !== undefined && (
+                        <span className="text-xs text-cult-silver">
+                          {account.days_until_due <= 0
+                            ? `${Math.abs(account.days_until_due)}d overdue`
+                            : `${account.days_until_due}d until due`}
+                        </span>
+                      )}
+                    </div>
+                    {account.account_tier && (
+                      <div className="text-xs text-cult-silver/70 mt-1 capitalize">
+                        {account.account_tier.replace('_', ' ')} \u00B7 {account.city || 'N/A'}
+                      </div>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
