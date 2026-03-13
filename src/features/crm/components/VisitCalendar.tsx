@@ -69,6 +69,18 @@ function getDeliveryStatusDot(orders: CRMCalendarOrder[]): string {
   return someReady ? 'bg-amber-400' : 'bg-orange-400';
 }
 
+
+function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; value: number; icon: React.ElementType; iconColor: string }) {
+  return (
+    <div className="bg-cult-dark-gray border border-cult-medium-gray rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className={`w-4 h-4 ${iconColor}`} />
+        <span className="text-xs text-cult-silver">{label}</span>
+      </div>
+      <div className="text-2xl font-bold text-cult-white">{value}</div>
+    </div>
+  );
+}
 interface VisitCalendarProps {
   onSelectOrder?: (orderId: string) => void;
 }
