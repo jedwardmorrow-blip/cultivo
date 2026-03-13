@@ -1,0 +1,320 @@
+import { useState, useEffect } from 'react';
+import { Users, Plus, Edit2, Trash2, Check, X, Search, Filter } from 'lucide-react';
+import { Button } from '@/shared/components';
+import { supabase } from '@/lib/supabase';
+
+interface StaffMember {
+  id: string;
+  first_name: string;
+  last_name: string | null;
+  position_title: string | null;
+  department: string | null;
+  role: string | null;
+  email: string | null;
+  phone: string | null;
+  hourly_rate: number | null;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  slack_id: string | null;
+  reports_to: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface StaffFormData {
+  first_name: string;
+  last_name: string;
+  position_title: string;
+  department: string;
+  role: string;
+  email: string;
+  phone: string;
+  hourly_rate: string;
+  start_date: string;
+  end_date: string;
+  reports_to: string;
+  slack_id: string;
+  notes: string;
+  is_active: boolean;
+}
+
+const DEPARTMENTS = [
+  'leadership',
+  'governance',
+  'cultivation',
+  'post_production',
+  'sales',
+  'inventory',
+];
+
+const ROLES = [
+  'admin',
+  'manager',
+  'cultivator',
+  'trimmer',
+  'packager',
+  'sales',
+  'inventory',
+  'staff',
+];
+
+const emptyFormData: StaffFormData = {
+  first_name: '',
+  last_name: '',
+  position_title: '',
+  department: '',
+  role: '',
+  email: '',
+  phone: '',
+  hourly_rate: '',
+  start_date: '',
+  end_date: '',
+  reports_to: '',
+  slack_id: '',
+  notes: '',
+  is_active: true,
+};
+
+export function StaffManagement() {
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [formData, setFormData] = useState<StaffFormData>(emptyFormData);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('all');
+
+  useEffect(() => {
+    loadStaff();
+  }, []);
+
+  const loadStaff = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data, error: fetchError } = await supabase
+        .from('staff')
+        .select('*')
+        .order('department')
+        .order('first_name');
+
+      if (fetchError) throw fetchError;
+      setStaff(data || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load staff');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setError(null);
+      const staffData = {
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim() || null,
+        position_title: formData.position_title.trim() || null,
+        department: formData.department || null,
+        role: formData.role || null,
+        email: formData.email.trim() || null,
+        phone: formData.phone.trim() || null,
+        hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        reports_to: formData.reports_to || null,
+        slack_id: formData.slack_id.trim() || null,
+        notes: formData.notes.trim() || null,
+        is_active: formData.is_active,
+        updated_at: new Date().toISOString(),
+      };
+      if (editingStaff) {
+        const { error: updateError } = await supabase.from('staff').update(staffData).eq('id', editingStaff.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase.from('staff').insert(staffData);
+        if (insertError) {
+          if (insertError.code === '23505') throw new Error('A staff member with this information already exists');
+          throw insertError;
+        }
+      }
+      setShowModal(false);
+      setEditingStaff(null);
+      setFormData(emptyFormData);
+      await loadStaff();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save staff member');
+    }
+  };
+
+  const handleEdit = (member: StaffMember) => {
+    setEditingStaff(member);
+    setFormData({
+      first_name: member.first_name || '',
+      last_name: member.last_name || '',
+      position_title: member.position_title || '',
+      department: member.department || '',
+      role: member.role || '',
+      email: member.email || '',
+      phone: member.phone || '',
+      hourly_rate: member.hourly_rate?.toString() || '',
+      start_date: member.start_date || '',
+      end_date: member.end_date || '',
+      reports_to: member.reports_to || '',
+      slack_id: member.slack_id || '',
+      notes: member.notes || '',
+      is_active: member.is_active,
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (member: StaffMember) => {
+    if (!window.confirm('Are you sure you want to delete ' + member.first_name + ' ' + (member.last_name || '') + '? This action cannot be undone.')) return;
+    try {
+      setError(null);
+      const { error: deleteError } = await supabase.from('staff').delete().eq('id', member.id);
+      if (deleteError) throw deleteError;
+      await loadStaff();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete staff member');
+    }
+  };
+
+  const toggleActive = async (member: StaffMember) => {
+    try {
+      setError(null);
+      const { error: updateError } = await supabase.from('staff').update({ is_active: !member.is_active, updated_at: new Date().toISOString() }).eq('id', member.id);
+      if (updateError) throw updateError;
+      await loadStaff();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update staff status');
+    }
+  };
+
+  const handleAddNew = () => { setEditingStaff(null); setFormData(emptyFormData); setShowModal(true); };
+
+  const formatDepartment = (dept: string | null) => {
+    if (!dept) return '\u2014';
+    return dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const filteredStaff = staff.filter((member) => {
+    const matchesDept = departmentFilter === 'all' || member.department === departmentFilter;
+    const matchesSearch = !searchQuery || (member.first_name + ' ' + (member.last_name || '')).toLowerCase().includes(searchQuery.toLowerCase()) || (member.email && member.email.toLowerCase().includes(searchQuery.toLowerCase())) || (member.position_title && member.position_title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesDept && matchesSearch;
+  });
+
+  if (loading) return (<div className="flex items-center justify-center py-12"><div className="text-cult-light-gray">Loading staff directory...</div></div>);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-cult-white" />
+          <h2 className="text-lg font-semibold text-cult-white">Staff Directory</h2>
+          <span className="text-sm text-cult-light-gray">({staff.length} members)</span>
+        </div>
+        <Button onClick={handleAddNew} size="sm" icon={Plus}>Add Staff</Button>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
+          <input type="text" placeholder="Search by name, email, or title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm placeholder-cult-medium-gray focus:outline-none focus:border-cult-light-gray" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-cult-medium-gray" />
+          <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-light-gray">
+            <option value="all">All Departments</option>
+            {DEPARTMENTS.map((dept) => (<option key={dept} value={dept}>{dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>))}
+          </select>
+        </div>
+      </div>
+      {error && (<div className="bg-red-900/30 border border-red-600 text-red-400 px-4 py-2 rounded-lg text-sm">{error}</div>)}
+      <div className="overflow-x-auto border border-cult-medium-gray rounded-lg">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-cult-medium-gray bg-cult-near-black">
+              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Name</th>
+              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Position</th>
+              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Department</th>
+              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Role</th>
+              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Email</th>
+              <th className="text-center px-4 py-3 text-cult-light-gray font-medium">Status</th>
+              <th className="text-right px-4 py-3 text-cult-light-gray font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStaff.length === 0 ? (<tr><td colSpan={7} className="text-center py-8 text-cult-medium-gray">{searchQuery || departmentFilter !== 'all' ? 'No staff members match your filters' : 'No staff members found'}</td></tr>) : (
+              filteredStaff.map((member) => (
+                <tr key={member.id} className="border-b border-cult-medium-gray/50 hover:bg-cult-black/50 cursor-pointer" onClick={() => handleEdit(member)}>
+                  <td className="px-4 py-3 text-cult-white font-medium">{member.first_name} {member.last_name || ''}</td>
+                  <td className="px-4 py-3 text-cult-light-gray">{member.position_title || '\u2014'}</td>
+                  <td className="px-4 py-3 text-cult-light-gray">{formatDepartment(member.department)}</td>
+                  <td className="px-4 py-3 text-cult-light-gray capitalize">{member.role || '\u2014'}</td>
+                  <td className="px-4 py-3 text-cult-light-gray">{member.email || '\u2014'}</td>
+                  <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => toggleActive(member)} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors ${member.is_active ? 'bg-green-900/30 text-green-400 border-green-600 hover:bg-green-900/50' : 'bg-red-900/30 text-red-400 border-red-600 hover:bg-red-900/50'}`}>
+                      {member.is_active ? (<><Check className="w-3 h-3" /> Active</>) : (<><X className="w-3 h-3" /> Inactive</>)}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => handleEdit(member)} className="p-1.5 rounded hover:bg-cult-medium-gray/30 text-cult-light-gray hover:text-cult-white transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(member)} className="p-1.5 rounded hover:bg-red-900/30 text-cult-light-gray hover:text-red-400 transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4">
+          <div className="bg-cult-near-black border border-cult-medium-gray rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-cult-medium-gray">
+              <h3 className="text-lg font-semibold text-cult-white">{editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}</h3>
+              <button onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="text-cult-light-gray hover:text-cult-white transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">First Name <span className="text-red-400">*</span></label><input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Last Name</label><input type="text" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">Position Title</label><input type="text" value={formData.position_title} onChange={(e) => setFormData({ ...formData, position_title: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Department</label><select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">Select Department</option>{DEPARTMENTS.map((dept) => (<option key={dept} value={dept}>{dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>))}</select></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">Role</label><select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">Select Role</option>{ROLES.map((role) => (<option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>))}</select></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Reports To</label><select value={formData.reports_to} onChange={(e) => setFormData({ ...formData, reports_to: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">None</option>{staff.filter((s) => s.id !== editingStaff?.id).map((s) => (<option key={s.id} value={s.id}>{s.first_name} {s.last_name || ''} {s.position_title ? '(' + s.position_title + ')' : ''}</option>))}</select></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">Email</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">Hourly Rate ($)</label><input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Slack ID</label><input type="text" value={formData.slack_id} onChange={(e) => setFormData({ ...formData, slack_id: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm text-cult-light-gray mb-1">Start Date</label><input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">End Date</label><input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+              </div>
+              <div><label className="block text-sm text-cult-light-gray mb-1">Notes</label><textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray resize-none" /></div>
+              <div className="flex items-center gap-2"><input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="rounded border-cult-medium-gray" /><label htmlFor="is_active" className="text-sm text-cult-light-gray">Active Staff Member</label></div>
+              {error && (<div className="bg-red-900/30 border border-red-600 text-red-400 px-4 py-2 rounded-lg text-sm">{error}</div>)}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="px-4 py-2 text-sm text-cult-light-gray hover:text-cult-white transition-colors">Cancel</button>
+                <Button type="submit" size="sm" icon={editingStaff ? Check : Plus}>{editingStaff ? 'Save Changes' : 'Add Staff Member'}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

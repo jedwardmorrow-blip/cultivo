@@ -288,6 +288,16 @@ function AppContent() {
       case 'crm-accounts-hub':
         return <AccountsHub onViewChange={handleViewChange} />;
 
+      case 'crm-health':
+        return <AccountHealthDashboard onViewChange={handleViewChange} />;
+      case 'crm-cadence':
+        return <VisitCadenceDashboard onViewChange={handleViewChange} />;
+      case 'crm-revenue':
+        return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
+      case 'crm-tasks':
+        return <AutomatedTaskEngine onViewChange={handleViewChange} />;
+      case 'crm-scorecard':
+        return <StorePerformanceScorecard onViewChange={handleViewChange} />;
       case 'crm-accounts':
       case 'crm-health':
       case 'crm-cadence':
