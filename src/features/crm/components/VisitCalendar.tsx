@@ -393,21 +393,7 @@ export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProp
           onCreated={() => { setShowScheduleModal(false); reload(); }}
         />
       )}
-    </div>
-  );
-}
-
-function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; value: number; icon: typeof MapPin; iconColor: string }) {
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 flex items-center gap-3 transition-all duration-200 hover:scale-[1.01]">
-      <div className={`p-2 rounded-lg bg-cult-dark-gray ${iconColor}`}>
-        <Icon className="w-4 h-4" />
       </div>
-      <div>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">{label}</p>
-        <p className="text-xl font-bold text-cult-white">{value}</p>
-      </div>
-    </div>
 
       {/* Cadence Side Panel */}
       {showCadencePanel && (
