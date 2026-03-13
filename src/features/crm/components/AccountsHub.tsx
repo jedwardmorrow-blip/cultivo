@@ -185,8 +185,8 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
           getAccountHealthDashboard(),
         ]);
         if (!cancelled) {
-          setAccounts(accts);
-          setHealthData(health);
+          setAccounts(accts.data || []);
+          setHealthData(health.data || []);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load accounts');
