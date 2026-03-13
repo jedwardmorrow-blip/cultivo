@@ -7,8 +7,8 @@ import {
   Clock,
   MoreHorizontal,
   MapPin,
-  Phone,
-  Package,
+  Bell
+  TrendingUp,
   RefreshCw,
   ChevronRight,
   ChevronDown,
@@ -25,20 +25,20 @@ interface SalesQueueProps {
   onViewChange: (view: string) => void;
 }
 
-const taskTypeIcons: Record<TaskType, typeof Phone> = {
-  callback: Phone,
-  visit_reminder: MapPin,
-  sample_drop: Package,
-  reorder_prompt: RefreshCw,
-  general: ClipboardList,
+const taskTypeIcons: Record<TaskType, typeof RefreshCw> = {
+    reorder_reminder: RefreshCw,
+    visit_overdue: MapPin,
+    visit_follow_up: Calendar,
+    prospect_advancement: TrendingUp,
+    general: Bell,
 };
 
 const taskTypeLabels: Record<TaskType, string> = {
-  callback: 'Callback',
-  visit_reminder: 'Visit Reminder',
-  sample_drop: 'Sample Drop',
-  reorder_prompt: 'Reorder Prompt',
-  general: 'General',
+    reorder_reminder: 'Reorder',
+    visit_overdue: 'Visit Overdue',
+    visit_follow_up: 'Follow-Up',
+    prospect_advancement: 'Prospect',
+    general: 'General',
 };
 
 const priorityColors: Record<string, string> = {
