@@ -7,7 +7,7 @@ import {
   Clock,
   MoreHorizontal,
   MapPin,
-  Bell,
+  Bell
   TrendingUp,
   RefreshCw,
   ChevronRight,
