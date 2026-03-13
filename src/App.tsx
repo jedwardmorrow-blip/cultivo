@@ -49,7 +49,6 @@ const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline')
 const ProspectPipeline = lazyRetry(() => import('./features/crm'), 'ProspectPipeline');
 const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
 const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'AccountHealthDashboard');
-const VisitCadenceDashboard = lazyRetry(() => import('./features/crm'), 'VisitCadenceDashboard');
 const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
 const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
@@ -101,7 +100,7 @@ function AppContent() {
     }
   }, []);
 
-  // Sync URL hash â currentView for shareable deep-links & browser back/forward
+  // Sync URL hash Ã¢ÂÂ currentView for shareable deep-links & browser back/forward
   useEffect(() => {
     const newHash = currentView === 'dashboard' ? '' : currentView;
     if (window.location.hash.replace('#', '') !== newHash) {
@@ -278,7 +277,7 @@ function AppContent() {
       case 'crm-queue':
         return <SalesQueue />;
       case 'crm-visit-calendar':
-        return <VisitCalendar onSelectOrder={handleSelectOrder} />;
+        return <VisitCalendar onSelectOrder={handleSelectOrder} onViewChange={handleViewChange} />;
       case 'crm-pipeline':
         return <SalesPipeline />;
       case 'crm-prospect-pipeline':
@@ -290,8 +289,6 @@ function AppContent() {
 
       case 'crm-health':
         return <AccountHealthDashboard onViewChange={handleViewChange} />;
-      case 'crm-cadence':
-        return <VisitCadenceDashboard onViewChange={handleViewChange} />;
       case 'crm-revenue':
         return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
       case 'crm-scorecard':
