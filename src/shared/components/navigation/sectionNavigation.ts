@@ -117,7 +117,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-visit-calendar', label: 'Visit Calendar', icon: CalendarDays, group: 'primary' },
       { id: 'crm-pipeline', label: 'Inventory Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'crm-accounts-hub', label: 'Accounts Hub', icon: Building2, group: 'primary' },
-      { id: 'crm-tasks', label: 'Task Engine', icon: Zap, group: 'secondary' }
+      { id: 'crm-prospect-pipeline', label: 'Prospect Pipeline', icon: TrendingUp, group: 'primary' }
     ],
   },
   {
