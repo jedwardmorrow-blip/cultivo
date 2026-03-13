@@ -42,6 +42,7 @@ const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyT
 const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
 const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
+const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
 const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
 const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
@@ -101,7 +102,7 @@ function AppContent() {
     }
   }, []);
 
-  // Sync URL hash ↔ currentView for shareable deep-links & browser back/forward
+  // Sync URL hash â currentView for shareable deep-links & browser back/forward
   useEffect(() => {
     const newHash = currentView === 'dashboard' ? '' : currentView;
     if (window.location.hash.replace('#', '') !== newHash) {
@@ -283,20 +284,19 @@ function AppContent() {
         return <SalesPipeline />;
       case 'crm-prospect-pipeline':
         return <ProspectPipeline onViewChange={handleViewChange} />;
-      case 'crm-health':
-        return <AccountHealthDashboard onViewChange={handleViewChange} />;
-      case 'crm-cadence':
-        return <VisitCadenceDashboard onViewChange={handleViewChange} />;
-      case 'crm-revenue':
-        return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
       case 'crm-tasks':
         return <AutomatedTaskEngine onViewChange={handleViewChange} />;
-      case 'crm-scorecard':
-        return <StorePerformanceScorecard onViewChange={handleViewChange} />;
       case 'crm-forecast':
         return <RevenueForecastingEngine onViewChange={handleViewChange} />;
+      case 'crm-accounts-hub':
+        return <AccountsHub onViewChange={handleViewChange} />;
       case 'crm-accounts':
-        return <AccountsList onViewChange={handleViewChange} />;
+      case 'crm-health':
+      case 'crm-cadence':
+      case 'crm-revenue':
+      case 'crm-scorecard':
+        handleViewChange('crm-accounts-hub');
+        return null;
       case 'settings':
         return <Settings />;
       default:
