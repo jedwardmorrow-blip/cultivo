@@ -16,12 +16,18 @@ import {
   Activity,
   RefreshCw,
   ExternalLink,
+  Phone,
+  Mail,
+  Star,
+  MapPin,
+  Briefcase,
 } from 'lucide-react';
 import {
   getAccountSummaries,
 } from '../services';
 import {
   getAccountHealthDashboard,
+  getAllContacts,
 } from '../services/crm.service';
 import type {
   AccountSummary,
@@ -32,7 +38,7 @@ import type {
 import { RevenueTrackingDashboard } from './RevenueTrackingDashboard';
 import { VisitCadenceDashboard } from './VisitCadenceDashboard';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// âââ Types âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 type TabKey = 'overview' | 'revenue' | 'cadence' | 'contacts';
 
@@ -61,7 +67,7 @@ interface EnrichedAccount extends AccountSummary {
   engagement_score?: number;
 }
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// âââ Constants âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 const TABS: Tab[] = [
   { key: 'overview', label: 'Overview', icon: Building2 },
@@ -97,10 +103,10 @@ const HEALTH_CONFIG: Record<HealthBucket, { label: string; color: string; bgColo
   },
 };
 
-// ─── Sub-Components ──────────────────────────────────────────────────────────
+// âââ Sub-Components ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function HealthBadge({ bucket }: { bucket?: HealthBucket }) {
-  if (!bucket) return <span className="text-cult-medium-gray text-xs">—</span>;
+  if (!bucket) return <span className="text-cult-medium-gray text-xs">â</span>;
   const cfg = HEALTH_CONFIG[bucket];
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bgColor} ${cfg.color} border ${cfg.borderColor}`}>
@@ -111,7 +117,7 @@ function HealthBadge({ bucket }: { bucket?: HealthBucket }) {
 }
 
 function MiniScoreBar({ score, max = 100 }: { score?: number; max?: number }) {
-  if (score === undefined || score === null) return <span className="text-cult-medium-gray text-xs">—</span>;
+  if (score === undefined || score === null) return <span className="text-cult-medium-gray text-xs">â</span>;
   const pct = Math.min(100, Math.max(0, (score / max) * 100));
   const color =
     pct >= 75 ? 'bg-emerald-400' :
@@ -159,7 +165,7 @@ function SortHeader({
   );
 }
 
-// ─── Overview Tab ────────────────────────────────────────────────────────────
+// âââ Overview Tab ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void }) {
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
@@ -335,12 +341,12 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
   };
 
   const formatCurrency = (val?: number) => {
-    if (val == null) return '—';
+    if (val == null) return 'â';
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
   };
 
   const formatDate = (val?: string) => {
-    if (!val) return '—';
+    if (!val) return 'â';
     return new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -364,7 +370,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
 
   return (
     <div className="space-y-4">
-      {/* ── Health Summary Cards ── */}
+      {/* ââ Health Summary Cards ââ */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-medium-gray/30">
           <p className="text-xs text-cult-silver mb-1">Avg Health Score</p>
@@ -385,7 +391,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
         </div>
       </div>
 
-      {/* ── At-Risk Alerts ── */}
+      {/* ââ At-Risk Alerts ââ */}
       {healthData.some((h) => (h.health_bucket === 'at_risk' || h.health_bucket === 'dormant') && (h.revenue_90d ?? 0) > 10000) && (
         <div className="bg-orange-400/10 border border-orange-400/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
@@ -402,14 +408,14 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                   onClick={() => onViewChange(`crm-account-detail:${h.customer_id}`)}
                   className="text-xs bg-cult-dark-gray/80 text-orange-300 px-2 py-1 rounded hover:bg-cult-dark-gray transition-colors"
                 >
-                  {h.customer_name} · {formatCurrency(h.revenue_90d)}
+                  {h.customer_name} Â· {formatCurrency(h.revenue_90d)}
                 </button>
               ))}
           </div>
         </div>
       )}
 
-      {/* ── Search & Filters ── */}
+      {/* ââ Search & Filters ââ */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
@@ -447,7 +453,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
         <span className="text-xs text-cult-medium-gray">{sorted.length} accounts</span>
       </div>
 
-      {/* ── Table ── */}
+      {/* ââ Table ââ */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -499,7 +505,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                       >
                         <span className="text-cult-white font-medium">{acct.name}</span>
                         <span className="text-cult-medium-gray text-xs ml-2">{acct.customer_code}</span>
-                        {isParent && <span className="ml-2 text-xs text-sky-400/70">Hub · {children.length} locations</span>}
+                        {isParent && <span className="ml-2 text-xs text-sky-400/70">Hub Â· {children.length} locations</span>}
                         {acct.city && <span className="block text-xs text-cult-medium-gray">{acct.city}{acct.state ? `, ${acct.state}` : ''}</span>}
                       </button>
                     </td>
@@ -513,7 +519,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                       {formatDate(acct.last_order_date)}
                     </td>
                     <td className="py-2.5 px-3 text-right text-cult-silver tabular-nums">
-                      {acct.order_count ?? '—'}
+                      {acct.order_count ?? 'â'}
                     </td>
                     <td className="py-2.5 px-3">
                       <MiniScoreBar score={acct.health_score} />
@@ -544,7 +550,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                         {formatDate(child.last_order_date)}
                       </td>
                       <td className="py-2 px-3 text-right text-cult-medium-gray tabular-nums text-xs">
-                        {child.order_count ?? '—'}
+                        {child.order_count ?? 'â'}
                       </td>
                       <td className="py-2 px-3">
                         <MiniScoreBar score={child.health_score} />
@@ -568,22 +574,157 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
   );
 }
 
-// ─── Contacts Tab (Placeholder) ──────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────
+// Contacts Tab — Cross-account contact directory
+// ──────────────────────────────────────────────────────────────────────────────
 
 function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void }) {
+  const [contacts, setContacts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedQuery, setDebouncedQuery] = React.useState('');
+  const [sortField, setSortField] = React.useState<'name' | 'customer' | 'title'>('name');
+  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch contacts
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getAllContacts(debouncedQuery || undefined).then(({ data }) => {
+      if (!cancelled && data) setContacts(data);
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [debouncedQuery]);
+
+  // Sort contacts
+  const sorted = useMemo(() => {
+    const arr = [...contacts];
+    arr.sort((a, b) => {
+      let aVal = '';
+      let bVal = '';
+      if (sortField === 'name') { aVal = a.name || ''; bVal = b.name || ''; }
+      else if (sortField === 'customer') { aVal = a.customer?.name || ''; bVal = b.customer?.name || ''; }
+      else if (sortField === 'title') { aVal = a.title || ''; bVal = b.title || ''; }
+      const cmp = aVal.localeCompare(bVal);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [contacts, sortField, sortDir]);
+
+  const toggleSort = (field: 'name' | 'customer' | 'title') => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+  };
+
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortField !== field) return <ArrowUpDown className="w-3 h-3 opacity-40" />;
+    return sortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-cult-medium-gray">
-      <Users className="w-12 h-12 mb-4 opacity-40" />
-      <p className="text-lg font-medium text-cult-silver mb-2">Contacts Hub</p>
-      <p className="text-sm max-w-md text-center">
-        Unified contact management across all accounts. Search, filter, and manage buyer contacts from a single view.
-      </p>
-      <p className="text-xs mt-4 text-cult-medium-gray/60">Coming in Phase 3</p>
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
+          <input
+            type="text"
+            placeholder="Search contacts by name, email, title, or phone..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-cult-dark-gray border border-cult-medium-gray/30 rounded-lg text-cult-silver text-sm placeholder:text-cult-medium-gray/60 focus:outline-none focus:border-cult-silver/50"
+          />
+        </div>
+        <div className="text-xs text-cult-medium-gray">
+          {contacts.length} contact{contacts.length !== 1 ? 's' : ''}
+        </div>
+      </div>
+
+      {/* Contacts Table */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <RefreshCw className="w-5 h-5 animate-spin text-cult-medium-gray" />
+        </div>
+      ) : sorted.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-cult-medium-gray">
+          <Users className="w-10 h-10 mb-3 opacity-40" />
+          <p className="text-sm">{debouncedQuery ? 'No contacts match your search' : 'No contacts found'}</p>
+        </div>
+      ) : (
+        <div className="border border-cult-medium-gray/20 rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-cult-dark-gray/60 text-cult-medium-gray text-xs uppercase tracking-wider">
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('name')}>
+                  <span className="flex items-center gap-1">Contact <SortIcon field="name" /></span>
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('title')}>
+                  <span className="flex items-center gap-1">Title <SortIcon field="title" /></span>
+                </th>
+                <th className="px-4 py-3 text-left">Email</th>
+                <th className="px-4 py-3 text-left">Phone</th>
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('customer')}>
+                  <span className="flex items-center gap-1">Account <SortIcon field="customer" /></span>
+                </th>
+                <th className="px-4 py-3 text-left">Location</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-cult-medium-gray/10">
+              {sorted.map(c => (
+                <tr key={c.id} className="hover:bg-cult-dark-gray/40 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {c.is_primary && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                      <span className="text-cult-silver font-medium">{c.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-cult-medium-gray">{c.title || '—'}</td>
+                  <td className="px-4 py-3">
+                    {c.email ? (
+                      <a href={'mailto:' + c.email} className="text-cult-medium-gray hover:text-cult-silver flex items-center gap-1">
+                        <Mail className="w-3 h-3" /> {c.email}
+                      </a>
+                    ) : <span className="text-cult-medium-gray/40">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.phone ? (
+                      <span className="text-cult-medium-gray flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> {c.phone}
+                      </span>
+                    ) : <span className="text-cult-medium-gray/40">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => onViewChange('account-detail:' + c.customer?.id)}
+                      className="text-cult-silver hover:underline flex items-center gap-1"
+                    >
+                      <Briefcase className="w-3 h-3 text-cult-medium-gray" />
+                      {c.customer?.name || 'Unknown'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-cult-medium-gray text-xs">
+                    {c.customer?.city && c.customer?.state
+                      ? c.customer.city + ', ' + c.customer.state
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-// ──┈ Main AccountsHub Component ──────────────────────────────────────────────
+// âââ Main AccountsHub Component ââââââââââââââââââââââââââââââââââââââââââââââ
 
 interface AccountsHubProps {
   onViewChange: (view: string) => void;
@@ -594,17 +735,17 @@ export default function AccountsHub({ onViewChange }: AccountsHubProps) {
 
   return (
     <div className="space-y-4">
-      {/* ── Header ── */}
+      {/* ââ Header ââ */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-cult-white">Accounts Hub</h1>
           <p className="text-sm text-cult-silver mt-0.5">
-            Unified account management — health, revenue, visits, and contacts in one place.
+            Unified account management â health, revenue, visits, and contacts in one place.
           </p>
         </div>
       </div>
 
-      {/* ── Tab Bar ── */}
+      {/* ââ Tab Bar ââ */}
       <div className="bg-cult-dark-gray/50 rounded-lg p-1 border border-cult-medium-gray/50 inline-flex">
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -626,7 +767,7 @@ export default function AccountsHub({ onViewChange }: AccountsHubProps) {
         })}
       </div>
 
-      {/* ── Tab Content ── */}
+      {/* ââ Tab Content ââ */}
       <div className="min-h-[400px]">
         {activeTab === 'overview' && <OverviewTab onViewChange={onViewChange} />}
         {activeTab === 'revenue' && <RevenueTrackingDashboard onViewChange={onViewChange} />}
