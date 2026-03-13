@@ -239,6 +239,13 @@ export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProp
             Schedule Visit
           </button>
           <button
+            <button
+              onClick={toggleCadencePanel}
+              className={`p-2 ${showCadencePanel ? 'text-sky-400' : 'text-cult-silver'} hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors`}
+              title="Toggle Visit Cadence Panel"
+            >
+              <CalendarClock className="w-4 h-4" />
+            </button>
             onClick={reload}
             className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
           >
