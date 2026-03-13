@@ -62,7 +62,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'primary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'primary' },
       { id: 'cultivation-taskboard', label: 'Task Board', icon: ClipboardList, group: 'primary' },
-      { id: 'cultivation-digest', label: 'Digest', icon: FileText, group: 'primary' },
+      { id: 'cultivation-digest', label: 'Digest', icon: FileText, group: 'primary' }
     ],
   },
   {
@@ -73,7 +73,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     items: [
       { id: 'orders', label: 'Orders', icon: Package, group: 'primary' },
       { id: 'delivery', label: 'Delivery Calendar', icon: Calendar, group: 'primary' },
-      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' },
+      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' }
     ],
   },
   {
@@ -91,7 +91,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'inventory-daily-activity', label: 'Daily Activity', icon: Activity, group: 'secondary' },
       { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'secondary' },
       { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
-      { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' },
+      { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
     ],
   },
   {
@@ -103,7 +103,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'production-overview', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'bucking-sessions', label: 'Bucking', icon: Scissors, group: 'primary' },
       { id: 'trim-sessions', label: 'Trim', icon: Leaf, group: 'primary' },
-      { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' },
+      { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' }
     ],
   },
   {
@@ -116,12 +116,8 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-queue', label: 'My Queue', icon: ClipboardList, group: 'primary' },
       { id: 'crm-visit-calendar', label: 'Visit Calendar', icon: CalendarDays, group: 'primary' },
       { id: 'crm-pipeline', label: 'Inventory Pipeline', icon: GitBranch, group: 'primary' },
-      { id: 'crm-accounts', label: 'Accounts', icon: Building2, group: 'primary' },
-      { id: 'crm-health', label: 'Account Health', icon: Activity, group: 'secondary' },
-      { id: 'crm-cadence', label: 'Visit Cadence', icon: CalendarDays, group: 'secondary' },
-      { id: 'crm-revenue', label: 'Revenue Tracking', icon: TrendingUp, group: 'secondary' },
-      { id: 'crm-tasks', label: 'Task Engine', icon: Zap, group: 'secondary' },
-      { id: 'crm-scorecard', label: 'Store Scorecard', icon: ClipboardList, group: 'secondary' },
+      { id: 'crm-accounts-hub', label: 'Accounts Hub', icon: Building2, group: 'primary' },
+      { id: 'crm-tasks', label: 'Task Engine', icon: Zap, group: 'secondary' }
     ],
   },
   {
@@ -137,9 +133,9 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'rosin-lab-wash', label: 'New Wash', icon: Waves, group: 'primary' },
       { id: 'rosin-lab-press', label: 'Press', icon: ArrowDownToLine, group: 'primary' },
       { id: 'rosin-lab-log', label: 'Press & Cure Log', icon: ClipboardList, group: 'secondary' },
-      { id: 'rosin-lab-analytics', label: 'Analytics', icon: BarChart3, group: 'secondary' },
+      { id: 'rosin-lab-analytics', label: 'Analytics', icon: BarChart3, group: 'secondary' }
     ],
-  },
+  }
 ];
 
 export function getSectionForView(viewId: string): SectionDefinition | undefined {

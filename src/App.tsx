@@ -47,6 +47,7 @@ const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');
 const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
 const ProspectPipeline = lazyRetry(() => import('./features/crm'), 'ProspectPipeline');
+const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
 const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'AccountHealthDashboard');
 const VisitCadenceDashboard = lazyRetry(() => import('./features/crm'), 'VisitCadenceDashboard');
 const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
@@ -100,7 +101,7 @@ function AppContent() {
     }
   }, []);
 
-  // Sync URL hash ↔ currentView for shareable deep-links & browser back/forward
+  // Sync URL hash â currentView for shareable deep-links & browser back/forward
   useEffect(() => {
     const newHash = currentView === 'dashboard' ? '' : currentView;
     if (window.location.hash.replace('#', '') !== newHash) {
@@ -282,6 +283,11 @@ function AppContent() {
         return <SalesPipeline />;
       case 'crm-prospect-pipeline':
         return <ProspectPipeline onViewChange={handleViewChange} />;
+      case 'crm-tasks':
+        return <AutomatedTaskEngine onViewChange={handleViewChange} />;
+      case 'crm-accounts-hub':
+        return <AccountsHub onViewChange={handleViewChange} />;
+
       case 'crm-health':
         return <AccountHealthDashboard onViewChange={handleViewChange} />;
       case 'crm-cadence':
@@ -293,7 +299,12 @@ function AppContent() {
       case 'crm-scorecard':
         return <StorePerformanceScorecard onViewChange={handleViewChange} />;
       case 'crm-accounts':
-        return <AccountsList onViewChange={handleViewChange} />;
+      case 'crm-health':
+      case 'crm-cadence':
+      case 'crm-revenue':
+      case 'crm-scorecard':
+        handleViewChange('crm-accounts-hub');
+        return null;
       case 'settings':
         return <Settings />;
       default:
