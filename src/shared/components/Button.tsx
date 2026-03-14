@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode, type ButtonHTMLAttributes } from 'react';
+import { forwardRef, isValidElement, createElement, type ReactNode, type ButtonHTMLAttributes, type ElementType } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
@@ -7,8 +7,8 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  icon?: ReactNode;
-  iconRight?: ReactNode;
+  icon?: ReactNode | ElementType;
+  iconRight?: ReactNode | ElementType;
   loading?: boolean;
   fullWidth?: boolean;
   uppercase?: boolean;
@@ -51,6 +51,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    const renderIcon = (value: ReactNode | ElementType | undefined) => {
+      if (!value) return null;
+      if (isValidElement(value)) return value;
+      if (typeof value === 'function' || (typeof value === 'object' && '$$typeof' in value)) {
+        return createElement(value as ElementType, { className: 'w-4 h-4' });
+      }
+      return value;
+    };
+
     const base =
       'inline-flex items-center justify-center gap-2 font-medium tracking-wider transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -72,9 +81,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={classes}
         {...rest}
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : renderIcon(icon)}
         {children}
-        {iconRight}
+        {renderIcon(iconRight)}
       </button>
     );
   },
