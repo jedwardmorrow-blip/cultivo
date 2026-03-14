@@ -75,6 +75,13 @@ const HEALTH_HEX: Record<string, string> = {
   critical: '#ef4444',
 };
 
+const HEALTH_DESCRIPTIONS: Record<string, string> = {
+  healthy: 'Good supply — sellable stock on hand or 10kg+ in the pipeline',
+  low: 'Running low — under 500g sellable with little or no pipeline to replenish',
+  warning: 'Watch closely — low sellable stock, but some pipeline inventory is in progress',
+  critical: 'Out of stock — open demand with zero sellable and zero pipeline inventory',
+};
+
 /* ────────────────────────────────────────────── *
  *  Helpers                                        *
  * ────────────────────────────────────────────── */
@@ -215,7 +222,10 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
 function HealthDot({ status }: { status: string }) {
   const s = HEALTH_STYLES[status] || HEALTH_STYLES.healthy;
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg}`}>
+    <div
+      className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg} cursor-default`}
+      title={HEALTH_DESCRIPTIONS[status] || status}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
       <span className={`text-[10px] font-semibold capitalize ${s.text}`}>
         {status}
