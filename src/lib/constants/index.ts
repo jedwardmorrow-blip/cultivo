@@ -36,11 +36,3 @@ export const ALLOCATION_STATUSES = {
   RELEASED: 'released',
   CONSUMED: 'consumed',
 } as const;
-
-export const AVAILABLE_TRIMMERS = [
-  'Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo'
-] as const;
-
-export const AVAILABLE_PACKAGERS = [
-  'Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo', 'Mike', 'Josie'
-] as const;
