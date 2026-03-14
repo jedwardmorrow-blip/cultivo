@@ -4,6 +4,7 @@
 
 export type Urgency = 'overdue' | 'urgent' | 'soon' | 'normal' | 'no_date';
 export type StockStatus = 'no_stock' | 'partial' | 'can_fill' | 'available';
+export type ProductCategory = 'All' | 'Flower' | 'Smalls' | 'Fresh Frozen' | 'Preroll' | 'Trim';
 
 /** v_production_queue_strain_summary — one row per strain */
 export interface StrainSummary {
@@ -28,6 +29,7 @@ export interface StrainFormatRow {
   format_label: string;
   demand_unit: string | null;
   weight_per_unit_g: number;
+  product_category: string;
   total_units_needed: number;
   total_demand_g: number;
   total_demand_lbs: number;
@@ -62,6 +64,7 @@ export interface OrderLineItem {
   line_demand_g: number;
   product_id: string;
   product_name: string;
+  product_category: string;
   urgency: Urgency;
   delivery_notes: string | null;
   // Batch fields (null when no batch assigned to this line item)

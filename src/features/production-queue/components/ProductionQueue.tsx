@@ -2,7 +2,7 @@ import { useState, Fragment } from 'react';
 import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
-import type { ProductionQueueTab, DeliveryDateFilter, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
+import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
 import { Calendar } from 'lucide-react';
 
 function urgencyBadge(urgency: Urgency) {
@@ -184,6 +184,53 @@ function DateFilterStrip({ value, onChange }: { value: DeliveryDateFilter; onCha
   );
 }
 
+// ─── Product Category Filter Strip ──────────────────────────────────────────
+
+function ProductCategoryStrip({
+  value,
+  onChange,
+  counts,
+}: {
+  value: ProductCategory;
+  onChange: (c: ProductCategory) => void;
+  counts: Record<string, { lines: number; lbs: number }>;
+}) {
+  const categories: ProductCategory[] = ['All', 'Flower', 'Smalls', 'Fresh Frozen'];
+
+  return (
+    <div className="flex items-center gap-2">
+      <Package className="w-4 h-4 text-gray-500" />
+      <span className="text-xs text-gray-500 uppercase tracking-wider mr-1">Product</span>
+      {categories.map(cat => {
+        const count = cat === 'All'
+          ? { lines: Object.values(counts).reduce((s, c) => s + c.lines, 0), lbs: Object.values(counts).reduce((s, c) => s + c.lbs, 0) }
+          : counts[cat] || { lines: 0, lbs: 0 };
+
+        // Skip categories with 0 lines (except All)
+        if (cat !== 'All' && count.lines === 0) return null;
+
+        return (
+          <button
+            key={cat}
+            onClick={() => onChange(cat)}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              value === cat
+                ? 'bg-white/10 text-white border border-white/20'
+                : 'text-gray-500 hover:text-gray-300 border border-transparent'
+            }`}
+            title={`${count.lines} line items · ${count.lbs.toFixed(1)} lbs`}
+          >
+            {cat}
+            {value === cat && cat !== 'All' && (
+              <span className="ml-1.5 text-xs text-gray-400 font-normal">{count.lbs.toFixed(1)} lbs</span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Stats Strip ────────────────────────────────────────────────────────────
 
 function StatsStrip({ stats }: { stats: { totalStrains: number; totalOrders: number; overdueOrders: number; stockAlerts: number } }) {
@@ -298,7 +345,12 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                   <tr key={`${strainId}-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2 text-gray-300 pl-8">{f.format_label}</td>
+                    <td className="px-4 py-2 text-gray-300 pl-8">
+                      {f.format_label}
+                      {f.product_category && f.product_category !== 'Flower' && (
+                        <span className="ml-1.5 text-[10px] text-gray-500">{f.product_category}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
                     <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
                     <td className="px-4 py-2 text-right text-gray-400">—</td>
@@ -526,11 +578,29 @@ export function ProductionQueue() {
   const { strainSummary, byStrain, byOrder, loading, error, stats, refresh } = useProductionQueue();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
   const [dateFilter, setDateFilter] = useState<DeliveryDateFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
 
   // Apply delivery-date filter to all three data sets
-  const filteredByOrder = filterByDeliveryDate(byOrder, dateFilter);
-  const filteredByStrain = filterByDeliveryDate(byStrain, dateFilter);
+  const dateFilteredByOrder = filterByDeliveryDate(byOrder, dateFilter);
+  const dateFilteredByStrain = filterByDeliveryDate(byStrain, dateFilter);
   const filteredSummary = filterByDeliveryDate(strainSummary, dateFilter);
+
+  // Compute category counts from date-filtered data (so counts update with date filter)
+  const categoryCounts: Record<string, { lines: number; lbs: number }> = {};
+  dateFilteredByOrder.forEach(o => {
+    const cat = o.product_category || 'Flower';
+    if (!categoryCounts[cat]) categoryCounts[cat] = { lines: 0, lbs: 0 };
+    categoryCounts[cat].lines += 1;
+    categoryCounts[cat].lbs += o.line_demand_g / 454;
+  });
+
+  // Apply product category filter
+  const filteredByOrder = categoryFilter === 'All'
+    ? dateFilteredByOrder
+    : dateFilteredByOrder.filter(o => (o.product_category || 'Flower') === categoryFilter);
+  const filteredByStrain = categoryFilter === 'All'
+    ? dateFilteredByStrain
+    : dateFilteredByStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
 
   // Recompute stats from filtered data
   const filteredStats = dateFilter === 'all' ? stats : {
@@ -589,8 +659,13 @@ export function ProductionQueue() {
         </button>
       </div>
 
-      {/* Date filter */}
-      <DateFilterStrip value={dateFilter} onChange={setDateFilter} />
+      {/* Filters */}
+      <div className="space-y-3">
+        <DateFilterStrip value={dateFilter} onChange={setDateFilter} />
+        {activeTab !== 'summary' && (
+          <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
+        )}
+      </div>
 
       {/* Stats */}
       <StatsStrip stats={filteredStats} />
