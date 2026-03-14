@@ -64,6 +64,17 @@ export interface OrderLineItem {
   product_name: string;
   urgency: Urgency;
   delivery_notes: string | null;
+  // Batch fields (null when no batch assigned to this line item)
+  batch_number: string | null;
+  batch_lifecycle_state: string | null;
+  batch_status: string | null;
+  batch_quarantined: boolean | null;
+  batch_harvest_date: string | null;
+  batch_quality_grade: string | null;
+  batch_grade_code: string | null;
+  batch_grade_color: string | null;
+  batch_stage_label: string | null;
 }
 
 export type ProductionQueueTab = 'by-strain' | 'by-order' | 'summary';
+export type DeliveryDateFilter = 'all' | 'overdue' | 'this-week' | 'next-week';

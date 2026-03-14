@@ -2,7 +2,8 @@ import { useState, Fragment } from 'react';
 import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
-import type { ProductionQueueTab, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
+import type { ProductionQueueTab, DeliveryDateFilter, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
+import { Calendar } from 'lucide-react';
 
 function urgencyBadge(urgency: Urgency) {
   const styles: Record<Urgency, string> = {
@@ -57,6 +58,130 @@ function formatWeight(grams: number) {
     return `${(grams / 454).toFixed(1)} lbs`;
   }
   return `${grams.toFixed(1)}g`;
+}
+
+// ─── Batch stage badge ──────────────────────────────────────────────────────
+
+function batchStageBadge(item: OrderLineItem) {
+  if (!item.batch_number) return null;
+
+  const stageColors: Record<string, string> = {
+    'Created': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    'Pre-Harvest': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    'Bucking': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    'Bucked': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    'Bulk Available': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+    'Trimming': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+    'Packaging': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    'Packaged': 'bg-green-500/20 text-green-400 border-green-500/30',
+  };
+  const stageLabel = item.batch_stage_label || item.batch_lifecycle_state || 'Unknown';
+  const stageStyle = stageColors[stageLabel] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+
+  const gradeColors: Record<string, string> = {
+    emerald: 'text-emerald-400',
+    sky: 'text-sky-400',
+    amber: 'text-amber-400',
+    rose: 'text-rose-400',
+    gray: 'text-gray-400',
+  };
+  const gradeTextColor = item.batch_grade_color ? (gradeColors[item.batch_grade_color] || 'text-gray-400') : '';
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-gray-500 font-mono">{item.batch_number}</span>
+      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${stageStyle}`}>
+        {stageLabel}
+      </span>
+      {item.batch_quality_grade && item.batch_quality_grade !== 'Ungraded' && (
+        <span className={`text-[10px] font-medium ${gradeTextColor}`}>
+          {item.batch_quality_grade}
+        </span>
+      )}
+      {item.batch_quarantined && (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+          Quarantined
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Date range filter helpers ──────────────────────────────────────────────
+
+function getWeekBounds(offsetWeeks: number): [Date, Date] {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset + offsetWeeks * 7);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return [monday, sunday];
+}
+
+function dateInRange(dateStr: string | null, filter: DeliveryDateFilter): boolean {
+  if (filter === 'all') return true;
+  if (!dateStr) return filter === 'overdue'; // null dates show under overdue (no date = risky)
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (filter === 'overdue') {
+    return d < today;
+  }
+  const weekOffset = filter === 'this-week' ? 0 : 1;
+  const [start, end] = getWeekBounds(weekOffset);
+  return d >= start && d <= end;
+}
+
+function filterByDeliveryDate<T extends { requested_delivery_date?: string | null; earliest_delivery_date?: string | null; earliest_delivery?: string | null }>(
+  rows: T[],
+  filter: DeliveryDateFilter,
+): T[] {
+  if (filter === 'all') return rows;
+  return rows.filter(r => {
+    const dateField = r.requested_delivery_date ?? r.earliest_delivery_date ?? r.earliest_delivery ?? null;
+    return dateInRange(dateField, filter);
+  });
+}
+
+// ─── Date Filter Strip ──────────────────────────────────────────────────────
+
+function DateFilterStrip({ value, onChange }: { value: DeliveryDateFilter; onChange: (f: DeliveryDateFilter) => void }) {
+  const [thisWeekStart, thisWeekEnd] = getWeekBounds(0);
+  const [nextWeekStart, nextWeekEnd] = getWeekBounds(1);
+  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  const options: { id: DeliveryDateFilter; label: string; sublabel?: string }[] = [
+    { id: 'all', label: 'All' },
+    { id: 'overdue', label: 'Overdue' },
+    { id: 'this-week', label: 'This Week', sublabel: `${fmt(thisWeekStart)} – ${fmt(thisWeekEnd)}` },
+    { id: 'next-week', label: 'Next Week', sublabel: `${fmt(nextWeekStart)} – ${fmt(nextWeekEnd)}` },
+  ];
+
+  return (
+    <div className="flex items-center gap-2">
+      <Calendar className="w-4 h-4 text-gray-500" />
+      <span className="text-xs text-gray-500 uppercase tracking-wider mr-1">Delivery</span>
+      {options.map(opt => (
+        <button
+          key={opt.id}
+          onClick={() => onChange(opt.id)}
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+            value === opt.id
+              ? 'bg-white/10 text-white border border-white/20'
+              : 'text-gray-500 hover:text-gray-300 border border-transparent'
+          }`}
+          title={opt.sublabel}
+        >
+          {opt.label}
+          {opt.sublabel && value === opt.id && (
+            <span className="ml-1.5 text-xs text-gray-400 font-normal">{opt.sublabel}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 // ─── Stats Strip ────────────────────────────────────────────────────────────
@@ -198,6 +323,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                             <span className="w-20 text-right">{formatWeight(o.line_demand_g)}</span>
                             <span className="w-20">{formatDate(o.requested_delivery_date)}</span>
                             {urgencyBadge(o.urgency)}
+                            {o.batch_number && batchStageBadge(o)}
                           </div>
                         ))}
                       </div>
@@ -287,10 +413,19 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                   <tr key={item.order_item_id} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2 text-gray-300">{item.strain_name}</td>
+                    <td className="px-4 py-2">
+                      <div className="text-gray-300">{item.strain_name}</div>
+                      {item.batch_number && (
+                        <div className="mt-1">{batchStageBadge(item)}</div>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-gray-400">{item.format_label}</td>
                     <td className="px-4 py-2 text-gray-400">{item.quantity} units</td>
-                    <td className="px-4 py-2"></td>
+                    <td className="px-4 py-2 text-center">
+                      {item.batch_number
+                        ? <span className="text-[10px] text-green-400">✓ Batch</span>
+                        : <span className="text-[10px] text-gray-600">No batch</span>}
+                    </td>
                     <td className="px-4 py-2 text-right text-gray-300">{formatWeight(item.line_demand_g)}</td>
                   </tr>
                 ))}
@@ -390,6 +525,20 @@ function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
 export function ProductionQueue() {
   const { strainSummary, byStrain, byOrder, loading, error, stats, refresh } = useProductionQueue();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
+  const [dateFilter, setDateFilter] = useState<DeliveryDateFilter>('all');
+
+  // Apply delivery-date filter to all three data sets
+  const filteredByOrder = filterByDeliveryDate(byOrder, dateFilter);
+  const filteredByStrain = filterByDeliveryDate(byStrain, dateFilter);
+  const filteredSummary = filterByDeliveryDate(strainSummary, dateFilter);
+
+  // Recompute stats from filtered data
+  const filteredStats = dateFilter === 'all' ? stats : {
+    totalStrains: new Set(filteredSummary.map(s => s.strain_id || s.strain_name)).size,
+    totalOrders: new Set(filteredByOrder.map(o => o.order_id)).size,
+    overdueOrders: new Set(filteredByOrder.filter(o => o.urgency === 'overdue').map(o => o.order_id)).size,
+    stockAlerts: filteredSummary.filter(s => s.stock_status !== 'can_fill').length,
+  };
 
   if (loading) {
     return (
@@ -421,7 +570,7 @@ export function ProductionQueue() {
   ];
 
   // Stock alerts strip
-  const alerts = strainSummary.filter(s => s.stock_status !== 'can_fill');
+  const alerts = filteredSummary.filter(s => s.stock_status !== 'can_fill');
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6">
@@ -440,8 +589,11 @@ export function ProductionQueue() {
         </button>
       </div>
 
+      {/* Date filter */}
+      <DateFilterStrip value={dateFilter} onChange={setDateFilter} />
+
       {/* Stats */}
-      <StatsStrip stats={stats} />
+      <StatsStrip stats={filteredStats} />
 
       {/* Stock alerts */}
       {alerts.length > 0 && (
@@ -487,9 +639,9 @@ export function ProductionQueue() {
       </div>
 
       {/* Tab content */}
-      {activeTab === 'by-strain' && <ByStrainView byStrain={byStrain} byOrder={byOrder} />}
-      {activeTab === 'by-order' && <ByOrderView byOrder={byOrder} />}
-      {activeTab === 'summary' && <SummaryView strainSummary={strainSummary} />}
+      {activeTab === 'by-strain' && <ByStrainView byStrain={filteredByStrain} byOrder={filteredByOrder} />}
+      {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
+      {activeTab === 'summary' && <SummaryView strainSummary={filteredSummary} />}
     </div>
   );
 }
