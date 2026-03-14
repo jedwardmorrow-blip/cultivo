@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { InventoryItem, ConsolidatedPackages } from '../types';
 
-export const AVAILABLE_TRIMMERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo'];
-
 export function useSessionData() {
   const [buckedPackages, setBuckedPackages] = useState<InventoryItem[]>([]);
   const [availableStrains, setAvailableStrains] = useState<string[]>([]);
