@@ -1,13 +1,13 @@
 /**
- * SalesPipeline â Phase 5 "Inventory Simplification"
+ * SalesPipeline — Phase 5 "Inventory Simplification"
  *
  * Replaces the previous dense 7-column pipeline grid with a clean
- * strain â batch â stage drill-down.
+ * strain → batch → stage drill-down.
  *
- * Click a strain  â see its batches
- * Each batch card â horizontal stage bar + qty labels
+ * Click a strain  → see its batches
+ * Each batch card → horizontal stage bar + qty labels
  *
- * v2 â search filter + summary charts (pure CSS, zero deps)
+ * v2 — search filter + summary charts (pure CSS, zero deps)
  */
 
 import { useState, useMemo } from 'react';
@@ -30,9 +30,9 @@ import {
 } from '../../hooks/useSimplifiedInventory';
 import { LoadingSpinner } from '@/shared/components';
 
-/* ââââââââââââââââââââââââââââââââââââââââââââââ *
+/* ────────────────────────────────────────────── *
  *  Constants                                      *
- * ââââââââââââââââââââââââââââââââââââââââââââââ */
+ * ────────────────────────────────────────────── */
 
 const STAGE_COLORS: Record<string, string> = {
   Binned: '#6366f1', // indigo
@@ -75,18 +75,18 @@ const HEALTH_HEX: Record<string, string> = {
   critical: '#ef4444',
 };
 
-/* ââââââââââââââââââââââââââââââââââââââââââââââ *
+/* ────────────────────────────────────────────── *
  *  Helpers                                        *
- * ââââââââââââââââââââââââââââââââââââââââââââââ */
+ * ────────────────────────────────────────────── */
 
 function fmt(g: number): string {
   if (g >= 1000) return (g / 1000).toFixed(1) + 'kg';
   return Math.round(g).toLocaleString() + 'g';
 }
 
-/* ââââââââââââââââââââââââââââââââââââââââââââââ *
+/* ────────────────────────────────────────────── *
  *  SummaryCharts                                  *
- * ââââââââââââââââââââââââââââââââââââââââââââââ */
+ * ────────────────────────────────────────────── */
 
 function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
   const total = strains.length || 1;
@@ -119,7 +119,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
-      {/* ââ Health ââ */}
+      {/* ── Health ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Health
@@ -144,7 +144,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
         </div>
       </div>
 
-      {/* ââ Breakdown ââ */}
+      {/* ── Breakdown ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Breakdown
@@ -177,7 +177,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
         </div>
       </div>
 
-      {/* ââ Top 5 ââ */}
+      {/* ── Top 5 ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Top 5 Strains
@@ -208,9 +208,9 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
   );
 }
 
-/* ââââââââââââââââââââââââââââââââââââââââââââââ *
+/* ────────────────────────────────────────────── *
  *  Sub-components                                 *
- * ââââââââââââââââââââââââââââââââââââââââââââââ */
+ * ────────────────────────────────────────────── */
 
 function HealthDot({ status }: { status: string }) {
   const s = HEALTH_STYLES[status] || HEALTH_STYLES.healthy;
@@ -305,7 +305,7 @@ function StrainRow({
 
   return (
     <div className="border border-cult-medium-gray/20 rounded-xl overflow-hidden">
-      {/* Strain header â clickable */}
+      {/* Strain header — clickable */}
       <button
         onClick={onToggle}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cult-medium-gray/5 transition-colors"
@@ -340,7 +340,7 @@ function StrainRow({
             <div className="flex items-center gap-2 py-6 justify-center">
               <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
               <span className="text-xs text-neutral-500">
-                Loading batchesâ¦
+                Loading batches…
               </span>
             </div>
           ) : batches.length > 0 ? (
@@ -360,9 +360,9 @@ function StrainRow({
   );
 }
 
-/* ââââââââââââââââââââââââââââââââââââââââââââââ *
+/* ────────────────────────────────────────────── *
  *  Main component                                 *
- * ââââââââââââââââââââââââââââââââââââââââââââââ */
+ * ────────────────────────────────────────────── */
 
 export function SalesPipeline() {
   const {
@@ -393,7 +393,7 @@ export function SalesPipeline() {
     return strains.filter((s) => s.strain.toLowerCase().includes(q));
   }, [strains, searchTerm]);
 
-  /* ââ Loading state ââ */
+  /* ── Loading state ── */
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -402,7 +402,7 @@ export function SalesPipeline() {
     );
   }
 
-  /* ââ Error state ââ */
+  /* ── Error state ── */
   if (error) {
     return (
       <div className="text-center py-12">
@@ -418,7 +418,7 @@ export function SalesPipeline() {
     );
   }
 
-  /* ââ Main render ââ */
+  /* ── Main render ── */
   return (
     <div className="space-y-1">
       {/* Header */}
@@ -466,7 +466,7 @@ export function SalesPipeline() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search strainsâ¦"
+            placeholder="Search strains…"
             className="w-full bg-cult-black border border-cult-medium-gray/20 rounded-xl pl-9 pr-9 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-cult-medium-gray/50 transition-colors"
           />
           {searchTerm && (
