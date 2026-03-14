@@ -103,7 +103,8 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'production-overview', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'bucking-sessions', label: 'Bucking', icon: Scissors, group: 'primary' },
       { id: 'trim-sessions', label: 'Trim', icon: Leaf, group: 'primary' },
-      { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' }
+      { id: 'packaging-sessions', label: 'Packaging', icon: Box, group: 'primary' },
+      { id: 'production-queue', label: 'Queue', icon: ClipboardList, group: 'primary' }
     ],
   },
   {

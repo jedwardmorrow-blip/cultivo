@@ -53,6 +53,7 @@ const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'Reve
 const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
+const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 
 function ViewFallback() {
   return (
@@ -246,6 +247,8 @@ function AppContent() {
         return <TrimSessionsRefactored />;
       case 'packaging-sessions':
         return <PackagingSessionsRefactored />;
+      case 'production-queue':
+        return <ProductionQueue />;
       case 'batches':
         return <BatchManagement />;
       case 'inventory-all':

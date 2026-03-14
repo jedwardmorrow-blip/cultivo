@@ -221,15 +221,21 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
 
 function HealthDot({ status }: { status: string }) {
   const s = HEALTH_STYLES[status] || HEALTH_STYLES.healthy;
+  const desc = HEALTH_DESCRIPTIONS[status] || status;
   return (
-    <div
-      className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg} cursor-default`}
-      title={HEALTH_DESCRIPTIONS[status] || status}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-      <span className={`text-[10px] font-semibold capitalize ${s.text}`}>
-        {status}
-      </span>
+    <div className="relative group/health">
+      <div
+        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg} cursor-default`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+        <span className={`text-[10px] font-semibold capitalize ${s.text}`}>
+          {status}
+        </span>
+      </div>
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/health:opacity-100 group-hover/health:visible transition-all duration-200 z-50 pointer-events-none">
+        {desc}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+      </div>
     </div>
   );
 }

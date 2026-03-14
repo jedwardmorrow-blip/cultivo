@@ -1,0 +1,69 @@
+// Production Queue View types
+// Maps to the 3 Supabase views: v_production_queue_strain_summary,
+// v_production_queue_by_strain, v_production_queue_by_order
+
+export type Urgency = 'overdue' | 'urgent' | 'soon' | 'normal' | 'no_date';
+export type StockStatus = 'no_stock' | 'partial' | 'can_fill' | 'available';
+
+/** v_production_queue_strain_summary — one row per strain */
+export interface StrainSummary {
+  strain_id: string | null;
+  strain_name: string;
+  total_demand_g: number;
+  total_demand_lbs: number;
+  available_g: number;
+  available_lbs: number;
+  fill_rate_pct: number;
+  order_count: number;
+  line_item_count: number;
+  earliest_delivery: string | null;
+  urgency: Urgency;
+  stock_status: StockStatus;
+}
+
+/** v_production_queue_by_strain — one row per strain + format combo */
+export interface StrainFormatRow {
+  strain_id: string | null;
+  strain_name: string;
+  format_label: string;
+  demand_unit: string | null;
+  weight_per_unit_g: number;
+  total_units_needed: number;
+  total_demand_g: number;
+  total_demand_lbs: number;
+  order_count: number;
+  strain_available_g: number;
+  strain_available_lbs: number;
+  stock_status: StockStatus;
+  earliest_delivery_date: string | null;
+  urgency: Urgency;
+}
+
+/** v_production_queue_by_order — one row per order line item */
+export interface OrderLineItem {
+  order_id: string;
+  order_number: string;
+  order_status: string;
+  requested_delivery_date: string | null;
+  scheduled_delivery_date: string | null;
+  is_sample: boolean;
+  customer_name: string;
+  customer_id: string;
+  order_item_id: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  demand_unit: string | null;
+  item_status: string;
+  strain_id: string | null;
+  strain_name: string;
+  format_label: string;
+  weight_per_unit_g: number;
+  line_demand_g: number;
+  product_id: string;
+  product_name: string;
+  urgency: Urgency;
+  delivery_notes: string | null;
+}
+
+export type ProductionQueueTab = 'by-strain' | 'by-order' | 'summary';
