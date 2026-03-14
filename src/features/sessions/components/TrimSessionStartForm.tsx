@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { TrimSessionInsert, InventoryItem } from '../types';
-import { AVAILABLE_TRIMMERS } from '../hooks/useSessionData';
+import { useActiveStaff } from '../hooks/useActiveStaff';
 import { createTrimSession } from '../services/sessions.service';
 
 interface TrimSessionStartFormProps {
@@ -16,6 +16,7 @@ export function TrimSessionStartForm({
   onSuccess,
   onCancel,
 }: TrimSessionStartFormProps) {
+  const { staff, loading: staffLoading, getDisplayName } = useActiveStaff();
   const [form, setForm] = useState<Partial<TrimSessionInsert>>({
     trim_method: 'hand',
     pulled_weight: 0,
@@ -36,6 +37,7 @@ export function TrimSessionStartForm({
       // Explicitly map fields to ensure pulled_weight is included
       const sessionData = {
         trimmer_name: form.trimmer_name,
+        trimmer_staff_id: form.trimmer_staff_id, // Link to staff table
         strain: form.strain,
         batch_id: form.batch_id,
         package_id: form.package_id,
@@ -124,15 +126,24 @@ export function TrimSessionStartForm({
           <div>
             <label className="block text-sm font-medium text-cult-white mb-1">Trimmer*</label>
             <select
-              value={form.trimmer_name || ''}
-              onChange={(e) => handleChange('trimmer_name', e.target.value)}
+              value={form.trimmer_staff_id || ''}
+              onChange={(e) => {
+                const selectedStaff = staff.find(s => s.id === e.target.value);
+                if (selectedStaff) {
+                  handleChange('trimmer_staff_id', selectedStaff.id);
+                  handleChange('trimmer_name', selectedStaff.first_name);
+                } else {
+                  handleChange('trimmer_staff_id', '');
+                  handleChange('trimmer_name', '');
+                }
+              }}
               required
-              disabled={isSubmitting}
+              disabled={isSubmitting || staffLoading}
               className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
-              <option value="">Select trimmer</option>
-              {AVAILABLE_TRIMMERS.map(trimmer => (
-                <option key={trimmer} value={trimmer}>{trimmer}</option>
+              <option value="">{staffLoading ? 'Loading staff...' : 'Select trimmer'}</option>
+              {staff.map(member => (
+                <option key={member.id} value={member.id}>{getDisplayName(member)}</option>
               ))}
             </select>
           </div>

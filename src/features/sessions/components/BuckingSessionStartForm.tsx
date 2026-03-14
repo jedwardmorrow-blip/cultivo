@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { BuckingSessionInsert, InventoryItem } from '../types';
 import { createBuckingSession } from '../services/sessions.service';
-import { AVAILABLE_BUCKERS } from '../hooks/useBuckingData';
+import { useActiveStaff } from '../hooks/useActiveStaff';
 import { notificationService } from '@/services/notification.service';
 
 interface BuckingSessionStartFormProps {
@@ -17,6 +17,7 @@ export function BuckingSessionStartForm({
   onSuccess,
   onCancel,
 }: BuckingSessionStartFormProps) {
+  const { staff, loading: staffLoading, getDisplayName } = useActiveStaff();
   const [form, setForm] = useState<Partial<BuckingSessionInsert>>({
     bucker_name: '',
     strain: '',
@@ -100,6 +101,7 @@ export function BuckingSessionStartForm({
 
     const { error } = await createBuckingSession({
       bucker_name: form.bucker_name!,
+      bucker_staff_id: form.bucker_staff_id, // Link to staff table
       binned_package_id: form.binned_package_id!,
       binned_weight_grams: form.binned_weight_grams!,
       strain: form.strain!,
@@ -146,14 +148,24 @@ export function BuckingSessionStartForm({
           <div>
             <label className="block text-sm font-medium text-cult-white mb-1">Bucker*</label>
             <select
-              value={form.bucker_name || ''}
-              onChange={(e) => onChange('bucker_name', e.target.value)}
+              value={form.bucker_staff_id || ''}
+              onChange={(e) => {
+                const selectedStaff = staff.find(s => s.id === e.target.value);
+                if (selectedStaff) {
+                  onChange('bucker_staff_id', selectedStaff.id);
+                  onChange('bucker_name', selectedStaff.first_name);
+                } else {
+                  onChange('bucker_staff_id', '');
+                  onChange('bucker_name', '');
+                }
+              }}
               required
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green"
+              disabled={staffLoading}
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
-              <option value="">Select bucker</option>
-              {AVAILABLE_BUCKERS.map(bucker => (
-                <option key={bucker} value={bucker}>{bucker}</option>
+              <option value="">{staffLoading ? 'Loading staff...' : 'Select bucker'}</option>
+              {staff.map(member => (
+                <option key={member.id} value={member.id}>{getDisplayName(member)}</option>
               ))}
             </select>
           </div>

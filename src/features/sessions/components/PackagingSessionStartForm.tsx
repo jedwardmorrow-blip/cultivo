@@ -5,8 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { notificationService } from '@/services/notification.service';
-
-const AVAILABLE_PACKAGERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo', 'Mike', 'Josie'];
+import { useActiveStaff } from '../hooks/useActiveStaff';
 
 interface PackagingSessionStartFormProps {
   inventoryPackages: InventoryItem[];
@@ -21,6 +20,7 @@ export function PackagingSessionStartForm({
   onSuccess,
   onCancel
 }: PackagingSessionStartFormProps) {
+  const { staff, loading: staffLoading, getDisplayName } = useActiveStaff();
   const [formData, setFormData] = useState<Partial<PackagingSessionInsert>>({
     packager_name: '',
     strain: '',
@@ -144,9 +144,10 @@ export function PackagingSessionStartForm({
       return;
     }
 
-    // Attempt to create the session
+    // Attempt to create the session - include packager_staff_id for staff linkage
     const { error } = await createPackagingSession({
       ...formData,
+      packager_staff_id: formData.packager_staff_id, // Link to staff table
       session_status: 'active',
       session_date: new Date().toISOString().split('T')[0]
     } as PackagingSessionInsert);
@@ -191,14 +192,30 @@ export function PackagingSessionStartForm({
           <div>
             <label className="block text-sm font-medium text-cult-white mb-1">Packager*</label>
             <select
-              value={formData.packager_name || ''}
-              onChange={(e) => setFormData({ ...formData, packager_name: e.target.value })}
+              value={formData.packager_staff_id || ''}
+              onChange={(e) => {
+                const selectedStaff = staff.find(s => s.id === e.target.value);
+                if (selectedStaff) {
+                  setFormData({
+                    ...formData,
+                    packager_staff_id: selectedStaff.id,
+                    packager_name: selectedStaff.first_name,
+                  });
+                } else {
+                  setFormData({
+                    ...formData,
+                    packager_staff_id: undefined,
+                    packager_name: '',
+                  });
+                }
+              }}
               className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
               required
+              disabled={staffLoading}
             >
-              <option value="">Select Packager</option>
-              {AVAILABLE_PACKAGERS.map(packager => (
-                <option key={packager} value={packager}>{packager}</option>
+              <option value="">{staffLoading ? 'Loading staff...' : 'Select Packager'}</option>
+              {staff.map(member => (
+                <option key={member.id} value={member.id}>{getDisplayName(member)}</option>
               ))}
             </select>
           </div>
