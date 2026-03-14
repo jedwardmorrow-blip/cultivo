@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import type { InventoryItem } from '../types';
 import { getInventoryItems } from '@/features/inventory/services/inventory.service';
 
-export const AVAILABLE_BUCKERS = ['Laura', 'Sam', 'Viana', 'Roxy', 'Justin', 'Greg', 'Andrew', 'Leo'];
-
 export function useBuckingData() {
   const [binnedPackages, setBinnedPackages] = useState<InventoryItem[]>([]);
   const [availableStrains, setAvailableStrains] = useState<string[]>([]);
