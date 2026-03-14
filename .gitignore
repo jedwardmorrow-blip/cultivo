@@ -21,3 +21,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Vite build timestamp artifacts (contain sandbox paths)
+vite.config.ts.timestamp-*
