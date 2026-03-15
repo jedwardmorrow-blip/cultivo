@@ -1,3 +1,4 @@
+import { parseDeliveryDate } from '@/lib/utils';
 import type { Order } from '../types';
 
 export interface AttentionFlag {
@@ -18,8 +19,9 @@ export function getAttentionFlags(order: Order): AttentionFlag[] {
   const now = new Date();
   const status = order.status || 'submitted';
   const createdAt = order.created_at ? new Date(order.created_at) : now;
-  const deliveryDate = order.scheduled_delivery_date || order.requested_delivery_date;
-  const deliveryTime = deliveryDate ? new Date(deliveryDate).getTime() : null;
+  const deliveryDateStr = order.scheduled_delivery_date || order.requested_delivery_date;
+  const parsedDelivery = parseDeliveryDate(deliveryDateStr);
+  const deliveryTime = parsedDelivery ? parsedDelivery.getTime() : null;
   const hoursOld = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
   const hoursUntilDelivery = deliveryTime
     ? (deliveryTime - now.getTime()) / (1000 * 60 * 60)
