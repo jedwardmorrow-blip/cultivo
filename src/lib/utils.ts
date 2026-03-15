@@ -44,6 +44,28 @@ export function formatCurrency(amount: number): string {
   });
 }
 
+/**
+ * Safely parse a delivery date string from either a `date` column (YYYY-MM-DD)
+ * or a `timestamptz` column (YYYY-MM-DD HH:MM:SS+00). Strips any time/timezone
+ * suffix and returns a local-midnight Date, or null if unparseable.
+ */
+export function parseDeliveryDate(dateStr: string | null | undefined): Date | null {
+  if (!dateStr) return null;
+  // Keep only YYYY-MM-DD portion, stripping any time or tz suffix
+  const dateOnly = dateStr.split(' ')[0].split('T')[0];
+  const parsed = new Date(dateOnly + 'T00:00:00');
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
+ * Extract just the YYYY-MM-DD portion from a delivery date string,
+ * suitable for HTML <input type="date"> values.
+ */
+export function toDateInputValue(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  return dateStr.split(' ')[0].split('T')[0];
+}
+
 export function validateDate(dateString: string): { isValid: boolean; error?: string } {
   if (!dateString) {
     return { isValid: true };

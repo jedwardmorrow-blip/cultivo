@@ -220,7 +220,10 @@ class OrdersDataService {
   async updateDeliveryDate(orderId: string, newDate: string): Promise<void> {
     const { error } = await supabase
       .from('orders')
-      .update({ requested_delivery_date: newDate })
+      .update({
+        requested_delivery_date: newDate,
+        scheduled_delivery_date: newDate,
+      })
       .eq('id', orderId);
 
     if (error) throw error;
