@@ -604,7 +604,7 @@ function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
 export function ProductionQueue() {
   const { strainSummary, byStrain, byOrder, loading, error, stats, refresh } = useProductionQueue();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
-  const [dateFilter, setDateFilter] = useState<DeliveryDateFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DeliveryDateFilter>('this-week');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
 
   // Apply delivery-date filter to all three data sets
