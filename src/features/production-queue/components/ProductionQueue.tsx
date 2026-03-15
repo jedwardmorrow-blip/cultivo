@@ -1,8 +1,9 @@
-import { useState, Fragment } from 'react';
+import { useState, useCallback, Fragment } from 'react';
 import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
-import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
+import { BatchAssignPanel } from './BatchAssignPanel';
+import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus, BatchAssignContext } from '../types';
 import { Calendar } from 'lucide-react';
 
 function urgencyBadge(urgency: Urgency) {
@@ -270,6 +271,8 @@ function StatsStrip({ stats }: { stats: { totalStrains: number; totalOrders: num
 
 function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOrder: OrderLineItem[] }) {
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
+  // Track which format row has the batch assign panel open: "strainId|formatLabel"
+  const [assigningFormat, setAssigningFormat] = useState<string | null>(null);
 
   // Group by strain_id
   const strainGroups = new Map<string, StrainFormatRow[]>();
@@ -291,6 +294,17 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
   // Get order detail for a strain
   function getOrdersForStrain(strainId: string | null) {
     return byOrder.filter(o => o.strain_id === strainId);
+  }
+
+  // Get orders for a specific strain + format combo
+  const getOrdersForStrainFormat = useCallback((strainId: string | null, formatLabel: string) => {
+    return byOrder.filter(o => o.strain_id === strainId && o.format_label === formatLabel);
+  }, [byOrder]);
+
+  // Toggle the batch assign panel for a format row
+  function toggleAssignPanel(strainId: string, formatLabel: string) {
+    const key = `${strainId}|${formatLabel}`;
+    setAssigningFormat(prev => prev === key ? null : key);
   }
 
   return (
@@ -363,29 +377,73 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                 </tr>
 
                 {/* Expanded: format breakdown */}
-                {isExpanded && formats.map((f, i) => (
-                  <tr key={`${strainId}-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2 text-gray-300 pl-8">
-                      {f.format_label}
-                      {f.product_category && f.product_category !== 'Flower' && (
-                        <span className="ml-1.5 text-[10px] text-gray-500">{f.product_category}</span>
+                {isExpanded && formats.map((f, i) => {
+                  const formatKey = `${strainId}|${f.format_label}`;
+                  const isAssigning = assigningFormat === formatKey;
+                  return (
+                    <Fragment key={`${strainId}-${i}`}>
+                      <tr className="border-b border-cult-medium-gray/30 bg-cult-black/30">
+                        <td className="px-4 py-2"></td>
+                        <td className="px-4 py-2"></td>
+                        <td className="px-4 py-2 text-gray-300 pl-8">
+                          {f.format_label}
+                          {f.product_category && f.product_category !== 'Flower' && (
+                            <span className="ml-1.5 text-[10px] text-gray-500">{f.product_category}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
+                        <td className="px-4 py-2 text-right text-gray-400">
+                          {f.already_packaged_units > 0 && (
+                            <span className="text-[10px] text-green-400">{f.already_packaged_units} pkgd</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2"></td>
+                        <td className="px-4 py-2">
+                          {/* Assign button */}
+                          {f.total_units_needed > 0 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleAssignPanel(strainId, f.format_label);
+                              }}
+                              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                                isAssigning
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20'
+                              }`}
+                            >
+                              {isAssigning ? 'Close' : 'Assign'}
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
+                        <td className="px-4 py-2 text-right text-gray-400">{f.order_count}</td>
+                      </tr>
+
+                      {/* Batch Assign Panel — inline below format row */}
+                      {isAssigning && (
+                        <tr className="border-b border-cult-medium-gray/30">
+                          <td colSpan={10} className="p-0">
+                            <BatchAssignPanel
+                              context={{
+                                strainId: f.strain_id,
+                                strainName: f.strain_name,
+                                formatLabel: f.format_label,
+                                productCategory: f.product_category,
+                                orderItems: getOrdersForStrainFormat(f.strain_id, f.format_label),
+                              }}
+                              onClose={() => setAssigningFormat(null)}
+                              onCommitComplete={() => {
+                                setAssigningFormat(null);
+                              }}
+                            />
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2 text-right text-gray-400">
-                      {f.already_packaged_units > 0 && (
-                        <span className="text-[10px] text-green-400">{f.already_packaged_units} pkgd</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
-                    <td className="px-4 py-2 text-right text-gray-400">{f.order_count}</td>
-                  </tr>
-                ))}
+                    </Fragment>
+                  );
+                })}
 
                 {/* Expanded: order detail */}
                 {isExpanded && (

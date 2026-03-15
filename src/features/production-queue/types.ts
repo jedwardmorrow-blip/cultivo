@@ -94,3 +94,40 @@ export interface OrderLineItem {
 
 export type ProductionQueueTab = 'by-strain' | 'by-order' | 'summary';
 export type DeliveryDateFilter = 'all' | 'overdue' | 'this-week' | 'next-week';
+
+// ─── Batch Assign types ─────────────────────────────────────────────────────
+
+/** A single draft assignment: one package → one order item, pending confirmation */
+export interface AssignmentDraft {
+  /** Temp ID for React key / removal */
+  draftId: string;
+  packageId: string;
+  packageLabel: string; // e.g. "PKG-001" display label
+  orderItemId: string;
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  quantityToAssign: number;
+  /** Max the package can provide (available_qty at draft time) */
+  packageAvailableQty: number;
+  /** Max the order item still needs */
+  orderItemRemainingQty: number;
+}
+
+/** Summary shown on the preview/confirm step */
+export interface BatchAssignPreview {
+  drafts: AssignmentDraft[];
+  totalPackagesUsed: number;
+  totalOrderItemsTouched: number;
+  totalUnitsAssigned: number;
+}
+
+/** Props passed to the BatchAssignPanel when opened for a strain+format row */
+export interface BatchAssignContext {
+  strainId: string | null;
+  strainName: string;
+  formatLabel: string;
+  productCategory: string;
+  /** The matching order line items that need this strain+format, sorted FIFO */
+  orderItems: OrderLineItem[];
+}
