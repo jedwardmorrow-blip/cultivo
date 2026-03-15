@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { useShiftSelect } from '@/shared/hooks';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
@@ -243,10 +243,10 @@ export function OrderTable({
                     {deliveryDate ? (
                       <span className="text-sm text-cult-silver flex items-center gap-1.5">
                         <Calendar className="w-3 h-3 text-cult-lighter-gray" />
-                        {new Date(deliveryDate + 'T00:00:00').toLocaleDateString('en-US', {
+                        {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
-                        })}
+                        }) ?? 'Invalid Date'}
                       </span>
                     ) : (
                       <span className="text-xs text-cult-lighter-gray">No date</span>
