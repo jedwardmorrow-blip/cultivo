@@ -1,17 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  X,
-  MapPin,
-  Phone,
-  Mail,
-  Copy,
-  Trash2,
-  ChevronRight,
-  Building2,
-  Clock,
-  Calendar,
-  Shield,
-  Gift,
+  X, MapPin, Phone, Mail, Copy, Trash2, ChevronRight,
+  Building2, Clock, Calendar, Shield, Gift, Check,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, parseDeliveryDate, toDateInputValue } from '@/lib/utils';
@@ -72,6 +62,7 @@ const TIMELINE_STEPS = ['submitted', 'accepted', 'processing', 'ready_for_delive
 
 function OrderTimeline({ currentStatus }: { currentStatus: string }) {
   const currentIndex = TIMELINE_STEPS.indexOf(currentStatus);
+
   if (currentStatus === 'cancelled') {
     return (
       <div className="flex items-center gap-1 px-4 py-2 bg-red-900/20 border border-red-800/50 rounded">
@@ -190,6 +181,7 @@ export function OrderDrawer({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [tempDate, setTempDate] = useState('');
+  const [dateSaved, setDateSaved] = useState(false);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const { orderDetails, loading } = useOrdersContext();
 
@@ -198,6 +190,8 @@ export function OrderDrawer({
   const handleDateSave = useCallback(async (newDate: string) => {
     if (newDate && newDate !== deliveryDate) {
       await onUpdateDeliveryDate(order.id, newDate);
+      setDateSaved(true);
+      setTimeout(() => setDateSaved(false), 2000);
     }
     setIsEditingDate(false);
     setTempDate('');
@@ -241,9 +235,7 @@ export function OrderDrawer({
     }
   }, [order.id]);
 
-  useEffect(() => {
-    loadCustomer();
-  }, [loadCustomer]);
+  useEffect(() => { loadCustomer(); }, [loadCustomer]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -262,12 +254,9 @@ export function OrderDrawer({
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-      />
-
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-black border-l border-cult-charcoal z-50 flex flex-col animate-slide-in-right shadow-2xl">
+
         <div className="flex items-center justify-between px-5 py-4 border-b border-cult-charcoal bg-cult-near-black">
           <div className="flex items-center gap-3 min-w-0">
             <h2 className="text-lg font-bold text-cult-off-white tracking-wide truncate">
@@ -293,22 +282,21 @@ export function OrderDrawer({
               </span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-cult-silver hover:text-cult-white hover:bg-cult-charcoal rounded transition-colors"
-          >
+          <button onClick={onClose} className="p-1.5 text-cult-silver hover:text-cult-white hover:bg-cult-charcoal rounded transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           <div className="px-5 py-4 space-y-4">
+
             <div className="flex items-center justify-between text-xs text-cult-silver">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Created {getOrderAge(order.created_at)}
                 </span>
+
                 {isEditingDate ? (
                   <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <Calendar className="w-3 h-3" />
@@ -320,7 +308,10 @@ export function OrderDrawer({
                       onBlur={(e) => handleDateSave(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleDateSave(tempDate);
-                        if (e.key === 'Escape') { setIsEditingDate(false); setTempDate(''); }
+                        if (e.key === 'Escape') {
+                          setIsEditingDate(false);
+                          setTempDate('');
+                        }
                       }}
                       autoFocus
                       className="bg-cult-charcoal border border-cult-silver/30 rounded px-1.5 py-0.5 text-xs text-cult-off-white outline-none focus:border-cult-green transition-colors"
@@ -332,9 +323,20 @@ export function OrderDrawer({
                     onClick={(e) => { e.stopPropagation(); handleDateEditStart(); }}
                     className="flex items-center gap-1 hover:text-cult-green transition-colors group/date"
                   >
-                    <Calendar className="w-3 h-3" />
+                    {dateSaved ? (
+                      <Check className="w-3 h-3 text-cult-green" />
+                    ) : (
+                      <Calendar className="w-3 h-3" />
+                    )}
                     {deliveryDate
-                      ? <>Delivery: {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? 'Invalid Date'}</>
+                      ? <span className={dateSaved ? 'text-cult-green transition-colors' : ''}>
+                          Delivery: {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          }) ?? 'No date'}
+                          {dateSaved && <span className="ml-1.5 text-cult-green font-semibold animate-pulse">Saved</span>}
+                        </span>
                       : <span className="text-cult-lighter-gray group-hover/date:text-cult-green">Set delivery date</span>
                     }
                   </button>
@@ -390,6 +392,7 @@ export function OrderDrawer({
                 )}
               </div>
             )}
+
           </div>
         </div>
 
@@ -421,7 +424,6 @@ export function OrderDrawer({
           onCancel={() => setConfirmDelete(false)}
         />
       )}
-
     </>
   );
 }

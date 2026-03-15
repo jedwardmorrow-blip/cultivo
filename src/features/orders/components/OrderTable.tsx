@@ -109,7 +109,6 @@ export function OrderTable({
   }, [orders, sortField, sortDirection]);
 
   const getOrderKey = useCallback((order: Order) => order.id, []);
-
   const { handleItemClick: shiftSelectClick } = useShiftSelect({
     items: sortedOrders,
     getKey: getOrderKey,
@@ -185,6 +184,7 @@ export function OrderTable({
                       className="w-3.5 h-3.5 rounded border-cult-charcoal bg-cult-near-black text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
                     />
                   </td>
+
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-cult-off-white tracking-wide">
@@ -215,6 +215,7 @@ export function OrderTable({
                       </div>
                     )}
                   </td>
+
                   <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex items-center gap-1">
                       <span className={`inline-block px-2 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
@@ -234,11 +235,13 @@ export function OrderTable({
                       )}
                     </div>
                   </td>
+
                   <td className="px-3 py-3">
                     <span className="text-sm text-cult-off-white">
                       {order.customer_name || 'Unknown'}
                     </span>
                   </td>
+
                   <td className="px-3 py-3">
                     {deliveryDate ? (
                       <span className="text-sm text-cult-silver flex items-center gap-1.5">
@@ -246,23 +249,26 @@ export function OrderTable({
                         {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
-                        }) ?? 'Invalid Date'}
+                        }) ?? 'No date'}
                       </span>
                     ) : (
                       <span className="text-xs text-cult-lighter-gray">No date</span>
                     )}
                   </td>
+
                   <td className="px-3 py-3">
                     <span className="text-sm text-cult-silver flex items-center gap-1.5">
                       <Package className="w-3 h-3 text-cult-lighter-gray" />
                       {order.item_count || 0}
                     </span>
                   </td>
+
                   <td className="px-3 py-3 text-right">
                     <span className="text-sm font-semibold text-green-400">
                       {formatCurrency(order.total_amount || 0)}
                     </span>
                   </td>
+
                   <td className="px-3 py-3">
                     {order.created_at ? (
                       <div>
@@ -279,6 +285,7 @@ export function OrderTable({
                       <span className="text-xs text-cult-lighter-gray">--</span>
                     )}
                   </td>
+
                   <td className="px-3 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Copy className="w-3.5 h-3.5 text-cult-silver hover:text-cult-white cursor-pointer" title="Clone order" />
                   </td>
