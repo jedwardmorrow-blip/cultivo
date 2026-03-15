@@ -14,7 +14,7 @@ import {
   Gift,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, parseDeliveryDate, toDateInputValue } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getOrderAge } from '../utils/orderAttention';
 import { OrderDetailsView } from './OrderDetailsView';
@@ -205,7 +205,7 @@ export function OrderDrawer({
 
   const handleDateEditStart = useCallback(() => {
     setIsEditingDate(true);
-    setTempDate(deliveryDate || '');
+    setTempDate(toDateInputValue(deliveryDate));
   }, [deliveryDate]);
 
   const items = orderDetails?.get(order.id) || [];
@@ -334,7 +334,7 @@ export function OrderDrawer({
                   >
                     <Calendar className="w-3 h-3" />
                     {deliveryDate
-                      ? <>Delivery: {new Date(deliveryDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>
+                      ? <>Delivery: {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? 'Invalid Date'}</>
                       : <span className="text-cult-lighter-gray group-hover/date:text-cult-green">Set delivery date</span>
                     }
                   </button>
