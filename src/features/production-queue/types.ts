@@ -24,7 +24,7 @@ export interface StrainSummary {
   stock_status: StockStatus;
 }
 
-/** v_production_queue_by_strain — one row per strain + format combo (v3) */
+/** v_production_queue_by_strain — one row per strain + format combo (v4) */
 export interface StrainFormatRow {
   strain_id: string | null;
   strain_name: string;
@@ -32,7 +32,10 @@ export interface StrainFormatRow {
   demand_unit: string | null;
   weight_per_unit_g: number;
   product_category: string;
-  total_units_needed: number;
+  // v4: assignment-aware demand columns
+  total_units_ordered: number;
+  total_units_assigned: number;
+  total_units_needed: number; // remaining = ordered - assigned
   total_demand_g: number;
   total_demand_lbs: number;
   order_count: number;
