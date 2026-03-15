@@ -17,6 +17,7 @@ export interface ProductStage {
 export interface Strain {
   id: string;
   name: string;
+  display_name: string;
   abbreviation: string | null;
   dominance_type: string | null;
   genetics_description: string | null;

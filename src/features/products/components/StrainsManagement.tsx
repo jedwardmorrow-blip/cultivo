@@ -94,6 +94,7 @@ export function StrainsManagement() {
       if (adding) {
         await productsService.createStrain({
           name: editForm.name!,
+          display_name: editForm.name!,
           abbreviation: editForm.abbreviation,
           dominance_type: editForm.dominance_type,
           genetics_description: editForm.genetics_description,
@@ -103,6 +104,7 @@ export function StrainsManagement() {
       } else {
         await productsService.updateStrain(id!, {
           name: editForm.name,
+          display_name: editForm.name,
           abbreviation: editForm.abbreviation,
           dominance_type: editForm.dominance_type,
           genetics_description: editForm.genetics_description,
@@ -144,8 +146,6 @@ export function StrainsManagement() {
         is_active: !currentStatus,
         updated_at: new Date().toISOString(),
       });
-
-      if (error) throw error;
 
       setMessage({
         type: 'success',
