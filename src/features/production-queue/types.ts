@@ -3,7 +3,9 @@
 // v_production_queue_by_strain, v_production_queue_by_order
 
 export type Urgency = 'overdue' | 'urgent' | 'soon' | 'normal' | 'no_date';
-export type StockStatus = 'no_stock' | 'partial' | 'can_fill' | 'available';
+// v3 stock_status values from by_strain view: 'no_stock' | 'needs_processing' | 'ready'
+// v2 stock_status values still used by strain_summary view: 'no_stock' | 'partial' | 'can_fill' | 'available'
+export type StockStatus = 'no_stock' | 'needs_processing' | 'ready' | 'partial' | 'can_fill' | 'available';
 export type ProductCategory = 'All' | 'Flower' | 'Smalls' | 'Fresh Frozen' | 'Preroll' | 'Trim';
 
 /** v_production_queue_strain_summary — one row per strain */
@@ -22,7 +24,7 @@ export interface StrainSummary {
   stock_status: StockStatus;
 }
 
-/** v_production_queue_by_strain — one row per strain + format combo */
+/** v_production_queue_by_strain — one row per strain + format combo (v3) */
 export interface StrainFormatRow {
   strain_id: string | null;
   strain_name: string;
@@ -34,8 +36,16 @@ export interface StrainFormatRow {
   total_demand_g: number;
   total_demand_lbs: number;
   order_count: number;
-  strain_available_g: number;
-  strain_available_lbs: number;
+  // v3 inventory breakdown (replaces strain_available_g / strain_available_lbs)
+  ready_flower_g: number;
+  ready_smalls_g: number;
+  ready_trim_g: number;
+  ready_lbs: number;
+  pipeline_bucked_g: number;
+  pipeline_binned_g: number;
+  pipeline_lbs: number;
+  already_packaged_units: number;
+  already_packaged_g: number;
   stock_status: StockStatus;
   earliest_delivery_date: string | null;
   urgency: Urgency;

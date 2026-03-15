@@ -70,7 +70,7 @@ export function useProductionQueue() {
     totalStrains: strainSummary.length,
     totalOrders: new Set(byOrder.map(r => r.order_id)).size,
     overdueOrders: new Set(byOrder.filter(r => r.urgency === 'overdue').map(r => r.order_id)).size,
-    stockAlerts: strainSummary.filter(s => s.stock_status !== 'can_fill').length,
+    stockAlerts: strainSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready').length,
   };
 
   return {

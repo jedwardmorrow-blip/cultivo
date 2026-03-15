@@ -29,16 +29,22 @@ function urgencyBadge(urgency: Urgency) {
 
 function stockBadge(status: StockStatus) {
   const styles: Record<StockStatus, string> = {
+    // v3 statuses
+    ready: 'bg-green-500/20 text-green-400',
+    needs_processing: 'bg-amber-500/20 text-amber-400',
+    no_stock: 'bg-red-500/20 text-red-400',
+    // v2 legacy (still used by summary view)
     can_fill: 'bg-green-500/20 text-green-400',
     available: 'bg-green-500/20 text-green-400',
     partial: 'bg-amber-500/20 text-amber-400',
-    no_stock: 'bg-red-500/20 text-red-400',
   };
   const labels: Record<StockStatus, string> = {
+    ready: 'Ready',
+    needs_processing: 'Needs Processing',
+    no_stock: 'No Stock',
     can_fill: 'Can Fill',
     available: 'Available',
     partial: 'Partial',
-    no_stock: 'No Stock',
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${styles[status]}`}>
@@ -297,7 +303,8 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Format</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Demand</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Available</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Ready</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Pipeline</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Stock</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
@@ -331,7 +338,22 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                     {formatWeight(formats.reduce((sum, f) => sum + f.total_demand_g, 0))}
                   </td>
                   <td className="px-4 py-3 text-right text-white">
-                    {formatWeight(formats[0].strain_available_g)}
+                    <div>{formats[0].ready_lbs.toFixed(1)} lbs</div>
+                    <div className="text-[10px] text-gray-500">
+                      F:{formatWeight(formats[0].ready_flower_g)} · S:{formatWeight(formats[0].ready_smalls_g)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-400">
+                    {formats[0].pipeline_lbs > 0 ? (
+                      <div>
+                        <div>{formats[0].pipeline_lbs.toFixed(1)} lbs</div>
+                        <div className="text-[10px] text-gray-500">
+                          {formats[0].pipeline_bucked_g > 0 && `Bucked: ${formatWeight(formats[0].pipeline_bucked_g)}`}
+                          {formats[0].pipeline_bucked_g > 0 && formats[0].pipeline_binned_g > 0 && ' · '}
+                          {formats[0].pipeline_binned_g > 0 && `Binned: ${formatWeight(formats[0].pipeline_binned_g)}`}
+                        </div>
+                      </div>
+                    ) : '—'}
                   </td>
                   <td className="px-4 py-3">{stockBadge(formats[0].stock_status)}</td>
                   <td className="px-4 py-3">{urgencyBadge(worstUrgency)}</td>
@@ -353,7 +375,12 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
                     <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2 text-right text-gray-400">—</td>
+                    <td className="px-4 py-2 text-right text-gray-400">
+                      {f.already_packaged_units > 0 && (
+                        <span className="text-[10px] text-green-400">{f.already_packaged_units} pkgd</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2"></td>
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
                     <td className="px-4 py-2 text-right text-gray-400">{f.order_count}</td>
@@ -363,7 +390,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                 {/* Expanded: order detail */}
                 {isExpanded && (
                   <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={9} className="px-8 py-3">
+                    <td colSpan={10} className="px-8 py-3">
                       <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">Contributing Orders</div>
                       <div className="space-y-1">
                         {getOrdersForStrain(formats[0].strain_id).map(o => (
@@ -607,7 +634,7 @@ export function ProductionQueue() {
     totalStrains: new Set(filteredSummary.map(s => s.strain_id || s.strain_name)).size,
     totalOrders: new Set(filteredByOrder.map(o => o.order_id)).size,
     overdueOrders: new Set(filteredByOrder.filter(o => o.urgency === 'overdue').map(o => o.order_id)).size,
-    stockAlerts: filteredSummary.filter(s => s.stock_status !== 'can_fill').length,
+    stockAlerts: filteredSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready').length,
   };
 
   if (loading) {
@@ -640,7 +667,7 @@ export function ProductionQueue() {
   ];
 
   // Stock alerts strip
-  const alerts = filteredSummary.filter(s => s.stock_status !== 'can_fill');
+  const alerts = filteredSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready');
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6">
