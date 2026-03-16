@@ -422,6 +422,13 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
                   ) : (
                     <span className="text-xs text-cult-medium-gray italic">No flip date set</span>
                   )}
+                  {earliestHarvestDate && (
+                    <div className="text-xs text-cult-light-gray">
+                      <span className="text-cult-medium-gray">Harvest: </span>
+                      {new Date(earliestHarvestDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <span className={`ml-2 font-bold ${countdownColor()}`}>{countdownText()}</span>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowFlipModal(true); }}

@@ -215,6 +215,7 @@ export type UpdatePlantGroupPlacementInput = {
 export type FlipRoomInput = {
   grow_room_id: string;
   flip_date: string;
+  projected_harvest_date?: string;
 };
 
 export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id' | 'plant_count'> &

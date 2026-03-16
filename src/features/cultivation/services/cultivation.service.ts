@@ -230,7 +230,7 @@ export const cultivationService = {
   },
 
   async flipRoom(input: FlipRoomInput): Promise<void> {
-    const { grow_room_id, flip_date } = input;
+    const { grow_room_id, flip_date, projected_harvest_date } = input;
 
     const { data: tables, error: tableErr } = await supabase
       .from('room_tables')
@@ -241,9 +241,13 @@ export const cultivationService = {
 
     if (tables && tables.length > 0) {
       const tableIds = tables.map((t: { id: string }) => t.id);
+      const sectionUpdate: Record<string, string> = { flip_date };
+      if (projected_harvest_date) {
+        sectionUpdate.projected_harvest_date = projected_harvest_date;
+      }
       const { error: sectionErr } = await supabase
         .from('room_sections')
-        .update({ flip_date })
+        .update(sectionUpdate)
         .in('room_table_id', tableIds)
         .eq('is_active', true);
       if (sectionErr) throwError(sectionErr, 'flipRoom:updateSections');

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Flower2 } from 'lucide-react';
 import { cultivationService } from '../services';
 import type { GrowRoom, PlantGroup } from '../types';
@@ -19,6 +19,14 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+const DEFAULT_FLOWER_DAYS = 63;
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 const STAGE_LABELS: Record<string, string> = {
   clone: 'Clone',
   veg: 'Veg',
@@ -28,8 +36,16 @@ const STAGE_LABELS: Record<string, string> = {
 
 export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoomModalProps) {
   const [flipDate, setFlipDate] = useState(todayIso());
+  const [harvestDate, setHarvestDate] = useState(addDays(todayIso(), DEFAULT_FLOWER_DAYS));
+  const [harvestManuallySet, setHarvestManuallySet] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!harvestManuallySet && flipDate) {
+      setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
+    }
+  }, [flipDate, harvestManuallySet]);
 
   const eligibleGroups = plantGroups.filter(
     (g) => g.growth_stage !== 'flower' && g.growth_stage !== 'harvested'
@@ -44,7 +60,11 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
     setSaving(true);
     setError(null);
     try {
-      await cultivationService.flipRoom({ grow_room_id: room.id, flip_date: flipDate });
+      await cultivationService.flipRoom({
+        grow_room_id: room.id,
+        flip_date: flipDate,
+        projected_harvest_date: harvestDate || undefined,
+      });
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to flip room');
@@ -89,6 +109,43 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
               <p className="text-xs text-cult-medium-gray mt-1">
                 {formatDate(flipDate)} will be set on all active sections in this room
               </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-2">
+              Projected Harvest Date
+              <span className="text-cult-medium-gray font-normal normal-case ml-1">({DEFAULT_FLOWER_DAYS}-day default)</span>
+            </label>
+            <input
+              type="date"
+              value={harvestDate}
+              onChange={(e) => {
+                setHarvestDate(e.target.value);
+                setHarvestManuallySet(true);
+              }}
+              disabled={saving}
+              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
+            />
+            {harvestDate && (
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-cult-medium-gray">
+                  {formatDate(harvestDate)}
+                  {harvestManuallySet && ' (manually set)'}
+                </p>
+                {harvestManuallySet && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHarvestManuallySet(false);
+                      if (flipDate) setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
+                    }}
+                    className="text-xs text-rose-400 hover:text-rose-300 underline"
+                  >
+                    Reset to default
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
