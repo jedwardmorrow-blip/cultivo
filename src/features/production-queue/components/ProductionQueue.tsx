@@ -1,6 +1,7 @@
-import { useState, Fragment } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, TrendingUp, Users, Clock, Timer } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
+import { supabase } from '@/lib/supabase';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { BatchInfoPanel } from './BatchInfoPanel';
 import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
@@ -234,6 +235,423 @@ function ProductCategoryStrip({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// ─── Supply vs Demand Chart ──────────────────────────────────────────────────
+
+interface StrainPipelineAgg {
+  strain_id: string | null;
+  strain_name: string;
+  demand_g: number;
+  packaged_g: number;
+  ready_g: number;    // ready_flower + ready_smalls + ready_trim
+  bucked_g: number;
+  binned_g: number;
+  total_supply_g: number;
+  fill_pct: number;
+}
+
+function aggregateStrainPipeline(byStrain: StrainFormatRow[]): StrainPipelineAgg[] {
+  const map = new Map<string, StrainPipelineAgg>();
+
+  byStrain.forEach(row => {
+    const key = row.strain_id || row.strain_name;
+    const existing = map.get(key);
+    if (existing) {
+      existing.demand_g += row.total_demand_g;
+      existing.packaged_g += row.already_packaged_g;
+      existing.ready_g += row.ready_flower_g + row.ready_smalls_g + row.ready_trim_g;
+      existing.bucked_g += row.pipeline_bucked_g;
+      existing.binned_g += row.pipeline_binned_g;
+    } else {
+      map.set(key, {
+        strain_id: row.strain_id,
+        strain_name: row.strain_name,
+        demand_g: row.total_demand_g,
+        packaged_g: row.already_packaged_g,
+        ready_g: row.ready_flower_g + row.ready_smalls_g + row.ready_trim_g,
+        bucked_g: row.pipeline_bucked_g,
+        binned_g: row.pipeline_binned_g,
+        total_supply_g: 0,
+        fill_pct: 0,
+      });
+    }
+  });
+
+  // Finalize totals and sort worst-first
+  const result = Array.from(map.values()).map(s => {
+    s.total_supply_g = s.packaged_g + s.ready_g + s.bucked_g + s.binned_g;
+    s.fill_pct = s.demand_g > 0 ? Math.round((s.total_supply_g / s.demand_g) * 100) : 0;
+    return s;
+  });
+
+  result.sort((a, b) => a.fill_pct - b.fill_pct);
+  return result;
+}
+
+const pipelineStages = [
+  { key: 'packaged_g' as const, label: 'Packaged', color: 'bg-green-500' },
+  { key: 'ready_g' as const, label: 'Ready', color: 'bg-cyan-500' },
+  { key: 'bucked_g' as const, label: 'Bucked', color: 'bg-blue-500' },
+  { key: 'binned_g' as const, label: 'Binned', color: 'bg-indigo-500' },
+];
+
+function SupplyDemandChart({ byStrain }: { byStrain: StrainFormatRow[] }) {
+  const strains = useMemo(() => aggregateStrainPipeline(byStrain), [byStrain]);
+
+  if (strains.length === 0) return null;
+
+  const maxDemand = Math.max(...strains.map(s => s.demand_g), 1);
+
+  return (
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-gray-400" />
+          <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Supply vs Demand</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {pipelineStages.map(s => (
+            <div key={s.key} className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-sm ${s.color}`} />
+              <span className="text-[10px] text-gray-500">{s.label}</span>
+            </div>
+          ))}
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-sm bg-gray-700 border border-gray-600" />
+            <span className="text-[10px] text-gray-500">Gap</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        {strains.map(strain => {
+          const barWidthPct = (strain.demand_g / maxDemand) * 100;
+          const fillColor = strain.fill_pct >= 100 ? 'text-green-400'
+            : strain.fill_pct >= 50 ? 'text-amber-400' : 'text-red-400';
+
+          return (
+            <div key={strain.strain_id || strain.strain_name} className="flex items-center gap-3">
+              {/* Strain name */}
+              <div className="w-28 flex-shrink-0 text-right">
+                <span className="text-xs text-gray-300 font-medium truncate block">{strain.strain_name}</span>
+              </div>
+
+              {/* Bar */}
+              <div className="flex-1 h-5 bg-gray-800/50 rounded overflow-hidden relative" style={{ width: `${barWidthPct}%` }}>
+                {/* Stacked supply segments */}
+                <div className="absolute inset-0 flex">
+                  {pipelineStages.map(stage => {
+                    const segPct = strain.demand_g > 0
+                      ? (strain[stage.key] / strain.demand_g) * 100
+                      : 0;
+                    if (segPct <= 0) return null;
+                    return (
+                      <div
+                        key={stage.key}
+                        className={`${stage.color} h-full opacity-80 hover:opacity-100 transition-opacity`}
+                        style={{ width: `${Math.min(segPct, 100)}%` }}
+                        title={`${stage.label}: ${formatWeight(strain[stage.key])}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Fill rate */}
+              <div className="w-16 flex-shrink-0 text-right">
+                <span className={`text-xs font-semibold ${fillColor}`}>
+                  {strain.fill_pct}%
+                </span>
+              </div>
+
+              {/* Demand label */}
+              <div className="w-20 flex-shrink-0 text-right">
+                <span className="text-[10px] text-gray-500">
+                  {formatWeight(strain.demand_g)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Trimmer Scoreboard (Phase 3) ────────────────────────────────────────────
+
+interface TrimmerStats {
+  trimmer_name: string;
+  session_count: number;
+  avg_grams_per_hour: number;
+  total_flower_g: number;
+  total_trim_g: number;
+  total_waste_g: number;
+  total_minutes: number;
+  waste_pct: number;
+}
+
+function useTrimmerStats() {
+  const [data, setData] = useState<TrimmerStats[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Get last 30 days of completed trim sessions, grouped by trimmer
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const since = thirtyDaysAgo.toISOString().slice(0, 10);
+
+      const { data: raw, error } = await supabase
+        .from('trim_sessions')
+        .select('trimmer_name, grams_per_hour, big_buds_grams, small_buds_grams, trim_grams, waste_grams, minutes_trimmed')
+        .eq('session_status', 'completed')
+        .gte('session_date', since);
+
+      if (error || !raw) { setData([]); return; }
+
+      // Aggregate per trimmer
+      const map = new Map<string, TrimmerStats>();
+      raw.forEach((r: any) => {
+        const name = r.trimmer_name || 'Unknown';
+        const existing = map.get(name);
+        const flower = Number(r.big_buds_grams || 0) + Number(r.small_buds_grams || 0);
+        const trim = Number(r.trim_grams || 0);
+        const waste = Number(r.waste_grams || 0);
+        const mins = Number(r.minutes_trimmed || 0);
+        const gph = Number(r.grams_per_hour || 0);
+
+        if (existing) {
+          existing.session_count += 1;
+          existing.total_flower_g += flower;
+          existing.total_trim_g += trim;
+          existing.total_waste_g += waste;
+          existing.total_minutes += mins;
+          // Weighted avg g/hr
+          existing.avg_grams_per_hour = existing.total_minutes > 0
+            ? ((existing.total_flower_g + existing.total_trim_g) / existing.total_minutes) * 60
+            : 0;
+        } else {
+          map.set(name, {
+            trimmer_name: name,
+            session_count: 1,
+            avg_grams_per_hour: gph,
+            total_flower_g: flower,
+            total_trim_g: trim,
+            total_waste_g: waste,
+            total_minutes: mins,
+            waste_pct: 0,
+          });
+        }
+      });
+
+      // Calculate waste %
+      const results = Array.from(map.values()).map(t => {
+        const totalOutput = t.total_flower_g + t.total_trim_g + t.total_waste_g;
+        t.waste_pct = totalOutput > 0 ? (t.total_waste_g / totalOutput) * 100 : 0;
+        return t;
+      });
+
+      // Sort by avg g/hr descending
+      results.sort((a, b) => b.avg_grams_per_hour - a.avg_grams_per_hour);
+      setData(results);
+    } catch {
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { data, loading, refresh: fetch };
+}
+
+function TrimmerScoreboard() {
+  const { data: trimmers, loading } = useTrimmerStats();
+
+  if (loading) return null;
+  if (trimmers.length === 0) return null;
+
+  const maxGph = Math.max(...trimmers.map(t => t.avg_grams_per_hour), 1);
+
+  return (
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Users className="w-4 h-4 text-gray-400" />
+        <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Trimmer Performance</span>
+        <span className="text-[10px] text-gray-600 ml-auto">Last 30 days</span>
+      </div>
+
+      <div className="space-y-2">
+        {trimmers.map((t, i) => {
+          const barPct = (t.avg_grams_per_hour / maxGph) * 100;
+          const rankColor = i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-amber-600' : 'text-gray-500';
+
+          return (
+            <div key={t.trimmer_name} className="flex items-center gap-3">
+              {/* Rank */}
+              <div className="w-5 flex-shrink-0 text-center">
+                <span className={`text-xs font-bold ${rankColor}`}>{i + 1}</span>
+              </div>
+
+              {/* Name */}
+              <div className="w-20 flex-shrink-0">
+                <span className="text-xs text-gray-300 font-medium truncate block">{t.trimmer_name}</span>
+              </div>
+
+              {/* Speed bar */}
+              <div className="flex-1 h-4 bg-gray-800/50 rounded overflow-hidden relative">
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded opacity-80"
+                  style={{ width: `${barPct}%` }}
+                />
+                <span className="absolute inset-0 flex items-center px-2 text-[10px] text-white font-semibold">
+                  {Math.round(t.avg_grams_per_hour)} g/hr
+                </span>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="text-right w-14" title="Sessions">
+                  <span className="text-[10px] text-gray-500">{t.session_count} sess</span>
+                </div>
+                <div className="text-right w-16" title="Total flower output">
+                  <span className="text-[10px] text-green-400">{formatWeight(t.total_flower_g)}</span>
+                </div>
+                <div className="text-right w-12" title="Waste percentage">
+                  <span className={`text-[10px] ${t.waste_pct > 5 ? 'text-amber-400' : 'text-gray-500'}`}>
+                    {t.waste_pct.toFixed(1)}% w
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Order Lead Time Widget (Phase 4) ────────────────────────────────────────
+
+interface LeadTimeData {
+  avg_lead_days: number;
+  completed_avg_days: number;
+  open_avg_days: number;
+  total_orders: number;
+  on_time_pct: number;
+}
+
+function useOrderLeadTime() {
+  const [data, setData] = useState<LeadTimeData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Grab recent non-cancelled orders with dates
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      const since = sixtyDaysAgo.toISOString().slice(0, 10);
+
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('id, status, created_at, requested_delivery_date, updated_at')
+        .gte('created_at', since)
+        .not('status', 'eq', 'cancelled');
+
+      if (error || !orders) { setData(null); return; }
+
+      const now = new Date();
+      let completedDays: number[] = [];
+      let openDays: number[] = [];
+      let onTime = 0;
+      let total = 0;
+
+      orders.forEach((o: any) => {
+        if (!o.created_at) return;
+        const created = new Date(o.created_at);
+
+        if (o.status === 'delivered' && o.updated_at) {
+          const delivered = new Date(o.updated_at);
+          const days = (delivered.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+          completedDays.push(days);
+          total++;
+          if (o.requested_delivery_date) {
+            const requestedDate = new Date(o.requested_delivery_date);
+            if (delivered <= requestedDate) onTime++;
+          }
+        } else {
+          const days = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+          openDays.push(days);
+          total++;
+          if (o.requested_delivery_date) {
+            const requestedDate = new Date(o.requested_delivery_date);
+            if (now <= requestedDate) onTime++;
+          }
+        }
+      });
+
+      const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      const allDays = [...completedDays, ...openDays];
+
+      setData({
+        avg_lead_days: avg(allDays),
+        completed_avg_days: avg(completedDays),
+        open_avg_days: avg(openDays),
+        total_orders: total,
+        on_time_pct: total > 0 ? (onTime / total) * 100 : 0,
+      });
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { data, loading };
+}
+
+function OrderLeadTimeWidget() {
+  const { data, loading } = useOrderLeadTime();
+
+  if (loading || !data) return null;
+
+  const kpis = [
+    { label: 'Avg Lead Time', value: `${data.avg_lead_days.toFixed(1)}d`, color: 'text-white', icon: Clock },
+    { label: 'Completed Avg', value: `${data.completed_avg_days.toFixed(1)}d`, color: 'text-green-400', icon: Timer },
+    { label: 'Open Avg Age', value: `${data.open_avg_days.toFixed(1)}d`, color: 'text-amber-400', icon: Timer },
+    { label: 'On-Time Rate', value: `${data.on_time_pct.toFixed(0)}%`, color: data.on_time_pct >= 80 ? 'text-green-400' : data.on_time_pct >= 50 ? 'text-amber-400' : 'text-red-400', icon: Calendar },
+  ];
+
+  return (
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Clock className="w-4 h-4 text-gray-400" />
+        <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Order Lead Time</span>
+        <span className="text-[10px] text-gray-600 ml-auto">Last 60 days · {data.total_orders} orders</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {kpis.map(k => {
+          const Icon = k.icon;
+          return (
+            <div key={k.label} className="flex items-center gap-2">
+              <Icon className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+              <div>
+                <div className={`text-lg font-bold ${k.color}`}>{k.value}</div>
+                <div className="text-[10px] text-gray-500">{k.label}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -716,6 +1134,15 @@ export function ProductionQueue() {
 
       {/* Stats */}
       <StatsStrip stats={filteredStats} />
+
+      {/* Supply vs Demand Chart */}
+      <SupplyDemandChart byStrain={filteredByStrain} />
+
+      {/* Production Insights Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TrimmerScoreboard />
+        <OrderLeadTimeWidget />
+      </div>
 
       {/* Stock alerts */}
       {alerts.length > 0 && (
