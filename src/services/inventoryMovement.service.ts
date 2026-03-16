@@ -93,9 +93,15 @@ class InventoryMovementService {
 
       if (error) {
         console.error('Failed to record movement:', error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message: string }).message
+              : String(error);
         return {
           success: false,
-          error: error instanceof Error ? error.message : String(error)
+          error: message
         };
       }
 
@@ -105,9 +111,15 @@ class InventoryMovementService {
       };
     } catch (error) {
       console.error('Failed to record movement:', error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? (error as { message: string }).message
+            : 'Unknown error';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: message
       };
     }
   }

@@ -122,13 +122,19 @@ export async function adjustInventoryItem(
     };
   } catch (error) {
     console.error('Error adjusting inventory:', error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? (error as { message: string }).message
+          : 'Unknown error';
     return {
       success: false,
       old_qty: 0,
       new_qty: 0,
       variance_qty: 0,
       variance_percentage: 0,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: message
     };
   }
 }
