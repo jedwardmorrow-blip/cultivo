@@ -70,7 +70,7 @@ export async function adjustInventoryItem(
 
     // Step 2: Create ADJUSTMENT movement
     const movementResult = await inventoryMovementService.recordMovement({
-      source_item_id: inventory_item_id,
+      dest_item_id: inventory_item_id,
       movement_kind: 'ADJUSTMENT',
       qty: new_qty,
       unit: item.unit,
