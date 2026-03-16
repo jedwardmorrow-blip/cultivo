@@ -1,22 +1,22 @@
 /**
  * useBatchStages — fetch batch→stage breakdown for a given strain.
  *
- * Mirrors the batch-fetching logic from useSimplifiedInventory but
- * scoped to a single strain_id (UUID) rather than strain name, and
- * with realtime subscriptions on inventory_items + batch_allocations.
+ * Mirrors the batch-fetching logic from useSimplifiedInventory,
+ * scoped to a single strain name, with realtime subscriptions
+ * on inventory_items + batch_allocations.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { BatchStage, BatchSummary } from '@/shared/components/inventory';
 
-export function useBatchStages(strainId: string | null) {
+export function useBatchStages(strainName: string | null) {
   const [batches, setBatches] = useState<BatchSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchBatches = useCallback(async () => {
-    if (!strainId) {
+    if (!strainName) {
       setBatches([]);
       return;
     }
@@ -28,7 +28,7 @@ export function useBatchStages(strainId: string | null) {
       const { data, error: err } = await supabase
         .from('v_inventory_batch_stages')
         .select('*')
-        .eq('strain_id', strainId)
+        .eq('strain', strainName)
         .order('batch_number', { ascending: false });
 
       if (err) throw err;
@@ -68,19 +68,19 @@ export function useBatchStages(strainId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [strainId]);
+  }, [strainName]);
 
-  // Initial fetch when strainId changes
+  // Initial fetch when strainName changes
   useEffect(() => {
     fetchBatches();
   }, [fetchBatches]);
 
   // Realtime: re-fetch when inventory or allocations change
   useEffect(() => {
-    if (!strainId) return;
+    if (!strainName) return;
 
     const channel = supabase
-      .channel(`batch-stages-${strainId}`)
+      .channel(`batch-stages-${strainName}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'inventory_items' },
@@ -96,7 +96,7 @@ export function useBatchStages(strainId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [strainId, fetchBatches]);
+  }, [strainName, fetchBatches]);
 
   return { batches, loading, error, refresh: fetchBatches };
 }

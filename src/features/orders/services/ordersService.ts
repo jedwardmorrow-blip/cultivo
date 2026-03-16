@@ -93,6 +93,7 @@ class OrdersDataService {
       .from('products')
       .select('id, name, type, strain, price_per_unit, pricing_unit, product_category, allows_fractional_quantity')
       .eq('is_archived', false)
+      .or('product_category.in.(packaged,preroll),name.ilike.%Fresh Frozen%')
       .order('name');
 
     if (error) throw error;

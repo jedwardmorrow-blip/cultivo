@@ -16,7 +16,7 @@ interface BatchInfoPanelProps {
 }
 
 export function BatchInfoPanel({ strainId, strainName }: BatchInfoPanelProps) {
-  const { batches, loading, error } = useBatchStages(strainId);
+  const { batches, loading, error } = useBatchStages(strainName);
 
   return (
     <div className="p-4 bg-cult-black/60 border-t border-cult-medium-gray/20">

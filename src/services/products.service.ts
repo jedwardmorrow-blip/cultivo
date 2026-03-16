@@ -6,7 +6,7 @@ export async function fetchOrderableProducts(): Promise<OrderableProduct[]> {
     .from('products')
     .select(`
       *,
-      stage:product_stages!inner(
+      stage:product_stages(
         id,
         name,
         sort_order,
@@ -18,10 +18,9 @@ export async function fetchOrderableProducts(): Promise<OrderableProduct[]> {
       type:product_types(id, name),
       strain:strains(id, name, abbreviation)
     `)
-    .eq('product_stages.name', 'Packaged')
     .eq('is_active', true)
     .eq('is_archived', false)
-    .in('product_category', ['packaged', 'preroll'])
+    .or('product_category.in.(packaged,preroll),name.ilike.%Fresh Frozen%')
     .order('product_category')
     .order('name');
 
@@ -34,10 +33,13 @@ export async function fetchOrderableProducts(): Promise<OrderableProduct[]> {
 }
 
 export function isProductOrderable(product: OrderableProduct): boolean {
+  const isFreshFrozen = product.name?.toLowerCase().includes('fresh frozen');
   return (
-    product.stage?.name === 'Packaged' &&
     product.is_active === true &&
-    ['packaged', 'preroll'].includes(product.product_category)
+    (
+      (['packaged', 'preroll'].includes(product.product_category)) ||
+      isFreshFrozen
+    )
   );
 }
 
