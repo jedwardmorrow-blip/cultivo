@@ -1,6 +1,6 @@
--- v5: Production Queue View - Category-Aware Stock Status
+-- v5.1: Production Queue View - Category-Aware Stock Status + Assignment Status Fix
 --
--- PROBLEM: stock_status badge was summing flower_bulk + smalls_bulk + trim_bulk together,
+-- FIX 1 (v5): stock_status badge was summing flower_bulk + smalls_bulk + trim_bulk together,
 -- then comparing against the demand for ONE specific format. This caused false 'ready' badges:
 --   - Smalls rows showed 'ready' because trim_g inflated the total
 --   - Flower rows showed 'ready' because smalls_g was counted
@@ -15,8 +15,13 @@
 -- Pipeline (bucked/binned) is pre-sorting material that can become any category,
 -- so it correctly feeds 'needs_processing' for all format types.
 --
--- CHANGE SCOPE: Only the stock_status CASE statement changed.
--- All columns, types, CTEs, joins, filters, and ordering are identical to v4.
+-- FIX 2 (v5.1): assigned_totals CTE filtered on pa.status IN ('active', 'fulfilled').
+-- 'active' does not exist — CHECK constraint only allows: reserved, fulfilled, released.
+-- Default on INSERT is 'reserved'. This meant 182 reserved units across 7 live assignments
+-- were invisible to the queue. Fixed to filter on ('reserved', 'fulfilled').
+--
+-- CHANGE SCOPE: stock_status CASE + assigned_totals status filter.
+-- All columns, types, joins, filters, and ordering are otherwise identical to v4.
 -- Uses CREATE OR REPLACE to preserve dependent view (v_production_queue_batch_planning).
 
 CREATE OR REPLACE VIEW v_production_queue_by_strain AS
@@ -24,7 +29,7 @@ WITH assigned_totals AS (
   SELECT pa.order_item_id,
          SUM(pa.quantity_assigned) AS total_assigned
   FROM package_assignments pa
-  WHERE pa.status IN ('active', 'fulfilled')
+  WHERE pa.status IN ('reserved', 'fulfilled')
   GROUP BY pa.order_item_id
 ),
 format_info AS (
