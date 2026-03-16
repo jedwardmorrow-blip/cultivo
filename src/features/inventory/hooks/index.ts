@@ -18,3 +18,4 @@ export * from './useVarianceLog';
 export * from './useAdjustment';
 export * from './useAuditPDF';
 export * from './useSessionContributions';
+export * from './useInventoryReview';

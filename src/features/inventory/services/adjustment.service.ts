@@ -84,29 +84,35 @@ export async function adjustInventoryItem(
 
     const movement = { id: movementResult.movement_id };
 
-    // Step 3: Log variance (if any)
+    // Step 3: Log variance (non-blocking — adjustment already applied)
     let varianceLogId: string | undefined;
     if (Math.abs(varianceQty) > 0) {
-      const varianceEntry = await logVariance({
-        source_type: 'manual_adjustment',
-        source_id: movement.id,
-        inventory_item_id: inventory_item_id,
-        package_id: item.package_id,
-        expected_qty: oldQty,
-        actual_qty: new_qty,
-        variance_qty: varianceQty,
-        variance_percentage: variancePercentage,
-        unit: item.unit,
-        variance_reason: variance_reason,
-        notes: notes,
-        inventory_stage: (item.product_stages as any).name,
-        strain: item.strain,
-        batch: item.batch,
-        product_name: item.product_name,
-        movement_id: movement.id
-      });
+      try {
+        const varianceEntry = await logVariance({
+          source_type: 'manual_adjustment',
+          source_id: movement.id,
+          inventory_item_id: inventory_item_id,
+          package_id: item.package_id,
+          expected_qty: oldQty,
+          actual_qty: new_qty,
+          variance_qty: varianceQty,
+          variance_percentage: variancePercentage,
+          unit: item.unit,
+          variance_reason: variance_reason,
+          notes: notes,
+          inventory_stage: (item.product_stages as any).name,
+          strain: item.strain,
+          batch: item.batch,
+          product_name: item.product_name,
+          movement_id: movement.id
+        });
 
-      varianceLogId = varianceEntry.id;
+        varianceLogId = varianceEntry.id;
+      } catch (varianceError) {
+        // Variance logging failed but the adjustment itself succeeded.
+        // Log the error but don't block the success response.
+        console.error('Variance log failed (adjustment still applied):', varianceError);
+      }
     }
 
     // Note: on_hand_qty is updated automatically by the inventory_movements trigger

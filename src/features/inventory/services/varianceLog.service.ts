@@ -3,48 +3,44 @@
  *
  * Service for managing inventory variance logs.
  * Handles creation, retrieval, and analysis of variance records.
+ *
+ * Table: variance_log (production)
  */
 
 import { supabase } from '@/lib/supabase';
-import type { VarianceRecordRequest, VarianceRecord, VarianceLogFilters } from '../types/variance.types';
+import type { VarianceLogFilters } from '../types/variance.types';
 
 /**
  * Create a new variance log entry
+ *
+ * Accepts a plain object matching variance_log column names
+ * and passes it through directly to Supabase.
  */
-export async function createVarianceLog(request: VarianceRecordRequest): Promise<VarianceRecord> {
+export async function createVarianceLog(request: Record<string, unknown>): Promise<{ id: string }> {
   const { data, error } = await supabase
-    .from('inventory_variance_log')
-    .insert({
-      inventory_id: request.inventory_id,
-      audit_session_id: request.audit_session_id,
-      expected_qty: request.expected_qty,
-      actual_qty: request.actual_qty,
-      variance_qty: request.variance_qty,
-      variance_percentage: request.variance_percentage,
-      reason: request.reason,
-      notes: request.notes,
-    })
-    .select()
+    .from('variance_log')
+    .insert(request)
+    .select('id')
     .single();
 
   if (error) throw error;
-  return data as VarianceRecord;
+  return data as { id: string };
 }
 
 /**
  * Get variance logs with optional filters
  */
-export async function getVarianceLogs(filters?: VarianceLogFilters): Promise<VarianceRecord[]> {
+export async function getVarianceLogs(filters?: VarianceLogFilters) {
   let query = supabase
-    .from('inventory_variance_log')
+    .from('variance_log')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (filters?.inventory_id) {
-    query = query.eq('inventory_id', filters.inventory_id);
+    query = query.eq('inventory_item_id', filters.inventory_id);
   }
   if (filters?.audit_session_id) {
-    query = query.eq('audit_session_id', filters.audit_session_id);
+    query = query.eq('source_id', filters.audit_session_id);
   }
   if (filters?.start_date) {
     query = query.gte('created_at', filters.start_date);
@@ -59,28 +55,28 @@ export async function getVarianceLogs(filters?: VarianceLogFilters): Promise<Var
   const { data, error } = await query.limit(100);
 
   if (error) throw error;
-  return (data || []) as VarianceRecord[];
+  return data || [];
 }
 
 /**
  * Get variance log by ID
  */
-export async function getVarianceLogById(id: string): Promise<VarianceRecord> {
+export async function getVarianceLogById(id: string) {
   const { data, error } = await supabase
-    .from('inventory_variance_log')
+    .from('variance_log')
     .select('*')
     .eq('id', id)
     .single();
 
   if (error) throw error;
-  return data as VarianceRecord;
+  return data;
 }
 
 /**
  * Delete variance log entry
  */
 export async function deleteVarianceLog(id: string): Promise<void> {
-  const { error } = await supabase.from('inventory_variance_log').delete().eq('id', id);
+  const { error } = await supabase.from('variance_log').delete().eq('id', id);
 
   if (error) throw error;
 }

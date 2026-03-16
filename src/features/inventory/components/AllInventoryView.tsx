@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2, Archive, SlidersHorizontal, ArrowLeftRight } from 'lucide-react';
+import { Package, Scale, Box, Leaf, Printer, Combine, AlertCircle, CheckCircle2, Archive, SlidersHorizontal, ArrowLeftRight, ShieldCheck, ShieldX } from 'lucide-react';
 import { InventoryTable } from './InventoryTable';
 import { StatsCard } from './StatsCard';
 import { InventoryLabelPrintModal } from './InventoryLabelPrintModal';
@@ -16,6 +16,8 @@ import { useAuth } from '@/lib/auth';
 import { useInventoryLabel } from '../hooks';
 import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
 import { useAdjustment } from '../hooks/useAdjustment';
+import { useInventoryReview } from '../hooks/useInventoryReview';
+import type { ReviewFilter } from '../hooks/useInventoryReview';
 import { getItemStage } from '../hooks/useInventoryFilters';
 import {
   validateAdjustment as validateAdjustmentInput,
@@ -78,6 +80,8 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
   const { isAdmin } = useAuth();
   const { applyAdjustment } = useAdjustment();
 
+  const { toggleReviewStatus } = useInventoryReview();
+
   const [selectedPackageIds, setSelectedPackageIds] = useState<Set<string>>(new Set());
   const [showCombineModal, setShowCombineModal] = useState(false);
   const [combineError, setCombineError] = useState<string | null>(null);
@@ -88,10 +92,39 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
   const [rebalanceSource, setRebalanceSource] = useState<InventoryItem | null>(null);
   const [showRebalanceModal, setShowRebalanceModal] = useState(false);
 
+  // Temporary audit: review status filter + optimistic overrides
+  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all');
+  const [reviewOverrides, setReviewOverrides] = useState<Map<string, boolean>>(new Map());
+
+  const handleReviewToggle = useCallback((item: InventoryItem) => {
+    toggleReviewStatus(item, (itemId, verified) => {
+      setReviewOverrides(prev => {
+        const next = new Map(prev);
+        next.set(itemId, verified);
+        return next;
+      });
+    });
+  }, [toggleReviewStatus]);
+
+  // Helper: get effective review status accounting for optimistic overrides
+  const isItemVerified = useCallback((item: InventoryItem): boolean => {
+    if (reviewOverrides.has(item.id)) return reviewOverrides.get(item.id)!;
+    return item.review_status === 'verified';
+  }, [reviewOverrides]);
+
   const filteredItems = useMemo(() => {
-    if (stageFilter === 'all') return items;
-    return items.filter((item) => getItemStage(item) === stageFilter);
-  }, [items, stageFilter]);
+    let result = items;
+    if (stageFilter !== 'all') {
+      result = result.filter((item) => getItemStage(item) === stageFilter);
+    }
+    if (reviewFilter !== 'all') {
+      result = result.filter((item) => {
+        const verified = isItemVerified(item);
+        return reviewFilter === 'verified' ? verified : !verified;
+      });
+    }
+    return result;
+  }, [items, stageFilter, reviewFilter, isItemVerified]);
 
   const selectedPackages = useMemo(() => {
     if (selectedPackageIds.size === 0) return [];
@@ -392,6 +425,57 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
         ))}
       </div>
 
+      {/* Temporary Audit: Verification filter bar */}
+      {(() => {
+        const stageItems = stageFilter === 'all' ? items : items.filter(i => getItemStage(i) === stageFilter);
+        const verifiedCount = stageItems.filter(i => isItemVerified(i)).length;
+        const totalCount = stageItems.length;
+        const pct = totalCount > 0 ? Math.round((verifiedCount / totalCount) * 100) : 0;
+        return (
+          <div className="flex items-center justify-between gap-4 mb-4 px-1">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-cult-lighter-gray" />
+              <div className="flex gap-0.5 p-0.5 bg-cult-dark-gray rounded-lg border border-cult-medium-gray">
+                {([
+                  { key: 'all' as ReviewFilter, label: 'All' },
+                  { key: 'verified' as ReviewFilter, label: 'Verified' },
+                  { key: 'unverified' as ReviewFilter, label: 'Unverified' },
+                ]).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setReviewFilter(key)}
+                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      reviewFilter === key
+                        ? key === 'verified'
+                          ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-800/50'
+                          : key === 'unverified'
+                          ? 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
+                          : 'bg-cult-medium-gray text-cult-white shadow-sm'
+                        : 'text-cult-lighter-gray hover:text-cult-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-24 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="text-xs text-cult-lighter-gray tabular-nums">
+                  {verifiedCount}/{totalCount} verified
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <InventoryTable
         items={filteredItems}
         searchable
@@ -490,6 +574,36 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
                 <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-900/30 text-emerald-400">
                   {item.status || 'Active'}
                 </span>
+              );
+            },
+          },
+          {
+            header: 'Verified',
+            accessor: (item) => item,
+            align: 'center',
+            sortable: false,
+            format: (_, item) => {
+              const verified = isItemVerified(item);
+              return (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReviewToggle(item);
+                  }}
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all cursor-pointer ${
+                    verified
+                      ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50'
+                      : 'bg-cult-medium-gray/30 text-cult-lighter-gray hover:bg-cult-medium-gray/50 hover:text-cult-silver'
+                  }`}
+                  title={verified ? 'Click to mark as unverified' : 'Click to mark as verified'}
+                >
+                  {verified ? (
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  ) : (
+                    <ShieldX className="w-3.5 h-3.5" />
+                  )}
+                  {verified ? 'Yes' : 'No'}
+                </button>
               );
             },
           },
