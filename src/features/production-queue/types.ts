@@ -171,12 +171,34 @@ export interface AssignmentDraft {
   orderItemRemainingQty: number;
 }
 
+/** A draft batch allocation: one batch → one order item, weight-based, pending confirmation */
+export interface BatchAllocationDraft {
+  draftId: string;
+  batchId: string;
+  batchNumber: string;
+  orderItemId: string;
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  /** Which processing stage the allocation is sourced from */
+  allocationStage: string;
+  /** Weight in grams to allocate from this batch */
+  weightGrams: number;
+  /** Total available grams in batch at draft time */
+  batchAvailableG: number;
+  /** Grams the order item still needs */
+  orderItemRemainingG: number;
+}
+
 /** Summary shown on the preview/confirm step */
 export interface BatchAssignPreview {
   drafts: AssignmentDraft[];
+  batchDrafts: BatchAllocationDraft[];
   totalPackagesUsed: number;
   totalOrderItemsTouched: number;
   totalUnitsAssigned: number;
+  totalBatchAllocations: number;
+  totalBatchWeightG: number;
 }
 
 /** Props passed to the BatchAssignPanel when opened for a strain+format row */

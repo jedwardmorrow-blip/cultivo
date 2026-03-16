@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Package, ShoppingCart, ArrowRight, Check, X, AlertTriangle, Loader2, ChevronRight } from 'lucide-react';
+import { Package, ShoppingCart, ArrowRight, Check, X, AlertTriangle, Loader2, ChevronRight, Layers } from 'lucide-react';
 import { useAvailablePackagesForStrain, useBatchAssign } from '../hooks/useBatchAssign';
-import type { BatchAssignContext, OrderLineItem, Urgency } from '../types';
+import { useBatchesForStrain } from '../hooks/useBatchPlanning';
+import type { BatchAssignContext, BatchPlanData, OrderLineItem, Urgency } from '../types';
 import type { AvailablePackage } from '@/features/orders/services';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -30,14 +31,24 @@ interface BatchAssignPanelProps {
   onCommitComplete?: () => void;
 }
 
+function formatWeight(grams: number): string {
+  if (grams >= 453.592) {
+    return `${(grams / 453.592).toFixed(1)} lbs`;
+  }
+  return `${grams.toLocaleString()}g`;
+}
+
 export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAssignPanelProps) {
-  const { strainName, formatLabel, productCategory, orderItems } = context;
+  const { strainId, strainName, formatLabel, productCategory, orderItems } = context;
 
   // Fetch available packages for this strain + category
   const { packages, loading: packagesLoading, refetch: refetchPackages } = useAvailablePackagesForStrain(
     strainName,
     productCategory
   );
+
+  // Fetch raw batches for this strain (new unified source)
+  const { batches, loading: batchesLoading, refetch: refetchBatches } = useBatchesForStrain(strainId);
 
   // Batch assign state machine
   const ba = useBatchAssign();
@@ -67,14 +78,14 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             <span className="text-sm font-medium text-white">
               Batch Assign — {strainName} · {formatLabel}
             </span>
-            {ba.drafts.length > 0 && (
+            {ba.totalDraftCount > 0 && (
               <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
-                {ba.drafts.length} assignment{ba.drafts.length !== 1 ? 's' : ''} drafted
+                {ba.totalDraftCount} assignment{ba.totalDraftCount !== 1 ? 's' : ''} drafted
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {ba.drafts.length > 0 && (
+            {ba.totalDraftCount > 0 && (
               <button
                 onClick={ba.goToPreview}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors"
@@ -105,7 +116,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                 No available packages for this strain.
               </div>
             ) : (
-              <div className="space-y-1 max-h-64 overflow-y-auto">
+              <div className="space-y-1 max-h-48 overflow-y-auto">
                 {packages.map(pkg => {
                   const remaining = ba.getRemainingPackageQty(pkg.package_id, pkg.available_qty);
                   const fullyDrafted = remaining <= 0;
@@ -130,6 +141,52 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                         });
                       }}
                       getRemainingOrderItemQty={ba.getRemainingOrderItemQty}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Raw Batches section */}
+            <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-4 mb-2 flex items-center gap-1">
+              <Layers className="w-3 h-3" /> Raw Batches
+            </div>
+
+            {batchesLoading ? (
+              <div className="flex items-center justify-center py-4 text-gray-500 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading batches…
+              </div>
+            ) : batches.length === 0 ? (
+              <div className="text-center py-4 text-gray-500 text-xs">
+                No raw batches for this strain.
+              </div>
+            ) : (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {batches.map(batch => {
+                  const remainingG = ba.getRemainingBatchCapacity(batch.batch_id, batch.total_available_g);
+                  const fullyDrafted = remainingG <= 0;
+                  return (
+                    <BatchRow
+                      key={batch.batch_id}
+                      batch={batch}
+                      remainingG={remainingG}
+                      fullyDrafted={fullyDrafted}
+                      orders={sortedOrders}
+                      onAllocate={(orderItem, weightG, stage) => {
+                        ba.addBatchDraft({
+                          batchId: batch.batch_id,
+                          batchNumber: batch.batch_number,
+                          orderItemId: orderItem.order_item_id,
+                          orderId: orderItem.order_id,
+                          orderNumber: orderItem.order_number,
+                          customerName: orderItem.customer_name,
+                          allocationStage: stage,
+                          weightGrams: weightG,
+                          batchAvailableG: batch.total_available_g,
+                          orderItemRemainingG: orderItem.line_demand_g,
+                        });
+                      }}
+                      getRemainingOrderItemGrams={ba.getRemainingOrderItemGrams}
                     />
                   );
                 })}
@@ -186,7 +243,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         </div>
 
         {/* Drafted assignments summary bar */}
-        {ba.drafts.length > 0 && (
+        {ba.totalDraftCount > 0 && (
           <div className="border-t border-cult-medium-gray/30 px-4 py-2">
             <div className="flex flex-wrap gap-1">
               {ba.drafts.map(d => (
@@ -194,9 +251,25 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                   key={d.draftId}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-300 rounded text-[11px] border border-blue-500/20"
                 >
+                  <Package className="w-3 h-3" />
                   {d.packageLabel.slice(-8)} → {d.orderNumber} ({d.quantityToAssign})
                   <button
                     onClick={() => ba.removeDraft(d.draftId)}
+                    className="hover:text-red-400 ml-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+              {ba.batchDrafts.map(d => (
+                <span
+                  key={d.draftId}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-500/10 text-indigo-300 rounded text-[11px] border border-indigo-500/20"
+                >
+                  <Layers className="w-3 h-3" />
+                  {d.batchNumber} → {d.orderNumber} ({formatWeight(d.weightGrams)})
+                  <button
+                    onClick={() => ba.removeBatchDraft(d.draftId)}
                     className="hover:text-red-400 ml-1"
                   >
                     <X className="w-3 h-3" />
@@ -229,35 +302,60 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
 
         <div className="px-4 py-3">
           {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
-              <div className="text-lg font-bold text-white">{ba.preview.totalUnitsAssigned}</div>
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Units Assigned</div>
-            </div>
-            <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
-              <div className="text-lg font-bold text-white">{ba.preview.totalPackagesUsed}</div>
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Packages Used</div>
-            </div>
+          <div className={`grid gap-4 mb-4 ${ba.preview.totalBatchAllocations > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
               <div className="text-lg font-bold text-white">{ba.preview.totalOrderItemsTouched}</div>
               <div className="text-[10px] uppercase tracking-wider text-gray-500">Orders Filled</div>
             </div>
+            {ba.preview.totalUnitsAssigned > 0 && (
+              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+                <div className="text-lg font-bold text-white">{ba.preview.totalUnitsAssigned}</div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500">Pkg Units</div>
+              </div>
+            )}
+            {ba.preview.totalPackagesUsed > 0 && (
+              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+                <div className="text-lg font-bold text-white">{ba.preview.totalPackagesUsed}</div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500">Packages Used</div>
+              </div>
+            )}
+            {ba.preview.totalBatchAllocations > 0 && (
+              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+                <div className="text-lg font-bold text-white">{formatWeight(ba.preview.totalBatchWeightG)}</div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500">Batch Weight</div>
+              </div>
+            )}
           </div>
 
-          {/* Detailed list */}
+          {/* Detailed list — package assignments */}
           <div className="space-y-1 max-h-48 overflow-y-auto mb-4">
             {ba.drafts.map(d => (
               <div
                 key={d.draftId}
                 className="flex items-center gap-3 px-3 py-2 bg-cult-dark-gray/20 rounded text-sm text-gray-300"
               >
-                <Package className="w-3 h-3 text-gray-500" />
+                <Package className="w-3 h-3 text-blue-400/60" />
                 <span className="font-mono text-xs">{d.packageLabel.slice(-12)}</span>
                 <ArrowRight className="w-3 h-3 text-gray-500" />
                 <span>{d.orderNumber}</span>
                 <span className="text-gray-500">·</span>
                 <span className="text-gray-400">{d.customerName}</span>
                 <span className="ml-auto font-medium text-white">{d.quantityToAssign} units</span>
+              </div>
+            ))}
+            {ba.batchDrafts.map(d => (
+              <div
+                key={d.draftId}
+                className="flex items-center gap-3 px-3 py-2 bg-indigo-500/5 rounded text-sm text-gray-300"
+              >
+                <Layers className="w-3 h-3 text-indigo-400/60" />
+                <span className="font-mono text-xs">{d.batchNumber}</span>
+                <span className="text-[10px] text-gray-500">({d.allocationStage})</span>
+                <ArrowRight className="w-3 h-3 text-gray-500" />
+                <span>{d.orderNumber}</span>
+                <span className="text-gray-500">·</span>
+                <span className="text-gray-400">{d.customerName}</span>
+                <span className="ml-auto font-medium text-white">{formatWeight(d.weightGrams)}</span>
               </div>
             ))}
           </div>
@@ -275,7 +373,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             onClick={ba.commitAll}
             className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
           >
-            <Check className="w-4 h-4" /> Confirm {ba.drafts.length} Assignment{ba.drafts.length !== 1 ? 's' : ''}
+            <Check className="w-4 h-4" /> Confirm {ba.totalDraftCount} Assignment{ba.totalDraftCount !== 1 ? 's' : ''}
           </button>
         </div>
       </div>
@@ -294,7 +392,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         <div className="px-4 py-6 text-center">
           <Loader2 className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
           <div className="text-sm text-gray-300 mb-2">
-            Assigning packages… {ba.commitProgress.done}/{ba.commitProgress.total}
+            Committing assignments… {ba.commitProgress.done}/{ba.commitProgress.total}
           </div>
           <div className="w-48 mx-auto bg-cult-dark-gray rounded-full h-2 overflow-hidden">
             <div
@@ -335,6 +433,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             onClick={() => {
               ba.reset();
               refetchPackages();
+              refetchBatches();
               onCommitComplete?.();
             }}
             className="px-4 py-2 text-sm font-medium bg-cult-dark-gray hover:bg-cult-medium-gray text-white rounded transition-colors"
@@ -431,6 +530,123 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
                   className="px-2 py-0.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-[10px] font-medium transition-colors"
                 >
                   Assign
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Batch Row (with quick-allocate to orders, weight-based) ──────────────────
+
+interface BatchRowProps {
+  batch: BatchPlanData;
+  remainingG: number;
+  fullyDrafted: boolean;
+  orders: OrderLineItem[];
+  onAllocate: (orderItem: OrderLineItem, weightG: number, stage: string) => void;
+  getRemainingOrderItemGrams: (orderItemId: string, originalNeededG: number, weightPerUnitG: number) => number;
+}
+
+/** Auto-detect best allocation stage from batch inventory */
+function detectBestStage(batch: BatchPlanData): string {
+  if (batch.packaged_g > 0) return 'packaged';
+  if (batch.bulk_g > 0) return 'bulk';
+  if (batch.bucked_g > 0) return 'bucked';
+  if (batch.binned_g > 0) return 'binned';
+  if (batch.trim_g > 0) return 'trim';
+  return 'bulk';
+}
+
+function batchStageLabel(batch: BatchPlanData): string {
+  const parts: string[] = [];
+  if (batch.packaged_g > 0) parts.push(`${formatWeight(batch.packaged_g)} pkgd`);
+  if (batch.bulk_g > 0) parts.push(`${formatWeight(batch.bulk_g)} bulk`);
+  if (batch.bucked_g > 0) parts.push(`${formatWeight(batch.bucked_g)} bucked`);
+  if (batch.binned_g > 0) parts.push(`${formatWeight(batch.binned_g)} binned`);
+  if (batch.trim_g > 0) parts.push(`${formatWeight(batch.trim_g)} trim`);
+  return parts.join(' · ') || 'empty';
+}
+
+function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRemainingOrderItemGrams }: BatchRowProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [allocWeights, setAllocWeights] = useState<Record<string, number>>({});
+
+  const bestStage = detectBestStage(batch);
+
+  return (
+    <div className={`rounded border ${fullyDrafted ? 'border-green-500/20 bg-green-500/5' : 'border-indigo-500/10 bg-indigo-500/5'}`}>
+      {/* Batch header */}
+      <div
+        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-indigo-500/10"
+        onClick={() => !fullyDrafted && setExpanded(!expanded)}
+      >
+        {!fullyDrafted && (
+          <ChevronRight className={`w-3 h-3 text-gray-500 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+        )}
+        {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
+        <span className="font-mono text-xs text-gray-300">{batch.batch_number}</span>
+        <span className="text-[10px] text-gray-500">{batchStageLabel(batch)}</span>
+        <span className="ml-auto text-xs">
+          {fullyDrafted ? (
+            <span className="text-green-400">Fully drafted</span>
+          ) : (
+            <span className="text-gray-300">{formatWeight(remainingG)} avail</span>
+          )}
+        </span>
+      </div>
+
+      {/* Expanded: allocate weight to orders */}
+      {expanded && !fullyDrafted && (
+        <div className="border-t border-indigo-500/10 px-3 py-2 space-y-1">
+          {orders.map(order => {
+            const orderRemainingG = getRemainingOrderItemGrams(
+              order.order_item_id,
+              order.line_demand_g,
+              order.weight_per_unit_g
+            );
+            if (orderRemainingG <= 0) return null;
+
+            const maxAllocG = Math.min(remainingG, orderRemainingG);
+            const currentG = allocWeights[order.order_item_id] ?? Math.round(Math.min(maxAllocG, orderRemainingG));
+
+            return (
+              <div key={order.order_item_id} className="flex items-center gap-2 text-xs">
+                <UrgencyDot urgency={order.urgency} />
+                <span className="text-gray-400 w-14">{order.order_number}</span>
+                <span className="text-gray-500 w-24 truncate">{order.customer_name}</span>
+                <span className="text-gray-500 w-14">{formatDate(order.requested_delivery_date)}</span>
+                <span className="text-gray-500">needs {formatWeight(orderRemainingG)}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={Math.round(maxAllocG)}
+                  value={currentG}
+                  onChange={(e) => {
+                    const v = Math.max(1, Math.min(Math.round(maxAllocG), parseInt(e.target.value) || 1));
+                    setAllocWeights(prev => ({ ...prev, [order.order_item_id]: v }));
+                  }}
+                  className="w-16 px-1 py-0.5 bg-cult-dark-gray border border-cult-medium-gray/30 rounded text-xs text-white text-center"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="text-[10px] text-gray-500">g</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAllocate(order, currentG, bestStage);
+                    setAllocWeights(prev => {
+                      const next = { ...prev };
+                      delete next[order.order_item_id];
+                      return next;
+                    });
+                  }}
+                  disabled={maxAllocG <= 0}
+                  className="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-[10px] font-medium transition-colors"
+                >
+                  Allocate
                 </button>
               </div>
             );
