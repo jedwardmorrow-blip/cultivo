@@ -260,6 +260,7 @@ export interface CalendarOrder {
   preferred_delivery_day: string | null;
   cached_duration_seconds: number | null;
   cached_distance_meters: number | null;
+  demand_g: number;
 }
 
 export async function getEnrichedCalendarOrders(archived: boolean = false): Promise<{ data: CalendarOrder[]; error: any }> {
@@ -281,7 +282,7 @@ export async function getEnrichedCalendarOrders(archived: boolean = false): Prom
         ? supabase.from('customers').select('id, name, latitude, longitude, city, preferred_delivery_day').in('id', customerIds)
         : { data: [], error: null },
       orderIds.length > 0
-        ? supabase.from('order_items').select('order_id').in('order_id', orderIds)
+        ? supabase.from('order_items').select('order_id, quantity, products!inner(net_weight)').in('order_id', orderIds)
         : { data: [], error: null },
       customerIds.length > 0
         ? supabase.from('delivery_routes').select('destination_customer_id, duration_seconds, distance_meters').in('destination_customer_id', customerIds)
@@ -292,8 +293,12 @@ export async function getEnrichedCalendarOrders(archived: boolean = false): Prom
     (customersResult.data || []).forEach(c => customerMap.set(c.id, c));
 
     const itemCountMap: Record<string, number> = {};
-    (itemsResult.data || []).forEach(item => {
+    const demandGMap: Record<string, number> = {};
+    (itemsResult.data || []).forEach((item: any) => {
       itemCountMap[item.order_id] = (itemCountMap[item.order_id] || 0) + 1;
+      const netWeight = Number(item.products?.net_weight || 0);
+      const qty = Number(item.quantity || 0);
+      demandGMap[item.order_id] = (demandGMap[item.order_id] || 0) + (qty * netWeight);
     });
 
     const routeMap = new Map<string, { duration_seconds: number; distance_meters: number }>();
@@ -324,6 +329,7 @@ export async function getEnrichedCalendarOrders(archived: boolean = false): Prom
         preferred_delivery_day: customer?.preferred_delivery_day || null,
         cached_duration_seconds: route?.duration_seconds ?? null,
         cached_distance_meters: route?.distance_meters ?? null,
+        demand_g: demandGMap[order.id] || 0,
       };
     });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2, Weight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getEnrichedCalendarOrders, updateOrderDeliveryDate as updateDeliveryDate, type CalendarOrder } from '../services/delivery.service';
 import { formatDuration } from '../services/routing.service';
@@ -19,6 +19,12 @@ function formatDateToLocal(date: Date): string {
 
 function getDayOfWeek(date: Date): string {
   return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
+}
+
+function formatWeight(grams: number): string {
+  if (grams <= 0) return '0g';
+  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
+  return `${Math.round(grams)}g`;
 }
 
 interface DistributionCalendarProps {
@@ -178,6 +184,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
 
   const totalRevenue = scheduledOrders.reduce((sum, o) => sum + o.total_amount, 0);
+  const totalWeight = scheduledOrders.reduce((sum, o) => sum + o.demand_g, 0);
 
   return (
     <div onDragEnd={handleDragEnd}>
@@ -186,7 +193,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         <p className="text-cult-light-gray mt-2">Plan and manage delivery schedules -- drag orders to reschedule</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <StatCard
           label="Total Orders"
           value={String(scheduledOrders.length)}
@@ -198,6 +205,13 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           value={String(scheduledOrders.length)}
           borderColor="border-green-600"
           valueColor="text-green-500"
+        />
+        <StatCard
+          label="Total Weight"
+          value={formatWeight(totalWeight)}
+          borderColor="border-purple-600"
+          valueColor="text-purple-400"
+          icon={<Weight className="w-4 h-4 text-purple-400" />}
         />
         <StatCard
           label="Total Revenue"
@@ -368,6 +382,7 @@ function DayCell({
   const someNotReady = orders.length > 0 && orders.some(o => !isOrderReadyStatus(o.status));
 
   const totalDuration = orders.reduce((sum, o) => sum + (o.cached_duration_seconds || 0), 0);
+  const dayWeight = orders.reduce((sum, o) => sum + (o.demand_g || 0), 0);
 
   return (
     <div
@@ -437,11 +452,18 @@ function DayCell({
               <div key={i} className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
             ))}
           </div>
-          {totalDuration > 0 && (
-            <span className="text-[9px] text-cult-lighter-gray leading-none">
-              ~{formatDuration(totalDuration)}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {dayWeight > 0 && (
+              <span className="text-[9px] text-purple-400 font-semibold leading-none">
+                {formatWeight(dayWeight)}
+              </span>
+            )}
+            {totalDuration > 0 && (
+              <span className="text-[9px] text-cult-lighter-gray leading-none">
+                ~{formatDuration(totalDuration)}
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>
