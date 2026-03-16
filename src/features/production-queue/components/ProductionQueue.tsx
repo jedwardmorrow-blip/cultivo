@@ -3,6 +3,7 @@ import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDow
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { BatchAssignPanel } from './BatchAssignPanel';
+import { BatchPlanExpansion } from './BatchPlanExpansion';
 import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus, BatchAssignContext } from '../types';
 import { Calendar } from 'lucide-react';
 
@@ -273,6 +274,8 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
   // Track which format row has the batch assign panel open: "strainId|formatLabel"
   const [assigningFormat, setAssigningFormat] = useState<string | null>(null);
+  // Track which strain has the batch planning expansion open
+  const [planningStrain, setPlanningStrain] = useState<string | null>(null);
 
   // Group by strain_id
   const strainGroups = new Map<string, StrainFormatRow[]>();
@@ -322,6 +325,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Stock</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400"></th>
           </tr>
         </thead>
         <tbody>
@@ -374,6 +378,21 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                   <td className="px-4 py-3 text-right text-gray-300">
                     {new Set(formats.flatMap(f => Array(f.order_count))).size > 0 ? formats[0].order_count : '—'}
                   </td>
+                  <td className="px-2 py-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPlanningStrain(prev => prev === strainId ? null : strainId);
+                      }}
+                      className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap ${
+                        planningStrain === strainId
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20'
+                      }`}
+                    >
+                      {planningStrain === strainId ? 'Close Plan' : 'Plan Batches'}
+                    </button>
+                  </td>
                 </tr>
 
                 {/* Expanded: format breakdown */}
@@ -419,12 +438,13 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                         </td>
                         <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
                         <td className="px-4 py-2 text-right text-gray-400">{f.order_count}</td>
+                        <td className="px-2 py-2"></td>
                       </tr>
 
                       {/* Batch Assign Panel — inline below format row */}
                       {isAssigning && (
                         <tr className="border-b border-cult-medium-gray/30">
-                          <td colSpan={10} className="p-0">
+                          <td colSpan={11} className="p-0">
                             <BatchAssignPanel
                               context={{
                                 strainId: f.strain_id,
@@ -445,10 +465,24 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                   );
                 })}
 
+                {/* Batch Planning Expansion — between format rows and order detail */}
+                {isExpanded && planningStrain === strainId && (
+                  <tr className="border-b border-cult-medium-gray/30">
+                    <td colSpan={11} className="p-2">
+                      <BatchPlanExpansion
+                        strainId={strainId}
+                        strainName={strainName}
+                        orderItems={getOrdersForStrain(formats[0].strain_id)}
+                        onClose={() => setPlanningStrain(null)}
+                      />
+                    </td>
+                  </tr>
+                )}
+
                 {/* Expanded: order detail */}
                 {isExpanded && (
                   <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={10} className="px-8 py-3">
+                    <td colSpan={11} className="px-8 py-3">
                       <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">Contributing Orders</div>
                       <div className="space-y-1">
                         {getOrdersForStrain(formats[0].strain_id).map(o => (

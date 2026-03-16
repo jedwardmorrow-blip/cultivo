@@ -95,6 +95,63 @@ export interface OrderLineItem {
 export type ProductionQueueTab = 'by-strain' | 'by-order' | 'summary';
 export type DeliveryDateFilter = 'all' | 'overdue' | 'this-week' | 'next-week';
 
+// ─── Batch Plan types (strain-level planning layer) ─────────────────────────
+
+/** One row from v_production_queue_batch_planning — one batch with stage + demand context */
+export interface BatchPlanData {
+  batch_id: string;
+  batch_number: string;
+  strain_id: string;
+  strain_name: string;
+  batch_status: string;
+  // Stage breakdown (grams)
+  binned_g: number;
+  bucked_g: number;
+  bulk_g: number;
+  packaged_g: number;
+  trim_g: number;
+  total_weight_g: number;
+  total_available_g: number;
+  // Current allocations
+  allocated_order_items: number;
+  total_allocated_g: number;
+  allocated_order_numbers: string[] | null;
+  // Capacity estimates
+  est_eighths_from_bulk: number;
+  est_lbs_from_bulk: number;
+  // Strain-level demand summary
+  strain_units_needed: number;
+  strain_demand_g: number;
+  strain_order_count: number;
+  strain_urgency: Urgency | 'no_date';
+}
+
+/** Props for the strain-level BatchPlanExpansion container */
+export interface BatchPlanProps {
+  strainId: string;
+  strainName: string;
+  /** ALL orders for this strain (all formats) */
+  orderItems: OrderLineItem[];
+  onClose: () => void;
+}
+
+/** A single batch_allocations row (for display within a batch card) */
+export interface BatchAllocation {
+  id: string;
+  batch_id: string;
+  order_item_id: string;
+  allocation_stage: string;
+  allocated_weight_grams: number;
+  projected_final_weight_grams: number | null;
+  status: string;
+  notes: string | null;
+  // Joined fields
+  order_number?: string;
+  customer_name?: string;
+  order_item_quantity?: number;
+  format_label?: string;
+}
+
 // ─── Batch Assign types ─────────────────────────────────────────────────────
 
 /** A single draft assignment: one package → one order item, pending confirmation */
