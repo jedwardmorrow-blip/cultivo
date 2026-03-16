@@ -164,7 +164,7 @@ export function OrderItemRow({
 
   const savePrice = () => {
     const newValue = parseFloat(priceValue);
-    if (!isNaN(newValue) && newValue > 0) {
+    if (!isNaN(newValue) && newValue >= 0) {
       onPriceUpdate(item.id, orderId, newValue);
     }
     setEditingPrice(false);

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { getSiteUrl } from './utils';
@@ -19,16 +19,55 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** Buffer before actual expiry to trigger a proactive refresh (5 minutes) */
+const REFRESH_BUFFER_MS = 5 * 60 * 1000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const refreshingRef = useRef(false);
+
+  /**
+   * Check if the current session is expired or about to expire,
+   * and proactively refresh it. This handles background tabs and
+   * laptop sleep where the SDK's auto-refresh timer gets throttled.
+   */
+  const ensureValidSession = useCallback(async () => {
+    if (refreshingRef.current) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const expiresAt = session.expires_at;
+      if (expiresAt && expiresAt * 1000 < Date.now() + REFRESH_BUFFER_MS) {
+        refreshingRef.current = true;
+        console.log('[Auth] Token expiring soon or expired, refreshing...');
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error) {
+          console.error('[Auth] Token refresh failed:', error.message);
+          // Session is truly dead — clear state so user sees login screen
+          setUser(null);
+          setProfile(null);
+        } else if (data.session?.user) {
+          console.log('[Auth] Token refreshed successfully');
+          setUser(data.session.user);
+        }
+        refreshingRef.current = false;
+      }
+    } catch (err) {
+      console.error('[Auth] Session check error:', err);
+      refreshingRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
+    // --- Initial session load ---
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const expiresAt = session.expires_at;
-        if (expiresAt && expiresAt * 1000 < Date.now() + 60_000) {
+        if (expiresAt && expiresAt * 1000 < Date.now() + REFRESH_BUFFER_MS) {
           const { data } = await supabase.auth.refreshSession();
           if (data.session?.user) {
             setUser(data.session.user);
@@ -43,7 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
+    // --- Auth state change listener ---
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('[Auth] Token refreshed via SDK');
+      }
+      if (event === 'SIGNED_OUT') {
+        console.log('[Auth] User signed out');
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -53,8 +104,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // --- Visibility change handler ---
+    // When the tab comes back from background or laptop wakes from sleep,
+    // check if the token is still valid and refresh if needed.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        ensureValidSession();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // --- Focus handler (belt-and-suspenders with visibilitychange) ---
+    const handleFocus = () => {
+      ensureValidSession();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // --- Periodic check every 4 minutes ---
+    // Catches edge cases where the tab stays visible but timers drifted
+    const intervalId = setInterval(ensureValidSession, 4 * 60 * 1000);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(intervalId);
+    };
+  }, [ensureValidSession]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -98,8 +174,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      // If signOut fails because token is already expired (403),
+      // clear local state anyway so the user can re-authenticate
+      console.warn('[Auth] signOut error (clearing local state anyway):', error);
+    }
+    setUser(null);
+    setProfile(null);
   };
 
   const resetPassword = async (email: string) => {
