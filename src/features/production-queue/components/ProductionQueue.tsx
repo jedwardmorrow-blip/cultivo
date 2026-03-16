@@ -382,7 +382,12 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        const opening = planningStrain !== strainId;
                         setPlanningStrain(prev => prev === strainId ? null : strainId);
+                        // Auto-expand the strain row so the panel is visible
+                        if (opening && !expandedStrains.has(strainId)) {
+                          setExpandedStrains(prev => new Set(prev).add(strainId));
+                        }
                       }}
                       className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap ${
                         planningStrain === strainId
