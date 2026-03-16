@@ -25,22 +25,20 @@ import {
 import {
   useSimplifiedInventory,
   type StrainSummary,
-  type BatchSummary,
-  type BatchStage,
 } from '../../hooks/useSimplifiedInventory';
 import { LoadingSpinner } from '@/shared/components';
+import {
+  StageBar,
+  BatchCard,
+  fmtGrams as fmt,
+  type BatchSummary,
+} from '@/shared/components/inventory';
 
 /* ────────────────────────────────────────────── *
  *  Constants                                      *
  * ────────────────────────────────────────────── */
 
-const STAGE_COLORS: Record<string, string> = {
-  Binned: '#6366f1', // indigo
-  Bucked: '#8b5cf6', // violet
-  Bulk: '#10b981', // emerald
-  Packaged: '#06b6d4', // cyan
-  Trim: '#78716c', // stone
-};
+/* STAGE_COLORS now imported from @/shared/components/inventory */
 
 const HEALTH_STYLES: Record<
   string,
@@ -86,10 +84,7 @@ const HEALTH_DESCRIPTIONS: Record<string, string> = {
  *  Helpers                                        *
  * ────────────────────────────────────────────── */
 
-function fmt(g: number): string {
-  if (g >= 1000) return (g / 1000).toFixed(1) + 'kg';
-  return Math.round(g).toLocaleString() + 'g';
-}
+/* fmt() now imported as fmtGrams from @/shared/components/inventory */
 
 /* ────────────────────────────────────────────── *
  *  SummaryCharts                                  *
@@ -240,69 +235,7 @@ function HealthDot({ status }: { status: string }) {
   );
 }
 
-function StageBar({ stages }: { stages: BatchStage[] }) {
-  const gramStages = stages.filter((s) => s.unit === 'g' && s.availableQty > 0);
-  const total = gramStages.reduce((acc, s) => acc + s.availableQty, 0);
-  if (total === 0 && stages.every((s) => s.availableQty === 0)) return null;
-
-  return (
-    <div>
-      {total > 0 && (
-        <div className="flex gap-[2px] h-2 rounded overflow-hidden mb-1.5">
-          {gramStages.map((s) => {
-            const pct = (s.availableQty / total) * 100;
-            return (
-              <div
-                key={s.category}
-                className="h-full rounded-sm transition-all"
-                style={{
-                  width: `${Math.max(pct, 2)}%`,
-                  background: STAGE_COLORS[s.stageName] || '#525252',
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
-      <div className="flex gap-3 flex-wrap">
-        {stages
-          .filter((s) => s.availableQty > 0)
-          .map((s) => (
-            <div key={s.category} className="flex items-center gap-1">
-              <span
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                style={{
-                  background: STAGE_COLORS[s.stageName] || '#525252',
-                }}
-              />
-              <span className="text-[10px] text-neutral-500">{s.stageName}</span>
-              <span className="text-[10px] font-bold text-neutral-300 tabular-nums">
-                {s.unit === 'unit'
-                  ? s.availableQty.toLocaleString() + 'u'
-                  : fmt(s.availableQty)}
-              </span>
-            </div>
-          ))}
-      </div>
-    </div>
-  );
-}
-
-function BatchCard({ batch }: { batch: BatchSummary }) {
-  return (
-    <div className="rounded-lg p-3 border border-cult-medium-gray/20 bg-cult-black hover:border-cult-medium-gray/40 transition-colors">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-xs font-bold text-neutral-300 font-mono tracking-wide">
-          {batch.batchNumber}
-        </span>
-        <span className="text-xs font-bold text-neutral-400 tabular-nums">
-          {fmt(batch.totalGrams)}
-        </span>
-      </div>
-      <StageBar stages={batch.stages} />
-    </div>
-  );
-}
+/* StageBar & BatchCard now imported from @/shared/components/inventory */
 
 function StrainRow({
   strain,

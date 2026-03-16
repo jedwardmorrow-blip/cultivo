@@ -44,24 +44,18 @@ export function useProductionQueue() {
   useEffect(() => {
     fetchAll();
 
-    // Subscribe to order_items and orders changes to auto-refresh
-    const orderItemsSub = supabase
-      .channel('production_queue_order_items')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
-        fetchAll();
-      })
-      .subscribe();
-
-    const ordersSub = supabase
-      .channel('production_queue_orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-        fetchAll();
-      })
+    // Subscribe to all tables that feed production queue views
+    const channel = supabase
+      .channel('production_queue_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_items' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'batch_allocations' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'package_assignments' }, () => fetchAll())
       .subscribe();
 
     return () => {
-      orderItemsSub.unsubscribe();
-      ordersSub.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [fetchAll]);
 

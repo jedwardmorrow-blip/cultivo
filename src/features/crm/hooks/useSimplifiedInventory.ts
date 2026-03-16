@@ -5,7 +5,9 @@ import { supabase } from '@/lib/supabase';
  *  Types                                                 *
  * ────────────────────────────────────────────────────── */
 
-export type HealthStatus = 'critical' | 'low' | 'warning' | 'healthy';
+// Re-export shared inventory types so existing imports keep working
+export type { HealthStatus, BatchStage, BatchSummary } from '@/shared/components/inventory';
+import type { HealthStatus, BatchStage, BatchSummary } from '@/shared/components/inventory';
 
 export interface StrainSummary {
   strain: string;
@@ -16,23 +18,6 @@ export interface StrainSummary {
   healthStatus: HealthStatus;
   gradeCode: string;
   gradeColor: string;
-}
-
-export interface BatchStage {
-  batchNumber: string;
-  category: string;
-  stageName: string;
-  stageSort: number;
-  displayGroup: string;
-  itemCount: number;
-  availableQty: number;
-  unit: string;
-}
-
-export interface BatchSummary {
-  batchNumber: string;
-  totalGrams: number;
-  stages: BatchStage[];
 }
 
 /* ────────────────────────────────────────────────────── *
