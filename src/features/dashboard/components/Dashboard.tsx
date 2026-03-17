@@ -111,7 +111,7 @@ export function Dashboard({
       {/* ── Row 2: Active Orders + Top Customers ── */}
       <div className="grid grid-cols-2 gap-4">
         <WidgetBoundary name="ActiveOrdersTable">
-          <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} />
+          <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => onViewChange('orders')} />
         </WidgetBoundary>
         <WidgetBoundary name="TopCustomers">
           <TopCustomers customers={data.customers} />

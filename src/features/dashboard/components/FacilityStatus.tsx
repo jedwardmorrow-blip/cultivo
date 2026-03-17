@@ -7,10 +7,9 @@ interface Props {
 }
 
 export function FacilityStatus({ cultivation, dryRooms, onViewChange: _onViewChange }: Props) {
-  const stages = [
+  const activeStages = [
     { label: 'Flowering', value: cultivation.flowerCount, color: 'text-cult-stage-flower' },
     { label: 'Veg', value: cultivation.vegCount, color: 'text-cult-stage-veg' },
-    { label: 'Harvested', value: cultivation.harvestedCount, color: 'text-cult-stage-harvest' },
   ];
 
   return (
@@ -20,13 +19,13 @@ export function FacilityStatus({ cultivation, dryRooms, onViewChange: _onViewCha
           Facility Status
         </h3>
         <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-success/10 text-cult-success-bright">
-          {cultivation.totalPlants.toLocaleString()} plants
+          {cultivation.totalPlants.toLocaleString()} active
         </span>
       </div>
 
-      {/* Stage grid */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {stages.map(s => (
+      {/* Active plant stages */}
+      <div className="grid grid-cols-2 gap-2.5">
+        {activeStages.map(s => (
           <div key={s.label} className="text-center p-3.5 bg-cult-surface-overlay rounded-cult">
             <div className={`text-[1.75rem] font-bold ${s.color}`}>{s.value.toLocaleString()}</div>
             <div className="text-[0.625rem] text-cult-text-muted uppercase tracking-[1px] font-semibold mt-1">
@@ -35,6 +34,13 @@ export function FacilityStatus({ cultivation, dryRooms, onViewChange: _onViewCha
           </div>
         ))}
       </div>
+
+      {/* Harvested note */}
+      {cultivation.harvestedCount > 0 && (
+        <div className="mt-2 text-[0.6875rem] text-cult-text-muted font-light text-center">
+          + <span className="text-cult-stage-harvest font-semibold">{cultivation.harvestedCount.toLocaleString()}</span> harvested (completed)
+        </div>
+      )}
 
       {/* Dry Rooms */}
       <div className="mt-4 mb-2 text-[0.625rem] font-semibold uppercase tracking-[1.5px] text-cult-text-muted">

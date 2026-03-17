@@ -438,27 +438,25 @@ async function fetchCultivationData(): Promise<{
     .sort((a, b) => (a.date || 'Z').localeCompare(b.date || 'Z'))
     .slice(0, 6);
 
-  // Dry rooms — harvest_sessions columns: session_status, dry_room_id (FK to grow_rooms)
-  // First get the dry room grow_room records
+  // Dry rooms — from the dedicated dry_rooms table (FK: harvest_sessions.dry_room_id → dry_rooms.id)
   const { data: dryRoomRecords } = await supabase
-    .from('grow_rooms')
-    .select('id, name, room_code')
-    .or('room_code.ilike.DRY%,name.ilike.%dry%');
+    .from('dry_rooms')
+    .select('id, name, room_code, is_active')
+    .eq('is_active', true)
+    .order('room_code') as { data: any[] | null };
 
-  // If no explicit dry rooms, create placeholder entries
   const dryRoomList = (dryRoomRecords && dryRoomRecords.length > 0)
     ? dryRoomRecords
-    : [{ id: 'dry-01', name: 'DRY-01', room_code: 'DRY-01' }, { id: 'dry-02', name: 'DRY-02', room_code: 'DRY-02' }, { id: 'dry-03', name: 'DRY-03', room_code: 'DRY-03' }];
+    : [];
 
-  // Get active drying sessions — dry_room_id was added after types were generated, cast needed
+  // Get active drying sessions with their dry_room_id
   const { data: dryingHarvests } = await supabase
     .from('harvest_sessions')
-    .select('id, session_status, wet_weight_grams, created_at, plant_groups(strains(name))')
+    .select('id, session_status, wet_weight_grams, created_at, dry_room_id, plant_groups(strains(name))')
     .eq('session_status', 'drying') as { data: any[] | null };
 
-  const dryRooms: DryRoom[] = dryRoomList.map(room => {
+  const dryRooms: DryRoom[] = dryRoomList.map((room: any) => {
     const roomName = room.room_code || room.name;
-    // Try to match by dry_room_id (may not be typed yet) or just show first active session
     const session = (dryingHarvests || []).find((h: any) => h.dry_room_id === room.id);
     if (session) {
       const wet = gramsToLbs(session.wet_weight_grams || 0);

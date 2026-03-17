@@ -1,8 +1,11 @@
 import type { ActiveOrder } from '../hooks/useDashboardData';
 
+const MAX_VISIBLE = 8;
+
 interface Props {
   orders: ActiveOrder[];
   onSelectOrder: (orderId: string) => void;
+  onViewAll?: () => void;
 }
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
@@ -24,7 +27,10 @@ function getUrgency(deliveryDate: string | null): { label: string; cls: string }
   return { label: `${diff}d`, cls: 'bg-blue-400/10 text-blue-400' };
 }
 
-export function ActiveOrdersTable({ orders, onSelectOrder }: Props) {
+export function ActiveOrdersTable({ orders, onSelectOrder, onViewAll }: Props) {
+  const visible = orders.slice(0, MAX_VISIBLE);
+  const remaining = orders.length - visible.length;
+
   return (
     <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-5">
@@ -47,7 +53,7 @@ export function ActiveOrdersTable({ orders, onSelectOrder }: Props) {
             </tr>
           </thead>
           <tbody>
-            {orders.map(order => {
+            {visible.map(order => {
               const status = STATUS_STYLES[order.status] || { label: order.status, cls: '' };
               const urgency = getUrgency(order.deliveryDate);
               return (
@@ -83,6 +89,15 @@ export function ActiveOrdersTable({ orders, onSelectOrder }: Props) {
           </tbody>
         </table>
       </div>
+
+      {remaining > 0 && (
+        <button
+          onClick={onViewAll}
+          className="mt-3 w-full text-center text-[0.6875rem] py-2 text-cult-text-secondary hover:text-cult-text-primary font-medium tracking-wider uppercase transition-colors"
+        >
+          View all {orders.length} orders →
+        </button>
+      )}
     </div>
   );
 }

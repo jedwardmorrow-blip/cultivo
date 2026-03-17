@@ -14,7 +14,7 @@ export function RevenueGoalBanner({ data }: Props) {
   const paceLabel = onPace ? 'on pace' : 'behind pace';
 
   return (
-    <div className="bg-cult-surface-raised border border-cult-stage-harvest rounded-cult p-4 px-6 mb-6 flex items-center justify-between gap-8 shadow-[0_0_20px_rgba(245,158,11,0.08)] animate-fade-in">
+    <div className="bg-cult-surface-raised border border-cult-stage-harvest rounded-cult p-4 px-6 mb-6 flex items-center justify-between gap-8 animate-fade-in">
       {/* Left: Target */}
       <div className="flex-shrink-0">
         <div className="text-[0.6875rem] uppercase tracking-[1.5px] text-cult-text-secondary font-semibold">

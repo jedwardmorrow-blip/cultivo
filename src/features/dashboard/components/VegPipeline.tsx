@@ -11,7 +11,7 @@ export function VegPipeline({ strains }: Props) {
     <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-5">
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
-          Veg Pipeline — VEG-01
+          Veg Pipeline
         </h3>
         <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-success/10 text-cult-success-bright">
           {totalPlants} plants · {strains.length} strains
