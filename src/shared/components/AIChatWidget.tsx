@@ -1,13 +1,31 @@
-// AIChatWidget.tsx — CultOps AI Assistant v2
+// AIChatWidget.tsx — CultOps AI Assistant v3
 // Floating chat widget with streaming, financial intelligence, semantic search
 // Mount: Add <AIChatWidget /> to App.tsx root, before closing tag
-// Requires: useAuth() hook that returns { session } with session.access_token
+// Branding: Cult Cannabis — black/white/gray, Montserrat, Cult Eye logo
 
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── CONFIGURATION ───
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/cultops-ai-chat`;
+
+// ─── BRAND COLORS ───
+const BRAND = {
+  black: "#0A0A0A",
+  graphite: "#1C1C1C",
+  charcoal: "#2E2E2E",
+  silver: "#A6A6A6",
+  offWhite: "#F8F8F8",
+  white: "#FFFFFF",
+  red: "#B81D24",
+  redHover: "#D42029",
+  // Semantic
+  surface: "#111111",
+  border: "#333333",
+  textPrimary: "#F0F0F0",
+  textSecondary: "#A6A6A6",
+  textMuted: "#666666",
+};
 
 // ─── TYPES ───
 interface Message {
@@ -23,32 +41,32 @@ interface Message {
 // ─── SUGGESTED PROMPTS ───
 const SUGGESTED_PROMPTS = [
   {
-    icon: "💰",
+    icon: "◉",
     label: "Financial Pulse",
     prompt: "What's our financial situation? Revenue vs burn rate, deficit, and break-even analysis.",
   },
   {
-    icon: "📦",
+    icon: "◉",
     label: "Inventory Pipeline",
     prompt: "Show me the inventory pipeline — what's at each stage and the revenue potential.",
   },
   {
-    icon: "⚡",
+    icon: "◉",
     label: "Production Velocity",
     prompt: "What's our production throughput vs break-even target? Are we on track?",
   },
   {
-    icon: "🏪",
+    icon: "◉",
     label: "Customer Health",
     prompt: "Which customers are most valuable and which are at risk of churning?",
   },
   {
-    icon: "📋",
+    icon: "◉",
     label: "Order Pipeline",
     prompt: "What orders are open and what's the delivery schedule this week?",
   },
   {
-    icon: "🎯",
+    icon: "◉",
     label: "What Should I Focus On?",
     prompt: "Given the current financial and operational data, what should be the top 3 priorities this week?",
   },
@@ -57,21 +75,14 @@ const SUGGESTED_PROMPTS = [
 // ─── MARKDOWN RENDERER ───
 function renderMarkdown(text: string): string {
   return text
-    // Code blocks
     .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="ai-code-block"><code>$2</code></pre>')
-    // Inline code
     .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
-    // Bold
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    // Italic
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    // Headers
     .replace(/^### (.+)$/gm, '<h4 class="ai-h4">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 class="ai-h3">$1</h3>')
-    // Lists
     .replace(/^- (.+)$/gm, '<li class="ai-li">$1</li>')
     .replace(/(<li.*<\/li>\n?)+/g, '<ul class="ai-ul">$&</ul>')
-    // Line breaks
     .replace(/\n/g, "<br />");
 }
 
@@ -86,13 +97,7 @@ export default function AIChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // NOTE: Adjust this import to match your auth hook location
-  // import { useAuth } from "../hooks/useAuth";
-  // const { session } = useAuth();
-  // For now, we'll get the token from the Supabase client
   const getAccessToken = useCallback(async (): Promise<string | null> => {
-    // Replace with your auth mechanism:
-    // return session?.access_token || null;
     try {
       const { createClient } = await import("@supabase/supabase-js");
       const supabase = createClient(
@@ -106,12 +111,10 @@ export default function AIChatWidget() {
     }
   }, []);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Focus input when opened
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
@@ -154,21 +157,19 @@ export default function AIChatWidget() {
         });
 
         if (response.status === 403) {
-          throw new Error("Admin access required. Contact Justin for access.");
+          throw new Error("Access denied. Speak to the Creator for permission.");
         }
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
           throw new Error(err.error || `Server error (${response.status})`);
         }
 
-        // Stream SSE response
         const reader = response.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
         let assistantText = "";
         const assistantId = crypto.randomUUID();
 
-        // Add empty assistant message
         setMessages((prev) => [
           ...prev,
           { id: assistantId, role: "assistant", content: "" },
@@ -223,7 +224,6 @@ export default function AIChatWidget() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
-        // Remove empty assistant message on error
         setMessages((prev) =>
           prev.filter((m) => m.role !== "assistant" || m.content.length > 0)
         );
@@ -234,7 +234,6 @@ export default function AIChatWidget() {
     [input, isLoading, messages, sessionId, getAccessToken]
   );
 
-  // ─── KEY HANDLER ───
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -242,14 +241,13 @@ export default function AIChatWidget() {
     }
   };
 
-  // ─── CLEAR CHAT ───
   const clearChat = () => {
     setMessages([]);
     setSessionId(null);
     setError(null);
   };
 
-  // ─── RENDER ───
+  // ─── CLOSED STATE: Cult Eye Bubble ───
   if (!isOpen) {
     return (
       <button
@@ -258,36 +256,48 @@ export default function AIChatWidget() {
           position: "fixed",
           bottom: "24px",
           right: "24px",
-          width: "56px",
-          height: "56px",
-          borderRadius: "28px",
-          background: "linear-gradient(135deg, #059669, #047857)",
-          border: "none",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          background: BRAND.black,
+          border: `2px solid ${BRAND.charcoal}`,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(5, 150, 105, 0.4)",
+          boxShadow: "0 4px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.05)",
           zIndex: 9999,
-          transition: "transform 0.2s, box-shadow 0.2s",
+          transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
+          padding: 0,
+          overflow: "hidden",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 6px 24px rgba(5, 150, 105, 0.5)";
+          e.currentTarget.style.boxShadow = "0 6px 28px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.08)";
+          e.currentTarget.style.borderColor = BRAND.silver;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 20px rgba(5, 150, 105, 0.4)";
+          e.currentTarget.style.boxShadow = "0 4px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.05)";
+          e.currentTarget.style.borderColor = BRAND.charcoal;
         }}
-        title="CultOps AI Assistant"
+        title="CULT AI"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
+        <img
+          src="/cult-logo-eye.png"
+          alt="CULT"
+          style={{
+            width: "36px",
+            height: "36px",
+            objectFit: "contain",
+            filter: "brightness(1.1)",
+          }}
+        />
       </button>
     );
   }
 
+  // ─── OPEN STATE: Chat Panel ───
   return (
     <div
       style={{
@@ -296,75 +306,88 @@ export default function AIChatWidget() {
         right: "24px",
         width: "420px",
         height: "600px",
-        borderRadius: "16px",
-        background: "#0f172a",
-        border: "1px solid #1e293b",
+        borderRadius: "12px",
+        background: BRAND.black,
+        border: `1px solid ${BRAND.charcoal}`,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+        boxShadow: "0 8px 40px rgba(0, 0, 0, 0.7)",
         zIndex: 9999,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'Montserrat, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <div
         style={{
           padding: "14px 16px",
-          background: "linear-gradient(135deg, #059669, #047857)",
+          background: BRAND.graphite,
+          borderBottom: `1px solid ${BRAND.charcoal}`,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          <span style={{ color: "white", fontWeight: 600, fontSize: "14px" }}>
-            CultOps AI
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img
+            src="/cult-logo-eye.png"
+            alt="CULT"
+            style={{ width: "22px", height: "22px", objectFit: "contain" }}
+          />
+          <span style={{ color: BRAND.white, fontWeight: 700, fontSize: "14px", letterSpacing: "1px", textTransform: "uppercase" }}>
+            CULT AI
           </span>
-          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "11px" }}>
-            v2 · Financial Intelligence
+          <span style={{ color: BRAND.textMuted, fontSize: "10px", letterSpacing: "0.5px" }}>
+            v3 · Intelligence
           </span>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "6px" }}>
           <button
             onClick={clearChat}
             style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              fontSize: "11px",
+              background: BRAND.charcoal,
+              border: `1px solid ${BRAND.border}`,
+              color: BRAND.silver,
+              padding: "4px 10px",
+              borderRadius: "4px",
+              fontSize: "10px",
               cursor: "pointer",
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              fontFamily: "inherit",
+              transition: "color 0.2s",
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = BRAND.white; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = BRAND.silver; }}
           >
             Clear
           </button>
           <button
             onClick={() => setIsOpen(false)}
             style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "white",
+              background: BRAND.charcoal,
+              border: `1px solid ${BRAND.border}`,
+              color: BRAND.silver,
               width: "28px",
               height: "28px",
-              borderRadius: "6px",
+              borderRadius: "4px",
               cursor: "pointer",
-              fontSize: "16px",
+              fontSize: "14px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              fontFamily: "inherit",
+              transition: "color 0.2s",
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = BRAND.white; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = BRAND.silver; }}
           >
             ×
           </button>
         </div>
       </div>
 
-      {/* Messages */}
+      {/* ── Messages ── */}
       <div
         style={{
           flex: 1,
@@ -377,8 +400,8 @@ export default function AIChatWidget() {
       >
         {messages.length === 0 && (
           <div>
-            <p style={{ color: "#94a3b8", fontSize: "13px", margin: "0 0 16px 0" }}>
-              Ask me anything about your operation — inventory, orders, production, finances, or strategy.
+            <p style={{ color: BRAND.textSecondary, fontSize: "12px", margin: "0 0 16px 0", letterSpacing: "0.3px" }}>
+              The eye sees all. Ask about inventory, orders, production, finances, or strategy.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               {SUGGESTED_PROMPTS.map((sp) => (
@@ -386,23 +409,28 @@ export default function AIChatWidget() {
                   key={sp.label}
                   onClick={() => sendMessage(sp.prompt)}
                   style={{
-                    background: "#1e293b",
-                    border: "1px solid #334155",
-                    borderRadius: "8px",
+                    background: BRAND.graphite,
+                    border: `1px solid ${BRAND.charcoal}`,
+                    borderRadius: "6px",
                     padding: "10px",
                     cursor: "pointer",
                     textAlign: "left",
-                    transition: "border-color 0.2s",
+                    transition: "border-color 0.2s, background 0.2s",
+                    fontFamily: "inherit",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#059669";
+                    e.currentTarget.style.borderColor = BRAND.silver;
+                    e.currentTarget.style.background = BRAND.charcoal;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "#334155";
+                    e.currentTarget.style.borderColor = BRAND.charcoal;
+                    e.currentTarget.style.background = BRAND.graphite;
                   }}
                 >
-                  <span style={{ fontSize: "16px" }}>{sp.icon}</span>
-                  <div style={{ color: "#e2e8f0", fontSize: "12px", fontWeight: 500, marginTop: "4px" }}>
+                  <span style={{ fontSize: "10px", color: BRAND.red }}>
+                    {sp.icon}
+                  </span>
+                  <div style={{ color: BRAND.offWhite, fontSize: "11px", fontWeight: 600, marginTop: "4px", letterSpacing: "0.3px" }}>
                     {sp.label}
                   </div>
                 </button>
@@ -420,19 +448,22 @@ export default function AIChatWidget() {
               alignItems: msg.role === "user" ? "flex-end" : "flex-start",
             }}
           >
-            {/* Intent badges for assistant messages */}
+            {/* Intent badges */}
             {msg.role === "assistant" && msg.metadata?.intents && (
               <div style={{ display: "flex", gap: "4px", marginBottom: "4px" }}>
                 {msg.metadata.intents.map((intent) => (
                   <span
                     key={intent}
                     style={{
-                      fontSize: "10px",
+                      fontSize: "9px",
                       padding: "2px 6px",
-                      borderRadius: "4px",
-                      background: intent === "financial" ? "#7c3aed20" : "#05966920",
-                      color: intent === "financial" ? "#a78bfa" : "#6ee7b7",
-                      border: `1px solid ${intent === "financial" ? "#7c3aed40" : "#05966940"}`,
+                      borderRadius: "3px",
+                      background: intent === "financial" ? "rgba(184, 29, 36, 0.15)" : "rgba(255, 255, 255, 0.06)",
+                      color: intent === "financial" ? "#E07070" : BRAND.silver,
+                      border: `1px solid ${intent === "financial" ? "rgba(184, 29, 36, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
+                      letterSpacing: "0.5px",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
                     }}
                   >
                     {intent}
@@ -440,19 +471,21 @@ export default function AIChatWidget() {
                 ))}
               </div>
             )}
+
             <div
               style={{
                 maxWidth: "90%",
                 padding: "10px 14px",
-                borderRadius: msg.role === "user" ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
-                background: msg.role === "user" ? "#059669" : "#1e293b",
-                color: msg.role === "user" ? "white" : "#e2e8f0",
+                borderRadius: msg.role === "user" ? "10px 10px 2px 10px" : "10px 10px 10px 2px",
+                background: msg.role === "user" ? BRAND.white : BRAND.graphite,
+                color: msg.role === "user" ? BRAND.black : BRAND.textPrimary,
                 fontSize: "13px",
-                lineHeight: 1.5,
+                lineHeight: 1.6,
+                border: msg.role === "user" ? "none" : `1px solid ${BRAND.charcoal}`,
               }}
               dangerouslySetInnerHTML={
                 msg.role === "assistant"
-                  ? { __html: renderMarkdown(msg.content) || '<span style="opacity:0.5">Thinking...</span>' }
+                  ? { __html: renderMarkdown(msg.content) || `<span style="opacity:0.4">Thinking...</span>` }
                   : undefined
               }
             >
@@ -461,31 +494,33 @@ export default function AIChatWidget() {
           </div>
         ))}
 
+        {/* Loading dots */}
         {isLoading && messages[messages.length - 1]?.role === "user" && (
           <div style={{ display: "flex", gap: "4px", padding: "8px" }}>
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "4px",
-                  background: "#059669",
-                  animation: `bounce 1.4s infinite ${i * 0.2}s`,
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "3px",
+                  background: BRAND.white,
+                  animation: `cultPulse 1.4s infinite ${i * 0.2}s`,
                 }}
               />
             ))}
           </div>
         )}
 
+        {/* Error */}
         {error && (
           <div
             style={{
-              background: "#7f1d1d20",
-              border: "1px solid #991b1b40",
-              borderRadius: "8px",
+              background: "rgba(184, 29, 36, 0.1)",
+              border: `1px solid rgba(184, 29, 36, 0.25)`,
+              borderRadius: "6px",
               padding: "10px",
-              color: "#fca5a5",
+              color: "#E07070",
               fontSize: "12px",
             }}
           >
@@ -496,13 +531,14 @@ export default function AIChatWidget() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* ── Input ── */}
       <div
         style={{
           padding: "12px 16px",
-          borderTop: "1px solid #1e293b",
+          borderTop: `1px solid ${BRAND.charcoal}`,
           display: "flex",
           gap: "8px",
+          background: BRAND.graphite,
         }}
       >
         <textarea
@@ -510,54 +546,93 @@ export default function AIChatWidget() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about inventory, finances, production..."
+          placeholder="Ask the eye..."
           rows={1}
           style={{
             flex: 1,
-            background: "#1e293b",
-            border: "1px solid #334155",
-            borderRadius: "8px",
+            background: BRAND.black,
+            border: `1px solid ${BRAND.charcoal}`,
+            borderRadius: "6px",
             padding: "10px 12px",
-            color: "#e2e8f0",
+            color: BRAND.textPrimary,
             fontSize: "13px",
             resize: "none",
             outline: "none",
             fontFamily: "inherit",
+            letterSpacing: "0.3px",
+            transition: "border-color 0.2s",
           }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = BRAND.silver; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = BRAND.charcoal; }}
         />
         <button
           onClick={() => sendMessage()}
           disabled={isLoading || !input.trim()}
           style={{
-            background: isLoading || !input.trim() ? "#1e293b" : "#059669",
+            background: isLoading || !input.trim() ? BRAND.charcoal : BRAND.white,
             border: "none",
-            borderRadius: "8px",
+            borderRadius: "6px",
             width: "40px",
             cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            transition: "background 0.2s",
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={isLoading || !input.trim() ? BRAND.textMuted : BRAND.black}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="22" y1="2" x2="11" y2="13" />
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
 
-      {/* Bounce animation */}
+      {/* ── Styles ── */}
       <style>{`
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-6px); }
+        @keyframes cultPulse {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+          40% { transform: translateY(-6px); opacity: 1; }
         }
-        .ai-code-block { background: #0d1117; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; }
-        .ai-inline-code { background: #1e293b; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
-        .ai-h3 { font-size: 15px; font-weight: 600; margin: 8px 0 4px; }
-        .ai-h4 { font-size: 13px; font-weight: 600; margin: 6px 0 2px; }
+        .ai-code-block {
+          background: ${BRAND.graphite};
+          border: 1px solid ${BRAND.charcoal};
+          padding: 12px;
+          border-radius: 4px;
+          overflow-x: auto;
+          font-size: 12px;
+          font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .ai-inline-code {
+          background: ${BRAND.charcoal};
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 12px;
+          font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .ai-h3 {
+          font-size: 14px;
+          font-weight: 700;
+          margin: 10px 0 4px;
+          letter-spacing: 0.5px;
+          color: ${BRAND.white};
+        }
+        .ai-h4 {
+          font-size: 13px;
+          font-weight: 600;
+          margin: 8px 0 2px;
+          color: ${BRAND.offWhite};
+        }
         .ai-ul { margin: 4px 0; padding-left: 20px; }
-        .ai-li { margin: 2px 0; }
+        .ai-li { margin: 2px 0; color: ${BRAND.textPrimary}; }
       `}</style>
     </div>
   );
