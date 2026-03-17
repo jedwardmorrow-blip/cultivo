@@ -101,7 +101,7 @@ class ErrorService {
 
   categorizeError(error: unknown): ErrorType {
     if (typeof error === 'object' && error !== null) {
-      const err = error as any;
+      const err = error as { code?: string; message?: string; status?: number };
 
       if (
         err.code === '23514' ||
@@ -271,5 +271,5 @@ class ErrorService {
 export const errorService = new ErrorService();
 
 if (typeof window !== 'undefined') {
-  (window as any).__errorService = errorService;
+  window.__errorService = errorService;
 }

@@ -20,9 +20,9 @@ import type {
 import { getDateFrom } from '../utils/analyticsHelpers';
 
 // Rosin lab tables do not exist in the DB schema yet.
-// Using `any` cast so TypeScript compiles while the schema is being built.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+// Using @ts-expect-error so TypeScript compiles while the schema is being built.
+// @ts-expect-error Rosin lab tables (wash_runs, press_runs, etc.) not yet in database schema
+const db = supabase;
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {

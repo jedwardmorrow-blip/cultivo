@@ -12,9 +12,9 @@ interface AdminSessionEditModalProps {
 
 function isAnyFinalized(session: TrimSession): string[] {
   const finalized: string[] = [];
-  if ((session as any).finalization_status_bigs === 'finalized') finalized.push('Flower');
-  if ((session as any).finalization_status_smalls === 'finalized') finalized.push('Smalls');
-  if ((session as any).finalization_status_trim === 'finalized') finalized.push('Trim');
+  if (session.finalization_status_bigs === 'finalized') finalized.push('Flower');
+  if (session.finalization_status_smalls === 'finalized') finalized.push('Smalls');
+  if (session.finalization_status_trim === 'finalized') finalized.push('Trim');
   return finalized;
 }
 

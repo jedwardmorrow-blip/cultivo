@@ -585,7 +585,8 @@ async function updateBatchStageAllocation(
 export async function calculateBatchProjection(
   input: BatchProjectionInput
 ): Promise<BatchProjectionResult> {
-  const { data, error } = await supabase.rpc('calculate_batch_projection' as any, {
+  // @ts-expect-error RPC not in generated types
+  const { data, error } = await supabase.rpc('calculate_batch_projection', {
     p_batch_id: input.batch_id,
     p_target_stage: input.target_stage,
     p_expected_yield_percentage: input.expected_yield_percentage || 85
@@ -608,7 +609,8 @@ export async function checkBatchOverAllocation(
   batchId: string,
   stage?: BatchStage
 ): Promise<BatchOverAllocationCheck> {
-  const { data, error } = await supabase.rpc('check_batch_over_allocation' as any, {
+  // @ts-expect-error RPC not in generated types
+  const { data, error } = await supabase.rpc('check_batch_over_allocation', {
     p_batch_id: batchId,
     p_stage: stage || null
   }) as { data: any; error: any };
@@ -634,7 +636,8 @@ export async function checkBatchOverAllocation(
  * @returns Promise<BatchCOASummary | null> - COA data or null if not found
  */
 export async function getBatchCOAData(batchNumber: string): Promise<BatchCOASummary | null> {
-  const { data, error } = await supabase.rpc('get_batch_coa_data' as any, {
+  // @ts-expect-error RPC not in generated types
+  const { data, error } = await supabase.rpc('get_batch_coa_data', {
     p_batch_number: batchNumber
   }) as { data: any; error: any };
 
@@ -656,7 +659,8 @@ export async function validateLabelCOARequirement(
   batchNumber: string,
   labelTypeCode: string
 ): Promise<BatchLabelValidation> {
-  const { data, error } = await supabase.rpc('validate_label_coa_requirement' as any, {
+  // @ts-expect-error RPC not in generated types
+  const { data, error } = await supabase.rpc('validate_label_coa_requirement', {
     p_batch_number: batchNumber,
     p_label_type_code: labelTypeCode
   }) as { data: any; error: any };
@@ -879,7 +883,7 @@ export async function updateBatchProjectionActual(
   if (!projection) throw new Error('Projection not found');
 
   // Calculate variance based on the database row
-  const dbProjection = projection as any;
+  const dbProjection = projection as BatchProjection & { projected_weight_grams?: number };
   const projectedWeight = dbProjection.projected_weight_grams || 0;
   const variance = projectedWeight > 0
     ? ((actualWeight - projectedWeight) / projectedWeight) * 100

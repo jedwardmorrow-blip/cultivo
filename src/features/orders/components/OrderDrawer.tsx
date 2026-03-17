@@ -12,6 +12,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { StatusActionPanel } from './StatusActionPanel';
 import { useOrdersContext } from '../hooks';
 import type { Order, Product } from '../types';
+import type { OrderExtended } from '@/types';
 
 interface CustomerInfo {
   id: string;
@@ -265,7 +266,7 @@ export function OrderDrawer({
             <span className={`px-2.5 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
               {STATUS_LABELS[order.status || 'submitted'] || order.status}
             </span>
-            {(order as any).is_sample && (
+            {(order as OrderExtended).is_sample && (
               <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
                 <Gift className="w-3 h-3" />
                 Sample

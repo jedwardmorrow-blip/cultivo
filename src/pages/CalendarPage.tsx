@@ -27,6 +27,15 @@ interface DayTodo {
   is_recurring?: boolean
 }
 
+// Extended types to include priority field for mapping
+interface PersonalTodoWithPriority extends Record<string, unknown> {
+  priority?: string;
+}
+
+interface TodoWithPriority extends Record<string, unknown> {
+  priority?: string;
+}
+
 // Color palette for team members (distinct, accessible on dark bg)
 const MEMBER_COLORS = [
   { dot: 'bg-cult-gold', text: 'text-cult-gold', border: 'border-cult-gold/40', bg: 'bg-cult-gold/20' },
@@ -212,7 +221,7 @@ export default function CalendarPage() {
           due_date: t.due_date!,
           owner_id: t.owner_id,
           owner_name: t.profiles?.full_name || 'Unknown',
-          priority: (t as any).priority || undefined,
+          priority: (t as PersonalTodoWithPriority).priority || undefined,
           is_recurring: t.is_recurring || false,
         }))
 
@@ -228,7 +237,7 @@ export default function CalendarPage() {
           due_date: t.due_date!,
           owner_id: t.owner_id || '',
           owner_name: t.profiles?.full_name || t.assignee_name || 'Unknown',
-          priority: (t as any).priority || undefined,
+          priority: (t as TodoWithPriority).priority || undefined,
         }))
 
       return [...personalForDate, ...teamForDate]

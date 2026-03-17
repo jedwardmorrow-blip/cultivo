@@ -9,6 +9,7 @@ import {
   PointElement,
   Tooltip,
   Legend,
+  type ChartOptions,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 import type { WeeklyRevenue } from '../hooks/useDashboardData';
@@ -48,7 +49,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -61,7 +62,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
         borderWidth: 1,
         cornerRadius: 6,
         callbacks: {
-          label: (ctx: any) => '$' + ctx.parsed.y.toLocaleString(),
+          label: (ctx) => '$' + ctx.parsed.y.toLocaleString(),
         },
       },
     },
@@ -69,7 +70,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (v: any) => '$' + (v / 1000) + 'K',
+          callback: (v) => '$' + (v as number / 1000) + 'K',
           font: { size: 11, weight: '300' as const },
         },
         grid: { color: 'rgba(46, 46, 46, 0.5)' },
@@ -92,7 +93,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
         </span>
       </div>
       <div className="relative h-[220px]">
-        <Chart type="bar" data={chartData} options={options as any} />
+        <Chart type="bar" data={chartData} options={options} />
       </div>
     </div>
   );

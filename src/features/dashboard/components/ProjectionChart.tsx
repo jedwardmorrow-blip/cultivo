@@ -9,6 +9,7 @@ import {
   PointElement,
   Tooltip,
   Legend,
+  type ChartOptions,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 import type { HarvestWindow } from '../hooks/useDashboardData';
@@ -79,7 +80,7 @@ export function ProjectionChart({ windows }: Props) {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: 'index' as const, intersect: false },
@@ -116,7 +117,7 @@ export function ProjectionChart({ windows }: Props) {
         position: 'right' as const,
         title: { display: true, text: 'Revenue ($K)', color: '#666666', font: { size: 10, weight: '400' as const } },
         ticks: {
-          callback: (v: any) => '$' + v + 'K',
+          callback: (v) => '$' + v + 'K',
           font: { size: 10, weight: '300' as const },
         },
         grid: { drawOnChartArea: false },
@@ -140,7 +141,7 @@ export function ProjectionChart({ windows }: Props) {
       </div>
 
       <div className="relative h-[280px]">
-        <Chart type="bar" data={chartData} options={options as any} />
+        <Chart type="bar" data={chartData} options={options} />
       </div>
 
       {/* Projection Table */}

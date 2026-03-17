@@ -10,6 +10,7 @@ import type { RowAction } from './RowActionMenu';
 import { QualityGradeBadge } from '@/shared/components';
 import { qualityGradeService } from '@/services';
 import { supabase } from '@/lib/supabase';
+import { InventoryItemExtended } from '@/types';
 import { useInventoryLabel } from '../hooks';
 import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
 import type { InventoryItem, InventoryStats, BulkStats, PackagedStats, BulkSubTab } from '../types';
@@ -71,7 +72,7 @@ function GradeColumn(onDataRefresh?: () => void) {
     sortable: false,
     format: (_: any, item: InventoryItem) => (
       <QualityGradeBadge
-        gradeId={(item as any).quality_grade_id}
+        gradeId={(item as InventoryItemExtended).quality_grade_id}
         editable
         onGradeChange={async (newGradeId) => {
           try {

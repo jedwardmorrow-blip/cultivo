@@ -6,6 +6,7 @@ import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
 import { getNextStatus, getTransitionLabel } from '../utils/orderTransitions';
 import type { Order } from '../types';
+import type { OrderExtended } from '@/types';
 
 type SortField = 'order_number' | 'customer_name' | 'status' | 'delivery_date' | 'total_amount' | 'created_at';
 type SortDirection = 'asc' | 'desc';
@@ -190,7 +191,7 @@ export function OrderTable({
                       <span className="text-sm font-bold text-cult-off-white tracking-wide">
                         {order.order_number}
                       </span>
-                      {(order as any).is_sample && (
+                      {(order as OrderExtended).is_sample && (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
                           <Gift className="w-2.5 h-2.5" />
                           Sample

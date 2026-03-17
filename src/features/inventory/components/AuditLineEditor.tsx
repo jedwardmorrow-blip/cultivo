@@ -140,7 +140,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
         </div>
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as any)}
+          onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'confirmed' | 'variance')}
           className="px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="all">All Lines</option>

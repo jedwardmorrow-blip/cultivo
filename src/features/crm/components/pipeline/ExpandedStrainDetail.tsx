@@ -3,6 +3,7 @@ import type { StrainPipelineEntry } from '../../hooks/useSalesPipeline';
 import type { BatchDetailRow } from '../../services/salesPipeline.service';
 import { formatGrams, formatCurrency, STAGE_COLORS, STAGE_TW } from './pipelineConstants';
 import { GradeBadge } from './PipelineBadges';
+import type { GradeCode } from '@/types';
 
 interface ExpandedStrainDetailProps {
   strain: StrainPipelineEntry;
@@ -109,7 +110,7 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
                   </div>
                   <div className="flex gap-3 text-[10px] flex-wrap">
                     {b.grade_code && b.grade_code !== 'UNDEFINED' && (
-                      <GradeBadge grade={b.grade_code as any} />
+                      <GradeBadge grade={b.grade_code as GradeCode} />
                     )}
                     {b.thc_percentage != null && (
                       <span className="text-emerald-400 font-semibold">THC {b.thc_percentage}%</span>

@@ -2,7 +2,7 @@ import { ReactNode, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Package, Filter } from 'lucide-react';
 import { useQualityGrades } from '@/hooks/useQualityGrades';
 import { useShiftSelect } from '@/shared/hooks';
-import { GRADE_COLOR_MAP } from '@/types';
+import { GRADE_COLOR_MAP, InventoryItemExtended } from '@/types';
 import type { InventoryItem } from '../types';
 
 interface Column {
@@ -73,9 +73,9 @@ export function InventoryTable({
 
     if (gradeFilterable && gradeFilter !== 'all') {
       if (gradeFilter === 'ungraded') {
-        result = result.filter((item) => !(item as any).quality_grade_id);
+        result = result.filter((item) => !(item as InventoryItemExtended).quality_grade_id);
       } else {
-        result = result.filter((item) => (item as any).quality_grade_id === gradeFilter);
+        result = result.filter((item) => (item as InventoryItemExtended).quality_grade_id === gradeFilter);
       }
     }
 

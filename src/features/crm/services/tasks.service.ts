@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
 import type { CRMTask, CRMTaskInput } from '../types';
+import type { CRMTaskComputedFields } from '@/types';
 
 export async function getTasks(filters?: {
   status?: string;
@@ -103,7 +104,8 @@ export async function createTask(input: CRMTaskInput) {
 
 export async function updateTask(id: string, updates: Partial<CRMTask>) {
   try {
-    const { id: _id, created_at: _ca, customer_name: _cn, dispensary_code: _dc, assigned_user_name: _aun, is_overdue: _io, days_overdue: _do, ...cleanUpdates } = updates as any;
+    const cleanedUpdates = updates as Partial<CRMTask> & CRMTaskComputedFields;
+    const { id: _id, created_at: _ca, customer_name: _cn, dispensary_code: _dc, assigned_user_name: _aun, is_overdue: _io, days_overdue: _do, ...cleanUpdates } = cleanedUpdates;
     const { data, error } = await supabase
       .from('crm_tasks')
       .update(cleanUpdates)

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/database';
 import { Package, Edit2, Save, X, Filter } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
+import type { ProductWithRelations } from '@/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -77,7 +78,7 @@ export function ProductsManagement() {
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = categoryFilter === 'all' || product.product_category === categoryFilter;
-    const matchesStage = stageFilter === 'all' || (product as any).stage?.name === stageFilter;
+    const matchesStage = stageFilter === 'all' || (product as ProductWithRelations).stage?.name === stageFilter;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (product.strain && product.strain.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -172,9 +173,9 @@ export function ProductsManagement() {
                     {editingId === product.id ? (
                       <>
                         <td className="px-4 py-3 text-cult-white">{product.name}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as any).stage?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as any).type?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as any).strain?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).stage?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).product_type?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).strain_info?.name || '-'}</td>
                         <td className="px-4 py-3">
                           <select
                             value={editForm.product_category || product.product_category}
@@ -247,15 +248,15 @@ export function ProductsManagement() {
                     ) : (
                       <>
                         <td className="px-4 py-3 text-cult-white">{product.name}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as any).stage?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as any).type?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).stage?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).product_type?.name || '-'}</td>
                         <td className="px-4 py-3 text-cult-light-gray">
-                          {(product as any).strain?.name ? (
+                          {(product as ProductWithRelations).strain_info?.name ? (
                             <span>
-                              {(product as any).strain.name}
-                              {(product as any).strain.abbreviation && (
+                              {(product as ProductWithRelations).strain_info.name}
+                              {(product as ProductWithRelations).strain_info.abbreviation && (
                                 <span className="text-cult-medium-gray text-xs ml-1">
-                                  ({(product as any).strain.abbreviation})
+                                  ({(product as ProductWithRelations).strain_info.abbreviation})
                                 </span>
                               )}
                             </span>

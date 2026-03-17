@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
 import type { VisitSchedule, VisitScheduleInput, CRMCalendarOrder } from '../types';
+import type { CustomerRelation } from '@/types';
 
 export async function getVisits(filters?: {
   customerId?: string;
@@ -88,13 +89,14 @@ export async function completeVisit(visitId: string, outcomeNotes: string) {
     if (fetchError) throw fetchError;
 
     const { data: { user } } = await supabase.auth.getUser();
+    const customerRelation = visit.customers as CustomerRelation | undefined;
     const { data: activity, error: actError } = await supabase
       .from('customer_activity_log')
       .insert([{
         customer_id: visit.customer_id,
         user_id: user?.id || null,
         activity_type: 'visit',
-        subject: `Visit completed: ${(visit.customers as any)?.name || 'Account'}`,
+        subject: `Visit completed: ${customerRelation?.name || 'Account'}`,
         body: outcomeNotes || null,
         completed: true,
         visit_id: visitId,

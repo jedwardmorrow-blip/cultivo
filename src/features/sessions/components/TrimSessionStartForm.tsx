@@ -194,10 +194,10 @@ export function TrimSessionStartForm({
             <select
               value={form.package_id || ''}
               onChange={(e) => {
-                const selectedPkg = packages.find((p: any) => p.package_id === e.target.value);
+                const selectedPkg = packages.find((p) => p.package_id === e.target.value);
                 handleChange('package_id', e.target.value);
                 if (selectedPkg) {
-                  handleChange('pulled_weight', (selectedPkg as any).available_qty || 0);
+                  handleChange('pulled_weight', selectedPkg.available_qty || 0);
                 }
               }}
               required

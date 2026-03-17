@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getConversionSummary, getPendingConversions } from '../services/conversions.service';
 import { supabase } from '@/lib/supabase';
-import { PendingConversionSession } from '@/types';
+import { PendingConversionSession, SortableRecord } from '@/types';
 
 /**
  * useConversionLots - Simplified Hybrid Architecture
@@ -42,8 +42,8 @@ export function useConversionLots(selectedDate?: string) {
       // Fetch from conversion_summary_view
       const data = await getConversionSummary(selectedDate);
 
-      setLots(data as any);
-      setFilteredLots(data as any);
+      setLots(data);
+      setFilteredLots(data);
 
       // Also fetch pending conversions for finalization workflow
       const pending = await getPendingConversions(selectedDate);
@@ -115,8 +115,8 @@ export function useConversionLots(selectedDate?: string) {
   // Apply sorting
   const applySort = useCallback((sort: { field: string; direction: 'asc' | 'desc' }) => {
     const sorted = [...filteredLots].sort((a, b) => {
-      const aVal = (a as any)[sort.field] || '';
-      const bVal = (b as any)[sort.field] || '';
+      const aVal = (a as SortableRecord)[sort.field] || '';
+      const bVal = (b as SortableRecord)[sort.field] || '';
 
       if (sort.direction === 'asc') {
         return aVal > bVal ? 1 : -1;

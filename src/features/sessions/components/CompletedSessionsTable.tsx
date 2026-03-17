@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, CreditCard as Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
 import type { TrimSession } from '../types';
+import type { SessionWithConversions } from '@/types';
 
-function getConversionStatus(session: TrimSession): 'none' | 'pending' | 'converted' {
-  const conversions = (session as any).pending_conversions;
+function getConversionStatus(session: TrimSession & SessionWithConversions): 'none' | 'pending' | 'converted' {
+  const conversions = session.pending_conversions;
   if (!conversions || conversions.length === 0) return 'none';
 
   const hasConverted = conversions.some((c: any) => c.status === 'converted');
@@ -13,11 +14,11 @@ function getConversionStatus(session: TrimSession): 'none' | 'pending' | 'conver
 }
 
 interface CompletedSessionsTableProps {
-  sessions: TrimSession[];
+  sessions: (TrimSession & SessionWithConversions)[];
   isAdmin: boolean;
-  onEdit: (session: TrimSession) => void;
-  onDelete: (session: TrimSession) => void;
-  onUndo?: (session: TrimSession) => Promise<void>;
+  onEdit: (session: TrimSession & SessionWithConversions) => void;
+  onDelete: (session: TrimSession & SessionWithConversions) => void;
+  onUndo?: (session: TrimSession & SessionWithConversions) => Promise<void>;
 }
 
 export function CompletedSessionsTable({

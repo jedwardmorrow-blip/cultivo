@@ -13,7 +13,12 @@ const baseCrud = createCrudService<Customer, CustomerInput, CustomerUpdate>({
 });
 
 async function createCustomer(input: CustomerInput): Promise<Customer> {
-  const customerData = {
+  const customerData: Omit<CustomerInput, 'address' | 'city' | 'state' | 'postal_code'> & {
+    delivery_address: string | null;
+    delivery_city: string | null;
+    delivery_state: string;
+    delivery_postal_code: string | null;
+  } = {
     ...input,
     delivery_address: input.address || null,
     delivery_city: input.city || null,
@@ -21,11 +26,17 @@ async function createCustomer(input: CustomerInput): Promise<Customer> {
     delivery_postal_code: input.postal_code || null,
   };
 
-  return baseCrud.create(customerData as any);
+  return baseCrud.create(customerData as CustomerInput);
 }
 
 async function updateCustomer(id: string, input: CustomerUpdate): Promise<Customer> {
-  const updateData = {
+  const updateData: Omit<CustomerUpdate, 'address' | 'city' | 'state' | 'postal_code'> & {
+    delivery_address?: string | null;
+    delivery_city?: string | null;
+    delivery_state?: string;
+    delivery_postal_code?: string | null;
+    updated_at: string;
+  } = {
     ...input,
     delivery_address: input.address,
     delivery_city: input.city,
@@ -34,7 +45,7 @@ async function updateCustomer(id: string, input: CustomerUpdate): Promise<Custom
     updated_at: new Date().toISOString(),
   };
 
-  return baseCrud.update(id, updateData as any);
+  return baseCrud.update(id, updateData as CustomerUpdate);
 }
 
 async function updateCustomerWithGeocodeCheck(

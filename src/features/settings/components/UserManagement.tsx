@@ -241,7 +241,7 @@ export function UserManagement() {
                 </label>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'manager' | 'user' })}
                   className="w-full px-4 py-2 bg-cult-black border border-cult-medium-gray rounded text-white focus:outline-none focus:border-white transition"
                 >
                   <option value="user">User</option>
@@ -297,7 +297,7 @@ export function UserManagement() {
                   <td className="px-4 py-3 text-sm">
                     <select
                       value={user.role}
-                      onChange={(e) => handleUpdateRole(user.id, e.target.value as any)}
+                      onChange={(e) => handleUpdateRole(user.id, e.target.value as 'admin' | 'manager' | 'user')}
                       disabled={user.id === profile?.id}
                       className="bg-cult-black border border-cult-medium-gray rounded px-2 py-1 text-white text-xs disabled:opacity-50"
                     >

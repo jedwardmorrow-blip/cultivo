@@ -7,6 +7,7 @@ import {
   cancelAudit as cancelAuditService,
 } from '../services/audit.service';
 import { notificationService } from '@/services/notification.service';
+import { supabase } from '@/lib/supabase';
 import type { InventoryAudit, InventoryAuditLine } from '../types/audit.types';
 
 /**
@@ -32,10 +33,13 @@ export function useAudit() {
       setLoading(true);
       setError(null);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
+
       const response = await initiateAudit({
-        selected_stages: stages as any,
+        selected_stages: stages,
         notes: 'Audit started via UI',
-      });
+      }, user.id);
 
       // Fetch the created audit
       const auditLines = await getAuditLines(response.audit_id);

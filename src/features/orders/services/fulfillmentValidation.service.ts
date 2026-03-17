@@ -10,6 +10,7 @@ import type {
   PackageAssignmentSummary,
 } from '../types/fulfillment.types';
 import { DEFAULT_FULFILLMENT_THRESHOLDS } from '../types/fulfillment.types';
+import type { PackageAssignmentStatus, OrderItemWithProduct } from '@/types';
 
 export class FulfillmentValidationService {
   private thresholds: FulfillmentThresholds = DEFAULT_FULFILLMENT_THRESHOLDS;
@@ -97,7 +98,7 @@ export class FulfillmentValidationService {
       assignmentId: a.id,
       packageId: a.package_id,
       quantityAssigned: Number(a.quantity_assigned),
-      reservationStatus: (a.assignment_status || 'reserved') as any,
+      reservationStatus: (a.assignment_status || 'reserved') as PackageAssignmentStatus,
       labelId: a.label_id,
       inventoryAvailable: a.available_qty ? Number(a.available_qty) : undefined,
       inventoryReserved: a.reserved_qty ? Number(a.reserved_qty) : undefined,
@@ -108,10 +109,11 @@ export class FulfillmentValidationService {
       assignedQuantity
     );
 
+    const typedOrderItem = orderItem as OrderItemWithProduct;
     return {
       orderItemId: orderItem.id,
       productId: orderItem.product_id,
-      productName: (orderItem.products as any)?.name || 'Unknown',
+      productName: typedOrderItem.products?.name || 'Unknown',
       strain: orderItem.strain || '',
       orderedQuantity: Number(orderItem.quantity),
       assignedQuantity,

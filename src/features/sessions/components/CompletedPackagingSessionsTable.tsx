@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, CreditCard as Edit, Trash2, Package, Clock, Undo2 } from 'lucide-react';
 import type { PackagingSession } from '../types';
+import type { SessionWithConversions } from '@/types';
 
-function getConversionStatus(session: PackagingSession): 'none' | 'pending' | 'converted' {
-  const conversions = (session as any).pending_conversions;
+function getConversionStatus(session: PackagingSession & SessionWithConversions): 'none' | 'pending' | 'converted' {
+  const conversions = session.pending_conversions;
   if (!conversions || conversions.length === 0) return 'none';
 
   const hasConverted = conversions.some((c: any) => c.status === 'converted');
@@ -13,11 +14,11 @@ function getConversionStatus(session: PackagingSession): 'none' | 'pending' | 'c
 }
 
 interface CompletedPackagingSessionsTableProps {
-  sessions: PackagingSession[];
+  sessions: (PackagingSession & SessionWithConversions)[];
   isAdmin: boolean;
-  onEdit: (session: PackagingSession) => void;
-  onDelete: (session: PackagingSession) => void;
-  onUndo?: (session: PackagingSession) => Promise<void>;
+  onEdit: (session: PackagingSession & SessionWithConversions) => void;
+  onDelete: (session: PackagingSession & SessionWithConversions) => void;
+  onUndo?: (session: PackagingSession & SessionWithConversions) => Promise<void>;
 }
 
 export function CompletedPackagingSessionsTable({

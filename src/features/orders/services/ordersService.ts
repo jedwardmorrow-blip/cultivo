@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { Order, OrderItem, Product, WorkflowSummary } from '../types';
+import type { ProductWithStrainRelation } from '@/types';
 
 class OrdersDataService {
   async fetchOrders(includeArchived: boolean = false): Promise<Order[]> {
@@ -58,11 +59,12 @@ class OrdersDataService {
 
     if (productsError) throw productsError;
 
-    const productsMap = new Map(productsData?.map(p => [p.id, p]) || []);
+    const productsMap = new Map((productsData as ProductWithStrainRelation[])?.map(p => [p.id, p]) || []);
 
     const items: OrderItem[] = itemsResult.data.map(item => {
       const product = productsMap.get(item.product_id);
-      const strainName = (product as any)?.strains?.name || product?.strain || '';
+      const strainRelation = product?.strains;
+      const strainName = strainRelation?.name || product?.strain || '';
       return {
         id: item.id,
         order_id: orderId,

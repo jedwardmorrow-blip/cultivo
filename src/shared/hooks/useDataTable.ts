@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { SearchableRecord } from '@/types';
 
 interface UseDataTableOptions<T> {
   fetchFn: () => Promise<T[]>;
@@ -37,7 +38,7 @@ export function useDataTable<T>({ fetchFn, initialSort }: UseDataTableOptions<T>
 
     if (searchTerm) {
       result = result.filter((item) =>
-        Object.values(item as any).some((value) =>
+        Object.values(item as SearchableRecord).some((value) =>
           String(value).toLowerCase().includes(searchTerm.toLowerCase())
         )
       );

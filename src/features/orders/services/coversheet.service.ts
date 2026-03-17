@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import { getCOAPDFUrl } from '@/features/coa/services/coa.service';
 import { getSiteUrl } from '@/lib/utils';
 import { DEFAULT_LICENSE_NUMBER, DEFAULT_LICENSE_NAME } from '@/lib/constants';
-import type { Coversheet, ComplianceHeader, BatchComplianceInfo, DistributedToInfo } from '@/types';
+import type { Coversheet, ComplianceHeader, BatchComplianceInfo, DistributedToInfo, CoversheetPrecomputedFields, OrderWithCustomer, OrderItemWithProduct } from '@/types';
 
 function generateSecureToken(): string {
   const array = new Uint8Array(32);
@@ -16,7 +16,7 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     .from('orders')
     .select('order_number, customer_id, customers(name), scheduled_delivery_date')
     .eq('id', orderId)
-    .single();
+    .single() as { data: OrderWithCustomer | null; error: any };
 
   const [complianceHeader, batchCompliance, distributedTo] = await Promise.all([
     getComplianceHeaderData(),
@@ -39,11 +39,11 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
 
   const deliveryDate = orderData?.scheduled_delivery_date || null;
 
-  const precomputedFields = {
-    compliance_header: complianceHeader as any,
-    batch_compliance_data: batchCompliance as any,
-    distributed_to_data: distributedTo as any,
-    package_manifest_data: [] as any,
+  const precomputedFields: CoversheetPrecomputedFields = {
+    compliance_header: complianceHeader,
+    batch_compliance_data: batchCompliance,
+    distributed_to_data: distributedTo,
+    package_manifest_data: [],
   };
 
   if (existing) {
@@ -91,17 +91,17 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     const { data: itemsData } = await supabase
       .from('order_items')
       .select('product_id, quantity, products(name, type)')
-      .eq('order_id', orderId);
+      .eq('order_id', orderId) as { data: OrderItemWithProduct[] | null; error: any };
 
     const itemsSummary = (itemsData || []).map(item => ({
       product_id: item.product_id,
-      product_name: (item.products as any)?.name || 'Unknown',
-      product_type: (item.products as any)?.type || 'Unknown',
+      product_name: item.products?.name || 'Unknown',
+      product_type: item.products?.type || 'Unknown',
       quantity: item.quantity
     }));
 
     const coversheetNumber = `CS-${orderData?.order_number || 'UNKNOWN'}`;
-    const customerName = (orderData?.customers as any)?.name || 'Unknown Customer';
+    const customerName = orderData?.customers?.name || 'Unknown Customer';
 
     const { data, error } = await supabase
       .from('coversheets')
@@ -113,7 +113,7 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
         customer_name: customerName,
         delivery_date: deliveryDate,
         total_packages: itemsSummary.reduce((sum, item) => sum + item.quantity, 0),
-        items_summary: itemsSummary as any,
+        items_summary: itemsSummary,
         ...precomputedFields,
       })
       .select()
@@ -435,13 +435,13 @@ export async function getDistributedToInfo(orderId: string): Promise<Distributed
       )
     `)
     .eq('id', orderId)
-    .single();
+    .single() as { data: OrderWithCustomer | null; error: any };
 
   if (error) {
     throw new Error(`Failed to fetch customer data: ${error.message}`);
   }
 
-  const customer = orderData?.customers as any;
+  const customer = orderData?.customers;
 
   return {
     customer_name: customer?.name || 'Unknown Customer',

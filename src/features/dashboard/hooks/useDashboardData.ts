@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import type { PlantGroupWithStrain } from '@/types';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -385,8 +386,8 @@ async function fetchCultivationData(): Promise<{
   // Veg pipeline strains
   const vegGroups = (groups || []).filter(g => g.growth_stage === 'veg');
   const vegMap = new Map<string, number>();
-  vegGroups.forEach(g => {
-    const name = (g.strains as any)?.name || 'Unknown';
+  vegGroups.forEach((g: PlantGroupWithStrain) => {
+    const name = g.strains?.name || 'Unknown';
     vegMap.set(name, (vegMap.get(name) || 0) + g.plant_count);
   });
   const vegStrains: VegStrain[] = Array.from(vegMap.entries())

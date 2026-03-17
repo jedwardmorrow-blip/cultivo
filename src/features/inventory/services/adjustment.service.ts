@@ -14,6 +14,7 @@ import type {
   AdjustmentHistoryEntry,
   AdjustmentHistoryFilters
 } from '../types/adjustment.types';
+import type { ProductStageRelation, UserRelation } from '@/types';
 import { logVariance } from './varianceLog.service';
 import { inventoryMovementService } from '@/services';
 
@@ -88,7 +89,8 @@ export async function adjustInventoryItem(
     let varianceLogId: string | undefined;
     if (Math.abs(varianceQty) > 0) {
       try {
-        const varianceEntry = await logVariance({
+        const itemWithStage = item as typeof item & { product_stages: ProductStageRelation };
+      const varianceEntry = await logVariance({
           source_type: 'manual_adjustment',
           source_id: movement.id,
           inventory_item_id: inventory_item_id,
@@ -100,7 +102,7 @@ export async function adjustInventoryItem(
           unit: item.unit,
           variance_reason: variance_reason,
           notes: notes,
-          inventory_stage: (item.product_stages as any).name,
+          inventory_stage: itemWithStage.product_stages.name,
           strain: item.strain,
           batch: item.batch,
           product_name: item.product_name,
@@ -285,22 +287,25 @@ export async function getAdjustmentHistory(
     if (error) throw error;
 
     // Transform to adjustment history format
-    return (data || []).map(entry => ({
-      id: entry.id,
-      timestamp: entry.timestamp,
-      inventory_item_id: entry.inventory_item_id || '',
-      package_id: entry.package_id,
-      product_name: entry.product_name || '',
-      old_qty: entry.expected_qty,
-      new_qty: entry.actual_qty,
-      variance_qty: entry.variance_qty,
-      variance_percentage: entry.variance_percentage,
-      variance_reason: entry.variance_reason,
-      notes: entry.notes || '',
-      user_id: entry.user_id || '',
-      user_full_name: (entry.user as any)?.full_name || null,
-      movement_id: entry.movement_id || ''
-    }));
+    return (data || []).map(entry => {
+      const entryWithUser = entry as typeof entry & { user: UserRelation | null };
+      return {
+        id: entry.id,
+        timestamp: entry.timestamp,
+        inventory_item_id: entry.inventory_item_id || '',
+        package_id: entry.package_id,
+        product_name: entry.product_name || '',
+        old_qty: entry.expected_qty,
+        new_qty: entry.actual_qty,
+        variance_qty: entry.variance_qty,
+        variance_percentage: entry.variance_percentage,
+        variance_reason: entry.variance_reason,
+        notes: entry.notes || '',
+        user_id: entry.user_id || '',
+        user_full_name: entryWithUser.user?.full_name || null,
+        movement_id: entry.movement_id || ''
+      };
+    });
   } catch (error) {
     console.error('Error fetching adjustment history:', error);
     throw new Error(`Failed to fetch adjustment history: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -382,22 +387,25 @@ export async function getAdjustmentsForItem(
 
     if (error) throw error;
 
-    return (data || []).map(entry => ({
-      id: entry.id,
-      timestamp: entry.timestamp,
-      inventory_item_id: entry.inventory_item_id || '',
-      package_id: entry.package_id,
-      product_name: entry.product_name || '',
-      old_qty: entry.expected_qty,
-      new_qty: entry.actual_qty,
-      variance_qty: entry.variance_qty,
-      variance_percentage: entry.variance_percentage,
-      variance_reason: entry.variance_reason,
-      notes: entry.notes || '',
-      user_id: entry.user_id || '',
-      user_full_name: (entry.user as any)?.full_name || null,
-      movement_id: entry.movement_id || ''
-    }));
+    return (data || []).map(entry => {
+      const entryWithUser = entry as typeof entry & { user: UserRelation | null };
+      return {
+        id: entry.id,
+        timestamp: entry.timestamp,
+        inventory_item_id: entry.inventory_item_id || '',
+        package_id: entry.package_id,
+        product_name: entry.product_name || '',
+        old_qty: entry.expected_qty,
+        new_qty: entry.actual_qty,
+        variance_qty: entry.variance_qty,
+        variance_percentage: entry.variance_percentage,
+        variance_reason: entry.variance_reason,
+        notes: entry.notes || '',
+        user_id: entry.user_id || '',
+        user_full_name: entryWithUser.user?.full_name || null,
+        movement_id: entry.movement_id || ''
+      };
+    });
   } catch (error) {
     console.error('Error fetching adjustments for item:', error);
     throw new Error(`Failed to fetch adjustments: ${error instanceof Error ? error.message : 'Unknown error'}`);

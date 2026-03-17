@@ -4,6 +4,7 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  type ChartOptions,
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import type { ProductionStats } from '../hooks/useDashboardData';
@@ -26,7 +27,7 @@ export function ProductionSessions({ data }: Props) {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '65%',
@@ -49,7 +50,7 @@ export function ProductionSessions({ data }: Props) {
         borderWidth: 1,
         cornerRadius: 6,
         callbacks: {
-          label: (ctx: any) => ctx.label + ': ' + ctx.parsed.toFixed(1) + ' lbs',
+          label: (ctx) => ctx.label + ': ' + (ctx.parsed as number).toFixed(1) + ' lbs',
         },
       },
     },
@@ -90,7 +91,7 @@ export function ProductionSessions({ data }: Props) {
         Production Sessions
       </h3>
       <div className="relative h-[200px]">
-        <Doughnut data={chartData} options={options as any} />
+        <Doughnut data={chartData} options={options} />
       </div>
       <div className="mt-3.5 flex flex-col gap-1.5">
         {stats.map(s => (

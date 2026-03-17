@@ -12,6 +12,7 @@ import type { RowAction } from './RowActionMenu';
 import { QualityGradeBadge } from '@/shared/components';
 import { qualityGradeService } from '@/services';
 import { supabase } from '@/lib/supabase';
+import { InventoryItemExtended } from '@/types';
 import { useAuth } from '@/lib/auth';
 import { useInventoryLabel } from '../hooks';
 import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
@@ -543,7 +544,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             sortable: false,
             format: (_, item) => (
               <QualityGradeBadge
-                gradeId={(item as any).quality_grade_id}
+                gradeId={(item as InventoryItemExtended).quality_grade_id}
                 editable
                 onGradeChange={async (newGradeId) => {
                   try {

@@ -18,6 +18,7 @@ import type {
   SelectedPackage,
   VarianceReason
 } from '../types/combine.types';
+import type { BatchRelation, ProductStageRelation, UserRelation } from '@/types';
 
 // =====================================================
 // VALIDATION
@@ -124,13 +125,17 @@ export async function validatePackagesForCombine(
     }
 
     // Build summary
+    const firstWithRelations = firstPackage as typeof firstPackage & {
+      batches: BatchRelation;
+      product_stages: ProductStageRelation;
+    };
     const summary: CombineSummary = {
       total_packages: packages.length,
       total_qty,
       unit,
-      batch_number: (firstPackage.batches as any).batch_number,
+      batch_number: firstWithRelations.batches.batch_number,
       product_name: firstPackage.product_name,
-      stage_name: (firstPackage.product_stages as any).name,
+      stage_name: firstWithRelations.product_stages.name,
       strain: firstPackage.strain,
       packages: packages.map(pkg => ({
         id: pkg.id,
@@ -379,6 +384,7 @@ export async function getCombineHistory(
 
     // Transform to history entries
     return (data || []).map(entry => {
+      const entryWithUser = entry as typeof entry & { user: UserRelation | null };
       // Parse source_package_count from notes if available
       const sourceCountMatch = entry.notes?.match(/Combined from (\d+) source packages/);
       const source_package_count = sourceCountMatch ? parseInt(sourceCountMatch[1], 10) : 0;
@@ -387,7 +393,7 @@ export async function getCombineHistory(
         id: entry.id,
         timestamp: entry.timestamp,
         user_id: entry.user_id || '',
-        user_full_name: (entry.user as any)?.full_name || null,
+        user_full_name: entryWithUser.user?.full_name || null,
         new_package_id: entry.package_id,
         source_package_count,
         combined_qty: entry.actual_qty,
@@ -472,19 +478,25 @@ export async function getPackagesForCombine(
 
     if (error) throw error;
 
-    return (data || []).map(pkg => ({
-      id: pkg.id,
-      package_id: pkg.package_id,
-      on_hand_qty: pkg.on_hand_qty,
-      unit: pkg.unit,
-      batch_id: pkg.batch_id,
-      batch_number: (pkg.batches as any).batch_number,
-      product_id: pkg.product_id,
-      product_name: pkg.product_name,
-      product_stage_id: pkg.product_stage_id,
-      stage_name: (pkg.product_stages as any).name,
-      strain: pkg.strain
-    }));
+    return (data || []).map(pkg => {
+      const pkgWithRelations = pkg as typeof pkg & {
+        batches: BatchRelation;
+        product_stages: ProductStageRelation;
+      };
+      return {
+        id: pkg.id,
+        package_id: pkg.package_id,
+        on_hand_qty: pkg.on_hand_qty,
+        unit: pkg.unit,
+        batch_id: pkg.batch_id,
+        batch_number: pkgWithRelations.batches.batch_number,
+        product_id: pkg.product_id,
+        product_name: pkg.product_name,
+        product_stage_id: pkg.product_stage_id,
+        stage_name: pkgWithRelations.product_stages.name,
+        strain: pkg.strain
+      };
+    });
   } catch (error) {
     console.error('Error fetching packages:', error);
     throw new Error(`Failed to fetch packages: ${error instanceof Error ? error.message : 'Unknown error'}`);

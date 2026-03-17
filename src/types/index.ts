@@ -40,3 +40,4 @@ export * from './qualityGrade.types';
 export * from '../features/settings/types';
 export * from '../features/inventory/types/conversions.types';
 export * from '../features/cultivation/types';
+export * from './supabase-extensions.types';

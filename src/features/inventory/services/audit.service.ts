@@ -23,6 +23,7 @@ import type {
   ActiveAuditInfo,
   StageLockStatus
 } from '../types';
+import type { ProductStageRelation, AuditRelation, AuditStatus } from '@/types';
 
 // =====================================================
 // AUDIT LIFECYCLE
@@ -92,19 +93,22 @@ export async function initiateAudit(
     if (itemsError) throw itemsError;
 
     // Step 5: Create audit lines
-    const auditLines = inventoryItems.map((item, index) => ({
-      audit_id: audit.id,
-      inventory_item_id: item.id,
-      package_id: item.package_id,
-      product_name: item.product_name,
-      strain: item.strain,
-      batch: item.batch,
-      room: item.room,
-      stage: (item.product_stages as any).display_name,
-      expected_qty: item.on_hand_qty,
-      unit: item.unit,
-      line_order: index + 1
-    }));
+    const auditLines = inventoryItems.map((item, index) => {
+      const itemWithStage = item as typeof item & { product_stages: ProductStageRelation };
+      return {
+        audit_id: audit.id,
+        inventory_item_id: item.id,
+        package_id: item.package_id,
+        product_name: item.product_name,
+        strain: item.strain,
+        batch: item.batch,
+        room: item.room,
+        stage: itemWithStage.product_stages.display_name,
+        expected_qty: item.on_hand_qty,
+        unit: item.unit,
+        line_order: index + 1
+      };
+    });
 
     const { error: linesError } = await supabase
       .from('inventory_audit_lines')
@@ -193,7 +197,7 @@ export async function getActiveAudit(): Promise<ActiveAuditInfo | null> {
     return {
       audit_id: data.id,
       audit_number: data.audit_number,
-      status: data.status as any,
+      status: data.status as AuditStatus,
       initiated_by: data.initiated_by || '',
       initiated_at: data.initiated_at || '',
       selected_stages: data.selected_stages,
@@ -248,7 +252,8 @@ export async function updateAuditLine(
     if (!line) throw new Error('Audit line not found');
 
     // Check audit is in progress
-    if ((line.audit as any).status !== 'in_progress' && (line.audit as any).status !== 'initiated') {
+    const auditData = line.audit as unknown as AuditRelation;
+    if (auditData.status !== 'in_progress' && auditData.status !== 'initiated') {
       throw new Error('Cannot update audit line: audit is not in progress');
     }
 

@@ -6,6 +6,7 @@ import { ordersReducer, initialState, type OrdersState, type OrdersAction } from
 import { notificationService } from '@/services/notification.service';
 import { canTransitionTo, getStatusLabel, isBackwardTransition } from '../utils/orderTransitions';
 import type { Order, OrderItem, Product } from '../types';
+import type { OrderItemPayload } from '@/types';
 
 interface OrdersContextValue extends OrdersState {
   dispatch: React.Dispatch<OrdersAction>;
@@ -293,7 +294,9 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, (payload) => {
         if (isMountedRef.current) {
-          const orderId = (payload.new as any)?.order_id || (payload.old as any)?.order_id;
+          const newPayload = payload.new as OrderItemPayload;
+          const oldPayload = payload.old as OrderItemPayload;
+          const orderId = newPayload?.order_id || oldPayload?.order_id;
           if (orderId) {
             ordersCacheService.invalidate(orderId);
             if (state.expansion.expandedOrders.has(orderId)) {
