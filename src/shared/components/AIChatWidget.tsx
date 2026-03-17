@@ -1,5 +1,6 @@
-// AIChatWidget.tsx — CultOps AI Assistant v3
-// Floating chat widget with streaming, financial intelligence, semantic search
+// AIChatWidget.tsx — CultOps AI Assistant v4
+// Floating chat widget with streaming, financial intelligence, semantic search,
+// ticket intake, knowledge pipeline, file attachments, user identity
 // Mount: Add <AIChatWidget /> to App.tsx root, before closing tag
 // Branding: Cult Cannabis — black/white/gray, Montserrat, Cult Eye logo
 
@@ -8,6 +9,12 @@ import { useState, useRef, useEffect, useCallback } from "react";
 // ─── CONFIGURATION ───
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/cultops-ai-chat`;
+const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = [
+  "image/png", "image/jpeg", "image/gif", "image/webp",
+  "application/pdf", "text/plain", "text/csv",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
 
 // ─── BRAND COLORS ───
 const BRAND = {
@@ -28,10 +35,19 @@ const BRAND = {
 };
 
 // ─── TYPES ───
+interface Attachment {
+  fileName: string;
+  mimeType: string;
+  base64Data: string;
+  previewUrl?: string;
+  size: number;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  attachments?: Attachment[];
   metadata?: {
     intents?: string[];
     financial?: boolean;
@@ -62,8 +78,8 @@ const SUGGESTED_PROMPTS = [
   },
   {
     icon: "◉",
-    label: "Order Pipeline",
-    prompt: "What orders are open and what's the delivery schedule this week?",
+    label: "Open Tickets",
+    prompt: "Show tickets",
   },
   {
     icon: "◉",
@@ -86,6 +102,26 @@ function renderMarkdown(text: string): string {
     .replace(/\n/g, "<br />");
 }
 
+// ─── FILE HELPERS ───
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Strip the data:...;base64, prefix
+      resolve(result.split(",")[1] || "");
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 // ─── MAIN COMPONENT ───
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -94,8 +130,10 @@ export default function AIChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getAccessToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -119,6 +157,43 @@ export default function AIChatWidget() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
+  // ─── FILE HANDLING ───
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_ATTACHMENT_SIZE) {
+        setError(`File "${file.name}" exceeds 5MB limit`);
+        continue;
+      }
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        setError(`File type not supported: ${file.type || file.name.split(".").pop()}`);
+        continue;
+      }
+      try {
+        const base64Data = await fileToBase64(file);
+        const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
+        setPendingAttachments((prev) => [
+          ...prev,
+          { fileName: file.name, mimeType: file.type, base64Data, previewUrl, size: file.size },
+        ]);
+      } catch {
+        setError(`Failed to read file: ${file.name}`);
+      }
+    }
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  }, []);
+
+  const removeAttachment = useCallback((index: number) => {
+    setPendingAttachments((prev) => {
+      const removed = prev[index];
+      if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+  }, []);
+
   // ─── SEND MESSAGE ───
   const sendMessage = useCallback(
     async (messageText?: string) => {
@@ -128,10 +203,15 @@ export default function AIChatWidget() {
       setError(null);
       setInput("");
 
+      // Capture and clear pending attachments
+      const attachments = [...pendingAttachments];
+      setPendingAttachments([]);
+
       const userMsg: Message = {
         id: crypto.randomUUID(),
         role: "user",
         content: text,
+        attachments: attachments.length > 0 ? attachments : undefined,
       };
       setMessages((prev) => [...prev, userMsg]);
       setIsLoading(true);
@@ -153,6 +233,13 @@ export default function AIChatWidget() {
               role: m.role,
               content: m.content,
             })),
+            ...(attachments.length > 0 && {
+              attachments: attachments.map((a) => ({
+                fileName: a.fileName,
+                mimeType: a.mimeType,
+                base64Data: a.base64Data,
+              })),
+            }),
           }),
         });
 
@@ -231,7 +318,7 @@ export default function AIChatWidget() {
         setIsLoading(false);
       }
     },
-    [input, isLoading, messages, sessionId, getAccessToken]
+    [input, isLoading, messages, sessionId, getAccessToken, pendingAttachments]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -472,6 +559,33 @@ export default function AIChatWidget() {
               </div>
             )}
 
+            {/* Attachment thumbnails on user messages */}
+            {msg.role === "user" && msg.attachments && msg.attachments.length > 0 && (
+              <div style={{ display: "flex", gap: "4px", marginBottom: "4px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                {msg.attachments.map((att, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: BRAND.charcoal,
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      border: `1px solid ${BRAND.border}`,
+                    }}
+                  >
+                    <span style={{ fontSize: "10px", color: BRAND.silver }}>
+                      {att.mimeType.startsWith("image/") ? "🖼" : "📎"}
+                    </span>
+                    <span style={{ fontSize: "10px", color: BRAND.textSecondary, maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {att.fileName}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div
               style={{
                 maxWidth: "90%",
@@ -531,6 +645,66 @@ export default function AIChatWidget() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* ── Pending Attachments Preview ── */}
+      {pendingAttachments.length > 0 && (
+        <div
+          style={{
+            padding: "6px 16px",
+            borderTop: `1px solid ${BRAND.charcoal}`,
+            background: BRAND.surface,
+            display: "flex",
+            gap: "6px",
+            flexWrap: "wrap",
+          }}
+        >
+          {pendingAttachments.map((att, i) => (
+            <div
+              key={i}
+              style={{
+                background: BRAND.charcoal,
+                borderRadius: "6px",
+                padding: "4px 8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                border: `1px solid ${BRAND.border}`,
+              }}
+            >
+              {att.previewUrl ? (
+                <img
+                  src={att.previewUrl}
+                  alt={att.fileName}
+                  style={{ width: "20px", height: "20px", borderRadius: "3px", objectFit: "cover" }}
+                />
+              ) : (
+                <span style={{ fontSize: "12px" }}>📎</span>
+              )}
+              <span style={{ fontSize: "10px", color: BRAND.textSecondary, maxWidth: "80px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {att.fileName}
+              </span>
+              <span style={{ fontSize: "9px", color: BRAND.textMuted }}>
+                {formatFileSize(att.size)}
+              </span>
+              <button
+                onClick={() => removeAttachment(i)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: BRAND.textMuted,
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  padding: "0 2px",
+                  lineHeight: 1,
+                }}
+                title="Remove"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ── Input ── */}
       <div
         style={{
@@ -538,9 +712,47 @@ export default function AIChatWidget() {
           borderTop: `1px solid ${BRAND.charcoal}`,
           display: "flex",
           gap: "8px",
+          alignItems: "flex-end",
           background: BRAND.graphite,
         }}
       >
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept={ALLOWED_FILE_TYPES.join(",")}
+          onChange={handleFileSelect}
+          style={{ display: "none" }}
+        />
+
+        {/* Attach button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading}
+          style={{
+            background: "none",
+            border: `1px solid ${BRAND.charcoal}`,
+            borderRadius: "6px",
+            width: "36px",
+            height: "36px",
+            cursor: isLoading ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "border-color 0.2s, color 0.2s",
+            flexShrink: 0,
+            color: pendingAttachments.length > 0 ? BRAND.white : BRAND.textMuted,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = BRAND.silver; e.currentTarget.style.color = BRAND.white; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = BRAND.charcoal; e.currentTarget.style.color = pendingAttachments.length > 0 ? BRAND.white : BRAND.textMuted; }}
+          title="Attach file"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        </button>
+
         <textarea
           ref={inputRef}
           value={input}
@@ -567,13 +779,15 @@ export default function AIChatWidget() {
         />
         <button
           onClick={() => sendMessage()}
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading || (!input.trim() && pendingAttachments.length === 0)}
           style={{
-            background: isLoading || !input.trim() ? BRAND.charcoal : BRAND.white,
+            background: isLoading || (!input.trim() && pendingAttachments.length === 0) ? BRAND.charcoal : BRAND.white,
             border: "none",
             borderRadius: "6px",
-            width: "40px",
-            cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
+            width: "36px",
+            height: "36px",
+            flexShrink: 0,
+            cursor: isLoading || (!input.trim() && pendingAttachments.length === 0) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -585,7 +799,7 @@ export default function AIChatWidget() {
             height="16"
             viewBox="0 0 24 24"
             fill="none"
-            stroke={isLoading || !input.trim() ? BRAND.textMuted : BRAND.black}
+            stroke={isLoading || (!input.trim() && pendingAttachments.length === 0) ? BRAND.textMuted : BRAND.black}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
