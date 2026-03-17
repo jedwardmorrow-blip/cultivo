@@ -2,6 +2,8 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  BarController,
+  LineController,
   BarElement,
   LineElement,
   PointElement,
@@ -11,7 +13,7 @@ import {
 import { Chart } from 'react-chartjs-2';
 import type { MonthlyRevenue } from '../hooks/useDashboardData';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarController, LineController, BarElement, LineElement, PointElement, Tooltip, Legend);
 
 interface Props {
   data: MonthlyRevenue[];

@@ -1,5 +1,6 @@
 import {
   Chart as ChartJS,
+  DoughnutController,
   ArcElement,
   Tooltip,
   Legend,
@@ -7,7 +8,7 @@ import {
 import { Doughnut } from 'react-chartjs-2';
 import type { ProductionStats } from '../hooks/useDashboardData';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(DoughnutController, ArcElement, Tooltip, Legend);
 
 interface Props {
   data: ProductionStats;
