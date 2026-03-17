@@ -11,6 +11,7 @@ import { NewOrderForm } from './features/orders';
 import { InventoryDataProvider } from './features/inventory/context/InventoryDataContext';
 import { createActivity } from './features/crm/services/crm.service';
 import { lazyRetry } from './lib/utils';
+import AIChatWidget from './shared/components/AIChatWidget';
 
 const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
@@ -331,6 +332,7 @@ function AppContent() {
           sampleMode={sampleMode}
         />
       )}
+      <AIChatWidget />
     </>
   );
 }
