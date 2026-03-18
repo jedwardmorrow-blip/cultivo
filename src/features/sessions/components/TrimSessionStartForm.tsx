@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { TrimSessionInsert, InventoryItem } from '../types';
 import { useActiveStaff } from '../hooks/useActiveStaff';
 import { createTrimSession } from '../services/sessions.service';
+import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
 
 interface TrimSessionStartFormProps {
   buckedPackages: InventoryItem[];
@@ -23,6 +24,16 @@ export function TrimSessionStartForm({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
+  const [reprintInfo, setReprintInfo] = useState<{
+    packageId: string;
+    originalWeight: number;
+    pullWeight: number;
+    strain: string;
+    batchNumber: string;
+    batchId: string;
+    category: string;
+  } | null>(null);
 
   const handleChange = (field: keyof TrimSessionInsert, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -57,8 +68,26 @@ export function TrimSessionStartForm({
         throw new Error('No data returned from server');
       }
 
-      // Success!
-      onSuccess();
+      // Check if source bag has remaining weight — prompt for label reprint
+      const selectedPkg = buckedPackages.find((p) => p.package_id === form.package_id);
+      const origWeight = selectedPkg?.available_qty || 0;
+      const pulled = form.pulled_weight || 0;
+      const remaining = origWeight - pulled;
+
+      if (remaining > 0 && selectedPkg) {
+        setReprintInfo({
+          packageId: form.package_id || '',
+          originalWeight: origWeight,
+          pullWeight: pulled,
+          strain: form.strain || '',
+          batchNumber: form.batch_id || '',
+          batchId: selectedPkg.batch_id || '',
+          category: selectedPkg.category || '',
+        });
+        setShowReprintPrompt(true);
+      } else {
+        onSuccess();
+      }
     } catch (err: any) {
       console.error('Error creating trim session:', err);
       setError(err.message || 'Failed to create trim session');
@@ -270,6 +299,19 @@ export function TrimSessionStartForm({
           </button>
         </div>
       </form>
+
+      {showReprintPrompt && reprintInfo && (
+        <SourceLabelReprintPrompt
+          sourcePackageId={reprintInfo.packageId}
+          originalWeight={reprintInfo.originalWeight}
+          pullWeight={reprintInfo.pullWeight}
+          strain={reprintInfo.strain}
+          batchNumber={reprintInfo.batchNumber}
+          batchId={reprintInfo.batchId}
+          category={reprintInfo.category}
+          onDone={onSuccess}
+        />
+      )}
     </div>
   );
 }

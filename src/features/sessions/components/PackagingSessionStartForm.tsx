@@ -6,6 +6,7 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { notificationService } from '@/services/notification.service';
 import { useActiveStaff } from '../hooks/useActiveStaff';
+import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
 
 interface PackagingSessionStartFormProps {
   inventoryPackages: InventoryItem[];
@@ -30,6 +31,17 @@ export function PackagingSessionStartForm({
     pull_weight: 0,
     notes: ''
   });
+
+  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
+  const [reprintInfo, setReprintInfo] = useState<{
+    packageId: string;
+    originalWeight: number;
+    pullWeight: number;
+    strain: string;
+    batchNumber: string;
+    batchId: string;
+    category: string;
+  } | null>(null);
 
   const [coaStatus, setCoaStatus] = useState<{
     loading: boolean;
@@ -180,7 +192,26 @@ export function PackagingSessionStartForm({
         notificationService.error('Error starting session: ' + error.message);
       }
     } else {
-      onSuccess();
+      // Check if source bag has remaining weight — prompt for label reprint
+      const selectedPkg = inventoryPackages.find(p => p.package_id === formData.package_id);
+      const origWeight = selectedPkg?.available_qty || 0;
+      const pulled = formData.pull_weight || 0;
+      const remaining = origWeight - pulled;
+
+      if (remaining > 0 && selectedPkg) {
+        setReprintInfo({
+          packageId: formData.package_id || '',
+          originalWeight: origWeight,
+          pullWeight: pulled,
+          strain: formData.strain || '',
+          batchNumber: formData.batch_id || '',
+          batchId: selectedPkg.batch_id || '',
+          category: selectedPkg.category || '',
+        });
+        setShowReprintPrompt(true);
+      } else {
+        onSuccess();
+      }
     }
   };
 
@@ -401,6 +432,19 @@ export function PackagingSessionStartForm({
           </Button>
         </div>
       </form>
+
+      {showReprintPrompt && reprintInfo && (
+        <SourceLabelReprintPrompt
+          sourcePackageId={reprintInfo.packageId}
+          originalWeight={reprintInfo.originalWeight}
+          pullWeight={reprintInfo.pullWeight}
+          strain={reprintInfo.strain}
+          batchNumber={reprintInfo.batchNumber}
+          batchId={reprintInfo.batchId}
+          category={reprintInfo.category}
+          onDone={onSuccess}
+        />
+      )}
     </div>
   );
 }
