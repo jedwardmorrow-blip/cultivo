@@ -23,6 +23,7 @@ export function TrimSessionStartForm({
     pulled_weight: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionCreated, setSessionCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReprintPrompt, setShowReprintPrompt] = useState(false);
   const [reprintInfo, setReprintInfo] = useState<{
@@ -41,6 +42,7 @@ export function TrimSessionStartForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || sessionCreated) return;
     setIsSubmitting(true);
     setError(null);
 
@@ -68,26 +70,12 @@ export function TrimSessionStartForm({
         throw new Error('No data returned from server');
       }
 
-      // Check if source bag has remaining weight — prompt for label reprint
-      const selectedPkg = buckedPackages.find((p) => p.package_id === form.package_id);
-      const origWeight = selectedPkg?.available_qty || 0;
-      const pulled = form.pulled_weight || 0;
-      const remaining = origWeight - pulled;
+      // Session created — prevent re-submission
+      setSessionCreated(true);
 
-      if (remaining > 0 && selectedPkg) {
-        setReprintInfo({
-          packageId: form.package_id || '',
-          originalWeight: origWeight,
-          pullWeight: pulled,
-          strain: form.strain || '',
-          batchNumber: form.batch_id || '',
-          batchId: selectedPkg.batch_id || '',
-          category: selectedPkg.category || '',
-        });
-        setShowReprintPrompt(true);
-      } else {
-        onSuccess();
-      }
+      // Label reprint moved to session COMPLETION flow per Laura's request (2026-03-18)
+      // Just call onSuccess to refresh the sessions list and close the form
+      onSuccess();
     } catch (err: any) {
       console.error('Error creating trim session:', err);
       setError(err.message || 'Failed to create trim session');
@@ -150,6 +138,7 @@ export function TrimSessionStartForm({
         </div>
       )}
 
+      {sessionCreated && showReprintPrompt ? null : (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -292,15 +281,16 @@ export function TrimSessionStartForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || sessionCreated}
             className="px-6 py-2 bg-cult-green text-cult-black rounded font-bold hover:bg-cult-green-bright transition disabled:opacity-50"
           >
             {isSubmitting ? 'Creating...' : 'Start Session'}
           </button>
         </div>
       </form>
+      )}
 
-      {showReprintPrompt && reprintInfo && (
+      {sessionCreated && showReprintPrompt && reprintInfo && (
         <SourceLabelReprintPrompt
           sourcePackageId={reprintInfo.packageId}
           originalWeight={reprintInfo.originalWeight}

@@ -32,16 +32,8 @@ export function PackagingSessionStartForm({
     notes: ''
   });
 
-  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
-  const [reprintInfo, setReprintInfo] = useState<{
-    packageId: string;
-    originalWeight: number;
-    pullWeight: number;
-    strain: string;
-    batchNumber: string;
-    batchId: string;
-    category: string;
-  } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionCreated, setSessionCreated] = useState(false);
 
   const [coaStatus, setCoaStatus] = useState<{
     loading: boolean;
@@ -130,11 +122,14 @@ export function PackagingSessionStartForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || sessionCreated) return;
+    setIsSubmitting(true);
 
     // Validate pull_weight against available inventory
     const selectedPackage = inventoryPackages.find(p => p.package_id === formData.package_id);
     if (!selectedPackage) {
       notificationService.warning('Selected package not found. Please select a valid package.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -143,6 +138,7 @@ export function PackagingSessionStartForm({
 
     if (pullWeight <= 0) {
       notificationService.warning('Pull weight must be greater than 0.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -153,6 +149,7 @@ export function PackagingSessionStartForm({
         `You are trying to pull ${pullWeight.toFixed(1)}g.\n\n` +
         `Please reduce the pull weight or select a different package.`
       );
+      setIsSubmitting(false);
       return;
     }
 
@@ -191,33 +188,21 @@ export function PackagingSessionStartForm({
       } else {
         notificationService.error('Error starting session: ' + error.message);
       }
+      setIsSubmitting(false);
     } else {
-      // Check if source bag has remaining weight — prompt for label reprint
-      const selectedPkg = inventoryPackages.find(p => p.package_id === formData.package_id);
-      const origWeight = selectedPkg?.available_qty || 0;
-      const pulled = formData.pull_weight || 0;
-      const remaining = origWeight - pulled;
+      // Session created successfully — prevent re-submission
+      setSessionCreated(true);
 
-      if (remaining > 0 && selectedPkg) {
-        setReprintInfo({
-          packageId: formData.package_id || '',
-          originalWeight: origWeight,
-          pullWeight: pulled,
-          strain: formData.strain || '',
-          batchNumber: formData.batch_id || '',
-          batchId: selectedPkg.batch_id || '',
-          category: selectedPkg.category || '',
-        });
-        setShowReprintPrompt(true);
-      } else {
-        onSuccess();
-      }
+      // Label reprint moved to session COMPLETION flow per Laura's request (2026-03-18)
+      // Just call onSuccess to refresh the sessions list and close the form
+      onSuccess();
     }
   };
 
   return (
     <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
       <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">Start New Packaging Session</h2>
+      {sessionCreated && showReprintPrompt ? null : (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -419,8 +404,8 @@ export function PackagingSessionStartForm({
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" size="sm">
-            Start Session
+          <Button type="submit" size="sm" disabled={isSubmitting || sessionCreated}>
+            {isSubmitting ? 'Creating...' : 'Start Session'}
           </Button>
           <Button
             type="button"
@@ -432,8 +417,9 @@ export function PackagingSessionStartForm({
           </Button>
         </div>
       </form>
+      )}
 
-      {showReprintPrompt && reprintInfo && (
+      {sessionCreated && showReprintPrompt && reprintInfo && (
         <SourceLabelReprintPrompt
           sourcePackageId={reprintInfo.packageId}
           originalWeight={reprintInfo.originalWeight}

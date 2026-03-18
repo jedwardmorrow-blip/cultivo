@@ -5,6 +5,7 @@ import type { TrimSession, TrimCompleteForm, InventoryItem } from '../types';
 import { completeTrimSession } from '../services/sessions.service';
 import { notificationService } from '@/services/notification.service';
 import { Button, QualityGradeSelector } from '@/shared/components';
+import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
 
 interface TrimSessionCompleteModalProps {
   session: TrimSession;
@@ -28,13 +29,21 @@ export function TrimSessionCompleteModal({
     bucked_smalls_inventory_id: '',
     notes: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
   const [consolidatedPackages, setConsolidatedPackages] = useState<{flower?: string, smalls?: string, trim?: string}>({});
 
   const totalOutput = formData.big_buds_grams + formData.small_buds_grams + formData.trim_grams + formData.waste_grams + formData.bucked_smalls_grams;
   const variance = session.pulled_weight - totalOutput;
 
+  // Calculate remaining weight on source bag after trim session
+  const remainingSourceWeight = (session.pulled_weight || 0) - totalOutput;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || sessionCompleted) return;
+    setIsSubmitting(true);
 
     const { error } = await completeTrimSession(session.id, {
       ...formData,
@@ -45,12 +54,20 @@ export function TrimSessionCompleteModal({
     if (error) {
       console.error('Error completing session:', error);
       notificationService.error('Error completing session: ' + error.message);
+      setIsSubmitting(false);
     } else {
+      setSessionCompleted(true);
       await fetchConsolidatedPackageIds();
-      setTimeout(() => {
-        onSuccess();
-        setConsolidatedPackages({});
-      }, 5000);
+
+      // If source bag has remaining weight (didn't use full pull), show reprint prompt
+      if (remainingSourceWeight > 1) {
+        setShowReprintPrompt(true);
+      } else {
+        setTimeout(() => {
+          onSuccess();
+          setConsolidatedPackages({});
+        }, 5000);
+      }
     }
   };
 
@@ -256,8 +273,8 @@ export function TrimSessionCompleteModal({
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" size="sm">
-                Complete Session
+              <Button type="submit" size="sm" disabled={isSubmitting || sessionCompleted}>
+                {isSubmitting ? 'Completing...' : 'Complete Session'}
               </Button>
               <button
                 type="button"
@@ -268,6 +285,22 @@ export function TrimSessionCompleteModal({
               </button>
             </div>
           </form>
+
+          {sessionCompleted && showReprintPrompt && (
+            <SourceLabelReprintPrompt
+              sourcePackageId={session.package_id}
+              originalWeight={session.pulled_weight || 0}
+              pullWeight={totalOutput}
+              strain={session.strain || ''}
+              batchNumber={session.batch_id || ''}
+              batchId={session.batch_registry_id || ''}
+              category=""
+              onDone={() => {
+                onSuccess();
+                setConsolidatedPackages({});
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { formatElapsedTime } from '../utils';
 import type { PackagingSession, PackagingCompleteForm } from '../types';
 import { notificationService } from '@/services/notification.service';
 import { Button, QualityGradeSelector } from '@/shared/components';
+import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
 
 interface PackagingSessionCompleteModalProps {
   session: PackagingSession;
@@ -26,6 +27,9 @@ export function PackagingSessionCompleteModal({
     waste_grams: 0,
     notes: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
   const [consolidatedPackages, setConsolidatedPackages] = useState<{[key: string]: string}>({});
 
   const totalOutput = formData.ending_weight +
@@ -38,6 +42,8 @@ export function PackagingSessionCompleteModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || sessionCompleted) return;
+    setIsSubmitting(true);
 
     const { error } = await completePackagingSession(session.id, {
       ...formData,
@@ -47,12 +53,20 @@ export function PackagingSessionCompleteModal({
     if (error) {
       console.error('Error completing session:', error);
       notificationService.error('Error completing session: ' + error.message);
+      setIsSubmitting(false);
     } else {
+      setSessionCompleted(true);
       await fetchConsolidatedPackageIds();
-      setTimeout(() => {
-        onSuccess();
-        setConsolidatedPackages({});
-      }, 5000);
+
+      // If there's remaining weight, show reprint prompt instead of auto-closing
+      if (formData.ending_weight > 0) {
+        setShowReprintPrompt(true);
+      } else {
+        setTimeout(() => {
+          onSuccess();
+          setConsolidatedPackages({});
+        }, 5000);
+      }
     }
   };
 
@@ -238,8 +252,8 @@ export function PackagingSessionCompleteModal({
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" size="sm">
-                Complete Session
+              <Button type="submit" size="sm" disabled={isSubmitting || sessionCompleted}>
+                {isSubmitting ? 'Completing...' : 'Complete Session'}
               </Button>
               <button
                 type="button"
@@ -250,6 +264,22 @@ export function PackagingSessionCompleteModal({
               </button>
             </div>
           </form>
+
+          {sessionCompleted && showReprintPrompt && (
+            <SourceLabelReprintPrompt
+              sourcePackageId={session.package_id}
+              originalWeight={session.pull_weight}
+              pullWeight={session.pull_weight - formData.ending_weight}
+              strain={session.strain}
+              batchNumber={session.batch_id || ''}
+              batchId={session.batch_registry_id || ''}
+              category=""
+              onDone={() => {
+                onSuccess();
+                setConsolidatedPackages({});
+              }}
+            />
+          )}
         </div>
       </div>
     </div>
