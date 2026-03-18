@@ -34,7 +34,7 @@ export function VegPipeline({ strains }: Props) {
       </div>
 
       <div className="mt-3 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult text-[0.6875rem] font-light text-cult-text-secondary border-l-2 border-cult-text-muted">
-        At 8–10 week flower cycle, these plants could yield ~{Math.round(totalPlants * 0.45)} lbs dry if flipped soon.
+        At 8–10 week flower cycle, one room yields ~96 lbs dry (65g/sqft × 672 sqft canopy).
       </div>
     </div>
   );

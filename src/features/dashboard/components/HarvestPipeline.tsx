@@ -79,7 +79,7 @@ export function HarvestPipeline({ windows }: Props) {
           <strong className="text-cult-accent font-semibold">
             {overdue[0].room} overdue.
           </strong>{' '}
-          {overdue[0].plants} plants ready now. Yield model: 2,256g wet/plant avg × 20% dry-back (from FLW-10 actuals).
+          {overdue[0].plants} plants ready now. Yield model: 65g/sqft × 672 sqft canopy = ~96 lbs dry per room.
         </div>
       )}
     </div>

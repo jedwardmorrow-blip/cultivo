@@ -375,6 +375,124 @@ export async function cancelPackagingSession(sessionId: string, notes?: string) 
   }
 }
 
+// Session Pause/Resume
+/**
+ * Pauses an active session
+ *
+ * @param sessionId - Session UUID
+ * @param sessionType - Type of session ('trim' | 'bucking' | 'packaging')
+ * @returns Promise<{ error: any | null }>
+ * @description Creates a session_pauses row and sets is_paused = true on the session
+ */
+export async function pauseSession(
+  sessionId: string,
+  sessionType: 'trim' | 'bucking' | 'packaging'
+) {
+  try {
+    const tableName = `${sessionType}_sessions`;
+
+    // Insert pause record
+    const { error: pauseError } = await supabase
+      .from('session_pauses')
+      .insert({
+        session_type: sessionType,
+        session_id: sessionId,
+        paused_at: new Date().toISOString(),
+      });
+
+    if (pauseError) throw pauseError;
+
+    // Set is_paused on session
+    const { error: updateError } = await supabase
+      .from(tableName)
+      .update({
+        is_paused: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId);
+
+    if (updateError) throw updateError;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, `Failed to pause ${sessionType} session`);
+    return { error };
+  }
+}
+
+/**
+ * Resumes a paused session
+ *
+ * @param sessionId - Session UUID
+ * @param sessionType - Type of session ('trim' | 'bucking' | 'packaging')
+ * @returns Promise<{ error: any | null }>
+ * @description Closes the open pause record, computes duration, increments total_pause_minutes
+ */
+export async function resumeSession(
+  sessionId: string,
+  sessionType: 'trim' | 'bucking' | 'packaging'
+) {
+  try {
+    const tableName = `${sessionType}_sessions`;
+    const now = new Date().toISOString();
+
+    // Find the open pause record
+    const { data: openPause, error: fetchError } = await supabase
+      .from('session_pauses')
+      .select('*')
+      .eq('session_id', sessionId)
+      .eq('session_type', sessionType)
+      .is('resumed_at', null)
+      .order('paused_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Calculate pause duration in minutes
+    const pausedAt = new Date(openPause.paused_at);
+    const resumedAt = new Date(now);
+    const durationMinutes = (resumedAt.getTime() - pausedAt.getTime()) / 60000;
+
+    // Close the pause record
+    const { error: closeError } = await supabase
+      .from('session_pauses')
+      .update({
+        resumed_at: now,
+        pause_duration_minutes: Math.round(durationMinutes * 100) / 100,
+      })
+      .eq('id', openPause.id);
+
+    if (closeError) throw closeError;
+
+    // Get current total_pause_minutes from session
+    const { data: session, error: sessionError } = await supabase
+      .from(tableName)
+      .select('total_pause_minutes')
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionError) throw sessionError;
+
+    const currentPause = (session as any)?.total_pause_minutes || 0;
+
+    // Increment total_pause_minutes and clear is_paused
+    const { error: updateError } = await supabase
+      .from(tableName)
+      .update({
+        is_paused: false,
+        total_pause_minutes: Math.round((currentPause + durationMinutes) * 100) / 100,
+        updated_at: now,
+      })
+      .eq('id', sessionId);
+
+    if (updateError) throw updateError;
+    return { error: null };
+  } catch (error) {
+    errorService.handle(error, `Failed to resume ${sessionType} session`);
+    return { error };
+  }
+}
+
 // Universal Undo Function
 /**
  * Undoes a completed session, restoring it to active state

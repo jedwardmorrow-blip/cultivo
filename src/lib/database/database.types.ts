@@ -634,6 +634,8 @@ export type Database = {
           finalized_at_smalls: string | null
           finalized_by_smalls: string | null
           void_reason_smalls: string | null
+          is_paused: boolean
+          total_pause_minutes: number
         }
         Insert: {
           id?: string
@@ -672,6 +674,8 @@ export type Database = {
           finalized_at_smalls?: string | null
           finalized_by_smalls?: string | null
           void_reason_smalls?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Update: {
           id?: string
@@ -710,6 +714,8 @@ export type Database = {
           finalized_at_smalls?: string | null
           finalized_by_smalls?: string | null
           void_reason_smalls?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Relationships: [
           {
@@ -3726,6 +3732,8 @@ export type Database = {
           void_reason_3_5g: string | null
           void_reason_14g: string | null
           void_reason_1lb: string | null
+          is_paused: boolean
+          total_pause_minutes: number
         }
         Insert: {
           id?: string
@@ -3781,6 +3789,8 @@ export type Database = {
           void_reason_3_5g?: string | null
           void_reason_14g?: string | null
           void_reason_1lb?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Update: {
           id?: string
@@ -3836,6 +3846,8 @@ export type Database = {
           void_reason_3_5g?: string | null
           void_reason_14g?: string | null
           void_reason_1lb?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Relationships: [
           {
@@ -4184,6 +4196,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      session_pauses: {
+        Row: {
+          id: string
+          session_type: string
+          session_id: string
+          paused_at: string
+          resumed_at: string | null
+          pause_duration_minutes: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          session_type: string
+          session_id: string
+          paused_at?: string
+          resumed_at?: string | null
+          pause_duration_minutes?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          session_type?: string
+          session_id?: string
+          paused_at?: string
+          resumed_at?: string | null
+          pause_duration_minutes?: number | null
+          created_at?: string | null
+        }
+        Relationships: []
       }
       room_tables: {
         Row: {
@@ -4968,6 +5010,8 @@ export type Database = {
           finalized_at_trim: string | null
           finalized_by_trim: string | null
           void_reason_trim: string | null
+          is_paused: boolean
+          total_pause_minutes: number
         }
         Insert: {
           id?: string
@@ -5021,6 +5065,8 @@ export type Database = {
           finalized_at_trim?: string | null
           finalized_by_trim?: string | null
           void_reason_trim?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Update: {
           id?: string
@@ -5074,6 +5120,8 @@ export type Database = {
           finalized_at_trim?: string | null
           finalized_by_trim?: string | null
           void_reason_trim?: string | null
+          is_paused?: boolean
+          total_pause_minutes?: number
         }
         Relationships: [
           {

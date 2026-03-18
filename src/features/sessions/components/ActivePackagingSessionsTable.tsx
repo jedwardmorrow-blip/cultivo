@@ -1,5 +1,8 @@
+import { useState } from 'react';
+import { Pause, Play } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { formatElapsedTime } from '../utils';
+import { pauseSession, resumeSession } from '../services/sessions.service';
 import type { PackagingSession } from '../types';
 
 interface ActivePackagingSessionsTableProps {
@@ -9,6 +12,21 @@ interface ActivePackagingSessionsTableProps {
 }
 
 export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }: ActivePackagingSessionsTableProps) {
+  const [pausingId, setPausingId] = useState<string | null>(null);
+
+  const handleTogglePause = async (session: PackagingSession) => {
+    setPausingId(session.id);
+    try {
+      if (session.is_paused) {
+        await resumeSession(session.id, 'packaging');
+      } else {
+        await pauseSession(session.id, 'packaging');
+      }
+    } finally {
+      setPausingId(null);
+    }
+  };
+
   return (
     <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray mb-6">
       <div className="p-4 border-b border-cult-medium-gray">
@@ -41,11 +59,29 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                   <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
                   <td className="px-4 py-3 text-sm text-cult-light-gray">{session.package_id}</td>
                   <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pull_weight != null ? session.pull_weight.toFixed(1) : '-'}</td>
-                  <td className="px-4 py-3 text-sm text-center font-medium text-cult-green">
-                    {formatElapsedTime(session.started_at)}
+                  <td className="px-4 py-3 text-sm text-center font-medium">
+                    {session.is_paused ? (
+                      <span className="text-yellow-400">PAUSED</span>
+                    ) : (
+                      <span className="text-cult-green">
+                        {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleTogglePause(session)}
+                        disabled={pausingId === session.id}
+                        className={`p-1.5 rounded transition ${
+                          session.is_paused
+                            ? 'bg-cult-green/20 text-cult-green hover:bg-cult-green/30'
+                            : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                        } disabled:opacity-50`}
+                        title={session.is_paused ? 'Resume session' : 'Pause session'}
+                      >
+                        {session.is_paused ? <Play size={16} /> : <Pause size={16} />}
+                      </button>
                       <Button
                         onClick={() => onComplete(session)}
                         size="sm"

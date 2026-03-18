@@ -190,7 +190,7 @@ export function ProjectionChart({ windows }: Props) {
       </div>
 
       <div className="mt-3 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult text-[0.6875rem] font-light text-cult-text-secondary border-l-2 border-cult-text-muted">
-        *Post-prod applies 65% conversion (71% buck × 92% trim yield). Revenue at $2K/lb avg blend.
+        *Dry yield: 65g/sqft × 672 sqft per room = ~96 lbs/room. Post-prod: 65% conv. (71% buck × 92% trim). Revenue at $2K/lb avg blend.
       </div>
     </div>
   );

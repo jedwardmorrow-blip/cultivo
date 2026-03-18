@@ -23,7 +23,8 @@ export interface KPIData {
   mtdCustomers: number;
   openPipeline: number;
   openOrderCount: number;
-  inventoryInProcessLbs: number;
+  inventoryInProcessLbs: number;    // raw weight across all in-process stages
+  finishedEquivLbs: number;         // projected weight after buck + trim
   packagedLbs: number;
   harvestIncomingLbs: number;
   harvestWindows: number;
@@ -31,9 +32,10 @@ export interface KPIData {
 
 export interface FunnelStage {
   label: string;
-  lbs: number;
+  lbs: number;         // raw on-hand weight at this stage
+  finishedLbs: number; // estimated weight after remaining processing
   color: string;
-  revenueEst: number;
+  revenueEst: number;  // based on finishedLbs × price
 }
 
 export interface ActiveOrder {
@@ -261,6 +263,7 @@ async function fetchRevenueData(): Promise<{
 async function fetchInventoryPipeline(): Promise<{
   funnel: FunnelStage[];
   inProcessLbs: number;
+  finishedEquivLbs: number;
   packagedLbs: number;
 }> {
   const { data } = await supabase
@@ -281,23 +284,42 @@ async function fetchInventoryPipeline(): Promise<{
     'Packaged': '#6366F1',
   };
 
+  // Conversion factors to get from stage weight → finished (post-trim) weight
+  // Binned → needs buck (71.4%) then trim (65.2%) = 46.6%
+  // Bucked → needs trim (65.2%)
+  // Trimmed → already finished weight
+  // Packaged → already finished (weight tracked as units, 0g in view)
+  const BUCK_YIELD = 0.714;
+  const TRIM_YIELD = 0.652;
+  const stageConversion: Record<string, number> = {
+    'Binned': BUCK_YIELD * TRIM_YIELD,  // ~46.6%
+    'Bucked': TRIM_YIELD,                // ~65.2%
+    'Trimmed': 1.0,                      // already done
+    'Packaged': 1.0,
+  };
+
   const pricePerLb = 2000;
   const funnel: FunnelStage[] = [];
   let inProcessGrams = 0;
+  let finishedEquivGrams = 0;
   let packagedGrams = 0;
 
   stageMap.forEach((grams, stage) => {
     const lbs = gramsToLbs(grams);
+    const conv = stageConversion[stage] || 1.0;
+    const finLbs = gramsToLbs(grams * conv);
     funnel.push({
       label: stage,
       lbs,
+      finishedLbs: finLbs,
       color: stageColors[stage] || '#666666',
-      revenueEst: lbs * pricePerLb,
+      revenueEst: finLbs * pricePerLb,
     });
     if (stage === 'Packaged') {
       packagedGrams = grams;
     } else {
       inProcessGrams += grams;
+      finishedEquivGrams += grams * conv;
     }
   });
 
@@ -306,6 +328,7 @@ async function fetchInventoryPipeline(): Promise<{
   return {
     funnel,
     inProcessLbs: gramsToLbs(inProcessGrams),
+    finishedEquivLbs: gramsToLbs(finishedEquivGrams),
     packagedLbs: gramsToLbs(packagedGrams),
   };
 }
@@ -418,12 +441,17 @@ async function fetchCultivationData(): Promise<{
     }
   });
 
-  const avgWetPerPlant = 2256; // grams (from FLW-10 actuals)
-  const dryBackRate = 0.20;
+  // Yield model: sqft-based, NOT plant-count-based.
+  // Canopy area determines yield; plant count is irrelevant.
+  // 65g/sqft avg × 672 sqft per room = 43,680g = 96.3 lbs dry per room.
+  // (FLW-10 actual: 90.7g/sqft = 134.4 lbs, but 65g is conservative avg)
+  const GRAMS_PER_SQFT = 65;
+  const CANOPY_SQFT_PER_ROOM = 672;
+  const EST_DRY_GRAMS_PER_ROOM = GRAMS_PER_SQFT * CANOPY_SQFT_PER_ROOM; // 43,680g
 
   const harvestPipeline: HarvestWindow[] = Array.from(windowMap.values())
     .map(w => {
-      const estDryLbs = gramsToLbs(w.plants * avgWetPerPlant * dryBackRate);
+      const estDryLbs = gramsToLbs(EST_DRY_GRAMS_PER_ROOM);
       const isOverdue = w.date !== 'TBD' && new Date(w.date) < new Date();
       return {
         room: w.room,
@@ -544,6 +572,7 @@ export function useDashboardData() {
           openPipeline: revenueResult.openPipeline,
           openOrderCount: revenueResult.openOrderCount,
           inventoryInProcessLbs: inventoryResult.inProcessLbs,
+          finishedEquivLbs: inventoryResult.finishedEquivLbs,
           packagedLbs: inventoryResult.packagedLbs,
           harvestIncomingLbs,
           harvestWindows: cultivationResult.harvestPipeline.length,

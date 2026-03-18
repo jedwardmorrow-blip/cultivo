@@ -1,9 +1,10 @@
-export function formatElapsedTime(startedAt: string): string {
+export function formatElapsedTime(startedAt: string, totalPauseMinutes?: number): string {
   const start = new Date(startedAt);
   const now = new Date();
-  const minutes = Math.floor((now.getTime() - start.getTime()) / 60000);
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  const wallClockMinutes = Math.floor((now.getTime() - start.getTime()) / 60000);
+  const activeMinutes = Math.max(0, wallClockMinutes - Math.floor(totalPauseMinutes || 0));
+  const hours = Math.floor(activeMinutes / 60);
+  const mins = activeMinutes % 60;
   return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 }
 

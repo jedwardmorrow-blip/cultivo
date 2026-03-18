@@ -66,8 +66,8 @@ export function KPIRow({ data }: Props) {
     },
     {
       label: 'Inventory In Process',
-      value: fmtLbs(data.inventoryInProcessLbs),
-      sub: 'Bucked + Trim + Bulk stages',
+      value: fmtLbs(data.finishedEquivLbs),
+      sub: `${fmtLbs(data.inventoryInProcessLbs)} raw · after buck + trim`,
       icon: 'box',
     },
     {
