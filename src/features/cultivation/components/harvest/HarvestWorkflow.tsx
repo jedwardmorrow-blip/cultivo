@@ -11,7 +11,7 @@ import { isValidStrainAbbreviation } from '../../utils';
 import { HarvestRoomSelect } from './HarvestRoomSelect';
 import { PlantGroupWeightCard } from './HarvestWeightRecorder';
 import { HarvestReviewFinalize } from './HarvestReviewFinalize';
-import type { GrowRoom, PlantGroup, HarvestSession } from '../../types';
+import type { GrowRoom, PlantGroup, HarvestSession, HarvestType } from '../../types';
 
 type Step = 'select-room' | 'record-weights' | 'review';
 
@@ -31,6 +31,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
   const [sessionMap, setSessionMap] = useState<Record<string, HarvestSession>>({});
   const [wasteMap, setWasteMap] = useState<Record<string, number>>({});
   const [weightTotals, setWeightTotals] = useState<Record<string, { weight: number; plants: number }>>({});
+  const [harvestTypeMap, setHarvestTypeMap] = useState<Record<string, HarvestType>>({});
 
   const flowerRooms = rooms
     .filter((r) => r.is_active && r.room_type === 'flower')
@@ -63,6 +64,10 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     setStep('record-weights');
   }
 
+  function handleHarvestTypeChange(groupId: string, type: HarvestType) {
+    setHarvestTypeMap((prev) => ({ ...prev, [groupId]: type }));
+  }
+
   async function handleCreateSession(groupId: string): Promise<HarvestSession> {
     const group = groups.find((g) => g.id === groupId);
     if (!group) throw new Error('Plant group not found');
@@ -71,12 +76,14 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
       throw new Error('Strain is missing a 3-letter abbreviation. Update in Products > Strains first.');
     }
 
+    const harvestType = harvestTypeMap[groupId] ?? 'flower';
     const session = await createSession({
       plant_group_id: groupId,
       harvest_date: new Date().toISOString().slice(0, 10),
       wet_weight_grams: 0,
       plant_count_harvested: 0,
       grow_room_id: selectedRoom?.id ?? undefined,
+      harvest_type: harvestType,
     });
     setSessionMap((prev) => ({ ...prev, [groupId]: session }));
     return session;
@@ -94,7 +101,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     });
   }, []);
 
-  async function handleFinalize(dryRoomId: string) {
+  async function handleFinalize(dryRoomId: string | null) {
     const sessionsToFinalize = Object.values(sessionMap);
     for (const session of sessionsToFinalize) {
       const waste = wasteMap[session.plant_group_id] || 0;
@@ -105,7 +112,9 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
           .eq('id', session.id);
         if (error) throw new Error(error.message);
       }
-      await finalizeHarvest(session.id, dryRoomId);
+      // Fresh frozen sessions get null dry room; flower sessions get the selected dry room
+      const sessionDryRoom = session.harvest_type === 'fresh_frozen' ? null : dryRoomId;
+      await finalizeHarvest(session.id, sessionDryRoom);
     }
     await reloadSessions();
     onComplete();
@@ -122,6 +131,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
         totalWeight: totals.weight,
         totalPlants: totals.plants,
         wasteGrams: wasteMap[group.id] ?? 0,
+        harvestType: (session.harvest_type ?? harvestTypeMap[group.id] ?? 'flower') as HarvestType,
       };
     });
 
@@ -193,6 +203,8 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
                 key={group.id}
                 group={group}
                 harvestSession={sessionMap[group.id] ?? null}
+                harvestType={harvestTypeMap[group.id] ?? 'flower'}
+                onHarvestTypeChange={handleHarvestTypeChange}
                 onCreateSession={handleCreateSession}
                 wasteGrams={wasteMap[group.id] ?? 0}
                 onWasteChange={handleWasteChange}
@@ -236,6 +248,8 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 interface PlantGroupWeightCardWithTotalsProps {
   group: PlantGroup;
   harvestSession: HarvestSession | null;
+  harvestType: HarvestType;
+  onHarvestTypeChange: (groupId: string, type: HarvestType) => void;
   onCreateSession: (groupId: string) => Promise<HarvestSession>;
   wasteGrams: number;
   onWasteChange: (groupId: string, grams: number) => void;
@@ -245,6 +259,8 @@ interface PlantGroupWeightCardWithTotalsProps {
 function PlantGroupWeightCardWithTotals({
   group,
   harvestSession,
+  harvestType,
+  onHarvestTypeChange,
   onCreateSession,
   wasteGrams,
   onWasteChange,
@@ -278,14 +294,58 @@ function PlantGroupWeightCardWithTotals({
     setRefreshKey((k) => k + 1);
   }
 
+  const hasSession = !!harvestSession;
+
   return (
-    <PlantGroupWeightCard
-      group={group}
-      harvestSession={harvestSession}
-      onSessionCreated={handleSessionCreated}
-      onCreateSession={onCreateSession}
-      wasteGrams={wasteGrams}
-      onWasteChange={onWasteChange}
-    />
+    <div>
+      {/* Harvest type toggle — only shown before session is created */}
+      {!hasSession && (
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Type:</span>
+          <button
+            onClick={() => onHarvestTypeChange(group.id, 'flower')}
+            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border transition-all ${
+              harvestType === 'flower'
+                ? 'border-green-600 bg-green-950 text-green-400'
+                : 'border-cult-dark-gray text-cult-medium-gray hover:border-cult-medium-gray'
+            }`}
+          >
+            Flower
+          </button>
+          <button
+            onClick={() => onHarvestTypeChange(group.id, 'fresh_frozen')}
+            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border transition-all ${
+              harvestType === 'fresh_frozen'
+                ? 'border-cyan-600 bg-cyan-950 text-cyan-400'
+                : 'border-cult-dark-gray text-cult-medium-gray hover:border-cult-medium-gray'
+            }`}
+          >
+            Fresh Frozen
+          </button>
+        </div>
+      )}
+      {/* Show locked badge after session created */}
+      {hasSession && (
+        <div className="flex items-center gap-1 mb-2">
+          <span
+            className={`text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border ${
+              harvestSession.harvest_type === 'fresh_frozen'
+                ? 'border-cyan-700 bg-cyan-950 text-cyan-400'
+                : 'border-green-700 bg-green-950 text-green-400'
+            }`}
+          >
+            {harvestSession.harvest_type === 'fresh_frozen' ? 'Fresh Frozen' : 'Flower'}
+          </span>
+        </div>
+      )}
+      <PlantGroupWeightCard
+        group={group}
+        harvestSession={harvestSession}
+        onSessionCreated={handleSessionCreated}
+        onCreateSession={onCreateSession}
+        wasteGrams={wasteGrams}
+        onWasteChange={onWasteChange}
+      />
+    </div>
   );
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { CheckCircle, AlertTriangle, Wind } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Wind, Snowflake } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { formatWeight } from '../../utils';
-import type { DryRoom, HarvestSession, PlantGroup } from '../../types';
+import type { DryRoom, HarvestSession, HarvestType, PlantGroup } from '../../types';
 
 interface GroupSummary {
   group: PlantGroup;
@@ -10,6 +10,7 @@ interface GroupSummary {
   totalWeight: number;
   totalPlants: number;
   wasteGrams: number;
+  harvestType: HarvestType;
 }
 
 interface HarvestReviewFinalizeProps {
@@ -17,7 +18,7 @@ interface HarvestReviewFinalizeProps {
   roomName: string;
   groupSummaries: GroupSummary[];
   dryRooms: DryRoom[];
-  onFinalize: (dryRoomId: string) => Promise<void>;
+  onFinalize: (dryRoomId: string | null) => Promise<void>;
   onBack: () => void;
 }
 
@@ -38,15 +39,21 @@ export function HarvestReviewFinalize({
   const combinedPlants = groupSummaries.reduce((s, g) => s + g.totalPlants, 0);
   const combinedWaste = groupSummaries.reduce((s, g) => s + g.wasteGrams, 0);
 
+  const hasFlowerSessions = groupSummaries.some((g) => g.harvestType === 'flower');
+  const hasFrozenSessions = groupSummaries.some((g) => g.harvestType === 'fresh_frozen');
+  const flowerWeight = groupSummaries.filter((g) => g.harvestType === 'flower').reduce((s, g) => s + g.totalWeight, 0);
+  const frozenWeight = groupSummaries.filter((g) => g.harvestType === 'fresh_frozen').reduce((s, g) => s + g.totalWeight, 0);
+
   const allComplete = groupSummaries.every((g) => g.totalPlants >= g.group.plant_count);
-  const canFinalize = selectedDryRoomId && groupSummaries.length > 0 && !saving;
+  // Dry room only required if there are flower sessions
+  const canFinalize = (hasFlowerSessions ? !!selectedDryRoomId : true) && groupSummaries.length > 0 && !saving;
 
   async function handleFinalize() {
     if (!canFinalize) return;
     setSaving(true);
     setError(null);
     try {
-      await onFinalize(selectedDryRoomId);
+      await onFinalize(selectedDryRoomId || null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to finalize harvest');
       setSaving(false);
@@ -89,15 +96,21 @@ export function HarvestReviewFinalize({
             <div className="text-right">
               <span className="text-cult-white text-lg font-bold">{formatWeight(combinedWeight)}</span>
               <span className="text-cult-medium-gray text-xs ml-2">{combinedPlants} plants</span>
+              {hasFlowerSessions && hasFrozenSessions && (
+                <div className="text-[10px] text-cult-medium-gray mt-0.5">
+                  Flower: {formatWeight(flowerWeight)} · Frozen: {formatWeight(frozenWeight)}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         <div className="divide-y divide-cult-dark-gray">
-          {groupSummaries.map(({ group, totalWeight, totalPlants, wasteGrams }) => {
+          {groupSummaries.map(({ group, totalWeight, totalPlants, wasteGrams, harvestType }) => {
             const strainName = group.strains?.name ?? 'Unknown';
             const batchNumber = group.batch_registry?.batch_number;
             const complete = totalPlants >= group.plant_count;
+            const isFrozen = harvestType === 'fresh_frozen';
 
             return (
               <div key={group.id} className="px-4 py-3 flex items-center justify-between gap-4">
@@ -113,6 +126,15 @@ export function HarvestReviewFinalize({
                         <span className="text-cult-white font-mono text-xs">{batchNumber}</span>
                       )}
                       <span className="text-cult-light-gray text-xs truncate">{strainName}</span>
+                      <span
+                        className={`text-[9px] px-1.5 py-0 uppercase tracking-wider font-semibold border ${
+                          isFrozen
+                            ? 'border-cyan-700 bg-cyan-950 text-cyan-400'
+                            : 'border-green-700 bg-green-950 text-green-400'
+                        }`}
+                      >
+                        {isFrozen ? 'FF' : 'FLW'}
+                      </span>
                     </div>
                     <span className="text-cult-medium-gray text-[10px]">
                       {totalPlants}/{group.plant_count} plants
@@ -137,31 +159,49 @@ export function HarvestReviewFinalize({
         )}
       </div>
 
-      <div className="bg-cult-near-black border border-cult-medium-gray p-4">
-        <label className="flex items-center gap-2 text-xs text-cult-light-gray uppercase tracking-wider mb-2">
-          <Wind className="w-4 h-4" />
-          Dry Room Destination
-        </label>
-        {activeDryRooms.length === 0 ? (
-          <p className="text-amber-400 text-sm">
-            No active dry rooms. Create one in Settings or Cultivation &gt; Dry Rooms first.
+      {hasFlowerSessions && (
+        <div className="bg-cult-near-black border border-cult-medium-gray p-4">
+          <label className="flex items-center gap-2 text-xs text-cult-light-gray uppercase tracking-wider mb-2">
+            <Wind className="w-4 h-4" />
+            Dry Room Destination
+            {hasFrozenSessions && (
+              <span className="text-cult-medium-gray font-normal normal-case tracking-normal">(for flower sessions only)</span>
+            )}
+          </label>
+          {activeDryRooms.length === 0 ? (
+            <p className="text-amber-400 text-sm">
+              No active dry rooms. Create one in Settings or Cultivation &gt; Dry Rooms first.
+            </p>
+          ) : (
+            <select
+              value={selectedDryRoomId}
+              onChange={(e) => setSelectedDryRoomId(e.target.value)}
+              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            >
+              <option value="">-- Select dry room --</option>
+              {activeDryRooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.room_code} - {room.name}
+                  {room.capacity_lbs != null ? ` (${room.capacity_lbs} lbs capacity)` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
+      {hasFrozenSessions && (
+        <div className="bg-cult-near-black border border-cyan-800 p-4">
+          <div className="flex items-center gap-2 text-xs text-cyan-400 uppercase tracking-wider mb-1">
+            <Snowflake className="w-4 h-4" />
+            Fresh Frozen
+          </div>
+          <p className="text-cult-light-gray text-sm">
+            {formatWeight(frozenWeight)} will be vacuum sealed and frozen.
+            Packages will be auto-created in the system upon finalization.
           </p>
-        ) : (
-          <select
-            value={selectedDryRoomId}
-            onChange={(e) => setSelectedDryRoomId(e.target.value)}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
-          >
-            <option value="">-- Select dry room --</option>
-            {activeDryRooms.map((room) => (
-              <option key={room.id} value={room.id}>
-                {room.room_code} - {room.name}
-                {room.capacity_lbs != null ? ` (${room.capacity_lbs} lbs capacity)` : ''}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button

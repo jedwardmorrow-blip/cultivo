@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3 } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3, Snowflake } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { formatWeight, formatDate } from '../utils';
@@ -120,6 +120,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
   const isAdjusted = session.adjusted_weight_grams !== null && session.adjusted_weight_grams !== undefined;
   const growRoomCode = session.grow_rooms?.room_code;
   const dryRoomCode = session.dry_rooms?.room_code;
+  const isFreshFrozen = session.harvest_type === 'fresh_frozen';
 
   return (
     <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
@@ -162,6 +163,12 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
                 <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
                   <Wind className="w-2.5 h-2.5" />
                   {dryRoomCode}
+                </span>
+              )}
+              {isFreshFrozen && (
+                <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-700 text-cyan-300 px-1.5 py-0.5 font-semibold uppercase tracking-wider">
+                  <Snowflake className="w-2.5 h-2.5" />
+                  Fresh Frozen
                 </span>
               )}
             </div>

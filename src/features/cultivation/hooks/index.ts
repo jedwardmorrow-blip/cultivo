@@ -24,3 +24,4 @@ export { useDailyDigest } from './useDailyDigest';
 export { useRoomSummaries } from './useRoomSummaries';
 export { useHarvestMetrics } from './useHarvestMetrics';
 export type { HarvestMetricRow, StrainAggregate, RoomAggregate, HarvestTotals } from './useHarvestMetrics';
+export { useFreshFrozenPackages } from './useFreshFrozenPackages';

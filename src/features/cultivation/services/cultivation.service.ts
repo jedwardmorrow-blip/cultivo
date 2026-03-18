@@ -34,6 +34,7 @@ import type {
   IndividualPlant,
   AddIndividualPlantInput,
   BulkImportPlantResult,
+  FreshFrozenPackage,
 } from '../types';
 import { inventoryMovementService } from '@/services';
 import {
@@ -80,7 +81,7 @@ const PLANT_GROUP_SUMMARY_SELECT = `
 `;
 
 const HARVEST_SESSION_SELECT = `
-  id, plant_group_id, harvest_date, wet_weight_grams, waste_grams, plant_count_harvested,
+  id, plant_group_id, harvest_date, harvest_type, wet_weight_grams, waste_grams, plant_count_harvested,
   adjusted_weight_grams, adjustment_reason, batch_registry_id, grow_room_id, dry_room_id,
   session_status, completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
   plant_groups (
@@ -491,7 +492,7 @@ export const cultivationService = {
   async createHarvestSession(input: CreateHarvestSessionInput): Promise<HarvestSession> {
     const { data, error } = await supabase
       .from('harvest_sessions')
-      .insert({ ...input, session_status: 'active' })
+      .insert({ ...input, harvest_type: input.harvest_type ?? 'flower', session_status: 'active' })
       .select(HARVEST_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'createHarvestSession');
@@ -578,7 +579,7 @@ export const cultivationService = {
     if (error) throwError(error, 'deleteHarvestWeightEntry');
   },
 
-  async finalizeHarvest(id: string, dryRoomId: string): Promise<HarvestSession> {
+  async finalizeHarvest(id: string, dryRoomId: string | null): Promise<HarvestSession> {
     const entries = await cultivationService.listHarvestWeightEntries(id);
     if (entries.length === 0) {
       throw new Error('Cannot finalize harvest: no weight entries recorded.');
@@ -602,6 +603,27 @@ export const cultivationService = {
       .single();
     if (error) throwError(error, 'finalizeHarvest');
     return data as unknown as HarvestSession;
+  },
+
+  async listFreshFrozenPackages(batchId: string): Promise<FreshFrozenPackage[]> {
+    const { data, error } = await supabase
+      .from('fresh_frozen_packages')
+      .select('*, strains (name, abbreviation)')
+      .eq('batch_id', batchId)
+      .order('package_number');
+    if (error) throwError(error, 'listFreshFrozenPackages');
+    return data as unknown as FreshFrozenPackage[];
+  },
+
+  async updateFreshFrozenPackage(id: string, updates: Partial<Pick<FreshFrozenPackage, 'weight_grams' | 'freezer_location' | 'vacuum_sealed_at' | 'frozen_at' | 'notes' | 'status'>>): Promise<FreshFrozenPackage> {
+    const { data, error } = await supabase
+      .from('fresh_frozen_packages')
+      .update(updates)
+      .eq('id', id)
+      .select('*, strains (name, abbreviation)')
+      .single();
+    if (error) throwError(error, 'updateFreshFrozenPackage');
+    return data as unknown as FreshFrozenPackage;
   },
 
   async listDryRooms(): Promise<DryRoom[]> {

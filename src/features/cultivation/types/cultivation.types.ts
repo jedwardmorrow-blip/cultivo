@@ -22,6 +22,8 @@ export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
 export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
 export type PlantSourceType = 'clone' | 'seed';
 export type HarvestSessionStatus = 'active' | 'completed' | 'cancelled';
+export type HarvestType = 'flower' | 'fresh_frozen';
+export type FreshFrozenPackageStatus = 'stored' | 'allocated' | 'washed' | 'sold';
 
 export interface GrowRoom {
   id: string;
@@ -129,6 +131,7 @@ export interface HarvestSession {
   id: string;
   plant_group_id: string;
   harvest_date: string;
+  harvest_type: HarvestType;
   wet_weight_grams: number;
   waste_grams: number | null;
   plant_count_harvested: number;
@@ -224,7 +227,28 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
   };
 
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
-  Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id'>>;
+  Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id' | 'harvest_type'>>;
+
+export interface FreshFrozenPackage {
+  id: string;
+  batch_id: string;
+  strain_id: string | null;
+  package_number: number;
+  weight_grams: number;
+  vacuum_sealed_at: string | null;
+  frozen_at: string | null;
+  freezer_location: string | null;
+  status: FreshFrozenPackageStatus;
+  sold_price_per_gram: number | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  strains?: { name: string; abbreviation: string | null };
+}
+
+export type CreateFreshFrozenPackageInput = Pick<FreshFrozenPackage, 'batch_id' | 'weight_grams'> &
+  Partial<Pick<FreshFrozenPackage, 'strain_id' | 'package_number' | 'vacuum_sealed_at' | 'frozen_at' | 'freezer_location' | 'notes'>>;
 
 export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
 
