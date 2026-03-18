@@ -17,6 +17,7 @@ interface StaffMember {
   start_date: string | null;
   end_date: string | null;
   slack_id: string | null;
+  pin_code: string | null;
   reports_to: string | null;
   notes: string | null;
   created_at: string;
@@ -32,6 +33,7 @@ interface StaffFormData {
   email: string;
   phone: string;
   hourly_rate: string;
+  pin_code: string;
   start_date: string;
   end_date: string;
   reports_to: string;
@@ -69,6 +71,7 @@ const emptyFormData: StaffFormData = {
   email: '',
   phone: '',
   hourly_rate: '',
+  pin_code: '',
   start_date: '',
   end_date: '',
   reports_to: '',
@@ -123,6 +126,7 @@ export function StaffManagement() {
         email: formData.email.trim() || null,
         phone: formData.phone.trim() || null,
         hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+        pin_code: formData.pin_code.trim() || null,
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
         reports_to: formData.reports_to || null,
@@ -161,6 +165,7 @@ export function StaffManagement() {
       email: member.email || '',
       phone: member.phone || '',
       hourly_rate: member.hourly_rate?.toString() || '',
+      pin_code: member.pin_code || '',
       start_date: member.start_date || '',
       end_date: member.end_date || '',
       reports_to: member.reports_to || '',
@@ -299,6 +304,7 @@ export function StaffManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm text-cult-light-gray mb-1">Hourly Rate ($)</label><input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
                 <div><label className="block text-sm text-cult-light-gray mb-1">Slack ID</label><input type="text" value={formData.slack_id} onChange={(e) => setFormData({ ...formData, slack_id: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">Worker PIN</label><input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={formData.pin_code} onChange={(e) => setFormData({ ...formData, pin_code: e.target.value.replace(/\D/g, '').slice(0, 6) })} placeholder="4-6 digit PIN for /worker login" className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray font-mono tracking-widest" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm text-cult-light-gray mb-1">Start Date</label><input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>

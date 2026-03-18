@@ -12,6 +12,8 @@ import { InventoryDataProvider } from './features/inventory/context/InventoryDat
 import { createActivity } from './features/crm/services/crm.service';
 import { lazyRetry } from './lib/utils';
 import AIChatWidget from './shared/components/AIChatWidget';
+import { WorkerAuthProvider, useWorkerAuth } from './features/worker/hooks';
+import { PinLoginPage, WorkerLayout, MyTasksView } from './features/worker/components';
 
 const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
@@ -77,6 +79,7 @@ function AppContent() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isStandaloneMode, setIsStandaloneMode] = useState(false);
   const [isResetPasswordMode, setIsResetPasswordMode] = useState(false);
+  const [isWorkerMode, setIsWorkerMode] = useState(false);
   const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -99,6 +102,9 @@ function AppContent() {
     }
     if (path === '/menu') {
       setCurrentView('public-menu');
+    }
+    if (path === '/worker' || path.startsWith('/worker/')) {
+      setIsWorkerMode(true);
     }
   }, []);
 
@@ -150,6 +156,10 @@ function AppContent() {
 
   if (isStandaloneMode) {
     return <StandaloneOrderFormRefactored />;
+  }
+
+  if (isWorkerMode) {
+    return <WorkerApp />;
   }
 
   if (!user) {
@@ -334,6 +344,38 @@ function AppContent() {
       )}
       <AIChatWidget />
     </>
+  );
+}
+
+function WorkerAppContent() {
+  const { staff, loading } = useWorkerAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cult-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-white" />
+      </div>
+    );
+  }
+
+  if (!staff) {
+    return <PinLoginPage />;
+  }
+
+  return (
+    <WorkerLayout>
+      <MyTasksView />
+    </WorkerLayout>
+  );
+}
+
+function WorkerApp() {
+  return (
+    <ErrorBoundary>
+      <WorkerAuthProvider>
+        <WorkerAppContent />
+      </WorkerAuthProvider>
+    </ErrorBoundary>
   );
 }
 
