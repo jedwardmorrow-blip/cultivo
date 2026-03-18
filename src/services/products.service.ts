@@ -20,7 +20,7 @@ export async function fetchOrderableProducts(): Promise<OrderableProduct[]> {
     `)
     .eq('is_active', true)
     .eq('is_archived', false)
-    .or('product_category.in.(packaged,preroll),name.ilike.%Fresh Frozen%')
+    .or('product_category.in.(packaged,preroll,bulk),name.ilike.%Fresh Frozen%')
     .order('product_category')
     .order('name');
 
@@ -37,7 +37,7 @@ export function isProductOrderable(product: OrderableProduct): boolean {
   return (
     product.is_active === true &&
     (
-      (['packaged', 'preroll'].includes(product.product_category)) ||
+      (['packaged', 'preroll', 'bulk'].includes(product.product_category)) ||
       isFreshFrozen
     )
   );

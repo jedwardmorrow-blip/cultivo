@@ -26,7 +26,7 @@ export function useAccountDetail(accountId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchAccount = useCallback(async () => {
-    if (!accountId) return;
+    if (!accountId || accountId.length < 10) return;
 
     try {
       setLoading(true);

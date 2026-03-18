@@ -34,7 +34,7 @@ export function useAccountDeepDive(customerId: string | null, initialRange?: Dat
   const [currentRange, setCurrentRange] = useState<DateRange | undefined>(initialRange);
 
   const fetchData = useCallback(async (range?: DateRange, isInitial = false) => {
-    if (!customerId) return;
+    if (!customerId || customerId.length < 10) return;
 
     try {
       if (isInitial) setLoading(true);
