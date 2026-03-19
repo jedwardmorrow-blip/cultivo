@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { TrimSessionInsert, InventoryItem } from '../types';
 import { useActiveStaff } from '../hooks/useActiveStaff';
 import { createTrimSession } from '../services/sessions.service';
-import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
 
 interface TrimSessionStartFormProps {
   buckedPackages: InventoryItem[];
@@ -25,16 +24,6 @@ export function TrimSessionStartForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessionCreated, setSessionCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showReprintPrompt, setShowReprintPrompt] = useState(false);
-  const [reprintInfo, setReprintInfo] = useState<{
-    packageId: string;
-    originalWeight: number;
-    pullWeight: number;
-    strain: string;
-    batchNumber: string;
-    batchId: string;
-    category: string;
-  } | null>(null);
 
   const handleChange = (field: keyof TrimSessionInsert, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -138,7 +127,6 @@ export function TrimSessionStartForm({
         </div>
       )}
 
-      {sessionCreated && showReprintPrompt ? null : (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -288,20 +276,6 @@ export function TrimSessionStartForm({
           </button>
         </div>
       </form>
-      )}
-
-      {sessionCreated && showReprintPrompt && reprintInfo && (
-        <SourceLabelReprintPrompt
-          sourcePackageId={reprintInfo.packageId}
-          originalWeight={reprintInfo.originalWeight}
-          pullWeight={reprintInfo.pullWeight}
-          strain={reprintInfo.strain}
-          batchNumber={reprintInfo.batchNumber}
-          batchId={reprintInfo.batchId}
-          category={reprintInfo.category}
-          onDone={onSuccess}
-        />
-      )}
     </div>
   );
 }

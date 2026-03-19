@@ -6,7 +6,7 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { notificationService } from '@/services/notification.service';
 import { useActiveStaff } from '../hooks/useActiveStaff';
-import { SourceLabelReprintPrompt } from './SourceLabelReprintPrompt';
+
 
 interface PackagingSessionStartFormProps {
   inventoryPackages: InventoryItem[];
@@ -202,7 +202,6 @@ export function PackagingSessionStartForm({
   return (
     <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
       <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">Start New Packaging Session</h2>
-      {sessionCreated && showReprintPrompt ? null : (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -417,20 +416,6 @@ export function PackagingSessionStartForm({
           </Button>
         </div>
       </form>
-      )}
-
-      {sessionCreated && showReprintPrompt && reprintInfo && (
-        <SourceLabelReprintPrompt
-          sourcePackageId={reprintInfo.packageId}
-          originalWeight={reprintInfo.originalWeight}
-          pullWeight={reprintInfo.pullWeight}
-          strain={reprintInfo.strain}
-          batchNumber={reprintInfo.batchNumber}
-          batchId={reprintInfo.batchId}
-          category={reprintInfo.category}
-          onDone={onSuccess}
-        />
-      )}
     </div>
   );
 }
