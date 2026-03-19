@@ -35,24 +35,25 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
   const [error, setError] = useState<string | null>(null);
 
   const selectedHarvest = unbinnedHarvests.find((h) => h.id === harvestSessionId);
-  const dryRoomName = selectedHarvest?.dry_rooms?.name;
-  const dryRoomCode = selectedHarvest?.dry_rooms?.room_code;
+  const flowerEntries = selectedHarvest?.harvest_weight_entries?.filter(e => e.destination === 'flower') ?? [];
+  const primaryDryRoomId = flowerEntries.map(e => e.location_id).find(Boolean);
+  const dryRoomCode = flowerEntries.map(e => e.dry_rooms?.room_code).find(Boolean);
 
   const canSave =
     harvestSessionId &&
-    selectedHarvest?.dry_room_id &&
+    primaryDryRoomId &&
     selectedHarvest?.batch_registry_id &&
     binDate &&
     !saving;
 
   async function handleSubmit() {
-    if (!canSave || !selectedHarvest?.batch_registry_id || !selectedHarvest?.dry_room_id) return;
+    if (!canSave || !selectedHarvest?.batch_registry_id || !primaryDryRoomId) return;
     setSaving(true);
     setError(null);
     try {
       const input: CreateBinningSessionInput = {
         harvest_session_id: harvestSessionId,
-        dry_room_id: selectedHarvest.dry_room_id,
+        dry_room_id: primaryDryRoomId,
         batch_registry_id: selectedHarvest.batch_registry_id,
         bin_date: binDate,
         notes: notes.trim() || undefined,
@@ -66,7 +67,7 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
     }
   }
 
-  const wetWeight = selectedHarvest?.adjusted_weight_grams ?? selectedHarvest?.wet_weight_grams ?? null;
+  const wetWeight = selectedHarvest ? (flowerEntries.reduce((s, e) => s + Number(e.weight_grams), 0) || (selectedHarvest.adjusted_weight_grams ?? selectedHarvest.wet_weight_grams)) : null;
 
   return (
     <div className="rounded-lg border border-cult-medium-gray bg-cult-dark-gray p-5 space-y-4">
@@ -108,9 +109,9 @@ function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBinningFor
         <div>
           <label className="block text-xs font-medium text-cult-light-gray mb-1">Dry Room</label>
           {selectedHarvest ? (
-            selectedHarvest.dry_room_id ? (
+            primaryDryRoomId ? (
               <div className="rounded-md bg-cult-black border border-cult-medium-gray px-3 py-2 text-sm text-cult-white">
-                {dryRoomName ?? 'Assigned'} {dryRoomCode ? <span className="text-cult-medium-gray font-mono ml-1">({dryRoomCode})</span> : null}
+                Assigned {dryRoomCode ? <span className="text-cult-medium-gray font-mono ml-1">({dryRoomCode})</span> : null}
               </div>
             ) : (
               <div className="flex items-center gap-1.5 rounded-md bg-amber-950 border border-amber-700 px-3 py-2 text-xs text-amber-400">
@@ -685,7 +686,7 @@ function SessionCard({ session, onComplete, onCancel, onViewBatch, listBinEntrie
 
 interface PendingHarvestRowProps {
   harvest: HarvestSession;
-  onStartBinning: (harvest: HarvestSession) => Promise<void>;
+  onStartBinning: (harvest: HarvestSession, dryRoomId?: string) => Promise<void>;
   startingId: string | null;
   rowError: string | null;
 }
@@ -693,10 +694,13 @@ interface PendingHarvestRowProps {
 function PendingHarvestRow({ harvest, onStartBinning, startingId, rowError }: PendingHarvestRowProps) {
   const strainName = harvest.plant_groups?.strains?.name ?? 'Unknown Strain';
   const batchNumber = harvest.batch_registry?.batch_number ?? '--';
-  const wetWeight = harvest.adjusted_weight_grams ?? harvest.wet_weight_grams;
-  const dryRoomLabel = harvest.dry_rooms ? `${harvest.dry_rooms.name} (${harvest.dry_rooms.room_code})` : null;
+  const flowerEntries = harvest.harvest_weight_entries?.filter(e => e.destination === 'flower') ?? [];
+  const wetWeight = flowerEntries.reduce((s, e) => s + Number(e.weight_grams), 0) || (harvest.adjusted_weight_grams ?? harvest.wet_weight_grams);
+  const primaryDryRoomCode = flowerEntries.map(e => e.dry_rooms?.room_code).find(Boolean);
+  const primaryDryRoomId = flowerEntries.map(e => e.location_id).find(Boolean);
+  const dryRoomLabel = primaryDryRoomCode ? `Room ${primaryDryRoomCode}` : null;
   const isStarting = startingId === harvest.id;
-  const missingRequirements = !harvest.batch_registry_id || !harvest.dry_room_id;
+  const missingRequirements = !harvest.batch_registry_id || !primaryDryRoomId;
 
   return (
     <div className="rounded-md border border-cult-medium-gray bg-cult-dark-gray px-4 py-3 space-y-2">
@@ -715,7 +719,7 @@ function PendingHarvestRow({ harvest, onStartBinning, startingId, rowError }: Pe
           </div>
         </div>
         <button
-          onClick={() => onStartBinning(harvest)}
+          onClick={() => onStartBinning(harvest, primaryDryRoomId || undefined)}
           disabled={isStarting || missingRequirements}
           className="flex items-center gap-1.5 flex-shrink-0 text-xs px-3 py-1.5 rounded-md bg-cult-white text-cult-black font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
@@ -774,14 +778,14 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
     cancelled: sessionsByTab.cancelled.length,
   };
 
-  async function handleStartBinning(harvest: HarvestSession) {
-    if (!harvest.dry_room_id || !harvest.batch_registry_id) return;
+  async function handleStartBinning(harvest: HarvestSession, dryRoomId?: string) {
+    if (!dryRoomId || !harvest.batch_registry_id) return;
     setStartingId(harvest.id);
     setStartError(null);
     try {
       const input: CreateBinningSessionInput = {
         harvest_session_id: harvest.id,
-        dry_room_id: harvest.dry_room_id,
+        dry_room_id: dryRoomId,
         batch_registry_id: harvest.batch_registry_id,
         bin_date: new Date().toISOString().slice(0, 10),
       };

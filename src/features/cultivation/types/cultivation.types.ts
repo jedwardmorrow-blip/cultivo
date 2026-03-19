@@ -119,27 +119,27 @@ export interface HarvestWeightEntry {
   weight_grams: number;
   plant_count: number;
   entry_order: number;
+  destination: HarvestType | null;
+  location_id: string | null;
   notes: string | null;
   created_at: string;
   created_by: string | null;
 }
 
-export type CreateHarvestWeightEntryInput = Pick<HarvestWeightEntry, 'harvest_session_id' | 'weight_grams' | 'plant_count'> &
-  Partial<Pick<HarvestWeightEntry, 'entry_order' | 'notes'>>;
+export type CreateHarvestWeightEntryInput = Pick<HarvestWeightEntry, 'harvest_session_id' | 'weight_grams' | 'plant_count' | 'destination'> &
+  Partial<Pick<HarvestWeightEntry, 'entry_order' | 'notes' | 'location_id'>>;
 
 export interface HarvestSession {
   id: string;
-  plant_group_id: string;
+  plant_group_id: string | null;
   harvest_date: string;
-  harvest_type: HarvestType;
   wet_weight_grams: number;
   waste_grams: number | null;
   plant_count_harvested: number;
   adjusted_weight_grams: number | null;
   adjustment_reason: string | null;
-  batch_registry_id: string | null;
+  batch_registry_id: string;
   grow_room_id: string | null;
-  dry_room_id: string | null;
   session_status: HarvestSessionStatus;
   completed_at: string | null;
   completed_by: string | null;
@@ -154,10 +154,13 @@ export interface HarvestSession {
     strains?: { name: string; abbreviation: string | null };
     grow_rooms?: { room_code: string };
   };
-  grow_rooms?: { name: string; room_code: string };
-  dry_rooms?: { name: string; room_code: string };
-  batch_registry?: { batch_number: string };
-  weight_entries?: HarvestWeightEntry[];
+  grow_rooms?: { name: string; room_code: string } | null;
+  batch_registry?: { batch_number: string } | null;
+  harvest_weight_entries?: Array<{
+    destination: HarvestType | null;
+    location_id: string | null;
+    dry_rooms?: { room_code: string } | null;
+  }>;
 }
 
 export interface RoomSection {
@@ -226,8 +229,8 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
     cut_sessions?: Omit<CreatePlantGroupCutSessionInput, 'plant_group_id'>[];
   };
 
-export type CreateHarvestSessionInput = Pick<HarvestSession, 'plant_group_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
-  Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id' | 'harvest_type'>>;
+export type CreateHarvestSessionInput = Pick<HarvestSession, 'batch_registry_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
+  Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id' | 'plant_group_id'>>;
 
 export interface FreshFrozenPackage {
   id: string;

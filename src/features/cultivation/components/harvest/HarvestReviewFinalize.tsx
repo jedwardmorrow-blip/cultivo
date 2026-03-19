@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CheckCircle, AlertTriangle, Wind, Snowflake } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { formatWeight } from '../../utils';
-import type { DryRoom, HarvestSession, HarvestType, PlantGroup } from '../../types';
+import type { DryRoom, HarvestSession, PlantGroup } from '../../types';
 
 interface GroupSummary {
   group: PlantGroup;
@@ -10,7 +10,8 @@ interface GroupSummary {
   totalWeight: number;
   totalPlants: number;
   wasteGrams: number;
-  harvestType: HarvestType;
+  flowerWeight: number;
+  frozenWeight: number;
 }
 
 interface HarvestReviewFinalizeProps {
@@ -39,10 +40,10 @@ export function HarvestReviewFinalize({
   const combinedPlants = groupSummaries.reduce((s, g) => s + g.totalPlants, 0);
   const combinedWaste = groupSummaries.reduce((s, g) => s + g.wasteGrams, 0);
 
-  const hasFlowerSessions = groupSummaries.some((g) => g.harvestType === 'flower');
-  const hasFrozenSessions = groupSummaries.some((g) => g.harvestType === 'fresh_frozen');
-  const flowerWeight = groupSummaries.filter((g) => g.harvestType === 'flower').reduce((s, g) => s + g.totalWeight, 0);
-  const frozenWeight = groupSummaries.filter((g) => g.harvestType === 'fresh_frozen').reduce((s, g) => s + g.totalWeight, 0);
+  const flowerWeight = groupSummaries.reduce((s, g) => s + g.flowerWeight, 0);
+  const frozenWeight = groupSummaries.reduce((s, g) => s + g.frozenWeight, 0);
+  const hasFlowerSessions = flowerWeight > 0;
+  const hasFrozenSessions = frozenWeight > 0;
 
   const allComplete = groupSummaries.every((g) => g.totalPlants >= g.group.plant_count);
   // Dry room only required if there are flower sessions
@@ -106,11 +107,10 @@ export function HarvestReviewFinalize({
         </div>
 
         <div className="divide-y divide-cult-dark-gray">
-          {groupSummaries.map(({ group, totalWeight, totalPlants, wasteGrams, harvestType }) => {
+          {groupSummaries.map(({ group, totalWeight, totalPlants, wasteGrams, flowerWeight, frozenWeight }) => {
             const strainName = group.strains?.name ?? 'Unknown';
             const batchNumber = group.batch_registry?.batch_number;
             const complete = totalPlants >= group.plant_count;
-            const isFrozen = harvestType === 'fresh_frozen';
 
             return (
               <div key={group.id} className="px-4 py-3 flex items-center justify-between gap-4">
@@ -122,19 +122,16 @@ export function HarvestReviewFinalize({
                   )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {batchNumber && (
+                       {batchNumber && (
                         <span className="text-cult-white font-mono text-xs">{batchNumber}</span>
                       )}
                       <span className="text-cult-light-gray text-xs truncate">{strainName}</span>
-                      <span
-                        className={`text-[9px] px-1.5 py-0 uppercase tracking-wider font-semibold border ${
-                          isFrozen
-                            ? 'border-cyan-700 bg-cyan-950 text-cyan-400'
-                            : 'border-green-700 bg-green-950 text-green-400'
-                        }`}
-                      >
-                        {isFrozen ? 'FF' : 'FLW'}
-                      </span>
+                      {flowerWeight > 0 && (
+                        <span className="text-[9px] px-1 py-0.5 uppercase font-bold border border-green-800 text-green-400">FLW</span>
+                      )}
+                      {frozenWeight > 0 && (
+                        <span className="text-[9px] px-1 py-0.5 uppercase font-bold border border-cyan-800 text-cyan-400">FF</span>
+                      )}
                     </div>
                     <span className="text-cult-medium-gray text-[10px]">
                       {totalPlants}/{group.plant_count} plants

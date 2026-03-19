@@ -119,8 +119,12 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
   const displayWeight = session.adjusted_weight_grams ?? session.wet_weight_grams;
   const isAdjusted = session.adjusted_weight_grams !== null && session.adjusted_weight_grams !== undefined;
   const growRoomCode = session.grow_rooms?.room_code;
-  const dryRoomCode = session.dry_rooms?.room_code;
-  const isFreshFrozen = session.harvest_type === 'fresh_frozen';
+  
+  const hasFreshFrozen = session.harvest_weight_entries?.some(e => e.destination === 'fresh_frozen');
+  const hasFlower = session.harvest_weight_entries?.some(e => e.destination === 'flower');
+  const uniqueDryRooms = Array.from(new Set(
+    (session.harvest_weight_entries?.map(e => e.dry_rooms?.room_code).filter(Boolean) as string[])
+  )).sort();
 
   return (
     <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
@@ -159,16 +163,16 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
                   {growRoomCode}
                 </span>
               )}
-              {dryRoomCode && (
-                <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
+              {uniqueDryRooms.map(room => (
+                <span key={room} className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
                   <Wind className="w-2.5 h-2.5" />
-                  {dryRoomCode}
+                  {room}
                 </span>
-              )}
-              {isFreshFrozen && (
+              ))}
+              {hasFreshFrozen && (
                 <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-700 text-cyan-300 px-1.5 py-0.5 font-semibold uppercase tracking-wider">
                   <Snowflake className="w-2.5 h-2.5" />
-                  Fresh Frozen
+                  {hasFlower ? 'Split: FF' : 'Fresh Frozen'}
                 </span>
               )}
             </div>

@@ -81,8 +81,8 @@ const PLANT_GROUP_SUMMARY_SELECT = `
 `;
 
 const HARVEST_SESSION_SELECT = `
-  id, plant_group_id, harvest_date, harvest_type, wet_weight_grams, waste_grams, plant_count_harvested,
-  adjusted_weight_grams, adjustment_reason, batch_registry_id, grow_room_id, dry_room_id,
+  id, plant_group_id, harvest_date, wet_weight_grams, waste_grams, plant_count_harvested,
+  adjusted_weight_grams, adjustment_reason, batch_registry_id, grow_room_id,
   session_status, completed_at, completed_by, cancelled_at, cancelled_by, notes, created_at, created_by,
   plant_groups (
     strain_id, grow_room_id,
@@ -90,8 +90,12 @@ const HARVEST_SESSION_SELECT = `
     grow_rooms (room_code)
   ),
   grow_rooms (name, room_code),
-  dry_rooms (name, room_code),
-  batch_registry (batch_number)
+  batch_registry (batch_number),
+  harvest_weight_entries (
+    destination,
+    location_id,
+    dry_rooms!location_id (room_code)
+  )
 `;
 
 const ROOM_SECTION_SELECT = 'id, room_table_id, section_label, section_sqft, is_active, created_at, created_by, flip_date, projected_harvest_date';
@@ -492,7 +496,7 @@ export const cultivationService = {
   async createHarvestSession(input: CreateHarvestSessionInput): Promise<HarvestSession> {
     const { data, error } = await supabase
       .from('harvest_sessions')
-      .insert({ ...input, harvest_type: input.harvest_type ?? 'flower', session_status: 'active' })
+      .insert({ ...input, session_status: 'active' })
       .select(HARVEST_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'createHarvestSession');
@@ -537,7 +541,7 @@ export const cultivationService = {
   async listHarvestWeightEntries(harvestSessionId: string): Promise<HarvestWeightEntry[]> {
     const { data, error } = await supabase
       .from('harvest_weight_entries')
-      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, notes, created_at, created_by')
+      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, destination, location_id, notes, created_at, created_by')
       .eq('harvest_session_id', harvestSessionId)
       .order('entry_order');
     if (error) throwError(error, 'listHarvestWeightEntries');
@@ -562,10 +566,12 @@ export const cultivationService = {
         weight_grams: input.weight_grams,
         plant_count: input.plant_count,
         entry_order: nextOrder,
+        destination: input.destination ?? null,
+        location_id: input.location_id ?? null,
         notes: input.notes ?? null,
         created_by: user?.id ?? null,
       })
-      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, notes, created_at, created_by')
+      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, destination, location_id, notes, created_at, created_by')
       .single();
     if (error) throwError(error, 'createHarvestWeightEntry');
     return data as HarvestWeightEntry;
@@ -588,13 +594,20 @@ export const cultivationService = {
     const totalWeight = entries.reduce((sum, e) => sum + Number(e.weight_grams), 0);
     const totalPlants = entries.reduce((sum, e) => sum + e.plant_count, 0);
 
+    if (dryRoomId) {
+      await supabase
+        .from('harvest_weight_entries')
+        .update({ location_id: dryRoomId })
+        .eq('harvest_session_id', id)
+        .eq('destination', 'flower');
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from('harvest_sessions')
       .update({
         wet_weight_grams: totalWeight,
         plant_count_harvested: totalPlants,
-        dry_room_id: dryRoomId,
         session_status: 'completed',
         completed_by: user?.id ?? null,
       })
@@ -675,8 +688,9 @@ export const cultivationService = {
   async listHarvestSessionsByDryRoom(dryRoomId: string): Promise<HarvestSession[]> {
     const { data, error } = await supabase
       .from('harvest_sessions')
-      .select(HARVEST_SESSION_SELECT)
-      .eq('dry_room_id', dryRoomId)
+      .select(`${HARVEST_SESSION_SELECT}, harvest_weight_entries!inner(location_id, destination)`)
+      .eq('harvest_weight_entries.location_id', dryRoomId)
+      .eq('harvest_weight_entries.destination', 'flower')
       .eq('session_status', 'completed')
       .order('harvest_date', { ascending: false });
     if (error) throwError(error, 'listHarvestSessionsByDryRoom');
@@ -691,9 +705,9 @@ export const cultivationService = {
         .not('session_status', 'eq', 'cancelled'),
       supabase
         .from('harvest_sessions')
-        .select(HARVEST_SESSION_SELECT)
+        .select(`${HARVEST_SESSION_SELECT}, harvest_weight_entries!inner(destination)`)
         .eq('session_status', 'completed')
-        .not('dry_room_id', 'is', null)
+        .eq('harvest_weight_entries.destination', 'flower')
         .order('harvest_date', { ascending: false }),
     ]);
 

@@ -59,8 +59,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
   const [sessionMap, setSessionMap] = useState<Record<string, HarvestSession>>({});
   const [wasteMap, setWasteMap] = useState<Record<string, number>>({});
-  const [weightTotals, setWeightTotals] = useState<Record<string, { weight: number; plants: number }>>({});
-  const [harvestTypeMap, setHarvestTypeMap] = useState<Record<string, HarvestType>>({});
+  const [weightTotals, setWeightTotals] = useState<Record<string, { weight: number; plants: number; flowerWeight: number; frozenWeight: number }>>({});
 
   const flowerRooms = rooms
     .filter((r) => r.is_active && r.room_type === 'flower')
@@ -96,16 +95,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     setStep('record-weights');
   }
 
-  // Harvest type applies to entire batch
-  function handleBatchHarvestTypeChange(batchRegistryId: string, type: HarvestType) {
-    const batch = batchGroups.find((b) => b.batchRegistryId === batchRegistryId);
-    if (!batch) return;
-    setHarvestTypeMap((prev) => {
-      const next = { ...prev };
-      for (const g of batch.groups) next[g.id] = type;
-      return next;
-    });
-  }
+
 
   // Create sessions for ALL plant groups in a batch at once
   async function handleBatchCreateSessions(batchRegistryId: string): Promise<HarvestSession> {
@@ -116,17 +106,17 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
       throw new Error('Strain is missing a 3-letter abbreviation. Update in Products > Strains first.');
     }
 
-    const harvestType = harvestTypeMap[batch.groups[0].id] ?? 'flower';
     let firstSession: HarvestSession | null = null;
+    const batchId = batch.batchRegistryId;
 
     for (const group of batch.groups) {
       const session = await createSession({
         plant_group_id: group.id,
+        batch_registry_id: batchId,
         harvest_date: new Date().toISOString().slice(0, 10),
         wet_weight_grams: 0,
         plant_count_harvested: 0,
         grow_room_id: selectedRoom?.id ?? undefined,
-        harvest_type: harvestType,
       });
       setSessionMap((prev) => ({ ...prev, [group.id]: session }));
       if (!firstSession) firstSession = session;
@@ -144,14 +134,13 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
       throw new Error('Strain is missing a 3-letter abbreviation. Update in Products > Strains first.');
     }
 
-    const harvestType = harvestTypeMap[groupId] ?? 'flower';
     const session = await createSession({
       plant_group_id: groupId,
+      batch_registry_id: group.batch_registry_id ?? group.id,
       harvest_date: new Date().toISOString().slice(0, 10),
       wet_weight_grams: 0,
       plant_count_harvested: 0,
       grow_room_id: selectedRoom?.id ?? undefined,
-      harvest_type: harvestType,
     });
     setSessionMap((prev) => ({ ...prev, [groupId]: session }));
     return session;
@@ -161,11 +150,11 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     setWasteMap((prev) => ({ ...prev, [groupId]: grams }));
   }
 
-  const updateWeightTotals = useCallback((groupId: string, weight: number, plants: number) => {
+  const updateWeightTotals = useCallback((groupId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => {
     setWeightTotals((prev) => {
       const existing = prev[groupId];
-      if (existing && existing.weight === weight && existing.plants === plants) return prev;
-      return { ...prev, [groupId]: { weight, plants } };
+      if (existing && existing.weight === weight && existing.plants === plants && existing.flowerWeight === flowerWeight && existing.frozenWeight === frozenWeight) return prev;
+      return { ...prev, [groupId]: { weight, plants, flowerWeight, frozenWeight } };
     });
   }, []);
 
@@ -180,9 +169,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
           .eq('id', session.id);
         if (error) throw new Error(error.message);
       }
-      // Fresh frozen sessions get null dry room; flower sessions get the selected dry room
-      const sessionDryRoom = session.harvest_type === 'fresh_frozen' ? null : dryRoomId;
-      await finalizeHarvest(session.id, sessionDryRoom);
+      await finalizeHarvest(session.id, dryRoomId);
     }
     await reloadSessions();
     onComplete();
@@ -193,14 +180,15 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     .filter((g) => sessionMap[g.id])
     .map((group) => {
       const session = sessionMap[group.id];
-      const totals = weightTotals[group.id] ?? { weight: 0, plants: 0 };
+      const totals = weightTotals[group.id] ?? { weight: 0, plants: 0, flowerWeight: 0, frozenWeight: 0 };
       return {
         group,
         session,
         totalWeight: totals.weight,
         totalPlants: totals.plants,
+        flowerWeight: totals.flowerWeight,
+        frozenWeight: totals.frozenWeight,
         wasteGrams: wasteMap[group.id] ?? 0,
-        harvestType: (session.harvest_type ?? harvestTypeMap[group.id] ?? 'flower') as HarvestType,
       };
     });
 
@@ -274,9 +262,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
                 key={batch.batchRegistryId}
                 batch={batch}
                 sessionMap={sessionMap}
-                harvestTypeMap={harvestTypeMap}
                 wasteMap={wasteMap}
-                onBatchHarvestTypeChange={handleBatchHarvestTypeChange}
                 onBatchCreateSessions={handleBatchCreateSessions}
                 onCreateSession={handleCreateSession}
                 onWasteChange={handleWasteChange}
@@ -323,9 +309,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 interface BatchWeightCardProps {
   batch: BatchGroup;
   sessionMap: Record<string, HarvestSession>;
-  harvestTypeMap: Record<string, HarvestType>;
   wasteMap: Record<string, number>;
-  onBatchHarvestTypeChange: (batchRegistryId: string, type: HarvestType) => void;
   onBatchCreateSessions: (batchRegistryId: string) => Promise<HarvestSession>;
   onCreateSession: (groupId: string) => Promise<HarvestSession>;
   onWasteChange: (groupId: string, grams: number) => void;
@@ -335,9 +319,7 @@ interface BatchWeightCardProps {
 function BatchWeightCard({
   batch,
   sessionMap,
-  harvestTypeMap,
   wasteMap,
-  onBatchHarvestTypeChange,
   onBatchCreateSessions,
   onCreateSession,
   onWasteChange,
@@ -346,14 +328,8 @@ function BatchWeightCard({
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const harvestType = harvestTypeMap[batch.groups[0].id] ?? 'flower';
   const hasAnySessions = batch.groups.some((g) => sessionMap[g.id]);
   const allHaveSessions = batch.groups.every((g) => sessionMap[g.id]);
-
-  // Get locked harvest type from first existing session
-  const lockedType = batch.groups
-    .map((g) => sessionMap[g.id]?.harvest_type)
-    .find((t) => t != null);
 
   async function handleStartAll() {
     setCreating(true);
@@ -369,47 +345,6 @@ function BatchWeightCard({
 
   return (
     <div>
-      {/* Harvest type toggle — one per batch, only before sessions are created */}
-      {!hasAnySessions && (
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Type:</span>
-          <button
-            onClick={() => onBatchHarvestTypeChange(batch.batchRegistryId, 'flower')}
-            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border transition-all ${
-              harvestType === 'flower'
-                ? 'border-green-600 bg-green-950 text-green-400'
-                : 'border-cult-dark-gray text-cult-medium-gray hover:border-cult-medium-gray'
-            }`}
-          >
-            Flower
-          </button>
-          <button
-            onClick={() => onBatchHarvestTypeChange(batch.batchRegistryId, 'fresh_frozen')}
-            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border transition-all ${
-              harvestType === 'fresh_frozen'
-                ? 'border-cyan-600 bg-cyan-950 text-cyan-400'
-                : 'border-cult-dark-gray text-cult-medium-gray hover:border-cult-medium-gray'
-            }`}
-          >
-            Fresh Frozen
-          </button>
-        </div>
-      )}
-      {/* Locked badge after sessions created */}
-      {hasAnySessions && lockedType && (
-        <div className="flex items-center gap-1 mb-2">
-          <span
-            className={`text-[10px] px-2 py-0.5 uppercase tracking-wider font-semibold border ${
-              lockedType === 'fresh_frozen'
-                ? 'border-cyan-700 bg-cyan-950 text-cyan-400'
-                : 'border-green-700 bg-green-950 text-green-400'
-            }`}
-          >
-            {lockedType === 'fresh_frozen' ? 'Fresh Frozen' : 'Flower'}
-          </span>
-        </div>
-      )}
-
       {/* Single consolidated card for the batch */}
       <div className="border border-cult-medium-gray bg-cult-near-black p-4 space-y-3">
         {/* Batch header */}
@@ -477,7 +412,7 @@ interface GroupWeightCardWithTotalsProps {
   onCreateSession: (groupId: string) => Promise<HarvestSession>;
   wasteGrams: number;
   onWasteChange: (groupId: string, grams: number) => void;
-  onTotalsUpdate: (groupId: string, weight: number, plants: number) => void;
+  onTotalsUpdate: (groupId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => void;
 }
 
 function GroupWeightCardWithTotals({
@@ -491,12 +426,16 @@ function GroupWeightCardWithTotals({
   const sessionId = harvestSession?.id ?? null;
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalPlants, setTotalPlants] = useState(0);
+  const [flowerWeight, setFlowerWeight] = useState(0);
+  const [frozenWeight, setFrozenWeight] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!sessionId) {
       setTotalWeight(0);
       setTotalPlants(0);
+      setFlowerWeight(0);
+      setFrozenWeight(0);
       return;
     }
     let cancelled = false;
@@ -504,13 +443,15 @@ function GroupWeightCardWithTotals({
       if (cancelled) return;
       setTotalWeight(entries.reduce((s, e) => s + Number(e.weight_grams), 0));
       setTotalPlants(entries.reduce((s, e) => s + e.plant_count, 0));
+      setFlowerWeight(entries.filter((e) => e.destination === 'flower').reduce((s, e) => s + Number(e.weight_grams), 0));
+      setFrozenWeight(entries.filter((e) => e.destination === 'fresh_frozen').reduce((s, e) => s + Number(e.weight_grams), 0));
     });
     return () => { cancelled = true; };
   }, [sessionId, refreshKey]);
 
   useEffect(() => {
-    onTotalsUpdate(group.id, totalWeight, totalPlants);
-  }, [group.id, totalWeight, totalPlants, onTotalsUpdate]);
+    onTotalsUpdate(group.id, totalWeight, totalPlants, flowerWeight, frozenWeight);
+  }, [group.id, totalWeight, totalPlants, flowerWeight, frozenWeight, onTotalsUpdate]);
 
   function handleSessionCreated() {
     setRefreshKey((k) => k + 1);

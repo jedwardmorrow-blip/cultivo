@@ -3,7 +3,7 @@ import { Plus, Trash2, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useHarvestWeightEntries } from '../../hooks/useHarvestWeightEntries';
 import { formatWeight } from '../../utils';
-import type { PlantGroup, HarvestSession } from '../../types';
+import type { PlantGroup, HarvestSession, HarvestType } from '../../types';
 
 interface WeightEntryFormProps {
   harvestSessionId: string;
@@ -16,6 +16,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
   const { addEntry } = useHarvestWeightEntries(harvestSessionId);
   const [weight, setWeight] = useState('');
   const [plantCount, setPlantCount] = useState('');
+  const [destination, setDestination] = useState<HarvestType>('flower');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
     setSaving(true);
     setError(null);
     try {
-      await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants });
+      await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants, destination });
       setWeight('');
       setPlantCount('');
       onEntryAdded();
@@ -79,6 +80,19 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
             placeholder={String(Math.min(5, remaining))}
             className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
           />
+        </div>
+        <div className="w-28">
+          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+            Dest
+          </label>
+          <select
+            value={destination}
+            onChange={(e) => setDestination(e.target.value as HarvestType)}
+            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray uppercase"
+          >
+            <option value="flower">Flower</option>
+            <option value="fresh_frozen">Frozen</option>
+          </select>
         </div>
         <Button
           onClick={handleAdd}
@@ -218,6 +232,11 @@ export function PlantGroupWeightCard({
                 <span className="text-cult-white font-mono">{formatWeight(Number(entry.weight_grams))}</span>
                 <span className="text-cult-medium-gray">|</span>
                 <span className="text-cult-light-gray">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
+                {entry.destination && (
+                  <span className={`text-[9px] px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-green-800 text-green-400'}`}>
+                    {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => handleRemoveEntry(entry.id)}
