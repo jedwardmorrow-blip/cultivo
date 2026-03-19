@@ -15,7 +15,8 @@
     "test:coverage": "vitest run --coverage",
     "types:generate": "bash scripts/generate-types.sh",
     "docs:validate": "tsx scripts/validate-documentation.ts",
-    "postinstall": "bash scripts/sync-pdf-worker.sh"
+    "postinstall": "bash scripts/sync-pdf-worker.sh",
+    "ai:init": "tsx scripts/ai-init.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
