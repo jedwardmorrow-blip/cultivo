@@ -1,456 +1,47 @@
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useRef } from 'react';
 import { Printer, Plus, Eye } from 'lucide-react';
-import QRCode from 'qrcode';
-import JsBarcode from 'jsbarcode';
-import { logoService } from '@/features/settings/services';
+import { useLabelGenerator } from '../hooks/useLabelGenerator';
 import { notificationService } from '@/services/notification.service';
 import { DEFAULT_LICENSE_NUMBER } from '@/lib/constants';
 
-interface Label {
-  id: string;
-  label_number: string;
-  product_name: string;
-  strain: string;
-  product_type: string;
-  net_weight_grams: number;
-  unit_count: number;
-  qr_code_data: string;
-  thc_percentage: number;
-  cbd_percentage: number;
-  package_id: string;
-  batch_id: string;
-  test_date: string;
-  package_date: string;
-  harvest_date: string;
-  printed_at: string;
-  compliance_uid: string;
-  warnings: string[];
-  lineage: string;
-  upc_code?: string;
-  barcode_url?: string;
-  barcode_format?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  type: string;
-  strain: string;
-}
-
 export function LabelGenerator() {
-  const [labels, setLabels] = useState<Label[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showNewLabelForm, setShowNewLabelForm] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState<Label | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
-  const [barcodeUrl, setBarcodeUrl] = useState<string>('');
-  const [upcBarcodeUrl, setUpcBarcodeUrl] = useState<string>('');
-  const [logoDataUrl, setLogoDataUrl] = useState<string>('');
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [loadingPrint, setLoadingPrint] = useState(false);
-  const [imageError, setImageError] = useState<string>('');
+  const {
+    labels,
+    products,
+    loading,
+    formState,
+    previewState,
+    dispatchForm,
+    dispatchPreview,
+    generateLabels,
+    markAsPrinted
+  } = useLabelGenerator();
+
+  const { formData, packageIdPreview, packageIdWarning, showNewLabelForm, showPreview, selectedLabel } = formState;
+  const { qrCodeUrl, barcodeUrl, upcBarcodeUrl, logoDataUrl, imagesLoaded, loadingPrint, imageError } = previewState;
+
   const printRef = useRef<HTMLDivElement>(null);
   const barcodeCanvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [formData, setFormData] = useState({
-    product_id: '',
-    batch_id: '',
-    package_id: '',
-    net_weight_grams: 3.5,
-    unit_count: 1,
-    thc_percentage: 0,
-    cbd_percentage: 0,
-    test_date: '',
-    package_date: new Date().toISOString().split('T')[0],
-    harvest_date: '',
-    lineage: '',
-    product_category: 'Indica Hybrid',
-    compliance_uid: '',
-    quantity_to_generate: 1,
-    upc_code: ''
-  });
-  const [packageIdPreview, setPackageIdPreview] = useState<string[]>([]);
-  const [packageIdWarning, setPackageIdWarning] = useState<string>('');
-
-  useEffect(() => {
-    loadLabels();
-    loadProducts();
-  }, []);
-
-  useEffect(() => {
-    checkPackageIdDuplicates();
-  }, [formData.package_id, formData.quantity_to_generate]);
-
-  useEffect(() => {
-    if (selectedLabel && showPreview) {
-      setImagesLoaded(false);
-      setImageError('');
-      const upcCode = selectedLabel.upc_code || generateUPCFromProduct(selectedLabel);
-
-      const createLogoDataUrl = async () => {
-        try {
-          const logoUrl = await logoService.getLogoUrl('label');
-          if (!logoUrl) {
-            setLogoDataUrl('');
-            return;
-          }
-
-          return new Promise<void>((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-
-              if (!ctx) {
-                reject(new Error('Could not get canvas context'));
-                return;
-              }
-
-              const sourceWidth = img.width;
-              const sourceHeight = img.height;
-              const cropTop = sourceHeight * 0.25;
-              const cropBottom = sourceHeight * 0.25;
-              const croppedHeight = sourceHeight - cropTop - cropBottom;
-
-              canvas.width = sourceWidth;
-              canvas.height = croppedHeight;
-
-              ctx.fillStyle = '#FFFFFF';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-              ctx.drawImage(
-                img,
-                0, cropTop,
-                sourceWidth, croppedHeight,
-                0, 0,
-                sourceWidth, croppedHeight
-              );
-
-              const dataUrl = canvas.toDataURL('image/png');
-              setLogoDataUrl(dataUrl);
-              resolve();
-            };
-
-            img.onerror = () => {
-              console.error('Failed to load logo from URL:', logoUrl);
-              setLogoDataUrl('');
-              resolve();
-            };
-
-            img.src = logoUrl;
-          });
-        } catch (error) {
-          console.error('Error loading logo:', error);
-          setLogoDataUrl('');
-        }
-      };
-
-      Promise.all([
-        generateQRCode(selectedLabel.qr_code_data),
-        generateBarcode(selectedLabel.package_id),
-        generateUPCBarcode(upcCode),
-        createLogoDataUrl()
-      ]).then(() => {
-        setTimeout(() => {
-          setImagesLoaded(true);
-        }, 800);
-      }).catch(err => {
-        console.error('Error generating codes:', err);
-        setImageError('Failed to generate barcodes/images: ' + err.message);
-        setImagesLoaded(true);
-      });
-    }
-  }, [selectedLabel, showPreview]);
-
-  useEffect(() => {
-    if (!showPreview) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowPreview(false);
-        setSelectedLabel(null);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showPreview]);
-
-  async function generateQRCode(data: string): Promise<void> {
-    try {
-      const url = await QRCode.toDataURL(data, {
-        width: 200,
-        margin: 0,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
-      setQrCodeUrl(url);
-    } catch (error) {
-      console.error('Error generating QR code:', error);
-      throw error;
-    }
-  }
-
-  function generateBarcode(data: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const canvas = document.createElement('canvas');
-        JsBarcode(canvas, data, {
-          format: 'CODE128',
-          width: 2,
-          height: 45,
-          displayValue: true,
-          margin: 0,
-          font: 'Arial',
-          fontSize: 8,
-          textMargin: 1,
-        });
-        const dataUrl = canvas.toDataURL();
-        setBarcodeUrl(dataUrl);
-        resolve();
-      } catch (error) {
-        console.error('Error generating barcode:', error);
-        reject(error);
-      }
-    });
-  }
-
-  function generateUPCBarcode(upcCode: string): Promise<void> {
-    return new Promise((resolve, _reject) => {
-      try {
-        if (!upcCode || upcCode.length < 8) {
-          setUpcBarcodeUrl('');
-          resolve();
-          return;
-        }
-
-        const canvas = document.createElement('canvas');
-        const format = upcCode.length === 12 ? 'UPC' : upcCode.length === 8 ? 'EAN8' : 'CODE128';
-
-        JsBarcode(canvas, upcCode, {
-          format: format,
-          width: 2,
-          height: 28,
-          displayValue: true,
-          fontSize: 7,
-          margin: 0,
-          textMargin: 1,
-        });
-        const dataUrl = canvas.toDataURL();
-        setUpcBarcodeUrl(dataUrl);
-        resolve();
-      } catch (error) {
-        console.error('Error generating UPC barcode:', error, upcCode);
-        setUpcBarcodeUrl('');
-        resolve();
-      }
-    });
-  }
-
-  function generateUPCFromProduct(label: Label): string {
-    const strainCode = label.strain.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
-    const weightCode = Math.floor(label.net_weight_grams * 10).toString().padStart(3, '0');
-    const typeCode = label.product_type.includes('Indica') ? '1' : label.product_type.includes('Sativa') ? '2' : '3';
-    const randomPart = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
-    return `0${typeCode}${strainCode.substring(0, 2)}${weightCode}${randomPart}`.substring(0, 12);
-  }
-
-  async function loadLabels() {
-    try {
-      const { data, error } = await supabase
-        .from('labels')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setLabels(data || []);
-    } catch (error) {
-      console.error('Error loading labels:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadProducts() {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, type, strain')
-        .eq('is_archived', false)
-        .order('name');
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Error loading products:', error);
-    }
-  }
-
-  async function checkPackageIdDuplicates() {
-    if (!formData.package_id || formData.quantity_to_generate < 1) {
-      setPackageIdPreview([]);
-      setPackageIdWarning('');
-      return;
-    }
-
-    const previewIds: string[] = [];
-    for (let i = 0; i < formData.quantity_to_generate; i++) {
-      const packageId = `${formData.package_id}${String(i + 1).padStart(3, '0')}`;
-      previewIds.push(packageId);
-    }
-    setPackageIdPreview(previewIds);
-
-    // Check for existing labels with these package IDs
-    const { data: existingLabels, error } = await supabase
-      .from('labels')
-      .select('package_id')
-      .in('package_id', previewIds);
-
-    if (error) {
-      console.error('Error checking for duplicate package IDs:', error);
-      return;
-    }
-
-    if (existingLabels && existingLabels.length > 0) {
-      const duplicateIds = existingLabels.map(l => l.package_id).join(', ');
-      setPackageIdWarning(`Warning: The following package IDs already exist: ${duplicateIds}`);
-    } else {
-      setPackageIdWarning('');
-    }
-  }
-
-  async function generateLabels() {
-    try {
-      const product = products.find(p => p.id === formData.product_id);
-      if (!product) {
-        notificationService.warning('Please select a product');
-        return;
-      }
-
-      if (!formData.package_id) {
-        notificationService.warning('Please enter a package ID prefix');
-        return;
-      }
-
-      // Final check for duplicates before creating
-      await checkPackageIdDuplicates();
-      if (packageIdWarning) {
-        const confirmed = confirm(`${packageIdWarning}\n\nDo you want to proceed anyway?`);
-        if (!confirmed) return;
-      }
-
-      const labelsToCreate = [];
-
-      for (let i = 0; i < formData.quantity_to_generate; i++) {
-        const packageId = `${formData.package_id}${String(i + 1).padStart(3, '0')}`;
-        const labelNumber = `LBL-${Date.now()}-${i}`;
-        const qrCodeData = `${formData.batch_id}-${packageId}`;
-
-        labelsToCreate.push({
-          label_number: labelNumber,
-          product_id: formData.product_id,
-          package_id: packageId,
-          batch_id: formData.batch_id,
-          strain: product.strain,
-          product_name: product.name,
-          product_type: formData.product_category,
-          net_weight_grams: formData.net_weight_grams,
-          unit_count: formData.unit_count,
-          qr_code_data: qrCodeData,
-          thc_percentage: formData.thc_percentage,
-          cbd_percentage: formData.cbd_percentage,
-          test_date: formData.test_date || null,
-          package_date: formData.package_date,
-          harvest_date: formData.harvest_date || null,
-          expiration_date: null,
-          compliance_uid: formData.compliance_uid || DEFAULT_LICENSE_NUMBER,
-          lineage: formData.lineage || '',
-          upc_code: formData.upc_code || null,
-          barcode_format: formData.upc_code ? (formData.upc_code.length === 12 ? 'UPC' : 'CODE128') : 'CODE128',
-          warnings: [
-            'For medical use only',
-            'Keep out of reach of children',
-            'May cause drowsiness',
-            'Do not operate heavy machinery'
-          ]
-        });
-      }
-
-      const { error } = await supabase
-        .from('labels')
-        .insert(labelsToCreate);
-
-      if (error) throw error;
-
-      setShowNewLabelForm(false);
-      setFormData({
-        product_id: '',
-        batch_id: '',
-        package_id: '',
-        net_weight_grams: 3.5,
-        unit_count: 1,
-        thc_percentage: 0,
-        cbd_percentage: 0,
-        test_date: '',
-        package_date: new Date().toISOString().split('T')[0],
-        harvest_date: '',
-        lineage: '',
-        product_category: 'Indica Hybrid',
-        compliance_uid: '',
-        quantity_to_generate: 1,
-        upc_code: ''
-      });
-
-      await loadLabels();
-    } catch (error) {
-      console.error('Error generating labels:', error);
-      notificationService.error('Failed to generate labels. Please try again.');
-    }
-  }
-
-  async function markAsPrinted(labelId: string) {
-    try {
-      const { error } = await supabase
-        .from('labels')
-        .update({ printed_at: new Date().toISOString() })
-        .eq('id', labelId);
-
-      if (error) throw error;
-      await loadLabels();
-    } catch (error) {
-      console.error('Error marking label as printed:', error);
-    }
-  }
 
   async function handlePrint() {
     if (!printRef.current) {
       notificationService.warning('Print area not ready. Please try again.');
       return;
     }
-
     if (!imagesLoaded) {
       notificationService.warning('Please wait for the label to finish loading...');
       return;
     }
-
     if (!qrCodeUrl || !barcodeUrl) {
       notificationService.warning('Barcodes are still generating. Please wait...');
       return;
     }
-
     if (imageError) {
       notificationService.error('There was an error generating the label: ' + imageError);
       return;
     }
 
-    setLoadingPrint(true);
+    dispatchPreview({ type: 'SET_PRINTING', isPrinting: true });
 
     try {
       const iframe = document.createElement('iframe');
@@ -472,27 +63,11 @@ export function LabelGenerator() {
           <meta charset="utf-8">
           <title>Print Label</title>
           <style>
-            @page {
-              size: 1.5in 2in;
-              margin: 0;
-            }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color-adjust: exact !important;
-            }
-            html, body {
-              margin: 0;
-              padding: 0;
-              width: 1.5in;
-              height: 2in;
-            }
-            body {
-              font-family: Arial, sans-serif;
-            }
-            #print-label {
-              padding: 0.08in !important;
-            }
+            @page { size: 1.5in 2in; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            html, body { margin: 0; padding: 0; width: 1.5in; height: 2in; }
+            body { font-family: Arial, sans-serif; }
+            #print-label { padding: 0.08in !important; }
           </style>
         </head>
         <body>
@@ -532,7 +107,7 @@ export function LabelGenerator() {
       console.error('Print error:', error);
       notificationService.error('An error occurred while printing. Please try again.');
     } finally {
-      setLoadingPrint(false);
+      dispatchPreview({ type: 'SET_PRINTING', isPrinting: false });
     }
   }
 
@@ -688,7 +263,7 @@ export function LabelGenerator() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Compliance Label Generator</h2>
         <button
-          onClick={() => setShowNewLabelForm(true)}
+          onClick={() => dispatchForm({ type: 'SHOW_NEW_FORM' })}
           className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -704,7 +279,7 @@ export function LabelGenerator() {
               <label className="block text-sm text-cult-text-muted mb-1">Product</label>
               <select
                 value={formData.product_id}
-                onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'product_id', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               >
                 <option value="">Select Product</option>
@@ -721,7 +296,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.batch_id}
-                onChange={(e) => setFormData({ ...formData, batch_id: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'batch_id', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="25064H"
               />
@@ -732,7 +307,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.package_id}
-                onChange={(e) => setFormData({ ...formData, package_id: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'package_id', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="072125"
               />
@@ -761,7 +336,7 @@ export function LabelGenerator() {
                 type="number"
                 step="0.1"
                 value={formData.net_weight_grams}
-                onChange={(e) => setFormData({ ...formData, net_weight_grams: parseFloat(e.target.value) })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'net_weight_grams', value: parseFloat(e.target.value) })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -772,7 +347,7 @@ export function LabelGenerator() {
                 type="number"
                 step="0.01"
                 value={formData.thc_percentage}
-                onChange={(e) => setFormData({ ...formData, thc_percentage: parseFloat(e.target.value) })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'thc_percentage', value: parseFloat(e.target.value) })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -783,7 +358,7 @@ export function LabelGenerator() {
                 type="number"
                 step="0.01"
                 value={formData.cbd_percentage}
-                onChange={(e) => setFormData({ ...formData, cbd_percentage: parseFloat(e.target.value) })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'cbd_percentage', value: parseFloat(e.target.value) })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -793,7 +368,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.product_category}
-                onChange={(e) => setFormData({ ...formData, product_category: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'product_category', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="Indica Hybrid"
               />
@@ -804,7 +379,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.lineage}
-                onChange={(e) => setFormData({ ...formData, lineage: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'lineage', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="(Face Off OG x Kush Mints) x (Biscotti x Sherb BX)"
               />
@@ -815,7 +390,7 @@ export function LabelGenerator() {
               <input
                 type="date"
                 value={formData.harvest_date}
-                onChange={(e) => setFormData({ ...formData, harvest_date: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'harvest_date', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -825,7 +400,7 @@ export function LabelGenerator() {
               <input
                 type="date"
                 value={formData.package_date}
-                onChange={(e) => setFormData({ ...formData, package_date: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'package_date', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -835,7 +410,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.compliance_uid}
-                onChange={(e) => setFormData({ ...formData, compliance_uid: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'compliance_uid', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder={DEFAULT_LICENSE_NUMBER}
               />
@@ -846,7 +421,7 @@ export function LabelGenerator() {
               <input
                 type="text"
                 value={formData.upc_code}
-                onChange={(e) => setFormData({ ...formData, upc_code: e.target.value })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'upc_code', value: e.target.value })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
                 placeholder="12-digit UPC-A or 8-digit EAN-8"
                 maxLength={12}
@@ -861,7 +436,7 @@ export function LabelGenerator() {
                 min="1"
                 max="100"
                 value={formData.quantity_to_generate}
-                onChange={(e) => setFormData({ ...formData, quantity_to_generate: parseInt(e.target.value) })}
+                onChange={(e) => dispatchForm({ type: 'SET_FIELD', field: 'quantity_to_generate', value: parseInt(e.target.value) })}
                 className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-white"
               />
             </div>
@@ -875,7 +450,7 @@ export function LabelGenerator() {
               Generate {formData.quantity_to_generate} Label{formData.quantity_to_generate !== 1 ? 's' : ''}
             </button>
             <button
-              onClick={() => setShowNewLabelForm(false)}
+              onClick={() => dispatchForm({ type: 'CLOSE_NEW_FORM' })}
               className="px-4 py-2 bg-cult-surface-overlay hover:bg-cult-surface-overlay text-white rounded transition-colors"
             >
               Cancel
@@ -928,8 +503,7 @@ export function LabelGenerator() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
-                          setSelectedLabel(label);
-                          setShowPreview(true);
+                          dispatchForm({ type: 'SHOW_PREVIEW', label });
                         }}
                         className="p-2 hover:bg-cult-surface-overlay rounded transition-colors"
                         title="Preview & Print"
@@ -1044,8 +618,7 @@ export function LabelGenerator() {
                   </button>
                   <button
                     onClick={() => {
-                      setShowPreview(false);
-                      setSelectedLabel(null);
+                      dispatchForm({ type: 'CLOSE_PREVIEW' });
                     }}
                     className="text-cult-text-muted hover:text-white px-4"
                   >
