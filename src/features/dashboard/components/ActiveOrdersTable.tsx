@@ -23,8 +23,8 @@ function getUrgency(deliveryDate: string | null): { label: string; cls: string }
   const diff = Math.floor((delivery.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (diff < 0) return { label: 'OVERDUE', cls: 'bg-cult-danger-muted text-cult-danger' };
   if (diff === 0) return { label: 'DUE TODAY', cls: 'bg-cult-stage-harvest/10 text-cult-stage-harvest' };
-  if (diff === 1) return { label: 'TOMORROW', cls: 'bg-blue-400/10 text-blue-400' };
-  return { label: `${diff}d`, cls: 'bg-blue-400/10 text-blue-400' };
+  if (diff === 1) return { label: 'TOMORROW', cls: 'bg-cult-surface-overlay text-cult-text-secondary' };
+  return { label: `${diff}d`, cls: 'bg-cult-surface-overlay text-cult-text-secondary' };
 }
 
 export function ActiveOrdersTable({ orders, onSelectOrder, onViewAll }: Props) {
@@ -37,7 +37,7 @@ export function ActiveOrdersTable({ orders, onSelectOrder, onViewAll }: Props) {
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
           Active Orders
         </h3>
-        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-blue-400/10 text-blue-400">
+        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-surface-overlay text-cult-text-secondary">
           {orders.length} open
         </span>
       </div>

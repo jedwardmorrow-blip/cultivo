@@ -31,7 +31,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
         backgroundColor: data.map(d => {
           if (d.revenue >= 40000) return 'rgba(16, 185, 129, 0.7)';
           if (d.revenue >= 15000) return 'rgba(166, 166, 166, 0.35)';
-          return 'rgba(184, 29, 36, 0.45)';
+          return 'rgba(220, 69, 69, 0.45)';
         }),
         borderRadius: 4,
         borderSkipped: false as const,
@@ -88,7 +88,7 @@ export function WeeklyRevenueChart({ data, weeklyGoal = 39500 }: Props) {
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
           Weekly Revenue — Last {data.length} Weeks
         </h3>
-        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-blue-400/10 text-blue-400">
+        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-surface-overlay text-cult-text-secondary">
           Trend
         </span>
       </div>

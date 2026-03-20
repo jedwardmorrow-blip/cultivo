@@ -10,7 +10,7 @@ import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
-import type { GrowRoom, PlantGroup, GrowthStage, RoomType, RoomSummary } from '../types';
+import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -27,6 +27,11 @@ const ROOM_TYPE_BORDER: Record<string, string> = {
   mother: 'border-l-cult-stage-harvest',
   mixed: 'border-l-cult-border',
 };
+
+function computeHarvestDays(harvestDate: string | null): number | null {
+  if (!harvestDate) return null;
+  return daysBetween(todayIso(), harvestDate);
+}
 
 const ROOM_TYPE_TEXT: Record<string, string> = {
   clone: 'text-cult-stage-clone border-cult-stage-clone',

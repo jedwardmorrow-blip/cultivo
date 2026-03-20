@@ -6,10 +6,10 @@ import { useInventoryPipeline, STAGES, type StageName } from '../hooks/useInvent
 import { PipelineStrainRow } from './PipelineStrainRow';
 
 const STAGE_META: Record<StageName, { color: string; borderColor: string; icon: string }> = {
-  Binned: { color: 'text-sky-400', borderColor: 'border-l-sky-500', icon: 'bg-sky-500/10' },
-  Bucked: { color: 'text-amber-400', borderColor: 'border-l-amber-500', icon: 'bg-amber-500/10' },
-  Trimmed: { color: 'text-teal-400', borderColor: 'border-l-teal-500', icon: 'bg-teal-500/10' },
-  Packaged: { color: 'text-emerald-400', borderColor: 'border-l-emerald-500', icon: 'bg-emerald-500/10' },
+  Binned: { color: 'text-cult-stage-clone', borderColor: 'border-l-cult-stage-clone', icon: 'bg-cult-stage-clone/10' },
+  Bucked: { color: 'text-cult-stage-harvest', borderColor: 'border-l-cult-stage-harvest', icon: 'bg-cult-stage-harvest/10' },
+  Trimmed: { color: 'text-cult-stage-veg', borderColor: 'border-l-cult-stage-veg', icon: 'bg-cult-stage-veg/10' },
+  Packaged: { color: 'text-cult-success', borderColor: 'border-l-cult-success', icon: 'bg-cult-success/10' },
 };
 
 function formatWeight(grams: number): string {
@@ -162,7 +162,7 @@ export function InventoryPipelineWidget() {
 
                       const max = grandTotals.maxByStage[stage];
                       const opacity = max > 0 && value > 0 ? Math.max(0.08, (value / max) * 0.35) : 0;
-                      const bgColor = stage === 'Binned' ? 'bg-sky-500' : stage === 'Bucked' ? 'bg-amber-500' : stage === 'Trimmed' ? 'bg-teal-500' : 'bg-emerald-500';
+                      const bgColor = stage === 'Binned' ? 'bg-cult-stage-clone' : stage === 'Bucked' ? 'bg-cult-stage-harvest' : stage === 'Trimmed' ? 'bg-cult-stage-veg' : 'bg-cult-success';
 
                       return (
                         <td key={stage} className="px-3 py-2.5 text-right relative">

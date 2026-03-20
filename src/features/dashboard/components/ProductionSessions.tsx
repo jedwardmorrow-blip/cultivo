@@ -21,7 +21,7 @@ export function ProductionSessions({ data }: Props) {
     datasets: [
       {
         data: [data.buckingOutput, data.buckingInput - data.buckingOutput],
-        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(184, 29, 36, 0.35)'],
+        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(220, 69, 69, 0.35)'],
         borderWidth: 0,
       },
     ],

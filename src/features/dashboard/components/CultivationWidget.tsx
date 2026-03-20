@@ -18,9 +18,9 @@ interface CultivationSummary {
 }
 
 const STAGE_STYLES: Record<string, { bar: string; text: string }> = {
-  clone: { bar: 'bg-sky-500', text: 'text-sky-400' },
-  veg: { bar: 'bg-green-500', text: 'text-green-400' },
-  flower: { bar: 'bg-rose-500', text: 'text-rose-400' },
+  clone: { bar: 'bg-cult-stage-clone', text: 'text-cult-stage-clone' },
+  veg: { bar: 'bg-cult-stage-veg', text: 'text-cult-stage-veg' },
+  flower: { bar: 'bg-cult-stage-flower', text: 'text-cult-stage-flower' },
 };
 
 function formatWeight(grams: number): string {
@@ -80,7 +80,7 @@ export function CultivationWidget() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <Sprout className="w-5 h-5 text-green-400" />
+          <Sprout className="w-5 h-5 text-cult-success" />
           <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Cultivation</h2>
         </div>
         <div className="text-xs text-cult-medium-gray py-4">Loading cultivation data…</div>
@@ -96,7 +96,7 @@ export function CultivationWidget() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Sprout className="w-5 h-5 text-green-400" />
+          <Sprout className="w-5 h-5 text-cult-success" />
           <div>
             <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Cultivation</h2>
             <p className="text-xs text-cult-light-gray mt-0.5">Active plant groups, harvests, and drying runs</p>
@@ -112,7 +112,7 @@ export function CultivationWidget() {
       </div>
 
       {summary.missingAbbrevStrains.length > 0 && (
-        <div className="flex items-start gap-2 bg-amber-950/50 border border-amber-800 px-3 py-2 text-xs text-amber-300">
+        <div className="flex items-start gap-2 bg-cult-warning-muted border border-cult-warning/30 rounded-cult px-3 py-2 text-xs text-cult-warning">
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
           <span>
             <span className="font-semibold">Harvest blocked: </span>
@@ -129,14 +129,14 @@ export function CultivationWidget() {
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Harvests</div>
-          <div className={`text-2xl font-bold ${summary.activeHarvests.length > 0 ? 'text-amber-400' : 'text-cult-white'}`}>
+          <div className={`text-2xl font-bold ${summary.activeHarvests.length > 0 ? 'text-cult-warning' : 'text-cult-white'}`}>
             {summary.activeHarvests.length}
           </div>
           <div className="text-xs text-cult-medium-gray mt-0.5">in progress</div>
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Pending Binning</div>
-          <div className={`text-2xl font-bold ${summary.pendingBinning > 0 ? 'text-sky-400' : 'text-cult-white'}`}>
+          <div className={`text-2xl font-bold ${summary.pendingBinning > 0 ? 'text-cult-stage-clone' : 'text-cult-white'}`}>
             {summary.pendingBinning}
           </div>
           <div className="text-xs text-cult-medium-gray mt-0.5">awaiting dry weight</div>
@@ -197,7 +197,7 @@ export function CultivationWidget() {
                   <span className="text-xs font-mono text-cult-light-gray">{h.batch_registry?.batch_number ?? '—'}</span>
                   <span className="text-xs text-cult-white truncate">{h.plant_groups?.strains?.name ?? 'Unknown'}</span>
                 </div>
-                <span className="text-xs text-amber-400 font-mono flex-shrink-0">
+                <span className="text-xs text-cult-warning font-mono flex-shrink-0">
                   {formatWeight(h.wet_weight_grams)}
                 </span>
               </div>
@@ -212,16 +212,16 @@ export function CultivationWidget() {
       )}
 
       {summary.pendingBinning > 0 && (
-        <div className="flex items-center justify-between border border-sky-900 bg-sky-950/30 px-4 py-3">
+        <div className="flex items-center justify-between border border-cult-stage-clone/30 bg-cult-stage-clone/5 rounded-cult px-4 py-3">
           <div className="flex items-center gap-2">
-            <Scale className="w-4 h-4 text-sky-400" />
-            <span className="text-sm text-sky-300">
+            <Scale className="w-4 h-4 text-cult-stage-clone" />
+            <span className="text-sm text-cult-stage-clone">
               {summary.pendingBinning} harvest{summary.pendingBinning !== 1 ? 's' : ''} ready to bin
             </span>
           </div>
           <button
             onClick={() => navigate('/cultivation-binning')}
-            className="flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 transition-colors font-medium uppercase tracking-wider"
+            className="flex items-center gap-1 text-xs text-cult-stage-clone hover:text-cult-stage-clone/80 transition-colors font-medium uppercase tracking-wider"
           >
             Start Binning
             <ArrowRight className="w-3.5 h-3.5" />

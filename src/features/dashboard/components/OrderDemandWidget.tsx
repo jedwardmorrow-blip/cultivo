@@ -68,7 +68,7 @@ export function OrderDemandWidget() {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-blue-400" />
+              <TrendingUp className="w-4 h-4 text-cult-text-secondary" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Total Demand</span>
             </div>
             <div className="text-2xl font-bold text-cult-white">{totalUnitsNeeded}</div>
@@ -77,10 +77,10 @@ export function OrderDemandWidget() {
 
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
+              <CheckCircle className="w-4 h-4 text-cult-success" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Packaged</span>
             </div>
-            <div className="text-2xl font-bold text-green-400">{totalPackagedAvailable}</div>
+            <div className="text-2xl font-bold text-cult-success">{totalPackagedAvailable}</div>
             <div className="text-xs text-cult-light-gray mt-1">
               {totalUnitsNeeded > 0
                 ? `${Math.round((totalPackagedAvailable / totalUnitsNeeded) * 100)}% ready`
@@ -91,10 +91,10 @@ export function OrderDemandWidget() {
 
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="w-4 h-4 text-amber-400" />
+              <AlertCircle className="w-4 h-4 text-cult-warning" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Still Needed</span>
             </div>
-            <div className="text-2xl font-bold text-amber-400">{totalUnitsShortfall}</div>
+            <div className="text-2xl font-bold text-cult-warning">{totalUnitsShortfall}</div>
             <div className="text-xs text-cult-light-gray mt-1">to package</div>
           </div>
         </div>
@@ -136,8 +136,8 @@ export function OrderDemandWidget() {
                     <div className="text-xs text-cult-lighter-gray mb-1">Packaged</div>
                     <div className={`font-bold ${
                       req.packaged_units_available >= req.total_units_needed
-                        ? 'text-green-400'
-                        : 'text-amber-400'
+                        ? 'text-cult-success'
+                        : 'text-cult-warning'
                     }`}>
                       {req.packaged_units_available} units
                     </div>
@@ -159,8 +159,8 @@ export function OrderDemandWidget() {
                 </div>
 
                 {req.units_still_needed > 0 && (
-                  <div className="mt-3 p-2 bg-amber-900/20 border border-amber-700">
-                    <div className="flex items-center gap-2 text-xs text-amber-200">
+                  <div className="mt-3 p-2 bg-cult-warning-muted border border-cult-warning rounded-cult">
+                    <div className="flex items-center gap-2 text-xs text-cult-warning">
                       <AlertCircle className="w-3 h-3" />
                       <span>
                         Need {req.units_still_needed} more units
@@ -173,8 +173,8 @@ export function OrderDemandWidget() {
                 )}
 
                 {req.packaged_units_available >= req.total_units_needed && (
-                  <div className="mt-3 p-2 bg-green-900/20 border border-green-700">
-                    <div className="flex items-center gap-2 text-xs text-green-200">
+                  <div className="mt-3 p-2 bg-cult-success/10 border border-cult-success/30 rounded-cult">
+                    <div className="flex items-center gap-2 text-xs text-cult-success">
                       <CheckCircle className="w-3 h-3" />
                       <span>Fully stocked and ready for delivery</span>
                     </div>

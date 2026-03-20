@@ -47,7 +47,7 @@ export function ProjectionChart({ windows }: Props) {
         label: 'Est. Dry Weight (lbs)',
         data: dryLbs,
         backgroundColor: windows.map((w, i) => {
-          if (w.isOverdue) return 'rgba(184, 29, 36, 0.6)';
+          if (w.isOverdue) return 'rgba(220, 69, 69, 0.6)';
           if (i < 2) return 'rgba(245, 158, 11, 0.6)';
           return 'rgba(166, 166, 166, 0.35)';
         }),

@@ -10,10 +10,10 @@ interface PipelineStrainRowProps {
 }
 
 const STAGE_COLORS: Record<StageName, string> = {
-  Binned: 'bg-sky-500/[OPACITY]',
-  Bucked: 'bg-amber-500/[OPACITY]',
-  Trimmed: 'bg-teal-500/[OPACITY]',
-  Packaged: 'bg-emerald-500/[OPACITY]',
+  Binned: 'bg-cult-stage-clone/[OPACITY]',
+  Bucked: 'bg-cult-stage-harvest/[OPACITY]',
+  Trimmed: 'bg-cult-stage-veg/[OPACITY]',
+  Packaged: 'bg-cult-success/[OPACITY]',
 };
 
 function formatValue(stage: StageName, weight: number, units: number): string {

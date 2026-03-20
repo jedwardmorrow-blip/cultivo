@@ -66,7 +66,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
           </div>
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 text-center">
-          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+          <CheckCircle2 className="w-12 h-12 text-cult-success mx-auto mb-3" />
           <p className="text-cult-light-gray text-sm">All sessions finalized</p>
           <p className="text-cult-light-gray text-xs mt-1">
             No sessions awaiting conversion to inventory
@@ -170,12 +170,12 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
             : 'bg-cult-surface-raised border-cult-border'
         }`}>
           <div className={`text-xs font-medium uppercase tracking-wide mb-2 ${
-            isUrgent ? 'text-amber-400' : 'text-cult-light-gray'
+            isUrgent ? 'text-cult-warning' : 'text-cult-light-gray'
           }`}>
             Oldest Pending
           </div>
           <div className={`text-3xl font-bold ${
-            isUrgent ? 'text-amber-400' : 'text-cult-white'
+            isUrgent ? 'text-cult-warning' : 'text-cult-white'
           }`}>
             {daysSinceOldest !== null ? (
               <>
@@ -189,7 +189,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
             )}
           </div>
           {isUrgent && (
-            <div className="flex items-center gap-1 text-xs text-amber-400 mt-1">
+            <div className="flex items-center gap-1 text-xs text-cult-warning mt-1">
               <AlertCircle className="w-3 h-3" />
               Action needed
             </div>

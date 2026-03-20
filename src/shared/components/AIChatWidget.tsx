@@ -125,6 +125,7 @@ function formatFileSize(bytes: number): string {
 // ─── MAIN COMPONENT ───
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -335,10 +336,10 @@ export default function AIChatWidget() {
   };
 
   // ─── CLOSED STATE: Cult Eye Bubble ───
-  if (!isOpen) {
+  if (!isOpen && !isMinimized) {
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true); setIsMinimized(false); }}
         style={{
           position: "fixed",
           bottom: "24px",
@@ -381,6 +382,100 @@ export default function AIChatWidget() {
           }}
         />
       </button>
+    );
+  }
+
+  // ─── MINIMIZED STATE: Compact Bar ───
+  if (isMinimized) {
+    const msgCount = messages.filter((m) => m.role === "assistant").length;
+    return (
+      <div
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          width: "280px",
+          borderRadius: "10px",
+          background: BRAND.graphite,
+          border: `1px solid ${BRAND.charcoal}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 14px",
+          boxShadow: "0 4px 24px rgba(0, 0, 0, 0.6)",
+          zIndex: 9999,
+          fontFamily: 'Montserrat, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          cursor: "pointer",
+          transition: "border-color 0.2s",
+        }}
+        onClick={() => setIsMinimized(false)}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = BRAND.silver; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = BRAND.charcoal; }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img
+            src="/cult-logo-eye.png"
+            alt="CULT"
+            style={{ width: "20px", height: "20px", objectFit: "contain" }}
+          />
+          <span style={{ color: BRAND.white, fontWeight: 700, fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase" }}>
+            CULT AI
+          </span>
+          {msgCount > 0 && (
+            <span
+              style={{
+                fontSize: "10px",
+                color: BRAND.textSecondary,
+                background: BRAND.charcoal,
+                padding: "2px 8px",
+                borderRadius: "10px",
+                border: `1px solid ${BRAND.border}`,
+              }}
+            >
+              {msgCount} {msgCount === 1 ? "reply" : "replies"}
+            </span>
+          )}
+          {isLoading && (
+            <div style={{ display: "flex", gap: "3px", alignItems: "center" }}>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "2px",
+                    background: BRAND.white,
+                    animation: `cultPulse 1.4s infinite ${i * 0.2}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(false);
+            setIsMinimized(false);
+          }}
+          title="Close"
+          style={{
+            background: "none",
+            border: "none",
+            color: BRAND.textMuted,
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "0 2px",
+            lineHeight: 1,
+            fontFamily: "inherit",
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = BRAND.white; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = BRAND.textMuted; }}
+        >
+          ×
+        </button>
+      </div>
     );
   }
 
@@ -450,7 +545,31 @@ export default function AIChatWidget() {
             Clear
           </button>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsMinimized(true)}
+            title="Minimize"
+            style={{
+              background: BRAND.charcoal,
+              border: `1px solid ${BRAND.border}`,
+              color: BRAND.silver,
+              width: "28px",
+              height: "28px",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "inherit",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = BRAND.white; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = BRAND.silver; }}
+          >
+            —
+          </button>
+          <button
+            onClick={() => { setIsOpen(false); setIsMinimized(false); }}
+            title="Close"
             style={{
               background: BRAND.charcoal,
               border: `1px solid ${BRAND.border}`,
@@ -514,7 +633,7 @@ export default function AIChatWidget() {
                     e.currentTarget.style.background = BRAND.graphite;
                   }}
                 >
-                  <span style={{ fontSize: "10px", color: BRAND.red }}>
+                  <span style={{ fontSize: "10px", color: BRAND.white }}>
                     {sp.icon}
                   </span>
                   <div style={{ color: BRAND.offWhite, fontSize: "11px", fontWeight: 600, marginTop: "4px", letterSpacing: "0.3px" }}>
@@ -545,9 +664,9 @@ export default function AIChatWidget() {
                       fontSize: "9px",
                       padding: "2px 6px",
                       borderRadius: "3px",
-                      background: intent === "financial" ? "rgba(184, 29, 36, 0.15)" : "rgba(255, 255, 255, 0.06)",
-                      color: intent === "financial" ? "#E07070" : BRAND.silver,
-                      border: `1px solid ${intent === "financial" ? "rgba(184, 29, 36, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
+                      background: intent === "financial" ? "rgba(220, 69, 69, 0.15)" : "rgba(255, 255, 255, 0.06)",
+                      color: intent === "financial" ? "#DC4545" : BRAND.silver,
+                      border: `1px solid ${intent === "financial" ? "rgba(220, 69, 69, 0.3)" : "rgba(255, 255, 255, 0.1)"}`,
                       letterSpacing: "0.5px",
                       textTransform: "uppercase",
                       fontWeight: 600,
@@ -630,11 +749,11 @@ export default function AIChatWidget() {
         {error && (
           <div
             style={{
-              background: "rgba(184, 29, 36, 0.1)",
-              border: `1px solid rgba(184, 29, 36, 0.25)`,
+              background: "rgba(220, 69, 69, 0.1)",
+              border: `1px solid rgba(220, 69, 69, 0.25)`,
               borderRadius: "6px",
               padding: "10px",
-              color: "#E07070",
+              color: "#DC4545",
               fontSize: "12px",
             }}
           >

@@ -8,9 +8,12 @@ interface Props {
 const MAX_VISIBLE = 12;
 
 const STAGE_COLORS: Record<string, string> = {
-  flower: '#F43F5E',
-  cure: '#8B5CF6',
-  clone: '#0EA5E9',
+  flower: '#F43F5E',   // cult-stage-flower
+  cure: '#8B5CF6',     // cult-stage-cure
+  clone: '#0EA5E9',    // cult-stage-clone
+  veg: '#10B981',      // cult-stage-veg
+  harvest: '#F59E0B',  // cult-stage-harvest
+  package: '#6366F1',  // cult-stage-package
 };
 
 export function ActiveStrainsWidget({ strains }: Props) {
