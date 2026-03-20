@@ -34,64 +34,28 @@ export function useBadgeCounts(enabled: boolean = true) {
 
       setLoading(true);
       try {
-        const [
-          ordersResult,
-          trimResult,
-          packagingResult,
-          batchesResult,
-          inventoryResult,
-          conversionsResult,
-          auditResult,
-        ] = await Promise.all([
-          supabase
-            .from('orders')
-            .select('id', { count: 'exact', head: true })
-            .in('status', ['submitted', 'processing']),
-          supabase
-            .from('trim_sessions')
-            .select('id', { count: 'exact', head: true })
-            .eq('session_status', 'in_progress'),
-          supabase
-            .from('packaging_sessions')
-            .select('id', { count: 'exact', head: true })
-            .eq('session_status', 'in_progress'),
-          supabase
-            .from('batch_registry')
-            .select('id', { count: 'exact', head: true })
-            .neq('lifecycle_state', 'archived'),
-          supabase
-            .from('inventory_items')
-            .select('category'),
-          supabase
-            .from('conversion_summary_view')
-            .select('session_id', { count: 'exact', head: true }),
-          supabase
-            .from('inventory_audits')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'in_progress'),
-        ]);
+        // Single query via server-side view — replaces 7 parallel queries
+        // (one of which downloaded ALL inventory_items client-side)
+        const { data, error } = await supabase
+          .from('v_badge_counts')
+          .select('*')
+          .single();
 
-        const inventoryItems = inventoryResult.data || [];
-        const binnedCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('binned')).length;
-        const buckedCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('bucked')).length;
-        const bulkCount = inventoryItems.filter((item) => (item.category || '').toLowerCase().includes('bulk')).length;
-        const packagedCount = inventoryItems.filter((item) => {
-          const cat = (item.category || '').toLowerCase();
-          return cat.includes('packaged') || cat.includes('prepack');
-        }).length;
+        if (error) throw error;
+        if (!data) return;
 
         setCounts({
-          orders: ordersResult.count || 0,
-          trimSessions: trimResult.count || 0,
-          packagingSessions: packagingResult.count || 0,
-          batches: batchesResult.count || 0,
-          inventoryTotal: inventoryItems.length,
-          inventoryBinned: binnedCount,
-          inventoryBucked: buckedCount,
-          inventoryBulk: bulkCount,
-          inventoryPackaged: packagedCount,
-          pendingConversions: conversionsResult.count || 0,
-          activeAudit: (auditResult.count || 0) > 0,
+          orders: data.orders ?? 0,
+          trimSessions: data.trim_sessions ?? 0,
+          packagingSessions: data.packaging_sessions ?? 0,
+          batches: data.batches ?? 0,
+          inventoryTotal: data.inventory_total ?? 0,
+          inventoryBinned: data.inventory_binned ?? 0,
+          inventoryBucked: data.inventory_bucked ?? 0,
+          inventoryBulk: data.inventory_bulk ?? 0,
+          inventoryPackaged: data.inventory_packaged ?? 0,
+          pendingConversions: data.pending_conversions ?? 0,
+          activeAudit: data.active_audit ?? false,
         });
         lastFetchRef.current = now;
       } catch (error) {
