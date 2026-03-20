@@ -79,8 +79,18 @@ export default {
         'slide-in': 'slideIn 0.4s ease-in-out',
         'slide-in-right': 'slideInRight 0.25s ease-out',
         'flicker': 'flicker 0.3s ease-in-out',
+        'pulse-red': 'pulseUrgentRed 2s infinite',
+        'pulse-amber': 'pulseUrgentAmber 2s infinite',
       },
       keyframes: {
+        pulseUrgentRed: {
+          '0%, 100%': { boxShadow: '0 0 5px rgba(184, 29, 36, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(184, 29, 36, 0.6)' }
+        },
+        pulseUrgentAmber: {
+          '0%, 100%': { boxShadow: '0 0 5px rgba(245, 158, 11, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(245, 158, 11, 0.6)' }
+        },
         glitch: {
           '0%, 100%': { transform: 'translate(0)' },
           '33%': { transform: 'translate(-1px, 1px)', opacity: '0.95' },

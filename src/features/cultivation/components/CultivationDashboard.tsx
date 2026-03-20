@@ -4,13 +4,10 @@ import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { useRoomSummaries } from '../hooks/useRoomSummaries';
+import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
-import { RoomGroup } from './RoomGroup';
-import { StrainPills } from './StrainPills';
-import { FlowerRunProgress } from './FlowerRunProgress';
-import { HarvestCountdown } from './HarvestCountdown';
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup, GrowthStage, RoomType, RoomSummary } from '../types';
@@ -23,14 +20,6 @@ const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   harvested: null,
 };
 
-const STAGE_GLOW: Record<RoomType, string> = {
-  clone: 'rgba(14,165,233,0.06)',
-  veg: 'rgba(16,185,129,0.06)',
-  flower: 'rgba(244,63,94,0.06)',
-  mother: 'rgba(245,158,11,0.06)',
-  mixed: 'rgba(64,64,64,0.06)',
-};
-
 const ROOM_TYPE_BORDER: Record<string, string> = {
   clone: 'border-l-cult-stage-clone',
   veg: 'border-l-cult-stage-veg',
@@ -39,64 +28,122 @@ const ROOM_TYPE_BORDER: Record<string, string> = {
   mixed: 'border-l-cult-border',
 };
 
-const DEFAULT_FLOWER_DAYS = 63;
+const ROOM_TYPE_TEXT: Record<string, string> = {
+  clone: 'text-cult-stage-clone border-cult-stage-clone',
+  veg: 'text-cult-stage-veg border-cult-stage-veg',
+  flower: 'text-cult-stage-flower border-cult-stage-flower',
+  mother: 'text-cult-stage-harvest border-cult-stage-harvest',
+  mixed: 'text-cult-light-gray border-cult-border',
+};
 
-function computeHarvestDays(harvestDate: string | null): number | null {
-  if (!harvestDate) return null;
-  return daysBetween(todayIso(), harvestDate);
-}
 
-function computeDayInFlower(flipDate: string | null): number | null {
-  if (!flipDate) return null;
-  const days = daysBetween(flipDate, todayIso());
-  return Math.max(0, days) + 1;
-}
 
-interface EnhancedRoomCardProps {
-  room: GrowRoom;
-  summary: RoomSummary | undefined;
+
+
+interface RoomCommandCardProps {
+  state: RoomOperationalState;
   onClick: () => void;
 }
 
-function EnhancedRoomCard({ room, summary, onClick }: EnhancedRoomCardProps) {
-  const borderCls = ROOM_TYPE_BORDER[room.room_type] ?? ROOM_TYPE_BORDER.mixed;
-  const glow = STAGE_GLOW[room.room_type] ?? STAGE_GLOW.mixed;
-  const isFlower = room.room_type === 'flower';
-  const groupCount = summary?.groups.length ?? 0;
-  const plantCount = summary?.total_plant_count ?? 0;
-  const harvestDays = isFlower ? computeHarvestDays(summary?.earliest_projected_harvest ?? null) : null;
-  const dayInFlower = isFlower ? computeDayInFlower(summary?.earliest_flip_date ?? null) : null;
+function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
+  const isEmpty = state.occupancy_status === 'empty';
+  
+  let pulseClass = '';
+  let urgencyBadge = null;
+  if (!isEmpty) {
+    if (state.urgency_score === 3) {
+      pulseClass = 'animate-[pulseUrgentRed_2s_infinite] border-cult-red shadow-[0_0_15px_rgba(184,29,36,0.3)] z-10';
+      urgencyBadge = <span className="bg-cult-red/20 text-cult-red text-[10px] uppercase font-bold px-1.5 py-0.5 border border-cult-red/50">Urgent</span>;
+    } else if (state.urgency_score === 2) {
+      pulseClass = 'animate-[pulseUrgentAmber_2s_infinite] border-cult-stage-harvest shadow-[0_0_15px_rgba(245,158,11,0.3)] z-10';
+      urgencyBadge = <span className="bg-cult-stage-harvest/20 text-cult-stage-harvest text-[10px] uppercase font-bold px-1.5 py-0.5 border border-cult-stage-harvest/50">Attention</span>;
+    } else if (state.urgency_score === 1) {
+      urgencyBadge = <span className="text-yellow-500 border border-yellow-500/50 bg-yellow-500/10 text-[10px] uppercase font-bold px-1.5 py-0.5">Watch</span>;
+    }
+  }
+
+  const borderCls = ROOM_TYPE_BORDER[state.room_type] ?? ROOM_TYPE_BORDER.mixed;
+  const typeTextCls = ROOM_TYPE_TEXT[state.room_type] ?? ROOM_TYPE_TEXT.mixed;
+
+  const totalTasks = Number(state.tasks_today) || 0;
+  const doneTasks = Number(state.tasks_completed_today) || 0;
+  const inProgressTasks = Number(state.tasks_in_progress_today) || 0;
+  const donePct = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+  const inProgPct = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
 
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left bg-cult-near-black border border-cult-dark-gray border-l-4 ${borderCls} px-4 py-3.5 hover:border-cult-medium-gray hover:bg-cult-black transition-all group space-y-2.5`}
-      style={{ boxShadow: `inset 0 0 20px ${glow}` }}
+      className={`relative w-full text-left bg-cult-near-black border ${pulseClass || 'border-cult-dark-gray'} border-l-4 ${!isEmpty ? borderCls : 'border-l-cult-dark-gray'} hover:bg-cult-black transition-all group flex flex-col h-full ${isEmpty ? 'opacity-50 grayscale-[0.5]' : ''}`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-          <span className="text-xs border border-cult-dark-gray text-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider">
-            {room.room_type}
+      <div className="p-4 flex-1 space-y-4 w-full">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-sm font-bold text-cult-white">{state.room_code}</span>
+            {urgencyBadge}
+          </div>
+          <span className={`text-[10px] px-1.5 py-0.5 uppercase tracking-wider font-bold border ${isEmpty ? 'border-cult-dark-gray text-cult-medium-gray' : typeTextCls}`}>
+            {isEmpty ? 'Empty' : state.room_type}
           </span>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-xs text-cult-light-gray">{groupCount} group{groupCount !== 1 ? 's' : ''}</span>
-          <span className="text-xs text-cult-medium-gray">{plantCount} plants</span>
-        </div>
+
+        {!isEmpty && (
+          <div className="space-y-3">
+            <div className="text-xs text-cult-light-gray flex items-center justify-between">
+              <span>{state.total_plants} plants &middot; {state.strain_count} strains</span>
+              {state.days_in_stage !== null && (
+                <span>Day {state.days_in_stage}</span>
+              )}
+            </div>
+            
+            {state.strain_names && state.strain_names.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {state.strain_names.slice(0, 4).map(s => (
+                  <span key={s} className="text-[10px] border border-cult-dark-gray text-cult-light-gray px-1.5 py-0.5 bg-cult-surface-overlay flex-shrink-0">{s}</span>
+                ))}
+                {state.strain_names.length > 4 && (
+                  <span className="text-[10px] text-cult-medium-gray px-1 inline-flex items-center">+{state.strain_names.length - 4}</span>
+                )}
+              </div>
+            )}
+
+            {state.room_type === 'flower' && (
+              <div className="bg-cult-surface-overlay border border-cult-border p-2 space-y-1.5 mt-2">
+                {state.days_to_harvest !== null && state.days_to_harvest > 0 && (
+                  <div className="text-xs text-cult-light-gray flex items-center justify-between">
+                    <span>Harvest in {state.days_to_harvest} days</span>
+                  </div>
+                )}
+                {state.days_to_harvest !== null && state.days_to_harvest <= 0 && (
+                  <div className="text-xs font-bold text-cult-red flex items-center justify-between animate-flicker">
+                    <span>OVERDUE by {Math.abs(state.days_to_harvest)} days</span>
+                  </div>
+                )}
+                {state.groups_near_harvest !== null && state.groups_near_harvest > 0 && (
+                  <div className="text-[10px] text-cult-stage-harvest font-medium tracking-wide">
+                    {state.groups_near_harvest} groups ready
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {summary && summary.strains.length > 0 && (
-        <StrainPills strains={summary.strains} />
-      )}
-
-      {isFlower && dayInFlower !== null && (
-        <FlowerRunProgress dayInFlower={dayInFlower} estimatedFlowerDays={DEFAULT_FLOWER_DAYS} />
-      )}
-
-      {isFlower && (
-        <HarvestCountdown daysUntilHarvest={harvestDays} />
-      )}
+      <div className="w-full border-t border-cult-dark-gray bg-cult-surface p-2 mt-auto">
+        <div className="flex items-center justify-between text-[10px] text-cult-medium-gray mb-1 px-1 font-mono">
+          <span>{doneTasks}/{totalTasks} tasks done</span>
+          {inProgressTasks > 0 && <span className="text-cult-stage-harvest font-bold">{inProgressTasks} active</span>}
+        </div>
+        <div className="h-1.5 w-full bg-cult-dark-gray flex overflow-hidden rounded-sm">
+          {totalTasks > 0 && (
+            <>
+              <div className="h-full bg-cult-green transition-all" style={{ width: `${donePct}%` }} />
+              <div className="h-full bg-cult-stage-harvest transition-all opacity-80" style={{ width: `${inProgPct}%` }} />
+            </>
+          )}
+        </div>
+      </div>
     </button>
   );
 }
@@ -110,22 +157,22 @@ type PendingAction =
   | { type: 'printGroup'; group: PlantGroup }
   | { type: 'printPlants'; group: PlantGroup };
 
-const ROOM_TYPE_ORDER: RoomType[] = ['mother', 'clone', 'veg', 'flower', 'mixed'];
+
 
 export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
   const { groups, loading: groupsLoading, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
   const { summaries, loading: summariesLoading } = useRoomSummaries();
+  const { rooms: opsRooms, loading: opsLoading } = useRoomOperationalState();
 
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [advanceError, setAdvanceError] = useState<string | null>(null);
 
-  const loading = roomsLoading || groupsLoading || sessionsLoading || summariesLoading;
+  const loading = roomsLoading || groupsLoading || sessionsLoading || summariesLoading || opsLoading;
 
   const activeRooms = rooms.filter((r) => r.is_active);
-  const summaryMap = new Map(summaries.map((s) => [s.room_id, s]));
 
   const totalPlants = groups.reduce((sum, g) => sum + g.plant_count, 0);
 
@@ -194,11 +241,6 @@ export function CultivationDashboard() {
     return `In ${nextHarvestDays}d`;
   }
 
-  const roomsByType = ROOM_TYPE_ORDER.map((type) => ({
-    type,
-    rooms: activeRooms.filter((r) => r.room_type === type).sort((a, b) => a.room_code.localeCompare(b.room_code)),
-  })).filter((g) => g.rooms.length > 0);
-
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
@@ -250,18 +292,20 @@ export function CultivationDashboard() {
           </div>
         ) : (
           <div className="space-y-6">
-            {roomsByType.map(({ type, rooms: typeRooms }) => (
-              <RoomGroup key={type} roomType={type} count={typeRooms.length}>
-                {typeRooms.map((room) => (
-                  <EnhancedRoomCard
-                    key={room.id}
-                    room={room}
-                    summary={summaryMap.get(room.id)}
-                    onClick={() => setSelectedRoom(room)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {opsRooms.map((opsState) => {
+                const fullRoom = rooms.find((r) => r.id === opsState.room_id);
+                // Even if fullRoom isn't mapped, render the command card since all data needed is in opsState.
+                // We'll pass fullRoom safely when clicked. If null, the drawer won't open.
+                return (
+                  <RoomCommandCard
+                    key={opsState.room_id}
+                    state={opsState}
+                    onClick={() => { if (fullRoom) setSelectedRoom(fullRoom); }}
                   />
-                ))}
-              </RoomGroup>
-            ))}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

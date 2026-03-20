@@ -104,7 +104,7 @@ export function DailyTaskBoard() {
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
-  const { tasks: dbTasks, completeWithLog, refetch: refetchTasks } = useDailyTasks(selectedDate);
+  const { tasks: dbTasks, completeWithLog, refetch: refetchTasks, createTask } = useDailyTasks(selectedDate);
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
   const { staff: activeStaff } = useActiveStaff();
 
@@ -423,8 +423,12 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
           rooms={rooms}
           staff={staff}
           preSelectedRoomId={addTaskRoomId}
+          taskDate={selectedDate}
           onClose={() => setShowAddTask(false)}
-          onSave={() => setShowAddTask(false)}
+          onSave={async (input) => {
+            await createTask({ ...input, task_date: selectedDate });
+            setShowAddTask(false);
+          }}
         />
       )}
 
@@ -457,16 +461,18 @@ interface AddTaskModalProps {
   rooms: { id: string; room_code: string; room_type: RoomType }[];
   staff: StaffMember[];
   preSelectedRoomId: string | null;
+  taskDate: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (input: { room_id: string; task_type: string; assigned_to?: string | null; notes?: string | null }) => Promise<void>;
 }
 
-function AddTaskModal({ rooms, staff, preSelectedRoomId, onClose, onSave }: AddTaskModalProps) {
+function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSave }: AddTaskModalProps) {
   const [taskType, setTaskType] = useState<TaskType>('feeding');
   const [roomId, setRoomId] = useState(preSelectedRoomId ?? '');
   const [assignedTo, setAssignedTo] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
 
@@ -478,10 +484,18 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, onClose, onSave }: AddT
   }, []);
 
   async function handleSave() {
+    if (!roomId) return;
     setSaving(true);
+    setError(null);
     try {
-      await new Promise((r) => setTimeout(r, 200));
-      onSave();
+      await onSave({
+        room_id: roomId,
+        task_type: taskType,
+        assigned_to: assignedTo || null,
+        notes: notes || null,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save task');
     } finally {
       setSaving(false);
     }
@@ -508,6 +522,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, onClose, onSave }: AddT
             notes={notes} setNotes={setNotes}
             rooms={rooms} staff={staff} taskTypes={TASK_TYPES}
           />
+          {error && <p className="text-xs text-red-400">{error}</p>}
           <Button onClick={handleSave} disabled={saving || !roomId} className="w-full">
             {saving ? 'Saving...' : 'Add Task'}
           </Button>
@@ -534,6 +549,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, onClose, onSave }: AddT
           notes={notes} setNotes={setNotes}
           rooms={rooms} staff={staff} taskTypes={TASK_TYPES}
         />
+        {error && <p className="text-xs text-red-400">{error}</p>}
         <Button onClick={handleSave} disabled={saving || !roomId} className="w-full">
           {saving ? 'Saving...' : 'Add Task'}
         </Button>

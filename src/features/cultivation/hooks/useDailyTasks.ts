@@ -80,5 +80,32 @@ export function useDailyTasks(taskDate: string) {
     return data as DailyTaskInstance;
   }
 
-  return { tasks, loading, error, refetch: load, updateStatus, assignWorker, completeWithLog };
+  async function createTask(input: {
+    room_id: string;
+    task_type: string;
+    task_date: string;
+    assigned_to?: string | null;
+    notes?: string | null;
+  }): Promise<DailyTaskInstance> {
+    const { data, error: err } = await supabase
+      .from('daily_task_instances')
+      .insert({
+        room_id: input.room_id,
+        task_type: input.task_type,
+        task_date: input.task_date,
+        assigned_to: input.assigned_to || null,
+        notes: input.notes || null,
+        status: 'pending' as TaskStatus,
+        scope: 'room',
+        progress_data: {},
+        task_config: {},
+      })
+      .select()
+      .single();
+    if (err) throw err;
+    await load();
+    return data as DailyTaskInstance;
+  }
+
+  return { tasks, loading, error, refetch: load, updateStatus, assignWorker, completeWithLog, createTask };
 }
