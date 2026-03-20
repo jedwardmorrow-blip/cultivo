@@ -162,7 +162,22 @@ Deno.serve(async (req: Request) => {
       headers: { "x-api-key": anthropicKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
       body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: MAX_TOKENS, system: systemPrompt, messages, stream: true }),
     });
-    if (!claudeResponse.ok) { const err = await claudeResponse.text(); throw new Error(`Claude API error (${claudeResponse.status}): ${err}`); }
+    if (!claudeResponse.ok) {
+      const errBody = await claudeResponse.text();
+      console.error(`[cultops-ai-chat] Anthropic API ${claudeResponse.status}: ${errBody}`);
+      // Map known API errors to user-friendly messages
+      const status = claudeResponse.status;
+      if (status === 400 && errBody.includes("credit balance is too low")) {
+        throw new Error("The AI assistant is temporarily unavailable due to a billing issue. Please notify an admin.");
+      } else if (status === 429) {
+        throw new Error("The AI assistant is experiencing high demand. Please try again in a moment.");
+      } else if (status === 529 || status === 503) {
+        throw new Error("The AI assistant is temporarily overloaded. Please try again shortly.");
+      } else if (status === 401) {
+        throw new Error("AI service authentication error. Please notify an admin.");
+      }
+      throw new Error("The AI assistant encountered an unexpected error. Please try again.");
+    }
 
     updateLearnedPreferences(userProfile.userId, intent, body.message.length).catch(() => {});
     const resultType = (contextKnowledge && contextKnowledge !== "No context available." && contextKnowledge !== "Context DB unavailable.") ? "confident" : "fallback";
