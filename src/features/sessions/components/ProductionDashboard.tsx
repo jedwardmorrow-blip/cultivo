@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Scissors,
   Leaf,
@@ -20,10 +21,6 @@ import {
   getTrimSessions,
   getPackagingSessions,
 } from '../services/sessions.service';
-
-interface ProductionDashboardProps {
-  onViewChange: (view: string) => void;
-}
 
 interface ActiveSessionRow {
   id: string;
@@ -123,7 +120,8 @@ const TYPE_CONFIG = {
   packaging: { label: 'Packaging', icon: Box, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
 } as const;
 
-function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
+function ProductionDashboardInner() {
+  const navigate = useNavigate();
   const [activeBucking, setActiveBucking] = useState<BuckingSession[]>([]);
   const [activeTrim, setActiveTrim] = useState<TrimSession[]>([]);
   const [activePackaging, setActivePackaging] = useState<PackagingSession[]>([]);
@@ -306,19 +304,19 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
             type="bucking"
             count={todaySummary.buckingCompleted}
             metric={`${(todaySummary.totalFlowerBucked / 1000).toFixed(1)} kg flower`}
-            onNavigate={() => onViewChange('bucking-sessions')}
+            onNavigate={() => navigate('/bucking-sessions')}
           />
           <CompletedCard
             type="trim"
             count={todaySummary.trimCompleted}
             metric={`${todaySummary.totalFlowerTrimmed.toFixed(0)}g flower`}
-            onNavigate={() => onViewChange('trim-sessions')}
+            onNavigate={() => navigate('/trim-sessions')}
           />
           <CompletedCard
             type="packaging"
             count={todaySummary.packagingCompleted}
             metric={`${todaySummary.totalUnitsPackaged} units`}
-            onNavigate={() => onViewChange('packaging-sessions')}
+            onNavigate={() => navigate('/packaging-sessions')}
           />
         </div>
       )}
@@ -332,19 +330,19 @@ function ProductionDashboardInner({ onViewChange }: ProductionDashboardProps) {
           <QuickActionButton
             label="Bucking Session"
             icon={<Scissors className="w-5 h-5" />}
-            onClick={() => onViewChange('bucking-sessions')}
+            onClick={() => navigate('/bucking-sessions')}
             accentColor="amber"
           />
           <QuickActionButton
             label="Trim Session"
             icon={<Leaf className="w-5 h-5" />}
-            onClick={() => onViewChange('trim-sessions')}
+            onClick={() => navigate('/trim-sessions')}
             accentColor="emerald"
           />
           <QuickActionButton
             label="Packaging Session"
             icon={<Box className="w-5 h-5" />}
-            onClick={() => onViewChange('packaging-sessions')}
+            onClick={() => navigate('/packaging-sessions')}
             accentColor="sky"
           />
         </div>
@@ -439,6 +437,6 @@ function QuickActionButton({
   );
 }
 
-export function ProductionDashboard(props: ProductionDashboardProps) {
-  return <ProductionDashboardInner {...props} />;
+export function ProductionDashboard() {
+  return <ProductionDashboardInner />;
 }

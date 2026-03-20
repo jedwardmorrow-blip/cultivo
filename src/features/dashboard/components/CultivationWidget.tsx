@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sprout, Scissors, Scale, ArrowRight, AlertTriangle } from 'lucide-react';
 import { cultivationService } from '@/features/cultivation/services';
 import { isValidStrainAbbreviation } from '@/features/cultivation/utils';
 import type { HarvestSession, BinningSession } from '@/features/cultivation/types';
-
-interface CultivationWidgetProps {
-  onViewChange: (view: string) => void;
-}
 
 interface CultivationSummary {
   activeGroups: number;
@@ -31,7 +28,8 @@ function formatWeight(grams: number): string {
   return `${Math.round(grams)} g`;
 }
 
-export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
+export function CultivationWidget() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<CultivationSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -105,7 +103,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
           </div>
         </div>
         <button
-          onClick={() => onViewChange('cultivation-dashboard')}
+          onClick={() => navigate('/cultivation-dashboard')}
           className="flex items-center gap-1.5 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
         >
           View all
@@ -186,7 +184,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
               Active Harvests
             </div>
             <button
-              onClick={() => onViewChange('cultivation-harvest')}
+              onClick={() => navigate('/cultivation-harvest')}
               className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
             >
               Manage →
@@ -222,7 +220,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
             </span>
           </div>
           <button
-            onClick={() => onViewChange('cultivation-binning')}
+            onClick={() => navigate('/cultivation-binning')}
             className="flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 transition-colors font-medium uppercase tracking-wider"
           >
             Start Binning
@@ -236,7 +234,7 @@ export function CultivationWidget({ onViewChange }: CultivationWidgetProps) {
           <Sprout className="w-8 h-8 text-cult-dark-gray mx-auto mb-2" />
           <p className="text-sm text-cult-medium-gray">No active cultivation activity</p>
           <button
-            onClick={() => onViewChange('cultivation-dashboard')}
+            onClick={() => navigate('/cultivation-dashboard')}
             className="mt-2 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
           >
             Go to Cultivation →

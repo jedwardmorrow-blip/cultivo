@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, TrendingUp, Settings } from 'lucide-react';
 import { batchService } from '@/services';
 import type { BatchAllocationWarning } from '../../types';
 
-interface BatchOverAllocationWidgetProps {
-  onViewChange: (view: string) => void;
-}
-
-export function BatchOverAllocationWidget({ onViewChange }: BatchOverAllocationWidgetProps) {
+export function BatchOverAllocationWidget() {
+  const navigate = useNavigate();
   const [warnings, setWarnings] = useState<BatchAllocationWarning[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +56,7 @@ export function BatchOverAllocationWidget({ onViewChange }: BatchOverAllocationW
           )}
         </div>
         <button
-          onClick={() => onViewChange('settings')}
+          onClick={() => navigate('/settings')}
           className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-xs uppercase tracking-wider"
         >
           <Settings className="w-4 h-4" />
@@ -85,7 +83,7 @@ export function BatchOverAllocationWidget({ onViewChange }: BatchOverAllocationW
               <div
                 key={`${warning.batch_id}-${warning.stage}-${idx}`}
                 className="bg-cult-black border border-red-600 p-4 hover:bg-cult-near-black transition-all cursor-pointer group"
-                onClick={() => onViewChange('settings')}
+                onClick={() => navigate('/settings')}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -144,7 +142,7 @@ export function BatchOverAllocationWidget({ onViewChange }: BatchOverAllocationW
                   </span>
                 </div>
                 <button
-                  onClick={() => onViewChange('settings')}
+                  onClick={() => navigate('/settings')}
                   className="px-4 py-2 bg-red-600 text-cult-white hover:bg-red-700 transition-all text-xs uppercase tracking-wider font-bold"
                 >
                   View All

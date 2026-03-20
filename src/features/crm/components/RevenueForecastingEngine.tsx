@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -16,9 +17,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getRevenueForecast } from '../services/crm.service';
 import type { RevenueForecastItem, ForecastConfidence } from '../types/crm.types';
 
-interface RevenueForecastingEngineProps {
-  onViewChange: (view: string) => void;
-}
+interface RevenueForecastingEngineProps {}
 
 type ForecastFilter = 'all' | 'reorder' | 'pipeline' | 'high_confidence' | 'at_risk';
 type SortField = 'monthly_forecast' | 'current_month_realized' | 'current_month_expected_additional' | 'reorder_probability' | 'avg_monthly_revenue' | 'customer_name';
@@ -54,7 +53,8 @@ function SortArrow({ field, current, dir }: { field: SortField; current: SortFie
   return <span className="ml-1 text-cult-ash">{dir === 'asc' ? '↑' : '↓'}</span>;
 }
 
-export function RevenueForecastingEngine({ onViewChange }: RevenueForecastingEngineProps) {
+export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
+  const navigate = useNavigate();
   const [items, setItems] = useState<RevenueForecastItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ForecastFilter>('all');
@@ -312,7 +312,7 @@ export function RevenueForecastingEngine({ onViewChange }: RevenueForecastingEng
               <tr
                 key={`${item.forecast_type}-${item.customer_id}`}
                 className="border-b border-cult-dark/30 hover:bg-cult-dark/50 transition-colors cursor-pointer"
-                onClick={() => onViewChange(`crm-account-detail:${item.customer_id}`)}
+                onClick={() => navigate(`/crm-account-detail/${item.customer_id}`)}
               >
                 <td className="px-4 py-3">
                   <div className="font-medium text-cult-white">{item.customer_name}</div>

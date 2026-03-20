@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3, Snowflake } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
@@ -271,11 +272,8 @@ function ConfirmActionModal({ title, message, confirmLabel, confirmClass, onConf
   );
 }
 
-interface HarvestSessionsListProps {
-  onViewChange?: (view: string) => void;
-}
-
-export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps = {}) {
+export function HarvestSessionsList() {
+  const navigate = useNavigate();
   const { sessions, loading, error, reload, completeSession, cancelSession, adjustWeight } = useHarvestSessions();
 
   const [activeTab, setActiveTab] = useState<TabKey>('active');
@@ -439,7 +437,7 @@ export function HarvestSessionsList({ onViewChange }: HarvestSessionsListProps =
               onComplete={setCompletingSession}
               onCancel={setCancellingSession}
               onAdjust={setAdjustingSession}
-              onViewBatch={onViewChange ? () => onViewChange('batches') : undefined}
+              onViewBatch={() => navigate('/batches')}
             />
           ))
         )}

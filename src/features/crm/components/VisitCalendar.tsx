@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
@@ -82,10 +83,10 @@ function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; val
 }
 interface VisitCalendarProps {
   onSelectOrder?: (orderId: string) => void;
-  onViewChange?: (view: string) => void;
 }
 
-export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProps) {
+export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
+  const navigate = useNavigate();
   const {
     visitsByDate,
     ordersByDate,
@@ -456,7 +457,7 @@ export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProp
                 return (
                   <button
                     key={account.customer_id}
-                    onClick={() => onViewChange?.(`crm-accounts-hub:account:${account.customer_id}`)}
+                    onClick={() => navigate(`/crm-accounts-hub/account/${account.customer_id}`)}
                     className="w-full text-left p-2.5 rounded-lg bg-cult-charcoal/50 hover:bg-cult-charcoal border border-transparent hover:border-cult-medium-gray transition-colors group"
                   >
                     <div className="flex items-center justify-between mb-1">

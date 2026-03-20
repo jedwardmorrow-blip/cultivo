@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Bell,
@@ -23,9 +24,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getTaskSummary, completeTask, dismissTask, runTaskEngine } from '../services/crm.service';
 import type { CRMTask, TaskType, TaskPriority } from '../types/crm.types';
 
-interface AutomatedTaskEngineProps {
-  onViewChange: (view: string) => void;
-}
+interface AutomatedTaskEngineProps {}
 
 type StatusFilter = 'open' | 'completed' | 'auto_closed' | 'all';
 type TypeFilter = TaskType | 'all';
@@ -61,7 +60,8 @@ const PRIORITY_SORT_ORDER: Record<TaskPriority, number> = {
   low: 1,
 };
 
-export function AutomatedTaskEngine({ onViewChange }: AutomatedTaskEngineProps) {
+export function AutomatedTaskEngine({}: AutomatedTaskEngineProps) {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<CRMTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
@@ -364,7 +364,7 @@ export function AutomatedTaskEngine({ onViewChange }: AutomatedTaskEngineProps) 
                   <div className="text-sm font-medium text-cult-white truncate">{task.title}</div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <button
-                      onClick={() => onViewChange(`crm-account-detail:${task.customer_id}`)}
+                      onClick={() => navigate(`/crm-account-detail/${task.customer_id}`)}
                       className="text-xs text-cult-400 hover:text-purple-400 truncate transition-colors"
                     >
                       {task.customer_name}
@@ -437,7 +437,7 @@ export function AutomatedTaskEngine({ onViewChange }: AutomatedTaskEngineProps) 
                     </span>
                   )}
                   <button
-                    onClick={() => onViewChange(`crm-account-detail:${task.customer_id}`)}
+                    onClick={() => navigate(`/crm-account-detail/${task.customer_id}`)}
                     className="p-1.5 rounded-lg text-cult-500 hover:text-cult-300 hover:bg-cult-700 transition-colors"
                     title="View account"
                   >

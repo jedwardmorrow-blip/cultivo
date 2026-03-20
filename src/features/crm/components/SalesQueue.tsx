@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ClipboardList,
   AlertTriangle,
@@ -21,9 +22,7 @@ import { useSalesQueue } from '../hooks';
 import type { CRMTask, VisitSchedule, TaskType, VisitType } from '../types';
 import { TaskCreateModal } from './TaskCreateModal';
 
-interface SalesQueueProps {
-  onViewChange: (view: string) => void;
-}
+interface SalesQueueProps {}
 
 const taskTypeIcons: Record<TaskType, typeof RefreshCw> = {
     reorder_reminder: RefreshCw,
@@ -333,7 +332,8 @@ function VisitRow({
   );
 }
 
-export function SalesQueue({ onViewChange }: SalesQueueProps) {
+export function SalesQueue({}: SalesQueueProps) {
+  const navigate = useNavigate();
   const {
     overdueTasks,
     todayTasks,
@@ -356,7 +356,7 @@ export function SalesQueue({ onViewChange }: SalesQueueProps) {
   const totalWeek = todayTasks.length + upcomingTasks.length + todayVisits.length + weekVisits.length;
 
   const navigateToAccount = (customerId: string) => {
-    onViewChange(`crm-account-detail:${customerId}`);
+    navigate(`/crm-account-detail/${customerId}`);
   };
 
   const handleCompleteVisit = async () => {

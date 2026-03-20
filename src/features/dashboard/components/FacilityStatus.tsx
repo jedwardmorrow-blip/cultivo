@@ -3,10 +3,9 @@ import type { CultivationSummary, DryRoom } from '../hooks/useDashboardData';
 interface Props {
   cultivation: CultivationSummary;
   dryRooms: DryRoom[];
-  onViewChange: (view: string) => void;
 }
 
-export function FacilityStatus({ cultivation, dryRooms, onViewChange: _onViewChange }: Props) {
+export function FacilityStatus({ cultivation, dryRooms }: Props) {
   const activeStages = [
     { label: 'Flowering', value: cultivation.flowerCount, color: 'text-cult-stage-flower' },
     { label: 'Veg', value: cultivation.vegCount, color: 'text-cult-stage-veg' },

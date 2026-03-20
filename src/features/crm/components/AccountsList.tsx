@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Building2, ChevronRight, ChevronDown, Filter, X, MapPin, Network } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
 import { getAccountSummaries } from '../services';
 import type { AccountSummary, AccountStatus, AccountType } from '../types';
 
-interface AccountsListProps {
-  onViewChange: (view: string) => void;
-}
+interface AccountsListProps {}
 
 function formatCurrency(value: number): string {
   if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
@@ -23,7 +22,8 @@ function getStatusColor(status: string): string {
   }
 }
 
-export function AccountsList({ onViewChange }: AccountsListProps) {
+export function AccountsList({}: AccountsListProps) {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -142,7 +142,7 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
   };
 
   const handleSelectAccount = (accountId: string) => {
-    onViewChange(`crm-account-detail:${accountId}`);
+    navigate(`/crm-account-detail/${accountId}`);
   };
 
   const toggleParent = (parentId: string, e: React.MouseEvent) => {
@@ -174,7 +174,7 @@ export function AccountsList({ onViewChange }: AccountsListProps) {
           </p>
         </div>
         <button
-          onClick={() => onViewChange('crm-dashboard')}
+          onClick={() => navigate('/crm-dashboard')}
           className="px-4 py-2 text-sm font-medium text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
         >
           Back to Dashboard

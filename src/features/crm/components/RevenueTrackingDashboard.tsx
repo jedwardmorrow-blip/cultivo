@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -16,9 +17,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getRevenueTracking, getRevenueWeekly } from '../services/crm.service';
 import type { RevenueTrackingItem, RevenueWeeklyItem } from '../types/crm.types';
 
-interface RevenueTrackingDashboardProps {
-  onViewChange: (view: string) => void;
-}
+interface RevenueTrackingDashboardProps {}
 
 type RevenueFilter = 'all' | 'has_unresolved' | 'growing' | 'declining' | 'new';
 type SortField = 'lifetime_revenue' | 'current_month_realized' | 'rolling_90d_realized' | 'mom_change_pct' | 'total_unresolved_revenue' | 'customer_name';
@@ -36,7 +35,8 @@ function fmtPct(n: number | null) {
   return `${sign}${n.toFixed(0)}%`;
 }
 
-export function RevenueTrackingDashboard({ onViewChange }: RevenueTrackingDashboardProps) {
+export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<RevenueTrackingItem[]>([]);
   const [weeklyData, setWeeklyData] = useState<RevenueWeeklyItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,7 +283,7 @@ export function RevenueTrackingDashboard({ onViewChange }: RevenueTrackingDashbo
               .map((a) => (
                 <button
                   key={a.customer_id}
-                  onClick={() => onViewChange(`crm-account-detail:${a.customer_id}`)}
+                  onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
@@ -397,7 +397,7 @@ export function RevenueTrackingDashboard({ onViewChange }: RevenueTrackingDashbo
                 <tr key={a.customer_id} className="hover:bg-cult-dark-gray/40 transition-colors group">
                   {/* Account */}
                   <td className="py-2.5 px-3">
-                    <button onClick={() => onViewChange(`crm-account-detail:${a.customer_id}`)} className="text-left">
+                    <button onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)} className="text-left">
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>

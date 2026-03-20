@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   TrendingUp,
@@ -167,7 +168,8 @@ function SortHeader({
 
 // âââ Overview Tab ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void }) {
+function OverviewTab() {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [healthData, setHealthData] = useState<AccountHealthDashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -405,7 +407,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
               .map((h) => (
                 <button
                   key={h.customer_id}
-                  onClick={() => onViewChange(`crm-account-detail:${h.customer_id}`)}
+                  onClick={() => navigate(`/crm-account-detail/${h.customer_id}`)}
                   className="text-xs bg-cult-dark-gray/80 text-orange-300 px-2 py-1 rounded hover:bg-cult-dark-gray transition-colors"
                 >
                   {h.customer_name} Â· {formatCurrency(h.revenue_90d)}
@@ -500,7 +502,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                     </td>
                     <td className="py-2.5 px-3">
                       <button
-                        onClick={() => onViewChange(`crm-account-detail:${acct.customer_id}`)}
+                        onClick={() => navigate(`/crm-account-detail/${acct.customer_id}`)}
                         className="text-left hover:text-cult-white transition-colors"
                       >
                         <span className="text-cult-white font-medium">{acct.name}</span>
@@ -532,7 +534,7 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
                       <td className="py-2 px-3" />
                       <td className="py-2 px-3 pl-10">
                         <button
-                          onClick={() => onViewChange(`crm-account-detail:${child.customer_id}`)}
+                          onClick={() => navigate(`/crm-account-detail/${child.customer_id}`)}
                           className="text-left hover:text-cult-white transition-colors"
                         >
                           <span className="text-cult-silver text-sm">{child.name}</span>
@@ -578,7 +580,8 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
 // Contacts Tab — Cross-account contact directory
 // ──────────────────────────────────────────────────────────────────────────────
 
-function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void }) {
+function ContactsTab() {
+  const navigate = useNavigate();
   const [contacts, setContacts] = React.useState<{
     id: string;
     name: string | null;
@@ -711,7 +714,7 @@ function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void })
                   </td>
                   <td className="px-4 py-3">
                     <button
-                      onClick={() => onViewChange('account-detail:' + c.customer?.id)}
+                      onClick={() => navigate('/crm-account-detail/' + c.customer?.id)}
                       className="text-cult-silver hover:underline flex items-center gap-1"
                     >
                       <Briefcase className="w-3 h-3 text-cult-medium-gray" />
@@ -735,11 +738,10 @@ function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void })
 
 // âââ Main AccountsHub Component ââââââââââââââââââââââââââââââââââââââââââââââ
 
-interface AccountsHubProps {
-  onViewChange: (view: string) => void;
-}
+interface AccountsHubProps {}
 
-export default function AccountsHub({ onViewChange }: AccountsHubProps) {
+export default function AccountsHub({}: AccountsHubProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
   return (
@@ -778,10 +780,10 @@ export default function AccountsHub({ onViewChange }: AccountsHubProps) {
 
       {/* ââ Tab Content ââ */}
       <div className="min-h-[400px]">
-        {activeTab === 'overview' && <OverviewTab onViewChange={onViewChange} />}
-        {activeTab === 'revenue' && <RevenueTrackingDashboard onViewChange={onViewChange} />}
-        {activeTab === 'cadence' && <VisitCadenceDashboard onViewChange={onViewChange} />}
-        {activeTab === 'contacts' && <ContactsTab onViewChange={onViewChange} />}
+        {activeTab === 'overview' && <OverviewTab />}
+        {activeTab === 'revenue' && <RevenueTrackingDashboard />}
+        {activeTab === 'cadence' && <VisitCadenceDashboard />}
+        {activeTab === 'contacts' && <ContactsTab />}
       </div>
     </div>
   );

@@ -67,9 +67,9 @@ function ViewFallback() {
   );
 }
 
-function AccountDetailRoute({ onViewChange, onCreateOrder, onCreateSampleOrder, onSelectOrder }: any) {
+function AccountDetailRoute({ onCreateOrder, onCreateSampleOrder, onSelectOrder }: { onCreateOrder: (customerId: string) => void; onCreateSampleOrder: (customerId: string) => void; onSelectOrder: (orderId: string) => void }) {
   const { id } = useParams<{ id: string }>();
-  return <AccountDetail accountId={id!} onViewChange={onViewChange} onCreateOrder={onCreateOrder} onCreateSampleOrder={onCreateSampleOrder} onSelectOrder={onSelectOrder} />;
+  return <AccountDetail accountId={id!} onCreateOrder={onCreateOrder} onCreateSampleOrder={onCreateSampleOrder} onSelectOrder={onSelectOrder} />;
 }
 
 function RosinLabRoute() {
@@ -100,12 +100,6 @@ function AuthenticatedApp() {
 
   if (!user) {
     return <Login />;
-  }
-
-  function handleViewChange(view: string) {
-    navigate(`/${view}`);
-    setShowNewOrderForm(false);
-    setSelectedOrderId(null);
   }
 
   function handleCreateOrder(cloneFrom?: any) {
@@ -162,17 +156,17 @@ function AuthenticatedApp() {
           <Suspense fallback={<ViewFallback />}>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />} />
+              <Route path="/dashboard" element={<Dashboard onSelectOrder={handleSelectOrder} />} />
               <Route path="/orders" element={<OrdersContainer key={ordersRefreshKey} onCreateOrder={handleCreateOrder} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />} />
               <Route path="/cultivation-dashboard" element={<CultivationDashboard />} />
               <Route path="/cultivation-plants" element={<PlantGroupsList />} />
-              <Route path="/cultivation-harvest" element={<HarvestSessionsList onViewChange={handleViewChange} />} />
-              <Route path="/cultivation-binning" element={<BinningSessionsView onViewChange={handleViewChange} />} />
+              <Route path="/cultivation-harvest" element={<HarvestSessionsList />} />
+              <Route path="/cultivation-binning" element={<BinningSessionsView />} />
               <Route path="/cultivation-taskboard" element={<DailyTaskBoard />} />
               <Route path="/cultivation-digest" element={<DailyDigestView />} />
               <Route path="/cultivation-rooms" element={<GrowRoomsManagement />} />
               <Route path="/cultivation-dry-rooms" element={<DryRoomsManagement />} />
-              <Route path="/production-overview" element={<ProductionDashboard onViewChange={handleViewChange} />} />
+              <Route path="/production-overview" element={<ProductionDashboard />} />
               <Route path="/bucking-sessions" element={<BuckingSessionsRefactored />} />
               <Route path="/trim-sessions" element={<TrimSessionsRefactored />} />
               <Route path="/packaging-sessions" element={<PackagingSessionsRefactored />} />
@@ -190,18 +184,18 @@ function AuthenticatedApp() {
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/eod-summary" element={<EODSummary />} />
-              <Route path="/crm-dashboard" element={<CRMDashboard onViewChange={handleViewChange} onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />
+              <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />
               <Route path="/crm-queue" element={<SalesQueue />} />
-              <Route path="/crm-visit-calendar" element={<VisitCalendar onSelectOrder={handleSelectOrder} onViewChange={handleViewChange} />} />
+              <Route path="/crm-visit-calendar" element={<VisitCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/crm-pipeline" element={<SalesPipeline />} />
-              <Route path="/crm-prospect-pipeline" element={<ProspectPipeline onViewChange={handleViewChange} />} />
-              <Route path="/crm-tasks" element={<AutomatedTaskEngine onViewChange={handleViewChange} />} />
-              <Route path="/crm-accounts-hub" element={<AccountsHub onViewChange={handleViewChange} />} />
-              <Route path="/crm-health" element={<AccountHealthDashboard onViewChange={handleViewChange} />} />
-              <Route path="/crm-revenue" element={<RevenueTrackingDashboard onViewChange={handleViewChange} />} />
-              <Route path="/crm-scorecard" element={<StorePerformanceScorecard onViewChange={handleViewChange} />} />
+              <Route path="/crm-prospect-pipeline" element={<ProspectPipeline />} />
+              <Route path="/crm-tasks" element={<AutomatedTaskEngine />} />
+              <Route path="/crm-accounts-hub" element={<AccountsHub />} />
+              <Route path="/crm-health" element={<AccountHealthDashboard />} />
+              <Route path="/crm-revenue" element={<RevenueTrackingDashboard />} />
+              <Route path="/crm-scorecard" element={<StorePerformanceScorecard />} />
               <Route path="/crm-accounts" element={<Navigate to="/crm-accounts-hub" replace />} />
-              <Route path="/crm-account-detail/:id" element={<AccountDetailRoute onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />} />
+              <Route path="/crm-account-detail/:id" element={<AccountDetailRoute onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />} />
               <Route path="/rosin-lab/*" element={<RosinLabRoute />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

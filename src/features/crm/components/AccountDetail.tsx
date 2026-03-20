@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner, DateRangeFilter } from '@/shared/components';
 import { notificationService } from '@/services';
@@ -22,7 +23,6 @@ import { computeDateRange } from '@/shared/utils/dateRange';
 
 interface AccountDetailProps {
   accountId: string;
-  onViewChange: (view: string) => void;
   onCreateOrder?: (customerId: string) => void;
   onCreateSampleOrder?: (customerId: string) => void;
   onSelectOrder?: (orderId: string) => void;
@@ -38,7 +38,8 @@ const TABS = [
 
 const DEFAULT_DETAIL_RANGE = computeDateRange('all_time');
 
-export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreateSampleOrder, onSelectOrder }: AccountDetailProps) {
+export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, onSelectOrder }: AccountDetailProps) {
+  const navigate = useNavigate();
   const {
     account,
     childAccounts,
@@ -74,7 +75,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
   const isDateFiltered = activeTab === 'orders' || activeTab === 'products' || activeTab === 'deliveries';
 
   const handleSelectAccount = (id: string) => {
-    onViewChange(`crm-account-detail:${id}`);
+    navigate(`/crm-account-detail/${id}`);
   };
 
   const handleSaveAccountInfo = async (input: AccountInfoInput) => {
@@ -94,7 +95,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
     return (
       <div className="space-y-4">
         <button
-          onClick={() => onViewChange('crm-accounts')}
+          onClick={() => navigate('/crm-accounts')}
           className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -112,7 +113,7 @@ export function AccountDetail({ accountId, onViewChange, onCreateOrder, onCreate
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => onViewChange('crm-accounts')}
+            onClick={() => navigate('/crm-accounts')}
             className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

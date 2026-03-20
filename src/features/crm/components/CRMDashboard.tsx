@@ -1,4 +1,5 @@
 import { RefreshCw, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DateRangeFilter, PageSkeleton } from '@/shared/components';
 import { useCRMDashboard } from '../hooks';
 import { RevenueStatsCards } from './RevenueStatsCards';
@@ -8,12 +9,12 @@ import { SKUPerformanceGrid } from './SKUPerformanceGrid';
 import { DashboardQuickActions } from './DashboardQuickActions';
 
 interface CRMDashboardProps {
-  onViewChange: (view: string) => void;
   onSelectAccount?: (accountId: string) => void;
   onCreateOrder?: (customerId?: string) => void;
 }
 
-export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: CRMDashboardProps) {
+export function CRMDashboard({ onSelectAccount, onCreateOrder }: CRMDashboardProps) {
+  const navigate = useNavigate();
   const {
     stats,
     topAccounts,
@@ -33,7 +34,7 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
     if (onSelectAccount) {
       onSelectAccount(accountId);
     }
-    onViewChange(`crm-account-detail:${accountId}`);
+    navigate(`/crm-account-detail/${accountId}`);
   };
 
   if (loading) {
@@ -49,7 +50,7 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => onViewChange('crm-accounts')}
+            onClick={() => navigate('/crm-accounts')}
             className="px-4 py-2 text-sm font-medium text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
           >
             View All Accounts
@@ -95,7 +96,6 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
       {onCreateOrder && (
         <DashboardQuickActions
           onCreateOrder={() => onCreateOrder()}
-          onViewChange={onViewChange}
         />
       )}
 
@@ -114,7 +114,6 @@ export function CRMDashboard({ onViewChange, onSelectAccount, onCreateOrder }: C
               accounts={atRiskAccounts}
               onSelectAccount={handleSelectAccount}
               onCreateOrder={onCreateOrder}
-              onViewChange={onViewChange}
             />
           </div>
         </div>

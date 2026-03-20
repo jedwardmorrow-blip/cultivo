@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, CheckCircle, XCircle, Wind, Scale, Leaf, AlertTriangle, Clock, ExternalLink, Trash2, Package, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBinningSessions } from '../hooks/useBinningSessions';
 import { useAuth } from '@/lib/auth';
@@ -752,11 +753,8 @@ function PendingHarvestRow({ harvest, onStartBinning, startingId, rowError }: Pe
   );
 }
 
-interface BinningSessionsViewProps {
-  onViewChange?: (view: string) => void;
-}
-
-export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps = {}) {
+export function BinningSessionsView() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('pending');
   const [showNewForm, setShowNewForm] = useState(false);
   const [startingId, setStartingId] = useState<string | null>(null);
@@ -901,7 +899,7 @@ export function BinningSessionsView({ onViewChange }: BinningSessionsViewProps =
                     session={session}
                     onComplete={async (id) => { await completeSession(id); }}
                     onCancel={async (id) => { await cancelSession(id); }}
-                    onViewBatch={onViewChange ? () => onViewChange('batches') : undefined}
+                    onViewBatch={() => navigate('/batches')}
                     listBinEntries={listBinEntries}
                     addBinEntry={addBinEntry}
                     removeBinEntry={removeBinEntry}

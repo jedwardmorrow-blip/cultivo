@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Phone,
@@ -18,9 +19,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getProspectPipeline, updatePipelineStage } from '../services/crm.service';
 import type { ProspectPipelineItem, PipelineStage } from '../types';
 
-interface ProspectPipelineProps {
-  onViewChange: (view: string) => void;
-}
+interface ProspectPipelineProps {}
 
 const STAGES: { key: PipelineStage; label: string; icon: typeof Users; color: string; bgColor: string }[] = [
   { key: 'lead', label: 'Lead', icon: Users, color: 'text-slate-400', bgColor: 'bg-slate-500/15 border-slate-500/30' },
@@ -36,7 +35,8 @@ function stageMeta(stage: PipelineStage) {
   return STAGES.find((s) => s.key === stage) || STAGES[0];
 }
 
-export function ProspectPipeline({ onViewChange }: ProspectPipelineProps) {
+export function ProspectPipeline({}: ProspectPipelineProps) {
+  const navigate = useNavigate();
   const [prospects, setProspects] = useState<ProspectPipelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [movingId, setMovingId] = useState<string | null>(null);
@@ -58,7 +58,7 @@ export function ProspectPipeline({ onViewChange }: ProspectPipelineProps) {
   };
 
   const navigateToAccount = (id: string) => {
-    onViewChange(`crm-account-detail:${id}`);
+    navigate(`/crm-account-detail/${id}`);
   };
 
   if (loading) return <LoadingSpinner />;

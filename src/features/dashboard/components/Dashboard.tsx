@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { RevenueGoalBanner } from './RevenueGoalBanner';
 import { KPIRow } from './KPIRow';
@@ -33,12 +34,11 @@ class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { 
 }
 
 export function Dashboard({
-  onViewChange,
   onSelectOrder,
 }: {
-  onViewChange: (view: string) => void;
   onSelectOrder: (orderId: string) => void;
 }) {
+  const navigate = useNavigate();
   const { data, loading, error } = useDashboardData();
 
   if (loading) {
@@ -111,7 +111,7 @@ export function Dashboard({
       {/* ── Row 2: Active Orders + Top Customers ── */}
       <div className="grid grid-cols-2 gap-4">
         <WidgetBoundary name="ActiveOrdersTable">
-          <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => onViewChange('orders')} />
+          <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => navigate('/orders')} />
         </WidgetBoundary>
         <WidgetBoundary name="TopCustomers">
           <TopCustomers customers={data.customers} />
@@ -127,7 +127,6 @@ export function Dashboard({
           <FacilityStatus
             cultivation={data.cultivation}
             dryRooms={data.dryRooms}
-            onViewChange={onViewChange}
           />
         </WidgetBoundary>
         <WidgetBoundary name="ActiveStrainsWidget">

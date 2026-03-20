@@ -1,12 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layers, RefreshCw, List, LayoutGrid } from 'lucide-react';
 import { LoadingSpinner, ErrorDisplay } from '@/shared/components';
 import { useInventoryPipeline, STAGES, type StageName } from '../hooks/useInventoryPipeline';
 import { PipelineStrainRow } from './PipelineStrainRow';
-
-interface InventoryPipelineWidgetProps {
-  onViewChange: (view: string) => void;
-}
 
 const STAGE_META: Record<StageName, { color: string; borderColor: string; icon: string }> = {
   Binned: { color: 'text-sky-400', borderColor: 'border-l-sky-500', icon: 'bg-sky-500/10' },
@@ -20,7 +17,8 @@ function formatWeight(grams: number): string {
   return `${Math.round(grams)} g`;
 }
 
-export function InventoryPipelineWidget({ onViewChange }: InventoryPipelineWidgetProps) {
+export function InventoryPipelineWidget() {
+  const navigate = useNavigate();
   const { strains, grandTotals, loading, error, refresh } = useInventoryPipeline();
   const [viewMode, setViewMode] = useState<'strain' | 'batch'>('strain');
   const [refreshing, setRefreshing] = useState(false);
@@ -142,7 +140,7 @@ export function InventoryPipelineWidget({ onViewChange }: InventoryPipelineWidge
                     key={strain.strain}
                     strain={strain}
                     grandTotals={grandTotals}
-                    onNavigateToInventory={() => onViewChange('inventory-all')}
+                    onNavigateToInventory={() => navigate('/inventory-all')}
                   />
                 ))
               ) : (

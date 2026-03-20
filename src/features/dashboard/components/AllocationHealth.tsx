@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllocationHealth } from '../services/dashboard.service';
 
-export function AllocationHealth({ onViewChange }: { onViewChange: (view: string) => void }) {
+export function AllocationHealth() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalOrders: 0,
     fullyAllocated: 0,
@@ -68,7 +70,7 @@ export function AllocationHealth({ onViewChange }: { onViewChange: (view: string
         </div>
       </div>
       <button
-        onClick={() => onViewChange('inventory-all')}
+        onClick={() => navigate('/inventory-all')}
         className="mt-4 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider"
       >
         View Inventory

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -17,9 +18,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getStoreScorecard } from '../services/crm.service';
 import type { StoreScorecard, OrderFrequencyLabel, ProductMixLabel } from '../types/crm.types';
 
-interface StorePerformanceScorecardProps {
-  onViewChange: (view: string) => void;
-}
+interface StorePerformanceScorecardProps {}
 
 type ScorecardFilter = 'all' | 'healthy' | 'cooling' | 'at_risk' | 'dormant';
 type SortField =
@@ -66,7 +65,8 @@ function fmt$(n: number) {
   return `$${n.toFixed(0)}`;
 }
 
-export function StorePerformanceScorecard({ onViewChange }: StorePerformanceScorecardProps) {
+export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<StoreScorecard[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ScorecardFilter>('all');
@@ -318,7 +318,7 @@ export function StorePerformanceScorecard({ onViewChange }: StorePerformanceScor
                   {/* Account */}
                   <td className="py-2.5 px-3">
                     <button
-                      onClick={() => onViewChange(`crm-account-detail:${a.customer_id}`)}
+                      onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">

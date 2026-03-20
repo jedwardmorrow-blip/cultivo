@@ -1,11 +1,12 @@
 import { ShoppingCart, MessageSquare, Calendar, Users, Activity, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardQuickActionsProps {
   onCreateOrder: () => void;
-  onViewChange: (view: string) => void;
 }
 
-export function DashboardQuickActions({ onCreateOrder, onViewChange }: DashboardQuickActionsProps) {
+export function DashboardQuickActions({ onCreateOrder }: DashboardQuickActionsProps) {
+  const navigate = useNavigate();
   const actions = [
     {
       label: 'New Order',
@@ -19,28 +20,28 @@ export function DashboardQuickActions({ onCreateOrder, onViewChange }: Dashboard
       description: 'Record a call, visit, or note',
       icon: MessageSquare,
       color: 'bg-sky-500/15 text-sky-400 border-sky-500/30 hover:bg-sky-500/25',
-      onClick: () => onViewChange('crm-queue'),
+      onClick: () => navigate('/crm-queue'),
     },
     {
       label: 'Schedule Visit',
       description: 'Plan an upcoming site visit',
       icon: Calendar,
       color: 'bg-teal-500/15 text-teal-400 border-teal-500/30 hover:bg-teal-500/25',
-      onClick: () => onViewChange('crm-visit-calendar'),
+      onClick: () => navigate('/crm-visit-calendar'),
     },
     {
       label: 'Prospect Pipeline',
       description: 'Track prospects through stages',
       icon: Users,
       color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/25',
-      onClick: () => onViewChange('crm-prospect-pipeline'),
+      onClick: () => navigate('/crm-prospect-pipeline'),
     },
     {
       label: 'Account Health',
       description: 'Monitor at-risk accounts',
       icon: Activity,
       color: 'bg-orange-500/15 text-orange-400 border-orange-500/30 hover:bg-orange-500/25',
-      onClick: () => onViewChange('crm-health'),
+      onClick: () => navigate('/crm-health'),
     },
   ];
 

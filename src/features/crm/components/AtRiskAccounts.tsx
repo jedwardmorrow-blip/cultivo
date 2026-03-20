@@ -1,4 +1,5 @@
 import { AlertTriangle, Clock, ChevronRight, Network, Phone, Calendar, ShoppingCart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import type { AccountSummary } from '../types';
 
@@ -6,10 +7,10 @@ interface AtRiskAccountsProps {
   accounts: AccountSummary[];
   onSelectAccount: (id: string) => void;
   onCreateOrder?: (customerId: string) => void;
-  onViewChange?: (view: string) => void;
 }
 
-export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder, onViewChange }: AtRiskAccountsProps) {
+export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder }: AtRiskAccountsProps) {
+  const navigate = useNavigate();
   if (accounts.length === 0) {
     return (
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-5">
@@ -76,15 +77,13 @@ export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder, onVie
                       <Phone className="w-3.5 h-3.5" />
                     </a>
                   )}
-                  {onViewChange && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onViewChange('crm-visit-calendar'); }}
-                      className="p-1.5 rounded hover:bg-teal-500/15 text-cult-medium-gray hover:text-teal-400 transition-colors"
-                      title="Schedule visit"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate('/crm-visit-calendar'); }}
+                    className="p-1.5 rounded hover:bg-teal-500/15 text-cult-medium-gray hover:text-teal-400 transition-colors"
+                    title="Schedule visit"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                  </button>
                   {onCreateOrder && (
                     <button
                       onClick={(e) => { e.stopPropagation(); onCreateOrder(account.id); }}

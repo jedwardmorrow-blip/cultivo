@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Activity,
   AlertTriangle,
@@ -23,9 +24,7 @@ import { LoadingSpinner } from '@/shared/components';
 import { getAccountHealthDashboard } from '../services/crm.service';
 import type { AccountHealthDashboardItem } from '../types/crm.types';
 
-interface AccountHealthDashboardProps {
-  onViewChange: (view: string) => void;
-}
+interface AccountHealthDashboardProps {}
 
 type HealthFilter = 'all' | 'healthy' | 'cooling' | 'at_risk' | 'dormant';
 type SortField = 'health_score' | 'days_since_last_order' | 'revenue_90d' | 'lifetime_revenue' | 'customer_name';
@@ -50,7 +49,8 @@ function fmt$(n: number) {
   return `$${n.toFixed(0)}`;
 }
 
-export function AccountHealthDashboard({ onViewChange }: AccountHealthDashboardProps) {
+export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<AccountHealthDashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<HealthFilter>('all');
@@ -199,7 +199,7 @@ export function AccountHealthDashboard({ onViewChange }: AccountHealthDashboardP
               {criticals.slice(0, 5).map((a) => (
                 <button
                   key={a.customer_id}
-                  onClick={() => onViewChange(`crm-account-detail:${a.customer_id}`)}
+                  onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
@@ -289,7 +289,7 @@ export function AccountHealthDashboard({ onViewChange }: AccountHealthDashboardP
                   {/* Account */}
                   <td className="py-2.5 px-3">
                     <button
-                      onClick={() => onViewChange(`crm-account-detail:${a.customer_id}`)}
+                      onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
