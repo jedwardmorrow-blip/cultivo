@@ -579,7 +579,16 @@ function OverviewTab({ onViewChange }: { onViewChange: (view: string) => void })
 // ──────────────────────────────────────────────────────────────────────────────
 
 function ContactsTab({ onViewChange }: { onViewChange: (view: string) => void }) {
-  const [contacts, setContacts] = React.useState<any[]>([]);
+  const [contacts, setContacts] = React.useState<{
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    title: string | null;
+    is_primary: boolean;
+    customer_id: string | null;
+    customer: { id: string; name: string; city: string | null; state: string | null; account_type: string | null } | null;
+  }[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');

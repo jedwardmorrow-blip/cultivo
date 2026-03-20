@@ -416,7 +416,7 @@ function useTrimmerStats() {
 
       // Aggregate per trimmer
       const map = new Map<string, TrimmerStats>();
-      raw.forEach((r: any) => {
+      raw.forEach((r: { trimmer_name: string | null; grams_per_hour: number | null; big_buds_grams: number | null; small_buds_grams: number | null; trim_grams: number | null; waste_grams: number | null; minutes_trimmed: number | null }) => {
         const name = r.trimmer_name || 'Unknown';
         const existing = map.get(name);
         const flower = Number(r.big_buds_grams || 0) + Number(r.small_buds_grams || 0);
@@ -573,7 +573,7 @@ function useOrderLeadTime() {
       let onTime = 0;
       let total = 0;
 
-      orders.forEach((o: any) => {
+      orders.forEach((o: { id: string; status: string; created_at: string | null; requested_delivery_date: string | null; updated_at: string | null }) => {
         if (!o.created_at) return;
         const created = new Date(o.created_at);
 

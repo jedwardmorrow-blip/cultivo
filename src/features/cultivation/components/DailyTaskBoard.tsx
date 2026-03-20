@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
+import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
 import { RoomCalendar } from './RoomCalendar';
@@ -43,40 +44,7 @@ const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
   { id: 'workers', label: 'Workers', icon: Users },
 ];
 
-const SAMPLE_STAFF: StaffMember[] = [
-  { id: 's1', first_name: 'Andrew', role: 'manager', hourly_rate: 35 },
-  { id: 's2', first_name: 'Greg', role: 'cultivator', hourly_rate: 22 },
-  { id: 's3', first_name: 'Laura', role: 'cultivator', hourly_rate: 20 },
-  { id: 's4', first_name: 'Leo', role: 'cultivator', hourly_rate: 20 },
-  { id: 's5', first_name: 'Roxy', role: 'cultivator', hourly_rate: 20 },
-  { id: 's6', first_name: 'Sam', role: 'cultivator', hourly_rate: 20 },
-  { id: 's7', first_name: 'Skye', role: 'cultivator', hourly_rate: 20 },
-  { id: 's8', first_name: 'Viana', role: 'cultivator', hourly_rate: 20 },
-  { id: 's9', first_name: 'Justin', role: 'operations', hourly_rate: 30 },
-];
-
-const SAMPLE_ROOMS: { id: string; name: string; room_type: RoomType; room_code: string }[] = [
-  { id: 'r1', name: 'MTH-01', room_type: 'mother', room_code: 'MTH-01' },
-  { id: 'r2', name: 'VEG-01', room_type: 'veg', room_code: 'VEG-01' },
-  { id: 'r3', name: 'VEG-02', room_type: 'veg', room_code: 'VEG-02' },
-  { id: 'r4', name: 'VEG-03', room_type: 'veg', room_code: 'VEG-03' },
-  { id: 'r5', name: 'FLW-01', room_type: 'flower', room_code: 'FLW-01' },
-  { id: 'r6', name: 'FLW-02', room_type: 'flower', room_code: 'FLW-02' },
-  { id: 'r7', name: 'FLW-03', room_type: 'flower', room_code: 'FLW-03' },
-  { id: 'r8', name: 'FLW-05', room_type: 'flower', room_code: 'FLW-05' },
-  { id: 'r9', name: 'FLW-06', room_type: 'flower', room_code: 'FLW-06' },
-  { id: 'r10', name: 'FLW-07', room_type: 'flower', room_code: 'FLW-07' },
-  { id: 'r11', name: 'FLW-08', room_type: 'flower', room_code: 'FLW-08' },
-];
-
-const SAMPLE_TASKS: TaskCardData[] = [
-  { id: 't1', task_type: 'ipm_spray', room_name: 'FLW-06', assigned_to_name: 'Greg', status: 'pending', estimated_duration: '45m', notes: null, estimated_cost: 17 },
-  { id: 't2', task_type: 'defoliation', room_name: 'FLW-03', assigned_to_name: 'Laura', status: 'in_progress', estimated_duration: '2h', notes: null, scope: 'multi_day', progress_current: 2, progress_total: 4, estimated_cost: 40 },
-  { id: 't3', task_type: 'feeding', room_name: 'VEG-01', assigned_to_name: 'Sam', status: 'completed', estimated_duration: '30m', notes: null, estimated_cost: 10 },
-  { id: 't4', task_type: 'scouting', room_name: 'FLW-08', assigned_to_name: 'Skye', status: 'pending', estimated_duration: '20m', notes: null, estimated_cost: 7 },
-  { id: 't5', task_type: 'cleaning', room_name: 'FLW-01', assigned_to_name: 'Roxy', status: 'carry_forward', estimated_duration: '1h', notes: 'Carried from yesterday', estimated_cost: 20 },
-  { id: 't6', task_type: 'training', room_name: 'VEG-02', assigned_to_name: 'Leo', status: 'pending', estimated_duration: '1h', notes: null, estimated_cost: 20 },
-];
+// Sample data removed 2026-03-19 — all data now fetched from real DB hooks
 
 const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
   ipm_spray: 'Apply integrated pest management sprays and treatments to prevent or control pests and diseases.',
@@ -138,38 +106,45 @@ export function DailyTaskBoard() {
   const { rooms: dbRooms } = useGrowRooms();
   const { tasks: dbTasks, completeWithLog, refetch: refetchTasks } = useDailyTasks(selectedDate);
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
+  const { staff: activeStaff } = useActiveStaff();
+
+  // Map DB staff to StaffMember shape expected by WorkerCheckIn / DailyBoardTab
+  const staff: StaffMember[] = useMemo(() => {
+    return activeStaff.map((s) => ({
+      id: s.id,
+      first_name: s.first_name,
+      role: s.role ?? 'staff',
+      hourly_rate: 0, // hourly_rate not yet populated in staff table — backfill when available
+    }));
+  }, [activeStaff]);
 
   const rooms = useMemo(() => {
-    if (dbRooms.length > 0) return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
-    return SAMPLE_ROOMS;
+    return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
   }, [dbRooms]);
 
   const taskCards: TaskCardData[] = useMemo(() => {
-    if (dbTasks.length > 0) {
-      return dbTasks.map((t) => {
-        const room = rooms.find((r) => r.id === t.room_id);
-        const staff = SAMPLE_STAFF.find((s) => s.id === t.assigned_to);
-        const durationHours = t.estimated_duration
-          ? parseFloat(t.estimated_duration.replace(/[^0-9.]/g, '')) || 0
-          : 0;
-        const cost = staff ? durationHours * staff.hourly_rate : undefined;
-        return {
-          id: t.id,
-          task_type: t.task_type,
-          room_name: room?.room_code ?? 'Unknown',
-          assigned_to_name: staff?.first_name ?? t.assigned_to,
-          status: t.status,
-          estimated_duration: t.estimated_duration,
-          notes: t.notes,
-          scope: t.scope,
-          progress_current: (t.progress_data as Record<string, number>)?.current,
-          progress_total: (t.progress_data as Record<string, number>)?.total,
-          estimated_cost: cost,
-        };
-      });
-    }
-    return SAMPLE_TASKS;
-  }, [dbTasks, rooms]);
+    return dbTasks.map((t) => {
+      const room = rooms.find((r) => r.id === t.room_id);
+      const staffMember = staff.find((s) => s.id === t.assigned_to);
+      const durationHours = t.estimated_duration
+        ? parseFloat(t.estimated_duration.replace(/[^0-9.]/g, '')) || 0
+        : 0;
+      const cost = staffMember && staffMember.hourly_rate > 0 ? durationHours * staffMember.hourly_rate : undefined;
+      return {
+        id: t.id,
+        task_type: t.task_type,
+        room_name: room?.room_code ?? 'Unknown',
+        assigned_to_name: staffMember?.first_name ?? t.assigned_to,
+        status: t.status,
+        estimated_duration: t.estimated_duration,
+        notes: t.notes,
+        scope: t.scope,
+        progress_current: (t.progress_data as Record<string, number>)?.current,
+        progress_total: (t.progress_data as Record<string, number>)?.total,
+        estimated_cost: cost,
+      };
+    });
+  }, [dbTasks, rooms, staff]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -262,7 +237,7 @@ export function DailyTaskBoard() {
       {activeTab === 'board' && (
         <DailyBoardTab
           rooms={rooms}
-          staff={SAMPLE_STAFF}
+          staff={staff}
           tasks={taskCards}
           attendance={attendance}
           date={selectedDate}
@@ -275,7 +250,7 @@ export function DailyTaskBoard() {
       )}
       {activeTab === 'types' && <TaskTypesTab />}
       {activeTab === 'workers' && (
-        <WorkersTab staff={SAMPLE_STAFF} tasks={taskCards} attendance={attendance} />
+        <WorkersTab staff={staff} tasks={taskCards} attendance={attendance} />
       )}
     </div>
   );
