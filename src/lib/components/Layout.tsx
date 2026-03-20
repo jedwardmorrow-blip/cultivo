@@ -7,16 +7,21 @@ import { useBadgeCounts } from '../../hooks/useBadgeCounts';
 import { NavigationDrawer, menuStructure, SectionTabs, SubNavBar } from '../../shared/components/navigation';
 import { getActiveSectionId } from '../../shared/components/navigation/sectionNavigation';
 
+import { useLocation, useNavigate } from 'react-router-dom';
+
 interface LayoutProps {
   children: ReactNode;
-  currentView: string;
-  onViewChange: (view: string) => void;
 }
 
-export function Layout({ children, currentView, onViewChange }: LayoutProps) {
+export function Layout({ children }: LayoutProps) {
   const { profile, signOut, isAdmin } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { getLogoUrl } = useLogos();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Strip leading slash for backwards compatibility with the legacy navigation strings
+  const currentView = location.pathname.replace(/^\//, '') || 'dashboard';
 
   const eyeLogoUrl = getLogoUrl('eye');
   const lightLogoUrl = getLogoUrl('light') || '/cult-logo-cropped.svg';
@@ -36,11 +41,11 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
   };
 
   const handleSectionChange = (_sectionId: string, defaultView: string) => {
-    onViewChange(defaultView);
+    navigate(`/${defaultView}`);
   };
 
   const handleLogoClick = () => {
-    onViewChange('dashboard');
+    navigate('/dashboard');
   };
 
   return (
@@ -85,7 +90,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => onViewChange('dashboard')}
+                  onClick={() => navigate('/dashboard')}
                   className={`p-2 rounded-cult transition-colors ${
                     currentView === 'dashboard'
                       ? 'text-cult-white bg-cult-charcoal'
@@ -96,7 +101,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
                   <Home className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => onViewChange('analytics')}
+                  onClick={() => navigate('/analytics')}
                   className={`p-2 rounded-cult transition-colors ${
                     currentView === 'analytics'
                       ? 'text-cult-white bg-cult-charcoal'
@@ -107,7 +112,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
                   <TrendingUp className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => onViewChange('settings')}
+                  onClick={() => navigate('/settings')}
                   className={`p-2 rounded-cult transition-colors ${
                     currentView === 'settings'
                       ? 'text-cult-white bg-cult-charcoal'
@@ -169,7 +174,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
       {showSubNav && (
         <SubNavBar
           currentView={currentView}
-          onNavigate={onViewChange}
+          onNavigate={(viewId) => navigate(`/${viewId}`)}
           badgeMap={badgeMap}
         />
       )}
@@ -179,7 +184,7 @@ export function Layout({ children, currentView, onViewChange }: LayoutProps) {
         onClose={toggleDrawer}
         sections={menuStructure}
         currentView={currentView}
-        onNavigate={onViewChange}
+        onNavigate={(viewId) => navigate(`/${viewId}`)}
         expandedSections={expandedSections}
         onToggleSection={toggleSection}
         isAdmin={isAdmin}

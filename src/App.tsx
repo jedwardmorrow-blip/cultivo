@@ -1,4 +1,5 @@
 import { useState, useEffect, Suspense } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ErrorBoundary, Layout } from './lib/components';
 import { Login, ResetPassword } from './features/auth';
@@ -66,68 +67,28 @@ function ViewFallback() {
   );
 }
 
-function AppContent() {
+function AccountDetailRoute({ onViewChange, onCreateOrder, onCreateSampleOrder, onSelectOrder }: any) {
+  const { id } = useParams<{ id: string }>();
+  return <AccountDetail accountId={id!} onViewChange={onViewChange} onCreateOrder={onCreateOrder} onCreateSampleOrder={onCreateSampleOrder} onSelectOrder={onSelectOrder} />;
+}
+
+function RosinLabRoute() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const cleanView = location.pathname.replace(/^\//, '') || 'rosin-lab';
+  return <RosinLabModule currentView={cleanView} setCurrentView={(v: string) => navigate(`/${v}`)} />;
+}
+
+function AuthenticatedApp() {
   const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState(() => {
-    const hash = window.location.hash.replace('#', '');
-    return hash || 'dashboard';
-  });
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
   const [cloneFromOrder, setCloneFromOrder] = useState<any>(null);
   const [preSelectedCustomerId, setPreSelectedCustomerId] = useState<string | null>(null);
   const [sampleMode, setSampleMode] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [isStandaloneMode, setIsStandaloneMode] = useState(false);
-  const [isResetPasswordMode, setIsResetPasswordMode] = useState(false);
-  const [isWorkerMode, setIsWorkerMode] = useState(false);
   const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('order') === 'new') {
-      setIsStandaloneMode(true);
-    }
-    const path = window.location.pathname;
-    if (path === '/reset-password') {
-      setIsResetPasswordMode(true);
-    }
-    if (path === '/coversheet') {
-      setCurrentView('public-coversheet');
-    }
-    if (path === '/coversheet-library') {
-      setCurrentView('public-coversheet-library');
-    }
-    if (path === '/coa-library') {
-      setCurrentView('public-coa');
-    }
-    if (path === '/menu') {
-      setCurrentView('public-menu');
-    }
-    if (path === '/worker' || path.startsWith('/worker/')) {
-      setIsWorkerMode(true);
-    }
-  }, []);
-
-  // Sync URL hash Ã¢ÂÂ currentView for shareable deep-links & browser back/forward
-  useEffect(() => {
-    const newHash = currentView === 'dashboard' ? '' : currentView;
-    if (window.location.hash.replace('#', '') !== newHash) {
-      window.history.replaceState(null, '', newHash ? `#${newHash}` : window.location.pathname);
-    }
-  }, [currentView]);
-
-  useEffect(() => {
-    function onHashChange() {
-      const hash = window.location.hash.replace('#', '');
-      if (hash && hash !== currentView) {
-        setCurrentView(hash);
-      } else if (!hash && currentView !== 'dashboard') {
-        setCurrentView('dashboard');
-      }
-    }
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, [currentView]);
 
   if (loading) {
     return (
@@ -137,39 +98,12 @@ function AppContent() {
     );
   }
 
-  if (isResetPasswordMode) {
-    return <ResetPassword />;
-  }
-
-  if (currentView === 'public-coversheet') {
-    return <CoversheetPublic />;
-  }
-  if (currentView === 'public-coversheet-library') {
-    return <CoversheetLibrary />;
-  }
-  if (currentView === 'public-coa') {
-    return <COALibrary />;
-  }
-  if (currentView === 'public-menu') {
-    return <PublicMenu />;
-  }
-
-  if (isStandaloneMode) {
-    return <StandaloneOrderFormRefactored />;
-  }
-
-  if (isWorkerMode) {
-    return <WorkerApp />;
-  }
-
   if (!user) {
     return <Login />;
   }
 
   function handleViewChange(view: string) {
-    const newHash = view === 'dashboard' ? '' : view;
-    window.history.pushState(null, '', newHash ? `#${newHash}` : window.location.pathname);
-    setCurrentView(view);
+    navigate(`/${view}`);
     setShowNewOrderForm(false);
     setSelectedOrderId(null);
   }
@@ -203,7 +137,7 @@ function AppContent() {
     setPreSelectedCustomerId(null);
     setSampleMode(false);
     setOrdersRefreshKey((k) => k + 1);
-    setCurrentView('orders');
+    navigate('/orders');
 
     if (customerId && orderData) {
       createActivity({
@@ -218,118 +152,60 @@ function AppContent() {
 
   function handleSelectOrder(orderId: string) {
     setSelectedOrderId(orderId);
-    setCurrentView('orders');
-  }
-
-  function renderView() {
-    switch (currentView) {
-      case 'dashboard':
-        return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
-      case 'orders':
-        return (
-          <OrdersContainer
-            key={ordersRefreshKey}
-            onCreateOrder={handleCreateOrder}
-            onSelectOrder={handleSelectOrder}
-            selectedOrderId={selectedOrderId}
-          />
-        );
-      case 'cultivation-dashboard':
-        return <CultivationDashboard />;
-      case 'cultivation-plants':
-        return <PlantGroupsList />;
-      case 'cultivation-harvest':
-        return <HarvestSessionsList onViewChange={handleViewChange} />;
-      case 'cultivation-binning':
-        return <BinningSessionsView onViewChange={handleViewChange} />;
-      case 'cultivation-taskboard':
-        return <DailyTaskBoard />;
-      case 'cultivation-digest':
-        return <DailyDigestView />;
-      case 'cultivation-rooms':
-        return <GrowRoomsManagement />;
-      case 'cultivation-dry-rooms':
-        return <DryRoomsManagement />;
-      case 'production-overview':
-        return <ProductionDashboard onViewChange={handleViewChange} />;
-      case 'bucking-sessions':
-        return <BuckingSessionsRefactored />;
-      case 'trim-sessions':
-        return <TrimSessionsRefactored />;
-      case 'packaging-sessions':
-        return <PackagingSessionsRefactored />;
-      case 'production-queue':
-        return <ProductionQueue />;
-      case 'batches':
-        return <BatchManagement />;
-      case 'inventory-all':
-        return <InventoryDataProvider><AllInventoryViewWrapper /></InventoryDataProvider>;
-      case 'inventory-binned':
-        return <InventoryDataProvider><BinnedInventoryViewWrapper /></InventoryDataProvider>;
-      case 'inventory-bucked':
-        return <InventoryDataProvider><BuckedInventoryViewWrapper /></InventoryDataProvider>;
-      case 'inventory-bulk':
-        return <InventoryDataProvider><BulkInventoryViewWrapper /></InventoryDataProvider>;
-      case 'inventory-packaged':
-        return <InventoryDataProvider><PackagedInventoryViewWrapper /></InventoryDataProvider>;
-      case 'inventory-daily-activity':
-        return <DailyActivityViewWrapper />;
-      case 'inventory-conversions':
-        return <ConversionsViewWrapper />;
-      case 'inventory-conversion-history':
-        return <ConversionHistoryViewWrapper />;
-      case 'inventory-audits':
-        return <AuditsViewWrapper />;
-      case 'delivery':
-        return <DistributionCalendar onSelectOrder={handleSelectOrder} />;
-      case 'analytics':
-        return <AnalyticsDashboard />;
-      case 'eod-summary':
-        return <EODSummary />;
-      case 'crm-dashboard':
-        return <CRMDashboard onViewChange={handleViewChange} onCreateOrder={(customerId) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />;
-      case 'crm-queue':
-        return <SalesQueue />;
-      case 'crm-visit-calendar':
-        return <VisitCalendar onSelectOrder={handleSelectOrder} onViewChange={handleViewChange} />;
-      case 'crm-pipeline':
-        return <SalesPipeline />;
-      case 'crm-prospect-pipeline':
-        return <ProspectPipeline onViewChange={handleViewChange} />;
-      case 'crm-tasks':
-        return <AutomatedTaskEngine onViewChange={handleViewChange} />;
-      case 'crm-accounts-hub':
-        return <AccountsHub onViewChange={handleViewChange} />;
-
-      case 'crm-health':
-        return <AccountHealthDashboard onViewChange={handleViewChange} />;
-      case 'crm-revenue':
-        return <RevenueTrackingDashboard onViewChange={handleViewChange} />;
-      case 'crm-scorecard':
-        return <StorePerformanceScorecard onViewChange={handleViewChange} />;
-      case 'crm-accounts':
-        handleViewChange('crm-accounts-hub');
-        return null;
-      case 'settings':
-        return <Settings />;
-      default:
-        if (currentView.startsWith('crm-account-detail:')) {
-          const acctId = currentView.replace('crm-account-detail:', '');
-          return <AccountDetail accountId={acctId} onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />;
-        }
-        if (currentView === 'rosin-lab' || currentView.startsWith('rosin-lab-')) {
-          return <RosinLabModule setCurrentView={handleViewChange} currentView={currentView} />;
-        }
-        return <Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />;
-    }
+    navigate('/orders');
   }
 
   return (
     <>
-      <Layout currentView={currentView} onViewChange={handleViewChange}>
-        <ErrorBoundary resetKeys={[currentView]}>
+      <Layout>
+        <ErrorBoundary resetKeys={[location.pathname]}>
           <Suspense fallback={<ViewFallback />}>
-            {renderView()}
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard onViewChange={handleViewChange} onSelectOrder={handleSelectOrder} />} />
+              <Route path="/orders" element={<OrdersContainer key={ordersRefreshKey} onCreateOrder={handleCreateOrder} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />} />
+              <Route path="/cultivation-dashboard" element={<CultivationDashboard />} />
+              <Route path="/cultivation-plants" element={<PlantGroupsList />} />
+              <Route path="/cultivation-harvest" element={<HarvestSessionsList onViewChange={handleViewChange} />} />
+              <Route path="/cultivation-binning" element={<BinningSessionsView onViewChange={handleViewChange} />} />
+              <Route path="/cultivation-taskboard" element={<DailyTaskBoard />} />
+              <Route path="/cultivation-digest" element={<DailyDigestView />} />
+              <Route path="/cultivation-rooms" element={<GrowRoomsManagement />} />
+              <Route path="/cultivation-dry-rooms" element={<DryRoomsManagement />} />
+              <Route path="/production-overview" element={<ProductionDashboard onViewChange={handleViewChange} />} />
+              <Route path="/bucking-sessions" element={<BuckingSessionsRefactored />} />
+              <Route path="/trim-sessions" element={<TrimSessionsRefactored />} />
+              <Route path="/packaging-sessions" element={<PackagingSessionsRefactored />} />
+              <Route path="/production-queue" element={<ProductionQueue />} />
+              <Route path="/batches" element={<BatchManagement />} />
+              <Route path="/inventory-all" element={<InventoryDataProvider><AllInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-binned" element={<InventoryDataProvider><BinnedInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-bucked" element={<InventoryDataProvider><BuckedInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-bulk" element={<InventoryDataProvider><BulkInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-packaged" element={<InventoryDataProvider><PackagedInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-daily-activity" element={<DailyActivityViewWrapper />} />
+              <Route path="/inventory-conversions" element={<ConversionsViewWrapper />} />
+              <Route path="/inventory-conversion-history" element={<ConversionHistoryViewWrapper />} />
+              <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
+              <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
+              <Route path="/analytics" element={<AnalyticsDashboard />} />
+              <Route path="/eod-summary" element={<EODSummary />} />
+              <Route path="/crm-dashboard" element={<CRMDashboard onViewChange={handleViewChange} onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />
+              <Route path="/crm-queue" element={<SalesQueue />} />
+              <Route path="/crm-visit-calendar" element={<VisitCalendar onSelectOrder={handleSelectOrder} onViewChange={handleViewChange} />} />
+              <Route path="/crm-pipeline" element={<SalesPipeline />} />
+              <Route path="/crm-prospect-pipeline" element={<ProspectPipeline onViewChange={handleViewChange} />} />
+              <Route path="/crm-tasks" element={<AutomatedTaskEngine onViewChange={handleViewChange} />} />
+              <Route path="/crm-accounts-hub" element={<AccountsHub onViewChange={handleViewChange} />} />
+              <Route path="/crm-health" element={<AccountHealthDashboard onViewChange={handleViewChange} />} />
+              <Route path="/crm-revenue" element={<RevenueTrackingDashboard onViewChange={handleViewChange} />} />
+              <Route path="/crm-scorecard" element={<StorePerformanceScorecard onViewChange={handleViewChange} />} />
+              <Route path="/crm-accounts" element={<Navigate to="/crm-accounts-hub" replace />} />
+              <Route path="/crm-account-detail/:id" element={<AccountDetailRoute onViewChange={handleViewChange} onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />} />
+              <Route path="/rosin-lab/*" element={<RosinLabRoute />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
           </Suspense>
         </ErrorBoundary>
       </Layout>
@@ -376,6 +252,35 @@ function WorkerApp() {
         <WorkerAppContent />
       </WorkerAuthProvider>
     </ErrorBoundary>
+  );
+}
+
+function AppContent() {
+  const [isStandaloneMode, setIsStandaloneMode] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('order') === 'new') {
+      setIsStandaloneMode(true);
+    }
+  }, []);
+
+  if (isStandaloneMode) {
+    return <StandaloneOrderFormRefactored />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/coversheet" element={<CoversheetPublic />} />
+      <Route path="/coversheet-library" element={<CoversheetLibrary />} />
+      <Route path="/coa-library" element={<COALibrary />} />
+      <Route path="/menu" element={<PublicMenu />} />
+      
+      <Route path="/worker/*" element={<WorkerApp />} />
+      
+      <Route path="/*" element={<AuthenticatedApp />} />
+    </Routes>
   );
 }
 

@@ -12,7 +12,6 @@ import {
   ExternalLink,
   AlertTriangle,
   CalendarClock,
-  ChevronRight,
   Users,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
@@ -83,6 +82,7 @@ function StatBlock({ label, value, icon: Icon, iconColor }: { label: string; val
 }
 interface VisitCalendarProps {
   onSelectOrder?: (orderId: string) => void;
+  onViewChange?: (view: string) => void;
 }
 
 export function VisitCalendar({ onSelectOrder, onViewChange }: VisitCalendarProps) {
