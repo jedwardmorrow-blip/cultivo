@@ -267,7 +267,7 @@ export async function generateCombinedPackageId(
   try {
     // Get batch number
     const { data: batch, error: batchError } = await supabase
-      .from('batches')
+      .from('batch_registry')
       .select('batch_number')
       .eq('id', batch_id)
       .single();
