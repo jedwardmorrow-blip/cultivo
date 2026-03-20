@@ -2,7 +2,9 @@
  * ConsolidateView Component
  *
  * Shows inventory groups (strain + category + batch) that have 2+ fragments.
- * One-click "Combine All" per group — no wizard, no manual package selection.
+ * Two combine modes per group:
+ *   - "Combine All" — merges every package in the group into one.
+ *   - Checkbox selection + "Combine Selected" — merge only the checked packages.
  * Directly calls fn_combine_inventory_packages via existing combine service.
  */
 
@@ -69,6 +71,8 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
   const [combineStatuses, setCombineStatuses] = useState<Record<string, CombineStatus>>({});
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [combineErrors, setCombineErrors] = useState<Record<string, string>>({});
+  // Per-group package selections: groupKey → Set of package UUIDs
+  const [selections, setSelections] = useState<Record<string, Set<string>>>({});
 
   // Group available items by strain + category + batch
   const groups = useMemo(() => {
@@ -131,8 +135,39 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
     });
   }, []);
 
-  const handleCombineAll = useCallback(
-    async (group: ConsolidateGroup) => {
+  // Selection helpers
+  const getSelection = useCallback(
+    (groupKey: string): Set<string> => selections[groupKey] || new Set(),
+    [selections]
+  );
+
+  const togglePackage = useCallback((groupKey: string, packageId: string) => {
+    setSelections((prev) => {
+      const current = new Set(prev[groupKey] || []);
+      if (current.has(packageId)) current.delete(packageId);
+      else current.add(packageId);
+      return { ...prev, [groupKey]: current };
+    });
+  }, []);
+
+  const toggleAllInGroup = useCallback((groupKey: string, allPackageIds: string[]) => {
+    setSelections((prev) => {
+      const current = prev[groupKey] || new Set();
+      const allSelected = allPackageIds.every((id) => current.has(id));
+      return {
+        ...prev,
+        [groupKey]: allSelected ? new Set() : new Set(allPackageIds),
+      };
+    });
+  }, []);
+
+  const handleCombine = useCallback(
+    async (group: ConsolidateGroup, packageIds: string[]) => {
+      if (packageIds.length < 2) {
+        notificationService.error('Select at least 2 packages to combine');
+        return;
+      }
+
       setCombineStatuses((prev) => ({ ...prev, [group.key]: 'combining' }));
       setCombineErrors((prev) => {
         const next = { ...prev };
@@ -141,12 +176,10 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
       });
 
       try {
-        // Generate package ID
         const newPackageId = await generateCombinedPackageId(group.batchId);
 
-        // Execute combine
         const result = await combineInventoryPackages({
-          source_package_ids: group.packages.map((p) => p.id),
+          source_package_ids: packageIds,
           new_package_id: newPackageId,
         });
 
@@ -154,12 +187,18 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
           throw new Error(result.error || 'Combination failed');
         }
 
+        const count = packageIds.length;
         setCombineStatuses((prev) => ({ ...prev, [group.key]: 'success' }));
+        // Clear selection for this group
+        setSelections((prev) => {
+          const next = { ...prev };
+          delete next[group.key];
+          return next;
+        });
         notificationService.success(
-          `Combined ${group.packages.length} ${group.strain} ${group.categoryLabel} packages → ${newPackageId}`
+          `Combined ${count} ${group.strain} ${group.categoryLabel} packages → ${newPackageId}`
         );
 
-        // Refresh data after a brief pause so user sees the success state
         setTimeout(() => {
           onDataRefresh?.();
         }, 1500);
@@ -210,6 +249,13 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
           const isExpanded = expandedGroups.has(group.key);
           const errorMsg = combineErrors[group.key];
           const colorClass = CATEGORY_COLORS[group.category] || 'border-cult-border bg-cult-dark-card';
+          const selected = getSelection(group.key);
+          const selectedCount = selected.size;
+          const selectedQty = group.packages
+            .filter((p) => selected.has(p.id))
+            .reduce((sum, p) => sum + p.qty, 0);
+          const allIds = group.packages.map((p) => p.id);
+          const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id));
 
           return (
             <div
@@ -242,34 +288,54 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                   </div>
                 </button>
 
-                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                  {/* Fragments preview */}
-                  <div className="hidden sm:flex items-center gap-1 text-xs text-cult-light-gray">
-                    {group.packages
-                      .sort((a, b) => a.qty - b.qty)
-                      .slice(0, 5)
-                      .map((p, i) => (
-                        <span key={p.id} className="px-1.5 py-0.5 bg-cult-surface rounded text-cult-text-muted font-mono">
-                          {p.unit === 'unit' ? p.qty : `${p.qty.toFixed(0)}g`}
-                        </span>
-                      ))}
-                    {group.packages.length > 5 && (
-                      <span className="text-cult-text-muted">+{group.packages.length - 5}</span>
-                    )}
-                  </div>
+                <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                  {/* Collapsed: fragment weight preview */}
+                  {!isExpanded && (
+                    <div className="hidden sm:flex items-center gap-1 text-xs text-cult-light-gray">
+                      {group.packages
+                        .sort((a, b) => a.qty - b.qty)
+                        .slice(0, 5)
+                        .map((p) => (
+                          <span key={p.id} className="px-1.5 py-0.5 bg-cult-surface rounded text-cult-text-muted font-mono">
+                            {p.unit === 'unit' ? p.qty : `${p.qty.toFixed(0)}g`}
+                          </span>
+                        ))}
+                      {group.packages.length > 5 && (
+                        <span className="text-cult-text-muted">+{group.packages.length - 5}</span>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Combine button */}
+                  {/* Action buttons */}
                   {status === 'idle' && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCombineAll(group);
-                      }}
-                      className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <Combine className="w-3.5 h-3.5" />
-                      Combine All
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {selectedCount >= 2 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCombine(group, Array.from(selected));
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Combine className="w-3.5 h-3.5" />
+                          Combine {selectedCount} ({formatQty(selectedQty, group.unit)})
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCombine(group, allIds);
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                          selectedCount >= 2
+                            ? 'bg-cult-surface text-cult-light-gray border border-cult-border hover:bg-cult-surface-raised'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        <Combine className="w-3.5 h-3.5" />
+                        Combine All
+                      </button>
+                    </div>
                   )}
                   {status === 'combining' && (
                     <div className="flex items-center gap-2 px-4 py-1.5 text-sm text-blue-400">
@@ -287,7 +353,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleCombineAll(group);
+                        handleCombine(group, selectedCount >= 2 ? Array.from(selected) : allIds);
                       }}
                       className="flex items-center gap-2 px-4 py-1.5 bg-red-600/80 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
                     >
@@ -303,31 +369,80 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                 <div className="px-5 pb-2 text-xs text-red-400">{errorMsg}</div>
               )}
 
-              {/* Expanded package list */}
+              {/* Expanded package list with checkboxes */}
               {isExpanded && (
                 <div className="border-t border-cult-border">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-cult-text-muted uppercase border-b border-cult-border">
-                        <th className="px-5 py-2 text-left">Package ID</th>
-                        <th className="px-5 py-2 text-right">Quantity</th>
-                        <th className="px-5 py-2 text-right">Created</th>
+                        <th className="px-3 py-2 text-left w-10">
+                          <input
+                            type="checkbox"
+                            checked={allSelected}
+                            onChange={() => toggleAllInGroup(group.key, allIds)}
+                            className="rounded border-cult-border text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-cult-surface cursor-pointer"
+                          />
+                        </th>
+                        <th className="px-3 py-2 text-left">Package ID</th>
+                        <th className="px-3 py-2 text-right">Quantity</th>
+                        <th className="px-3 py-2 text-right">Created</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-cult-border/50">
                       {group.packages
                         .sort((a, b) => a.qty - b.qty)
-                        .map((pkg) => (
-                          <tr key={pkg.id} className="text-cult-light-gray hover:bg-cult-surface/30">
-                            <td className="px-5 py-1.5 font-mono text-xs">{pkg.packageId}</td>
-                            <td className="px-5 py-1.5 text-right font-medium">{formatQty(pkg.qty, pkg.unit)}</td>
-                            <td className="px-5 py-1.5 text-right text-xs text-cult-text-muted">
-                              {pkg.createdAt ? new Date(pkg.createdAt).toLocaleDateString() : '—'}
-                            </td>
-                          </tr>
-                        ))}
+                        .map((pkg) => {
+                          const isChecked = selected.has(pkg.id);
+                          return (
+                            <tr
+                              key={pkg.id}
+                              onClick={() => togglePackage(group.key, pkg.id)}
+                              className={`cursor-pointer transition-colors ${
+                                isChecked
+                                  ? 'bg-blue-900/20 text-cult-white'
+                                  : 'text-cult-light-gray hover:bg-cult-surface/30'
+                              }`}
+                            >
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => togglePackage(group.key, pkg.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="rounded border-cult-border text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-cult-surface cursor-pointer"
+                                />
+                              </td>
+                              <td className="px-3 py-1.5 font-mono text-xs">{pkg.packageId}</td>
+                              <td className="px-3 py-1.5 text-right font-medium">{formatQty(pkg.qty, pkg.unit)}</td>
+                              <td className="px-3 py-1.5 text-right text-xs text-cult-text-muted">
+                                {pkg.createdAt ? new Date(pkg.createdAt).toLocaleDateString() : '—'}
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
+
+                  {/* Selection summary bar inside expanded group */}
+                  {selectedCount > 0 && (
+                    <div className="flex items-center justify-between px-5 py-2 bg-blue-900/15 border-t border-cult-border text-xs">
+                      <span className="text-blue-300">
+                        {selectedCount} of {group.packages.length} selected · {formatQty(selectedQty, group.unit)}
+                      </span>
+                      {selectedCount >= 2 && status === 'idle' && (
+                        <button
+                          onClick={() => handleCombine(group, Array.from(selected))}
+                          className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                        >
+                          <Combine className="w-3 h-3" />
+                          Combine Selected
+                        </button>
+                      )}
+                      {selectedCount < 2 && (
+                        <span className="text-cult-text-muted">Select at least 2 to combine</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
