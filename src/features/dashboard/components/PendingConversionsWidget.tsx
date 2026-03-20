@@ -43,8 +43,8 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-red-400">
+      <div className="bg-cult-surface-raised border border-cult-danger rounded-cult p-4">
+        <div className="flex items-center gap-2 text-cult-danger">
           <AlertCircle className="w-5 h-5" />
           <span className="text-sm">Error loading pending conversions: {error}</span>
         </div>
@@ -65,7 +65,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
             </h2>
           </div>
         </div>
-        <div className="bg-cult-dark-gray border border-cult-medium-gray rounded-lg p-6 text-center">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 text-center">
           <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
           <p className="text-cult-light-gray text-sm">All sessions finalized</p>
           <p className="text-cult-light-gray text-xs mt-1">
@@ -124,7 +124,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Sessions */}
-        <div className="bg-cult-dark-gray border border-cult-medium-gray rounded-lg p-4">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
           <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
             Pending Sessions
           </div>
@@ -140,7 +140,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
 
         {/* Pending Weight */}
         {totalWeight > 0 && (
-          <div className="bg-cult-dark-gray border border-cult-medium-gray rounded-lg p-4">
+          <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
             <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
               Total Weight
             </div>
@@ -153,7 +153,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
 
         {/* Pending Units */}
         {totalUnits > 0 && (
-          <div className="bg-cult-dark-gray border border-cult-medium-gray rounded-lg p-4">
+          <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
             <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
               Total Units
             </div>
@@ -166,8 +166,8 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
         {/* Oldest Pending */}
         <div className={`border rounded-lg p-4 ${
           isUrgent
-            ? 'bg-amber-900/20 border-amber-600'
-            : 'bg-cult-dark-gray border-cult-medium-gray'
+            ? 'bg-cult-warning-muted border-cult-warning'
+            : 'bg-cult-surface-raised border-cult-border'
         }`}>
           <div className={`text-xs font-medium uppercase tracking-wide mb-2 ${
             isUrgent ? 'text-amber-400' : 'text-cult-light-gray'

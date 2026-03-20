@@ -41,7 +41,7 @@ export function AllocationHealth() {
   }
 
   if (loading) {
-    return <div className="text-cult-light-gray">Loading allocation health...</div>;
+    return <div className="text-cult-text-muted text-xs uppercase tracking-widest animate-pulse">Loading allocation health...</div>;
   }
 
   const allocationRate = stats.totalOrders > 0
@@ -50,28 +50,28 @@ export function AllocationHealth() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">Allocation Health</h2>
+      <h2 className="text-xs font-semibold text-cult-text-primary uppercase tracking-[1.5px] mb-4">Allocation Health</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-cult-black p-4 border border-green-600">
-          <p className="text-green-400 text-sm uppercase tracking-wider">Fully Allocated</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.fullyAllocated}</p>
+        <div className="bg-cult-surface-raised p-4 border border-cult-success/30 rounded-cult">
+          <p className="text-cult-success text-[0.625rem] uppercase tracking-wider font-semibold">Fully Allocated</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">{stats.fullyAllocated}</p>
         </div>
-        <div className="bg-cult-black p-4 border border-yellow-600">
-          <p className="text-yellow-400 text-sm uppercase tracking-wider">Partial</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.partiallyAllocated}</p>
+        <div className="bg-cult-surface-raised p-4 border border-cult-warning/30 rounded-cult">
+          <p className="text-cult-warning text-[0.625rem] uppercase tracking-wider font-semibold">Partial</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">{stats.partiallyAllocated}</p>
         </div>
-        <div className="bg-cult-black p-4 border border-red-600">
-          <p className="text-red-400 text-sm uppercase tracking-wider">Not Allocated</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.notAllocated}</p>
+        <div className="bg-cult-surface-raised p-4 border border-cult-danger/30 rounded-cult">
+          <p className="text-cult-danger text-[0.625rem] uppercase tracking-wider font-semibold">Not Allocated</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">{stats.notAllocated}</p>
         </div>
-        <div className="bg-cult-black p-4 border border-cult-medium-gray">
-          <p className="text-cult-light-gray text-sm uppercase tracking-wider">Allocation Rate</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{allocationRate}%</p>
+        <div className="bg-cult-surface-raised p-4 border border-cult-border rounded-cult">
+          <p className="text-cult-text-muted text-[0.625rem] uppercase tracking-wider font-semibold">Allocation Rate</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">{allocationRate}%</p>
         </div>
       </div>
       <button
         onClick={() => navigate('/inventory-all')}
-        className="mt-4 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider"
+        className="mt-4 px-4 py-2 border border-cult-border text-cult-text-secondary hover:text-cult-text-primary hover:border-cult-border-strong transition-all text-[0.625rem] uppercase tracking-wider rounded-cult"
       >
         View Inventory
       </button>

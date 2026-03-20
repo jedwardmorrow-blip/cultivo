@@ -164,7 +164,7 @@ export function ProjectionChart({ windows }: Props) {
               const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ` (${w.room})`;
               return (
                 <tr key={i} className="hover:bg-cult-surface-overlay">
-                  <td className="text-xs px-2.5 py-2 border-b border-cult-border-subtle font-medium" style={{ color: w.isOverdue ? '#B81D24' : i < 2 ? '#F59E0B' : undefined }}>
+                  <td className="text-xs px-2.5 py-2 border-b border-cult-border-subtle font-medium" style={{ color: w.isOverdue ? '#DC4545' : i < 2 ? '#F59E0B' : undefined }}>
                     {dateStr}{w.isOverdue ? ' ⚠' : ''}
                   </td>
                   <td className="text-xs px-2.5 py-2 border-b border-cult-border-subtle">{w.plants.toLocaleString()}</td>

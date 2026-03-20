@@ -5,13 +5,17 @@
  * Two combine modes per group:
  *   - "Combine All" — merges every package in the group into one.
  *   - Checkbox selection + "Combine Selected" — merge only the checked packages.
+ * Per-package reclassify: change a package's category so it can be combined
+ * with a different group (e.g. move bigs into smalls).
+ * Search bar filters groups by strain, batch, or category.
  * Directly calls fn_combine_inventory_packages via existing combine service.
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Combine, Loader2, CheckCircle, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Combine, Loader2, CheckCircle, AlertTriangle, ChevronDown, ChevronRight, Search, ArrowRightLeft, X } from 'lucide-react';
 import { combineInventoryPackages, generateCombinedPackageId } from '../services/combine.service';
 import { notificationService } from '@/services/notification.service';
+import { supabase } from '@/lib/supabase';
 import type { InventoryItem } from '../types';
 
 interface ConsolidateViewProps {
@@ -37,28 +41,54 @@ interface PackageSummary {
   qty: number;
   unit: string;
   createdAt: string;
+  category: string;
 }
 
 type CombineStatus = 'idle' | 'combining' | 'success' | 'error';
 
 const CATEGORY_LABELS: Record<string, string> = {
   flower_binned: 'Flower (Binned)',
+  smalls_binned: 'Smalls (Binned)',
   flower_bucked: 'Flower (Bucked)',
+  smalls_bucked: 'Smalls (Bucked)',
   flower_bulk: 'Flower (Bulk)',
   smalls_bulk: 'Smalls (Bulk)',
   trim_bulk: 'Trim (Bulk)',
-  flower_packaged: 'Flower (Packaged)',
+  flower_trimmed: 'Flower (Trimmed)',
   smalls_trimmed: 'Smalls (Trimmed)',
+  trim_trimmed: 'Trim (Trimmed)',
+  flower_packaged: 'Flower (Packaged)',
+  smalls_packaged: 'Smalls (Packaged)',
+  fresh_frozen: 'Fresh Frozen',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
   flower_binned: 'border-emerald-700/50 bg-emerald-900/10',
+  smalls_binned: 'border-emerald-700/30 bg-emerald-900/5',
   flower_bucked: 'border-blue-700/50 bg-blue-900/10',
+  smalls_bucked: 'border-blue-700/30 bg-blue-900/5',
   flower_bulk: 'border-amber-700/50 bg-amber-900/10',
   smalls_bulk: 'border-purple-700/50 bg-purple-900/10',
   trim_bulk: 'border-orange-700/50 bg-orange-900/10',
   flower_packaged: 'border-teal-700/50 bg-teal-900/10',
   smalls_trimmed: 'border-pink-700/50 bg-pink-900/10',
+  smalls_packaged: 'border-teal-700/30 bg-teal-900/5',
+};
+
+// Categories grouped by processing stage — reclassify targets within the same stage
+const RECLASSIFY_TARGETS: Record<string, string[]> = {
+  flower_binned: ['smalls_binned'],
+  smalls_binned: ['flower_binned'],
+  flower_bucked: ['smalls_bucked'],
+  smalls_bucked: ['flower_bucked'],
+  flower_bulk: ['smalls_bulk', 'trim_bulk'],
+  smalls_bulk: ['flower_bulk', 'trim_bulk'],
+  trim_bulk: ['flower_bulk', 'smalls_bulk'],
+  flower_trimmed: ['smalls_trimmed', 'trim_trimmed'],
+  smalls_trimmed: ['flower_trimmed', 'trim_trimmed'],
+  trim_trimmed: ['flower_trimmed', 'smalls_trimmed'],
+  flower_packaged: ['smalls_packaged'],
+  smalls_packaged: ['flower_packaged'],
 };
 
 function formatQty(qty: number, unit: string): string {
@@ -71,8 +101,9 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
   const [combineStatuses, setCombineStatuses] = useState<Record<string, CombineStatus>>({});
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [combineErrors, setCombineErrors] = useState<Record<string, string>>({});
-  // Per-group package selections: groupKey → Set of package UUIDs
   const [selections, setSelections] = useState<Record<string, Set<string>>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [reclassifyingIds, setReclassifyingIds] = useState<Set<string>>(new Set());
 
   // Group available items by strain + category + batch
   const groups = useMemo(() => {
@@ -110,15 +141,28 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
         qty: item.on_hand_qty,
         unit: item.unit || 'g',
         createdAt: item.created_at || '',
+        category,
       });
       group.totalQty += item.on_hand_qty;
     }
 
-    // Filter to groups with 2+ packages, sort by package count descending
     return Array.from(groupMap.values())
       .filter((g) => g.packages.length >= 2)
       .sort((a, b) => b.packages.length - a.packages.length);
   }, [items]);
+
+  // Filter groups by search query
+  const filteredGroups = useMemo(() => {
+    if (!searchQuery.trim()) return groups;
+    const q = searchQuery.toLowerCase();
+    return groups.filter(
+      (g) =>
+        g.strain.toLowerCase().includes(q) ||
+        g.batchNumber.toLowerCase().includes(q) ||
+        g.categoryLabel.toLowerCase().includes(q) ||
+        g.category.toLowerCase().includes(q)
+    );
+  }, [groups, searchQuery]);
 
   const totalFragments = useMemo(
     () => groups.reduce((sum, g) => sum + g.packages.length, 0),
@@ -135,7 +179,6 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
     });
   }, []);
 
-  // Selection helpers
   const getSelection = useCallback(
     (groupKey: string): Set<string> => selections[groupKey] || new Set(),
     [selections]
@@ -189,7 +232,6 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
 
         const count = packageIds.length;
         setCombineStatuses((prev) => ({ ...prev, [group.key]: 'success' }));
-        // Clear selection for this group
         setSelections((prev) => {
           const next = { ...prev };
           delete next[group.key];
@@ -212,6 +254,43 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
     [onDataRefresh]
   );
 
+  const handleReclassify = useCallback(
+    async (pkg: PackageSummary, newCategory: string) => {
+      setReclassifyingIds((prev) => new Set(prev).add(pkg.id));
+
+      try {
+        const userId = (await supabase.auth.getUser()).data.user?.id;
+        if (!userId) throw new Error('Not authenticated');
+
+        const { data, error } = await supabase.rpc('fn_reclassify_inventory_item', {
+          p_item_id: pkg.id,
+          p_new_category: newCategory,
+          p_user_id: userId,
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data?.success) throw new Error(data?.error || 'Reclassify failed');
+
+        const label = CATEGORY_LABELS[newCategory] || newCategory;
+        notificationService.success(
+          `${pkg.packageId} reclassified → ${label}`
+        );
+
+        onDataRefresh?.();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Reclassify failed';
+        notificationService.error(msg);
+      } finally {
+        setReclassifyingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(pkg.id);
+          return next;
+        });
+      }
+    },
+    [onDataRefresh]
+  );
+
   if (groups.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-cult-light-gray">
@@ -223,20 +302,40 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary bar */}
-      <div className="flex items-center justify-between bg-cult-dark-card border border-cult-border rounded-lg px-5 py-3">
+    <div className="space-y-4">
+      {/* Search + summary bar */}
+      <div className="flex items-center gap-4 bg-cult-dark-card border border-cult-border rounded-lg px-4 py-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-muted" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search strain, batch, or category..."
+            className="w-full pl-9 pr-8 py-1.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-white placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-light-gray"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-6 text-sm">
           <div>
-            <span className="text-cult-light-gray">Fragment groups: </span>
-            <span className="text-cult-white font-semibold">{groups.length}</span>
+            <span className="text-cult-light-gray">Groups: </span>
+            <span className="text-cult-white font-semibold">
+              {filteredGroups.length !== groups.length ? `${filteredGroups.length}/` : ''}{groups.length}
+            </span>
           </div>
           <div>
-            <span className="text-cult-light-gray">Total fragments: </span>
+            <span className="text-cult-light-gray">Fragments: </span>
             <span className="text-amber-400 font-semibold">{totalFragments}</span>
           </div>
           <div>
-            <span className="text-cult-light-gray">After consolidation: </span>
+            <span className="text-cult-light-gray">After: </span>
             <span className="text-green-400 font-semibold">{totalAfterConsolidate}</span>
           </div>
         </div>
@@ -244,7 +343,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
 
       {/* Groups */}
       <div className="space-y-3">
-        {groups.map((group) => {
+        {filteredGroups.map((group) => {
           const status = combineStatuses[group.key] || 'idle';
           const isExpanded = expandedGroups.has(group.key);
           const errorMsg = combineErrors[group.key];
@@ -289,7 +388,6 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                 </button>
 
                 <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                  {/* Collapsed: fragment weight preview */}
                   {!isExpanded && (
                     <div className="hidden sm:flex items-center gap-1 text-xs text-cult-light-gray">
                       {group.packages
@@ -306,7 +404,6 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                     </div>
                   )}
 
-                  {/* Action buttons */}
                   {status === 'idle' && (
                     <div className="flex items-center gap-2">
                       {selectedCount >= 2 && (
@@ -364,12 +461,11 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                 </div>
               </div>
 
-              {/* Error message */}
               {errorMsg && (
                 <div className="px-5 pb-2 text-xs text-red-400">{errorMsg}</div>
               )}
 
-              {/* Expanded package list with checkboxes */}
+              {/* Expanded package list */}
               {isExpanded && (
                 <div className="border-t border-cult-border">
                   <table className="w-full text-sm">
@@ -386,6 +482,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                         <th className="px-3 py-2 text-left">Package ID</th>
                         <th className="px-3 py-2 text-right">Quantity</th>
                         <th className="px-3 py-2 text-right">Created</th>
+                        <th className="px-3 py-2 text-right w-40">Reclassify</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-cult-border/50">
@@ -393,6 +490,8 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                         .sort((a, b) => a.qty - b.qty)
                         .map((pkg) => {
                           const isChecked = selected.has(pkg.id);
+                          const isReclassifying = reclassifyingIds.has(pkg.id);
+                          const targets = RECLASSIFY_TARGETS[pkg.category] || [];
                           return (
                             <tr
                               key={pkg.id}
@@ -417,13 +516,34 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                               <td className="px-3 py-1.5 text-right text-xs text-cult-text-muted">
                                 {pkg.createdAt ? new Date(pkg.createdAt).toLocaleDateString() : '—'}
                               </td>
+                              <td className="px-3 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
+                                {isReclassifying ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400 ml-auto" />
+                                ) : targets.length > 0 ? (
+                                  <select
+                                    value=""
+                                    onChange={(e) => {
+                                      if (e.target.value) handleReclassify(pkg, e.target.value);
+                                    }}
+                                    className="bg-cult-surface border border-cult-border rounded px-2 py-0.5 text-xs text-cult-light-gray focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer w-full"
+                                  >
+                                    <option value="">Move to...</option>
+                                    {targets.map((cat) => (
+                                      <option key={cat} value={cat}>
+                                        {CATEGORY_LABELS[cat] || cat}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <span className="text-xs text-cult-text-muted">—</span>
+                                )}
+                              </td>
                             </tr>
                           );
                         })}
                     </tbody>
                   </table>
 
-                  {/* Selection summary bar inside expanded group */}
                   {selectedCount > 0 && (
                     <div className="flex items-center justify-between px-5 py-2 bg-blue-900/15 border-t border-cult-border text-xs">
                       <span className="text-blue-300">
@@ -449,6 +569,13 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
           );
         })}
       </div>
+
+      {/* No results for search */}
+      {filteredGroups.length === 0 && searchQuery && (
+        <div className="text-center py-10 text-cult-light-gray text-sm">
+          No groups matching "{searchQuery}"
+        </div>
+      )}
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function TopCustomers({ customers }: Props) {
                 className="h-full rounded-sm"
                 style={{
                   width: `${(c.revenue / maxRev) * 100}%`,
-                  background: 'linear-gradient(90deg, #B81D24, #D42029)',
+                  background: 'linear-gradient(90deg, #FFFFFF, #A6A6A6)',
                 }}
               />
             </div>

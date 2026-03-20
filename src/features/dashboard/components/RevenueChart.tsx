@@ -45,8 +45,8 @@ export function RevenueChart({ data, goal = 158000 }: Props) {
         data: data.map(d => d.revenue),
         backgroundColor: data.map((d, i) => {
           if (d.revenue === best) return 'rgba(52, 211, 153, 0.75)';
-          if (i === data.length - 1) return 'rgba(184, 29, 36, 0.6)';
-          return 'rgba(166, 166, 166, 0.4)';
+          if (i === data.length - 1) return 'rgba(255, 255, 255, 0.85)';
+          return 'rgba(166, 166, 166, 0.3)';
         }),
         borderRadius: 4,
         borderSkipped: false as const,

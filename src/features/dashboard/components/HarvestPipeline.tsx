@@ -17,7 +17,7 @@ export function HarvestPipeline({ windows }: Props) {
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
           Harvest Pipeline
         </h3>
-        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-accent/10 text-cult-accent">
+        <span className="text-[0.625rem] px-2.5 py-0.5 rounded-full font-semibold bg-cult-surface-overlay text-cult-text-secondary">
           {windows.length} windows
         </span>
       </div>
@@ -42,7 +42,7 @@ export function HarvestPipeline({ windows }: Props) {
               key={i}
               className={`grid grid-cols-[120px_80px_1fr_80px_90px] items-center gap-3 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult
                 hover:bg-cult-border transition-colors duration-200
-                ${w.isOverdue ? 'border-l-2 border-cult-accent' : ''}`}
+                ${w.isOverdue ? 'border-l-2 border-cult-warning' : ''}`}
             >
               <div className="text-xs font-semibold text-cult-text-primary">{w.room}</div>
               <div className="text-[0.6875rem] font-medium" style={{ color: w.dateColor }}>
@@ -76,7 +76,7 @@ export function HarvestPipeline({ windows }: Props) {
 
       {overdue.length > 0 && (
         <div className="mt-2.5 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult text-[0.6875rem] font-light text-cult-text-secondary border-l-2 border-cult-stage-harvest">
-          <strong className="text-cult-accent font-semibold">
+          <strong className="text-cult-warning font-semibold">
             {overdue[0].room} overdue.
           </strong>{' '}
           {overdue[0].plants} plants ready now. Yield model: 65g/sqft × 672 sqft canopy = ~96 lbs dry per room.

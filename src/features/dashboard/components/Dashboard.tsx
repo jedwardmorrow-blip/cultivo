@@ -23,8 +23,8 @@ class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { 
   render() {
     if (this.state.error) {
       return (
-        <div className="bg-cult-surface-raised border border-cult-accent rounded-cult p-6 animate-fade-in">
-          <p className="text-cult-accent text-xs font-semibold uppercase tracking-wider mb-1">{this.props.name} — Error</p>
+        <div className="bg-cult-surface-raised border border-cult-danger rounded-cult p-6 animate-fade-in">
+          <p className="text-cult-danger text-xs font-semibold uppercase tracking-wider mb-1">{this.props.name} — Error</p>
           <p className="text-cult-text-muted text-xs">{this.state.error.message}</p>
         </div>
       );
@@ -54,7 +54,7 @@ export function Dashboard({
   if (error || !data) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-accent text-sm">{error || 'Failed to load dashboard'}</div>
+        <div className="text-cult-danger text-sm">{error || 'Failed to load dashboard'}</div>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export function Dashboard({
       <div className="flex justify-between items-start pb-5 border-b border-cult-border mb-4">
         <div>
           <h1 className="text-h1 text-cult-text-primary uppercase tracking-wider">
-            <span className="text-cult-accent">CULT</span> OPS
+            CULT <span className="text-cult-text-secondary font-light">OPS</span>
           </h1>
           <p className="text-caption text-cult-text-secondary mt-1 tracking-wider">
             Operations Command Center — CULT Cannabis Cultivation

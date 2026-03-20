@@ -92,7 +92,7 @@ export function KPIRow({ data }: Props) {
           key={card.label}
           className={`bg-cult-surface-raised border rounded-cult p-5 animate-fade-in
             hover:border-cult-border-strong transition-colors duration-200
-            ${card.alert ? 'border-cult-accent' : 'border-cult-border'}`}
+            ${card.alert ? 'border-cult-danger' : 'border-cult-border'}`}
         >
           <div className="flex justify-between items-start mb-3">
             <div className="text-[0.6875rem] uppercase tracking-[1.5px] text-cult-text-muted font-semibold">
@@ -105,7 +105,7 @@ export function KPIRow({ data }: Props) {
           <div className="text-[2rem] font-bold tracking-tight leading-none text-cult-text-primary">
             {card.value}
           </div>
-          <div className={`text-[0.6875rem] font-light mt-1.5 ${card.alert ? 'text-cult-accent' : 'text-cult-text-muted'}`}>
+          <div className={`text-[0.6875rem] font-light mt-1.5 ${card.alert ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
             {card.sub}
           </div>
         </div>

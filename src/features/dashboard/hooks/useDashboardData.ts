@@ -497,7 +497,7 @@ async function fetchCultivationData(): Promise<{
         plants: w.plants,
         estDryLbs,
         isOverdue,
-        dateColor: isOverdue ? '#B81D24' : '#F59E0B',
+        dateColor: isOverdue ? '#DC4545' : '#F59E0B',
         barColor: '#F43F5E',
       };
     })

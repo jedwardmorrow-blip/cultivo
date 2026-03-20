@@ -9,7 +9,7 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
-  submitted: { label: 'SUBMITTED', cls: 'bg-cult-accent/10 text-cult-accent-hover' },
+  submitted: { label: 'SUBMITTED', cls: 'bg-cult-surface-overlay text-cult-text-secondary' },
   accepted: { label: 'ACCEPTED', cls: 'bg-cult-success/10 text-cult-success-bright' },
   processing: { label: 'PROCESSING', cls: 'bg-cult-stage-harvest/10 text-cult-stage-harvest' },
   ready_for_delivery: { label: 'READY', cls: 'bg-cult-success/10 text-cult-success-bright' },
@@ -21,7 +21,7 @@ function getUrgency(deliveryDate: string | null): { label: string; cls: string }
   today.setHours(0, 0, 0, 0);
   const delivery = new Date(deliveryDate);
   const diff = Math.floor((delivery.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff < 0) return { label: 'OVERDUE', cls: 'bg-cult-accent/10 text-cult-accent' };
+  if (diff < 0) return { label: 'OVERDUE', cls: 'bg-cult-danger-muted text-cult-danger' };
   if (diff === 0) return { label: 'DUE TODAY', cls: 'bg-cult-stage-harvest/10 text-cult-stage-harvest' };
   if (diff === 1) return { label: 'TOMORROW', cls: 'bg-blue-400/10 text-blue-400' };
   return { label: `${diff}d`, cls: 'bg-blue-400/10 text-blue-400' };

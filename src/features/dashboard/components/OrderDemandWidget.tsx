@@ -35,7 +35,7 @@ export function OrderDemandWidget() {
 
   if (loading) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6">
         <div className="flex items-center justify-center py-8">
           <div className="text-cult-light-gray">Loading order demand...</div>
         </div>
@@ -44,8 +44,8 @@ export function OrderDemandWidget() {
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray">
-      <div className="border-b border-cult-medium-gray p-6">
+    <div className="bg-cult-surface-raised border border-cult-border rounded-cult">
+      <div className="border-b border-cult-border p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-cult-white" />
@@ -66,7 +66,7 @@ export function OrderDemandWidget() {
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-cult-black border border-cult-medium-gray p-4">
+          <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-blue-400" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Total Demand</span>
@@ -75,7 +75,7 @@ export function OrderDemandWidget() {
             <div className="text-xs text-cult-light-gray mt-1">units needed</div>
           </div>
 
-          <div className="bg-cult-black border border-cult-medium-gray p-4">
+          <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Packaged</span>
@@ -89,7 +89,7 @@ export function OrderDemandWidget() {
             </div>
           </div>
 
-          <div className="bg-cult-black border border-cult-medium-gray p-4">
+          <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="w-4 h-4 text-amber-400" />
               <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Still Needed</span>
@@ -110,7 +110,7 @@ export function OrderDemandWidget() {
             filteredRequirements.map((req, idx) => (
               <div
                 key={idx}
-                className="bg-cult-black border border-cult-medium-gray p-4"
+                className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -131,7 +131,7 @@ export function OrderDemandWidget() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-cult-medium-gray">
+                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-cult-border">
                   <div>
                     <div className="text-xs text-cult-lighter-gray mb-1">Packaged</div>
                     <div className={`font-bold ${
@@ -151,7 +151,7 @@ export function OrderDemandWidget() {
                   <div>
                     <div className="text-xs text-cult-lighter-gray mb-1">Bucked Needed</div>
                     <div className={`font-bold ${
-                      req.bucked_grams_needed > 0 ? 'text-red-400' : 'text-green-400'
+                      req.bucked_grams_needed > 0 ? 'text-cult-danger' : 'text-cult-success'
                     }`}>
                       {req.bucked_grams_needed.toFixed(0)}g
                     </div>

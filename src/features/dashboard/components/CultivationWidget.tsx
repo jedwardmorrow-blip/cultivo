@@ -122,19 +122,19 @@ export function CultivationWidget() {
       )}
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-cult-black border border-cult-dark-gray p-3">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Groups</div>
           <div className="text-2xl font-bold text-cult-white">{summary.activeGroups}</div>
           <div className="text-xs text-cult-medium-gray mt-0.5">{summary.totalPlants.toLocaleString()} plants</div>
         </div>
-        <div className="bg-cult-black border border-cult-dark-gray p-3">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Harvests</div>
           <div className={`text-2xl font-bold ${summary.activeHarvests.length > 0 ? 'text-amber-400' : 'text-cult-white'}`}>
             {summary.activeHarvests.length}
           </div>
           <div className="text-xs text-cult-medium-gray mt-0.5">in progress</div>
         </div>
-        <div className="bg-cult-black border border-cult-dark-gray p-3">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Pending Binning</div>
           <div className={`text-2xl font-bold ${summary.pendingBinning > 0 ? 'text-sky-400' : 'text-cult-white'}`}>
             {summary.pendingBinning}
@@ -146,7 +146,7 @@ export function CultivationWidget() {
       {summary.activeGroups > 0 && (
         <div>
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2">Stage Distribution</div>
-          <div className="flex h-2 rounded-full overflow-hidden bg-cult-dark-gray gap-px">
+          <div className="flex h-2 rounded-full overflow-hidden bg-cult-surface-overlay gap-px">
             {(['clone', 'veg', 'flower'] as const).map((stage) => {
               const count = stage === 'clone' ? summary.cloneCount : stage === 'veg' ? summary.vegCount : summary.flowerCount;
               const pct = (count / totalGroupsForBar) * 100;
@@ -192,7 +192,7 @@ export function CultivationWidget() {
           </div>
           <div className="space-y-1">
             {summary.activeHarvests.slice(0, 3).map((h) => (
-              <div key={h.id} className="flex items-center justify-between border border-cult-dark-gray bg-cult-black px-3 py-2">
+              <div key={h.id} className="flex items-center justify-between border border-cult-border bg-cult-surface-raised rounded-cult px-3 py-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs font-mono text-cult-light-gray">{h.batch_registry?.batch_number ?? '—'}</span>
                   <span className="text-xs text-cult-white truncate">{h.plant_groups?.strains?.name ?? 'Unknown'}</span>
@@ -230,7 +230,7 @@ export function CultivationWidget() {
       )}
 
       {summary.activeGroups === 0 && summary.activeHarvests.length === 0 && summary.pendingBinning === 0 && (
-        <div className="border border-dashed border-cult-medium-gray p-6 text-center">
+        <div className="border border-dashed border-cult-border rounded-cult p-6 text-center">
           <Sprout className="w-8 h-8 text-cult-dark-gray mx-auto mb-2" />
           <p className="text-sm text-cult-medium-gray">No active cultivation activity</p>
           <button

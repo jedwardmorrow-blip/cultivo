@@ -71,40 +71,41 @@ export function BatchAllocationOverview() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'over_allocated':
-        return <AlertTriangle className="w-5 h-5 text-red-400" />;
+        return <AlertTriangle className="w-4 h-4 text-cult-danger" />;
       case 'allocated':
-        return <Package className="w-5 h-5 text-blue-400" />;
+        return <Package className="w-4 h-4 text-cult-text-secondary" />;
       case 'available':
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
+        return <CheckCircle className="w-4 h-4 text-cult-success" />;
       default:
-        return <TrendingUp className="w-5 h-5 text-cult-light-gray" />;
+        return <TrendingUp className="w-4 h-4 text-cult-text-muted" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBorder = (status: string) => {
     switch (status) {
       case 'over_allocated':
-        return 'border-red-600 bg-red-900/20';
-      case 'allocated':
-        return 'border-blue-600 bg-blue-900/20';
-      case 'available':
-        return 'border-green-600 bg-green-900/20';
+        return 'border-cult-danger';
       default:
-        return 'border-cult-medium-gray bg-cult-near-black';
+        return 'border-cult-border';
     }
   };
 
   const getUtilizationColor = (pct: number) => {
-    if (pct >= 100) return 'text-red-400';
-    if (pct >= 80) return 'text-yellow-400';
-    if (pct >= 50) return 'text-blue-400';
-    return 'text-green-400';
+    if (pct >= 100) return 'text-cult-danger';
+    if (pct >= 80) return 'text-cult-warning';
+    return 'text-cult-text-secondary';
+  };
+
+  const getBarColor = (pct: number) => {
+    if (pct >= 100) return 'bg-cult-danger';
+    if (pct >= 80) return 'bg-cult-warning';
+    return 'bg-cult-text-muted';
   };
 
   if (loading) {
     return (
-      <div className="bg-cult-near-black border-2 border-cult-medium-gray p-6">
-        <div className="text-cult-light-gray">Loading batch allocations...</div>
+      <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6">
+        <div className="text-cult-text-muted text-xs uppercase tracking-widest animate-pulse">Loading batch allocations...</div>
       </div>
     );
   }
@@ -117,27 +118,29 @@ export function BatchAllocationOverview() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">Batch Allocation Overview</h2>
-          <p className="text-cult-light-gray mt-1">Track batch utilization and capacity</p>
+          <h2 className="text-xs font-semibold text-cult-text-primary uppercase tracking-[1.5px]">Batch Allocation Overview</h2>
+          <p className="text-[0.6875rem] text-cult-text-muted mt-0.5">Track batch utilization and capacity</p>
         </div>
         <div className="flex items-center gap-6">
+          {overAllocated.length > 0 && (
+            <div className="text-center">
+              <p className="text-[0.625rem] text-cult-text-muted uppercase tracking-wider">Over</p>
+              <p className="text-lg font-bold text-cult-danger">{overAllocated.length}</p>
+            </div>
+          )}
           <div className="text-center">
-            <p className="text-xs text-cult-light-gray uppercase tracking-wider">Over Allocated</p>
-            <p className="text-2xl font-bold text-red-400">{overAllocated.length}</p>
+            <p className="text-[0.625rem] text-cult-text-muted uppercase tracking-wider">Allocated</p>
+            <p className="text-lg font-bold text-cult-text-secondary">{allocated.length}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-cult-light-gray uppercase tracking-wider">Allocated</p>
-            <p className="text-2xl font-bold text-blue-400">{allocated.length}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-cult-light-gray uppercase tracking-wider">Available</p>
-            <p className="text-2xl font-bold text-green-400">{available.length}</p>
+            <p className="text-[0.625rem] text-cult-text-muted uppercase tracking-wider">Available</p>
+            <p className="text-lg font-bold text-cult-success">{available.length}</p>
           </div>
         </div>
       </div>
 
       {allocations.length === 0 ? (
-        <div className="bg-cult-near-black border-2 border-cult-medium-gray p-12 text-center text-cult-light-gray">
+        <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-12 text-center text-cult-text-muted">
           No batch allocations found
         </div>
       ) : (
@@ -145,131 +148,120 @@ export function BatchAllocationOverview() {
           {allocations.map((batch) => (
             <div
               key={batch.batch_id}
-              className={`border-2 p-4 ${getStatusColor(batch.allocation_status)}`}
+              className={`bg-cult-surface-raised border rounded-cult p-4 animate-fade-in
+                hover:border-cult-border-strong transition-colors duration-200
+                ${getStatusBorder(batch.allocation_status)}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     {getStatusIcon(batch.allocation_status)}
-                    <h3 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+                    <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wide">
                       {batch.batch_id}
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm text-cult-light-gray">{batch.strain}</p>
+                    <p className="text-xs text-cult-text-secondary">{batch.strain}</p>
                     <QualityGradeBadge gradeId={batchGrades[batch.batch_id] ?? null} />
                   </div>
-                  <p className="text-xs text-cult-lighter-gray mt-1">{batch.current_stage}</p>
+                  <p className="text-[0.6875rem] text-cult-text-muted mt-0.5">{batch.current_stage}</p>
                 </div>
                 {batch.orders_assigned > 0 && (
                   <div className="text-right">
-                    <p className="text-xs text-cult-light-gray uppercase">Orders</p>
-                    <p className="text-xl font-bold text-cult-white">{batch.orders_assigned}</p>
+                    <p className="text-[0.625rem] text-cult-text-muted uppercase">Orders</p>
+                    <p className="text-lg font-bold text-cult-text-primary">{batch.orders_assigned}</p>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-3 pt-3 border-t-2 border-cult-medium-gray">
+              <div className="space-y-3 pt-3 border-t border-cult-border">
                 {/* 8ths */}
                 {(batch.eighths_demand > 0 || batch.eighths_capacity > 0) && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-cult-light-gray uppercase tracking-wider">8ths</span>
-                      <span className={`text-sm font-bold ${getUtilizationColor(batch.eighths_utilization_pct)}`}>
-                        {batch.eighths_utilization_pct.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-cult-lighter-gray">
-                        {batch.eighths_demand} / {batch.eighths_capacity}
-                      </span>
-                      <span className={batch.eighths_remaining < 0 ? 'text-red-400' : 'text-cult-white'}>
-                        {batch.eighths_remaining} left
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-cult-black mt-1">
-                      <div
-                        className={`h-full ${
-                          batch.eighths_utilization_pct >= 100
-                            ? 'bg-red-500'
-                            : batch.eighths_utilization_pct >= 80
-                            ? 'bg-yellow-500'
-                            : 'bg-blue-500'
-                        }`}
-                        style={{ width: `${Math.min(batch.eighths_utilization_pct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                  <UtilBar
+                    label="8ths"
+                    demand={batch.eighths_demand}
+                    capacity={batch.eighths_capacity}
+                    remaining={batch.eighths_remaining}
+                    pct={batch.eighths_utilization_pct}
+                    getUtilColor={getUtilizationColor}
+                    getBarCol={getBarColor}
+                  />
                 )}
 
                 {/* Halves */}
                 {(batch.halves_demand > 0 || batch.halves_capacity > 0) && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-cult-light-gray uppercase tracking-wider">Halves</span>
-                      <span className={`text-sm font-bold ${getUtilizationColor(batch.halves_utilization_pct)}`}>
-                        {batch.halves_utilization_pct.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-cult-lighter-gray">
-                        {batch.halves_demand} / {batch.halves_capacity}
-                      </span>
-                      <span className={batch.halves_remaining < 0 ? 'text-red-400' : 'text-cult-white'}>
-                        {batch.halves_remaining} left
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-cult-black mt-1">
-                      <div
-                        className={`h-full ${
-                          batch.halves_utilization_pct >= 100
-                            ? 'bg-red-500'
-                            : batch.halves_utilization_pct >= 80
-                            ? 'bg-yellow-500'
-                            : 'bg-blue-500'
-                        }`}
-                        style={{ width: `${Math.min(batch.halves_utilization_pct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                  <UtilBar
+                    label="Halves"
+                    demand={batch.halves_demand}
+                    capacity={batch.halves_capacity}
+                    remaining={batch.halves_remaining}
+                    pct={batch.halves_utilization_pct}
+                    getUtilColor={getUtilizationColor}
+                    getBarCol={getBarColor}
+                  />
                 )}
 
                 {/* Pounds */}
                 {(batch.pounds_demand > 0 || batch.pounds_capacity > 0) && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-cult-light-gray uppercase tracking-wider">Pounds</span>
-                      <span className={`text-sm font-bold ${getUtilizationColor(batch.pounds_utilization_pct)}`}>
-                        {batch.pounds_utilization_pct.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-cult-lighter-gray">
-                        {batch.pounds_demand} / {batch.pounds_capacity}
-                      </span>
-                      <span className={batch.pounds_remaining < 0 ? 'text-red-400' : 'text-cult-white'}>
-                        {batch.pounds_remaining} left
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-cult-black mt-1">
-                      <div
-                        className={`h-full ${
-                          batch.pounds_utilization_pct >= 100
-                            ? 'bg-red-500'
-                            : batch.pounds_utilization_pct >= 80
-                            ? 'bg-yellow-500'
-                            : 'bg-blue-500'
-                        }`}
-                        style={{ width: `${Math.min(batch.pounds_utilization_pct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                  <UtilBar
+                    label="Pounds"
+                    demand={batch.pounds_demand}
+                    capacity={batch.pounds_capacity}
+                    remaining={batch.pounds_remaining}
+                    pct={batch.pounds_utilization_pct}
+                    getUtilColor={getUtilizationColor}
+                    getBarCol={getBarColor}
+                  />
                 )}
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* Extracted utilization bar to reduce repetition */
+function UtilBar({
+  label,
+  demand,
+  capacity,
+  remaining,
+  pct,
+  getUtilColor,
+  getBarCol,
+}: {
+  label: string;
+  demand: number;
+  capacity: number;
+  remaining: number;
+  pct: number;
+  getUtilColor: (p: number) => string;
+  getBarCol: (p: number) => string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[0.625rem] text-cult-text-muted uppercase tracking-wider">{label}</span>
+        <span className={`text-xs font-semibold ${getUtilColor(pct)}`}>
+          {pct.toFixed(0)}%
+        </span>
+      </div>
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-cult-text-muted">
+          {demand} / {capacity}
+        </span>
+        <span className={remaining < 0 ? 'text-cult-danger' : 'text-cult-text-secondary'}>
+          {remaining} left
+        </span>
+      </div>
+      <div className="w-full h-1.5 bg-cult-surface-overlay rounded-full mt-1 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${getBarCol(pct)}`}
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
     </div>
   );
 }

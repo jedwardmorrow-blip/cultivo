@@ -16,7 +16,7 @@ export default {
           'lighter-gray': '#666666',
           'dark-gray': '#1A1A1A',
           silver: '#A6A6A6',
-          red: '#B81D24',
+          red: '#DC4545',
           green: '#10B981',
           'green-bright': '#34D399',
                       // Semantic Surface Tokens
@@ -33,12 +33,17 @@ export default {
                       'text-secondary': '#A6A6A6',
                       'text-muted': '#666666',
                       'text-faint': '#404040',
-                      // Interactive Tokens
-                      'accent': '#B81D24',
-                      'accent-hover': '#D42029',
+                      // Interactive / Brand Tokens
+                      'accent': '#FFFFFF',
+                      'accent-hover': '#D4D4D4',
+                      'accent-subtle': '#A6A6A6',
+                      // Status Tokens
                       'success': '#10B981',
                       'success-bright': '#34D399',
-                      'danger': '#B81D24',
+                      'danger': '#DC4545',
+                      'danger-muted': '#DC454520',
+                      'warning': '#F59E0B',
+                      'warning-muted': '#F59E0B20',
                       // Cannabis Stage Colors
                       'stage-clone': '#0EA5E9',
                       'stage-veg': '#10B981',
@@ -84,8 +89,8 @@ export default {
       },
       keyframes: {
         pulseUrgentRed: {
-          '0%, 100%': { boxShadow: '0 0 5px rgba(184, 29, 36, 0.3)' },
-          '50%': { boxShadow: '0 0 20px rgba(184, 29, 36, 0.6)' }
+          '0%, 100%': { boxShadow: '0 0 5px rgba(220, 69, 69, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(220, 69, 69, 0.6)' }
         },
         pulseUrgentAmber: {
           '0%, 100%': { boxShadow: '0 0 5px rgba(245, 158, 11, 0.3)' },
