@@ -165,8 +165,10 @@ async function fetchRevenueData(): Promise<{
 
   const rows = allOrders || [];
 
-  // MTD revenue
+  // MTD revenue — only count completed/delivered orders as actual revenue
+  const revenueStatuses = ['completed', 'delivered'];
   const mtdRows = rows.filter(o => {
+    if (!revenueStatuses.includes(o.status)) return false;
     const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
     return dt && dt >= monthStart;
   });
@@ -189,12 +191,12 @@ async function fetchRevenueData(): Promise<{
     customerName: o.customer_name || 'Unknown',
   }));
 
-  // Customer lifetime revenue
+  // Customer lifetime revenue — only count completed/delivered orders
   const { data: customerData } = await supabase
     .from('order_pipeline')
     .select('customer_name, total_amount')
     .eq('is_sample', false)
-    .not('status', 'eq', 'cancelled');
+    .in('status', ['completed', 'delivered']);
 
   const custMap = new Map<string, number>();
   (customerData || []).forEach(o => {
@@ -215,6 +217,7 @@ async function fetchRevenueData(): Promise<{
     const mEnd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(getDaysInMonth(d)).padStart(2, '0')}`;
     const mRevenue = rows
       .filter(o => {
+        if (!revenueStatuses.includes(o.status)) return false;
         const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
         return dt && dt >= mStart && dt <= mEnd;
       })
@@ -237,6 +240,7 @@ async function fetchRevenueData(): Promise<{
     const weStr = weekEnd.toISOString().split('T')[0];
     const wRevenue = rows
       .filter(o => {
+        if (!revenueStatuses.includes(o.status)) return false;
         const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
         return dt && dt >= wsStr && dt <= weStr;
       })
@@ -260,22 +264,53 @@ async function fetchRevenueData(): Promise<{
   };
 }
 
+// Parse package size in grams from product_name (e.g. "Packaged - Strain - 3.5g Flower")
+function parsePackageSizeGrams(productName: string): number {
+  const match = productName.match(/(\d+(?:\.\d+)?)g\b/);
+  if (match) return parseFloat(match[1]);
+  // Fallback for 1oz or similar
+  if (/\b1\s*oz\b/i.test(productName)) return 28;
+  return 0;
+}
+
 async function fetchInventoryPipeline(): Promise<{
   funnel: FunnelStage[];
   inProcessLbs: number;
   finishedEquivLbs: number;
   packagedLbs: number;
 }> {
+  // Fetch bulk stage balances (weight-based: Binned, Bucked, Trimmed)
   const { data } = await supabase
     .from('v_batch_stage_balances')
     .select('stage, weight_grams, unit_count')
     .not('stage', 'is', null);
+
+  // Fetch packaged items separately to compute weight from units × package size
+  const { data: packagedItems } = await supabase
+    .from('inventory_items')
+    .select('product_name, on_hand_qty, unit, product_stage_id, product_stages(name)')
+    .eq('unit', 'unit')
+    .gt('on_hand_qty', 0)
+    .neq('status', 'deleted');
+
+  // Compute packaged weight in grams from unit-based items
+  const packagedGramsComputed = (packagedItems || [])
+    .filter((item: any) => item.product_stages?.name === 'Packaged')
+    .reduce((total: number, item: any) => {
+      const sizeG = parsePackageSizeGrams(item.product_name || '');
+      return total + (sizeG * (item.on_hand_qty || 0));
+    }, 0);
 
   const stageMap = new Map<string, number>();
   (data || []).forEach(row => {
     const stage = row.stage || 'Unknown';
     stageMap.set(stage, (stageMap.get(stage) || 0) + (Number(row.weight_grams) || 0));
   });
+
+  // Override Packaged with computed weight from unit × package size
+  if (packagedGramsComputed > 0) {
+    stageMap.set('Packaged', packagedGramsComputed);
+  }
 
   const stageColors: Record<string, string> = {
     'Trimmed': '#8B5CF6',
@@ -323,7 +358,9 @@ async function fetchInventoryPipeline(): Promise<{
     }
   });
 
-  funnel.sort((a, b) => b.lbs - a.lbs);
+  // Sort by pipeline stage order, not weight
+  const stageOrder: Record<string, number> = { 'Binned': 0, 'Bucked': 1, 'Trimmed': 2, 'Packaged': 3 };
+  funnel.sort((a, b) => (stageOrder[a.label] ?? 99) - (stageOrder[b.label] ?? 99));
 
   return {
     funnel,
