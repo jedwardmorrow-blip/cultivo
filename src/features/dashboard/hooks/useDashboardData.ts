@@ -169,7 +169,7 @@ async function fetchRevenueData(): Promise<{
   const revenueStatuses = ['completed', 'delivered'];
   const mtdRows = rows.filter(o => {
     if (!revenueStatuses.includes(o.status)) return false;
-    const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
+    const dt = o.scheduled_delivery_date || o.requested_delivery_date || null;
     return dt && dt >= monthStart;
   });
   const mtd = mtdRows.reduce((s, o) => s + (o.total_amount || 0), 0);
@@ -218,7 +218,7 @@ async function fetchRevenueData(): Promise<{
     const mRevenue = rows
       .filter(o => {
         if (!revenueStatuses.includes(o.status)) return false;
-        const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
+        const dt = o.scheduled_delivery_date || o.requested_delivery_date || null;
         return dt && dt >= mStart && dt <= mEnd;
       })
       .reduce((s, o) => s + (o.total_amount || 0), 0);
@@ -241,7 +241,7 @@ async function fetchRevenueData(): Promise<{
     const wRevenue = rows
       .filter(o => {
         if (!revenueStatuses.includes(o.status)) return false;
-        const dt = o.scheduled_delivery_date || (o.created_at ? o.created_at.split('T')[0] : null);
+        const dt = o.scheduled_delivery_date || o.requested_delivery_date || null;
         return dt && dt >= wsStr && dt <= weStr;
       })
       .reduce((s, o) => s + (o.total_amount || 0), 0);

@@ -33,6 +33,7 @@ const DailyActivityViewWrapper = lazyRetry(() => import('./features/inventory'),
 const ConversionsViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionsViewWrapper');
 const ConversionHistoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionHistoryViewWrapper');
 const AuditsViewWrapper = lazyRetry(() => import('./features/inventory'), 'AuditsViewWrapper');
+const ConsolidateViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConsolidateViewWrapper');
 const Settings = lazyRetry(() => import('./features/settings'), 'Settings');
 const AnalyticsDashboard = lazyRetry(() => import('./features/analytics'), 'AnalyticsDashboard');
 const EODSummary = lazyRetry(() => import('./features/analytics'), 'EODSummary');
@@ -181,6 +182,7 @@ function AuthenticatedApp() {
               <Route path="/inventory-conversions" element={<ConversionsViewWrapper />} />
               <Route path="/inventory-conversion-history" element={<ConversionHistoryViewWrapper />} />
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
+              <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/eod-summary" element={<EODSummary />} />

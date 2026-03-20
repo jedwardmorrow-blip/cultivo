@@ -13,6 +13,7 @@ import {
 import { ConversionsView } from './ConversionsView';
 import { ConversionHistoryView } from './ConversionHistoryView';
 import { AuditManagement } from './AuditManagement';
+import { ConsolidateView } from './ConsolidateView';
 import type { BulkSubTab } from '../types';
 
 function ViewShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
@@ -128,6 +129,17 @@ export function AuditsViewWrapper() {
   return (
     <ViewShell title="Audit Management" subtitle="Perform inventory audits and track variances">
       <AuditManagement />
+    </ViewShell>
+  );
+}
+
+export function ConsolidateViewWrapper() {
+  const { loading, allItems, onDataRefresh } = useInventoryContext();
+  if (loading) return <InventoryLoadingState />;
+
+  return (
+    <ViewShell title="Consolidate Inventory" subtitle="Combine fragmented packages by strain, batch, and stage">
+      <ConsolidateView items={allItems} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
 }

@@ -30,6 +30,7 @@ import {
   ArrowDownToLine,
   TrendingUp,
   Zap,
+  Combine,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -91,6 +92,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'inventory-daily-activity', label: 'Daily Activity', icon: Activity, group: 'secondary' },
       { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'secondary' },
       { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
+      { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
       { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
     ],
   },
