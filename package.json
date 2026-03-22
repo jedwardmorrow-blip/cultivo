@@ -16,7 +16,8 @@
     "types:generate": "bash scripts/generate-types.sh",
     "docs:validate": "tsx scripts/validate-documentation.ts",
     "postinstall": "bash scripts/sync-pdf-worker.sh",
-    "ai:init": "tsx scripts/ai-init.ts"
+    "ai:init": "tsx scripts/ai-init.ts",
+    "ai:writeback": "tsx scripts/ai-writeback.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

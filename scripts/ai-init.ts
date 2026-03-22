@@ -52,13 +52,44 @@ async function init() {
     console.log("No critical lessons found.");
   }
 
-  // 3. Fetch Cowork Queue
-  console.log("\n📋 ACTIVE COWORK QUEUE (Top 3):");
+  // 3. Fetch Sprint Tickets (v_sprint_active — Rule 42)
+  console.log("\n🎯 ACTIVE SPRINT TICKETS (Top 3 — v_sprint_active):");
+  const { data: sprint, error: sprintError } = await supabase
+    .from('v_sprint_active')
+    .select('ticket_number, title, priority, task_type, executor, ticket_status, spec, acceptance_criteria, files_to_touch, known_traps, dependencies_met, tickets_done, tickets_total')
+    .limit(3);
+
+  if (sprintError) {
+    console.error("Error fetching sprint tickets:", sprintError.message);
+  } else if (sprint && sprint.length > 0) {
+    // Print sprint progress from first ticket's aggregates
+    const first = sprint[0] as any;
+    console.log(`Sprint progress: ${first.tickets_done}/${first.tickets_total} done\n`);
+
+    sprint.forEach((t: any, i) => {
+      console.log(`${i + 1}. [P${t.priority}] #${t.ticket_number}: ${t.title}`);
+      console.log(`   Type: ${t.task_type} | Executor: ${t.executor} | Status: ${t.ticket_status} | Deps met: ${t.dependencies_met}`);
+      console.log(`   Files: ${(t.files_to_touch || []).join(', ')}`);
+      if (t.known_traps) console.log(`   ⚠️  Traps: ${t.known_traps.slice(0, 200)}...`);
+      console.log('');
+    });
+
+    // Print full spec of ticket #1 (the one to execute)
+    console.log("--- TICKET #1 FULL SPEC ---");
+    console.log(first.spec);
+    console.log("\n--- ACCEPTANCE CRITERIA ---");
+    console.log(first.acceptance_criteria);
+  } else {
+    console.log("No active sprint tickets.");
+  }
+
+  // 4. Fetch Cowork Queue (backlog / non-sprint items)
+  console.log("\n📋 COWORK QUEUE (Top 3 non-sprint items):");
   const { data: queue, error: queueError } = await supabase
     .from('v_cowork_queue_active')
     .select('*')
     .limit(3);
-    
+
   if (queueError) {
     console.error("Error fetching cowork queue:", queueError.message);
   } else if (queue && queue.length > 0) {
