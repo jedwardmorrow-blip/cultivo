@@ -17,12 +17,13 @@ import {
 } from "./handlers.ts";
 
 // ============================================================
-// MAIN HANDLER — v38 (MESSAGE FEEDBACK)
+// MAIN HANDLER — v49 (MESSAGE FEEDBACK)
 // v34: Reconciled merge (canonical)
 // v35: Cowork queue wired to widget
 // v36: Image attachments sent to Claude as vision blocks
 // v37: Adjusted auto-distill filters to capture conversational data & restored people category
 // v38: Thread assistant message_id through done event for thumbs feedback
+// v49: Grade detection, inventory limit fix, order_items query, sold/sales intent keywords
 // ============================================================
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -35,7 +36,7 @@ Deno.serve(async (req: Request) => {
     const body: ChatRequest = await req.json();
     if (!body.message?.trim()) throw new Error("Message is required");
 
-    console.log(`[cultops-ai-chat v38] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | "${body.message.slice(0, 80)}"`);
+    console.log(`[cultops-ai-chat v49] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | "${body.message.slice(0, 80)}"`);
 
     const requestStart = Date.now();
 

@@ -296,7 +296,7 @@ export async function fetchLiveData(
   }
 
   const isLeoUser = userEmail === "leo@cultcannabis.co";
-  const filters = message ? parseInventoryFilters(message) : { batchPrefixes:[], strainPatterns:[], hasFilters:false };
+  const filters = message ? parseInventoryFilters(message) : { batchPrefixes:[], strainPatterns:[], gradeCodes:[], hasFilters:false };
 
   // v35: If Creator and guidance/knowledge intent, also pull queue summary
   if (isCreator && intents.some(i => ["guidance","knowledge","creator"].includes(i))) {
@@ -319,14 +319,21 @@ export async function fetchLiveData(
         let q = prodClient.from("v_inventory_sales").select("strain,batch_number,harvest_date,category,stage_name,display_group,grade_code,grade_color,item_count,available_qty,available_lbs,unit");
         if (filters.batchPrefixes.length > 0) q = q.or(filters.batchPrefixes.map(p => `batch_number.ilike.${p}%`).join(","));
         else if (filters.strainPatterns.length > 0) q = q.or(filters.strainPatterns.map(s => `strain.ilike.${s}`).join(","));
-        else q = q.limit(150);
+        if (filters.gradeCodes.length > 0) q = q.in("grade_code", filters.gradeCodes);
+        if (!filters.hasFilters) q = q.limit(300);
         queries.push(q.then(({data:d}) => { if(d) data.inventory_sales=d; }).catch(() => {}));
         break;
       }
-      case "orders":
+      case "orders": {
         queries.push(prodClient.from("order_pipeline").select("*").limit(20).then(({data:d}) => { if(d) data.order_pipeline=d; }).catch(() => {}));
         queries.push(prodClient.from("order_age_metrics").select("*").limit(10).then(({data:d}) => { if(d) data.order_age_metrics=d; }).catch(() => {}));
+        // v49: Query order_items with order context for strain-level detail
+        let oiq = prodClient.from("order_items").select("id,strain,quantity,unit_price,subtotal,status,demand_unit,notes,order_id,orders!inner(order_number,status,customer_name,created_at)");
+        if (filters.strainPatterns.length > 0) oiq = oiq.or(filters.strainPatterns.map(s => `strain.ilike.%${s}%`).join(","));
+        else oiq = oiq.limit(50);
+        queries.push(oiq.order("order_id", { ascending: false }).then(({data:d}) => { if(d) data.order_items=d; }).catch(() => {}));
         break;
+      }
       case "production":
         queries.push(prodClient.from("v_production_queue_by_strain").select("*").limit(20).then(({data:d}) => { if(d) data.production_queue=d; }).catch(() => {}));
         break;

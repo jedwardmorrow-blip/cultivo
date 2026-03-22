@@ -90,7 +90,7 @@ export async function fetchPinnedContext(pinnedIds: string[]): Promise<string> {
   } catch { return ""; }
 }
 
-export interface InventoryFilters { batchPrefixes: string[]; strainPatterns: string[]; hasFilters: boolean; }
+export interface InventoryFilters { batchPrefixes: string[]; strainPatterns: string[]; gradeCodes: string[]; hasFilters: boolean; }
 
 const KNOWN_STRAINS: string[] = ["animal tsunami","bananaconda","black maple","blue pave","capulator junky","chembanger","chemlatto","cherry paloma","dante's inferno","devil driver","dog walker","early riser","flavor flav","gas face","georgia apple pie","lemondary","magic marker","orange sherb","peanut butter breath","pie scream","purple ice water","rainbow inferno","silver marker","smackles","stay puft","strawguava","swamp water fumez","tahoe larry","trillionz","valley dog","violet fog","white devil","z marker","zoda pop"];
 const BATCH_STRAIN_CODES: Record<string, string> = {"asu":"animal tsunami","blm":"black maple","blp":"blue pave","cap":"capulator junky","chl":"chemlatto","chp":"cherry paloma","dog":"dog walker","ear":"early riser","flf":"flavor flav","gas":"gas face","gap":"georgia apple pie","lmd":"lemondary","mgm":"magic marker","ors":"orange sherb","pbb":"peanut butter breath","pis":"pie scream","piw":"purple ice water","rbi":"rainbow inferno","stg":"strawguava","thl":"tahoe larry","tlz":"trillionz","vld":"valley dog","vio":"violet fog","zmk":"z marker"};
@@ -99,6 +99,7 @@ export function parseInventoryFilters(message: string): InventoryFilters {
   const lower = message.toLowerCase();
   const batchPrefixes: string[] = [];
   const strainPatterns: string[] = [];
+  const gradeCodes: string[] = [];
   const fullBatchPattern = /\b(\d{6})-([a-z]{2,4})\b/gi;
   let match;
   while ((match = fullBatchPattern.exec(message)) !== null) { const prefix = `${match[1]}-${match[2].toUpperCase()}`; if (!batchPrefixes.includes(prefix)) batchPrefixes.push(prefix); }
@@ -107,7 +108,19 @@ export function parseInventoryFilters(message: string): InventoryFilters {
   for (const strain of KNOWN_STRAINS) { if (lower.includes(strain)) { const cap = strain.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" "); if (!strainPatterns.includes(cap)) strainPatterns.push(cap); } }
   const codePattern = /\b([a-z]{3})\b/gi;
   while ((match = codePattern.exec(message)) !== null) { const code = match[1].toLowerCase(); if (BATCH_STRAIN_CODES[code]) { const strain = BATCH_STRAIN_CODES[code]; const cap = strain.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" "); if (!strainPatterns.includes(cap)) strainPatterns.push(cap); } }
-  return { batchPrefixes, strainPatterns, hasFilters: batchPrefixes.length > 0 || strainPatterns.length > 0 };
+  // Grade detection: "C grade", "grade D", "CULT grade", "B", "C", "D" in grade context
+  if (/\bcult\s*grade\b|\bgrade\s*cult\b/i.test(lower)) { if (!gradeCodes.includes("CULT")) gradeCodes.push("CULT"); }
+  if (/\b[Bb]\s*grade\b|\bgrade\s*[Bb]\b/i.test(message)) { if (!gradeCodes.includes("B")) gradeCodes.push("B"); }
+  if (/\b[Cc]\s*grade\b|\bgrade\s*[Cc]\b|\bc\s*&\s*d\b/i.test(message)) { if (!gradeCodes.includes("C")) gradeCodes.push("C"); }
+  if (/\b[Dd]\s*grade\b|\bgrade\s*[Dd]\b|\bc\s*&\s*d\b/i.test(message)) { if (!gradeCodes.includes("D")) gradeCodes.push("D"); }
+  if (/\bundefined\s*grade\b|\bgrade\s*undefined\b|\bno\s*grade\b|\bungraded\b/i.test(lower)) { if (!gradeCodes.includes("UNDEFINED")) gradeCodes.push("UNDEFINED"); }
+  // Standalone grade letters in inventory context (e.g., "all the C & D grade", "count of C and D")
+  if (/\bgrade/i.test(lower)) {
+    if (/\bC\b/.test(message) && !gradeCodes.includes("C")) gradeCodes.push("C");
+    if (/\bD\b/.test(message) && !gradeCodes.includes("D")) gradeCodes.push("D");
+    if (/\bB\b/.test(message) && !gradeCodes.includes("B")) gradeCodes.push("B");
+  }
+  return { batchPrefixes, strainPatterns, gradeCodes, hasFilters: batchPrefixes.length > 0 || strainPatterns.length > 0 || gradeCodes.length > 0 };
 }
 
 export type AccessTier = "owner" | "admin" | "collaborator" | "public";
@@ -174,8 +187,8 @@ export function classifyIntent(message: string): ClassifiedIntent {
   if (/staff|team|employee|people|person|who\s+(is|works|runs|leads|manages)|org.?chart|department|role[s]?\b|hire|payroll|performance|review|90.?day|headcount|report.?to/i.test(lower)) { intents.push("people"); categories.push("people"); }
   if (/\b(andrew|laura|leo|josie|greg|dave|sam|james|scott|david|carver|ynez)\b/i.test(lower)) { if (!intents.includes("people")) intents.push("people"); if (!categories.includes("people")) categories.push("people"); }
   if (/\bjustin\b|\bcreator\b|\bfounder\b|who.?(built|made|created|started)|ceo/i.test(lower)) { intents.push("creator"); categories.push("people","architecture"); }
-  if (/inventor|stock|atp|available|package[ds]?\b|sku|product(?!ion)|trim|bulk|sellable|menu|quote|what.?can.?(i|we).?sell|what.?do.?(we|i).?have/i.test(lower)) { intents.push("inventory"); categories.push("inventory","inventory_pipeline","inventory_audit"); }
-  if (/order|deliver|ship|fulfill/i.test(lower)) { intents.push("orders"); categories.push("delivery_model"); }
+  if (/inventor|stock|atp|available|package[ds]?\b|sku|product(?!ion)|trim|bulk|sellable|menu|quote|what.?can.?(i|we).?sell|what.?do.?(we|i).?have|\bgrade[ds]?\b|\bgrading\b|[ABCD]\s*grade|grade\s*[ABCD]|cult\s*grade/i.test(lower)) { intents.push("inventory"); categories.push("inventory","inventory_pipeline","inventory_audit"); }
+  if (/order|deliver|ship|fulfill|sold\b|have we sold|sales?\s*history|purchased|who bought|what.?s? been sold/i.test(lower)) { intents.push("orders"); categories.push("delivery_model"); }
   if (/product(ion)?\s*(queue|schedule|velocity|throughput)|buck|packag(e|ing)\s*session/i.test(lower)) { intents.push("production"); categories.push("operations"); }
   if (/cultiv|plant|strain|grow|room|flower|veg|clone|mother|harvest/i.test(lower)) { intents.push("cultivation"); categories.push("cultivation","harvest_metrics"); }
   if (/customer|account|crm|dispen|sales|prospect|pipeline|visit|leo/i.test(lower)) { intents.push("crm"); categories.push("crm","sales_motion"); }

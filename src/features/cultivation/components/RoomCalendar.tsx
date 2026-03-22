@@ -542,6 +542,10 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
 
   async function handleDelete() {
     if (!onDelete) return;
+    const confirmed = window.confirm(
+      'Delete this schedule? This will stop all future task generation for this room.'
+    );
+    if (!confirmed) return;
     setDeleting(true);
     try {
       await onDelete();
