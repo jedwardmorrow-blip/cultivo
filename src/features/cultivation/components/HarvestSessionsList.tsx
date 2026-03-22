@@ -489,16 +489,17 @@ export function HarvestSessionsList() {
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {activeTab === 'active' ? (
           // Room-level grouping for active harvests
           activeRoomGroups.length === 0 ? (
-            <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-              <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
+            <div className="bg-cult-near-black border border-cult-charcoal p-12 text-center">
+              <Leaf className="w-8 h-8 text-cult-medium-gray mx-auto mb-3" />
+              <p className="text-cult-light-gray text-sm uppercase tracking-wider">
                 No active harvests
               </p>
-              <p className="text-cult-medium-gray text-xs mt-2">
-                Click <span className="text-cult-light-gray">+ Start Harvest</span> to begin harvesting a room.
+              <p className="text-cult-lighter-gray text-xs mt-2">
+                Click <span className="text-cult-white font-semibold">+ Start Harvest</span> to begin harvesting a room.
               </p>
             </div>
           ) : (
@@ -506,46 +507,46 @@ export function HarvestSessionsList() {
               <button
                 key={roomGroup.roomId}
                 onClick={() => handleResumeRoom(roomGroup.roomId)}
-                className="w-full text-left border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all group"
+                className="w-full text-left border border-l-4 border-cult-charcoal border-l-cult-stage-harvest bg-cult-near-black hover:bg-cult-graphite hover:border-cult-medium-gray transition-all group"
               >
-                <div className="flex items-center justify-between px-4 py-3 gap-4">
+                <div className="flex items-center justify-between px-5 py-4 gap-4">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="flex items-center justify-center w-10 h-10 bg-green-950 border border-green-800 flex-shrink-0">
-                      <Leaf className="w-5 h-5 text-green-400" />
+                    <div className="flex items-center justify-center w-11 h-11 bg-amber-950/40 border border-amber-800/50 flex-shrink-0">
+                      <Leaf className="w-5 h-5 text-cult-stage-harvest" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-cult-white font-mono text-sm font-semibold">{roomGroup.roomCode}</span>
-                        <span className="text-cult-medium-gray text-sm">{roomGroup.roomName}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-cult-white font-mono text-base font-bold tracking-wide">{roomGroup.roomCode}</span>
+                        <span className="text-cult-light-gray text-sm">{roomGroup.roomName}</span>
                       </div>
-                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <span className="text-cult-light-gray text-xs">{roomGroup.batchCount} batch{roomGroup.batchCount !== 1 ? 'es' : ''}</span>
+                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                        <span className="text-cult-silver text-xs">{roomGroup.batchCount} batch{roomGroup.batchCount !== 1 ? 'es' : ''}</span>
                         {roomGroup.totalPlants > 0 && (
                           <>
-                            <span className="text-cult-medium-gray text-xs">·</span>
-                            <span className="text-cult-light-gray text-xs">{roomGroup.totalPlants} plants harvested</span>
+                            <span className="text-cult-medium-gray">·</span>
+                            <span className="text-cult-silver text-xs">{roomGroup.totalPlants} plants harvested</span>
                           </>
                         )}
                         {roomGroup.totalWeight > 0 && (
                           <>
-                            <span className="text-cult-medium-gray text-xs">·</span>
-                            <span className="text-cult-light-gray text-xs">{formatWeight(roomGroup.totalWeight)} recorded</span>
+                            <span className="text-cult-medium-gray">·</span>
+                            <span className="text-cult-stage-harvest text-xs font-mono font-semibold">{formatWeight(roomGroup.totalWeight)} recorded</span>
                           </>
                         )}
                         {roomGroup.completedSessions.length > 0 && (
                           <>
-                            <span className="text-cult-medium-gray text-xs">·</span>
-                            <span className="text-green-400 text-xs">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
+                            <span className="text-cult-medium-gray">·</span>
+                            <span className="text-green-400 text-xs font-semibold">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs text-cult-medium-gray uppercase tracking-wider group-hover:text-cult-light-gray transition-colors">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-xs text-cult-lighter-gray uppercase tracking-wider font-semibold group-hover:text-cult-stage-harvest transition-colors">
                       {roomGroup.activeSessions.length > 0 ? 'Continue' : 'Resume'}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-5 h-5 text-cult-medium-gray group-hover:text-cult-white group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
               </button>
