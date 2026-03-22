@@ -96,7 +96,7 @@ export function useDailyTasks(taskDate: string) {
         assigned_to: input.assigned_to || null,
         notes: input.notes || null,
         status: 'pending' as TaskStatus,
-        scope: 'room',
+        scope: 'single_day',
         progress_data: {},
         task_config: {},
       })

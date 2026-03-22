@@ -17,11 +17,12 @@ import {
 } from "./handlers.ts";
 
 // ============================================================
-// MAIN HANDLER — v37 (CONVERSATIONAL KNOWLEDGE)
+// MAIN HANDLER — v38 (MESSAGE FEEDBACK)
 // v34: Reconciled merge (canonical)
 // v35: Cowork queue wired to widget
 // v36: Image attachments sent to Claude as vision blocks
 // v37: Adjusted auto-distill filters to capture conversational data & restored people category
+// v38: Thread assistant message_id through done event for thumbs feedback
 // ============================================================
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -34,7 +35,7 @@ Deno.serve(async (req: Request) => {
     const body: ChatRequest = await req.json();
     if (!body.message?.trim()) throw new Error("Message is required");
 
-    console.log(`[cultops-ai-chat v36] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | "${body.message.slice(0, 80)}"`);
+    console.log(`[cultops-ai-chat v38] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | "${body.message.slice(0, 80)}"`);
 
     const requestStart = Date.now();
 
@@ -210,9 +211,9 @@ Deno.serve(async (req: Request) => {
                   const latency = Date.now() - requestStart;
                   logInteraction(userProfile.email, body.session_id || null, body.message, intent.primary, intent.categories, resultType, latency, intent.intents).catch(() => {});
                   logConversation(userProfile.userId, body.session_id || null, body.message, fullResponse)
-                    .then(sid => {
-                      if (sid) autoDistillSession(sid).catch(e => console.log(`[v36] auto-distill error: ${e}`));
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", session_id: sid })}\n\n`));
+                    .then(result => {
+                      if (result.sessionId) autoDistillSession(result.sessionId).catch(e => console.log(`[v36] auto-distill error: ${e}`));
+                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", session_id: result.sessionId, message_id: result.messageId })}\n\n`));
                       controller.close();
                     })
                     .catch(() => controller.close());

@@ -52,6 +52,8 @@ interface Message {
     intents?: string[];
     financial?: boolean;
   };
+  messageDbId?: string;
+  feedbackScore?: 1 | -1 | null;
 }
 
 // ─── SUGGESTED PROMPTS ───
@@ -301,6 +303,15 @@ export default function AIChatWidget() {
                 );
               } else if (event.type === "done") {
                 if (event.session_id) setSessionId(event.session_id);
+                if (event.message_id) {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, messageDbId: event.message_id }
+                        : m
+                    )
+                  );
+                }
               } else if (event.type === "error") {
                 throw new Error(event.error);
               }
@@ -334,6 +345,25 @@ export default function AIChatWidget() {
     setSessionId(null);
     setError(null);
   };
+
+  const submitFeedback = useCallback(async (msgId: string, messageDbId: string, score: 1 | -1) => {
+    setMessages((prev) =>
+      prev.map((m) => m.id === msgId ? { ...m, feedbackScore: score } : m)
+    );
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabase = createClient(
+        SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+      );
+      await supabase.rpc("submit_chat_feedback", {
+        p_message_id: messageDbId,
+        p_score: score,
+      });
+    } catch (err) {
+      console.error("[AIChatWidget] Feedback error:", err);
+    }
+  }, []);
 
   // ─── CLOSED STATE: Cult Eye Bubble ───
   if (!isOpen && !isMinimized) {
@@ -724,6 +754,57 @@ export default function AIChatWidget() {
             >
               {msg.role === "user" ? msg.content : undefined}
             </div>
+
+            {/* Thumbs up/down feedback — assistant messages only */}
+            {msg.role === "assistant" && msg.content && (
+              <div
+                className="ai-feedback-row"
+                data-voted={msg.feedbackScore ? "true" : undefined}
+                style={{
+                  display: "flex",
+                  gap: "2px",
+                  marginTop: "4px",
+                  transition: "opacity 0.2s",
+                }}
+              >
+                <button
+                  onClick={() => msg.messageDbId && submitFeedback(msg.id, msg.messageDbId, 1)}
+                  disabled={!!msg.feedbackScore || !msg.messageDbId}
+                  title="Helpful"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: msg.feedbackScore || !msg.messageDbId ? "default" : "pointer",
+                    padding: "2px 4px",
+                    fontSize: "14px",
+                    lineHeight: 1,
+                    color: msg.feedbackScore === 1 ? "#4ade80" : BRAND.textMuted,
+                    transition: "color 0.2s",
+                    opacity: msg.feedbackScore === -1 ? 0.3 : 1,
+                  }}
+                >
+                  {msg.feedbackScore === 1 ? "👍" : "👍"}
+                </button>
+                <button
+                  onClick={() => msg.messageDbId && submitFeedback(msg.id, msg.messageDbId, -1)}
+                  disabled={!!msg.feedbackScore || !msg.messageDbId}
+                  title="Not helpful"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: msg.feedbackScore || !msg.messageDbId ? "default" : "pointer",
+                    padding: "2px 4px",
+                    fontSize: "14px",
+                    lineHeight: 1,
+                    color: msg.feedbackScore === -1 ? "#f87171" : BRAND.textMuted,
+                    transition: "color 0.2s",
+                    opacity: msg.feedbackScore === 1 ? 0.3 : 1,
+                  }}
+                >
+                  {msg.feedbackScore === -1 ? "👎" : "👎"}
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
@@ -966,6 +1047,10 @@ export default function AIChatWidget() {
         }
         .ai-ul { margin: 4px 0; padding-left: 20px; }
         .ai-li { margin: 2px 0; color: ${BRAND.textPrimary}; }
+        .ai-feedback-row { opacity: 0 !important; }
+        *:hover > .ai-feedback-row,
+        .ai-feedback-row:hover { opacity: 1 !important; }
+        .ai-feedback-row[data-voted="true"] { opacity: 1 !important; }
       `}</style>
     </div>
   );

@@ -60,6 +60,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
   const [sessionMap, setSessionMap] = useState<Record<string, HarvestSession>>({});
   const [wasteMap, setWasteMap] = useState<Record<string, number>>({});
   const [weightTotals, setWeightTotals] = useState<Record<string, { weight: number; plants: number; flowerWeight: number; frozenWeight: number }>>({});
+  const [loadingSessions, setLoadingSessions] = useState(false);
 
   const flowerRooms = rooms
     .filter((r) => r.is_active && r.room_type === 'flower')
@@ -74,14 +75,19 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
   const loadExistingSessions = useCallback(async (roomGroupIds: string[]) => {
     if (roomGroupIds.length === 0) return;
-    const allSessions = await cultivationService.listHarvestSessions({ status: 'active' });
-    const map: Record<string, HarvestSession> = {};
-    for (const s of allSessions) {
-      if (roomGroupIds.includes(s.plant_group_id)) {
-        map[s.plant_group_id] = s;
+    setLoadingSessions(true);
+    try {
+      const allSessions = await cultivationService.listHarvestSessions({ status: 'active' });
+      const map: Record<string, HarvestSession> = {};
+      for (const s of allSessions) {
+        if (roomGroupIds.includes(s.plant_group_id)) {
+          map[s.plant_group_id] = s;
+        }
       }
+      setSessionMap(map);
+    } finally {
+      setLoadingSessions(false);
     }
-    setSessionMap(map);
   }, []);
 
   useEffect(() => {
@@ -97,7 +103,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
 
 
-  // Create sessions for ALL plant groups in a batch at once
+  // Create sessions for ALL plant groups in a batch at once (skips groups that already have one)
   async function handleBatchCreateSessions(batchRegistryId: string): Promise<HarvestSession> {
     const batch = batchGroups.find((b) => b.batchRegistryId === batchRegistryId);
     if (!batch) throw new Error('Batch not found');
@@ -110,6 +116,11 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     const batchId = batch.batchRegistryId;
 
     for (const group of batch.groups) {
+      // Skip groups that already have an active session (prevents duplicates)
+      if (sessionMap[group.id]) {
+        if (!firstSession) firstSession = sessionMap[group.id];
+        continue;
+      }
       const session = await createSession({
         plant_group_id: group.id,
         batch_registry_id: batchId,
@@ -127,6 +138,9 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
   // Legacy per-group session creation (used by weight card internally)
   async function handleCreateSession(groupId: string): Promise<HarvestSession> {
+    // Return existing session if one already exists (prevents duplicates)
+    if (sessionMap[groupId]) return sessionMap[groupId];
+
     const group = groups.find((g) => g.id === groupId);
     if (!group) throw new Error('Plant group not found');
 
@@ -256,6 +270,11 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
             </p>
           </div>
 
+          {loadingSessions ? (
+            <div className="text-cult-medium-gray text-sm py-8 text-center">
+              Loading existing harvest sessions…
+            </div>
+          ) : (
           <div className="space-y-3">
             {batchGroups.map((batch) => (
               <BatchWeightCard
@@ -270,6 +289,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
               />
             ))}
           </div>
+          )}
 
           {activeBatches > 0 && (
             <div className="flex gap-3">
