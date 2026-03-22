@@ -160,6 +160,62 @@ export default function AIChatWidget() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
+  // ─── PROACTIVE GREETING on widget open ───
+  const greetingFetched = useRef(false);
+  useEffect(() => {
+    if (!isOpen || messages.length > 0 || greetingFetched.current) return;
+    greetingFetched.current = true;
+
+    (async () => {
+      try {
+        const token = await getAccessToken();
+        if (!token) return;
+
+        const response = await fetch(CHAT_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ greeting: true }),
+        });
+
+        if (!response.ok) return;
+
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let greetingText = "";
+        const greetingId = crypto.randomUUID();
+
+        setMessages([{ id: greetingId, role: "assistant", content: "" }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const event = JSON.parse(line.slice(6));
+              if (event.type === "text") {
+                greetingText += event.text;
+                setMessages([{ id: greetingId, role: "assistant", content: greetingText }]);
+              } else if (event.type === "done") {
+                if (event.session_id) setSessionId(event.session_id);
+              }
+            } catch { /* SSE parse skip */ }
+          }
+        }
+      } catch (e) {
+        console.error("[AIChatWidget] Greeting error:", e);
+      }
+    })();
+  }, [isOpen, messages.length, getAccessToken]);
+
   // ─── FILE HANDLING ───
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -344,6 +400,7 @@ export default function AIChatWidget() {
     setMessages([]);
     setSessionId(null);
     setError(null);
+    greetingFetched.current = false;
   };
 
   const submitFeedback = useCallback(async (msgId: string, messageDbId: string, score: 1 | -1) => {

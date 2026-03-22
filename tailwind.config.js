@@ -82,7 +82,7 @@ export default {
         'glitch': 'glitch 1s infinite',
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-in': 'slideIn 0.4s ease-in-out',
-        'slide-in-right': 'slideInRight 0.25s ease-out',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
         'flicker': 'flicker 0.3s ease-in-out',
         'pulse-red': 'pulseUrgentRed 2s infinite',
         'pulse-amber': 'pulseUrgentAmber 2s infinite',

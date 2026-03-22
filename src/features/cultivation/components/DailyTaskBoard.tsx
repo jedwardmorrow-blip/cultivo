@@ -38,6 +38,7 @@ import type { TaskCardData, StaffOption } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { DeadPlantForm } from './DeadPlantForm';
 import { todayIso } from '../utils/dateUtils';
+import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_DOT } from '../constants/stageColors';
 
 type TabId = 'calendar' | 'board' | 'types' | 'workers';
 
@@ -88,20 +89,6 @@ const ICON_MAP: Record<string, typeof Scissors> = {
 };
 
 const ROOM_TYPE_ORDER: Record<string, number> = { mother: 0, veg: 1, flower: 2, clone: 3, mixed: 4 };
-const ROOM_TYPE_BORDER: Record<string, string> = {
-  mother: 'border-l-amber-600',
-  veg: 'border-l-green-600',
-  flower: 'border-l-rose-600',
-  clone: 'border-l-sky-600',
-  mixed: 'border-l-cult-medium-gray',
-};
-const ROOM_TYPE_BG: Record<string, string> = {
-  mother: 'bg-amber-600',
-  veg: 'bg-green-600',
-  flower: 'bg-rose-600',
-  clone: 'bg-sky-600',
-  mixed: 'bg-cult-medium-gray',
-};
 const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
 /** Roles that belong on the cultivation task board */
@@ -596,7 +583,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
               {/* Section header for room type */}
               {showSectionHeader && (
                 <div className="flex items-center gap-3 mt-6 mb-2 first:mt-0">
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${ROOM_TYPE_BG[room.room_type] ?? 'bg-cult-medium-gray'}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
                   <span className="text-[11px] font-bold text-cult-light-gray uppercase tracking-widest">
                     {ROOM_TYPE_LABELS[room.room_type] ?? room.room_type}
                   </span>
@@ -605,7 +592,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
               )}
 
               <div
-                className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_BORDER[room.room_type] ?? ''} ${
+                className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''} ${
                   allDone ? 'opacity-50' : ''
                 } animate-fade-in`}
                 style={{ animationDelay: `${currentIndex * 50}ms`, animationFillMode: 'both' }}

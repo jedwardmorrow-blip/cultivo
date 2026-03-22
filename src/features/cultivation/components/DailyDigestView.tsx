@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { AnnotationInput } from './AnnotationInput';
 import { DigestSlackPreview } from './DigestSlackPreview';
 import { todayIso } from '../utils/dateUtils';
+import { ROOM_TYPE_LEFT_BORDER } from '../constants/stageColors';
 import type { DailyTaskInstance, DailyLogAnnotation, CreateAnnotationInput } from '../types';
 
 type DigestTab = 'overview' | 'by-room' | 'labor' | 'slack';
@@ -30,14 +31,6 @@ const TASK_TYPE_LABELS: Record<string, string> = {
   training: 'Training',
   clone_cutting: 'Clone Cutting',
   custom: 'Custom',
-};
-
-const ROOM_TYPE_BORDER: Record<string, string> = {
-  clone: 'border-l-cult-stage-clone',
-  veg: 'border-l-cult-stage-veg',
-  flower: 'border-l-cult-stage-flower',
-  mother: 'border-l-cult-stage-harvest',
-  mixed: 'border-l-cult-border',
 };
 
 interface StaffRecord {
@@ -606,7 +599,7 @@ function ByRoomTab({ roomDigests }: { roomDigests: RoomDigest[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
       {roomDigests.map((rd) => {
-        const borderCls = ROOM_TYPE_BORDER[rd.roomType] ?? ROOM_TYPE_BORDER.mixed;
+        const borderCls = ROOM_TYPE_LEFT_BORDER[rd.roomType] ?? ROOM_TYPE_LEFT_BORDER.mixed;
         return (
           <div key={rd.roomId} className={`bg-cult-surface-raised border border-cult-border border-l-4 ${borderCls} rounded-cult p-4 space-y-3`}>
             <div className="flex items-center justify-between">

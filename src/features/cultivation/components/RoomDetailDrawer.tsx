@@ -9,22 +9,8 @@ import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { ExpandedPlantsList } from './ExpandedPlantsList';
 import { todayIso, daysBetween, formatDate } from '../utils/dateUtils';
+import { ROOM_TYPE_BORDER, STAGE_BADGE } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
-
-const ROOM_TYPE_BORDER: Record<string, string> = {
-  clone: 'border-sky-700',
-  veg: 'border-green-700',
-  flower: 'border-rose-700',
-  mother: 'border-amber-700',
-  mixed: 'border-cult-medium-gray',
-};
-
-const STAGE_BADGE: Record<string, string> = {
-  clone: 'text-sky-400 border-sky-800 bg-sky-950',
-  veg: 'text-green-400 border-green-800 bg-green-950',
-  flower: 'text-rose-400 border-rose-800 bg-rose-950',
-  harvested: 'text-cult-medium-gray border-cult-dark-gray bg-cult-near-black',
-};
 
 function buildGridData(groups: PlantGroup[]): Map<string, PlantGroup[]> {
   const placedMap = new Map<string, PlantGroup[]>();
@@ -305,10 +291,10 @@ export function RoomDetailDrawer({
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-stretch bg-black/70"
+        className="fixed inset-0 z-50 flex items-stretch bg-black/70 animate-fade-in"
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
-        <div className={`relative ml-auto bg-cult-near-black border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden`}>
+        <div className={`relative ml-auto bg-cult-near-black border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden animate-slide-in-right`}>
           <div className="flex items-start justify-between px-6 py-5 border-b border-cult-medium-gray flex-shrink-0">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-3 flex-wrap">

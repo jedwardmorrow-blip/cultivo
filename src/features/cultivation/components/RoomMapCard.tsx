@@ -5,22 +5,8 @@ import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { FlipRoomModal } from './FlipRoomModal';
 import { todayIso, daysBetween } from '../utils/dateUtils';
+import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, INNER_GLOW } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
-
-const ROOM_TYPE_COLORS: Record<string, string> = {
-  clone: 'border-sky-700 bg-sky-950/20',
-  veg: 'border-green-700 bg-green-950/20',
-  flower: 'border-rose-700 bg-rose-950/10',
-  mother: 'border-amber-700 bg-amber-950/20',
-  mixed: 'border-cult-medium-gray bg-cult-near-black',
-};
-
-const STAGE_BADGE: Record<string, string> = {
-  clone: 'text-sky-400 border-sky-800 bg-sky-950',
-  veg: 'text-green-400 border-green-800 bg-green-950',
-  flower: 'text-rose-400 border-rose-800 bg-rose-950',
-  harvested: 'text-cult-medium-gray border-cult-dark-gray bg-cult-near-black',
-};
 
 interface PlacedGroup {
   group: PlantGroup;
@@ -104,21 +90,6 @@ function buildBatchSummary(groups: PlantGroup[]): BatchEntry[] {
 }
 
 const MAX_BATCH_CHIPS = 6;
-
-const CHIP_STAGE_COLORS: Record<string, string> = {
-  clone: 'border-sky-600 bg-sky-950/40 text-sky-300',
-  veg: 'border-green-600 bg-green-950/40 text-green-300',
-  flower: 'border-rose-600 bg-rose-950/40 text-rose-300',
-  mother: 'border-amber-600 bg-amber-950/40 text-amber-300',
-  mixed: 'border-cult-medium-gray bg-cult-near-black text-cult-light-gray',
-};
-
-const INNER_GLOW: Record<string, string> = {
-  clone: 'inset 0 0 30px rgba(14,165,233,0.06)',
-  veg: 'inset 0 0 30px rgba(16,185,129,0.06)',
-  flower: 'inset 0 0 30px rgba(244,63,94,0.06)',
-  mother: 'inset 0 0 30px rgba(245,158,11,0.06)',
-};
 
 interface BatchSummaryChipsProps {
   groups: PlantGroup[];

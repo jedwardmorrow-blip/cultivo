@@ -1,14 +1,7 @@
 import { Trophy, Home } from 'lucide-react';
 import { formatWeight } from '../../utils';
+import { ROOM_TYPE_BADGE as ROOM_TYPE_COLORS } from '../../constants/stageColors';
 import type { RoomAggregate } from '../../hooks/useHarvestMetrics';
-
-const ROOM_TYPE_COLORS: Record<string, string> = {
-  flower: 'text-rose-400 border-rose-800 bg-rose-950',
-  veg: 'text-green-400 border-green-800 bg-green-950',
-  clone: 'text-sky-400 border-sky-800 bg-sky-950',
-  mother: 'text-amber-400 border-amber-800 bg-amber-950',
-  mixed: 'text-cult-medium-gray border-cult-dark-gray bg-cult-near-black',
-};
 
 const MEDAL_COLORS = ['text-amber-400', 'text-cult-light-gray', 'text-amber-700'];
 

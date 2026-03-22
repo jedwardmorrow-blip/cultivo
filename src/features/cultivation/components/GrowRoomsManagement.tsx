@@ -5,6 +5,7 @@ import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { LayoutBuilder } from './LayoutBuilder';
 import { formatDate, daysBetween, todayIso } from '../utils/dateUtils';
+import { ROOM_TYPE_BADGE } from '../constants/stageColors';
 import type { GrowRoom, RoomType, RoomTable, RoomSection, CreateGrowRoomInput, UpdateGrowRoomInput } from '../types';
 
 const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
@@ -15,13 +16,7 @@ const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
   { value: 'mixed', label: 'Mixed' },
 ];
 
-const ROOM_TYPE_COLORS: Record<RoomType, string> = {
-  clone: 'bg-sky-950 border-sky-700 text-sky-400',
-  veg: 'bg-green-950 border-green-700 text-green-400',
-  flower: 'bg-rose-950 border-rose-700 text-rose-400',
-  mother: 'bg-amber-950 border-amber-700 text-amber-400',
-  mixed: 'bg-cult-black border-cult-medium-gray text-cult-light-gray',
-};
+const ROOM_TYPE_COLORS = ROOM_TYPE_BADGE as Record<RoomType, string>;
 
 interface RunDatesProps {
   section: RoomSection;

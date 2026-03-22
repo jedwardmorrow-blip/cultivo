@@ -12,7 +12,7 @@ import {
   handleRejectCandidate, handleShowTickets, handleWorkTicketIntake,
   handleRequestIntake, handleShowCoworkQueue, uploadAttachments,
   fetchLiveData, fetchContextKnowledge,
-  buildSystemPrompt, logConversation, logInteraction, sseResponse,
+  buildSystemPrompt, buildGreeting, logConversation, logInteraction, sseResponse,
   autoDistillSession,
 } from "./handlers.ts";
 
@@ -33,12 +33,21 @@ Deno.serve(async (req: Request) => {
   try {
     const userProfile = await verifyAuth(req);
     const tier = getUserAccessTier(userProfile);
-    const body: ChatRequest = await req.json();
-    if (!body.message?.trim()) throw new Error("Message is required");
+    const body: ChatRequest & { greeting?: boolean } = await req.json();
 
-    console.log(`[cultops-ai-chat v49] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | "${body.message.slice(0, 80)}"`);
+    console.log(`[cultops-ai-chat v49] User: ${userProfile.fullName} (${userProfile.role}, tier=${tier}${userProfile.isCreator ? ", CREATOR" : ""}) | ${body.greeting ? "GREETING" : `"${(body.message || "").slice(0, 80)}"`}`);
 
     const requestStart = Date.now();
+
+    // Proactive greeting on widget open
+    if (body.greeting) {
+      const persona = await fetchPersonaProfile(userProfile.email);
+      const greetingText = await buildGreeting(userProfile, persona, tier);
+      logInteraction(userProfile.email, null, "__greeting__", "daily_greeting", [], "confident", Date.now() - requestStart).catch(() => {});
+      return sseResponse(greetingText, ["daily_greeting"], logConversation(userProfile.userId, null, "__greeting__", greetingText, "greeting"));
+    }
+
+    if (!body.message?.trim()) throw new Error("Message is required");
 
     const prefUpdate = detectExplicitPreferences(body.message);
     if (prefUpdate) {

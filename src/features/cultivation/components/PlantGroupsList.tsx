@@ -11,6 +11,7 @@ import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { ExpandedPlantsList } from './ExpandedPlantsList';
 import { isValidStrainAbbreviation } from '../utils';
+import { STAGE_BADGE } from '../constants/stageColors';
 import type { PlantGroup, GrowthStage } from '../types';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -21,11 +22,9 @@ const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
 };
 
 const STAGE_COLORS: Record<GrowthStage, string> = {
-  clone: 'bg-sky-950 border-sky-700 text-sky-400',
-  veg: 'bg-green-950 border-green-700 text-green-400',
-  flower: 'bg-rose-950 border-rose-700 text-rose-400',
-  harvested: 'bg-amber-950 border-amber-700 text-amber-400',
-};
+  ...STAGE_BADGE as Record<string, string>,
+  harvested: 'bg-cult-stage-harvest/10 border-cult-stage-harvest/50 text-cult-stage-harvest',
+} as Record<GrowthStage, string>;
 
 type PendingAction =
   | { type: 'detail'; group: PlantGroup }

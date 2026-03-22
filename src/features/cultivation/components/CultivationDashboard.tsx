@@ -10,6 +10,7 @@ import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
+import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
@@ -20,26 +21,10 @@ const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   harvested: null,
 };
 
-const ROOM_TYPE_BORDER: Record<string, string> = {
-  clone: 'border-l-cult-stage-clone',
-  veg: 'border-l-cult-stage-veg',
-  flower: 'border-l-cult-stage-flower',
-  mother: 'border-l-cult-stage-harvest',
-  mixed: 'border-l-cult-border',
-};
-
 function computeHarvestDays(harvestDate: string | null): number | null {
   if (!harvestDate) return null;
   return daysBetween(todayIso(), harvestDate);
 }
-
-const ROOM_TYPE_TEXT: Record<string, string> = {
-  clone: 'text-cult-stage-clone border-cult-stage-clone',
-  veg: 'text-cult-stage-veg border-cult-stage-veg',
-  flower: 'text-cult-stage-flower border-cult-stage-flower',
-  mother: 'text-cult-stage-harvest border-cult-stage-harvest',
-  mixed: 'text-cult-light-gray border-cult-border',
-};
 
 
 
@@ -67,7 +52,7 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
     }
   }
 
-  const borderCls = ROOM_TYPE_BORDER[state.room_type] ?? ROOM_TYPE_BORDER.mixed;
+  const borderCls = ROOM_TYPE_LEFT_BORDER[state.room_type] ?? ROOM_TYPE_LEFT_BORDER.mixed;
   const typeTextCls = ROOM_TYPE_TEXT[state.room_type] ?? ROOM_TYPE_TEXT.mixed;
 
   const totalTasks = Number(state.tasks_today) || 0;

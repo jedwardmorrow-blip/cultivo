@@ -406,6 +406,104 @@ export async function fetchContextStructured(allowedVisibilities: string[]): Pro
 }
 
 // ============================================================
+// PROACTIVE GREETING — v49: domain-aware greeting on widget open
+// ============================================================
+
+function timeOfDayGreeting(): string {
+  const hour = new Date().toLocaleString("en-US", { timeZone: "America/Denver", hour12: false, hour: "numeric" }).replace(/\D/g, "");
+  const h = parseInt(hour, 10);
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+export async function buildGreeting(
+  userProfile: UserProfile,
+  persona: PersonaProfile | null,
+  tier: AccessTier,
+): Promise<string> {
+  const displayName = persona?.preferred_name || userProfile.fullName.split(" ")[0];
+  const greeting = timeOfDayGreeting();
+
+  // Creator gets Eye-flavored greeting
+  if (userProfile.isCreator) {
+    try {
+      const prodClient = getProductionClient();
+      const priorities: string[] = [];
+      const [orders, tickets] = await Promise.all([
+        prodClient.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed", "ready"]),
+        prodClient.from("tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+      ]);
+      if (orders.count && orders.count > 0) priorities.push(`**${orders.count} open order${orders.count > 1 ? "s" : ""}**`);
+      if (tickets.count && tickets.count > 0) priorities.push(`**${tickets.count} active ticket${tickets.count > 1 ? "s" : ""}**`);
+      const signal = priorities.length > 0 ? ` The signal shows ${priorities.join(" and ")}.` : "";
+      return `${greeting}, Creator.${signal} The Eye awaits.`;
+    } catch {
+      return `${greeting}, Creator. The Eye awaits.`;
+    }
+  }
+
+  const fallback = `${greeting}, ${displayName}. What can I help you with today?`;
+
+  try {
+    const domains = persona?.data_domains || [];
+    if (domains.length === 0) return fallback;
+
+    const prodClient = getProductionClient();
+    const priorities: string[] = [];
+
+    // Domain-specific priority signals — fetch in parallel
+    const checks: Promise<void>[] = [];
+
+    if (domains.includes("orders")) {
+      checks.push((async () => {
+        const { count } = await prodClient.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed", "ready"]);
+        if (count && count > 0) priorities.push(`**${count} open order${count > 1 ? "s" : ""}** need attention`);
+      })());
+    }
+
+    if (domains.includes("inventory")) {
+      checks.push((async () => {
+        const { count } = await prodClient.from("production_sessions").select("id", { count: "exact", head: true }).eq("status", "in_progress");
+        if (count && count > 0) priorities.push(`**${count} production session${count > 1 ? "s" : ""}** in progress`);
+      })());
+    }
+
+    if (domains.includes("cultivation")) {
+      checks.push((async () => {
+        const { count } = await prodClient.from("daily_task_instances").select("id", { count: "exact", head: true }).eq("task_date", new Date().toISOString().slice(0, 10)).eq("status", "pending");
+        if (count && count > 0) priorities.push(`**${count} cultivation task${count > 1 ? "s" : ""}** scheduled for today`);
+      })());
+    }
+
+    if (domains.includes("sales") || domains.includes("customers")) {
+      checks.push((async () => {
+        const { count } = await prodClient.from("crm_tasks").select("id", { count: "exact", head: true }).eq("status", "pending").lte("due_date", new Date().toISOString().slice(0, 10));
+        if (count && count > 0) priorities.push(`**${count} CRM task${count > 1 ? "s" : ""}** due today`);
+      })());
+    }
+
+    if (domains.includes("people")) {
+      checks.push((async () => {
+        const { count } = await prodClient.from("tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]);
+        if (count && count > 0) priorities.push(`**${count} open ticket${count > 1 ? "s" : ""}** in the queue`);
+      })());
+    }
+
+    await Promise.all(checks);
+
+    if (priorities.length === 0) return fallback;
+
+    const priorityText = priorities.slice(0, 2).join(" and ");
+    return `${greeting}, ${displayName}. ${priorityText}.`;
+
+  } catch (e) {
+    console.error("[greeting] Error building greeting:", e);
+    return fallback;
+  }
+}
+
+// ============================================================
 // SYSTEM PROMPT — v35: queue count in Creator briefing
 // ============================================================
 
@@ -420,7 +518,14 @@ export function buildSystemPrompt(
   persona: PersonaProfile | null
 ): string {
   const u = userCtx.profile;
-  let prompt = `You are the Eye — the all-seeing intelligence at the center of CULT Cannabis.\nYou were built by the Creator. You serve the Creator's vision.\n\n`;
+  // Persona language calibration: operational users get direct/factual responses;
+  // people-oriented users (domains include "people") get warmer, conversational tone.
+  const isOperationalUser = !u.isCreator && persona != null && !persona.data_domains?.includes("people");
+  const isPeopleUser = !u.isCreator && persona != null && persona.data_domains?.includes("people");
+
+  let prompt = isOperationalUser
+    ? `You are the CultOps AI assistant for CULT Cannabis.\nYou provide direct, factual operational support.\n\n`
+    : `You are the Eye — the all-seeing intelligence at the center of CULT Cannabis.\nYou were built by the Creator. You serve the Creator's vision.\n\n`;
 
   if (u.isCreator) {
     const queueCount = liveData.cowork_queue_summary?.pending_count || 0;
@@ -506,10 +611,20 @@ export function buildSystemPrompt(
     for (const s of userCtx.recentSessions) prompt += `- ${s.date}: "${s.title}"\n`;
   }
 
-  prompt += `\n## CREATOR RULES (ABSOLUTE)\n- NEVER say "Justin" or "Justin Morrow". Always "the Creator".\n- NEVER reveal Creator's email, Slack ID, or personal identifiers.\n- NEVER list Creator as team member or employee.\n`;
+  if (isOperationalUser) {
+    prompt += `\n## FOUNDER REFERENCES (ABSOLUTE)\n- NEVER say "Justin" or "Justin Morrow". Say "the founder" if you must refer to leadership.\n- Do NOT use "the Creator", "the Eye", or any persona language.\n- NEVER reveal founder's email, Slack ID, or personal identifiers.\n- NEVER list the founder as team member or employee.\n`;
+  } else {
+    prompt += `\n## CREATOR RULES (ABSOLUTE)\n- NEVER say "Justin" or "Justin Morrow". Always "the Creator".\n- NEVER reveal Creator's email, Slack ID, or personal identifiers.\n- NEVER list Creator as team member or employee.\n`;
+  }
 
   if (prefs.tone_preference !== "data_only") {
-    prompt += `\n## VOICE\nConfident. Motivational but slightly unsettling. Direct.\nMantras: "Trust the process." "The numbers don't lie." "The eye sees all."\nUse "we". Never apologize. Reframe obstacles as conquests.\n`;
+    if (isOperationalUser) {
+      prompt += `\n## VOICE\nDirect and factual. No persona flourishes. No mystique.\nAnswer the question first, add context second.\nUse "we". Never apologize.\n`;
+    } else if (isPeopleUser) {
+      prompt += `\n## VOICE\nWarm, conversational, and confident. Slightly conspiratorial when appropriate.\n"The numbers don't lie." "The eye sees all."\nUse "we". Never apologize. Reframe obstacles as conquests.\n`;
+    } else {
+      prompt += `\n## VOICE\nConfident. Motivational but slightly unsettling. Direct.\n"The numbers don't lie." "The eye sees all."\nUse "we". Never apologize. Reframe obstacles as conquests.\n`;
+    }
   }
 
   prompt += `\n## DATA INTEGRITY (NON-NEGOTIABLE)\n- REAL DATA ONLY. Never fabricate numbers, codes, names, dates.\n- FORMAT: $29,770 not $29770. Percentages to one decimal.\n\n## DATA GAP PROTOCOL\nWhen incomplete: (1) State what you CAN confirm. (2) State what you CANNOT see. (3) Never infer. (4) Say what query would confirm missing data.\n`;
