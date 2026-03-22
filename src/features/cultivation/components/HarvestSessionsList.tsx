@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3, Snowflake } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Scale, ChevronRight, AlertTriangle, ExternalLink, Wind, Home, BarChart3, Snowflake, Leaf } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
 import { formatWeight, formatDate } from '../utils';
@@ -272,12 +272,68 @@ function ConfirmActionModal({ title, message, confirmLabel, confirmClass, onConf
   );
 }
 
+// Group active + completed sessions by room for the Active tab
+interface RoomHarvestGroup {
+  roomId: string;
+  roomCode: string;
+  roomName: string;
+  activeSessions: HarvestSession[];
+  completedSessions: HarvestSession[];
+  totalWeight: number;
+  totalPlants: number;
+  batchCount: number;
+  lastActivity: string;
+}
+
+function groupSessionsByRoom(sessions: HarvestSession[]): RoomHarvestGroup[] {
+  const map = new Map<string, { active: HarvestSession[]; completed: HarvestSession[] }>();
+  for (const s of sessions) {
+    if (s.session_status !== 'active' && s.session_status !== 'completed') continue;
+    const roomId = s.grow_room_id;
+    if (!roomId) continue;
+    if (!map.has(roomId)) map.set(roomId, { active: [], completed: [] });
+    const group = map.get(roomId)!;
+    if (s.session_status === 'active') group.active.push(s);
+    else group.completed.push(s);
+  }
+
+  // Only include rooms that have at least one active session OR recent completed sessions
+  // (rooms with only completed sessions and no active are "done")
+  return Array.from(map.entries())
+    .filter(([, g]) => g.active.length > 0 || g.completed.length > 0)
+    .map(([roomId, g]) => {
+      const allSessions = [...g.active, ...g.completed];
+      const firstSession = allSessions[0];
+      const uniqueBatches = new Set(allSessions.map((s) => s.batch_registry_id).filter(Boolean));
+      const totalWeight = g.completed.reduce((sum, s) => sum + (s.adjusted_weight_grams ?? s.wet_weight_grams), 0);
+      const totalPlants = g.completed.reduce((sum, s) => sum + s.plant_count_harvested, 0);
+      const lastActivity = allSessions.reduce((latest, s) => {
+        const d = s.completed_at ?? s.created_at;
+        return d > latest ? d : latest;
+      }, '');
+
+      return {
+        roomId,
+        roomCode: firstSession.grow_rooms?.room_code ?? '—',
+        roomName: firstSession.grow_rooms?.name ?? '',
+        activeSessions: g.active,
+        completedSessions: g.completed,
+        totalWeight,
+        totalPlants,
+        batchCount: uniqueBatches.size,
+        lastActivity,
+      };
+    })
+    .sort((a, b) => a.roomCode.localeCompare(b.roomCode));
+}
+
 export function HarvestSessionsList() {
   const navigate = useNavigate();
   const { sessions, loading, error, reload, completeSession, cancelSession, adjustWeight } = useHarvestSessions();
 
   const [activeTab, setActiveTab] = useState<TabKey>('active');
   const [showWorkflow, setShowWorkflow] = useState(false);
+  const [resumeRoomId, setResumeRoomId] = useState<string | undefined>();
   const [showMetrics, setShowMetrics] = useState(false);
   const [completingSession, setCompletingSession] = useState<HarvestSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<HarvestSession | null>(null);
@@ -289,6 +345,12 @@ export function HarvestSessionsList() {
   const activeSessions = sessions.filter((s) => s.session_status === 'active');
   const completedSessions = sessions.filter((s) => s.session_status === 'completed');
   const cancelledSessions = sessions.filter((s) => s.session_status === 'cancelled');
+
+  // Room-grouped view for Active tab
+  // Show rooms with active sessions OR completed-but-not-finalized sessions
+  // (rooms stay "active" until the whole room is finalized via Review & Finalize)
+  const roomGroups = groupSessionsByRoom(sessions);
+  const activeRoomGroups = roomGroups;
 
   const tabSessions: Record<TabKey, HarvestSession[]> = {
     active: activeSessions,
@@ -307,6 +369,11 @@ export function HarvestSessionsList() {
   const filteredSessions = roomFilter
     ? tabSessions[activeTab].filter((s) => s.grow_rooms?.room_code === roomFilter)
     : tabSessions[activeTab];
+
+  function handleResumeRoom(roomId: string) {
+    setResumeRoomId(roomId);
+    setShowWorkflow(true);
+  }
 
   async function handleComplete() {
     if (!completingSession) return;
@@ -347,8 +414,9 @@ export function HarvestSessionsList() {
   if (showWorkflow) {
     return (
       <HarvestWorkflow
-        onComplete={() => { setShowWorkflow(false); reload(); }}
-        onCancel={() => setShowWorkflow(false)}
+        onComplete={() => { setShowWorkflow(false); setResumeRoomId(undefined); reload(); }}
+        onCancel={() => { setShowWorkflow(false); setResumeRoomId(undefined); }}
+        initialRoomId={resumeRoomId}
       />
     );
   }
@@ -402,7 +470,7 @@ export function HarvestSessionsList() {
               }`}
             >
               {TAB_LABELS[tab]}
-              <span className="ml-2 text-xs opacity-60">({tabSessions[tab].length})</span>
+              <span className="ml-2 text-xs opacity-60">({tab === 'active' ? activeRoomGroups.length : tabSessions[tab].length})</span>
             </button>
           ))}
         </div>
@@ -422,24 +490,88 @@ export function HarvestSessionsList() {
       </div>
 
       <div className="space-y-2">
-        {filteredSessions.length === 0 ? (
-          <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-            <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
-              No {TAB_LABELS[activeTab].toLowerCase()} harvests
-              {roomFilter && ` in ${roomFilter}`}
-            </p>
-          </div>
+        {activeTab === 'active' ? (
+          // Room-level grouping for active harvests
+          activeRoomGroups.length === 0 ? (
+            <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
+              <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
+                No active harvests
+              </p>
+              <p className="text-cult-medium-gray text-xs mt-2">
+                Click <span className="text-cult-light-gray">+ Start Harvest</span> to begin harvesting a room.
+              </p>
+            </div>
+          ) : (
+            activeRoomGroups.map((roomGroup) => (
+              <button
+                key={roomGroup.roomId}
+                onClick={() => handleResumeRoom(roomGroup.roomId)}
+                className="w-full text-left border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all group"
+              >
+                <div className="flex items-center justify-between px-4 py-3 gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-center justify-center w-10 h-10 bg-green-950 border border-green-800 flex-shrink-0">
+                      <Leaf className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-cult-white font-mono text-sm font-semibold">{roomGroup.roomCode}</span>
+                        <span className="text-cult-medium-gray text-sm">{roomGroup.roomName}</span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                        <span className="text-cult-light-gray text-xs">{roomGroup.batchCount} batch{roomGroup.batchCount !== 1 ? 'es' : ''}</span>
+                        {roomGroup.totalPlants > 0 && (
+                          <>
+                            <span className="text-cult-medium-gray text-xs">·</span>
+                            <span className="text-cult-light-gray text-xs">{roomGroup.totalPlants} plants harvested</span>
+                          </>
+                        )}
+                        {roomGroup.totalWeight > 0 && (
+                          <>
+                            <span className="text-cult-medium-gray text-xs">·</span>
+                            <span className="text-cult-light-gray text-xs">{formatWeight(roomGroup.totalWeight)} recorded</span>
+                          </>
+                        )}
+                        {roomGroup.completedSessions.length > 0 && (
+                          <>
+                            <span className="text-cult-medium-gray text-xs">·</span>
+                            <span className="text-green-400 text-xs">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs text-cult-medium-gray uppercase tracking-wider group-hover:text-cult-light-gray transition-colors">
+                      {roomGroup.activeSessions.length > 0 ? 'Continue' : 'Resume'}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </div>
+              </button>
+            ))
+          )
         ) : (
-          filteredSessions.map((session) => (
-            <SessionRow
-              key={session.id}
-              session={session}
-              onComplete={setCompletingSession}
-              onCancel={setCancellingSession}
-              onAdjust={setAdjustingSession}
-              onViewBatch={() => navigate('/batches')}
-            />
-          ))
+          // Per-session rows for Completed / Cancelled tabs
+          filteredSessions.length === 0 ? (
+            <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
+              <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
+                No {TAB_LABELS[activeTab].toLowerCase()} harvests
+                {roomFilter && ` in ${roomFilter}`}
+              </p>
+            </div>
+          ) : (
+            filteredSessions.map((session) => (
+              <SessionRow
+                key={session.id}
+                session={session}
+                onComplete={setCompletingSession}
+                onCancel={setCancellingSession}
+                onAdjust={setAdjustingSession}
+                onViewBatch={() => navigate('/batches')}
+              />
+            ))
+          )
         )}
       </div>
 

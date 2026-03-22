@@ -51,9 +51,11 @@ function groupByBatch(groups: PlantGroup[]): BatchGroup[] {
 interface HarvestWorkflowProps {
   onComplete: () => void;
   onCancel: () => void;
+  /** Pre-select a room (for resuming an active room harvest) */
+  initialRoomId?: string;
 }
 
-export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) {
+export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: HarvestWorkflowProps) {
   const { rooms } = useGrowRooms();
   const { groups } = usePlantGroups({ stage: 'flower' });
   const { createSession, finalizeHarvest, reload: reloadSessions } = useHarvestSessions();
@@ -70,6 +72,17 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
   const flowerRooms = rooms
     .filter((r) => r.is_active && r.room_type === 'flower')
     .filter((r) => groups.some((g) => g.grow_room_id === r.id));
+
+  // Auto-select room when resuming an active harvest
+  useEffect(() => {
+    if (initialRoomId && rooms.length > 0 && !selectedRoom) {
+      const room = rooms.find((r) => r.id === initialRoomId);
+      if (room) {
+        setSelectedRoom(room);
+        setStep('record-weights');
+      }
+    }
+  }, [initialRoomId, rooms, selectedRoom]);
 
   const roomGroups = selectedRoom
     ? groups.filter((g) => g.grow_room_id === selectedRoom.id)

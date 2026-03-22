@@ -38,7 +38,7 @@ import { DeadPlantForm } from './DeadPlantForm';
 type TabId = 'calendar' | 'board' | 'types' | 'workers';
 
 const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
-  { id: 'calendar', label: 'Room Calendar', icon: Calendar },
+  { id: 'calendar', label: 'Schedules', icon: Calendar },
   { id: 'board', label: 'Daily Board', icon: ClipboardList },
   { id: 'types', label: 'Task Types', icon: Layers },
   { id: 'workers', label: 'Workers', icon: Users },
@@ -99,12 +99,26 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-interface DailyTaskBoardProps {
-  initialTab?: TabId;
+export function SchedulesPage() {
+  const { rooms: dbRooms } = useGrowRooms();
+
+  const rooms = useMemo(() => {
+    return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
+  }, [dbRooms]);
+
+  return (
+    <div className="space-y-6 pb-8">
+      <div>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedules</h1>
+        <p className="text-cult-light-gray mt-1">Set up recurring task schedules for each grow room</p>
+      </div>
+      <RoomCalendar rooms={rooms} />
+    </div>
+  );
 }
 
-export function DailyTaskBoard({ initialTab = 'board' }: DailyTaskBoardProps) {
-  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+export function DailyTaskBoard() {
+  const [activeTab, setActiveTab] = useState<TabId>('board');
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
