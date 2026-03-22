@@ -93,8 +93,7 @@ const HARVEST_SESSION_SELECT = `
   batch_registry (batch_number),
   harvest_weight_entries (
     destination,
-    location_id,
-    dry_rooms!location_id (room_code)
+    location_id
   )
 `;
 

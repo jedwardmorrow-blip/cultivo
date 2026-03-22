@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Leaf } from 'lucide-react';
+import { ArrowLeft, Leaf, Plus, Trash2, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { supabase } from '@/lib/supabase';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
 import { usePlantGroups } from '../../hooks/usePlantGroups';
 import { useHarvestSessions } from '../../hooks/useHarvestSessions';
 import { useDryRooms } from '../../hooks/useDryRooms';
+import { useHarvestWeightEntries } from '../../hooks/useHarvestWeightEntries';
 import { cultivationService } from '../../services';
 import { isValidStrainAbbreviation } from '../../utils';
+import { formatWeight } from '../../utils';
 import { HarvestRoomSelect } from './HarvestRoomSelect';
-import { PlantGroupWeightCard } from './HarvestWeightRecorder';
 import { HarvestReviewFinalize } from './HarvestReviewFinalize';
 import type { GrowRoom, PlantGroup, HarvestSession, HarvestType } from '../../types';
 
@@ -22,6 +23,8 @@ interface BatchGroup {
   strainAbbreviation: string | null;
   groups: PlantGroup[];
   totalPlants: number;
+  /** First group used as representative for session creation */
+  representativeGroupId: string;
 }
 
 function groupByBatch(groups: PlantGroup[]): BatchGroup[] {
@@ -40,6 +43,7 @@ function groupByBatch(groups: PlantGroup[]): BatchGroup[] {
       strainAbbreviation: first.strains?.abbreviation ?? null,
       groups: batchGroups,
       totalPlants: batchGroups.reduce((sum, g) => sum + g.plant_count, 0),
+      representativeGroupId: first.id,
     };
   });
 }
@@ -57,9 +61,10 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
   const [step, setStep] = useState<Step>('select-room');
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
-  const [sessionMap, setSessionMap] = useState<Record<string, HarvestSession>>({});
+  // Keyed by batchRegistryId → one session per batch
+  const [batchSessionMap, setBatchSessionMap] = useState<Record<string, HarvestSession>>({});
   const [wasteMap, setWasteMap] = useState<Record<string, number>>({});
-  const [weightTotals, setWeightTotals] = useState<Record<string, { weight: number; plants: number; flowerWeight: number; frozenWeight: number }>>({});
+  const [batchTotals, setBatchTotals] = useState<Record<string, { weight: number; plants: number; flowerWeight: number; frozenWeight: number }>>({});
   const [loadingSessions, setLoadingSessions] = useState(false);
 
   const flowerRooms = rooms
@@ -70,21 +75,20 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     ? groups.filter((g) => g.grow_room_id === selectedRoom.id)
     : [];
 
-  // Group plant groups by batch for consolidated harvest cards
   const batchGroups = groupByBatch(roomGroups);
 
-  const loadExistingSessions = useCallback(async (roomGroupIds: string[]) => {
-    if (roomGroupIds.length === 0) return;
+  // Load existing active sessions, keyed by batch_registry_id
+  const loadExistingSessions = useCallback(async () => {
     setLoadingSessions(true);
     try {
       const allSessions = await cultivationService.listHarvestSessions({ status: 'active' });
       const map: Record<string, HarvestSession> = {};
       for (const s of allSessions) {
-        if (roomGroupIds.includes(s.plant_group_id)) {
-          map[s.plant_group_id] = s;
+        if (s.batch_registry_id) {
+          map[s.batch_registry_id] = s;
         }
       }
-      setSessionMap(map);
+      setBatchSessionMap(map);
     } finally {
       setLoadingSessions(false);
     }
@@ -92,7 +96,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
   useEffect(() => {
     if (selectedRoom && roomGroups.length > 0) {
-      loadExistingSessions(roomGroups.map((g) => g.id));
+      loadExistingSessions();
     }
   }, [selectedRoom?.id, roomGroups.length, loadExistingSessions]);
 
@@ -101,10 +105,10 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     setStep('record-weights');
   }
 
+  // Create ONE session per batch using the first plant group as representative
+  async function handleStartBatch(batchRegistryId: string): Promise<HarvestSession> {
+    if (batchSessionMap[batchRegistryId]) return batchSessionMap[batchRegistryId];
 
-
-  // Create sessions for ALL plant groups in a batch at once (skips groups that already have one)
-  async function handleBatchCreateSessions(batchRegistryId: string): Promise<HarvestSession> {
     const batch = batchGroups.find((b) => b.batchRegistryId === batchRegistryId);
     if (!batch) throw new Error('Batch not found');
 
@@ -112,70 +116,34 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
       throw new Error('Strain is missing a 3-letter abbreviation. Update in Products > Strains first.');
     }
 
-    let firstSession: HarvestSession | null = null;
-    const batchId = batch.batchRegistryId;
-
-    for (const group of batch.groups) {
-      // Skip groups that already have an active session (prevents duplicates)
-      if (sessionMap[group.id]) {
-        if (!firstSession) firstSession = sessionMap[group.id];
-        continue;
-      }
-      const session = await createSession({
-        plant_group_id: group.id,
-        batch_registry_id: batchId,
-        harvest_date: new Date().toISOString().slice(0, 10),
-        wet_weight_grams: 0,
-        plant_count_harvested: 0,
-        grow_room_id: selectedRoom?.id ?? undefined,
-      });
-      setSessionMap((prev) => ({ ...prev, [group.id]: session }));
-      if (!firstSession) firstSession = session;
-    }
-
-    return firstSession!;
-  }
-
-  // Legacy per-group session creation (used by weight card internally)
-  async function handleCreateSession(groupId: string): Promise<HarvestSession> {
-    // Return existing session if one already exists (prevents duplicates)
-    if (sessionMap[groupId]) return sessionMap[groupId];
-
-    const group = groups.find((g) => g.id === groupId);
-    if (!group) throw new Error('Plant group not found');
-
-    if (!isValidStrainAbbreviation(group.strains?.abbreviation)) {
-      throw new Error('Strain is missing a 3-letter abbreviation. Update in Products > Strains first.');
-    }
-
     const session = await createSession({
-      plant_group_id: groupId,
-      batch_registry_id: group.batch_registry_id ?? group.id,
+      plant_group_id: batch.representativeGroupId,
+      batch_registry_id: batchRegistryId,
       harvest_date: new Date().toISOString().slice(0, 10),
       wet_weight_grams: 0,
       plant_count_harvested: 0,
       grow_room_id: selectedRoom?.id ?? undefined,
     });
-    setSessionMap((prev) => ({ ...prev, [groupId]: session }));
+    setBatchSessionMap((prev) => ({ ...prev, [batchRegistryId]: session }));
     return session;
   }
 
-  function handleWasteChange(groupId: string, grams: number) {
-    setWasteMap((prev) => ({ ...prev, [groupId]: grams }));
+  function handleWasteChange(batchRegistryId: string, grams: number) {
+    setWasteMap((prev) => ({ ...prev, [batchRegistryId]: grams }));
   }
 
-  const updateWeightTotals = useCallback((groupId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => {
-    setWeightTotals((prev) => {
-      const existing = prev[groupId];
+  const updateBatchTotals = useCallback((batchRegistryId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => {
+    setBatchTotals((prev) => {
+      const existing = prev[batchRegistryId];
       if (existing && existing.weight === weight && existing.plants === plants && existing.flowerWeight === flowerWeight && existing.frozenWeight === frozenWeight) return prev;
-      return { ...prev, [groupId]: { weight, plants, flowerWeight, frozenWeight } };
+      return { ...prev, [batchRegistryId]: { weight, plants, flowerWeight, frozenWeight } };
     });
   }, []);
 
   async function handleFinalize(dryRoomId: string | null) {
-    const sessionsToFinalize = Object.values(sessionMap);
+    const sessionsToFinalize = Object.values(batchSessionMap);
     for (const session of sessionsToFinalize) {
-      const waste = wasteMap[session.plant_group_id] || 0;
+      const waste = wasteMap[session.batch_registry_id ?? ''] || 0;
       if (waste > 0) {
         const { error } = await supabase
           .from('harvest_sessions')
@@ -189,26 +157,24 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
     onComplete();
   }
 
-  // Build summaries per underlying group (HarvestReviewFinalize expects per-group)
-  const groupSummaries = roomGroups
-    .filter((g) => sessionMap[g.id])
-    .map((group) => {
-      const session = sessionMap[group.id];
-      const totals = weightTotals[group.id] ?? { weight: 0, plants: 0, flowerWeight: 0, frozenWeight: 0 };
+  // Build batch-level summaries for review screen
+  const batchSummaries = batchGroups
+    .filter((b) => batchSessionMap[b.batchRegistryId])
+    .map((batch) => {
+      const session = batchSessionMap[batch.batchRegistryId];
+      const totals = batchTotals[batch.batchRegistryId] ?? { weight: 0, plants: 0, flowerWeight: 0, frozenWeight: 0 };
       return {
-        group,
+        batch,
         session,
         totalWeight: totals.weight,
         totalPlants: totals.plants,
         flowerWeight: totals.flowerWeight,
         frozenWeight: totals.frozenWeight,
-        wasteGrams: wasteMap[group.id] ?? 0,
+        wasteGrams: wasteMap[batch.batchRegistryId] ?? 0,
       };
     });
 
-  const activeBatches = batchGroups.filter((b) =>
-    b.groups.some((g) => sessionMap[g.id])
-  ).length;
+  const activeBatches = batchGroups.filter((b) => batchSessionMap[b.batchRegistryId]).length;
 
   const stepLabels: Record<Step, string> = {
     'select-room': 'Select Room',
@@ -264,7 +230,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
               Step 2
             </h2>
             <p className="text-cult-light-gray text-sm">
-              Record weights for plant groups in{' '}
+              Record weights by batch in{' '}
               <span className="text-cult-white font-mono">{selectedRoom.room_code}</span>
               <span className="text-cult-medium-gray"> ({selectedRoom.name})</span>
             </p>
@@ -280,12 +246,11 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
               <BatchWeightCard
                 key={batch.batchRegistryId}
                 batch={batch}
-                sessionMap={sessionMap}
-                wasteMap={wasteMap}
-                onBatchCreateSessions={handleBatchCreateSessions}
-                onCreateSession={handleCreateSession}
+                session={batchSessionMap[batch.batchRegistryId] ?? null}
+                wasteGrams={wasteMap[batch.batchRegistryId] ?? 0}
+                onStartBatch={handleStartBatch}
                 onWasteChange={handleWasteChange}
-                onTotalsUpdate={updateWeightTotals}
+                onTotalsUpdate={updateBatchTotals}
               />
             ))}
           </div>
@@ -313,7 +278,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
         <HarvestReviewFinalize
           roomCode={selectedRoom.room_code}
           roomName={selectedRoom.name}
-          groupSummaries={groupSummaries}
+          batchSummaries={batchSummaries}
           dryRooms={dryRooms}
           onFinalize={handleFinalize}
           onBack={() => setStep('record-weights')}
@@ -324,38 +289,60 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 }
 
 // ─── BATCH-LEVEL WEIGHT CARD ───
-// Renders one consolidated card per batch, with individual PlantGroupWeightCards inside
+// One card per batch. Inline weight entry form. Shows total/remaining plants.
 
 interface BatchWeightCardProps {
   batch: BatchGroup;
-  sessionMap: Record<string, HarvestSession>;
-  wasteMap: Record<string, number>;
-  onBatchCreateSessions: (batchRegistryId: string) => Promise<HarvestSession>;
-  onCreateSession: (groupId: string) => Promise<HarvestSession>;
-  onWasteChange: (groupId: string, grams: number) => void;
-  onTotalsUpdate: (groupId: string, weight: number, plants: number) => void;
+  session: HarvestSession | null;
+  wasteGrams: number;
+  onStartBatch: (batchRegistryId: string) => Promise<HarvestSession>;
+  onWasteChange: (batchRegistryId: string, grams: number) => void;
+  onTotalsUpdate: (batchRegistryId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => void;
 }
 
 function BatchWeightCard({
   batch,
-  sessionMap,
-  wasteMap,
-  onBatchCreateSessions,
-  onCreateSession,
+  session,
+  wasteGrams,
+  onStartBatch,
   onWasteChange,
   onTotalsUpdate,
 }: BatchWeightCardProps) {
+  const sessionId = session?.id ?? null;
+  const { entries, totalWeight, totalPlants, addEntry, removeEntry, reload } = useHarvestWeightEntries(sessionId);
+
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasAnySessions = batch.groups.some((g) => sessionMap[g.id]);
-  const allHaveSessions = batch.groups.every((g) => sessionMap[g.id]);
+  // Weight entry form state
+  const [weight, setWeight] = useState('');
+  const [plantCount, setPlantCount] = useState('');
+  const [destination, setDestination] = useState<HarvestType>('flower');
+  const [saving, setSaving] = useState(false);
+  const [entryError, setEntryError] = useState<string | null>(null);
 
-  async function handleStartAll() {
+  const remaining = batch.totalPlants - totalPlants;
+  const progress = batch.totalPlants > 0 ? Math.min(100, Math.round((totalPlants / batch.totalPlants) * 100)) : 0;
+  const isComplete = totalPlants >= batch.totalPlants;
+
+  const parsedWeight = parseFloat(weight);
+  const parsedPlants = parseInt(plantCount);
+  const canAdd = parsedWeight > 0 && parsedPlants >= 1 && parsedPlants <= remaining && !saving;
+
+  // Compute flower/frozen weights from entries
+  const flowerWeight = entries.filter((e) => e.destination === 'flower' || e.destination === null).reduce((s, e) => s + Number(e.weight_grams), 0);
+  const frozenWeight = entries.filter((e) => e.destination === 'fresh_frozen').reduce((s, e) => s + Number(e.weight_grams), 0);
+
+  // Bubble totals up to parent
+  useEffect(() => {
+    onTotalsUpdate(batch.batchRegistryId, totalWeight, totalPlants, flowerWeight, frozenWeight);
+  }, [batch.batchRegistryId, totalWeight, totalPlants, flowerWeight, frozenWeight, onTotalsUpdate]);
+
+  async function handleStart() {
     setCreating(true);
     setError(null);
     try {
-      await onBatchCreateSessions(batch.batchRegistryId);
+      await onStartBatch(batch.batchRegistryId);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start harvest');
     } finally {
@@ -363,128 +350,211 @@ function BatchWeightCard({
     }
   }
 
-  return (
-    <div>
-      {/* Single consolidated card for the batch */}
-      <div className="border border-cult-medium-gray bg-cult-near-black p-4 space-y-3">
-        {/* Batch header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-cult-white font-mono text-sm font-semibold">{batch.batchNumber}</span>
-              <span className="text-cult-white text-sm truncate">{batch.strainName}</span>
-            </div>
-            <span className="text-cult-medium-gray text-xs">{batch.totalPlants} plants total</span>
-            {batch.groups.length > 1 && (
-              <span className="text-cult-medium-gray text-xs ml-2">
-                ({batch.groups.length} tables)
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Start weighing button — creates sessions for all groups in batch */}
-        {!allHaveSessions && (
-          <div>
-            {error && (
-              <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
-                {error}
-              </div>
-            )}
-            <button
-              onClick={handleStartAll}
-              disabled={creating}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all disabled:opacity-50"
-            >
-              <Leaf className="w-3.5 h-3.5" />
-              {creating ? 'Starting...' : 'Start Weighing'}
-            </button>
-          </div>
-        )}
-
-        {/* Individual plant group weight cards — shown after sessions are created */}
-        {allHaveSessions && (
-          <div className="space-y-2">
-            {batch.groups.map((group) => (
-              <GroupWeightCardWithTotals
-                key={group.id}
-                group={group}
-                harvestSession={sessionMap[group.id] ?? null}
-                onCreateSession={onCreateSession}
-                wasteGrams={wasteMap[group.id] ?? 0}
-                onWasteChange={onWasteChange}
-                onTotalsUpdate={onTotalsUpdate}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── PER-GROUP WEIGHT TRACKING (inside a batch card) ───
-// Tracks totals for a single plant group's session
-
-interface GroupWeightCardWithTotalsProps {
-  group: PlantGroup;
-  harvestSession: HarvestSession | null;
-  onCreateSession: (groupId: string) => Promise<HarvestSession>;
-  wasteGrams: number;
-  onWasteChange: (groupId: string, grams: number) => void;
-  onTotalsUpdate: (groupId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => void;
-}
-
-function GroupWeightCardWithTotals({
-  group,
-  harvestSession,
-  onCreateSession,
-  wasteGrams,
-  onWasteChange,
-  onTotalsUpdate,
-}: GroupWeightCardWithTotalsProps) {
-  const sessionId = harvestSession?.id ?? null;
-  const [totalWeight, setTotalWeight] = useState(0);
-  const [totalPlants, setTotalPlants] = useState(0);
-  const [flowerWeight, setFlowerWeight] = useState(0);
-  const [frozenWeight, setFrozenWeight] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    if (!sessionId) {
-      setTotalWeight(0);
-      setTotalPlants(0);
-      setFlowerWeight(0);
-      setFrozenWeight(0);
-      return;
+  async function handleAddEntry() {
+    if (!canAdd) return;
+    setSaving(true);
+    setEntryError(null);
+    try {
+      await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants, destination });
+      setWeight('');
+      setPlantCount('');
+    } catch (err: unknown) {
+      setEntryError(err instanceof Error ? err.message : 'Failed to add entry');
+    } finally {
+      setSaving(false);
     }
-    let cancelled = false;
-    cultivationService.listHarvestWeightEntries(sessionId).then((entries) => {
-      if (cancelled) return;
-      setTotalWeight(entries.reduce((s, e) => s + Number(e.weight_grams), 0));
-      setTotalPlants(entries.reduce((s, e) => s + e.plant_count, 0));
-      setFlowerWeight(entries.filter((e) => e.destination === 'flower').reduce((s, e) => s + Number(e.weight_grams), 0));
-      setFrozenWeight(entries.filter((e) => e.destination === 'fresh_frozen').reduce((s, e) => s + Number(e.weight_grams), 0));
-    });
-    return () => { cancelled = true; };
-  }, [sessionId, refreshKey]);
+  }
 
-  useEffect(() => {
-    onTotalsUpdate(group.id, totalWeight, totalPlants, flowerWeight, frozenWeight);
-  }, [group.id, totalWeight, totalPlants, flowerWeight, frozenWeight, onTotalsUpdate]);
-
-  function handleSessionCreated() {
-    setRefreshKey((k) => k + 1);
+  async function handleRemoveEntry(entryId: string) {
+    try {
+      await removeEntry(entryId);
+    } catch {
+      // silent
+    }
   }
 
   return (
-    <PlantGroupWeightCard
-      group={group}
-      harvestSession={harvestSession}
-      onSessionCreated={handleSessionCreated}
-      onCreateSession={onCreateSession}
-      wasteGrams={wasteGrams}
-      onWasteChange={onWasteChange}
-    />
+    <div className={`border ${isComplete ? 'border-green-800 bg-green-950/20' : 'border-cult-medium-gray bg-cult-near-black'} p-4`}>
+      {/* Batch header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-cult-white font-mono text-sm font-semibold">{batch.batchNumber}</span>
+            <span className="text-cult-white text-sm truncate">{batch.strainName}</span>
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-cult-medium-gray text-xs">{batch.totalPlants} plants</span>
+            {batch.groups.length > 1 && (
+              <span className="text-cult-medium-gray text-xs">({batch.groups.length} tables)</span>
+            )}
+            {totalWeight > 0 && (
+              <>
+                <span className="text-cult-medium-gray text-xs">|</span>
+                <span className="text-cult-light-gray text-xs font-mono">{formatWeight(totalWeight)} recorded</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isComplete && (
+            <span className="flex items-center gap-1 text-green-400 text-xs font-semibold uppercase tracking-wider">
+              <CheckCircle className="w-3.5 h-3.5" />
+              Done
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      {session && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+              {totalPlants} / {batch.totalPlants} plants weighed
+              {remaining > 0 && <span className="text-cult-light-gray ml-1">({remaining} remaining)</span>}
+            </span>
+            <span className="text-[10px] text-cult-medium-gray">{progress}%</span>
+          </div>
+          <div className="w-full bg-cult-black h-1.5 overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-600' : 'bg-cult-white'}`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Start weighing button */}
+      {!session && (
+        <div className="mt-3">
+          {error && (
+            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+          <button
+            onClick={handleStart}
+            disabled={creating}
+            className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider font-semibold"
+          >
+            <Scale className="w-3.5 h-3.5" />
+            {creating ? 'Starting...' : 'Start Weighing'}
+          </button>
+        </div>
+      )}
+
+      {/* Weight entries list */}
+      {session && entries.length > 0 && (
+        <div className="mt-3 space-y-1">
+          {entries.map((entry) => (
+            <div
+              key={entry.id}
+              className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-3 py-1.5 text-xs"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-cult-white font-mono">{formatWeight(Number(entry.weight_grams))}</span>
+                <span className="text-cult-medium-gray">|</span>
+                <span className="text-cult-light-gray">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
+                {entry.destination && (
+                  <span className={`text-[9px] px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-green-800 text-green-400'}`}>
+                    {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => handleRemoveEntry(entry.id)}
+                className="text-cult-medium-gray hover:text-red-400 transition-colors p-0.5"
+                title="Remove entry"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Inline weight entry form */}
+      {session && remaining > 0 && (
+        <div className="mt-3">
+          {entryError && (
+            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
+              <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              {entryError}
+            </div>
+          )}
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+                Weight (g)
+              </label>
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="e.g. 1200"
+                className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+              />
+            </div>
+            <div className="w-24">
+              <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+                Plants
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={remaining}
+                step="1"
+                value={plantCount}
+                onChange={(e) => setPlantCount(e.target.value)}
+                placeholder={String(Math.min(5, remaining))}
+                className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+              />
+            </div>
+            <div className="w-28">
+              <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+                Dest
+              </label>
+              <select
+                value={destination}
+                onChange={(e) => setDestination(e.target.value as HarvestType)}
+                className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray uppercase"
+              >
+                <option value="flower">Flower</option>
+                <option value="fresh_frozen">Frozen</option>
+              </select>
+            </div>
+            <Button
+              onClick={handleAddEntry}
+              disabled={!canAdd}
+              size="xs"
+              icon={<Plus className="w-3.5 h-3.5" />}
+            >
+              {saving ? '...' : 'Add'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Waste input */}
+      {session && (
+        <div className="mt-3">
+          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+            Waste (g) - optional
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={wasteGrams || ''}
+            onChange={(e) => onWasteChange(batch.batchRegistryId, parseFloat(e.target.value) || 0)}
+            placeholder="0"
+            className="w-32 bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+          />
+        </div>
+      )}
+    </div>
   );
 }

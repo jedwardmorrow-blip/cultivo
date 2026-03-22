@@ -4,8 +4,18 @@ import { Button } from '@/shared/components';
 import { formatWeight } from '../../utils';
 import type { DryRoom, HarvestSession, PlantGroup } from '../../types';
 
-interface GroupSummary {
-  group: PlantGroup;
+interface BatchGroup {
+  batchRegistryId: string;
+  batchNumber: string;
+  strainName: string;
+  strainAbbreviation: string | null;
+  groups: PlantGroup[];
+  totalPlants: number;
+  representativeGroupId: string;
+}
+
+export interface BatchSummary {
+  batch: BatchGroup;
   session: HarvestSession;
   totalWeight: number;
   totalPlants: number;
@@ -17,7 +27,7 @@ interface GroupSummary {
 interface HarvestReviewFinalizeProps {
   roomCode: string;
   roomName: string;
-  groupSummaries: GroupSummary[];
+  batchSummaries: BatchSummary[];
   dryRooms: DryRoom[];
   onFinalize: (dryRoomId: string | null) => Promise<void>;
   onBack: () => void;
@@ -26,7 +36,7 @@ interface HarvestReviewFinalizeProps {
 export function HarvestReviewFinalize({
   roomCode,
   roomName,
-  groupSummaries,
+  batchSummaries,
   dryRooms,
   onFinalize,
   onBack,
@@ -36,18 +46,18 @@ export function HarvestReviewFinalize({
   const [error, setError] = useState<string | null>(null);
 
   const activeDryRooms = dryRooms.filter((r) => r.is_active);
-  const combinedWeight = groupSummaries.reduce((s, g) => s + g.totalWeight, 0);
-  const combinedPlants = groupSummaries.reduce((s, g) => s + g.totalPlants, 0);
-  const combinedWaste = groupSummaries.reduce((s, g) => s + g.wasteGrams, 0);
+  const combinedWeight = batchSummaries.reduce((s, b) => s + b.totalWeight, 0);
+  const combinedPlants = batchSummaries.reduce((s, b) => s + b.totalPlants, 0);
+  const combinedBatchPlants = batchSummaries.reduce((s, b) => s + b.batch.totalPlants, 0);
+  const combinedWaste = batchSummaries.reduce((s, b) => s + b.wasteGrams, 0);
 
-  const flowerWeight = groupSummaries.reduce((s, g) => s + g.flowerWeight, 0);
-  const frozenWeight = groupSummaries.reduce((s, g) => s + g.frozenWeight, 0);
+  const flowerWeight = batchSummaries.reduce((s, b) => s + b.flowerWeight, 0);
+  const frozenWeight = batchSummaries.reduce((s, b) => s + b.frozenWeight, 0);
   const hasFlowerSessions = flowerWeight > 0;
   const hasFrozenSessions = frozenWeight > 0;
 
-  const allComplete = groupSummaries.every((g) => g.totalPlants >= g.group.plant_count);
-  // Dry room only required if there are flower sessions
-  const canFinalize = (hasFlowerSessions ? !!selectedDryRoomId : true) && groupSummaries.length > 0 && !saving;
+  const allComplete = batchSummaries.every((b) => b.totalPlants >= b.batch.totalPlants);
+  const canFinalize = (hasFlowerSessions ? !!selectedDryRoomId : true) && batchSummaries.length > 0 && !saving;
 
   async function handleFinalize() {
     if (!canFinalize) return;
@@ -82,7 +92,7 @@ export function HarvestReviewFinalize({
       {!allComplete && (
         <div className="flex items-start gap-2 bg-amber-950 border border-amber-700 text-amber-300 text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          Not all plant groups have been fully weighed. You can still finalize with partial weights.
+          Not all batches have been fully weighed ({combinedPlants}/{combinedBatchPlants} plants). You can still finalize with partial weights.
         </div>
       )}
 
@@ -107,13 +117,11 @@ export function HarvestReviewFinalize({
         </div>
 
         <div className="divide-y divide-cult-dark-gray">
-          {groupSummaries.map(({ group, totalWeight, totalPlants, wasteGrams, flowerWeight, frozenWeight }) => {
-            const strainName = group.strains?.name ?? 'Unknown';
-            const batchNumber = group.batch_registry?.batch_number;
-            const complete = totalPlants >= group.plant_count;
+          {batchSummaries.map(({ batch, totalWeight, totalPlants, wasteGrams, flowerWeight, frozenWeight }) => {
+            const complete = totalPlants >= batch.totalPlants;
 
             return (
-              <div key={group.id} className="px-4 py-3 flex items-center justify-between gap-4">
+              <div key={batch.batchRegistryId} className="px-4 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {complete ? (
                     <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -122,10 +130,8 @@ export function HarvestReviewFinalize({
                   )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                       {batchNumber && (
-                        <span className="text-cult-white font-mono text-xs">{batchNumber}</span>
-                      )}
-                      <span className="text-cult-light-gray text-xs truncate">{strainName}</span>
+                      <span className="text-cult-white font-mono text-xs">{batch.batchNumber}</span>
+                      <span className="text-cult-light-gray text-xs truncate">{batch.strainName}</span>
                       {flowerWeight > 0 && (
                         <span className="text-[9px] px-1 py-0.5 uppercase font-bold border border-green-800 text-green-400">FLW</span>
                       )}
@@ -134,7 +140,7 @@ export function HarvestReviewFinalize({
                       )}
                     </div>
                     <span className="text-cult-medium-gray text-[10px]">
-                      {totalPlants}/{group.plant_count} plants
+                      {totalPlants}/{batch.totalPlants} plants
                       {wasteGrams > 0 && ` | waste: ${formatWeight(wasteGrams)}`}
                     </span>
                   </div>

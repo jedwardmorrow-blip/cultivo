@@ -504,7 +504,7 @@ async function fetchCultivationData(): Promise<{
     .sort((a, b) => (a.date || 'Z').localeCompare(b.date || 'Z'))
     .slice(0, 6);
 
-  // Dry rooms — from the dedicated dry_rooms table (FK: harvest_sessions.dry_room_id → dry_rooms.id)
+  // Dry rooms — from the dedicated dry_rooms table (FK: harvest_weight_entries.location_id → dry_rooms.id)
   const { data: dryRoomRecords } = await supabase
     .from('dry_rooms')
     .select('id, name, room_code, is_active')
@@ -515,15 +515,17 @@ async function fetchCultivationData(): Promise<{
     ? dryRoomRecords
     : [];
 
-  // Get active drying sessions with their dry_room_id
+  // Get active drying sessions — dry room is now on harvest_weight_entries.location_id
   const { data: dryingHarvests } = await supabase
     .from('harvest_sessions')
-    .select('id, session_status, wet_weight_grams, created_at, dry_room_id, plant_groups(strains(name))')
+    .select('id, session_status, wet_weight_grams, created_at, plant_groups(strains(name)), harvest_weight_entries(location_id)')
     .eq('session_status', 'drying') as { data: any[] | null };
 
   const dryRooms: DryRoom[] = dryRoomList.map((room: any) => {
     const roomName = room.room_code || room.name;
-    const session = (dryingHarvests || []).find((h: any) => h.dry_room_id === room.id);
+    const session = (dryingHarvests || []).find((h: any) =>
+      (h.harvest_weight_entries || []).some((e: any) => e.location_id === room.id)
+    );
     if (session) {
       const wet = gramsToLbs(session.wet_weight_grams || 0);
       const strainName = session.plant_groups?.strains?.name || '';
