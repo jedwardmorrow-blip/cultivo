@@ -27,7 +27,7 @@ const activityColors: Record<ActivityType, string> = {
   follow_up: 'text-rose-400 bg-rose-500/15',
 };
 
-function formatDate(dateStr: string): string {
+function formatRelativeDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -163,7 +163,7 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                   <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{activity.body}</p>
                 )}
                 <div className="flex items-center gap-3 mt-1.5 text-[10px] text-cult-silver">
-                  <span>{formatDate(activity.created_at)}</span>
+                  <span>{formatRelativeDate(activity.created_at)}</span>
                   {activity.user_name && <span>by {activity.user_name}</span>}
                   {activity.follow_up_date && (
                     <span className="text-amber-400">Follow up: {activity.follow_up_date}</span>

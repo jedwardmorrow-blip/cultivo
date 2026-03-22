@@ -8,25 +8,8 @@ import { FlipRoomModal } from './FlipRoomModal';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { ExpandedPlantsList } from './ExpandedPlantsList';
+import { todayIso, daysBetween, formatDate } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function daysBetween(a: string, b: string): number {
-  return Math.round(
-    (new Date(b + 'T00:00:00').getTime() - new Date(a + 'T00:00:00').getTime()) / 86400000
-  );
-}
-
-function formatDate(d: string): string {
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 const ROOM_TYPE_BORDER: Record<string, string> = {
   clone: 'border-sky-700',
@@ -378,7 +361,7 @@ export function RoomDetailDrawer({
                 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-dark-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-medium-gray hover:text-cult-white transition-colors"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
-                Schedules
+                Schedule
               </button>
               {isFlower && (
                 <button

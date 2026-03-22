@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Clock, Wheat, Sprout, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Clock, Wheat, Sprout, CheckCircle2, AlertCircle, UserPlus, ChevronDown, UserX } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, RoomSection } from '../types';
@@ -36,9 +36,16 @@ type AnyFormData =
   | TrainingFormData
   | CustomFormData;
 
+interface StaffOption {
+  id: string;
+  first_name: string;
+}
+
 interface TaskCompletionFormProps {
   task: TaskCardData;
   roomId: string;
+  staffOptions?: StaffOption[];
+  onAssignWorker?: (taskId: string, staffId: string) => Promise<void>;
   onComplete: (refTable: string, refId: string, duration: string | null) => void;
   onNavigateHarvest: () => void;
   onNavigateClone: () => void;
@@ -72,7 +79,7 @@ function getRefTable(taskType: TaskType): string {
 }
 
 export function TaskCompletionForm({
-  task, roomId, onComplete, onNavigateHarvest, onNavigateClone, onClose,
+  task, roomId, staffOptions, onAssignWorker, onComplete, onNavigateHarvest, onNavigateClone, onClose,
 }: TaskCompletionFormProps) {
   const [formData, setFormData] = useState<AnyFormData | null>(() => getInitialData(task.task_type));
   const [duration, setDuration] = useState<string | null>(null);
@@ -80,6 +87,10 @@ export function TaskCompletionForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [assignedStaffId, setAssignedStaffId] = useState<string | null>(task.assigned_to ?? null);
+  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const staffDropdownRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
 
   const { allSections } = useRoomSections(roomId);
@@ -97,6 +108,35 @@ export function TaskCompletionForm({
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // Close staff dropdown on outside click
+  useEffect(() => {
+    if (!showStaffDropdown) return;
+    function handleClick(e: MouseEvent) {
+      if (staffDropdownRef.current && !staffDropdownRef.current.contains(e.target as Node)) {
+        setShowStaffDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showStaffDropdown]);
+
+  const selectedStaff = staffOptions?.find((s) => s.id === assignedStaffId) ?? null;
+
+  async function handleAssign(staffId: string | null) {
+    setShowStaffDropdown(false);
+    if (!onAssignWorker) return;
+    if (staffId === assignedStaffId) return;
+    setAssigning(true);
+    try {
+      if (staffId) {
+        await onAssignWorker(task.id, staffId);
+      }
+      setAssignedStaffId(staffId);
+    } finally {
+      setAssigning(false);
+    }
+  }
 
   const config = TASK_TYPE_CONFIG[task.task_type] ?? TASK_TYPE_CONFIG.custom;
   const isRouter = task.task_type === 'harvest' || task.task_type === 'clone_cutting';
@@ -239,6 +279,77 @@ export function TaskCompletionForm({
   const formContent = (
     <div className="space-y-4">
       <FormHeader task={task} config={config} onClose={onClose} />
+
+      {/* ── Assigned Worker Picker ──────────────────────────── */}
+      {staffOptions && staffOptions.length > 0 && !isRouter && (
+        <div className="relative" ref={staffDropdownRef}>
+          <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+            Assigned To
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowStaffDropdown(!showStaffDropdown)}
+            disabled={assigning}
+            className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs border rounded-sm transition-colors ${
+              selectedStaff
+                ? 'bg-cult-charcoal border-cult-medium-gray text-cult-white'
+                : 'bg-cult-charcoal/60 border-amber-700/50 text-amber-400'
+            } hover:border-cult-light-gray disabled:opacity-50`}
+          >
+            <div className="flex items-center gap-2">
+              {selectedStaff ? (
+                <>
+                  <span className="w-5 h-5 rounded-full bg-cult-near-black flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                    {selectedStaff.first_name.charAt(0)}
+                  </span>
+                  <span className="font-medium">{selectedStaff.first_name}</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span className="font-medium">{assigning ? 'Assigning...' : 'Unassigned — tap to assign'}</span>
+                </>
+              )}
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${showStaffDropdown ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showStaffDropdown && (
+            <div className="absolute z-20 mt-1 w-full bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-xl max-h-48 overflow-y-auto">
+              {selectedStaff && (
+                <button
+                  type="button"
+                  onClick={() => handleAssign(null)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-400 hover:bg-amber-950/30 transition-colors border-b border-cult-dark-gray/50"
+                >
+                  <UserX className="w-3.5 h-3.5" />
+                  Unassign
+                </button>
+              )}
+              {staffOptions.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleAssign(s.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
+                    s.id === assignedStaffId
+                      ? 'bg-cult-charcoal text-cult-white font-semibold'
+                      : 'text-cult-light-gray hover:bg-cult-charcoal/60 hover:text-cult-white'
+                  }`}
+                >
+                  <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                    {s.first_name.charAt(0)}
+                  </span>
+                  {s.first_name}
+                  {s.id === assignedStaffId && (
+                    <span className="ml-auto text-[9px] text-cult-medium-gray uppercase">Current</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {isRouter ? (
         <RouterCard

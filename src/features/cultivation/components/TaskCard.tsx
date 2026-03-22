@@ -15,6 +15,7 @@ export interface TaskCardData {
   id: string;
   task_type: TaskType;
   room_name: string;
+  assigned_to: string | null;
   assigned_to_name: string | null;
   status: TaskStatus;
   estimated_duration: string | null;

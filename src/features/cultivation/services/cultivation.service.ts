@@ -66,6 +66,15 @@ const PLANT_GROUP_SELECT = `
   cut_sessions:plant_group_cut_sessions!plant_group_id (${CUT_SESSION_SELECT})
 `;
 
+const PLANT_GROUP_LIST_SELECT = `
+  id, name, strain_id, grow_room_id,
+  room_table_id, room_section_id, batch_registry_id,
+  is_mother, plant_count, growth_stage, stage_entered_at,
+  strains (name, abbreviation),
+  grow_rooms (name, room_code),
+  batch_registry (batch_number)
+`;
+
 const PLANT_GROUP_SUMMARY_SELECT = `
   id, name, strain_id, grow_room_id, mother_plant_group_id,
   room_table_id, room_section_id, batch_registry_id,
@@ -277,7 +286,7 @@ export const cultivationService = {
   },
 
   async listPlantGroups(filter?: { stage?: GrowthStage | 'active' }): Promise<PlantGroup[]> {
-    let query = supabase.from('plant_groups').select(PLANT_GROUP_SUMMARY_SELECT);
+    let query = supabase.from('plant_groups').select(PLANT_GROUP_LIST_SELECT);
 
     if (filter?.stage === 'active') {
       query = query.not('growth_stage', 'eq', 'harvested');
@@ -293,7 +302,7 @@ export const cultivationService = {
   async listPlantGroupsByRoom(growRoomId: string): Promise<PlantGroup[]> {
     const { data, error } = await supabase
       .from('plant_groups')
-      .select(PLANT_GROUP_SUMMARY_SELECT)
+      .select(PLANT_GROUP_LIST_SELECT)
       .eq('grow_room_id', growRoomId)
       .order('created_at', { ascending: false });
     if (error) throwError(error, 'listPlantGroupsByRoom');

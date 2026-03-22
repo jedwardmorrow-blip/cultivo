@@ -33,7 +33,7 @@ interface LabelData {
 
 const ADDITIVES_TEXT = 'Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B';
 
-function formatDate(dateStr: string | null): string {
+function formatDateSlash(dateStr: string | null): string {
   if (!dateStr) return 'N/A';
   try {
     const d = new Date(dateStr + 'T00:00:00');
@@ -289,11 +289,11 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
           <div style={{ fontSize: '5.5pt', fontWeight: 'bold', marginBottom: '0.005in' }}>{dominance}</div>
         )}
         <div style={{ fontSize: '5pt' }}>
-          <span style={{ fontWeight: 'bold' }}>Package Date: </span>{formatDate(label.package_date)}
+          <span style={{ fontWeight: 'bold' }}>Package Date: </span>{formatDateSlash(label.package_date)}
         </div>
         {label.harvest_date && (
           <div style={{ fontSize: '5pt' }}>
-            <span style={{ fontWeight: 'bold' }}>Harvest Date: </span>{formatDate(label.harvest_date)}
+            <span style={{ fontWeight: 'bold' }}>Harvest Date: </span>{formatDateSlash(label.harvest_date)}
           </div>
         )}
       </div>

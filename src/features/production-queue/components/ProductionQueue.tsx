@@ -6,6 +6,7 @@ import { useProductionQueue } from '../hooks/useProductionQueue';
 import { BatchInfoPanel } from './BatchInfoPanel';
 import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
 import { Calendar } from 'lucide-react';
+import { formatDateShort } from '@/shared/utils/format';
 
 function urgencyBadge(urgency: Urgency) {
   const styles: Record<Urgency, string> = {
@@ -55,11 +56,6 @@ function stockBadge(status: StockStatus) {
   );
 }
 
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 function formatWeight(grams: number) {
   if (grams >= 454) {
@@ -838,7 +834,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                             <span className="w-28">{o.format_label}</span>
                             <span className="w-16 text-right">{o.quantity} units</span>
                             <span className="w-20 text-right">{formatWeight(o.line_demand_g)}</span>
-                            <span className="w-20">{formatDate(o.requested_delivery_date)}</span>
+                            <span className="w-20">{formatDateShort(o.requested_delivery_date)}</span>
                             {urgencyBadge(o.urgency)}
                             {o.batch_number && batchStageBadge(o)}
                           </div>
@@ -920,7 +916,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                     )}
                   </td>
                   <td className="px-4 py-3 text-gray-300">{first.customer_name}</td>
-                  <td className="px-4 py-3 text-gray-300">{formatDate(first.requested_delivery_date)}</td>
+                  <td className="px-4 py-3 text-gray-300">{formatDateShort(first.requested_delivery_date)}</td>
                   <td className="px-4 py-3">{urgencyBadge(worstUrgency)}</td>
                   <td className="px-4 py-3 text-right text-gray-300">{items.length}</td>
                   <td className="px-4 py-3 text-right text-white">{formatWeight(totalDemandG)}</td>
@@ -1025,7 +1021,7 @@ function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
               <td className="px-4 py-3">{stockBadge(s.stock_status)}</td>
               <td className="px-4 py-3">{urgencyBadge(s.urgency)}</td>
               <td className="px-4 py-3 text-right text-gray-300">{s.order_count}</td>
-              <td className="px-4 py-3 text-gray-300">{formatDate(s.earliest_delivery)}</td>
+              <td className="px-4 py-3 text-gray-300">{formatDateShort(s.earliest_delivery)}</td>
             </tr>
           ))}
         </tbody>

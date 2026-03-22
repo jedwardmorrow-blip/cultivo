@@ -4,11 +4,8 @@ import { useWorkerAuth } from '../hooks/useWorkerAuth';
 import { useDailyTasks } from '../../cultivation/hooks/useDailyTasks';
 import { TASK_TYPE_CONFIG } from '../../cultivation/types';
 import { TaskCompletionForm } from '../../cultivation/components/TaskCompletionForm';
+import { todayIso } from '@/shared/utils/format';
 import type { DailyTaskInstance, TaskType } from '../../cultivation/types';
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function MyTasksView() {
   const { staff } = useWorkerAuth();

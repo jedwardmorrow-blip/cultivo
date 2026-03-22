@@ -7,6 +7,7 @@ import { useDailyTasks, useDailyDigest, useAnnotations, useGrowRooms } from '../
 import { supabase } from '@/lib/supabase';
 import { AnnotationInput } from './AnnotationInput';
 import { DigestSlackPreview } from './DigestSlackPreview';
+import { todayIso } from '../utils/dateUtils';
 import type { DailyTaskInstance, DailyLogAnnotation, CreateAnnotationInput } from '../types';
 
 type DigestTab = 'overview' | 'by-room' | 'labor' | 'slack';
@@ -44,10 +45,6 @@ interface StaffRecord {
   first_name: string;
   role: string | null;
   hourly_rate: number | null;
-}
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function shiftDate(dateStr: string, days: number): string {

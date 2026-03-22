@@ -8,11 +8,4 @@ export function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function daysBetween(from: string, to: string): number {
-  const ms = new Date(to + 'T00:00:00').getTime() - new Date(from + 'T00:00:00').getTime();
-  return Math.round(ms / 86_400_000);
-}
+export { todayIso, daysBetween } from '@/shared/utils/format';

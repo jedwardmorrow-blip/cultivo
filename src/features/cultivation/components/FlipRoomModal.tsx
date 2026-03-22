@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Flower2 } from 'lucide-react';
 import { cultivationService } from '../services';
+import { todayIso, formatDate } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup } from '../types';
 
 interface FlipRoomModalProps {
@@ -8,15 +9,6 @@ interface FlipRoomModalProps {
   plantGroups: PlantGroup[];
   onClose: () => void;
   onSuccess: () => void;
-}
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 const DEFAULT_FLOWER_DAYS = 63;

@@ -6,6 +6,7 @@ import {
   completeFreezeDryRun,
 } from '../../services/rosinLabService';
 import type { FreezeDryRun } from '../../types/rosin-lab.types';
+import { formatDate } from '@/shared/utils/format';
 
 interface CompletionForm {
   outputWeight: string;
@@ -22,14 +23,6 @@ function formatElapsed(startTime: string | null): string {
   return `${hours}h ${minutes}m`;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 function getStrainName(run: FreezeDryRun): string {
   return run.wash_run?.strain?.name ?? run.wash_run?.batch?.strain ?? '—';

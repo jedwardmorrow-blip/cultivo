@@ -4,6 +4,7 @@ import { useAvailablePackagesForStrain, useBatchAssign } from '../hooks/useBatch
 import { useBatchesForStrain } from '../hooks/useBatchPlanning';
 import type { BatchAssignContext, BatchPlanData, OrderLineItem, Urgency } from '../types';
 import type { AvailablePackage } from '@/features/orders/services';
+import { formatDateShort } from '@/shared/utils/format';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -16,11 +17,6 @@ function UrgencyDot({ urgency }: { urgency: Urgency }) {
     no_date: 'bg-gray-400',
   };
   return <span className={`inline-block w-2 h-2 rounded-full ${colors[urgency]}`} />;
-}
-
-function formatDate(d: string | null) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 // ─── Main Panel ──────────────────────────────────────────────────────────────
@@ -222,7 +218,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                       <UrgencyDot urgency={order.urgency} />
                       <span className="text-gray-400 w-16 text-xs">{order.order_number}</span>
                       <span className="text-gray-300 w-32 truncate text-xs">{order.customer_name}</span>
-                      <span className="text-gray-400 w-20 text-xs">{formatDate(order.requested_delivery_date)}</span>
+                      <span className="text-gray-400 w-20 text-xs">{formatDateShort(order.requested_delivery_date)}</span>
                       <span className="text-right flex-1 text-xs">
                         {fullyDrafted ? (
                           <span className="text-green-400 flex items-center justify-end gap-1">
@@ -501,7 +497,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
                 <UrgencyDot urgency={order.urgency} />
                 <span className="text-gray-400 w-14">{order.order_number}</span>
                 <span className="text-gray-500 w-24 truncate">{order.customer_name}</span>
-                <span className="text-gray-500 w-14">{formatDate(order.requested_delivery_date)}</span>
+                <span className="text-gray-500 w-14">{formatDateShort(order.requested_delivery_date)}</span>
                 <span className="text-gray-500">needs {orderRemaining}</span>
                 <input
                   type="number"
@@ -618,7 +614,7 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
                 <UrgencyDot urgency={order.urgency} />
                 <span className="text-gray-400 w-14">{order.order_number}</span>
                 <span className="text-gray-500 w-24 truncate">{order.customer_name}</span>
-                <span className="text-gray-500 w-14">{formatDate(order.requested_delivery_date)}</span>
+                <span className="text-gray-500 w-14">{formatDateShort(order.requested_delivery_date)}</span>
                 <span className="text-gray-500">needs {formatWeight(orderRemainingG)}</span>
                 <input
                   type="number"

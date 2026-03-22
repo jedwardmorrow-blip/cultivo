@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList } from 'lucide-react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList, Plus, AlertCircle } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useTaskSchedules } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
@@ -16,13 +16,13 @@ interface RoomCalendarProps {
   rooms: RoomCalendarRoom[];
 }
 
-const ROOM_TYPE_ORDER: Record<string, number> = { mother: 0, veg: 1, flower: 2, clone: 3, mixed: 4 };
-const ROOM_TYPE_DOT: Record<string, string> = {
-  mother: 'border-l-amber-600',
-  veg: 'border-l-green-600',
-  flower: 'border-l-rose-600',
-  clone: 'border-l-sky-600',
-  mixed: 'border-l-cult-medium-gray',
+const ROOM_TYPE_ORDER: Record<string, number> = { mother: 0, clone: 1, veg: 2, flower: 3, mixed: 4 };
+const ROOM_TYPE_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  mother: { label: 'Mother', color: '#D97706', bg: 'bg-amber-950/40', border: 'border-amber-700/40' },
+  clone: { label: 'Clone', color: '#0EA5E9', bg: 'bg-sky-950/40', border: 'border-sky-700/40' },
+  veg: { label: 'Vegetation', color: '#10B981', bg: 'bg-emerald-950/40', border: 'border-emerald-700/40' },
+  flower: { label: 'Flower', color: '#F43F5E', bg: 'bg-rose-950/40', border: 'border-rose-700/40' },
+  mixed: { label: 'Mixed', color: '#6B7280', bg: 'bg-gray-900/40', border: 'border-gray-600/40' },
 };
 
 const TASK_TYPES = Object.keys(TASK_TYPE_CONFIG) as TaskType[];
@@ -67,6 +67,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date());
   const [calendarMode, setCalendarMode] = useState<'gantt' | 'month'>('gantt');
   const [editorState, setEditorState] = useState<{ roomId: string; roomCode: string } | null>(null);
+  const todayRef = useRef<HTMLTableCellElement>(null);
 
   const { schedules, createSchedule, updateSchedule, deleteSchedule } = useTaskSchedules();
 
@@ -84,7 +85,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const days = useMemo(() => {
     return Array.from({ length: daysCount }, (_, i) => {
       const d = new Date(year, month, i + 1);
-      return { num: i + 1, date: d, iso: toIsoDate(d), dayOfWeek: DAY_NAMES[d.getDay()] };
+      return { num: i + 1, date: d, iso: toIsoDate(d), dayOfWeek: DAY_NAMES[d.getDay()], isWeekend: d.getDay() === 0 || d.getDay() === 6 };
     });
   }, [year, month, daysCount]);
 
@@ -97,6 +98,18 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
     }
     return map;
   }, [schedules]);
+
+  // Stats
+  const roomsWithSchedules = useMemo(() => {
+    let count = 0;
+    for (const room of rooms) {
+      if ((schedulesByRoom.get(room.id) ?? []).length > 0) count++;
+    }
+    return count;
+  }, [rooms, schedulesByRoom]);
+
+  const totalScheduleCount = schedules.length;
+  const unconfiguredRooms = rooms.length - roomsWithSchedules;
 
   function getDotsForCell(roomId: string, date: Date): TaskType[] {
     const roomSchedules = schedulesByRoom.get(roomId) ?? [];
@@ -117,25 +130,82 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
     setViewDate(new Date());
   }
 
+  // Scroll to today column on mount
+  useEffect(() => {
+    if (todayRef.current) {
+      todayRef.current.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+  }, [month, year]);
+
+  // Group rooms by type for section headers
+  const roomsByType = useMemo(() => {
+    const groups: { type: string; meta: typeof ROOM_TYPE_META[string]; rooms: RoomCalendarRoom[] }[] = [];
+    let currentType = '';
+    for (const room of sortedRooms) {
+      if (room.room_type !== currentType) {
+        currentType = room.room_type;
+        groups.push({ type: currentType, meta: ROOM_TYPE_META[currentType] ?? ROOM_TYPE_META.mixed, rooms: [] });
+      }
+      groups[groups.length - 1].rooms.push(room);
+    }
+    return groups;
+  }, [sortedRooms]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* ── Summary Bar ────────────────────────────────────── */}
+      <div className="flex items-center gap-6 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-cult-white font-mono">{rooms.length}</span>
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Rooms</span>
+        </div>
+        <div className="w-px h-6 bg-cult-dark-gray" />
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-green-400 font-mono">{totalScheduleCount}</span>
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Active Schedules</span>
+        </div>
+        {unconfiguredRooms > 0 && (
+          <>
+            <div className="w-px h-6 bg-cult-dark-gray" />
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs text-amber-400 font-semibold">
+                {unconfiguredRooms} room{unconfiguredRooms !== 1 ? 's' : ''} with no schedule
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ── Controls Row ───────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={prevMonth} className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors">
+          <button type="button" onClick={prevMonth} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
             <ChevronLeft className="w-5 h-5 text-cult-light-gray" />
           </button>
           <h2 className="text-lg font-semibold text-cult-white min-w-[180px] text-center">{monthLabel}</h2>
-          <button type="button" onClick={nextMonth} className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors">
+          <button type="button" onClick={nextMonth} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
             <ChevronRight className="w-5 h-5 text-cult-light-gray" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex border border-cult-medium-gray rounded-sm overflow-hidden">
+
+        <div className="flex items-center gap-3">
+          {/* Legend (inline, compact) */}
+          <div className="hidden lg:flex items-center gap-2.5 mr-2">
+            {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
+              <div key={t} className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
+                <span className="text-[9px] text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{TASK_TYPE_CONFIG[t].label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
             <button
               type="button"
               onClick={() => setCalendarMode('gantt')}
               className={`p-1.5 transition-colors ${calendarMode === 'gantt' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
-              title="Gantt view"
+              title="Timeline view"
             >
               <LayoutList className="w-4 h-4" />
             </button>
@@ -151,71 +221,24 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           <button
             type="button"
             onClick={goToday}
-            className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-medium-gray hover:bg-cult-charcoal rounded-sm transition-colors"
+            className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray rounded-sm transition-colors"
           >
             Today
           </button>
         </div>
       </div>
 
+      {/* ── Calendar ───────────────────────────────────────── */}
       {calendarMode === 'gantt' ? (
-        <div className="overflow-x-auto scrollbar-hide">
-          <table className="w-full border-collapse min-w-[800px]">
-            <thead>
-              <tr>
-                <th className="sticky left-0 z-10 bg-cult-black text-left px-3 py-2 text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold w-24">
-                  Room
-                </th>
-                {days.map((d) => (
-                  <th
-                    key={d.num}
-                    className={`px-0.5 py-2 text-center text-[10px] uppercase tracking-wider font-semibold min-w-[28px] ${
-                      d.iso === today ? 'text-cult-accent' : 'text-cult-medium-gray'
-                    }`}
-                  >
-                    <div>{d.dayOfWeek}</div>
-                    <div className="text-[11px]">{d.num}</div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedRooms.map((room) => (
-                <tr key={room.id} className="border-t border-cult-dark-gray/50 hover:bg-cult-charcoal/20">
-                  <td className={`sticky left-0 z-10 bg-cult-black px-3 py-2 font-mono text-xs font-bold text-cult-white border-l-2 ${ROOM_TYPE_DOT[room.room_type] ?? ''}`}>
-                    {room.room_code}
-                  </td>
-                  {days.map((d) => {
-                    const dots = getDotsForCell(room.id, d.date);
-                    const isToday = d.iso === today;
-                    return (
-                      <td
-                        key={d.num}
-                        className={`px-0.5 py-1.5 text-center cursor-pointer hover:bg-cult-charcoal/40 transition-colors ${
-                          isToday ? 'bg-cult-accent/5' : ''
-                        }`}
-                        onClick={() => setEditorState({ roomId: room.id, roomCode: room.room_code })}
-                      >
-                        {dots.length > 0 && (
-                          <div className="flex flex-wrap justify-center gap-[2px]">
-                            {dots.slice(0, 4).map((t) => (
-                              <span
-                                key={t}
-                                className="block w-[6px] h-[6px] rounded-full"
-                                style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                                title={TASK_TYPE_CONFIG[t].label}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <GanttView
+          days={days}
+          today={today}
+          roomsByType={roomsByType}
+          schedulesByRoom={schedulesByRoom}
+          getDotsForCell={getDotsForCell}
+          onOpenEditor={setEditorState}
+          todayRef={todayRef}
+        />
       ) : (
         <MonthCalendarGrid
           year={year}
@@ -225,6 +248,16 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           schedulesByRoom={schedulesByRoom}
         />
       )}
+
+      {/* ── Mobile legend ──────────────────────────────────── */}
+      <div className="lg:hidden flex flex-wrap items-center gap-3 px-1">
+        {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
+          <div key={t} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
+            <span className="text-[10px] text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
+          </div>
+        ))}
+      </div>
 
       {editorState && (
         <ScheduleEditorDrawer
@@ -241,7 +274,169 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   );
 }
 
-/* ── Month Calendar Grid ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   Gantt / Timeline View — Redesigned
+   ═══════════════════════════════════════════════════════════════ */
+
+interface GanttViewProps {
+  days: { num: number; date: Date; iso: string; dayOfWeek: string; isWeekend: boolean }[];
+  today: string;
+  roomsByType: { type: string; meta: { label: string; color: string; bg: string; border: string }; rooms: RoomCalendarRoom[] }[];
+  schedulesByRoom: Map<string, RoomTaskSchedule[]>;
+  getDotsForCell: (roomId: string, date: Date) => TaskType[];
+  onOpenEditor: (state: { roomId: string; roomCode: string }) => void;
+  todayRef: React.RefObject<HTMLTableCellElement | null>;
+}
+
+function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, onOpenEditor, todayRef }: GanttViewProps) {
+  return (
+    <div className="overflow-x-auto scrollbar-hide rounded-sm border border-cult-dark-gray/50">
+      <table className="w-full border-collapse min-w-[800px]">
+        <thead>
+          <tr className="bg-cult-charcoal/30">
+            <th className="sticky left-0 z-20 bg-cult-near-black text-left px-4 py-2.5 text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold w-32 border-r border-cult-dark-gray/50">
+              Room
+            </th>
+            {days.map((d) => {
+              const isToday = d.iso === today;
+              return (
+                <th
+                  key={d.num}
+                  ref={isToday ? todayRef : undefined}
+                  className={`px-0 py-2 text-center min-w-[32px] transition-colors ${
+                    isToday
+                      ? 'bg-green-950/40'
+                      : d.isWeekend
+                        ? 'bg-cult-charcoal/15'
+                        : ''
+                  }`}
+                >
+                  <div className={`text-[9px] uppercase tracking-wider font-semibold ${
+                    isToday ? 'text-green-400' : d.isWeekend ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
+                  }`}>
+                    {d.dayOfWeek}
+                  </div>
+                  <div className={`text-[11px] font-mono font-bold ${
+                    isToday ? 'text-green-400' : 'text-cult-medium-gray'
+                  }`}>
+                    {d.num}
+                  </div>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {roomsByType.map((group) => (
+            <>
+              {/* Room type section header */}
+              <tr key={`header-${group.type}`}>
+                <td
+                  colSpan={days.length + 1}
+                  className={`px-4 py-1.5 ${group.bg} border-y ${group.border}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: group.meta.color }}
+                    />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: group.meta.color }}>
+                      {group.meta.label}
+                    </span>
+                    <span className="text-[10px] text-cult-medium-gray">
+                      {group.rooms.length} room{group.rooms.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+
+              {group.rooms.map((room) => {
+                const roomSchedules = schedulesByRoom.get(room.id) ?? [];
+                const hasSchedules = roomSchedules.length > 0;
+
+                return (
+                  <tr
+                    key={room.id}
+                    className="group border-b border-cult-dark-gray/30 hover:bg-cult-charcoal/25 cursor-pointer transition-colors"
+                    onClick={() => onOpenEditor({ roomId: room.id, roomCode: room.room_code })}
+                  >
+                    <td className="sticky left-0 z-10 bg-cult-near-black group-hover:bg-cult-charcoal/60 px-4 py-2 border-r border-cult-dark-gray/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-cult-white">
+                            {room.room_code}
+                          </span>
+                          {!hasSchedules && (
+                            <span className="text-[9px] text-amber-500/80 font-semibold uppercase tracking-wider">
+                              No tasks
+                            </span>
+                          )}
+                        </div>
+                        <Plus className="w-3 h-3 text-cult-dark-gray group-hover:text-cult-medium-gray transition-colors" />
+                      </div>
+                      {hasSchedules && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {Array.from(new Set(roomSchedules.map(s => s.task_type))).slice(0, 5).map(t => (
+                            <span
+                              key={t}
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ backgroundColor: TASK_TYPE_CONFIG[t]?.color ?? '#666' }}
+                            />
+                          ))}
+                          <span className="text-[9px] text-cult-dark-gray ml-0.5">
+                            {roomSchedules.length}
+                          </span>
+                        </div>
+                      )}
+                    </td>
+
+                    {days.map((d) => {
+                      const dots = getDotsForCell(room.id, d.date);
+                      const isToday = d.iso === today;
+
+                      return (
+                        <td
+                          key={d.num}
+                          className={`px-0 py-1 text-center transition-colors ${
+                            isToday
+                              ? 'bg-green-950/25'
+                              : d.isWeekend
+                                ? 'bg-cult-charcoal/10'
+                                : ''
+                          }`}
+                        >
+                          {dots.length > 0 ? (
+                            <div className="flex flex-wrap justify-center gap-[3px] px-0.5">
+                              {dots.slice(0, 4).map((t) => (
+                                <span
+                                  key={t}
+                                  className="block w-[7px] h-[7px] rounded-full ring-1 ring-black/20"
+                                  style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                                  title={TASK_TYPE_CONFIG[t].label}
+                                />
+                              ))}
+                            </div>
+                          ) : hasSchedules ? (
+                            /* Room has schedules but none fire on this day — subtle dash */
+                            <span className="block mx-auto w-2 h-px bg-cult-dark-gray/40" />
+                          ) : null}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Month Calendar Grid
+   ═══════════════════════════════════════════════════════════════ */
 
 interface MonthCalendarGridProps {
   year: number;
@@ -253,9 +448,8 @@ interface MonthCalendarGridProps {
 
 function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: MonthCalendarGridProps) {
   const daysCount = getDaysInMonth(year, month);
-  const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
 
-  // Build day cells: leading blanks + actual days
   const cells: (null | { num: number; date: Date; iso: string })[] = [];
   for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
   for (let d = 1; d <= daysCount; d++) {
@@ -263,7 +457,6 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
     cells.push({ num: d, date, iso: toIsoDate(date) });
   }
 
-  // Aggregate all task types across all rooms for a given date
   function getTaskTypesForDay(date: Date): TaskType[] {
     const types = new Set<TaskType>();
     for (const room of rooms) {
@@ -275,7 +468,6 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
     return Array.from(types);
   }
 
-  // Count rooms with tasks on a given date
   function getRoomCountForDay(date: Date): number {
     let count = 0;
     for (const room of rooms) {
@@ -286,11 +478,11 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
   }
 
   return (
-    <div>
+    <div className="border border-cult-dark-gray/50 rounded-sm overflow-hidden">
       {/* Day-of-week header */}
-      <div className="grid grid-cols-7 border-b border-cult-dark-gray">
+      <div className="grid grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="py-2 text-center text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
+          <div key={name} className="py-2.5 text-center text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
             {name}
           </div>
         ))}
@@ -300,7 +492,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
       <div className="grid grid-cols-7">
         {cells.map((cell, idx) => {
           if (!cell) {
-            return <div key={`blank-${idx}`} className="min-h-[80px] border-b border-r border-cult-dark-gray/30" />;
+            return <div key={`blank-${idx}`} className="min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
           }
           const isToday = cell.iso === today;
           const taskTypes = getTaskTypesForDay(cell.date);
@@ -310,33 +502,33 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
           return (
             <div
               key={cell.num}
-              className={`min-h-[80px] border-b border-r border-cult-dark-gray/30 p-1.5 transition-colors hover:bg-cult-charcoal/20 ${
-                isToday ? 'bg-cult-accent/5' : isWeekend ? 'bg-cult-charcoal/5' : ''
+              className={`min-h-[90px] border-b border-r border-cult-dark-gray/20 p-2 transition-colors hover:bg-cult-charcoal/25 ${
+                isToday ? 'bg-green-950/20' : isWeekend ? 'bg-cult-charcoal/5' : ''
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <span
-                  className={`text-xs font-mono ${
+                  className={`text-xs font-mono font-bold ${
                     isToday
-                      ? 'bg-cult-accent text-white w-6 h-6 rounded-full flex items-center justify-center font-bold'
+                      ? 'bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center'
                       : 'text-cult-light-gray'
                   }`}
                 >
                   {cell.num}
                 </span>
                 {roomCount > 0 && (
-                  <span className="text-[9px] text-cult-medium-gray">
-                    {roomCount}r
+                  <span className="text-[9px] text-cult-medium-gray font-mono">
+                    {roomCount} <span className="text-cult-dark-gray">rm</span>
                   </span>
                 )}
               </div>
               {taskTypes.length > 0 && (
-                <div className="flex flex-wrap gap-[3px] mt-1">
+                <div className="flex flex-wrap gap-1 mt-1">
                   {taskTypes.slice(0, 6).map((t) => (
                     <span
                       key={t}
-                      className="inline-flex items-center gap-0.5 px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wider rounded-sm"
-                      style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}20`, color: TASK_TYPE_CONFIG[t].color }}
+                      className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-wider rounded-sm"
+                      style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
                       title={TASK_TYPE_CONFIG[t].label}
                     >
                       <span
@@ -352,19 +544,13 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
           );
         })}
       </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-cult-dark-gray">
-        {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
-          <div key={t} className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
-            <span className="text-[10px] text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Schedule Editor Drawer
+   ═══════════════════════════════════════════════════════════════ */
 
 interface ScheduleEditorDrawerProps {
   roomId: string;
@@ -400,20 +586,52 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
       className="fixed inset-0 z-50 flex items-stretch bg-black/70"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="relative ml-auto bg-cult-near-black border-l border-cult-medium-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-medium-gray flex-shrink-0">
+      <div className="relative ml-auto bg-cult-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/20">
           <div>
-            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Schedules</h3>
-            <span className="text-xs text-cult-light-gray font-mono">{roomCode}</span>
+            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Room Schedule</span>
+            <h3 className="text-base font-bold text-cult-white font-mono mt-0.5">{roomCode}</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 hover:bg-cult-charcoal rounded-sm">
+          <button type="button" onClick={onClose} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
             <X className="w-4 h-4 text-cult-medium-gray" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        {/* Schedule count */}
+        <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center justify-between">
+          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+            {schedules.length} active schedule{schedules.length !== 1 ? 's' : ''}
+          </span>
+          {!isNew && editingId === null && (
+            <button
+              type="button"
+              onClick={startNew}
+              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              Add
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {schedules.length === 0 && !isNew && (
-            <p className="text-xs text-cult-medium-gray text-center py-6">No schedules for this room</p>
+            <div className="text-center py-10">
+              <div className="w-12 h-12 mx-auto rounded-full bg-cult-charcoal/40 flex items-center justify-center mb-3">
+                <AlertCircle className="w-5 h-5 text-cult-dark-gray" />
+              </div>
+              <p className="text-sm text-cult-medium-gray">No schedules configured</p>
+              <p className="text-xs text-cult-dark-gray mt-1">Add a schedule to auto-generate daily tasks for this room</p>
+              <button
+                type="button"
+                onClick={startNew}
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Create First Schedule
+              </button>
+            </div>
           )}
 
           {schedules.map((s) => (
@@ -449,12 +667,6 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
             />
           )}
         </div>
-
-        {!isNew && editingId === null && (
-          <div className="px-5 py-3 border-t border-cult-dark-gray flex-shrink-0">
-            <Button onClick={startNew} className="w-full">Add Schedule</Button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -471,29 +683,45 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
     <button
       type="button"
       onClick={onEdit}
-      className="w-full text-left bg-cult-charcoal/40 border border-cult-dark-gray hover:border-cult-medium-gray p-3 transition-colors"
+      className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-cult-medium-gray p-3.5 transition-all hover:bg-cult-charcoal/50 group"
     >
-      <div className="flex items-center gap-2">
-        <span
-          className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
-          style={{ backgroundColor: `${config.color}20`, color: config.color }}
-        >
-          {config.label}
-        </span>
-        <span className="text-[10px] text-cult-medium-gray uppercase">{schedule.recurrence}</span>
-        {schedule.priority !== 'medium' && (
-          <span className={`text-[10px] uppercase font-semibold ${schedule.priority === 'high' ? 'text-red-400' : 'text-cult-medium-gray'}`}>
-            {schedule.priority}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-black/20"
+            style={{ backgroundColor: config.color }}
+          />
+          <span className="text-xs font-bold text-cult-white uppercase tracking-wider">{config.label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-cult-medium-gray bg-cult-charcoal rounded-sm">
+            {schedule.recurrence}
           </span>
-        )}
+          {schedule.priority === 'high' && (
+            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm">
+              High
+            </span>
+          )}
+        </div>
       </div>
       {schedule.day_of_week && schedule.day_of_week.length > 0 && (
-        <div className="mt-1 text-[10px] text-cult-light-gray">
-          {schedule.day_of_week.map((d) => DAY_NAMES[d]).join(', ')}
+        <div className="mt-2 flex gap-1">
+          {DAY_NAMES.map((name, idx) => (
+            <span
+              key={idx}
+              className={`w-6 h-5 flex items-center justify-center text-[8px] font-bold uppercase rounded-sm ${
+                schedule.day_of_week!.includes(idx)
+                  ? 'text-cult-white bg-cult-charcoal'
+                  : 'text-cult-dark-gray'
+              }`}
+            >
+              {name.charAt(0)}
+            </span>
+          ))}
         </div>
       )}
       {schedule.notes && (
-        <div className="mt-1 text-[10px] text-cult-medium-gray truncate">{schedule.notes}</div>
+        <div className="mt-1.5 text-[10px] text-cult-medium-gray truncate">{schedule.notes}</div>
       )}
     </button>
   );
@@ -554,48 +782,79 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
     }
   }
 
+  const selectedConfig = TASK_TYPE_CONFIG[taskType];
+
   return (
-    <div className="bg-cult-charcoal/40 border border-cult-medium-gray p-4 space-y-3">
-      <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
-        <select
-          value={taskType}
-          onChange={(e) => setTaskType(e.target.value as TaskType)}
-          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-1.5 px-2 rounded-sm focus:outline-none focus:border-cult-accent"
-        >
-          {TASK_TYPES.map((t) => (
-            <option key={t} value={t}>{TASK_TYPE_CONFIG[t].label}</option>
-          ))}
-        </select>
+    <div className="bg-cult-charcoal/30 border border-cult-medium-gray/60 p-4 space-y-3.5">
+      {/* Visual preview of selected task type */}
+      <div className="flex items-center gap-2 pb-2 border-b border-cult-dark-gray/50">
+        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedConfig.color }} />
+        <span className="text-xs font-bold text-cult-white uppercase tracking-wider">
+          {initial ? 'Edit' : 'New'} — {selectedConfig.label}
+        </span>
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Recurrence</label>
-        <select
-          value={recurrence}
-          onChange={(e) => setRecurrence(e.target.value)}
-          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-1.5 px-2 rounded-sm focus:outline-none focus:border-cult-accent"
-        >
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {TASK_TYPES.map((t) => {
+            const cfg = TASK_TYPE_CONFIG[t];
+            const selected = taskType === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTaskType(t)}
+                className={`flex items-center gap-1.5 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-all ${
+                  selected
+                    ? 'text-white border'
+                    : 'text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/50 hover:border-cult-medium-gray hover:text-cult-light-gray'
+                }`}
+                style={selected ? { backgroundColor: `${cfg.color}20`, borderColor: `${cfg.color}50`, color: cfg.color } : undefined}
+              >
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                {cfg.label.length > 8 ? cfg.label.slice(0, 7) + '.' : cfg.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
+        <div className="flex gap-1.5">
           {RECURRENCE_OPTIONS.map((r) => (
-            <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRecurrence(r)}
+              className={`flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+                recurrence === r
+                  ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
+                  : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+              }`}
+            >
+              {r.charAt(0).toUpperCase() + r.slice(1)}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
       {showDayPicker && (
         <div>
-          <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Days</label>
+          <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
           <div className="flex gap-1">
             {DAY_NAMES.map((name, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => toggleDay(idx)}
-                className={`flex-1 py-1 text-[10px] font-semibold rounded-sm transition-colors ${
+                className={`flex-1 py-1.5 text-[10px] font-bold rounded-sm transition-all ${
                   dayOfWeek.includes(idx)
-                    ? 'bg-cult-accent text-white'
-                    : 'bg-cult-charcoal text-cult-medium-gray border border-cult-dark-gray hover:border-cult-medium-gray'
+                    ? 'text-white'
+                    : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
                 }`}
+                style={dayOfWeek.includes(idx) ? { backgroundColor: `${selectedConfig.color}30`, color: selectedConfig.color, borderWidth: '1px', borderColor: `${selectedConfig.color}50` } : undefined}
               >
                 {name}
               </button>
@@ -605,17 +864,21 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       )}
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Priority</label>
-        <div className="flex gap-1">
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Priority</label>
+        <div className="flex gap-1.5">
           {PRIORITY_OPTIONS.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPriority(p)}
-              className={`flex-1 py-1 text-[10px] font-semibold uppercase rounded-sm transition-colors ${
+              className={`flex-1 py-1.5 text-[10px] font-semibold uppercase rounded-sm transition-colors ${
                 priority === p
-                  ? p === 'high' ? 'bg-red-900 text-red-300 border border-red-700' : 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                  : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray hover:border-cult-medium-gray'
+                  ? p === 'high'
+                    ? 'bg-red-950/60 text-red-400 border border-red-700/50'
+                    : p === 'low'
+                      ? 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray'
+                      : 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
+                  : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
               }`}
             >
               {p}
@@ -625,26 +888,27 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-1.5 px-2 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
+          placeholder="Optional instructions for this task..."
+          className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2 px-2.5 rounded-sm resize-none focus:outline-none focus:border-cult-medium-gray placeholder:text-cult-dark-gray"
         />
       </div>
 
       <div className="flex items-center gap-2 pt-1">
         <Button onClick={handleSave} disabled={saving} className="flex-1">
           <Save className="w-3 h-3 mr-1" />
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? 'Saving...' : initial ? 'Update' : 'Create'}
         </Button>
         {initial && onDelete && (
           <button
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="p-2 text-red-400 hover:bg-red-950 rounded-sm transition-colors"
+            className="p-2 text-red-400 hover:bg-red-950/40 rounded-sm transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>

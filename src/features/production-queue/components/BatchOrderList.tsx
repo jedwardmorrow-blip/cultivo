@@ -1,5 +1,6 @@
 import { Plus, X, Loader2 } from 'lucide-react';
 import type { OrderLineItem, BatchAllocation, BatchPlanData, Urgency } from '../types';
+import { formatDateShort } from '@/shared/utils/format';
 
 function urgencyDot(urgency: Urgency) {
   const colors: Record<Urgency, string> = {
@@ -12,11 +13,6 @@ function urgencyDot(urgency: Urgency) {
   return <span className={`inline-block w-2 h-2 rounded-full ${colors[urgency]}`} />;
 }
 
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 interface BatchOrderListProps {
   batch: BatchPlanData;
@@ -70,7 +66,7 @@ export function BatchOrderList({
             <span className="w-32 truncate text-gray-300">{o.customer_name}</span>
             <span className="w-20 text-gray-400">{o.format_label}</span>
             <span className="w-16 text-right text-gray-300">{o.quantity} units</span>
-            <span className="w-16 text-right text-gray-400">{formatDate(o.requested_delivery_date)}</span>
+            <span className="w-16 text-right text-gray-400">{formatDateShort(o.requested_delivery_date)}</span>
             {urgencyDot(o.urgency)}
             <div className="ml-auto">
               <button
@@ -97,7 +93,7 @@ export function BatchOrderList({
           <span className="w-32 truncate text-gray-400">{o.customer_name}</span>
           <span className="w-20 text-gray-500">{o.format_label}</span>
           <span className="w-16 text-right text-gray-400">{o.quantity} units</span>
-          <span className="w-16 text-right text-gray-500">{formatDate(o.requested_delivery_date)}</span>
+          <span className="w-16 text-right text-gray-500">{formatDateShort(o.requested_delivery_date)}</span>
           {urgencyDot(o.urgency)}
           <div className="ml-auto">
             <button

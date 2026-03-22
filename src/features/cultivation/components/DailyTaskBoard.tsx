@@ -43,7 +43,7 @@ type TabId = 'calendar' | 'board' | 'types' | 'workers';
 
 const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
   { id: 'board', label: 'Daily Board', icon: ClipboardList },
-  { id: 'calendar', label: 'Schedules', icon: Calendar },
+  { id: 'calendar', label: 'Schedule', icon: Calendar },
   { id: 'types', label: 'Task Types', icon: Layers },
   { id: 'workers', label: 'Workers', icon: Users },
 ];
@@ -117,7 +117,7 @@ export function SchedulesPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedules</h1>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
         <p className="text-cult-light-gray mt-1">Set up recurring task schedules for each grow room</p>
       </div>
       <RoomCalendar rooms={rooms} />
@@ -172,6 +172,7 @@ export function DailyTaskBoard() {
         id: t.id,
         task_type: t.task_type,
         room_name: room?.room_code ?? 'Unknown',
+        assigned_to: t.assigned_to ?? null,
         assigned_to_name: staffMember?.first_name ?? t.assigned_to,
         status: t.status,
         estimated_duration: t.estimated_duration,
@@ -449,7 +450,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
               <div className="w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden mt-2">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    stats.pct === 100 ? 'bg-green-500' : 'bg-cult-accent'
+                    stats.pct === 100 ? 'bg-green-500' : 'bg-green-600'
                   }`}
                   style={{ width: `${stats.pct}%` }}
                 />
@@ -481,7 +482,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
           <button
             type="button"
             onClick={() => openAddTask()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-cult-accent hover:bg-cult-accent-hover text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Task
@@ -556,7 +557,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-2 px-4 py-2 bg-cult-accent hover:bg-cult-accent-hover text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Task
@@ -631,7 +632,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
                           </span>
                           <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
                             <div
-                              className="h-full rounded-full transition-all duration-300 bg-cult-accent"
+                              className="h-full rounded-full transition-all duration-300 bg-green-600"
                               style={{ width: `${roomPct}%` }}
                             />
                           </div>
@@ -715,6 +716,8 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
         <TaskCompletionForm
           task={completingTask.task}
           roomId={completingTask.roomId}
+          staffOptions={quickAssignStaff}
+          onAssignWorker={onAssignWorker}
           onComplete={async (refTable, refId, dur) => {
             await onCompleteWithLog(completingTask.task.id, refTable, refId, dur);
             setCompletingTask(null);

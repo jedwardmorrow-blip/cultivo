@@ -3,6 +3,7 @@ import { Plus, Trash2, Search, Tag, Calendar, X, ChevronDown } from 'lucide-reac
 import { supabase } from '@/lib/supabase';
 import { notificationService } from '@/services/notification.service';
 import { getCustomerPriceList, createPriceOverride, deletePriceOverride } from '../services/priceList.service';
+import { formatDate } from '@/shared/utils/format';
 import type { CustomerPriceOverride } from '../types';
 
 interface AccountPriceListProps {
@@ -416,9 +417,4 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
       </div>
     </form>
   );
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }

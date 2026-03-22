@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Pin, PinOff, StickyNote, Phone, Mail, MapPin, Package, CalendarClock, MessageSquare } from 'lucide-react';
 import type { CustomerActivity, ActivityType } from '../types';
 import { getPinnedNotes, togglePinActivity } from '../services';
+import { formatDate } from '@/shared/utils/format';
 
 interface AccountPinnedNotesProps {
   customerId: string;
@@ -25,11 +26,6 @@ const activityColors: Record<string, string> = {
   note: 'text-cult-silver bg-cult-dark-gray',
   follow_up: 'text-rose-400 bg-rose-500/15',
 };
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
 
 export function AccountPinnedNotes({ customerId, onUnpin }: AccountPinnedNotesProps) {
   const [pinnedNotes, setPinnedNotes] = useState<CustomerActivity[]>([]);

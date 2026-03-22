@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Printer, CircleOff, Loader2, Check, CheckSquare, Square, AlertTriangle } from 'lucide-react';
 import { cultivationService } from '../services';
+import { formatDate } from '../utils/dateUtils';
 import type { PlantGroup, IndividualPlant } from '../types';
 
 interface ExpandedPlantsListProps {
@@ -8,10 +9,6 @@ interface ExpandedPlantsListProps {
   onPrintSinglePlant: (plant: IndividualPlant) => void;
   onPrintSelectedPlants: (plants: IndividualPlant[]) => void;
   onPrintAllPlants: () => void;
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function ExpandedPlantsList({

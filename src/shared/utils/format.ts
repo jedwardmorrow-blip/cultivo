@@ -39,3 +39,18 @@ export function formatDate(dateStr: string | null): string {
 export function formatNumber(value: number): string {
   return value.toLocaleString('en-US');
 }
+
+export function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function daysBetween(from: string, to: string): number {
+  const ms = new Date(to + 'T00:00:00').getTime() - new Date(from + 'T00:00:00').getTime();
+  return Math.round(ms / 86_400_000);
+}
+
+export function formatDateShort(dateStr: string | null): string {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}

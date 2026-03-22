@@ -1,12 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { daysBetween, todayIso } from '../utils/dateUtils';
 import type { RoomSummary, RoomSummaryStrain, GrowthStage, RoomType } from '../types';
-
-function daysBetween(from: string, to: Date): number {
-  const start = new Date(from);
-  const diff = to.getTime() - start.getTime();
-  return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-}
 
 export function useRoomSummaries() {
   const [summaries, setSummaries] = useState<RoomSummary[]>([]);
@@ -37,7 +32,7 @@ export function useRoomSummaries() {
       if (err) throw err;
       if (!data) { setSummaries([]); return; }
 
-      const now = new Date();
+      const today = todayIso();
       const roomMap = new Map<string, RoomSummary>();
 
       for (const row of data as Record<string, unknown>[]) {
@@ -91,7 +86,7 @@ export function useRoomSummaries() {
           strain: strainName,
           stage: row.growth_stage as GrowthStage,
           plant_count: plantCount,
-          days_in_stage: daysBetween(row.stage_entered_at as string, now),
+          days_in_stage: Math.max(0, daysBetween(row.stage_entered_at as string, today)),
         });
       }
 

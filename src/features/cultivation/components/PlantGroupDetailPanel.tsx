@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, ArrowRight, Scissors, Sprout } from 'lucide-react';
 import { cultivationService } from '../services';
 import { IndividualPlantsTab } from './IndividualPlantsTab';
+import { formatDate } from '../utils/dateUtils';
 import type { PlantGroup, PlantGroupStageHistory, PlantGroupRoomHistory, PlantGroupCutSession } from '../types';
 
 type Tab = 'history' | 'plants';
@@ -10,10 +11,6 @@ interface PlantGroupDetailPanelProps {
   group: PlantGroup;
   onClose: () => void;
   initialTab?: Tab;
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
