@@ -519,7 +519,7 @@ async function fetchCultivationData(): Promise<{
   const { data: dryingHarvests } = await supabase
     .from('harvest_sessions')
     .select('id, session_status, wet_weight_grams, created_at, plant_groups(strains(name)), harvest_weight_entries(location_id)')
-    .eq('session_status', 'drying') as { data: any[] | null };
+    .eq('session_status', 'finalized') as { data: any[] | null };
 
   const dryRooms: DryRoom[] = dryRoomList.map((room: any) => {
     const roomName = room.room_code || room.name;
@@ -544,7 +544,7 @@ async function fetchCultivationData(): Promise<{
   const { data: harvestedData } = await supabase
     .from('harvest_sessions')
     .select('plant_count_harvested')
-    .in('session_status', ['completed', 'drying']);
+    .in('session_status', ['completed', 'finalized']);
 
   const harvestedCount = (harvestedData || []).reduce((s, h) => s + (h.plant_count_harvested || 0), 0);
 

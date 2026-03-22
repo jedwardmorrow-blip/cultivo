@@ -608,7 +608,7 @@ export const cultivationService = {
       .update({
         wet_weight_grams: totalWeight,
         plant_count_harvested: totalPlants,
-        session_status: 'completed',
+        session_status: 'finalized',
         completed_by: user?.id ?? null,
       })
       .eq('id', id)
@@ -691,7 +691,7 @@ export const cultivationService = {
       .select(`${HARVEST_SESSION_SELECT}, harvest_weight_entries!inner(location_id, destination)`)
       .eq('harvest_weight_entries.location_id', dryRoomId)
       .eq('harvest_weight_entries.destination', 'flower')
-      .eq('session_status', 'completed')
+      .in('session_status', ['completed', 'finalized'])
       .order('harvest_date', { ascending: false });
     if (error) throwError(error, 'listHarvestSessionsByDryRoom');
     return data as unknown as HarvestSession[];
@@ -706,7 +706,7 @@ export const cultivationService = {
       supabase
         .from('harvest_sessions')
         .select(`${HARVEST_SESSION_SELECT}, harvest_weight_entries!inner(destination)`)
-        .eq('session_status', 'completed')
+        .in('session_status', ['completed', 'finalized'])
         .eq('harvest_weight_entries.destination', 'flower')
         .order('harvest_date', { ascending: false }),
     ]);
@@ -730,7 +730,7 @@ export const cultivationService = {
       supabase
         .from('harvest_sessions')
         .select(HARVEST_SESSION_SELECT)
-        .eq('session_status', 'completed')
+        .in('session_status', ['completed', 'finalized'])
         .order('harvest_date', { ascending: false }),
     ]);
 

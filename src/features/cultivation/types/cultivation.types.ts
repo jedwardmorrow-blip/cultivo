@@ -21,7 +21,7 @@
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
 export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
 export type PlantSourceType = 'clone' | 'seed';
-export type HarvestSessionStatus = 'active' | 'completed' | 'cancelled';
+export type HarvestSessionStatus = 'active' | 'completed' | 'finalized' | 'cancelled';
 export type HarvestType = 'flower' | 'fresh_frozen';
 export type FreshFrozenPackageStatus = 'stored' | 'allocated' | 'washed' | 'sold';
 

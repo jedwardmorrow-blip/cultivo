@@ -343,7 +343,7 @@ export function HarvestSessionsList() {
   const [roomFilter, setRoomFilter] = useState<string>('');
 
   const activeSessions = sessions.filter((s) => s.session_status === 'active');
-  const completedSessions = sessions.filter((s) => s.session_status === 'completed');
+  const completedSessions = sessions.filter((s) => s.session_status === 'completed' || s.session_status === 'finalized');
   const cancelledSessions = sessions.filter((s) => s.session_status === 'cancelled');
 
   // Room-grouped view for Active tab
