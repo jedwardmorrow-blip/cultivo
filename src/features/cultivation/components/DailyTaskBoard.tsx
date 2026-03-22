@@ -246,6 +246,9 @@ export function DailyTaskBoard() {
             await completeWithLog(taskId, refTable, refId, dur ?? undefined);
             await refetchTasks();
           }}
+          onCreateTask={async (input) => {
+            await createTask(input);
+          }}
         />
       )}
       {activeTab === 'types' && <TaskTypesTab />}
@@ -264,9 +267,10 @@ interface DailyBoardTabProps {
   date: string;
   onUpsertAttendance: (input: Parameters<ReturnType<typeof useAttendance>['upsertAttendance']>[0]) => Promise<void>;
   onCompleteWithLog: (taskId: string, refTable: string, refId: string, duration: string | null) => Promise<void>;
+  onCreateTask: (input: { room_id: string; task_type: string; assigned_to?: string | null; notes?: string | null; task_date: string }) => Promise<void>;
 }
 
-function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
@@ -423,10 +427,10 @@ function DailyBoardTab({ rooms, staff, tasks, attendance, date, onUpsertAttendan
           rooms={rooms}
           staff={staff}
           preSelectedRoomId={addTaskRoomId}
-          taskDate={selectedDate}
+          taskDate={date}
           onClose={() => setShowAddTask(false)}
           onSave={async (input) => {
-            await createTask({ ...input, task_date: selectedDate });
+            await onCreateTask({ ...input, task_date: date });
             setShowAddTask(false);
           }}
         />
