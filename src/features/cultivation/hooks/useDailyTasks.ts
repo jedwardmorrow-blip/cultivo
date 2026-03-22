@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useTableSubscription } from '@/shared/hooks/useTableSubscription';
 import type { DailyTaskInstance, TaskStatus } from '../types';
 
 export function useDailyTasks(taskDate: string) {
@@ -28,6 +29,9 @@ export function useDailyTasks(taskDate: string) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live updates — refetch when any task row changes (debounced 500ms)
+  useTableSubscription('daily_task_instances', load);
 
   async function updateStatus(id: string, status: TaskStatus): Promise<DailyTaskInstance> {
     const updates: Record<string, unknown> = { status };

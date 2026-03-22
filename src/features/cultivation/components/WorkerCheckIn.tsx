@@ -24,12 +24,15 @@ interface WorkerCheckInProps {
 
 const ROLE_STYLES: Record<string, string> = {
   manager: 'bg-amber-950 text-amber-400 border border-amber-800',
+  cultivation_manager: 'bg-amber-950 text-amber-400 border border-amber-800',
+  cultivation_lead: 'bg-amber-950 text-amber-400 border border-amber-800',
   cultivator: 'bg-green-950 text-green-400 border border-green-800',
   operations: 'bg-sky-950 text-sky-400 border border-sky-800',
+  operations_manager: 'bg-sky-950 text-sky-400 border border-sky-800',
 };
 
 export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendance }: WorkerCheckInProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
 
   const attendanceMap = useMemo(() => {
@@ -151,7 +154,7 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                       </span>
                       <span className="text-sm text-cult-white font-medium truncate">{s.first_name}</span>
                       <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
-                        {s.role}
+                        {s.role.replace(/_/g, ' ')}
                       </span>
                     </div>
 

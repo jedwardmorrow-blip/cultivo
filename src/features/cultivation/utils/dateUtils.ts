@@ -4,7 +4,8 @@ export function formatWeight(grams: number): string {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function todayIso(): string {
@@ -12,6 +13,6 @@ export function todayIso(): string {
 }
 
 export function daysBetween(from: string, to: string): number {
-  const ms = new Date(to).getTime() - new Date(from).getTime();
-  return Math.floor(ms / 86_400_000);
+  const ms = new Date(to + 'T00:00:00').getTime() - new Date(from + 'T00:00:00').getTime();
+  return Math.round(ms / 86_400_000);
 }

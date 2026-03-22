@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useTableSubscription } from '@/shared/hooks/useTableSubscription';
 import type { DailyAttendance, UpsertAttendanceInput } from '../types';
 
 export function useAttendance(date: string) {
@@ -28,6 +29,9 @@ export function useAttendance(date: string) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live updates — refetch when attendance changes (debounced 500ms)
+  useTableSubscription('daily_attendance', load);
 
   async function upsertAttendance(input: UpsertAttendanceInput): Promise<DailyAttendance> {
     const { data, error: err } = await supabase

@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Flower2, Settings, MapPin } from 'lucide-rea
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { FlipRoomModal } from './FlipRoomModal';
+import { todayIso, daysBetween } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 const ROOM_TYPE_COLORS: Record<string, string> = {
@@ -20,14 +21,6 @@ const STAGE_BADGE: Record<string, string> = {
   flower: 'text-rose-400 border-rose-800 bg-rose-950',
   harvested: 'text-cult-medium-gray border-cult-dark-gray bg-cult-near-black',
 };
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function daysBetween(a: string, b: string): number {
-  return Math.round((new Date(b + 'T00:00:00').getTime() - new Date(a + 'T00:00:00').getTime()) / 86400000);
-}
 
 interface PlacedGroup {
   group: PlantGroup;
@@ -61,8 +54,15 @@ const GridCell = memo(function GridCell({ groups, onClick }: GridCellProps) {
     );
   }
 
+  const label = groups.map((g) => `${g.strains?.abbreviation ?? '???'} ${g.plant_count}p`).join(', ');
+
   return (
-    <div className="border border-rose-900 bg-rose-950/20 h-14 p-1 space-y-0.5 overflow-hidden cursor-pointer hover:border-rose-700 transition-colors" onClick={() => onClick(groups[0])}>
+    <button
+      type="button"
+      aria-label={`Select group: ${label}`}
+      className="border border-rose-900 bg-rose-950/20 h-14 p-1 space-y-0.5 overflow-hidden cursor-pointer hover:border-rose-700 transition-colors w-full text-left"
+      onClick={() => onClick(groups[0])}
+    >
       {groups.map((g) => (
         <div key={g.id} className="flex items-center gap-1">
           <span className="text-xs font-bold text-rose-300 font-mono truncate">
@@ -71,7 +71,7 @@ const GridCell = memo(function GridCell({ groups, onClick }: GridCellProps) {
           <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
         </div>
       ))}
-    </div>
+    </button>
   );
 });
 

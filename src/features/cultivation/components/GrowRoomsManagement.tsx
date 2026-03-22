@@ -4,6 +4,7 @@ import { Button } from '@/shared/components';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { LayoutBuilder } from './LayoutBuilder';
+import { formatDate, daysBetween, todayIso } from '../utils/dateUtils';
 import type { GrowRoom, RoomType, RoomTable, RoomSection, CreateGrowRoomInput, UpdateGrowRoomInput } from '../types';
 
 const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
@@ -21,21 +22,6 @@ const ROOM_TYPE_COLORS: Record<RoomType, string> = {
   mother: 'bg-amber-950 border-amber-700 text-amber-400',
   mixed: 'bg-cult-black border-cult-medium-gray text-cult-light-gray',
 };
-
-function formatDate(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function daysBetween(a: string, b: string): number {
-  const msA = new Date(a + 'T00:00:00').getTime();
-  const msB = new Date(b + 'T00:00:00').getTime();
-  return Math.round((msB - msA) / 86400000);
-}
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 interface RunDatesProps {
   section: RoomSection;
