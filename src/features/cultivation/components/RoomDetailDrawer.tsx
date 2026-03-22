@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { X, Flower2, MapPin, Settings, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Flower2, MapPin, Settings, ChevronDown, ChevronRight, Layers, CalendarDays } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
@@ -236,6 +237,7 @@ export function RoomDetailDrawer({
   onClose,
   onGroupAction,
 }: RoomDetailDrawerProps) {
+  const navigate = useNavigate();
   const [fetchedGroups, setFetchedGroups] = useState<PlantGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [showFlipModal, setShowFlipModal] = useState(false);
@@ -371,6 +373,13 @@ export function RoomDetailDrawer({
             </div>
 
             <div className="flex items-center gap-2 ml-4">
+              <button
+                onClick={() => { onClose(); navigate('/cultivation-schedules'); }}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-dark-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-medium-gray hover:text-cult-white transition-colors"
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                Schedules
+              </button>
               {isFlower && (
                 <button
                   onClick={() => setShowFlipModal(true)}

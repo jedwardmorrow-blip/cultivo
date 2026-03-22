@@ -165,6 +165,7 @@ function AuthenticatedApp() {
               <Route path="/cultivation-plants" element={<CultivationErrorBoundary><PlantGroupsList /></CultivationErrorBoundary>} />
               <Route path="/cultivation-harvest" element={<CultivationErrorBoundary><HarvestSessionsList /></CultivationErrorBoundary>} />
               <Route path="/cultivation-binning" element={<CultivationErrorBoundary><BinningSessionsView /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-schedules" element={<CultivationErrorBoundary><DailyTaskBoard initialTab="calendar" /></CultivationErrorBoundary>} />
               <Route path="/cultivation-taskboard" element={<CultivationErrorBoundary><DailyTaskBoard /></CultivationErrorBoundary>} />
               <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />

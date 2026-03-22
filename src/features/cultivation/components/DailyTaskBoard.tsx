@@ -99,8 +99,12 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function DailyTaskBoard() {
-  const [activeTab, setActiveTab] = useState<TabId>('board');
+interface DailyTaskBoardProps {
+  initialTab?: TabId;
+}
+
+export function DailyTaskBoard({ initialTab = 'board' }: DailyTaskBoardProps) {
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
