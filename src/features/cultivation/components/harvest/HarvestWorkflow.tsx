@@ -77,22 +77,38 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
 
   const batchGroups = groupByBatch(roomGroups);
 
+  // Track plants already harvested in prior completed sessions per batch
+  const [priorHarvestMap, setPriorHarvestMap] = useState<Record<string, number>>({});
+
   // Load existing active sessions, keyed by batch_registry_id
+  // Also load completed sessions to calculate prior harvested plant counts
   const loadExistingSessions = useCallback(async () => {
     setLoadingSessions(true);
     try {
-      const allSessions = await cultivationService.listHarvestSessions({ status: 'active' });
+      const [activeSessions, completedSessions] = await Promise.all([
+        cultivationService.listHarvestSessions({ status: 'active' }),
+        cultivationService.listHarvestSessions({ status: 'completed' }),
+      ]);
       const map: Record<string, HarvestSession> = {};
-      for (const s of allSessions) {
+      for (const s of activeSessions) {
         if (s.batch_registry_id) {
           map[s.batch_registry_id] = s;
         }
       }
       setBatchSessionMap(map);
+
+      // Sum plant_count_harvested from completed sessions per batch+room
+      const priorMap: Record<string, number> = {};
+      for (const s of completedSessions) {
+        if (s.batch_registry_id && selectedRoom && s.grow_room_id === selectedRoom.id) {
+          priorMap[s.batch_registry_id] = (priorMap[s.batch_registry_id] ?? 0) + s.plant_count_harvested;
+        }
+      }
+      setPriorHarvestMap(priorMap);
     } finally {
       setLoadingSessions(false);
     }
-  }, []);
+  }, [selectedRoom]);
 
   useEffect(() => {
     if (selectedRoom && roomGroups.length > 0) {
@@ -248,6 +264,7 @@ export function HarvestWorkflow({ onComplete, onCancel }: HarvestWorkflowProps) 
                 batch={batch}
                 session={batchSessionMap[batch.batchRegistryId] ?? null}
                 wasteGrams={wasteMap[batch.batchRegistryId] ?? 0}
+                priorHarvestedPlants={priorHarvestMap[batch.batchRegistryId] ?? 0}
                 onStartBatch={handleStartBatch}
                 onWasteChange={handleWasteChange}
                 onTotalsUpdate={updateBatchTotals}
@@ -295,6 +312,7 @@ interface BatchWeightCardProps {
   batch: BatchGroup;
   session: HarvestSession | null;
   wasteGrams: number;
+  priorHarvestedPlants: number;
   onStartBatch: (batchRegistryId: string) => Promise<HarvestSession>;
   onWasteChange: (batchRegistryId: string, grams: number) => void;
   onTotalsUpdate: (batchRegistryId: string, weight: number, plants: number, flowerWeight: number, frozenWeight: number) => void;
@@ -304,6 +322,7 @@ function BatchWeightCard({
   batch,
   session,
   wasteGrams,
+  priorHarvestedPlants,
   onStartBatch,
   onWasteChange,
   onTotalsUpdate,
@@ -311,8 +330,15 @@ function BatchWeightCard({
   const sessionId = session?.id ?? null;
   const { entries, totalWeight, totalPlants, addEntry, removeEntry, reload } = useHarvestWeightEntries(sessionId);
 
+  // Form open state — decoupled from session existence
+  const [formOpen, setFormOpen] = useState(!!session);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-open form when session is loaded (e.g. from loadExistingSessions)
+  useEffect(() => {
+    if (session) setFormOpen(true);
+  }, [session?.id]);
 
   // Weight entry form state
   const [weight, setWeight] = useState('');
@@ -321,9 +347,11 @@ function BatchWeightCard({
   const [saving, setSaving] = useState(false);
   const [entryError, setEntryError] = useState<string | null>(null);
 
-  const remaining = batch.totalPlants - totalPlants;
-  const progress = batch.totalPlants > 0 ? Math.min(100, Math.round((totalPlants / batch.totalPlants) * 100)) : 0;
-  const isComplete = totalPlants >= batch.totalPlants;
+  // Account for plants already harvested in prior completed sessions
+  const cumulativePlants = priorHarvestedPlants + totalPlants;
+  const remaining = batch.totalPlants - cumulativePlants;
+  const progress = batch.totalPlants > 0 ? Math.min(100, Math.round((cumulativePlants / batch.totalPlants) * 100)) : 0;
+  const isComplete = cumulativePlants >= batch.totalPlants;
 
   const parsedWeight = parseFloat(weight);
   const parsedPlants = parseInt(plantCount);
@@ -338,28 +366,47 @@ function BatchWeightCard({
     onTotalsUpdate(batch.batchRegistryId, totalWeight, totalPlants, flowerWeight, frozenWeight);
   }, [batch.batchRegistryId, totalWeight, totalPlants, flowerWeight, frozenWeight, onTotalsUpdate]);
 
-  async function handleStart() {
-    setCreating(true);
-    setError(null);
-    try {
-      await onStartBatch(batch.batchRegistryId);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to start harvest');
-    } finally {
-      setCreating(false);
-    }
+  // "Start Weighing" just opens the form — no DB write
+  function handleStart() {
+    setFormOpen(true);
   }
 
+  // Session is created lazily on first entry
   async function handleAddEntry() {
     if (!canAdd) return;
     setSaving(true);
     setEntryError(null);
+    setError(null);
     try {
-      await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants, destination });
+      // Create session on first entry if it doesn't exist yet
+      let currentSession = session;
+      if (!currentSession) {
+        setCreating(true);
+        currentSession = await onStartBatch(batch.batchRegistryId);
+        setCreating(false);
+      }
+      // addEntry uses the hook's sessionId, which updates when session prop changes.
+      // But since state update is async, we need to call the service directly for the first entry.
+      if (!session) {
+        // Session was just created — addEntry won't work yet because sessionId is still null.
+        // Call service directly with the new session id.
+        await cultivationService.createHarvestWeightEntry({
+          harvest_session_id: currentSession.id,
+          weight_grams: parsedWeight,
+          plant_count: parsedPlants,
+          destination,
+        });
+        await reload();
+      } else {
+        await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants, destination });
+      }
       setWeight('');
       setPlantCount('');
     } catch (err: unknown) {
-      setEntryError(err instanceof Error ? err.message : 'Failed to add entry');
+      const msg = err instanceof Error ? err.message : 'Failed to add entry';
+      if (!session) setError(msg);
+      else setEntryError(msg);
+      setCreating(false);
     } finally {
       setSaving(false);
     }
@@ -405,12 +452,13 @@ function BatchWeightCard({
         </div>
       </div>
 
-      {/* Progress bar */}
-      {session && (
+      {/* Progress bar — show when form is open or prior harvests exist */}
+      {(formOpen || priorHarvestedPlants > 0) && (
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
-              {totalPlants} / {batch.totalPlants} plants weighed
+              {cumulativePlants} / {batch.totalPlants} plants weighed
+              {priorHarvestedPlants > 0 && <span className="text-cult-medium-gray ml-1">({priorHarvestedPlants} prior)</span>}
               {remaining > 0 && <span className="text-cult-light-gray ml-1">({remaining} remaining)</span>}
             </span>
             <span className="text-[10px] text-cult-medium-gray">{progress}%</span>
@@ -424,8 +472,8 @@ function BatchWeightCard({
         </div>
       )}
 
-      {/* Start weighing button */}
-      {!session && (
+      {/* Start weighing button — only show when form is closed and batch not complete */}
+      {!formOpen && !isComplete && (
         <div className="mt-3">
           {error && (
             <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
@@ -439,13 +487,13 @@ function BatchWeightCard({
             className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider font-semibold"
           >
             <Scale className="w-3.5 h-3.5" />
-            {creating ? 'Starting...' : 'Start Weighing'}
+            Start Weighing
           </button>
         </div>
       )}
 
       {/* Weight entries list */}
-      {session && entries.length > 0 && (
+      {entries.length > 0 && (
         <div className="mt-3 space-y-1">
           {entries.map((entry) => (
             <div
@@ -475,7 +523,7 @@ function BatchWeightCard({
       )}
 
       {/* Inline weight entry form */}
-      {session && remaining > 0 && (
+      {formOpen && remaining > 0 && (
         <div className="mt-3">
           {entryError && (
             <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
