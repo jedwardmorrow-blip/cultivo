@@ -1,5 +1,5 @@
 // Build cache bust: 2026-03-09T20
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import { ChevronDown, ChevronRight, Flower2, Settings, MapPin } from 'lucide-react';
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
@@ -52,7 +52,7 @@ interface GridCellProps {
   onClick: (group: PlantGroup) => void;
 }
 
-function GridCell({ groups, onClick }: GridCellProps) {
+const GridCell = memo(function GridCell({ groups, onClick }: GridCellProps) {
   if (groups.length === 0) {
     return (
       <div className="border border-cult-dark-gray bg-cult-black/30 h-14 flex items-center justify-center">
@@ -73,7 +73,7 @@ function GridCell({ groups, onClick }: GridCellProps) {
       ))}
     </div>
   );
-}
+});
 
 interface BatchEntry {
   batchNumber: string;

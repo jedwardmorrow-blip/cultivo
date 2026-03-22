@@ -38,6 +38,7 @@ const ConsolidateViewWrapper = lazyRetry(() => import('./features/inventory'), '
 const Settings = lazyRetry(() => import('./features/settings'), 'Settings');
 const AnalyticsDashboard = lazyRetry(() => import('./features/analytics'), 'AnalyticsDashboard');
 const EODSummary = lazyRetry(() => import('./features/analytics'), 'EODSummary');
+import { CultivationErrorBoundary } from './features/cultivation/components/CultivationErrorBoundary';
 const CultivationDashboard = lazyRetry(() => import('./features/cultivation'), 'CultivationDashboard');
 const PlantGroupsList = lazyRetry(() => import('./features/cultivation'), 'PlantGroupsList');
 const HarvestSessionsList = lazyRetry(() => import('./features/cultivation'), 'HarvestSessionsList');
@@ -160,14 +161,14 @@ function AuthenticatedApp() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard onSelectOrder={handleSelectOrder} />} />
               <Route path="/orders" element={<OrdersContainer key={ordersRefreshKey} onCreateOrder={handleCreateOrder} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />} />
-              <Route path="/cultivation-dashboard" element={<CultivationDashboard />} />
-              <Route path="/cultivation-plants" element={<PlantGroupsList />} />
-              <Route path="/cultivation-harvest" element={<HarvestSessionsList />} />
-              <Route path="/cultivation-binning" element={<BinningSessionsView />} />
-              <Route path="/cultivation-taskboard" element={<DailyTaskBoard />} />
-              <Route path="/cultivation-digest" element={<DailyDigestView />} />
-              <Route path="/cultivation-rooms" element={<GrowRoomsManagement />} />
-              <Route path="/cultivation-dry-rooms" element={<DryRoomsManagement />} />
+              <Route path="/cultivation-dashboard" element={<CultivationErrorBoundary><CultivationDashboard /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-plants" element={<CultivationErrorBoundary><PlantGroupsList /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-harvest" element={<CultivationErrorBoundary><HarvestSessionsList /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-binning" element={<CultivationErrorBoundary><BinningSessionsView /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-taskboard" element={<CultivationErrorBoundary><DailyTaskBoard /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-dry-rooms" element={<CultivationErrorBoundary><DryRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/production-overview" element={<ProductionDashboard />} />
               <Route path="/bucking-sessions" element={<BuckingSessionsRefactored />} />
               <Route path="/trim-sessions" element={<TrimSessionsRefactored />} />

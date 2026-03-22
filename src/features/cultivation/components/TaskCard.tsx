@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Clock, ArrowRight } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus } from '../types';
@@ -29,7 +30,7 @@ interface TaskCardProps {
   onClick?: () => void;
 }
 
-export function TaskCard({ task, onClick }: TaskCardProps) {
+export const TaskCard = memo(function TaskCard({ task, onClick }: TaskCardProps) {
   const config = TASK_TYPE_CONFIG[task.task_type] ?? TASK_TYPE_CONFIG.custom;
   const statusStyle = STATUS_STYLES[task.status] ?? STATUS_STYLES.pending;
   const isCarried = task.status === 'carry_forward';
@@ -106,4 +107,4 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       )}
     </button>
   );
-}
+});
