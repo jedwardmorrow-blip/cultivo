@@ -200,8 +200,10 @@ Deno.serve(async (req: Request) => {
         const reader = claudeResponse.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        const newline = "\n\n";
         try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "metadata", intents: intent.intents, financial: intent.financial, tier })}\n\n`));
+          const metaData = JSON.stringify({ type: "metadata", intents: intent.intents, financial: intent.financial, tier });
+          controller.enqueue(encoder.encode("data: " + metaData + newline));
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -216,14 +218,16 @@ Deno.serve(async (req: Request) => {
                 const event = JSON.parse(data);
                 if (event.type === "content_block_delta" && event.delta?.text) {
                   fullResponse += event.delta.text;
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text", text: event.delta.text })}\n\n`));
+                  const textData = JSON.stringify({ type: "text", text: event.delta.text });
+                  controller.enqueue(encoder.encode("data: " + textData + newline));
                 } else if (event.type === "message_stop") {
                   const latency = Date.now() - requestStart;
                   logInteraction(userProfile.email, body.session_id || null, body.message, intent.primary, intent.categories, resultType, latency, intent.intents).catch(() => {});
                   logConversation(userProfile.userId, body.session_id || null, body.message, fullResponse)
                     .then(result => {
                       if (result.sessionId) autoDistillSession(result.sessionId).catch(e => console.log(`[v36] auto-distill error: ${e}`));
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", session_id: result.sessionId, message_id: result.messageId })}\n\n`));
+                      const doneData = JSON.stringify({ type: "done", session_id: result.sessionId, message_id: result.messageId });
+                      controller.enqueue(encoder.encode("data: " + doneData + newline));
                       controller.close();
                     })
                     .catch(() => controller.close());
@@ -234,7 +238,8 @@ Deno.serve(async (req: Request) => {
           }
           controller.close();
         } catch (err) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "error", error: String(err) })}\n\n`));
+          const errData = JSON.stringify({ type: "error", error: String(err) });
+          controller.enqueue(encoder.encode("data: " + errData + newline));
           controller.close();
         }
       },

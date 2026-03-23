@@ -102,7 +102,7 @@ export function AuditInitiationModal({
             <label className="block text-sm font-semibold text-cult-text-primary mb-3">
               Select Stages to Audit <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availableStages.map(stage => (
                 <label
                   key={stage}

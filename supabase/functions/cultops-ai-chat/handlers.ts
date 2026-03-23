@@ -8,7 +8,7 @@ import {
 } from "./lib.ts";
 
 // ============================================================
-// handlers.ts v37 — CONVERSATIONAL KNOWLEDGE SUPPORT
+// handlers.ts v39 — AUTO-GRADE SUGGESTIONS
 // v34: Reconciled merge (canonical base)
 // v35: Cowork queue integration
 // v36 additions: uploadAttachments error logging
@@ -16,7 +16,13 @@ import {
 //   + fetchLiveData() — cowork_queue intent queries context DB
 //   + buildSystemPrompt() — queue count in Creator briefing
 //   + handleWorkTicketIntake() — auto-writes cowork task on bug report
-// v37 additions: fixed category filtering to include "people", lowered autoApprove threshold to 0.85, adjusted EXTRACTION_PROMPT.
+// v37: fixed category filtering to include "people", lowered autoApprove threshold to 0.85, adjusted EXTRACTION_PROMPT.
+// v38: EXTRACTION_PROMPT expanded with conversational intent detection (people_assessment,
+//   role_clarity, operational_feedback, process_observation, customer_insight, strain_observation).
+//   Intent→category mapping enforced in autoDistillSession. Subject + intent_type stored in
+//   source_messages JSONB. SLACK_KNOWLEDGE_WEBHOOK_URL used for notifications.
+// v39: Auto-grade suggestions — grade intent + v_strain_grade_suggestions in fetchLiveData.
+//   Appends grade suggestions to inventory queries when ungraded items exist.
 // All v34 handlers preserved exactly.
 // ============================================================
 
@@ -119,6 +125,13 @@ export async function handleWorkTicketIntake(
       created_by_session: `widget_bug_report_${new Date().toISOString().slice(0,10)}`,
     });
   } catch { /* non-blocking — ticket is already created */ }
+  // v38: Slack notification for new tickets
+  try {
+    const slackWebhook = Deno.env.get("SLACK_KNOWLEDGE_WEBHOOK_URL") || Deno.env.get("SLACK_WEBHOOK_URL");
+    if (slackWebhook) {
+      await fetch(slackWebhook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: `[CultOps] New ${classification.severity} ticket filed by ${reporterName || "team member"}: "${classification.title}" | Area: ${classification.affected_area} | ID: ${ticket.id.slice(0,8)}` }) });
+    }
+  } catch { /* non-blocking */ }
   const sev = classification.severity === "critical" ? "This demands immediate attention." : classification.severity === "high" ? "This is a priority." : "It has been recorded.";
   return `**Issue Logged** — ID: \`${ticket.id.slice(0,8)}\`\n\n**"${classification.title}"**\n\n${classification.summary}\n\n**Severity:** ${classification.severity.toUpperCase()} | **Area:** ${classification.affected_area}\n\n${sev} Added to the build queue.`;
 }
@@ -175,14 +188,35 @@ export async function uploadAttachments(attachments: Attachment[], prefix: strin
 
 const EXTRACTION_PROMPT = `You are a knowledge extraction system for CULT Cannabis Operations. Extract REUSABLE institutional knowledge from this chat conversation.
 
-Focus on: financial benchmarks, operational metrics, strategic decisions, process changes, data corrections, people/org insights, staff roles, operational feedback, team feelings, architecture decisions, inventory insights, CRM patterns.
+There are two extraction modes. Apply BOTH and combine results into one array.
+
+MODE 1 — FACTUAL/OPERATIONAL KNOWLEDGE
+Focus on: financial benchmarks, operational metrics, strategic decisions, process changes, data corrections, architecture decisions, inventory insights, CRM patterns.
+
+MODE 2 — CONVERSATIONAL SIGNALS
+Detect these intent types from natural conversation:
+- people_assessment: observations about a staff member's performance, behavior, strengths, weaknesses, attitude
+- role_clarity: observations about job scope, responsibilities, who-does-what ambiguity
+- operational_feedback: commentary on how a process is working or failing in practice
+- process_observation: specific workflow friction, bottleneck, or improvement noticed during daily work
+- customer_insight: observations about buyer behavior, preferences, account dynamics
+- strain_observation: any observation about a specific strain's growth, trim, cure, yield, or quality characteristics
 
 Do NOT extract: greetings, small talk, test messages, the Eye's personality rules, anything about "the Creator" or "Justin" identity.
 
 For each item provide:
+- intent_type: one of (factual, people_assessment, role_clarity, operational_feedback, process_observation, customer_insight, strain_observation)
 - category: one of (strategy, operations, financial, cultivation, inventory, crm, people, architecture, infrastructure, sales_motion, delivery_model)
-- key: snake_case identifier
-- value: 2-4 sentence factual statement
+  Category mapping for conversational signals:
+    people_assessment → people
+    role_clarity → people
+    operational_feedback → operations
+    process_observation → operations
+    customer_insight → crm
+    strain_observation → cultivation
+- subject: who or what is being discussed (person name, strain name, process name, or null for general observations)
+- key: snake_case identifier (e.g. leo_avoiding_difficult_accounts, stay_puft_fast_trim_speed)
+- value: 2-4 sentence factual statement capturing the observation
 - confidence: 0.0-1.0
 
 Return JSON array. Only confidence >= 0.70. Return [] if nothing. ONLY valid JSON.`;
@@ -208,9 +242,21 @@ export async function handleDistill(userId: string, tier: AccessTier): Promise<s
     let candidates: any[];
     try { const r = await response.json(); candidates = JSON.parse(r.content?.[0]?.text||"[]"); if (!Array.isArray(candidates)) candidates=[]; } catch { candidates=[]; }
     if (candidates.length > 0) {
-      const msgIds = messages.map((m: any) => m.id);
-      await prodClient.from("chat_knowledge_candidates").insert(candidates.map((c: any) => ({ source_session:session.id, source_messages:msgIds, proposed_category:c.category, proposed_key:c.key, proposed_value:c.value, confidence_score:Math.min(1.0,Math.max(0.0,c.confidence)), status:"pending" })));
-      totalCandidates += candidates.length;
+      // v38: Apply same intent→category mapping as autoDistillSession
+      const intentMap: Record<string, string> = { people_assessment:"people", role_clarity:"people", operational_feedback:"operations", process_observation:"operations", customer_insight:"crm", strain_observation:"cultivation" };
+      const mapped = candidates.map((c: any) => {
+        if (c.intent_type && intentMap[c.intent_type]) c.category = intentMap[c.intent_type];
+        return c;
+      }).filter((c: any) => c.confidence >= 0.70);
+      if (mapped.length > 0) {
+        await prodClient.from("chat_knowledge_candidates").insert(mapped.map((c: any) => ({
+          source_session: session.id,
+          source_messages: { subject: c.subject || null, intent_type: c.intent_type || "factual" },
+          proposed_category: c.category, proposed_key: c.key, proposed_value: c.value,
+          confidence_score: Math.min(1.0, Math.max(0.0, c.confidence)), status: "pending",
+        })));
+      }
+      totalCandidates += mapped.length;
       sessionResults.push(`\u2022 "${session.title?.slice(0,50)}" — **${candidates.length} insights**`);
     } else sessionResults.push(`\u2022 "${session.title?.slice(0,50)}" — no actionable knowledge`);
   }
@@ -322,6 +368,15 @@ export async function fetchLiveData(
         if (filters.gradeCodes.length > 0) q = q.in("grade_code", filters.gradeCodes);
         if (!filters.hasFilters) q = q.limit(300);
         queries.push(q.then(({data:d}) => { if(d) data.inventory_sales=d; }).catch(() => {}));
+        // v39: Append grade suggestions when inventory has ungraded items
+        queries.push(prodClient.from("v_strain_grade_suggestions").select("strain_name, strain_id, avg_big_bud_pct, stddev_big_bud_pct, session_count, ungraded_item_count, suggested_grade, confidence, suggestion_rationale").gt("ungraded_item_count", 0).order("ungraded_item_count", { ascending: false }).then(({data:d}) => { if(d && d.length > 0) data.grade_suggestions = d; }).catch(() => {}));
+        break;
+      }
+      // v39: Explicit grade intent — "show me ungraded inventory", "what should we grade"
+      case "grade": {
+        queries.push(prodClient.from("v_strain_grade_suggestions").select("strain_name, strain_id, avg_big_bud_pct, stddev_big_bud_pct, session_count, ungraded_item_count, suggested_grade, confidence, suggestion_rationale").gt("ungraded_item_count", 0).order("ungraded_item_count", { ascending: false }).then(({data:d}) => { if(d && d.length > 0) data.grade_suggestions = d; }).catch(() => {}));
+        // Also fetch ungraded inventory items for context
+        queries.push(prodClient.from("v_inventory_sales").select("strain,batch_number,harvest_date,category,stage_name,display_group,grade_code,available_qty,available_lbs,unit").or("grade_code.is.null,grade_code.eq.UNDEFINED").limit(200).then(({data:d}) => { if(d) data.inventory_sales=d; }).catch(() => {}));
         break;
       }
       case "orders": {
@@ -337,6 +392,53 @@ export async function fetchLiveData(
       case "production":
         queries.push(prodClient.from("v_production_queue_by_strain").select("*").limit(20).then(({data:d}) => { if(d) data.production_queue=d; }).catch(() => {}));
         break;
+      // v38: Production prioritization — join pipeline, conversion rates, demand
+      case "production_prioritization": {
+        queries.push((async () => {
+          try {
+            const [pqRes, crRes, odRes] = await Promise.all([
+              prodClient.from("v_production_queue_by_strain").select("strain_name, pipeline_bucked_g, pipeline_binned_g, pipeline_lbs, ready_flower_g, ready_lbs, urgency, earliest_delivery_date").gt("pipeline_bucked_g", 0),
+              prodClient.from("v_strain_conversion_rates").select("strain, confidence, trimming_big_bud_pct, trimming_small_bud_pct, trimming_trim_pct, total_sessions"),
+              prodClient.from("v_open_order_demand").select("strain, total_demand_g, total_demand_lbs, unassigned_demand, order_count"),
+            ]);
+            const convMap = new Map<string, any>();
+            for (const cr of (crRes.data || [])) convMap.set(cr.strain, cr);
+            const demandMap = new Map<string, any>();
+            for (const od of (odRes.data || [])) {
+              const key = od.strain;
+              const existing = demandMap.get(key);
+              if (!existing || (od.total_demand_g || 0) > (existing.total_demand_g || 0)) demandMap.set(key, od);
+            }
+            const ranked = (pqRes.data || []).map((pq: any) => {
+              const cr = convMap.get(pq.strain_name);
+              const od = demandMap.get(pq.strain_name);
+              const trimOutputRate = cr ? (((cr.trimming_big_bud_pct || 0) + (cr.trimming_small_bud_pct || 0)) / 100) : 0.65;
+              const conversionConfidence = cr?.confidence || "none";
+              const projectedSellableLbs = Math.round((pq.pipeline_bucked_g || 0) * trimOutputRate / 1000 * 100) / 100;
+              const demandLbs = od ? (od.total_demand_lbs || (od.total_demand_g || 0) / 1000) : 0;
+              const unassignedDemandLbs = od ? ((od.unassigned_demand || 0) / 1000) : 0;
+              const score = unassignedDemandLbs * trimOutputRate;
+              return {
+                strain: pq.strain_name,
+                pipeline_bucked_lbs: Math.round((pq.pipeline_bucked_g || 0) / 1000 * 100) / 100,
+                pipeline_binned_lbs: Math.round((pq.pipeline_binned_g || 0) / 1000 * 100) / 100,
+                ready_lbs: pq.ready_lbs || 0,
+                trim_output_rate: Math.round(trimOutputRate * 100),
+                conversion_confidence: conversionConfidence,
+                projected_sellable_lbs: projectedSellableLbs,
+                demand_lbs: Math.round(demandLbs * 100) / 100,
+                unassigned_demand_lbs: Math.round(unassignedDemandLbs * 100) / 100,
+                open_orders: od?.order_count || 0,
+                urgency: pq.urgency,
+                earliest_delivery: pq.earliest_delivery_date,
+                score,
+              };
+            }).sort((a: any, b: any) => b.score - a.score).slice(0, 5);
+            if (ranked.length > 0) data.production_prioritization = ranked;
+          } catch (e) { console.error("[v38] production_prioritization error:", e); }
+        })());
+        break;
+      }
       case "cultivation":
         queries.push(prodClient.from("v_plant_groups_by_batch").select("*").limit(30).then(({data:d}) => { if(d) data.plant_groups=d; }).catch(() => {}));
         break;
@@ -697,14 +799,47 @@ export async function autoDistillSession(sessionId: string): Promise<void> {
     try { const r = await response.json(); candidates = JSON.parse(r.content?.[0]?.text||"[]"); if (!Array.isArray(candidates)) candidates=[]; } catch { return; }
     if (candidates.length === 0) return;
     const safeCategories = ["strategy","operations","financial","cultivation","inventory","crm","architecture","infrastructure","sales_motion","delivery_model","people"];
-    const validCandidates = candidates.filter((c: any) => c.confidence >= 0.70 && safeCategories.includes(c.category));
+    // v38: Apply category mapping for conversational signals (in case LLM returns intent_type but wrong category)
+    const intentCategoryMap: Record<string, string> = {
+      people_assessment: "people", role_clarity: "people",
+      operational_feedback: "operations", process_observation: "operations",
+      customer_insight: "crm", strain_observation: "cultivation",
+    };
+    const validCandidates = candidates
+      .map((c: any) => {
+        // Enforce category mapping from intent_type if present
+        if (c.intent_type && intentCategoryMap[c.intent_type]) c.category = intentCategoryMap[c.intent_type];
+        // Map "financial" → "strategy" (context DB doesn't allow financial)
+        if (c.category === "financial") c.category = "strategy";
+        return c;
+      })
+      .filter((c: any) => c.confidence >= 0.70 && safeCategories.includes(c.category));
     if (validCandidates.length === 0) return;
-    await prodClient.from("chat_knowledge_candidates").insert(validCandidates.map((c: any) => ({ source_session:sessionId, proposed_category:c.category, proposed_key:c.key, proposed_value:c.value, confidence_score:Math.min(1.0,Math.max(0.0,c.confidence)), status:"pending" })));
+    // v38: Store subject and intent_type in source_messages JSONB alongside message context
+    await prodClient.from("chat_knowledge_candidates").insert(validCandidates.map((c: any) => ({
+      source_session: sessionId,
+      source_messages: { subject: c.subject || null, intent_type: c.intent_type || "factual" },
+      proposed_category: c.category,
+      proposed_key: c.key,
+      proposed_value: c.value,
+      confidence_score: Math.min(1.0, Math.max(0.0, c.confidence)),
+      status: "pending",
+    })));
+    // Auto-approve: non-people categories with confidence >= 0.85
     const autoApprove = validCandidates.filter((c: any) => c.confidence >= 0.85 && c.category !== "people");
     if (autoApprove.length > 0) {
       const contextClient = getContextClient();
-      for (const c of autoApprove) { try { await contextClient.from("business_context").insert({ category:c.category, key:c.key, value:c.value, source:`auto_distill_${sessionId.slice(0,8)}` }); } catch { } }
+      for (const c of autoApprove) {
+        try {
+          await contextClient.from("business_context").insert({
+            category: c.category, key: c.key, value: c.value,
+            source: `auto_distill_${sessionId.slice(0,8)}`,
+            metadata: c.subject ? { subject: c.subject, intent_type: c.intent_type } : null,
+          });
+        } catch { }
+      }
     }
+    // People-category: NEVER auto-approve, always hold + notify
     const needsReview = validCandidates.filter((c: any) => c.category === "people");
     if (needsReview.length > 0) await notifySlackPendingReview(sessionId.slice(0,8), "people", session.user_id);
   } catch { }
@@ -712,8 +847,9 @@ export async function autoDistillSession(sessionId: string): Promise<void> {
 
 export async function notifySlackPendingReview(candidateId: string, category: string, userId: string): Promise<void> {
   try {
-    const slackWebhook = Deno.env.get("SLACK_WEBHOOK_URL");
+    // v38: Use SLACK_KNOWLEDGE_WEBHOOK_URL per deployment spec (falls back to SLACK_WEBHOOK_URL)
+    const slackWebhook = Deno.env.get("SLACK_KNOWLEDGE_WEBHOOK_URL") || Deno.env.get("SLACK_WEBHOOK_URL");
     if (!slackWebhook) return;
-    await fetch(slackWebhook, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ text:`[CultOps AI] Knowledge candidate pending review — session ${candidateId}, category: ${category}, user: ${userId}` }) });
+    await fetch(slackWebhook, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ text:`[CultOps AI] Knowledge candidate pending review — session ${candidateId}, category: ${category}, user: ${userId}. Review at /knowledge-candidates` }) });
   } catch { }
 }

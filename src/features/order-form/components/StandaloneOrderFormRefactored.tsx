@@ -220,7 +220,7 @@ export function StandaloneOrderFormRefactored() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
               { view: 'details' as MobileView, label: 'Details' },
               { view: 'products' as MobileView, label: 'Products' },

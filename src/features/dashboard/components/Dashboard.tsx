@@ -70,21 +70,21 @@ export function Dashboard({
   return (
     <div className="max-w-[1440px] mx-auto space-y-4 pb-8">
       {/* ── Header ── */}
-      <div className="flex justify-between items-start pb-5 border-b border-cult-border mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 pb-5 border-b border-cult-border mb-4">
         <div>
-          <h1 className="text-h1 text-cult-text-primary uppercase tracking-wider">
+          <h1 className="text-xl sm:text-h1 text-cult-text-primary uppercase tracking-wider">
             CULT <span className="text-cult-text-secondary font-light">OPS</span>
           </h1>
-          <p className="text-caption text-cult-text-secondary mt-1 tracking-wider">
-            Operations Command Center — CULT Cannabis Cultivation
+          <p className="text-xs sm:text-caption text-cult-text-secondary mt-1 tracking-wider">
+            Operations Command Center
           </p>
         </div>
-        <div className="text-right text-caption text-cult-text-secondary font-light">
-          <div className="flex items-center gap-1.5 justify-end">
+        <div className="text-left sm:text-right text-xs sm:text-caption text-cult-text-secondary font-light">
+          <div className="flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 bg-cult-success rounded-full animate-pulse" />
             Live Data
           </div>
-          <div className="text-cult-text-muted mt-1">{dateStr} · Production DB</div>
+          <div className="text-cult-text-muted mt-1 hidden sm:block">{dateStr} · Production DB</div>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export function Dashboard({
       </WidgetBoundary>
 
       {/* ── Row 1: Pipeline + Revenue Trend ── */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <WidgetBoundary name="InventoryFunnel">
           <InventoryFunnel stages={data.funnel} />
         </WidgetBoundary>
@@ -109,7 +109,7 @@ export function Dashboard({
       </div>
 
       {/* ── Row 2: Active Orders + Top Customers ── */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <WidgetBoundary name="ActiveOrdersTable">
           <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => navigate('/orders')} />
         </WidgetBoundary>
@@ -119,7 +119,7 @@ export function Dashboard({
       </div>
 
       {/* ── Row 3: Production + Facility + Strains ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <WidgetBoundary name="ProductionSessions">
           <ProductionSessions data={data.production} />
         </WidgetBoundary>
@@ -135,7 +135,7 @@ export function Dashboard({
       </div>
 
       {/* ── Row 4: Harvest Pipeline + Revenue Projections ── */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <WidgetBoundary name="HarvestPipeline">
           <HarvestPipeline windows={data.harvestPipeline} />
         </WidgetBoundary>
@@ -157,7 +157,7 @@ export function Dashboard({
       </WidgetBoundary>
 
       {/* ── Footer ── */}
-      <div className="text-center py-6 text-cult-text-faint text-[0.625rem] font-light tracking-[1px] uppercase">
+      <div className="text-center py-6 text-cult-text-faint text-xs font-light tracking-[1px] uppercase">
         CULT OPS — Built by the operator, for operators · Syn-Ag Inc.
       </div>
     </div>

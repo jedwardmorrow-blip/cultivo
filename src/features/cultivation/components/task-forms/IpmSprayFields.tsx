@@ -66,7 +66,7 @@ export function IpmSprayFields({ data, onChange, sections }: Props) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Product Type</label>
           <select value={data.product_type} onChange={(e) => set('product_type', e.target.value)} className={selectClass}>
@@ -81,7 +81,7 @@ export function IpmSprayFields({ data, onChange, sections }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Concentration</label>
           <input
@@ -122,7 +122,7 @@ export function IpmSprayFields({ data, onChange, sections }: Props) {
         onChange={(labels) => set('tables_sprayed', labels)}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Re-entry Hours</label>
           <input

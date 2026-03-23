@@ -502,7 +502,7 @@ export default function CalendarPage() {
         )}
 
         {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-7 gap-1 mb-1">
           {dayNames.map((day) => (
             <div
               key={day}
@@ -514,7 +514,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-7 gap-1 flex-1">
           {calendarDays.map((date, index) => {
             const isOtherMonth = !isCurrentMonth(date)
             const isTodayDate = isToday(date)

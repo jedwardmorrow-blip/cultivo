@@ -156,7 +156,7 @@ export function NewWashForm({ onSuccess }: NewWashFormProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={LABEL_CLASS}>Batch</label>
               <select
@@ -213,7 +213,7 @@ export function NewWashForm({ onSuccess }: NewWashFormProps) {
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                 {packages.map((pkg) => {
                   const isSelected = selectedPackageIds.has(pkg.id);
                   return (
@@ -266,7 +266,7 @@ export function NewWashForm({ onSuccess }: NewWashFormProps) {
       {selectedBatchId && selectedPackages.length > 0 && (
         <div className={SECTION_CLASS}>
           <p className={SECTION_LABEL}>Step 3 — Wash Parameters</p>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className={LABEL_CLASS}>Water Temp (°F)</label>
               <input

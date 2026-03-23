@@ -53,7 +53,7 @@ export function Layout({ children }: LayoutProps) {
       <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between py-2.5">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <button
                 onClick={handleLogoClick}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
@@ -87,11 +87,11 @@ export function Layout({ children }: LayoutProps) {
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className={`p-2 rounded-cult transition-colors ${
+                  className={`p-2 rounded-cult transition-colors hidden sm:block ${
                     currentView === 'dashboard'
                       ? 'text-cult-white bg-cult-charcoal'
                       : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
@@ -102,7 +102,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
                 <button
                   onClick={() => navigate('/analytics')}
-                  className={`p-2 rounded-cult transition-colors ${
+                  className={`p-2 rounded-cult transition-colors hidden sm:block ${
                     currentView === 'analytics'
                       ? 'text-cult-white bg-cult-charcoal'
                       : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
@@ -113,7 +113,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
                 <button
                   onClick={() => navigate('/settings')}
-                  className={`p-2 rounded-cult transition-colors ${
+                  className={`p-2 rounded-cult transition-colors hidden sm:block ${
                     currentView === 'settings'
                       ? 'text-cult-white bg-cult-charcoal'
                       : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
@@ -134,7 +134,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
               </div>
 
-              <div className="w-px h-8 bg-cult-charcoal mx-1" />
+              <div className="w-px h-8 bg-cult-charcoal mx-1 hidden sm:block" />
 
               <div className="relative">
                 <button

@@ -92,7 +92,7 @@ export function TaskCreateModal({ onClose, onCreated, prefilledCustomerId }: Tas
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-cult-silver mb-1">Type</label>
               <select

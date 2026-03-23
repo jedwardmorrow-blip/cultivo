@@ -2,10 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // ============================================================
-// CultOps AI Chat — lib.ts v37
+// CultOps AI Chat — lib.ts v39
 // v35: Added cowork_queue intent to classifyIntent()
 // v36: Version bump (no logic changes in lib.ts)
 // v37: Version bump
+// v39: Added production_prioritization intent, grade intent
 // ============================================================
 
 export const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
@@ -188,8 +189,12 @@ export function classifyIntent(message: string): ClassifiedIntent {
   if (/\b(andrew|laura|leo|josie|greg|dave|sam|james|scott|david|carver|ynez)\b/i.test(lower)) { if (!intents.includes("people")) intents.push("people"); if (!categories.includes("people")) categories.push("people"); }
   if (/\bjustin\b|\bcreator\b|\bfounder\b|who.?(built|made|created|started)|ceo/i.test(lower)) { intents.push("creator"); categories.push("people","architecture"); }
   if (/inventor|stock|atp|available|package[ds]?\b|sku|product(?!ion)|trim|bulk|sellable|menu|quote|what.?can.?(i|we).?sell|what.?do.?(we|i).?have|\bgrade[ds]?\b|\bgrading\b|[ABCD]\s*grade|grade\s*[ABCD]|cult\s*grade/i.test(lower)) { intents.push("inventory"); categories.push("inventory","inventory_pipeline","inventory_audit"); }
+  // v39: Grade suggestions intent — "ungraded inventory", "what should we grade", "grade suggestions"
+  if (/ungraded|grade.?suggest|suggest.?grade|what.?should.*(grade|be graded)|auto.?grade|grade.?recommend|assign.?grade/i.test(lower)) { if (!intents.includes("grade")) intents.push("grade"); categories.push("inventory"); }
   if (/order|deliver|ship|fulfill|sold\b|have we sold|sales?\s*history|purchased|who bought|what.?s? been sold/i.test(lower)) { intents.push("orders"); categories.push("delivery_model"); }
-  if (/product(ion)?\s*(queue|schedule|velocity|throughput)|buck|packag(e|ing)\s*session/i.test(lower)) { intents.push("production"); categories.push("operations"); }
+  // v38: Production prioritization intent — "what should Laura/we process next?"
+  if (/what.?should.*(process|package|do next|prioriti|work on)|process(ing)?\s*(priority|next|first|order)|what.?(has|have).*(most|highest).?demand|what.?to.?(process|trim|package).?(next|first|today)/i.test(lower)) { intents.push("production_prioritization"); intents.push("production"); categories.push("operations","inventory"); }
+  else if (/product(ion)?\s*(queue|schedule|velocity|throughput)|buck|packag(e|ing)\s*session/i.test(lower)) { intents.push("production"); categories.push("operations"); }
   if (/cultiv|plant|strain|grow|room|flower|veg|clone|mother|harvest/i.test(lower)) { intents.push("cultivation"); categories.push("cultivation","harvest_metrics"); }
   if (/customer|account|crm|dispen|sales|prospect|pipeline|visit|leo/i.test(lower)) { intents.push("crm"); categories.push("crm","sales_motion"); }
   if (/app|system|architect|database|schema|edge.?function|supabase|code|deploy|build/i.test(lower)) categories.push("architecture","infrastructure","database");

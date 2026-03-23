@@ -248,7 +248,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatBlock label="Scheduled" value={scheduledCount} icon={CalendarDays} iconColor="text-sky-400" />
         <StatBlock label="Completed" value={completedCount} icon={CheckCircle2} iconColor="text-emerald-400" />
         <StatBlock label="Total Visits" value={scheduledCount + completedCount} icon={MapPin} iconColor="text-cult-silver" />
@@ -274,7 +274,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-1 sm:grid-cols-7">
           {DAY_NAMES.map((name) => (
             <div key={name} className="px-2 py-2 text-center text-xs font-medium text-cult-silver uppercase tracking-wider border-b border-cult-charcoal">
               {name}
@@ -425,7 +425,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
               <div className="text-red-400 text-lg font-bold">{cadenceStats.overdue}</div>
               <div className="text-red-400/70 text-xs">Overdue</div>

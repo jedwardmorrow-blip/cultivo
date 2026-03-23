@@ -113,7 +113,7 @@ export function PackagingSessionCompleteModal({
           <h2 className="text-2xl font-bold mb-4 text-cult-white uppercase tracking-wide">Complete Packaging Session</h2>
 
           <div className="bg-cult-dark-gray p-4 rounded-lg mb-6 border border-cult-medium-gray">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-cult-light-gray font-medium">Packager:</p>
                 <p className="font-bold text-cult-white">{session.packager_name}</p>
@@ -138,7 +138,7 @@ export function PackagingSessionCompleteModal({
           </div>
 
           <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-cult-white mb-1">Ending Weight (g)</label>
                 <input

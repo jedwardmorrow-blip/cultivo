@@ -126,7 +126,7 @@ export function PackageAssignmentModal({
       maxWidth="5xl"
     >
       <div className="space-y-6">
-        <div className="grid grid-cols-3 gap-4 p-4 bg-cult-dark-gray border border-cult-medium-gray">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-cult-dark-gray border border-cult-medium-gray">
           <div>
             <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Order Item Quantity</p>
             <p className="text-2xl font-bold text-cult-white">

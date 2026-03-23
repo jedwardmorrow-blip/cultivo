@@ -70,7 +70,7 @@ export function ScoutingFields({ data, onChange, sections }: Props) {
           </button>
         </div>
         {data.pest_found && (
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
               <label className={labelClass}>Pest Type</label>
               <input

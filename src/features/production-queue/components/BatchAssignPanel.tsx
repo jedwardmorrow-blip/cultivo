@@ -96,7 +96,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         </div>
 
         {/* Two-panel layout */}
-        <div className="grid grid-cols-2 divide-x divide-cult-medium-gray/30" style={{ minHeight: '280px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-cult-medium-gray/30" style={{ minHeight: '280px' }}>
           {/* LEFT: Available Packages */}
           <div className="p-3">
             <div className="text-xs uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">

@@ -119,7 +119,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-4 gap-4 p-6 bg-cult-surface-sunken border-b">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-cult-surface-sunken border-b">
           <div className="text-center">
             <div className="text-3xl font-bold text-cult-black">{stats.total}</div>
             <div className="text-sm text-cult-text-faint uppercase tracking-wide">Total</div>

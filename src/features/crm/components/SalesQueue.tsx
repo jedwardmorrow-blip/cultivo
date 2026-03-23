@@ -234,7 +234,7 @@ function TaskRow({
                 className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Priority</label>
                 <select

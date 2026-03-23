@@ -162,7 +162,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
         {packages.length === 0 ? (
           <p className="text-sm text-[#666666] py-4 text-center">No hash packages available for pressing.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {packages.map((pkg) => {
               const isChecked = !!selected[pkg.id];
               const isPartial = pkg.status === 'partial';
@@ -238,7 +238,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
 
       <div className={sectionClass}>
         <p className={sectionHeaderClass}>Press Parameters</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Temperature (°F)</label>
             <input

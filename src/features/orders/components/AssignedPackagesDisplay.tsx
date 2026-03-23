@@ -130,7 +130,7 @@ export function AssignedPackagesDisplay({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-cult-lighter-gray">Strain</p>
                       <p className="text-cult-white">{assignment.strain || 'N/A'}</p>

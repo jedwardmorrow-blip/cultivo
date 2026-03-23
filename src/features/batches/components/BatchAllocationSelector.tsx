@@ -158,7 +158,7 @@ export function BatchAllocationSelector({
             Allocation Helper
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <span className="text-cult-lighter-gray">Required Weight:</span>
             <span className="ml-2 text-cult-white font-medium">{requiredWeight.toFixed(1)}g</span>
@@ -208,7 +208,7 @@ export function BatchAllocationSelector({
                   )}
 
                   {batch.coa_status === 'active' && (
-                    <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-xs">
                       <div>
                         <span className="text-cult-lighter-gray">THC: </span>
                         <span className="text-cult-white font-medium">
@@ -240,7 +240,7 @@ export function BatchAllocationSelector({
 
               {stageStatus && (
                 <div className="border-t border-cult-medium-gray pt-3 mt-3">
-                  <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div>
                       <div className="text-cult-lighter-gray mb-1">Available</div>
                       <div className="text-cult-white font-medium">

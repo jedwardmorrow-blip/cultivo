@@ -38,7 +38,7 @@ export function TrainingFields({ data, onChange, sections }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Training Type</label>
           <select value={data.training_type} onChange={(e) => set('training_type', e.target.value)} className={selectClass}>

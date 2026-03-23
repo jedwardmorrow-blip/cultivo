@@ -62,7 +62,7 @@ function DryRoomForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel, is
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-cult-light-gray mb-1">Room Name *</label>
           <input

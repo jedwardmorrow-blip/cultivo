@@ -249,7 +249,7 @@ export function ConversionsManagement() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
                       <div>
                         <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">
                           Avg Yield
@@ -271,7 +271,7 @@ export function ConversionsManagement() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div className="p-2 bg-cult-near-black">
                         <p className="text-cult-lighter-gray mb-1">Min</p>
                         <p className="font-bold text-red-400">{stat.min_yield?.toFixed(1)}%</p>
@@ -358,7 +358,7 @@ export function ConversionsManagement() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
                     Source Type
@@ -457,7 +457,7 @@ export function ConversionsManagement() {
                       {projection.expectedUnits} units
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-3 bg-cult-near-black">
                       <p className="text-xs text-cult-lighter-gray mb-1">Minimum</p>
                       <p className="text-lg font-bold text-cult-white">
@@ -480,7 +480,7 @@ export function ConversionsManagement() {
                       {projection.requiredWeight}g
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-3 bg-cult-near-black">
                       <p className="text-xs text-cult-lighter-gray mb-1">Minimum</p>
                       <p className="text-lg font-bold text-cult-white">

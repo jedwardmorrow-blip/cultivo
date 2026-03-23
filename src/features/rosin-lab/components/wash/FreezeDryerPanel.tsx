@@ -154,7 +154,7 @@ export function FreezeDryerPanel() {
                 </div>
 
                 {/* Stats row */}
-                <div className="grid grid-cols-3 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
                   <div>
                     <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1">Input</p>
                     <p className="text-sm font-medium text-cult-text-primary">
@@ -185,7 +185,7 @@ export function FreezeDryerPanel() {
                   <p className="text-xs font-semibold text-cult-text-secondary uppercase tracking-widest mb-3">
                     Complete Freeze Dry
                   </p>
-                  <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
                     <div>
                       <label className="block text-sm text-cult-text-secondary mb-1">
                         Output Weight (g) <span className="text-cult-accent">*</span>

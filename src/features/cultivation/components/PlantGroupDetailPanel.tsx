@@ -77,7 +77,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
         </div>
 
         <div className="p-5 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Stat label="Stage" value={group.growth_stage} />
             <Stat label="Days in Stage" value={String(daysInStage)} />
             <Stat label="Plant Count" value={String(group.plant_count)} />

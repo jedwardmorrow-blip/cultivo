@@ -202,7 +202,7 @@ export function OrderItemLabelPrintModal({
                             {getStatusBadge(label)}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                             <div>
                               <span className="text-cult-lighter-gray">Package ID:</span>
                               <span className="ml-2 text-cult-white font-medium">{label.package_id}</span>

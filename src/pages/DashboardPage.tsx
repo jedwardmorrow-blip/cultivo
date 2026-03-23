@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
       <ClaudeRecommendations maxItems={4} />
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Open Goals', value: goals.filter(g => g.status !== 'completed').length, icon: Target, color: 'text-cult-gold' },
           { label: 'Active Rocks', value: rocks.filter(r => r.status !== 'complete').length, icon: TrendingUp, color: 'text-blue-300' },
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <span className="font-mono text-xs text-cult-text tracking-wider uppercase">Active Goals</span>

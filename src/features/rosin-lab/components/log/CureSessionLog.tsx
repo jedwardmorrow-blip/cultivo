@@ -331,7 +331,7 @@ export function CureSessionLog({ searchTerm }: CureSessionLogProps) {
                       {isExpanded && (
                         <tr className="border-b border-cult-border last:border-b-0">
                           <td colSpan={14} className="p-0">
-                            <div className="px-6 py-4 bg-cult-surface-overlay/30 grid grid-cols-2 gap-6">
+                            <div className="px-6 py-4 bg-cult-surface-overlay/30 grid grid-cols-1 sm:grid-cols-2 gap-6">
                               {/* Rosin Packages */}
                               <div>
                                 <p className="text-xs font-semibold text-cult-text-muted uppercase tracking-wide mb-2">

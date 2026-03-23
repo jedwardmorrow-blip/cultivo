@@ -190,7 +190,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="City">
                 <FormInput
                   value={formData.city || ''}

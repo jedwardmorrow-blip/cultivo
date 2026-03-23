@@ -96,7 +96,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="bg-cult-dark-gray p-4 rounded-lg border border-cult-medium-gray">
-            <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-cult-light-gray font-medium">Strain</p>
                 <p className="font-bold text-cult-white">{session.strain}</p>
@@ -123,7 +123,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-cult-white mb-1">Pulled Weight (g)</label>
               <input
@@ -147,7 +147,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-cult-white mb-1">Flower / Big Buds (g)</label>
               <input

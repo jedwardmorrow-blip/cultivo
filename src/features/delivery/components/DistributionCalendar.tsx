@@ -263,7 +263,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           <div className="p-12 text-center text-cult-light-gray">Loading calendar...</div>
         ) : (
           <div className="p-4">
-            <div className="grid grid-cols-7 gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <div key={day} className="text-center text-xs font-medium text-cult-light-gray py-2 uppercase tracking-wide">
                   {day}
@@ -271,7 +271,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
               {days.map((date, index) => {
                 if (!date) return <div key={`empty-${index}`} className="aspect-square" />;
 

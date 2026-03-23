@@ -222,7 +222,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
             {isExpanded && (
               <div className="border-t border-cult-border px-4 pb-4 pt-4">
                 {/* Wash details */}
-                <div className="grid grid-cols-4 gap-4 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                   <div>
                     <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1">Water Temp</p>
                     <p className="text-sm text-cult-text-primary">
@@ -275,7 +275,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                     <p className="text-xs font-semibold text-cult-text-secondary uppercase tracking-widest mb-3">
                       Record Output
                     </p>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="block text-sm text-cult-text-secondary mb-1">
                           Output Weight (g) <span className="text-cult-accent">*</span>
@@ -313,7 +313,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                       <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-2">
                         Micron Grades (optional)
                       </p>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(['73', '90', '120', '160'] as const).map((micron) => {
                           const fieldKey = `micron${micron}` as keyof OutputForm;
                           return (

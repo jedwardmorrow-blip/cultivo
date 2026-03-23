@@ -151,7 +151,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 bg-cult-surface-sunken rounded-lg">
           <div className="text-sm text-cult-text-faint">Total Lines</div>
           <div className="text-2xl font-bold text-cult-text-primary">{lines.length}</div>

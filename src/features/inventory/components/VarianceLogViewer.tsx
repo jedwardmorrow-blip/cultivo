@@ -156,7 +156,7 @@ export function VarianceLogViewer({
               <Calendar className="h-4 w-4 inline mr-1" />
               Date Range
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-cult-text-faint mb-1">Start Date</label>
                 <input

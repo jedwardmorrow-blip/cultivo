@@ -480,7 +480,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
   return (
     <div className="border border-cult-dark-gray/50 rounded-sm overflow-hidden">
       {/* Day-of-week header */}
-      <div className="grid grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
+      <div className="grid grid-cols-1 sm:grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
         {DAY_NAMES.map((name) => (
           <div key={name} className="py-2.5 text-center text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
             {name}
@@ -489,7 +489,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-1 sm:grid-cols-7">
         {cells.map((cell, idx) => {
           if (!cell) {
             return <div key={`blank-${idx}`} className="min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
@@ -796,7 +796,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
 
       <div>
         <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
           {TASK_TYPES.map((t) => {
             const cfg = TASK_TYPE_CONFIG[t];
             const selected = taskType === t;

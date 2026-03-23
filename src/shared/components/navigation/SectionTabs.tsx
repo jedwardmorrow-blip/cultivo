@@ -10,7 +10,7 @@ export function SectionTabs({ currentView, onSectionChange }: SectionTabsProps) 
   const activeSectionId = getActiveSectionId(currentView);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
       {sectionDefinitions.map((section: SectionDefinition) => {
         const isActive = section.id === activeSectionId;
         const Icon = section.icon;
@@ -20,7 +20,7 @@ export function SectionTabs({ currentView, onSectionChange }: SectionTabsProps) 
             key={section.id}
             onClick={() => onSectionChange(section.id, section.defaultView)}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+              flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-lg text-sm font-medium
               transition-all duration-200 whitespace-nowrap
               ${
                 isActive

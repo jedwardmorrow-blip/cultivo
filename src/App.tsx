@@ -62,6 +62,7 @@ const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'Automated
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
+const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
 
 function ViewFallback() {
   return (
@@ -204,6 +205,7 @@ function AuthenticatedApp() {
               <Route path="/crm-account-detail/:id" element={<AccountDetailRoute onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />} />
               <Route path="/rosin-lab/*" element={<RosinLabRoute />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/tickets" element={<TicketTriage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </Suspense>

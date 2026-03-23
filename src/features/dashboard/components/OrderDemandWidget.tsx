@@ -65,7 +65,7 @@ export function OrderDemandWidget() {
           </select>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-cult-text-secondary" />
@@ -131,7 +131,7 @@ export function OrderDemandWidget() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-cult-border">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-cult-border">
                   <div>
                     <div className="text-xs text-cult-lighter-gray mb-1">Packaged</div>
                     <div className={`font-bold ${

@@ -395,7 +395,7 @@ export function BulkBagCreationModal({
             {bags.length > 0 && (
               <div className="bg-cult-surface-sunken border border-cult-border-subtle rounded-lg p-4 mb-6">
                 <h4 className="text-sm font-medium text-cult-text-primary mb-3">Summary</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-cult-text-faint">Total Bags</div>
                     <div className="font-semibold text-cult-text-primary">{bags.length}</div>

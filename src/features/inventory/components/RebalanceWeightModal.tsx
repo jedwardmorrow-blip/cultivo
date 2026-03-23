@@ -140,7 +140,7 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
 
           <div className="p-4 rounded-lg bg-cult-dark-gray border border-cult-medium-gray">
             <div className="text-xs uppercase tracking-wider text-cult-lighter-gray mb-2">Source</div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <span className="text-xs text-cult-lighter-gray">Package ID</span>
                 <div className="font-mono text-sm font-medium text-cult-white">{sourceItem.package_id}</div>

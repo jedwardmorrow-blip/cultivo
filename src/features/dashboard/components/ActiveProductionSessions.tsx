@@ -42,7 +42,7 @@ export function ActiveProductionSessions() {
   return (
     <div>
       <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">Active Production Sessions</h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-cult-black p-4 border border-cult-medium-gray">
           <p className="text-cult-light-gray text-sm uppercase tracking-wider">Trim Sessions</p>
           <p className="text-3xl font-bold text-cult-white mt-2">{trimSessions}</p>

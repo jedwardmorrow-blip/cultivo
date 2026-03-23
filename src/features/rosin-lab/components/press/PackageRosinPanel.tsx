@@ -251,7 +251,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
             <p className="text-xs font-semibold text-[#A6A6A6] uppercase tracking-wider">
               Record Output
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Output Weight (g)</label>
                 <input

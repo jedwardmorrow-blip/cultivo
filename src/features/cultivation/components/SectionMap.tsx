@@ -34,7 +34,7 @@ export function SectionMap({ tables, groups }: SectionMapProps) {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
       {cells.map((cell) => (
         <div
           key={cell.label}

@@ -100,7 +100,7 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
           </div>
         </div>
 
-        <div className="invoice-details-grid grid grid-cols-2 gap-8 mb-8">
+        <div className="invoice-details-grid grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           <div className="sold-to-section">
             <div className="section-title font-bold mb-2">Sold To:</div>
             <div className="text-sm">

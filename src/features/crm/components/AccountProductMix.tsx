@@ -50,7 +50,7 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
       </div>
 
       {productMix.length > 0 && (
-        <div className="px-5 py-3 border-b border-cult-charcoal/50 grid grid-cols-3 gap-3">
+        <div className="px-5 py-3 border-b border-cult-charcoal/50 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Revenue</p>
             <p className="text-sm font-bold text-emerald-400">{formatCurrencyShort(totalRevenue)}</p>

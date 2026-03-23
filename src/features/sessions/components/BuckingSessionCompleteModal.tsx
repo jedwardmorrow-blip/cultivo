@@ -71,7 +71,7 @@ export function BuckingSessionCompleteModal({
 
         <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="p-6 space-y-4">
           <div className="bg-cult-dark-gray p-4 rounded-lg border border-cult-medium-gray">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-cult-silver">Bucker:</span>
                 <span className="text-cult-white ml-2 font-medium">{session.bucker_name}</span>

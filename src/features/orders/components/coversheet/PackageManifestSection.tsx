@@ -281,7 +281,7 @@ export function PackageManifestSection({
 
       {/* Summary Footer */}
       <div className="border-t-2 border-black p-4 bg-cult-surface-sunken">
-        <div className="grid grid-cols-3 gap-4 text-center text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-sm">
           <div>
             <div className="text-cult-text-faint uppercase tracking-wide">Total Packages</div>
             <div className="text-2xl font-bold">{packages.length}</div>

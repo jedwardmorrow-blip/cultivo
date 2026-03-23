@@ -158,7 +158,7 @@ export function COALibrary() {
                         {coa.batch_number}
                       </p>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div className="bg-cult-black p-3 border border-cult-medium-gray">
                           <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">THC</div>
                           <div className="text-2xl font-bold text-cult-white">
@@ -282,7 +282,7 @@ export function COALibrary() {
                     Cannabinoid Profile
                   </h4>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
                     <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">THC</div>
                     <div className="text-4xl font-bold text-cult-white">

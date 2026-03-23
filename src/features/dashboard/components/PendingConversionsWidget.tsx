@@ -33,7 +33,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
     return (
       <div className="animate-pulse">
         <div className="h-6 bg-cult-dark-gray rounded w-48 mb-4"></div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="h-24 bg-cult-dark-gray rounded"></div>
           <div className="h-24 bg-cult-dark-gray rounded"></div>
         </div>

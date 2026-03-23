@@ -146,7 +146,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
         <div className="audit-info mb-6">
           <h1 className="text-2xl font-bold mb-4 text-center">INVENTORY AUDIT SHEET</h1>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <div className="font-semibold">Audit Number:</div>
               <div className="text-lg">{audit.audit_number}</div>
@@ -178,7 +178,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
           )}
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-4 gap-2 bg-cult-surface p-3 rounded">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-cult-surface p-3 rounded">
             <div className="text-center">
               <div className="text-xs font-semibold">Total Lines</div>
               <div className="text-lg">{audit.total_lines}</div>
@@ -263,7 +263,7 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
 
         {/* Signatures */}
         <div className="signatures mt-8 pt-6 border-t-2 border-cult-border">
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             <div>
               <div className="mb-8">
                 <div className="font-semibold mb-2">Prepared By:</div>

@@ -86,7 +86,7 @@ export function KPIRow({ data }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6">
       {cards.map(card => (
         <div
           key={card.label}
@@ -95,7 +95,7 @@ export function KPIRow({ data }: Props) {
             ${card.alert ? 'border-cult-danger' : 'border-cult-border'}`}
         >
           <div className="flex justify-between items-start mb-3">
-            <div className="text-[0.6875rem] uppercase tracking-[1.5px] text-cult-text-muted font-semibold">
+            <div className="text-xs uppercase tracking-[1.5px] text-cult-text-muted font-semibold">
               {card.label}
             </div>
             <div className="text-cult-text-muted opacity-50">
@@ -105,7 +105,7 @@ export function KPIRow({ data }: Props) {
           <div className="text-[2rem] font-bold tracking-tight leading-none text-cult-text-primary">
             {card.value}
           </div>
-          <div className={`text-[0.6875rem] font-light mt-1.5 ${card.alert ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
+          <div className={`text-xs font-light mt-1.5 ${card.alert ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
             {card.sub}
           </div>
         </div>

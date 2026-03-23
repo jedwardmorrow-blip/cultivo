@@ -87,7 +87,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             </div>
           </div>
 
-          <div className="grid grid-cols-2 border-b-2 border-black">
+          <div className="grid grid-cols-1 sm:grid-cols-2 border-b-2 border-black">
             <div className="border-r border-black p-4">
               <div className="font-bold text-sm mb-1">Date Completed</div>
               <div className="text-base">{manifestData.date_completed}</div>
@@ -101,7 +101,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           <div className="border-b-2 border-black bg-cult-surface-sunken">
             <div className="p-4">
               <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Route Origin</div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                 <div className="border border-cult-border p-2 bg-white">
                   <div className="font-semibold text-xs text-cult-text-faint mb-1">Starting Location</div>
                   <div className="text-sm font-semibold">{manifestData.origin_location_name}</div>
@@ -121,7 +121,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           <div className="border-b-2 border-black bg-white">
             <div className="p-4">
               <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Company Information</div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                 <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                   <div className="font-semibold text-xs text-cult-text-faint mb-1">Company</div>
                   <div className="text-sm">{manifestData.originating_entity_name}</div>
@@ -142,7 +142,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           <div className="border-b-2 border-black">
             <div className="p-4">
               <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Transport Information</div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                 <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                   <div className="font-semibold text-xs text-cult-text-faint mb-1">Delivery Person</div>
                   <div className="text-sm">{manifestData.driver.first_name} {manifestData.driver.last_name}</div>
@@ -161,7 +161,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
           <div className="border-b-2 border-black bg-cult-surface-sunken">
             <div className="p-4">
               <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Destination Information</div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-3">
                 <div className="border border-cult-border p-2 bg-white">
                   <div className="font-semibold text-xs text-cult-text-faint mb-1">Destination Entity</div>
                   <div className="text-sm">{manifestData.destination_entity_name}</div>
@@ -176,7 +176,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                   <div className="text-sm">{manifestData.destination_entity_city}, {manifestData.destination_entity_state} {manifestData.destination_entity_postal_code}</div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-x-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-3">
                 <div className="border border-cult-border p-2 bg-white">
                   <div className="font-semibold text-xs text-cult-text-faint mb-1">Departure Time</div>
                   <div className="border-b border-cult-border mt-2 pb-1">______________</div>
@@ -227,7 +227,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             <div className="border-b-2 border-black bg-cult-surface-sunken">
               <div className="p-4">
                 <div className="font-bold text-base mb-3 uppercase border-b border-cult-border pb-2">Route Information</div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="border border-cult-border p-2 bg-white">
                     <div className="font-semibold text-xs text-cult-text-faint mb-1">Distance</div>
                     <div className="text-base font-semibold">{manifestData.route_distance}</div>
@@ -354,7 +354,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             <div className="text-xs italic mb-3 text-cult-text-muted">
               I confirm that the contents of this shipment match weight and quantity records entered above, and I agree to take custody of this shipment as indicated.
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <div className="border border-cult-border p-2 bg-cult-surface-sunken">
                 <div className="font-bold text-xs mb-1">Name of Receiver</div>
                 <div className="mt-6 border-b-2 border-black"></div>

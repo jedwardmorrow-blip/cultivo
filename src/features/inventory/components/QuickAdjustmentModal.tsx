@@ -54,7 +54,7 @@ export function QuickAdjustmentModal({
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           <div className="p-4 rounded-lg bg-cult-dark-gray border border-cult-medium-gray">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="text-xs text-cult-lighter-gray">Package ID</div>
                 <div className="font-mono font-semibold text-cult-white">{state.packageId}</div>

@@ -121,7 +121,7 @@ export function CultivationWidget() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
           <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Groups</div>
           <div className="text-2xl font-bold text-cult-white">{summary.activeGroups}</div>

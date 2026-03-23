@@ -31,7 +31,7 @@ export function FeedingFields({ data, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Reservoir ID</label>
           <input
@@ -54,7 +54,7 @@ export function FeedingFields({ data, onChange }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>EC Value</label>
           <input
@@ -82,7 +82,7 @@ export function FeedingFields({ data, onChange }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Volume (gal)</label>
           <input
