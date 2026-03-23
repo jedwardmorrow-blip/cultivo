@@ -23,6 +23,8 @@ import {
 //   source_messages JSONB. SLACK_KNOWLEDGE_WEBHOOK_URL used for notifications.
 // v39: Auto-grade suggestions — grade intent + v_strain_grade_suggestions in fetchLiveData.
 //   Appends grade suggestions to inventory queries when ungraded items exist.
+//   Confidence alerts: thin data (<3 sessions) + deviation (>20% from avg) warnings on
+//   production_prioritization and grade intents. Fetches latest trim_sessions per strain.
 // All v34 handlers preserved exactly.
 // ============================================================
 
@@ -377,6 +379,33 @@ export async function fetchLiveData(
         queries.push(prodClient.from("v_strain_grade_suggestions").select("strain_name, strain_id, avg_big_bud_pct, stddev_big_bud_pct, session_count, ungraded_item_count, suggested_grade, confidence, suggestion_rationale").gt("ungraded_item_count", 0).order("ungraded_item_count", { ascending: false }).then(({data:d}) => { if(d && d.length > 0) data.grade_suggestions = d; }).catch(() => {}));
         // Also fetch ungraded inventory items for context
         queries.push(prodClient.from("v_inventory_sales").select("strain,batch_number,harvest_date,category,stage_name,display_group,grade_code,available_qty,available_lbs,unit").or("grade_code.is.null,grade_code.eq.UNDEFINED").limit(200).then(({data:d}) => { if(d) data.inventory_sales=d; }).catch(() => {}));
+        // v39: Confidence alerts for grade suggestions (thin data + deviation)
+        queries.push((async () => {
+          try {
+            const [crRes, latestRes] = await Promise.all([
+              prodClient.from("v_strain_conversion_rates").select("strain, trimming_big_bud_pct, trimming_sessions"),
+              prodClient.from("trim_sessions").select("strain, big_buds_grams, pulled_weight, session_date").gt("pulled_weight", 0).not("big_buds_grams", "is", null).order("session_date", { ascending: false }).limit(100),
+            ]);
+            const latestMap = new Map<string, any>();
+            for (const ts of (latestRes.data || [])) { if (!latestMap.has(ts.strain)) latestMap.set(ts.strain, ts); }
+            const alerts: any[] = [];
+            for (const cr of (crRes.data || [])) {
+              const sessions = cr.trimming_sessions || 0;
+              if (sessions > 0 && sessions < 3) {
+                alerts.push({ strain: cr.strain, type: "thin_data", sessions, message: `Only ${sessions} trim session${sessions === 1 ? "" : "s"} for ${cr.strain}. Grade suggestion confidence is low — track actuals carefully.` });
+              }
+              const latest = latestMap.get(cr.strain);
+              if (latest && cr.trimming_big_bud_pct > 0) {
+                const latestPct = latest.pulled_weight > 0 ? (latest.big_buds_grams / latest.pulled_weight * 100) : 0;
+                const deviationPct = Math.abs(latestPct - cr.trimming_big_bud_pct) / cr.trimming_big_bud_pct * 100;
+                if (deviationPct > 20) {
+                  alerts.push({ strain: cr.strain, type: "deviation", latest_big_bud_pct: Math.round(latestPct * 10) / 10, avg_big_bud_pct: Math.round(cr.trimming_big_bud_pct * 10) / 10, deviation_pct: Math.round(deviationPct), message: `Latest ${cr.strain} trim: ${Math.round(latestPct)}% big buds vs ${Math.round(cr.trimming_big_bud_pct)}% avg — grade suggestion may shift with more data.` });
+                }
+              }
+            }
+            if (alerts.length > 0) data.confidence_alerts = alerts;
+          } catch { /* non-blocking */ }
+        })());
         break;
       }
       case "orders": {
@@ -393,13 +422,15 @@ export async function fetchLiveData(
         queries.push(prodClient.from("v_production_queue_by_strain").select("*").limit(20).then(({data:d}) => { if(d) data.production_queue=d; }).catch(() => {}));
         break;
       // v38: Production prioritization — join pipeline, conversion rates, demand
+      // v39: Added confidence alerts (thin data + deviation warnings)
       case "production_prioritization": {
         queries.push((async () => {
           try {
-            const [pqRes, crRes, odRes] = await Promise.all([
+            const [pqRes, crRes, odRes, latestRes] = await Promise.all([
               prodClient.from("v_production_queue_by_strain").select("strain_name, pipeline_bucked_g, pipeline_binned_g, pipeline_lbs, ready_flower_g, ready_lbs, urgency, earliest_delivery_date").gt("pipeline_bucked_g", 0),
-              prodClient.from("v_strain_conversion_rates").select("strain, confidence, trimming_big_bud_pct, trimming_small_bud_pct, trimming_trim_pct, total_sessions"),
+              prodClient.from("v_strain_conversion_rates").select("strain, confidence, trimming_big_bud_pct, trimming_small_bud_pct, trimming_trim_pct, trimming_sessions, total_sessions"),
               prodClient.from("v_open_order_demand").select("strain, total_demand_g, total_demand_lbs, unassigned_demand, order_count"),
+              prodClient.from("trim_sessions").select("strain, big_buds_grams, pulled_weight, session_date").gt("pulled_weight", 0).not("big_buds_grams", "is", null).order("session_date", { ascending: false }).limit(100),
             ]);
             const convMap = new Map<string, any>();
             for (const cr of (crRes.data || [])) convMap.set(cr.strain, cr);
@@ -408,6 +439,11 @@ export async function fetchLiveData(
               const key = od.strain;
               const existing = demandMap.get(key);
               if (!existing || (od.total_demand_g || 0) > (existing.total_demand_g || 0)) demandMap.set(key, od);
+            }
+            // v39: Build latest session map (most recent per strain)
+            const latestMap = new Map<string, any>();
+            for (const ts of (latestRes.data || [])) {
+              if (!latestMap.has(ts.strain)) latestMap.set(ts.strain, ts);
             }
             const ranked = (pqRes.data || []).map((pq: any) => {
               const cr = convMap.get(pq.strain_name);
@@ -435,7 +471,28 @@ export async function fetchLiveData(
               };
             }).sort((a: any, b: any) => b.score - a.score).slice(0, 5);
             if (ranked.length > 0) data.production_prioritization = ranked;
-          } catch (e) { console.error("[v38] production_prioritization error:", e); }
+            // v39: Build confidence alerts for strains in the ranked list
+            const alerts: any[] = [];
+            for (const r of ranked) {
+              const cr = convMap.get(r.strain);
+              const sessions = cr?.trimming_sessions || 0;
+              // Thin data warning: < 3 trim sessions
+              if (sessions > 0 && sessions < 3) {
+                alerts.push({ strain: r.strain, type: "thin_data", sessions, message: `Only ${sessions} trim session${sessions === 1 ? "" : "s"} for ${r.strain}. Conversion rate estimate is directional — track actuals carefully and update after this run.` });
+              }
+              // Deviation alert: latest session > 20% from historical avg
+              const latest = latestMap.get(r.strain);
+              if (latest && cr && cr.trimming_big_bud_pct > 0) {
+                const latestPct = latest.pulled_weight > 0 ? (latest.big_buds_grams / latest.pulled_weight * 100) : 0;
+                const avgPct = cr.trimming_big_bud_pct;
+                const deviationPct = Math.abs(latestPct - avgPct) / avgPct * 100;
+                if (deviationPct > 20) {
+                  alerts.push({ strain: r.strain, type: "deviation", latest_big_bud_pct: Math.round(latestPct * 10) / 10, avg_big_bud_pct: Math.round(avgPct * 10) / 10, deviation_pct: Math.round(deviationPct), latest_session_date: latest.session_date, message: `The most recent ${r.strain} trim session yielded ${Math.round(latestPct)}% big buds vs the ${Math.round(avgPct)}% historical average — potential quality shift or measurement variance.` });
+                }
+              }
+            }
+            if (alerts.length > 0) data.confidence_alerts = alerts;
+          } catch (e) { console.error("[v39] production_prioritization error:", e); }
         })());
         break;
       }
