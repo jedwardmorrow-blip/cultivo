@@ -17,7 +17,7 @@ function YieldSparkline({ values, width = 120, height = 28, color = '#22c55e', a
   if (values.length < 2) {
     return (
       <div style={{ width, height }} className="flex items-center justify-center">
-        <span className="text-[9px] text-cult-medium-gray">—</span>
+        <span className="text-xs text-cult-medium-gray">—</span>
       </div>
     );
   }
@@ -179,7 +179,7 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
           <div className="flex items-center gap-2">
             <span className="text-cult-white font-semibold">{strain.strain_name}</span>
             {strain.strain_abbreviation && (
-              <span className="text-[10px] text-cult-medium-gray font-mono border border-cult-dark-gray px-1">
+              <span className="text-xs text-cult-medium-gray font-mono border border-cult-dark-gray px-1">
                 {strain.strain_abbreviation}
               </span>
             )}

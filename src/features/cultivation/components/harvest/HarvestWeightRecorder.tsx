@@ -53,7 +53,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
       )}
       <div className="flex items-end gap-2">
         <div className="flex-1">
-          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
             Weight (g)
           </label>
           <input
@@ -67,7 +67,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
           />
         </div>
         <div className="w-24">
-          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
             Plants
           </label>
           <input
@@ -82,7 +82,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
           />
         </div>
         <div className="w-28">
-          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
             Dest
           </label>
           <select
@@ -189,10 +189,10 @@ export function PlantGroupWeightCard({
 
       <div className="mt-3">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
             {totalPlants} / {group.plant_count} plants weighed
           </span>
-          <span className="text-[10px] text-cult-medium-gray">{progress}%</span>
+          <span className="text-xs text-cult-medium-gray">{progress}%</span>
         </div>
         <div className="w-full bg-cult-black h-1.5 overflow-hidden">
           <div
@@ -233,7 +233,7 @@ export function PlantGroupWeightCard({
                 <span className="text-cult-medium-gray">|</span>
                 <span className="text-cult-light-gray">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
                 {entry.destination && (
-                  <span className={`text-[9px] px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-green-800 text-green-400'}`}>
+                  <span className={`text-xs px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-green-800 text-green-400'}`}>
                     {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
                   </span>
                 )}
@@ -261,7 +261,7 @@ export function PlantGroupWeightCard({
 
       {harvestSession && (
         <div className="mt-3">
-          <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
             Waste (g) - optional
           </label>
           <input

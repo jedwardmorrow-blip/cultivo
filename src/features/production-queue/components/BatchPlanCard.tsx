@@ -79,7 +79,7 @@ export function BatchPlanCard({ batch, orderItems, onMutate }: BatchPlanCardProp
         <span className="text-sm font-mono font-medium text-gray-200">
           {batch.batch_number}
         </span>
-        <span className="text-[10px] uppercase tracking-wider text-gray-500 px-1.5 py-0.5 bg-gray-800 rounded">
+        <span className="text-xs uppercase tracking-wider text-gray-500 px-1.5 py-0.5 bg-gray-800 rounded">
           {batch.batch_status}
         </span>
 
@@ -120,13 +120,13 @@ export function BatchPlanCard({ batch, orderItems, onMutate }: BatchPlanCardProp
 
           {/* Processing warnings */}
           {needsProcessing && (
-            <div className="flex items-center gap-2 text-[11px] text-amber-400/80 bg-amber-500/5 border border-amber-500/10 rounded px-2 py-1">
+            <div className="flex items-center gap-2 text-xs text-amber-400/80 bg-amber-500/5 border border-amber-500/10 rounded px-2 py-1">
               <AlertTriangle className="w-3 h-3 shrink-0" />
               Needs processing — flower is binned/bucked but not yet bulk-ready
             </div>
           )}
           {hasOnlyTrim && (
-            <div className="flex items-center gap-2 text-[11px] text-stone-400/80 bg-stone-500/5 border border-stone-500/10 rounded px-2 py-1">
+            <div className="flex items-center gap-2 text-xs text-stone-400/80 bg-stone-500/5 border border-stone-500/10 rounded px-2 py-1">
               <AlertTriangle className="w-3 h-3 shrink-0" />
               Only trim available in this batch
             </div>

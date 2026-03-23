@@ -70,7 +70,7 @@ export function CompletedWashRuns() {
   }
 
   const thBase =
-    'px-4 py-2.5 text-left text-[11px] font-semibold text-cult-text-muted uppercase tracking-wide whitespace-nowrap';
+    'px-4 py-2.5 text-left text-xs font-semibold text-cult-text-muted uppercase tracking-wide whitespace-nowrap';
 
   return (
     <div className="flex flex-col gap-3">

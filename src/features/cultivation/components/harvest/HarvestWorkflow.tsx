@@ -262,7 +262,7 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
         <div className="space-y-5">
           {/* Step 2 header */}
           <div className="border-l-2 border-cult-stage-harvest pl-4">
-            <h2 className="text-[11px] text-cult-stage-harvest uppercase tracking-widest font-bold mb-1">
+            <h2 className="text-xs text-cult-stage-harvest uppercase tracking-widest font-bold mb-1">
               Step 2
             </h2>
             <p className="text-cult-silver text-sm">
@@ -541,7 +541,7 @@ function BatchWeightCard({
                 <span className="text-cult-lighter-gray">·</span>
                 <span className="text-cult-silver">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
                 {entry.destination && (
-                  <span className={`text-[10px] px-1.5 py-0.5 uppercase tracking-wider font-bold border ${
+                  <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${
                     entry.destination === 'fresh_frozen'
                       ? 'border-cyan-700 text-cyan-400 bg-cyan-950/30'
                       : 'border-green-700 text-green-400 bg-green-950/30'
@@ -573,7 +573,7 @@ function BatchWeightCard({
           )}
           <div className="flex items-end gap-2">
             <div className="flex-1">
-              <label className="block text-[11px] text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
                 Weight (g)
               </label>
               <input
@@ -587,7 +587,7 @@ function BatchWeightCard({
               />
             </div>
             <div className="w-24">
-              <label className="block text-[11px] text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
                 Plants
               </label>
               <input
@@ -602,7 +602,7 @@ function BatchWeightCard({
               />
             </div>
             <div className="w-28">
-              <label className="block text-[11px] text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1 font-medium">
                 Dest
               </label>
               <select
@@ -630,7 +630,7 @@ function BatchWeightCard({
       {session && (
         <div className="mt-4 flex items-end gap-3">
           <div>
-            <label className="block text-[11px] text-cult-lighter-gray uppercase tracking-wider mb-1 font-medium">
+            <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-1 font-medium">
               Waste (g) <span className="text-cult-medium-gray normal-case">— optional</span>
             </label>
             <input

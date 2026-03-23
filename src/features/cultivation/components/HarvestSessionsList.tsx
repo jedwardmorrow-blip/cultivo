@@ -159,19 +159,19 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
               <span className="text-cult-light-gray text-xs">{session.plant_count_harvested} plants</span>
 
               {growRoomCode && (
-                <span className="flex items-center gap-1 text-[10px] bg-rose-950 border border-rose-800 text-rose-400 px-1.5 py-0.5 font-mono">
+                <span className="flex items-center gap-1 text-xs bg-rose-950 border border-rose-800 text-rose-400 px-1.5 py-0.5 font-mono">
                   <Home className="w-2.5 h-2.5" />
                   {growRoomCode}
                 </span>
               )}
               {uniqueDryRooms.map(room => (
-                <span key={room} className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
+                <span key={room} className="flex items-center gap-1 text-xs bg-cyan-950 border border-cyan-800 text-cyan-400 px-1.5 py-0.5 font-mono">
                   <Wind className="w-2.5 h-2.5" />
                   {room}
                 </span>
               ))}
               {hasFreshFrozen && (
-                <span className="flex items-center gap-1 text-[10px] bg-cyan-950 border border-cyan-700 text-cyan-300 px-1.5 py-0.5 font-semibold uppercase tracking-wider">
+                <span className="flex items-center gap-1 text-xs bg-cyan-950 border border-cyan-700 text-cyan-300 px-1.5 py-0.5 font-semibold uppercase tracking-wider">
                   <Snowflake className="w-2.5 h-2.5" />
                   {hasFlower ? 'Split: FF' : 'Fresh Frozen'}
                 </span>

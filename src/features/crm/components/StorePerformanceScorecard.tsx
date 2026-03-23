@@ -174,25 +174,25 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Avg Health Score */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Avg Health</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Health</p>
           <p className="text-2xl font-bold text-cult-white">{avgHealth}</p>
-          <p className="text-[10px] text-cult-silver">of 100</p>
+          <p className="text-xs text-cult-silver">of 100</p>
         </div>
         {/* Avg Order Value — CULT-LOS metric */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Avg Order Value</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Order Value</p>
           <p className="text-2xl font-bold text-emerald-400">{fmt$(avgOrderValue)}</p>
-          <p className="text-[10px] text-cult-silver">90-day avg</p>
+          <p className="text-xs text-cult-silver">90-day avg</p>
         </div>
         {/* Active Accounts — CULT-LOS metric */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Active (60d)</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Active (60d)</p>
           <p className="text-2xl font-bold text-sky-400">{orderedLast60}</p>
-          <p className="text-[10px] text-cult-silver">ordered last 60 days</p>
+          <p className="text-xs text-cult-silver">ordered last 60 days</p>
         </div>
         {/* Product Mix Distribution */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Product Mix</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Product Mix</p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-bold text-emerald-400">{mixCounts.full || 0}</span>
             <span className="text-xs text-cult-medium-gray">/</span>
@@ -200,17 +200,17 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
             <span className="text-xs text-cult-medium-gray">/</span>
             <span className="text-lg font-bold text-orange-400">{mixCounts.narrow || 0}</span>
           </div>
-          <p className="text-[10px] text-cult-silver">full / mod / narrow</p>
+          <p className="text-xs text-cult-silver">full / mod / narrow</p>
         </div>
         {/* Visit Compliance */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Visit Compliant</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Visit Compliant</p>
           <p className="text-2xl font-bold text-cult-white">{visitCompliant}</p>
-          <p className="text-[10px] text-cult-silver">on track / scheduled</p>
+          <p className="text-xs text-cult-silver">on track / scheduled</p>
         </div>
         {/* Health filter cards (compact) */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Health Split</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Health Split</p>
           <div className="flex items-center gap-2 mt-1">
             {(['healthy', 'cooling', 'at_risk', 'dormant'] as const).map((label) => {
               const cfg = HEALTH_CONFIG[label];
@@ -223,7 +223,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   title={cfg.label}
                 >
                   <span className={`text-sm font-bold ${filter === label ? cfg.color : 'text-cult-silver'}`}>{count}</span>
-                  <span className="text-[8px] text-cult-medium-gray">{cfg.label.charAt(0)}</span>
+                  <span className="text-xs text-cult-medium-gray">{cfg.label.charAt(0)}</span>
                 </button>
               );
             })}
@@ -258,7 +258,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-[10px] uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
               <th className="text-left py-2 px-3 font-medium">
                 <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
                   Account <SortArrow field="customer_name" />
@@ -324,7 +324,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-[10px] text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
+                      <p className="text-xs text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
                     </button>
                   </td>
                   {/* Health */}
@@ -340,7 +340,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   {/* Frequency */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     <span className={`text-xs font-medium ${freq.color}`}>{freq.label}</span>
-                    <p className="text-[9px] text-cult-medium-gray">{a.orders_90d} / 90d</p>
+                    <p className="text-xs text-cult-medium-gray">{a.orders_90d} / 90d</p>
                   </td>
                   {/* Lifetime */}
                   <td className="py-2.5 px-2 text-right hidden md:table-cell">
@@ -360,7 +360,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                         />
                       ))}
                     </div>
-                    <p className="text-[9px] text-cult-medium-gray mt-0.5">{a.distinct_skus_purchased} SKUs</p>
+                    <p className="text-xs text-cult-medium-gray mt-0.5">{a.distinct_skus_purchased} SKUs</p>
                   </td>
                   {/* Trend */}
                   <td className="py-2.5 px-2 text-center hidden lg:table-cell">
@@ -411,8 +411,8 @@ function VisitBadge({ status, pct }: { status: string; pct: number }) {
   const c = cfg[status] || cfg.never_visited;
   return (
     <div>
-      <span className={`text-[10px] font-medium ${c.color}`}>{c.label}</span>
-      {pct > 0 && <p className="text-[9px] text-cult-medium-gray">{Math.round(pct)}%</p>}
+      <span className={`text-xs font-medium ${c.color}`}>{c.label}</span>
+      {pct > 0 && <p className="text-xs text-cult-medium-gray">{Math.round(pct)}%</p>}
     </div>
   );
 }

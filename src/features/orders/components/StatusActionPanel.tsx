@@ -75,7 +75,7 @@ export function StatusActionPanel({
   return (
     <>
       <div className="bg-cult-near-black border border-cult-charcoal rounded-cult p-4 space-y-3">
-        <h4 className="text-[11px] font-semibold text-cult-silver uppercase tracking-wider">
+        <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider">
           Status Actions
         </h4>
 
@@ -136,7 +136,7 @@ export function StatusActionPanel({
                     : getTransitionLabel(currentStatus, nextStatus)}
                 </button>
                 {hint && (
-                  <p className="text-[11px] text-cult-lighter-gray leading-relaxed px-1">
+                  <p className="text-xs text-cult-lighter-gray leading-relaxed px-1">
                     {hint}
                   </p>
                 )}

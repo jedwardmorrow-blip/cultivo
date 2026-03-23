@@ -43,12 +43,12 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
   if (!isEmpty) {
     if (state.urgency_score === 3) {
       pulseClass = 'animate-[pulseUrgentRed_2s_infinite] border-cult-red shadow-[0_0_15px_rgba(184,29,36,0.3)] z-10';
-      urgencyBadge = <span className="bg-cult-red/20 text-cult-red text-[10px] uppercase font-bold px-1.5 py-0.5 border border-cult-red/50">Urgent</span>;
+      urgencyBadge = <span className="bg-cult-red/20 text-cult-red text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-red/50">Urgent</span>;
     } else if (state.urgency_score === 2) {
       pulseClass = 'animate-[pulseUrgentAmber_2s_infinite] border-cult-stage-harvest shadow-[0_0_15px_rgba(245,158,11,0.3)] z-10';
-      urgencyBadge = <span className="bg-cult-stage-harvest/20 text-cult-stage-harvest text-[10px] uppercase font-bold px-1.5 py-0.5 border border-cult-stage-harvest/50">Attention</span>;
+      urgencyBadge = <span className="bg-cult-stage-harvest/20 text-cult-stage-harvest text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-stage-harvest/50">Attention</span>;
     } else if (state.urgency_score === 1) {
-      urgencyBadge = <span className="text-yellow-500 border border-yellow-500/50 bg-yellow-500/10 text-[10px] uppercase font-bold px-1.5 py-0.5">Watch</span>;
+      urgencyBadge = <span className="text-yellow-500 border border-yellow-500/50 bg-yellow-500/10 text-xs uppercase font-bold px-1.5 py-0.5">Watch</span>;
     }
   }
 
@@ -72,7 +72,7 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
             <span className="font-mono text-sm font-bold text-cult-white">{state.room_code}</span>
             {urgencyBadge}
           </div>
-          <span className={`text-[10px] px-1.5 py-0.5 uppercase tracking-wider font-bold border ${isEmpty ? 'border-cult-dark-gray text-cult-medium-gray' : typeTextCls}`}>
+          <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${isEmpty ? 'border-cult-dark-gray text-cult-medium-gray' : typeTextCls}`}>
             {isEmpty ? 'Empty' : state.room_type}
           </span>
         </div>
@@ -89,10 +89,10 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
             {state.strain_names && state.strain_names.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {state.strain_names.slice(0, 4).map(s => (
-                  <span key={s} className="text-[10px] border border-cult-dark-gray text-cult-light-gray px-1.5 py-0.5 bg-cult-surface-overlay flex-shrink-0">{s}</span>
+                  <span key={s} className="text-xs border border-cult-dark-gray text-cult-light-gray px-1.5 py-0.5 bg-cult-surface-overlay flex-shrink-0">{s}</span>
                 ))}
                 {state.strain_names.length > 4 && (
-                  <span className="text-[10px] text-cult-medium-gray px-1 inline-flex items-center">+{state.strain_names.length - 4}</span>
+                  <span className="text-xs text-cult-medium-gray px-1 inline-flex items-center">+{state.strain_names.length - 4}</span>
                 )}
               </div>
             )}
@@ -110,7 +110,7 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
                   </div>
                 )}
                 {state.groups_near_harvest !== null && state.groups_near_harvest > 0 && (
-                  <div className="text-[10px] text-cult-stage-harvest font-medium tracking-wide">
+                  <div className="text-xs text-cult-stage-harvest font-medium tracking-wide">
                     {state.groups_near_harvest} groups ready
                   </div>
                 )}
@@ -121,7 +121,7 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
       </div>
 
       <div className="w-full border-t border-cult-dark-gray bg-cult-surface p-2 mt-auto">
-        <div className="flex items-center justify-between text-[10px] text-cult-medium-gray mb-1 px-1 font-mono">
+        <div className="flex items-center justify-between text-xs text-cult-medium-gray mb-1 px-1 font-mono">
           <span>{doneTasks}/{totalTasks} tasks done</span>
           {inProgressTasks > 0 && <span className="text-cult-stage-harvest font-bold">{inProgressTasks} active</span>}
         </div>

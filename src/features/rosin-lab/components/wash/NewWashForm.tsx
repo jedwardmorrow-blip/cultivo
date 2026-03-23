@@ -13,7 +13,7 @@ interface NewWashFormProps {
 }
 
 const SECTION_CLASS = 'bg-cult-surface-raised border border-cult-border rounded-[6px] p-5 mb-4';
-const SECTION_LABEL = 'text-[11px] font-semibold text-cult-text-secondary uppercase tracking-widest mb-3';
+const SECTION_LABEL = 'text-xs font-semibold text-cult-text-secondary uppercase tracking-widest mb-3';
 const INPUT_CLASS =
   'w-full bg-cult-surface border border-cult-border rounded-[6px] px-3 py-2 text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-colors';
 const LABEL_CLASS = 'block text-sm text-cult-text-secondary mb-1';

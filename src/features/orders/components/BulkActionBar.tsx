@@ -44,7 +44,7 @@ export function BulkActionBar({ selectedCount, selectedOrders, onBulkStatusChang
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 animate-slide-in">
+      <div className="fixed bottom-safe left-1/2 -translate-x-1/2 z-30 animate-slide-in">
         <div className="flex items-center gap-3 bg-cult-near-black border border-cult-charcoal rounded-cult px-5 py-3 shadow-2xl shadow-black/60">
           <span className="text-sm font-bold text-cult-off-white">
             {selectedCount} selected

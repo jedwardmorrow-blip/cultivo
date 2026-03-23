@@ -16,7 +16,7 @@ interface Props {
 }
 
 const selectClass = 'w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
-const labelClass = 'block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1';
+const labelClass = 'block text-xs text-cult-light-gray uppercase tracking-wider mb-1';
 
 function formatLabel(val: string) {
   return val.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

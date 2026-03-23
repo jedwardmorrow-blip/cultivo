@@ -52,7 +52,7 @@ export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder }: AtR
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
                   {isHub && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
                       <Network className="w-3 h-3" />
                       CHAIN
                     </span>
@@ -99,7 +99,7 @@ export function AtRiskAccounts({ accounts, onSelectAccount, onCreateOrder }: AtR
                     <Clock className="w-3.5 h-3.5" />
                     <span className="text-sm font-semibold">{account.days_since_last_order}d</span>
                   </div>
-                  <span className="text-[10px] text-cult-light-gray">since last order</span>
+                  <span className="text-xs text-cult-light-gray">since last order</span>
                 </div>
                 <ChevronRight
                   className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors cursor-pointer flex-shrink-0"

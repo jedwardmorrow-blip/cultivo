@@ -60,7 +60,7 @@ export function DashboardQuickActions({ onCreateOrder }: DashboardQuickActionsPr
             </div>
             <div className="text-left flex-1 min-w-0">
               <p className="text-sm font-semibold text-cult-white">{action.label}</p>
-              <p className="text-[10px] text-cult-silver hidden sm:block">{action.description}</p>
+              <p className="text-xs text-cult-silver hidden sm:block">{action.description}</p>
             </div>
             <ArrowRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors flex-shrink-0" />
           </button>

@@ -94,6 +94,41 @@
   }
 }
 
+@layer utilities {
+  /* Safe-area utilities for notched/dynamic island devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-left {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  .safe-right {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .safe-y {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-all {
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+  /* Bottom offset for fixed bottom elements (adds to existing bottom value) */
+  .bottom-safe {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Top offset for fixed top elements (adds to existing top value) */
+  .top-safe {
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+  }
+}
+
 @layer base {
   body {
     @apply text-cult-off-white bg-cult-black;
@@ -162,6 +197,84 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Touch-device optimizations ────────────────────────────
+   On devices with no hover capability (phones, tablets),
+   prevent hover states from "sticking" after tap and
+   apply coarse-pointer enhancements.
+   ──────────────────────────────────────────────────────── */
+
+/* Neutralize hover bg/color stickiness on touch devices */
+@media (hover: none) {
+  /* Remove hover background changes that stick on touch */
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    background-color: inherit;
+  }
+
+  /* Hide scrollbars on touch (use momentum scrolling) */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+  }
+}
+
+/* Coarse pointer: enlarge small interactive gaps, improve tap feedback */
+@media (pointer: coarse) {
+  /* Ensure minimum gap between adjacent interactive elements */
+  button + button,
+  a + a,
+  [role="button"] + [role="button"] {
+    margin-left: 4px;
+  }
+
+  /* Snappier active state feedback for tactile response */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    transform: scale(0.97);
+    transition: transform 0.05s ease-out;
+  }
+
+  /* Select elements get taller on touch for easier manipulation */
+  select {
+    min-height: 44px;
+  }
+
+  /* Input fields get comfortable touch height */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Combined: touch device with no hover — full mobile mode */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable text selection on interactive elements (prevents long-press highlight) */
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smoother momentum scrolling on overflow containers */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }
 

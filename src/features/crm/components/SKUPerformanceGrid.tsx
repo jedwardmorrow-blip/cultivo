@@ -75,7 +75,7 @@ export function SKUPerformanceGrid({ skus, periodLabel }: SKUPerformanceGridProp
           <Package className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Top Products</h3>
           {periodLabel && (
-            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
@@ -147,9 +147,9 @@ export function SKUPerformanceGrid({ skus, periodLabel }: SKUPerformanceGridProp
                       <p className="text-sm text-cult-white truncate max-w-[250px]">{sku.product_name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {sku.sku && (
-                          <span className="text-[10px] font-mono text-cult-light-gray">{sku.sku}</span>
+                          <span className="text-xs font-mono text-cult-light-gray">{sku.sku}</span>
                         )}
-                        <span className={`px-1.5 py-0.5 text-[10px] rounded ${getCategoryColor(sku.product_category)}`}>
+                        <span className={`px-1.5 py-0.5 text-xs rounded ${getCategoryColor(sku.product_category)}`}>
                           {sku.product_category}
                         </span>
                       </div>

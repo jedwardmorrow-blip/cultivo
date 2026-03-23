@@ -80,7 +80,7 @@ export default function DashboardPage() {
               <Target size={16} className="text-cult-gold" />
             </div>
             <div>
-              <div className="font-mono text-[10px] tracking-[0.3em] text-cult-gold/70 uppercase mb-1">North Star · Q1 2026</div>
+              <div className="font-mono text-xs tracking-[0.3em] text-cult-gold/70 uppercase mb-1">North Star · Q1 2026</div>
               <p className="text-cult-white text-sm leading-relaxed">{northStar}</p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           <div key={label} className="card p-4">
             <Icon size={16} className={`${color} mb-3`} />
             <div className={`font-display text-3xl ${color} mb-1`}>{value}</div>
-            <div className="font-mono text-[10px] text-cult-text tracking-wider uppercase">{label}</div>
+            <div className="font-mono text-xs text-cult-text tracking-wider uppercase">{label}</div>
           </div>
         ))}
       </div>
@@ -131,8 +131,8 @@ export default function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-cult-white leading-snug">{goal.title}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`phase-pill border ${PHASE_COLORS[goal.phase]} text-[9px]`}>Day {goal.phase === 1 ? '1-30' : goal.phase === 2 ? '31-60' : '61-90'}</span>
-                      <span className={`font-mono text-[9px] ${s.cls}`}>{s.label}</span>
+                      <span className={`phase-pill border ${PHASE_COLORS[goal.phase]} text-xs`}>Day {goal.phase === 1 ? '1-30' : goal.phase === 2 ? '31-60' : '61-90'}</span>
+                      <span className={`font-mono text-xs ${s.cls}`}>{s.label}</span>
                     </div>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export default function DashboardPage() {
                 <div key={todo.id} className="flex items-center gap-2">
                   <Circle size={12} className="text-cult-border flex-shrink-0" />
                   <span className="text-xs text-cult-white flex-1 truncate">{todo.title}</span>
-                  {todo.due_date && <span className="font-mono text-[9px] text-cult-text flex-shrink-0">{format(parseISO(todo.due_date), 'MMM d')}</span>}
+                  {todo.due_date && <span className="font-mono text-xs text-cult-text flex-shrink-0">{format(parseISO(todo.due_date), 'MMM d')}</span>}
                 </div>
               ))}
               {todos.length === 0 && <p className="text-cult-text text-xs font-mono text-center py-2">No open to-dos</p>}
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   <div key={issue.id} className="flex items-center gap-2">
                     <AlertCircle size={12} className={priorityColors[issue.priority]} />
                     <span className="text-xs text-cult-white flex-1 truncate">{issue.title}</span>
-                    <span className={`font-mono text-[9px] uppercase ${priorityColors[issue.priority]}`}>{issue.priority}</span>
+                    <span className={`font-mono text-xs uppercase ${priorityColors[issue.priority]}`}>{issue.priority}</span>
                   </div>
                 )
               })}

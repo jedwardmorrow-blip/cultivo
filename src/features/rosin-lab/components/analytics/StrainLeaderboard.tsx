@@ -64,25 +64,25 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-[#1C1C1C]">
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-10">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-10">
                 #
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-36">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-36">
                 Strain
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-center px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-center px-3 py-2 w-16">
                 Runs
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-left px-3 py-2">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2">
                 Avg Yield
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
                 Best
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
                 Worst
               </th>
-              <th className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-24">
+              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-24">
                 Last Pressed
               </th>
             </tr>

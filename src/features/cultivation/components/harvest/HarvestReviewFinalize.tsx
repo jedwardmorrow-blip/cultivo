@@ -108,7 +108,7 @@ export function HarvestReviewFinalize({
               <span className="text-cult-white text-lg font-bold">{formatWeight(combinedWeight)}</span>
               <span className="text-cult-medium-gray text-xs ml-2">{combinedPlants} plants</span>
               {hasFlowerSessions && hasFrozenSessions && (
-                <div className="text-[10px] text-cult-medium-gray mt-0.5">
+                <div className="text-xs text-cult-medium-gray mt-0.5">
                   Flower: {formatWeight(flowerWeight)} · Frozen: {formatWeight(frozenWeight)}
                 </div>
               )}
@@ -133,13 +133,13 @@ export function HarvestReviewFinalize({
                       <span className="text-cult-white font-mono text-xs">{batch.batchNumber}</span>
                       <span className="text-cult-light-gray text-xs truncate">{batch.strainName}</span>
                       {flowerWeight > 0 && (
-                        <span className="text-[9px] px-1 py-0.5 uppercase font-bold border border-green-800 text-green-400">FLW</span>
+                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-green-800 text-green-400">FLW</span>
                       )}
                       {frozenWeight > 0 && (
-                        <span className="text-[9px] px-1 py-0.5 uppercase font-bold border border-cyan-800 text-cyan-400">FF</span>
+                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-cyan-800 text-cyan-400">FF</span>
                       )}
                     </div>
-                    <span className="text-cult-medium-gray text-[10px]">
+                    <span className="text-cult-medium-gray text-xs">
                       {totalPlants}/{batch.totalPlants} plants
                       {wasteGrams > 0 && ` | waste: ${formatWeight(wasteGrams)}`}
                     </span>

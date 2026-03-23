@@ -80,7 +80,7 @@ function OrderTimeline({ currentStatus }: { currentStatus: string }) {
         const isCurrent = index === currentIndex;
         return (
           <div key={step} className="flex items-center">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap ${
+            <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${
               isCurrent
                 ? 'bg-cult-green/20 text-cult-green border border-cult-green/40'
                 : isComplete
@@ -117,7 +117,7 @@ function CustomerCard({ customer }: { customer: CustomerInfo }) {
           <h4 className="text-sm font-bold text-cult-off-white">{customer.name}</h4>
         </div>
         {customer.order_count !== undefined && (
-          <span className="text-[10px] text-cult-silver bg-cult-charcoal px-2 py-0.5 rounded">
+          <span className="text-xs text-cult-silver bg-cult-charcoal px-2 py-0.5 rounded">
             {customer.order_count} orders
           </span>
         )}
@@ -263,22 +263,22 @@ export function OrderDrawer({
             <h2 className="text-lg font-bold text-cult-off-white tracking-wide truncate">
               {order.order_number}
             </h2>
-            <span className={`px-2.5 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
+            <span className={`px-2.5 py-1 text-xs font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
               {STATUS_LABELS[order.status || 'submitted'] || order.status}
             </span>
             {(order as OrderExtended).is_sample && (
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
+              <span className="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
                 <Gift className="w-3 h-3" />
                 Sample
               </span>
             )}
             {order.priority === 'urgent' && (
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
+              <span className="px-2 py-0.5 text-xs font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
                 Urgent
               </span>
             )}
             {order.priority === 'high' && (
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-900/30 text-amber-400 border border-amber-700 rounded uppercase">
+              <span className="px-2 py-0.5 text-xs font-bold bg-amber-900/30 text-amber-400 border border-amber-700 rounded uppercase">
                 High
               </span>
             )}
@@ -377,7 +377,7 @@ export function OrderDrawer({
               <div className="space-y-3 pt-2">
                 {order.delivery_notes && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Delivery Notes</h4>
+                    <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Delivery Notes</h4>
                     <p className="text-xs text-cult-silver bg-cult-near-black border border-cult-charcoal rounded-cult p-3">
                       {order.delivery_notes}
                     </p>
@@ -385,7 +385,7 @@ export function OrderDrawer({
                 )}
                 {order.internal_notes && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Internal Notes</h4>
+                    <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Internal Notes</h4>
                     <p className="text-xs text-cult-silver bg-cult-near-black border border-cult-charcoal rounded-cult p-3">
                       {order.internal_notes}
                     </p>

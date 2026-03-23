@@ -58,7 +58,7 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
           <Package className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Order History</h3>
           {periodLabel && (
-            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
@@ -106,7 +106,7 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
                           <span className="text-sm font-semibold text-cult-white">{formatCurrency(Number(order.total_amount))}</span>
                         </div>
                         <div className="px-4 py-3 text-center">
-                          <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase ${getOrderStatusColor(order.status)}`}>
+                          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full uppercase ${getOrderStatusColor(order.status)}`}>
                             {order.status.replace(/_/g, ' ')}
                           </span>
                         </div>

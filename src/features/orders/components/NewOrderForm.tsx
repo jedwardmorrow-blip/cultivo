@@ -533,7 +533,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
                         <label className="block text-xs font-medium text-cult-light-gray mb-2">
                           Unit Price *
                           {item.product_id && customerPrices?.has(item.product_id) && (
-                            <span className="ml-1 text-[10px] font-bold text-amber-400">Custom</span>
+                            <span className="ml-1 text-xs font-bold text-amber-400">Custom</span>
                           )}
                         </label>
                         <input

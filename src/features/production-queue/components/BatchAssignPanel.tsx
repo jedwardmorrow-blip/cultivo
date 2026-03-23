@@ -99,7 +99,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         <div className="grid grid-cols-2 divide-x divide-cult-medium-gray/30" style={{ minHeight: '280px' }}>
           {/* LEFT: Available Packages */}
           <div className="p-3">
-            <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
+            <div className="text-xs uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
               <Package className="w-3 h-3" /> Available Packages
             </div>
 
@@ -144,7 +144,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             )}
 
             {/* Raw Batches section */}
-            <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-4 mb-2 flex items-center gap-1">
+            <div className="text-xs uppercase tracking-wider text-gray-500 mt-4 mb-2 flex items-center gap-1">
               <Layers className="w-3 h-3" /> Raw Batches
             </div>
 
@@ -192,7 +192,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
 
           {/* RIGHT: Orders needing this strain+format (FIFO) */}
           <div className="p-3">
-            <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
+            <div className="text-xs uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
               <ShoppingCart className="w-3 h-3" /> Orders — FIFO by Delivery Date
             </div>
 
@@ -245,7 +245,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
               {ba.drafts.map(d => (
                 <span
                   key={d.draftId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-300 rounded text-[11px] border border-blue-500/20"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-300 rounded text-xs border border-blue-500/20"
                 >
                   <Package className="w-3 h-3" />
                   {d.packageLabel.slice(-8)} → {d.orderNumber} ({d.quantityToAssign})
@@ -260,7 +260,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
               {ba.batchDrafts.map(d => (
                 <span
                   key={d.draftId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-500/10 text-indigo-300 rounded text-[11px] border border-indigo-500/20"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-500/10 text-indigo-300 rounded text-xs border border-indigo-500/20"
                 >
                   <Layers className="w-3 h-3" />
                   {d.batchNumber} → {d.orderNumber} ({formatWeight(d.weightGrams)})
@@ -301,24 +301,24 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
           <div className={`grid gap-4 mb-4 ${ba.preview.totalBatchAllocations > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
               <div className="text-lg font-bold text-white">{ba.preview.totalOrderItemsTouched}</div>
-              <div className="text-[10px] uppercase tracking-wider text-gray-500">Orders Filled</div>
+              <div className="text-xs uppercase tracking-wider text-gray-500">Orders Filled</div>
             </div>
             {ba.preview.totalUnitsAssigned > 0 && (
               <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{ba.preview.totalUnitsAssigned}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Pkg Units</div>
+                <div className="text-xs uppercase tracking-wider text-gray-500">Pkg Units</div>
               </div>
             )}
             {ba.preview.totalPackagesUsed > 0 && (
               <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{ba.preview.totalPackagesUsed}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Packages Used</div>
+                <div className="text-xs uppercase tracking-wider text-gray-500">Packages Used</div>
               </div>
             )}
             {ba.preview.totalBatchAllocations > 0 && (
               <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{formatWeight(ba.preview.totalBatchWeightG)}</div>
-                <div className="text-[10px] uppercase tracking-wider text-gray-500">Batch Weight</div>
+                <div className="text-xs uppercase tracking-wider text-gray-500">Batch Weight</div>
               </div>
             )}
           </div>
@@ -346,7 +346,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
               >
                 <Layers className="w-3 h-3 text-indigo-400/60" />
                 <span className="font-mono text-xs">{d.batchNumber}</span>
-                <span className="text-[10px] text-gray-500">({d.allocationStage})</span>
+                <span className="text-xs text-gray-500">({d.allocationStage})</span>
                 <ArrowRight className="w-3 h-3 text-gray-500" />
                 <span>{d.orderNumber}</span>
                 <span className="text-gray-500">·</span>
@@ -471,7 +471,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
         )}
         {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
         <span className="font-mono text-xs text-gray-300">{pkg.package_id.slice(-10)}</span>
-        <span className="text-[10px] text-gray-500">{pkg.batch_number || pkg.batch || ''}</span>
+        <span className="text-xs text-gray-500">{pkg.batch_number || pkg.batch || ''}</span>
         <span className="ml-auto text-xs">
           {fullyDrafted ? (
             <span className="text-green-400">Fully drafted</span>
@@ -479,7 +479,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
             <span className="text-gray-300">{remainingQty} avail</span>
           )}
         </span>
-        {pkg.room && <span className="text-[10px] text-gray-500 ml-1">{pkg.room}</span>}
+        {pkg.room && <span className="text-xs text-gray-500 ml-1">{pkg.room}</span>}
       </div>
 
       {/* Expanded: assign to orders */}
@@ -523,7 +523,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
                     });
                   }}
                   disabled={maxAssignable <= 0}
-                  className="px-2 py-0.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-[10px] font-medium transition-colors"
+                  className="px-2 py-0.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-xs font-medium transition-colors"
                 >
                   Assign
                 </button>
@@ -585,7 +585,7 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
         )}
         {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
         <span className="font-mono text-xs text-gray-300">{batch.batch_number}</span>
-        <span className="text-[10px] text-gray-500">{batchStageLabel(batch)}</span>
+        <span className="text-xs text-gray-500">{batchStageLabel(batch)}</span>
         <span className="ml-auto text-xs">
           {fullyDrafted ? (
             <span className="text-green-400">Fully drafted</span>
@@ -628,7 +628,7 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
                   className="w-16 px-1 py-0.5 bg-cult-dark-gray border border-cult-medium-gray/30 rounded text-xs text-white text-center"
                   onClick={(e) => e.stopPropagation()}
                 />
-                <span className="text-[10px] text-gray-500">g</span>
+                <span className="text-xs text-gray-500">g</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -640,7 +640,7 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
                     });
                   }}
                   disabled={maxAllocG <= 0}
-                  className="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-[10px] font-medium transition-colors"
+                  className="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-xs font-medium transition-colors"
                 >
                   Allocate
                 </button>

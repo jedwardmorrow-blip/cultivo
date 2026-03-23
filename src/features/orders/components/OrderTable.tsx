@@ -36,7 +36,7 @@ function AttentionBadge({ flag }: { flag: AttentionFlag }) {
     : 'bg-amber-900/30 text-amber-400 border-amber-700';
 
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider border rounded ${colors}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider border rounded ${colors}`}>
       <AlertTriangle className="w-2.5 h-2.5" />
       {flag.label}
     </span>
@@ -192,18 +192,18 @@ export function OrderTable({
                         {order.order_number}
                       </span>
                       {(order as OrderExtended).is_sample && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
                           <Gift className="w-2.5 h-2.5" />
                           Sample
                         </span>
                       )}
                       {order.priority === 'urgent' && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
+                        <span className="px-1.5 py-0.5 text-xs font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
                           Urgent
                         </span>
                       )}
                       {order.priority === 'high' && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-900/30 text-amber-400 border border-amber-700 rounded uppercase">
+                        <span className="px-1.5 py-0.5 text-xs font-bold bg-amber-900/30 text-amber-400 border border-amber-700 rounded uppercase">
                           High
                         </span>
                       )}
@@ -219,7 +219,7 @@ export function OrderTable({
 
                   <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex items-center gap-1">
-                      <span className={`inline-block px-2 py-1 text-[11px] font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
+                      <span className={`inline-block px-2 py-1 text-xs font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
                         {STATUS_LABELS[order.status || 'submitted'] || order.status}
                       </span>
                       {onStatusChange && nextStatus && (
@@ -280,7 +280,7 @@ export function OrderTable({
                             day: 'numeric',
                           })}
                         </span>
-                        <span className={`text-[10px] ${ageColor} ml-4.5`}>{age}</span>
+                        <span className={`text-xs ${ageColor} ml-4.5`}>{age}</span>
                       </div>
                     ) : (
                       <span className="text-xs text-cult-lighter-gray">--</span>

@@ -34,7 +34,7 @@ export function BatchPlanExpansion({ strainId, strainName, orderItems, onClose }
         </h3>
 
         {/* Summary chips */}
-        <div className="flex items-center gap-3 ml-4 text-[11px]">
+        <div className="flex items-center gap-3 ml-4 text-xs">
           <span className="text-gray-400">
             {totalUnitsNeeded} units needed ({formatWeight(totalDemandG)})
           </span>

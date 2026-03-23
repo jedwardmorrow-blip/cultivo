@@ -370,7 +370,7 @@ export function AutomatedTaskEngine({}: AutomatedTaskEngineProps) {
                       {task.customer_name}
                     </button>
                     {task.dispensary_code && (
-                      <span className="text-[10px] text-cult-500 font-mono">{task.dispensary_code}</span>
+                      <span className="text-xs text-cult-500 font-mono">{task.dispensary_code}</span>
                     )}
                   </div>
                 </div>
@@ -381,7 +381,7 @@ export function AutomatedTaskEngine({}: AutomatedTaskEngineProps) {
                     {task.priority}
                   </span>
                   {task.is_overdue && (
-                    <span className="ml-1 text-[10px] text-red-400 font-medium">
+                    <span className="ml-1 text-xs text-red-400 font-medium">
                       {task.days_overdue}d overdue
                     </span>
                   )}
@@ -398,11 +398,11 @@ export function AutomatedTaskEngine({}: AutomatedTaskEngineProps) {
                 {/* Source */}
                 <div className="col-span-1">
                   {task.trigger_source === 'auto' ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                    <span className="inline-flex items-center gap-1 text-xs text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
                       <Zap className="w-2.5 h-2.5" /> auto
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-cult-400 bg-cult-700/50 px-1.5 py-0.5 rounded">
+                    <span className="inline-flex items-center gap-1 text-xs text-cult-400 bg-cult-700/50 px-1.5 py-0.5 rounded">
                       <Users className="w-2.5 h-2.5" /> manual
                     </span>
                   )}
@@ -432,7 +432,7 @@ export function AutomatedTaskEngine({}: AutomatedTaskEngineProps) {
                     <Loader2 className="w-4 h-4 text-cult-400 animate-spin" />
                   )}
                   {!isOpen && (
-                    <span className="text-[10px] text-cult-500 capitalize">
+                    <span className="text-xs text-cult-500 capitalize">
                       {task.status === 'auto_closed' ? 'dismissed' : task.status}
                     </span>
                   )}

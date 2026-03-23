@@ -454,12 +454,12 @@ function DayCell({
           </div>
           <div className="flex items-center gap-1.5">
             {dayWeight > 0 && (
-              <span className="text-[9px] text-purple-400 font-semibold leading-none">
+              <span className="text-xs text-purple-400 font-semibold leading-none">
                 {formatWeight(dayWeight)}
               </span>
             )}
             {totalDuration > 0 && (
-              <span className="text-[9px] text-cult-lighter-gray leading-none">
+              <span className="text-xs text-cult-lighter-gray leading-none">
                 ~{formatDuration(totalDuration)}
               </span>
             )}

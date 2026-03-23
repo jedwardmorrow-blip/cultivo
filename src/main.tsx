@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { NotificationProvider } from './lib/components';
 import { errorService } from './services/error.service';
+import { registerServiceWorker } from './lib/registerSW';
 import './index.css';
 
 import { BrowserRouter } from 'react-router-dom';
@@ -20,3 +21,6 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+// Register service worker for offline support (production only)
+registerServiceWorker();

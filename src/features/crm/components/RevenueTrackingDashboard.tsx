@@ -185,27 +185,27 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Current Month Realized */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Month Realized</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Realized</p>
           <p className="text-2xl font-bold text-emerald-400">{fmt$(totals.totalRealized)}</p>
-          <p className="text-[10px] text-cult-silver">completed deliveries</p>
+          <p className="text-xs text-cult-silver">completed deliveries</p>
         </div>
         {/* Current Month Tentative */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Month Tentative</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Tentative</p>
           <p className="text-2xl font-bold text-amber-400">{fmt$(totals.totalTentative)}</p>
-          <p className="text-[10px] text-cult-silver">pending delivery</p>
+          <p className="text-xs text-cult-silver">pending delivery</p>
         </div>
         {/* Prior Month */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Prior Month</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Prior Month</p>
           <p className="text-2xl font-bold text-cult-white">{fmt$(totals.priorMonthTotal)}</p>
-          <p className="text-[10px] text-cult-silver">realized</p>
+          <p className="text-xs text-cult-silver">realized</p>
         </div>
         {/* Rolling 90d */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">90-Day Total</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">90-Day Total</p>
           <p className="text-2xl font-bold text-sky-400">{fmt$(totals.rolling90Total)}</p>
-          <p className="text-[10px] text-cult-silver">
+          <p className="text-xs text-cult-silver">
             + {fmt$(totals.rolling90Tentative)} tentative
           </p>
         </div>
@@ -218,22 +218,22 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
               : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
           }`}
         >
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Unresolved</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Unresolved</p>
           <p className="text-2xl font-bold text-red-400">{fmt$(totals.totalUnresolved)}</p>
-          <p className="text-[10px] text-cult-silver">{totals.unresolvedAccounts} accounts</p>
+          <p className="text-xs text-cult-silver">{totals.unresolvedAccounts} accounts</p>
         </button>
         {/* Lifetime */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Lifetime</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Lifetime</p>
           <p className="text-2xl font-bold text-cult-white">{fmt$(totals.lifetimeTotal)}</p>
-          <p className="text-[10px] text-cult-silver">all time</p>
+          <p className="text-xs text-cult-silver">all time</p>
         </div>
       </div>
 
       {/* Weekly Trend Bar */}
       {weeklySummary.length > 0 && (
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-2">Weekly Revenue (90 days)</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-2">Weekly Revenue (90 days)</p>
           <div className="flex items-end gap-1 h-16">
             {(() => {
               const maxVal = Math.max(...weeklySummary.map(([, d]) => d.realized + d.tentative), 1);
@@ -253,10 +253,10 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
             })()}
           </div>
           <div className="flex items-center gap-4 mt-2">
-            <span className="flex items-center gap-1.5 text-[10px] text-cult-silver">
+            <span className="flex items-center gap-1.5 text-xs text-cult-silver">
               <span className="w-2 h-2 rounded-sm bg-emerald-500" /> Realized
             </span>
-            <span className="flex items-center gap-1.5 text-[10px] text-cult-silver">
+            <span className="flex items-center gap-1.5 text-xs text-cult-silver">
               <span className="w-2 h-2 rounded-sm bg-amber-500/40" /> Tentative
             </span>
           </div>
@@ -284,7 +284,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
                   <span className="text-red-400/60">·</span>
@@ -294,7 +294,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                 </button>
               ))}
             {totals.unresolvedAccounts > 5 && (
-              <span className="text-[11px] text-red-400/60 self-center">+{totals.unresolvedAccounts - 5} more</span>
+              <span className="text-xs text-red-400/60 self-center">+{totals.unresolvedAccounts - 5} more</span>
             )}
           </div>
         </div>
@@ -346,7 +346,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-[10px] uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
               <th className="text-left py-2 px-3 font-medium">
                 <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
                   Account <SortArrow field="customer_name" />
@@ -401,7 +401,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-[10px] text-cult-light-gray">
+                      <p className="text-xs text-cult-light-gray">
                         {a.dispensary_code} · {a.lifetime_order_count} orders
                       </p>
                     </button>
@@ -411,10 +411,10 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                     <div>
                       <span className="text-xs text-emerald-400 font-medium">{fmt$(a.current_month_realized)}</span>
                       {a.current_month_tentative > 0 && (
-                        <span className="text-[10px] text-amber-400 ml-1">+{fmt$(a.current_month_tentative)}</span>
+                        <span className="text-xs text-amber-400 ml-1">+{fmt$(a.current_month_tentative)}</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-cult-medium-gray">{a.current_month_orders} orders</p>
+                    <p className="text-xs text-cult-medium-gray">{a.current_month_orders} orders</p>
                   </td>
                   {/* MoM */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
@@ -427,7 +427,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   <td className="py-2.5 px-2 text-right hidden md:table-cell">
                     <span className="text-xs text-cult-silver">{fmt$(a.rolling_90d_realized)}</span>
                     {a.rolling_90d_tentative > 0 && (
-                      <span className="text-[10px] text-amber-400/60 ml-1">+{fmt$(a.rolling_90d_tentative)}</span>
+                      <span className="text-xs text-amber-400/60 ml-1">+{fmt$(a.rolling_90d_tentative)}</span>
                     )}
                   </td>
                   {/* Lifetime */}
@@ -439,7 +439,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                     {a.total_unresolved_revenue > 0 ? (
                       <span className="text-xs text-red-400 font-medium">
                         {fmt$(a.total_unresolved_revenue)}
-                        <span className="text-[10px] text-red-400/60 ml-1">({a.total_unresolved_orders})</span>
+                        <span className="text-xs text-red-400/60 ml-1">({a.total_unresolved_orders})</span>
                       </span>
                     ) : (
                       <span className="text-xs text-cult-medium-gray">—</span>

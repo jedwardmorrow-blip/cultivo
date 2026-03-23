@@ -195,7 +195,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
             {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
               <div key={t} className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
-                <span className="text-[9px] text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{TASK_TYPE_CONFIG[t].label}</span>
+                <span className="text-xs text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{TASK_TYPE_CONFIG[t].label}</span>
               </div>
             ))}
           </div>
@@ -221,7 +221,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           <button
             type="button"
             onClick={goToday}
-            className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray rounded-sm transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray rounded-sm transition-colors"
           >
             Today
           </button>
@@ -254,7 +254,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
         {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
           <div key={t} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
-            <span className="text-[10px] text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
+            <span className="text-xs text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
           </div>
         ))}
       </div>
@@ -294,7 +294,7 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
       <table className="w-full border-collapse min-w-[800px]">
         <thead>
           <tr className="bg-cult-charcoal/30">
-            <th className="sticky left-0 z-20 bg-cult-near-black text-left px-4 py-2.5 text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold w-32 border-r border-cult-dark-gray/50">
+            <th className="sticky left-0 z-20 bg-cult-near-black text-left px-4 py-2.5 text-xs text-cult-medium-gray uppercase tracking-wider font-semibold w-32 border-r border-cult-dark-gray/50">
               Room
             </th>
             {days.map((d) => {
@@ -311,12 +311,12 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                         : ''
                   }`}
                 >
-                  <div className={`text-[9px] uppercase tracking-wider font-semibold ${
+                  <div className={`text-xs uppercase tracking-wider font-semibold ${
                     isToday ? 'text-green-400' : d.isWeekend ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
                   }`}>
                     {d.dayOfWeek}
                   </div>
-                  <div className={`text-[11px] font-mono font-bold ${
+                  <div className={`text-xs font-mono font-bold ${
                     isToday ? 'text-green-400' : 'text-cult-medium-gray'
                   }`}>
                     {d.num}
@@ -340,10 +340,10 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                       className="w-2 h-2 rounded-full flex-shrink-0"
                       style={{ backgroundColor: group.meta.color }}
                     />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: group.meta.color }}>
+                    <span className="text-xs font-bold uppercase tracking-[0.15em]" style={{ color: group.meta.color }}>
                       {group.meta.label}
                     </span>
-                    <span className="text-[10px] text-cult-medium-gray">
+                    <span className="text-xs text-cult-medium-gray">
                       {group.rooms.length} room{group.rooms.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -367,7 +367,7 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                             {room.room_code}
                           </span>
                           {!hasSchedules && (
-                            <span className="text-[9px] text-amber-500/80 font-semibold uppercase tracking-wider">
+                            <span className="text-xs text-amber-500/80 font-semibold uppercase tracking-wider">
                               No tasks
                             </span>
                           )}
@@ -383,7 +383,7 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                               style={{ backgroundColor: TASK_TYPE_CONFIG[t]?.color ?? '#666' }}
                             />
                           ))}
-                          <span className="text-[9px] text-cult-dark-gray ml-0.5">
+                          <span className="text-xs text-cult-dark-gray ml-0.5">
                             {roomSchedules.length}
                           </span>
                         </div>
@@ -482,7 +482,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
       {/* Day-of-week header */}
       <div className="grid grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="py-2.5 text-center text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
+          <div key={name} className="py-2.5 text-center text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
             {name}
           </div>
         ))}
@@ -517,7 +517,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
                   {cell.num}
                 </span>
                 {roomCount > 0 && (
-                  <span className="text-[9px] text-cult-medium-gray font-mono">
+                  <span className="text-xs text-cult-medium-gray font-mono">
                     {roomCount} <span className="text-cult-dark-gray">rm</span>
                   </span>
                 )}
@@ -527,7 +527,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
                   {taskTypes.slice(0, 6).map((t) => (
                     <span
                       key={t}
-                      className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-wider rounded-sm"
+                      className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
                       style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
                       title={TASK_TYPE_CONFIG[t].label}
                     >
@@ -600,14 +600,14 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
 
         {/* Schedule count */}
         <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center justify-between">
-          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
             {schedules.length} active schedule{schedules.length !== 1 ? 's' : ''}
           </span>
           {!isNew && editingId === null && (
             <button
               type="button"
               onClick={startNew}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
             >
               <Plus className="w-3 h-3" />
               Add
@@ -694,11 +694,11 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
           <span className="text-xs font-bold text-cult-white uppercase tracking-wider">{config.label}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-cult-medium-gray bg-cult-charcoal rounded-sm">
+          <span className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray bg-cult-charcoal rounded-sm">
             {schedule.recurrence}
           </span>
           {schedule.priority === 'high' && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm">
+            <span className="px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm">
               High
             </span>
           )}
@@ -709,7 +709,7 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
           {DAY_NAMES.map((name, idx) => (
             <span
               key={idx}
-              className={`w-6 h-5 flex items-center justify-center text-[8px] font-bold uppercase rounded-sm ${
+              className={`w-6 h-5 flex items-center justify-center text-xs font-bold uppercase rounded-sm ${
                 schedule.day_of_week!.includes(idx)
                   ? 'text-cult-white bg-cult-charcoal'
                   : 'text-cult-dark-gray'
@@ -721,7 +721,7 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
         </div>
       )}
       {schedule.notes && (
-        <div className="mt-1.5 text-[10px] text-cult-medium-gray truncate">{schedule.notes}</div>
+        <div className="mt-1.5 text-xs text-cult-medium-gray truncate">{schedule.notes}</div>
       )}
     </button>
   );
@@ -795,7 +795,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
         <div className="grid grid-cols-3 gap-1.5">
           {TASK_TYPES.map((t) => {
             const cfg = TASK_TYPE_CONFIG[t];
@@ -805,7 +805,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
                 key={t}
                 type="button"
                 onClick={() => setTaskType(t)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all ${
                   selected
                     ? 'text-white border'
                     : 'text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/50 hover:border-cult-medium-gray hover:text-cult-light-gray'
@@ -821,14 +821,14 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
         <div className="flex gap-1.5">
           {RECURRENCE_OPTIONS.map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => setRecurrence(r)}
-              className={`flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+              className={`flex-1 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
                 recurrence === r
                   ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
                   : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
@@ -842,14 +842,14 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
 
       {showDayPicker && (
         <div>
-          <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
+          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
           <div className="flex gap-1">
             {DAY_NAMES.map((name, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => toggleDay(idx)}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-sm transition-all ${
+                className={`flex-1 py-1.5 text-xs font-bold rounded-sm transition-all ${
                   dayOfWeek.includes(idx)
                     ? 'text-white'
                     : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
@@ -864,14 +864,14 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       )}
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Priority</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Priority</label>
         <div className="flex gap-1.5">
           {PRIORITY_OPTIONS.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPriority(p)}
-              className={`flex-1 py-1.5 text-[10px] font-semibold uppercase rounded-sm transition-colors ${
+              className={`flex-1 py-1.5 text-xs font-semibold uppercase rounded-sm transition-colors ${
                 priority === p
                   ? p === 'high'
                     ? 'bg-red-950/60 text-red-400 border border-red-700/50'
@@ -888,7 +888,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Notes</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

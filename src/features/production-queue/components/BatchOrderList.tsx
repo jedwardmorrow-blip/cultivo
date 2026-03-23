@@ -49,7 +49,7 @@ export function BatchOrderList({
 
   return (
     <div className="space-y-1">
-      <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">
+      <div className="text-xs uppercase tracking-wider text-gray-500 mb-1">
         Orders needing {batch.strain_name}
       </div>
 
@@ -61,7 +61,7 @@ export function BatchOrderList({
             key={o.order_item_id}
             className="flex items-center gap-3 text-xs py-1 px-2 rounded bg-green-500/5 border border-green-500/10"
           >
-            <span className="text-green-400 text-[10px]">✓</span>
+            <span className="text-green-400 text-xs">✓</span>
             <span className="text-gray-400 w-18 font-mono">{o.order_number}</span>
             <span className="w-32 truncate text-gray-300">{o.customer_name}</span>
             <span className="w-20 text-gray-400">{o.format_label}</span>
@@ -88,7 +88,7 @@ export function BatchOrderList({
           key={o.order_item_id}
           className="flex items-center gap-3 text-xs py-1 px-2 rounded hover:bg-white/[0.02]"
         >
-          <span className="text-gray-600 text-[10px]">──</span>
+          <span className="text-gray-600 text-xs">──</span>
           <span className="text-gray-500 w-18 font-mono">{o.order_number}</span>
           <span className="w-32 truncate text-gray-400">{o.customer_name}</span>
           <span className="w-20 text-gray-500">{o.format_label}</span>

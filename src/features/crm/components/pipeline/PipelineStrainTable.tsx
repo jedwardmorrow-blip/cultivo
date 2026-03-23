@@ -42,7 +42,7 @@ export function PipelineStrainTable({
         />
       </div>
 
-      <div className="hidden lg:grid items-center px-3 py-2 border-b border-cult-medium-gray/15 text-[9px] font-bold text-neutral-600 tracking-[0.08em]"
+      <div className="hidden lg:grid items-center px-3 py-2 border-b border-cult-medium-gray/15 text-xs font-bold text-neutral-600 tracking-[0.08em]"
         style={{ gridTemplateColumns: '1.8fr 0.5fr 0.7fr 0.7fr 0.7fr 0.6fr 0.5fr' }}
       >
         <span>STRAIN</span>
@@ -88,7 +88,7 @@ export function PipelineStrainTable({
 
               <div className="hidden lg:block">
                 <div className="text-[12px] font-bold text-neutral-300 tabular-nums">{formatCurrency(s.demandRevenue)}</div>
-                <div className="text-[9px] text-neutral-600">{s.demandOrders} orders</div>
+                <div className="text-xs text-neutral-600">{s.demandOrders} orders</div>
               </div>
 
               <div className="hidden lg:block">
@@ -106,7 +106,7 @@ export function PipelineStrainTable({
               <div className="flex lg:hidden items-center gap-2 col-span-6 mt-1">
                 <GradeBadge grade={s.primaryGrade} />
                 <HealthBadge status={s.supplyHealth} />
-                <span className="text-[11px] text-neutral-400 tabular-nums ml-auto">{formatCurrency(s.demandRevenue)}</span>
+                <span className="text-xs text-neutral-400 tabular-nums ml-auto">{formatCurrency(s.demandRevenue)}</span>
               </div>
             </div>
 

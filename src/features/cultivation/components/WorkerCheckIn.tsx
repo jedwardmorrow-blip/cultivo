@@ -119,7 +119,7 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-cult-charcoal/30 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-charcoal/30 active:bg-cult-charcoal/50 transition-colors min-h-[48px]"
       >
         <div className="flex items-center gap-2">
           {collapsed ? <ChevronRight className="w-4 h-4 text-cult-medium-gray" /> : <ChevronDown className="w-4 h-4 text-cult-medium-gray" />}
@@ -146,19 +146,19 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
               const isSaving = saving === s.id;
 
               return (
-                <div key={s.id} className={`px-4 py-3 flex flex-col gap-2 ${isSaving ? 'opacity-60' : ''}`}>
-                  <div className="flex items-center justify-between gap-3">
+                <div key={s.id} className={`px-3 sm:px-4 py-3 flex flex-col gap-2 ${isSaving ? 'opacity-60' : ''}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-7 h-7 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
                         {s.first_name.charAt(0)}
                       </span>
                       <span className="text-sm text-cult-white font-medium truncate">{s.first_name}</span>
-                      <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
+                      <span className={`hidden sm:inline-flex px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
                         {s.role.replace(/_/g, ' ')}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                       <div className="flex items-center gap-1">
                         <input
                           type="number"
@@ -170,14 +170,14 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                           disabled={isSaving}
                           className="w-14 bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs text-center py-1 rounded-sm focus:outline-none focus:border-cult-accent"
                         />
-                        <span className="text-[10px] text-cult-medium-gray">hrs</span>
+                        <span className="text-xs text-cult-medium-gray">hrs</span>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => togglePresent(s.id)}
                         disabled={isSaving}
-                        className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+                        className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-colors min-h-[44px] ${
                           isPresent
                             ? 'bg-green-950 text-green-400 border border-green-800 hover:bg-green-900'
                             : 'bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700'
@@ -189,7 +189,7 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                   </div>
 
                   {isPresent && (
-                    <div className="flex flex-wrap gap-1 pl-9">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 pl-0 sm:pl-9">
                       {rooms.map((r) => {
                         const assigned = assignedRooms.includes(r.id);
                         return (
@@ -198,7 +198,7 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                             type="button"
                             onClick={() => toggleRoom(s.id, r.id)}
                             disabled={isSaving}
-                            className={`px-2 py-0.5 text-[10px] font-mono font-semibold rounded-sm transition-colors ${
+                            className={`px-3 py-2 text-xs font-mono font-semibold rounded-md transition-colors min-h-[40px] ${
                               assigned
                                 ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
                                 : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray hover:border-cult-medium-gray'
@@ -288,11 +288,11 @@ function RoomAllocationBreakdown({
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-cult-charcoal/30 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-charcoal/30 active:bg-cult-charcoal/50 transition-colors min-h-[48px]"
       >
         <div className="flex items-center gap-2">
           <MapPin className="w-3.5 h-3.5 text-cult-medium-gray" />
-          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold">
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
             Room Allocation Breakdown
           </span>
         </div>
@@ -305,14 +305,14 @@ function RoomAllocationBreakdown({
             <div key={alloc.room_code} className="bg-cult-charcoal/30 border border-cult-dark-gray p-2.5">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-mono text-xs font-bold text-cult-white">{alloc.room_code}</span>
-                <div className="flex items-center gap-3 text-[10px]">
+                <div className="flex items-center gap-3 text-xs">
                   <span className="text-cult-light-gray">{alloc.totalHours.toFixed(1)} hrs</span>
                   <span className="text-cult-white font-semibold">${alloc.totalCost.toFixed(0)}</span>
                 </div>
               </div>
               <div className="space-y-0.5">
                 {alloc.workers.map((w) => (
-                  <div key={w.name} className="flex items-center justify-between text-[10px]">
+                  <div key={w.name} className="flex items-center justify-between text-xs">
                     <span className="text-cult-light-gray">{w.name}</span>
                     <span className="text-cult-medium-gray font-mono">{w.hours.toFixed(1)}h · ${w.cost.toFixed(0)}</span>
                   </div>

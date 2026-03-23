@@ -492,7 +492,7 @@ export default function CalendarPage() {
                 return (
                   <div key={m.id} className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${color?.dot || 'bg-cult-gold'}`} />
-                    <span className="text-[10px] font-mono text-cult-text">
+                    <span className="text-xs font-mono text-cult-text">
                       {m.name.split(' ')[0]}
                     </span>
                   </div>
@@ -506,7 +506,7 @@ export default function CalendarPage() {
           {dayNames.map((day) => (
             <div
               key={day}
-              className="text-center font-mono text-[10px] uppercase tracking-wider text-cult-text/60 py-1"
+              className="text-center font-mono text-xs uppercase tracking-wider text-cult-text/60 py-1"
             >
               {day}
             </div>
@@ -538,7 +538,7 @@ export default function CalendarPage() {
                 `}
               >
                 <span
-                  className={`font-mono text-[11px] font-medium ${
+                  className={`font-mono text-xs font-medium ${
                     isOtherMonth
                       ? 'text-cult-text'
                       : isTodayDate
@@ -573,7 +573,7 @@ export default function CalendarPage() {
                 day: 'numeric',
               }).format(selectedDate)}
             </h3>
-            <p className="text-cult-text text-[10px] font-mono mt-0.5">
+            <p className="text-cult-text text-xs font-mono mt-0.5">
               {selectedDayTodos.length} item{selectedDayTodos.length !== 1 ? 's' : ''}
               {teamView && filterUser === 'all' && groupedTodos
                 ? ` · ${groupedTodos.size} member${groupedTodos.size !== 1 ? 's' : ''}`
@@ -599,11 +599,11 @@ export default function CalendarPage() {
                   <div key={ownerId} className="mb-3 last:mb-0">
                     <div className="flex items-center gap-2 mb-1.5 px-1">
                       <div className={`w-5 h-5 rounded-full ${color?.bg || 'bg-cult-gold/20'} ${color?.border || 'border-cult-gold/30'} border flex items-center justify-center`}>
-                        <span className={`text-[7px] font-mono font-bold ${color?.text || 'text-cult-gold'}`}>
+                        <span className={`text-xs font-mono font-bold ${color?.text || 'text-cult-gold'}`}>
                           {group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-cult-text tracking-wider">
+                      <span className="text-xs font-mono text-cult-text tracking-wider">
                         {group.name}
                       </span>
                     </div>
@@ -685,7 +685,7 @@ function TodoDetailItem({
         </p>
         <div className="flex items-center gap-2 mt-0.5">
           <span
-            className={`text-[9px] font-mono inline-block ${
+            className={`text-xs font-mono inline-block ${
               color?.text
                 ? `${color.text}/60`
                 : todo.type === 'personal'
@@ -696,12 +696,12 @@ function TodoDetailItem({
             {todo.type === 'personal' ? 'Personal' : 'Team'}
           </span>
           {todo.priority && todo.priority !== 'medium' && (
-            <span className={`text-[9px] font-mono uppercase ${priorityColors[todo.priority] || ''}`}>
+            <span className={`text-xs font-mono uppercase ${priorityColors[todo.priority] || ''}`}>
               {todo.priority}
             </span>
           )}
           {showOwner && (
-            <span className="text-[9px] font-mono text-cult-text/40">
+            <span className="text-xs font-mono text-cult-text/40">
               {todo.owner_name.split(' ')[0]}
             </span>
           )}

@@ -193,24 +193,24 @@ function ProspectCard({
 
         <div className="mt-1.5 space-y-1">
           {prospect.contact_name && (
-            <div className="flex items-center gap-1.5 text-[10px] text-cult-light-gray">
+            <div className="flex items-center gap-1.5 text-xs text-cult-light-gray">
               <Users className="w-3 h-3 text-cult-medium-gray" />
               <span className="truncate">{prospect.contact_name}</span>
             </div>
           )}
           {prospect.city && (
-            <div className="flex items-center gap-1.5 text-[10px] text-cult-light-gray">
+            <div className="flex items-center gap-1.5 text-xs text-cult-light-gray">
               <MapPin className="w-3 h-3 text-cult-medium-gray" />
               <span>{[prospect.city, prospect.state].filter(Boolean).join(', ')}</span>
             </div>
           )}
           <div className="flex items-center gap-3 mt-1">
-            <div className="flex items-center gap-1 text-[10px] text-cult-silver">
+            <div className="flex items-center gap-1 text-xs text-cult-silver">
               <Clock className="w-3 h-3" />
               <span>{prospect.days_in_stage}d in stage</span>
             </div>
             {prospect.open_task_count > 0 && (
-              <div className="flex items-center gap-1 text-[10px] text-amber-400">
+              <div className="flex items-center gap-1 text-xs text-amber-400">
                 <ClipboardList className="w-3 h-3" />
                 <span>{prospect.open_task_count} task{prospect.open_task_count !== 1 ? 's' : ''}</span>
               </div>
@@ -241,7 +241,7 @@ function ProspectCard({
           {nextStage && (
             <button
               onClick={() => onStageChange(nextStage.key)}
-              className={`ml-auto flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${nextStage.bgColor} ${nextStage.color} hover:opacity-80 transition-opacity`}
+              className={`ml-auto flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${nextStage.bgColor} ${nextStage.color} hover:opacity-80 transition-opacity`}
               title={`Move to ${nextStage.label}`}
             >
               {nextStage.label}
@@ -254,7 +254,7 @@ function ProspectCard({
       {/* Expanded move menu */}
       {showMove && (
         <div className="border-t border-cult-charcoal px-3 py-2 bg-cult-dark-gray/50">
-          <p className="text-[10px] text-cult-silver mb-1.5 uppercase tracking-wider">Move to:</p>
+          <p className="text-xs text-cult-silver mb-1.5 uppercase tracking-wider">Move to:</p>
           <div className="flex flex-wrap gap-1">
             {STAGES.filter((s) => s.key !== currentStage).map((s) => {
               const Icon = s.icon;
@@ -262,7 +262,7 @@ function ProspectCard({
                 <button
                   key={s.key}
                   onClick={() => { onStageChange(s.key); setShowMove(false); }}
-                  className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${s.bgColor} ${s.color} hover:opacity-80`}
+                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded border transition-colors ${s.bgColor} ${s.color} hover:opacity-80`}
                 >
                   <Icon className="w-3 h-3" />
                   {s.label}
@@ -309,7 +309,7 @@ function ClosedSection({
           >
             <div>
               <p className="text-sm font-medium text-cult-white">{p.name}</p>
-              <p className="text-[10px] text-cult-silver">
+              <p className="text-xs text-cult-silver">
                 {p.city && `${p.city}, ${p.state}`}
                 {p.contact_name && ` · ${p.contact_name}`}
               </p>

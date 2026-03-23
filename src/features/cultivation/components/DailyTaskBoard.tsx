@@ -104,8 +104,8 @@ export function SchedulesPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
-        <p className="text-cult-light-gray mt-1">Set up recurring task schedules for each grow room</p>
+        <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
+        <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Set up recurring task schedules for each grow room</p>
       </div>
       <RoomCalendar rooms={rooms} />
     </div>
@@ -182,9 +182,9 @@ export function DailyTaskBoard() {
   return (
     <div className="space-y-0 pb-8">
       {/* ── Header: Date Nav + Title ────────────────────────── */}
-      <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+          <h1 className="text-lg sm:text-2xl font-bold text-cult-white uppercase tracking-wide">
             Task Board
           </h1>
           <div className="flex items-center gap-3 mt-1.5">
@@ -195,10 +195,10 @@ export function DailyTaskBoard() {
                 d.setDate(d.getDate() - 1);
                 setSelectedDate(d.toISOString().slice(0, 10));
               }}
-              className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="p-3 -m-1 text-cult-medium-gray hover:text-cult-white active:bg-cult-charcoal/40 transition-colors rounded-lg"
               aria-label="Previous day"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
 
             <span className={`text-sm font-medium ${isToday ? 'text-cult-white' : 'text-cult-light-gray'}`}>
@@ -217,17 +217,17 @@ export function DailyTaskBoard() {
                 d.setDate(d.getDate() + 1);
                 setSelectedDate(d.toISOString().slice(0, 10));
               }}
-              className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="p-3 -m-1 text-cult-medium-gray hover:text-cult-white active:bg-cult-charcoal/40 transition-colors rounded-lg"
               aria-label="Next day"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
 
             {!isToday && (
               <button
                 type="button"
                 onClick={() => setSelectedDate(todayIso())}
-                className="ml-1 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-cult-accent border border-cult-accent/30 hover:bg-cult-accent/10 transition-colors"
+                className="ml-1 px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-accent border border-cult-accent/30 hover:bg-cult-accent/10 active:bg-cult-accent/20 transition-colors rounded-sm"
               >
                 Jump to Today
               </button>
@@ -247,14 +247,14 @@ export function DailyTaskBoard() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-px flex-shrink-0 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-px flex-shrink-0 min-h-[48px] ${
                   isActive
                     ? 'text-cult-white border-cult-accent'
                     : 'text-cult-medium-gray hover:text-cult-light-gray border-transparent'
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
           })}
@@ -488,7 +488,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
       {/* ── Status Filter Chips ──────────────────────────── */}
       {stats.total > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider mr-1 flex-shrink-0">Show:</span>
+          <span className="text-xs text-cult-medium-gray uppercase tracking-wider mr-1 flex-shrink-0">Show:</span>
           {([
             { key: 'all' as const, label: 'All Tasks', count: stats.total, icon: ClipboardList },
             { key: 'pending' as const, label: 'Pending', count: stats.pending + stats.carried, icon: Circle },
@@ -502,15 +502,15 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
                 key={chip.key}
                 type="button"
                 onClick={() => setStatusFilter(chip.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-sm transition-colors flex-shrink-0 ${
+                className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-medium rounded-sm transition-colors flex-shrink-0 min-h-[44px] ${
                   isActive
                     ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
                     : 'text-cult-medium-gray hover:text-cult-light-gray border border-transparent hover:border-cult-dark-gray'
                 }`}
               >
-                <Icon className="w-3 h-3" />
+                <Icon className="w-3.5 h-3.5" />
                 {chip.label}
-                <span className={`ml-0.5 text-[10px] ${isActive ? 'text-cult-light-gray' : 'text-cult-medium-gray'}`}>
+                <span className={`ml-0.5 text-xs ${isActive ? 'text-cult-light-gray' : 'text-cult-medium-gray'}`}>
                   {chip.count}
                 </span>
               </button>
@@ -584,7 +584,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
               {showSectionHeader && (
                 <div className="flex items-center gap-3 mt-6 mb-2 first:mt-0">
                   <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
-                  <span className="text-[11px] font-bold text-cult-light-gray uppercase tracking-widest">
+                  <span className="text-xs font-bold text-cult-light-gray uppercase tracking-widest">
                     {ROOM_TYPE_LABELS[room.room_type] ?? room.room_type}
                   </span>
                   <div className="flex-1 h-px bg-cult-dark-gray" />
@@ -601,20 +601,20 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
                 <div className="flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-                    <span className="text-[10px] text-cult-medium-gray uppercase">{room.room_type}</span>
+                    <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>
                   </div>
 
                   <div className="flex items-center gap-3">
                     {/* Completion indicator */}
                     <div className="flex items-center gap-2">
                       {allDone ? (
-                        <span className="flex items-center gap-1 text-[11px] font-medium text-green-400">
+                        <span className="flex items-center gap-1 text-xs font-medium text-green-400">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Done
                         </span>
                       ) : (
                         <>
-                          <span className="text-[11px] font-medium text-cult-light-gray">
+                          <span className="text-xs font-medium text-cult-light-gray">
                             {completedCount}/{totalCount}
                           </span>
                           <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
@@ -627,22 +627,22 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => openDeadPlantForm(room.id)}
-                        className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors text-cult-medium-gray hover:text-red-400"
+                        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-red-400 active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
                         title="Log dead plant"
                       >
-                        <Skull className="w-3.5 h-3.5" />
+                        <Skull className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
                         onClick={() => openAddTask(room.id)}
-                        className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors text-cult-medium-gray hover:text-cult-accent"
+                        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-accent active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
                         title="Add task to this room"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -743,9 +743,9 @@ function StatCard({
 }) {
   return (
     <div className="bg-cult-near-black border border-cult-dark-gray p-3">
-      <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">{label}</div>
       <div className={`text-xl font-bold ${accent ?? 'text-cult-white'}`}>{value}</div>
-      <div className="text-[10px] text-cult-medium-gray mt-0.5">{detail}</div>
+      <div className="text-xs text-cult-medium-gray mt-0.5">{detail}</div>
       {children}
     </div>
   );
@@ -765,7 +765,7 @@ function CompletedTasksCollapse({ tasks, onTaskClick }: { tasks: TaskCardData[];
       >
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-green-500/60" />
-          <span className="text-[11px] text-cult-medium-gray font-medium">
+          <span className="text-xs text-cult-medium-gray font-medium">
             {tasks.length} completed
           </span>
         </div>
@@ -906,27 +906,27 @@ function AddTaskFormFields({
   return (
     <>
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
         <select value={taskType} onChange={(e) => setTaskType(e.target.value as TaskType)} className={selectClass}>
           {taskTypes.map((t) => <option key={t} value={t}>{TASK_TYPE_CONFIG[t].label}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Room</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Room</label>
         <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={selectClass}>
           <option value="">Select room...</option>
           {rooms.map((r) => <option key={r.id} value={r.id}>{r.room_code}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Assign To</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Assign To</label>
         <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={selectClass}>
           <option value="">Unassigned</option>
           {staff.map((s) => <option key={s.id} value={s.id}>{s.first_name}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -962,15 +962,15 @@ function TaskTypesTab() {
               </div>
               <span className="text-xs font-semibold text-cult-white uppercase tracking-wider">{config.label}</span>
             </div>
-            <p className="text-[10px] text-cult-light-gray leading-relaxed">
+            <p className="text-xs text-cult-light-gray leading-relaxed">
               {TASK_TYPE_DESCRIPTIONS[key]}
             </p>
             {fields.length > 0 && (
               <div className="pt-2 border-t border-cult-dark-gray/50">
-                <span className="text-[9px] text-cult-medium-gray uppercase tracking-wider">Fields</span>
+                <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Fields</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {fields.map((f) => (
-                    <span key={f} className="px-1.5 py-0.5 text-[9px] bg-cult-charcoal text-cult-light-gray rounded-sm">{f}</span>
+                    <span key={f} className="px-1.5 py-0.5 text-xs bg-cult-charcoal text-cult-light-gray rounded-sm">{f}</span>
                   ))}
                 </div>
               </div>
@@ -1086,17 +1086,17 @@ function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-cult-white font-medium">{s.first_name}</span>
-                      <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
+                      <span className={`px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
                         {s.role.replace(/_/g, ' ')}
                       </span>
                       {!isPresent && (
-                        <span className="text-[10px] text-zinc-500 uppercase">Absent</span>
+                        <span className="text-xs text-zinc-500 uppercase">Absent</span>
                       )}
                     </div>
                     {isPresent && roomAssignments.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {roomAssignments.map((rid) => (
-                          <span key={rid} className="px-1.5 py-0.5 text-[9px] font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
+                          <span key={rid} className="px-1.5 py-0.5 text-xs font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
                         ))}
                       </div>
                     )}
@@ -1107,15 +1107,15 @@ function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
                   <div className="flex items-center gap-3 flex-shrink-0 text-xs">
                     <div className="text-center">
                       <div className="text-cult-white font-semibold">{counts.total}</div>
-                      <div className="text-[9px] text-cult-medium-gray uppercase">Tasks</div>
+                      <div className="text-xs text-cult-medium-gray uppercase">Tasks</div>
                     </div>
                     <div className="text-center">
                       <div className="text-cult-green font-semibold">{counts.completed}</div>
-                      <div className="text-[9px] text-cult-medium-gray uppercase">Done</div>
+                      <div className="text-xs text-cult-medium-gray uppercase">Done</div>
                     </div>
                     <div className="text-center">
                       <div className="text-cult-white font-semibold">{hours}h</div>
-                      <div className="text-[9px] text-cult-medium-gray uppercase">Hours</div>
+                      <div className="text-xs text-cult-medium-gray uppercase">Hours</div>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-cult-medium-gray transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
@@ -1141,20 +1141,20 @@ function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
                           <div key={t.id} className="flex items-center gap-3 py-2">
                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[t.status] ?? 'bg-zinc-500'}`} />
                             <span
-                              className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
+                              className="px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
                               style={{ backgroundColor: `${config.color}20`, color: config.color }}
                             >
                               {config.label}
                             </span>
                             <span className="text-xs font-mono text-cult-white">{t.room_name}</span>
                             {t.estimated_duration && (
-                              <span className="flex items-center gap-1 text-[10px] text-cult-medium-gray ml-auto">
+                              <span className="flex items-center gap-1 text-xs text-cult-medium-gray ml-auto">
                                 <Clock className="w-3 h-3" />
                                 {t.estimated_duration}
                               </span>
                             )}
                             {t.estimated_cost != null && t.estimated_cost > 0 && (
-                              <span className="text-[10px] text-cult-medium-gray font-mono">${t.estimated_cost.toFixed(0)}</span>
+                              <span className="text-xs text-cult-medium-gray font-mono">${t.estimated_cost.toFixed(0)}</span>
                             )}
                           </div>
                         );
@@ -1175,7 +1175,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-cult-near-black border border-cult-dark-gray p-3">
       <div className="text-lg font-bold text-cult-white">{value}</div>
-      <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider mt-0.5">{label}</div>
+      <div className="text-xs text-cult-medium-gray uppercase tracking-wider mt-0.5">{label}</div>
     </div>
   );
 }

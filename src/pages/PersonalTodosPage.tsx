@@ -283,7 +283,7 @@ function AdminTodoView() {
             <div className="px-4 py-3 border-b border-cult-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-cult-gold/20 border border-cult-gold/30 flex items-center justify-center">
-                  <span className="text-[8px] font-mono text-cult-gold font-medium">
+                  <span className="text-xs font-mono text-cult-gold font-medium">
                     {name
                       .split(' ')
                       .map(n => n[0])
@@ -297,7 +297,7 @@ function AdminTodoView() {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-mono text-cult-text">
+                <span className="text-xs font-mono text-cult-text">
                   {doneCount}/{userTodos.length} done
                 </span>
                 <button
@@ -339,13 +339,13 @@ function AdminTodoView() {
                         {todo.title}
                       </span>
                       {todo.assigned_by_profile && (
-                        <span className="ml-2 text-[9px] font-mono text-cult-text/40">
+                        <span className="ml-2 text-xs font-mono text-cult-text/40">
                           assigned by {todo.assigned_by_profile.full_name.split(' ')[0]}
                         </span>
                       )}
                     </div>
                     {todo.priority && todo.priority !== 'medium' && (
-                      <span className={`px-1.5 py-0.5 text-[8px] font-mono tracking-wider rounded-sm border flex-shrink-0 ${
+                      <span className={`px-1.5 py-0.5 text-xs font-mono tracking-wider rounded-sm border flex-shrink-0 ${
                         todo.priority === 'critical' ? 'text-cult-red-bright bg-cult-red-bright/10 border-cult-red-bright/30' :
                         todo.priority === 'high' ? 'text-cult-amber-bright bg-cult-amber-bright/10 border-cult-amber-bright/30' :
                         'text-cult-text/60 bg-cult-dark border-cult-border/50'
@@ -357,7 +357,7 @@ function AdminTodoView() {
                       <Repeat size={10} className="text-cult-text/40" />
                     )}
                     {todo.due_date && (
-                      <span className="text-[10px] font-mono text-cult-text/50">
+                      <span className="text-xs font-mono text-cult-text/50">
                         {todo.due_date}
                       </span>
                     )}
@@ -406,10 +406,10 @@ function TodoSection({
     <div>
       <div className="flex items-center gap-2 mb-2 px-1">
         {icon}
-        <span className="text-[10px] font-mono text-cult-text/60 tracking-wider uppercase">
+        <span className="text-xs font-mono text-cult-text/60 tracking-wider uppercase">
           {title}
         </span>
-        <span className="text-[10px] font-mono text-cult-text/40">
+        <span className="text-xs font-mono text-cult-text/40">
           ({count})
         </span>
       </div>
@@ -456,12 +456,12 @@ function TodoItem({
           {todo.title}
         </span>
         {todo.assigned_by_profile && (
-          <p className="text-[9px] font-mono text-cult-gold/50 mt-0.5">
+          <p className="text-xs font-mono text-cult-gold/50 mt-0.5">
             assigned by {todo.assigned_by_profile.full_name.split(' ')[0]}
           </p>
         )}
         {todo.description && !todo.assigned_by_profile && (
-          <p className="text-[10px] text-cult-text/50 mt-0.5 truncate">
+          <p className="text-xs text-cult-text/50 mt-0.5 truncate">
             {todo.description}
           </p>
         )}
@@ -470,7 +470,7 @@ function TodoItem({
         <Repeat size={11} className="text-cult-gold/40 flex-shrink-0" />
       )}
       {todo.due_date && !todo.is_recurring && (
-        <span className="text-[10px] font-mono text-cult-text/50 flex-shrink-0">
+        <span className="text-xs font-mono text-cult-text/50 flex-shrink-0">
           {todo.due_date}
         </span>
       )}
@@ -502,7 +502,7 @@ function CompletedSection({
         className="flex items-center gap-2 mb-2 px-1 text-cult-text/40 hover:text-cult-text transition-colors"
       >
         {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-        <span className="text-[10px] font-mono tracking-wider uppercase">
+        <span className="text-xs font-mono tracking-wider uppercase">
           Completed ({todos.length})
         </span>
       </button>

@@ -44,7 +44,7 @@ export function SectionMap({ tables, groups }: SectionMapProps) {
               : 'bg-cult-near-black border-dashed border-cult-dark-gray'
           }`}
         >
-          <p className="text-cult-medium-gray text-[10px]">{cell.label}</p>
+          <p className="text-cult-medium-gray text-xs">{cell.label}</p>
           {cell.plantCount > 0 ? (
             <>
               {cell.strainAbbr && (

@@ -94,16 +94,16 @@ function batchStageBadge(item: OrderLineItem) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-500 font-mono">{item.batch_number}</span>
-      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${stageStyle}`}>
+      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${stageStyle}`}>
         {stageLabel}
       </span>
       {item.batch_quality_grade && item.batch_quality_grade !== 'Ungraded' && (
-        <span className={`text-[10px] font-medium ${gradeTextColor}`}>
+        <span className={`text-xs font-medium ${gradeTextColor}`}>
           {item.batch_quality_grade}
         </span>
       )}
       {item.batch_quarantined && (
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
           Quarantined
         </span>
       )}
@@ -312,12 +312,12 @@ function SupplyDemandChart({ byStrain }: { byStrain: StrainFormatRow[] }) {
           {pipelineStages.map(s => (
             <div key={s.key} className="flex items-center gap-1.5">
               <div className={`w-2 h-2 rounded-sm ${s.color}`} />
-              <span className="text-[10px] text-gray-500">{s.label}</span>
+              <span className="text-xs text-gray-500">{s.label}</span>
             </div>
           ))}
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-sm bg-gray-700 border border-gray-600" />
-            <span className="text-[10px] text-gray-500">Gap</span>
+            <span className="text-xs text-gray-500">Gap</span>
           </div>
         </div>
       </div>
@@ -365,7 +365,7 @@ function SupplyDemandChart({ byStrain }: { byStrain: StrainFormatRow[] }) {
 
               {/* Demand label */}
               <div className="w-20 flex-shrink-0 text-right">
-                <span className="text-[10px] text-gray-500">
+                <span className="text-xs text-gray-500">
                   {formatWeight(strain.demand_g)}
                 </span>
               </div>
@@ -480,7 +480,7 @@ function TrimmerScoreboard() {
       <div className="flex items-center gap-2 mb-3">
         <Users className="w-4 h-4 text-gray-400" />
         <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Trimmer Performance</span>
-        <span className="text-[10px] text-gray-600 ml-auto">Last 30 days</span>
+        <span className="text-xs text-gray-600 ml-auto">Last 30 days</span>
       </div>
 
       <div className="space-y-2">
@@ -506,7 +506,7 @@ function TrimmerScoreboard() {
                   className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded opacity-80"
                   style={{ width: `${barPct}%` }}
                 />
-                <span className="absolute inset-0 flex items-center px-2 text-[10px] text-white font-semibold">
+                <span className="absolute inset-0 flex items-center px-2 text-xs text-white font-semibold">
                   {Math.round(t.avg_grams_per_hour)} g/hr
                 </span>
               </div>
@@ -514,13 +514,13 @@ function TrimmerScoreboard() {
               {/* Stats */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="text-right w-14" title="Sessions">
-                  <span className="text-[10px] text-gray-500">{t.session_count} sess</span>
+                  <span className="text-xs text-gray-500">{t.session_count} sess</span>
                 </div>
                 <div className="text-right w-16" title="Total flower output">
-                  <span className="text-[10px] text-green-400">{formatWeight(t.total_flower_g)}</span>
+                  <span className="text-xs text-green-400">{formatWeight(t.total_flower_g)}</span>
                 </div>
                 <div className="text-right w-12" title="Waste percentage">
-                  <span className={`text-[10px] ${t.waste_pct > 5 ? 'text-amber-400' : 'text-gray-500'}`}>
+                  <span className={`text-xs ${t.waste_pct > 5 ? 'text-amber-400' : 'text-gray-500'}`}>
                     {t.waste_pct.toFixed(1)}% w
                   </span>
                 </div>
@@ -632,7 +632,7 @@ function OrderLeadTimeWidget() {
       <div className="flex items-center gap-2 mb-3">
         <Clock className="w-4 h-4 text-gray-400" />
         <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Order Lead Time</span>
-        <span className="text-[10px] text-gray-600 ml-auto">Last 60 days · {data.total_orders} orders</span>
+        <span className="text-xs text-gray-600 ml-auto">Last 60 days · {data.total_orders} orders</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpis.map(k => {
@@ -642,7 +642,7 @@ function OrderLeadTimeWidget() {
               <Icon className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
               <div>
                 <div className={`text-lg font-bold ${k.color}`}>{k.value}</div>
-                <div className="text-[10px] text-gray-500">{k.label}</div>
+                <div className="text-xs text-gray-500">{k.label}</div>
               </div>
             </div>
           );
@@ -758,7 +758,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                   </td>
                   <td className="px-4 py-3 text-right text-white">
                     <div>{formats[0].ready_lbs.toFixed(1)} lbs</div>
-                    <div className="text-[10px] text-gray-500">
+                    <div className="text-xs text-gray-500">
                       F:{formatWeight(formats[0].ready_flower_g)} · S:{formatWeight(formats[0].ready_smalls_g)}
                     </div>
                   </td>
@@ -766,7 +766,7 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                     {formats[0].pipeline_lbs > 0 ? (
                       <div>
                         <div>{formats[0].pipeline_lbs.toFixed(1)} lbs</div>
-                        <div className="text-[10px] text-gray-500">
+                        <div className="text-xs text-gray-500">
                           {formats[0].pipeline_bucked_g > 0 && `Bucked: ${formatWeight(formats[0].pipeline_bucked_g)}`}
                           {formats[0].pipeline_bucked_g > 0 && formats[0].pipeline_binned_g > 0 && ' · '}
                           {formats[0].pipeline_binned_g > 0 && `Binned: ${formatWeight(formats[0].pipeline_binned_g)}`}
@@ -790,14 +790,14 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
                       <td className="px-4 py-2 text-gray-300 pl-8">
                         {f.format_label}
                         {f.product_category && f.product_category !== 'Flower' && (
-                          <span className="ml-1.5 text-[10px] text-gray-500">{f.product_category}</span>
+                          <span className="ml-1.5 text-xs text-gray-500">{f.product_category}</span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
                       <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
                       <td className="px-4 py-2 text-right text-gray-400">
                         {f.already_packaged_units > 0 && (
-                          <span className="text-[10px] text-green-400">{f.already_packaged_units} pkgd</span>
+                          <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
                         )}
                       </td>
                       <td className="px-4 py-2"></td>
@@ -936,8 +936,8 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                     <td className="px-4 py-2 text-gray-400">{item.quantity} units</td>
                     <td className="px-4 py-2 text-center">
                       {item.batch_number
-                        ? <span className="text-[10px] text-green-400">✓ Batch</span>
-                        : <span className="text-[10px] text-gray-600">No batch</span>}
+                        ? <span className="text-xs text-green-400">✓ Batch</span>
+                        : <span className="text-xs text-gray-600">No batch</span>}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300">{formatWeight(item.line_demand_g)}</td>
                   </tr>

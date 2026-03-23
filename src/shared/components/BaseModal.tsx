@@ -117,7 +117,8 @@ export function BaseModal({
             </div>
             <button
               onClick={attemptClose}
-              className="text-cult-lighter-gray hover:text-cult-white transition-colors"
+              className="p-2 -m-2 text-cult-lighter-gray hover:text-cult-white hover:bg-cult-charcoal active:bg-cult-charcoal/80 transition-colors rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Close"
             >
               <X className="w-6 h-6" />
             </button>

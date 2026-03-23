@@ -214,12 +214,12 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
                         <div className="flex items-center gap-2">
                           <span className="text-cult-white font-semibold">{sc.strain_name}</span>
                           {isBest && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-green-400">
+                            <span className="flex items-center gap-0.5 text-xs text-green-400">
                               <TrendingDown className="w-3 h-3" /> lowest
                             </span>
                           )}
                           {isWorst && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-red-400">
+                            <span className="flex items-center gap-0.5 text-xs text-red-400">
                               <TrendingUp className="w-3 h-3" /> highest
                             </span>
                           )}
@@ -259,11 +259,11 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Est. Cost</div>
+                    <div className="text-xs text-cult-medium-gray uppercase tracking-wider">Est. Cost</div>
                     <div className="text-sm font-mono text-cult-light-gray">${rc.est_total.toLocaleString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider">$/gram</div>
+                    <div className="text-xs text-cult-medium-gray uppercase tracking-wider">$/gram</div>
                     <div className="text-lg font-mono font-bold text-cult-white">
                       {rc.cost_per_gram != null ? `$${rc.cost_per_gram.toFixed(2)}` : '—'}
                     </div>
@@ -276,7 +276,7 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
       )}
 
       {/* Disclaimer */}
-      <p className="text-[10px] text-cult-medium-gray italic">
+      <p className="text-xs text-cult-medium-gray italic">
         Cost estimates are based on configurable assumptions and harvest data. Adjust assumptions above to refine projections.
         Actual costs may vary based on labor scheduling, utility rates, and supply chain factors.
       </p>
@@ -289,7 +289,7 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
 function ParamInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <label className="block text-[10px] text-cult-medium-gray uppercase tracking-wider mb-1">{label}</label>
+      <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">{label}</label>
       <input
         type="number"
         min={0}
@@ -305,9 +305,9 @@ function ParamInput({ label, value, onChange }: { label: string; value: number; 
 function CostCard({ label, value, sub, custom }: { label: string; value: string; sub: string; custom?: React.ReactNode }) {
   return (
     <div className="bg-cult-near-black border border-cult-dark-gray p-3">
-      <div className="text-[10px] text-cult-medium-gray uppercase tracking-wider">{label}</div>
+      <div className="text-xs text-cult-medium-gray uppercase tracking-wider">{label}</div>
       {value && <div className="text-xl font-mono font-bold text-cult-white mt-1">{value}</div>}
-      {sub && <div className="text-[10px] text-cult-light-gray mt-0.5">{sub}</div>}
+      {sub && <div className="text-xs text-cult-light-gray mt-0.5">{sub}</div>}
       {custom}
     </div>
   );
@@ -317,11 +317,11 @@ function CostBar({ label, amount, total, color }: { label: string; amount: numbe
   const pct = total > 0 ? (amount / total) * 100 : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-cult-light-gray w-10">{label}</span>
+      <span className="text-xs text-cult-light-gray w-10">{label}</span>
       <div className="flex-1 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-mono text-cult-medium-gray w-12 text-right">${amount.toLocaleString()}</span>
+      <span className="text-xs font-mono text-cult-medium-gray w-12 text-right">${amount.toLocaleString()}</span>
     </div>
   );
 }

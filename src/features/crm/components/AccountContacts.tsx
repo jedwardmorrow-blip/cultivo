@@ -169,7 +169,7 @@ export function AccountContacts({
                     <Star className={`w-3 h-3 ${contact.is_primary ? 'fill-amber-400' : ''}`} />
                   </button>
                   {contact.title && (
-                    <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-1.5 py-0.5 rounded">{contact.title}</span>
+                    <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-1.5 py-0.5 rounded">{contact.title}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-1">
@@ -210,14 +210,14 @@ export function AccountContacts({
         {contacts.length === 0 && hasLegacyData && (
           <>
             <div className="px-5 py-2 bg-cult-dark-gray/20">
-              <span className="text-[10px] uppercase tracking-wider text-cult-silver">Legacy Contact Data</span>
+              <span className="text-xs uppercase tracking-wider text-cult-silver">Legacy Contact Data</span>
             </div>
             {legacyContacts.map((lc, i) => (
               <div key={i} className="px-5 py-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-cult-light-gray">{lc.name}</span>
                   {lc.title && (
-                    <span className="text-[10px] text-cult-silver bg-cult-dark-gray px-1.5 py-0.5 rounded">{lc.title}</span>
+                    <span className="text-xs text-cult-silver bg-cult-dark-gray px-1.5 py-0.5 rounded">{lc.title}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-1">

@@ -224,21 +224,21 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                 {/* Wash details */}
                 <div className="grid grid-cols-4 gap-4 mb-5">
                   <div>
-                    <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-1">Water Temp</p>
+                    <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1">Water Temp</p>
                     <p className="text-sm text-cult-text-primary">
                       {run.water_temp_f ? `${run.water_temp_f}°F` : '—'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-1"># Washes</p>
+                    <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1"># Washes</p>
                     <p className="text-sm text-cult-text-primary">{run.num_washes ?? '—'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-1">Equipment</p>
+                    <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1">Equipment</p>
                     <p className="text-sm text-cult-text-primary">{run.equipment?.name ?? '—'}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-1">Date</p>
+                    <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-1">Date</p>
                     <p className="text-sm text-cult-text-primary">
                       {new Date(run.wash_date).toLocaleDateString('en-US', {
                         month: 'short',
@@ -252,7 +252,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                 {/* Input packages */}
                 {run.inputs && run.inputs.length > 0 && (
                   <div className="mb-5">
-                    <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-2">Input Packages</p>
+                    <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-2">Input Packages</p>
                     <div className="flex flex-wrap gap-2">
                       {run.inputs.map((inp) => (
                         <span
@@ -272,7 +272,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                 {/* Record output or completed state */}
                 {!isCompleted && run.total_output_weight_grams === null && (
                   <div className="bg-cult-surface border border-cult-border rounded-[6px] p-4">
-                    <p className="text-[11px] font-semibold text-cult-text-secondary uppercase tracking-widest mb-3">
+                    <p className="text-xs font-semibold text-cult-text-secondary uppercase tracking-widest mb-3">
                       Record Output
                     </p>
                     <div className="grid grid-cols-2 gap-4 mb-4">
@@ -310,7 +310,7 @@ export function ActiveWashRuns({ onNewWash, onFreezeDryer }: ActiveWashRunsProps
                     )}
 
                     <div>
-                      <p className="text-[11px] text-cult-text-muted uppercase tracking-wide mb-2">
+                      <p className="text-xs text-cult-text-muted uppercase tracking-wide mb-2">
                         Micron Grades (optional)
                       </p>
                       <div className="grid grid-cols-4 gap-2">

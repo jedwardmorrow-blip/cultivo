@@ -111,7 +111,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
                 </button>
                 {showPipelineMenu && (
                   <div className="absolute top-full left-0 mt-1 z-50 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl p-1.5 min-w-[160px]">
-                    <p className="px-2 py-1 text-[10px] text-cult-silver uppercase tracking-wider">Pipeline Stage</p>
+                    <p className="px-2 py-1 text-xs text-cult-silver uppercase tracking-wider">Pipeline Stage</p>
                     {PIPELINE_STAGES.map((s) => (
                       <button
                         key={s.key}
@@ -167,7 +167,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
           {account.tags.length > 0 && (
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               {account.tags.map((tag) => (
-                <span key={tag} className="px-2 py-0.5 text-[10px] font-medium bg-cult-dark-gray text-cult-silver rounded-full border border-cult-charcoal">
+                <span key={tag} className="px-2 py-0.5 text-xs font-medium bg-cult-dark-gray text-cult-silver rounded-full border border-cult-charcoal">
                   {tag}
                 </span>
               ))}
@@ -198,7 +198,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
           </div>
           {monthlyRevenue && monthlyRevenue.some((v) => v > 0) && (
             <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50 w-full">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-2">6-Month Revenue Trend</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-2">6-Month Revenue Trend</p>
               <RevenueSparkline data={monthlyRevenue} width={200} height={40} />
             </div>
           )}
@@ -237,7 +237,7 @@ function MetricBlock({ label, value, accent }: { label: string; value: string; a
   const valueColor = accent === 'emerald' ? 'text-emerald-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
   return (
     <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
       <p className={`text-lg font-bold ${valueColor}`}>{value}</p>
     </div>
   );

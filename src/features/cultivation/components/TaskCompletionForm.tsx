@@ -283,7 +283,7 @@ export function TaskCompletionForm({
       {/* ── Assigned Worker Picker ──────────────────────────── */}
       {staffOptions && staffOptions.length > 0 && !isRouter && (
         <div className="relative" ref={staffDropdownRef}>
-          <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
             Assigned To
           </label>
           <button
@@ -299,7 +299,7 @@ export function TaskCompletionForm({
             <div className="flex items-center gap-2">
               {selectedStaff ? (
                 <>
-                  <span className="w-5 h-5 rounded-full bg-cult-near-black flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-cult-near-black flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
                     {selectedStaff.first_name.charAt(0)}
                   </span>
                   <span className="font-medium">{selectedStaff.first_name}</span>
@@ -337,12 +337,12 @@ export function TaskCompletionForm({
                       : 'text-cult-light-gray hover:bg-cult-charcoal/60 hover:text-cult-white'
                   }`}
                 >
-                  <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
                     {s.first_name.charAt(0)}
                   </span>
                   {s.first_name}
                   {s.id === assignedStaffId && (
-                    <span className="ml-auto text-[9px] text-cult-medium-gray uppercase">Current</span>
+                    <span className="ml-auto text-xs text-cult-medium-gray uppercase">Current</span>
                   )}
                 </button>
               ))}
@@ -438,7 +438,7 @@ function FormHeader({ task, config, onClose }: {
     <div className="flex items-start justify-between gap-3">
       <div className="space-y-1.5">
         <span
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-sm"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider rounded-sm"
           style={{ backgroundColor: `${config.color}20`, color: config.color }}
         >
           {config.label}
@@ -447,7 +447,7 @@ function FormHeader({ task, config, onClose }: {
           <span className="font-mono font-bold text-cult-white">{task.room_name}</span>
           {task.assigned_to_name && (
             <span className="flex items-center gap-1">
-              <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-[9px] font-bold text-cult-white">
+              <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white">
                 {task.assigned_to_name.charAt(0)}
               </span>
               {task.assigned_to_name}
@@ -496,7 +496,7 @@ function RouterCard({ task, config, onNavigateHarvest, onNavigateClone, onClose 
           <p className="text-sm text-cult-white font-medium">
             {isHarvest ? 'Harvest Workflow' : 'Clone Cutting Flow'}
           </p>
-          <p className="text-[11px] text-cult-medium-gray mt-0.5">
+          <p className="text-xs text-cult-medium-gray mt-0.5">
             {isHarvest
               ? 'This task uses the dedicated harvest workflow with room selection, weight recording, and batch creation.'
               : 'This task uses the clone cutting flow with mother selection, cut counts, and tray assignment.'}
@@ -522,7 +522,7 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
   return (
     <div className="space-y-3 pt-2 border-t border-cult-dark-gray">
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1.5">Duration</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5">Duration</label>
         <div className="flex flex-wrap gap-1.5">
           {DURATION_OPTIONS.map((opt) => (
             <button
@@ -542,7 +542,7 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
       </div>
 
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

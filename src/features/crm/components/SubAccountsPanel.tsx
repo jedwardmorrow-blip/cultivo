@@ -59,10 +59,10 @@ export function SubAccountsPanel({
             <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
               Hub Locations
             </h3>
-            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500/20 text-sky-400 rounded">
+            <span className="px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
               {childAccounts.length}
             </span>
-            <span className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded border ${
+            <span className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border ${
               deliveryModel === 'hub_and_spoke'
                 ? 'bg-teal-500/15 text-teal-400 border-teal-500/30'
                 : 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
@@ -99,9 +99,9 @@ export function SubAccountsPanel({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-cult-white">{child.name}</span>
-                    <span className="text-[10px] font-mono text-cult-light-gray">{child.dispensary_code}</span>
+                    <span className="text-xs font-mono text-cult-light-gray">{child.dispensary_code}</span>
                     {perf && (
-                      <span className={`px-1.5 py-0.5 text-[9px] font-semibold rounded-full border ${getHealthColor(perf.health_label)}`}>
+                      <span className={`px-1.5 py-0.5 text-xs font-semibold rounded-full border ${getHealthColor(perf.health_label)}`}>
                         {getHealthLabel(perf.health_label)}
                       </span>
                     )}
@@ -118,7 +118,7 @@ export function SubAccountsPanel({
                   {perf && (
                     <div className="hidden sm:flex items-center gap-4">
                       <div className="w-24">
-                        <div className="flex items-center justify-between text-[10px] mb-1">
+                        <div className="flex items-center justify-between text-xs mb-1">
                           <span className="text-cult-silver">Share</span>
                           <span className="text-cult-white font-semibold">{revenueSharePct.toFixed(0)}%</span>
                         </div>
@@ -133,7 +133,7 @@ export function SubAccountsPanel({
                         <p className={`text-sm font-semibold ${Number(perf.revenue) > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
                           {Number(perf.revenue) > 0 ? formatCurrency(Number(perf.revenue)) : '-'}
                         </p>
-                        <p className="text-[10px] text-cult-silver">{perf.order_count} orders</p>
+                        <p className="text-xs text-cult-silver">{perf.order_count} orders</p>
                       </div>
                     </div>
                   )}
@@ -142,7 +142,7 @@ export function SubAccountsPanel({
                       <p className={`text-sm font-semibold ${Number(child.total_revenue) > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
                         {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
                       </p>
-                      <p className="text-[10px] text-cult-silver">{child.order_count} orders</p>
+                      <p className="text-xs text-cult-silver">{child.order_count} orders</p>
                     </div>
                   )}
                   <div className="text-right hidden md:block">

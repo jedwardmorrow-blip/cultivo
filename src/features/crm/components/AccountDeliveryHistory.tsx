@@ -47,7 +47,7 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
           <Truck className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Delivery History</h3>
           {periodLabel && (
-            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
@@ -74,11 +74,11 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-cult-white">{delivery.order_number}</span>
-                <span className={`px-1.5 py-0.5 text-[10px] rounded ${getStatusStyle(delivery.status)}`}>
+                <span className={`px-1.5 py-0.5 text-xs rounded ${getStatusStyle(delivery.status)}`}>
                   {getStatusLabel(delivery.status)}
                 </span>
               </div>
-              <div className="flex items-center gap-3 mt-0.5 text-[10px] text-cult-silver">
+              <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-silver">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatDate(delivery.order_date)}
@@ -89,7 +89,7 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
             <div className="text-right flex-shrink-0">
               <p className="text-sm font-semibold text-cult-white">{formatCurrency(Number(delivery.total_amount))}</p>
               {delivery.scheduled_delivery_date && (
-                <p className="text-[10px] text-cult-light-gray">
+                <p className="text-xs text-cult-light-gray">
                   Del: {formatDate(delivery.scheduled_delivery_date)}
                 </p>
               )}

@@ -150,12 +150,12 @@ function TaskRow({
             >
               {task.title}
             </button>
-            <span className="text-[10px] text-cult-silver">{taskTypeLabels[task.task_type]}</span>
+            <span className="text-xs text-cult-silver">{taskTypeLabels[task.task_type]}</span>
             {task.focus_today && (
-              <span className="text-[10px] text-amber-400 font-medium">★ Focus</span>
+              <span className="text-xs text-amber-400 font-medium">★ Focus</span>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-cult-silver">
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-silver">
             <span className="text-cult-light-gray">{task.customer_name}</span>
             {task.dispensary_code && (
               <span className="font-mono text-cult-medium-gray">{task.dispensary_code}</span>
@@ -226,7 +226,7 @@ function TaskRow({
         <div className="px-4 pb-4 pt-1 bg-cult-dark-gray/30 border-t border-cult-charcoal/50 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Title</label>
+              <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Title</label>
               <input
                 type="text"
                 value={editTitle}
@@ -236,7 +236,7 @@ function TaskRow({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Priority</label>
+                <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Priority</label>
                 <select
                   value={editPriority}
                   onChange={(e) => setEditPriority(e.target.value as CRMTask['priority'])}
@@ -249,7 +249,7 @@ function TaskRow({
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Due Date</label>
+                <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Due Date</label>
                 <input
                   type="date"
                   value={editDueDate}
@@ -260,7 +260,7 @@ function TaskRow({
             </div>
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-cult-silver mb-1">Notes / Description</label>
+            <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Notes / Description</label>
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
@@ -312,11 +312,11 @@ function VisitRow({
           >
             {visit.customer_name}
           </button>
-          <span className={`px-1.5 py-0.5 text-[10px] rounded ${visitTypeColors[visit.visit_type]}`}>
+          <span className={`px-1.5 py-0.5 text-xs rounded ${visitTypeColors[visit.visit_type]}`}>
             {visitTypeLabels[visit.visit_type]}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-cult-silver">
+        <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-silver">
           {visit.visit_time_window && <span>{visit.visit_time_window}</span>}
           {visit.location_notes && <span className="truncate max-w-[200px]">{visit.location_notes}</span>}
         </div>
@@ -596,7 +596,7 @@ function StatBlock({ label, value, accent }: { label: string; value: number; acc
   const valueColor = accent === 'red' ? 'text-red-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
       <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
     </div>
   );

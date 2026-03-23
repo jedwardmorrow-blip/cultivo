@@ -46,7 +46,7 @@ export function StrainLeaderboard({ strainAggregates }: StrainLeaderboardProps) 
                 <div className="flex items-center gap-2">
                   <span className="text-cult-white font-semibold text-sm">{strain.strain_name}</span>
                   {strain.strain_abbreviation && (
-                    <span className="text-[10px] text-cult-medium-gray font-mono border border-cult-dark-gray px-1">
+                    <span className="text-xs text-cult-medium-gray font-mono border border-cult-dark-gray px-1">
                       {strain.strain_abbreviation}
                     </span>
                   )}

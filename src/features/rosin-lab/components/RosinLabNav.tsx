@@ -39,7 +39,7 @@ export function RosinLabNav({ activeScreen, onNavigate, activeCounts = {} }: Ros
   return (
     <nav className="flex flex-col gap-0.5 py-4">
       <div className="px-4 pb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-cult-text-muted">
+        <span className="text-xs font-semibold uppercase tracking-widest text-cult-text-muted">
           Rosin Lab
         </span>
       </div>

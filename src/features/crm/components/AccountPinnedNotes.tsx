@@ -56,7 +56,7 @@ export function AccountPinnedNotes({ customerId, onUnpin }: AccountPinnedNotesPr
       <div className="px-5 py-3 border-b border-cult-charcoal flex items-center gap-2">
         <Pin className="w-3.5 h-3.5 text-amber-400" />
         <h3 className="text-xs font-semibold text-cult-white uppercase tracking-wider">Pinned Notes</h3>
-        <span className="text-[10px] text-amber-400 font-semibold ml-auto">{pinnedNotes.length}</span>
+        <span className="text-xs text-amber-400 font-semibold ml-auto">{pinnedNotes.length}</span>
       </div>
       <div className="divide-y divide-cult-charcoal/50">
         {pinnedNotes.map((note) => {
@@ -72,7 +72,7 @@ export function AccountPinnedNotes({ customerId, onUnpin }: AccountPinnedNotesPr
                 {note.body && (
                   <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{note.body}</p>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 text-[10px] text-cult-silver">
+                <div className="flex items-center gap-3 mt-1.5 text-xs text-cult-silver">
                   <span>{formatDate(note.created_at)}</span>
                   {note.user_name && <span>by {note.user_name}</span>}
                 </div>

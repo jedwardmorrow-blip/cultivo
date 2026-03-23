@@ -330,9 +330,9 @@ function ParentRow({
             <div className="min-w-0">
               <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] font-mono text-cult-light-gray">{account.dispensary_code}</span>
+                <span className="text-xs font-mono text-cult-light-gray">{account.dispensary_code}</span>
                 {isHub && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
                     <Network className="w-3 h-3" />
                     CHAIN ({account.child_account_count})
                   </span>
@@ -352,7 +352,7 @@ function ParentRow({
               {combinedRevenue > 0 ? formatCurrency(combinedRevenue) : '-'}
             </span>
             {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
-              <p className="text-[10px] text-cult-silver">
+              <p className="text-xs text-cult-silver">
                 {formatCurrency(Number(account.total_revenue))} direct
               </p>
             )}
@@ -362,7 +362,7 @@ function ParentRow({
           <div>
             <span className="text-sm text-cult-light-gray">{combinedOrders || '-'}</span>
             {isHub && account.order_count > 0 && (account.child_total_orders || 0) > 0 && (
-              <p className="text-[10px] text-cult-silver">{account.order_count} direct</p>
+              <p className="text-xs text-cult-silver">{account.order_count} direct</p>
             )}
           </div>
         </td>
@@ -376,7 +376,7 @@ function ParentRow({
           </span>
         </td>
         <td className="px-4 py-3 text-center hidden sm:table-cell">
-          <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase border ${getStatusColor(account.account_status)}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full uppercase border ${getStatusColor(account.account_status)}`}>
             {account.account_status}
           </span>
         </td>
@@ -396,7 +396,7 @@ function ParentRow({
               <MapPin className="w-3.5 h-3.5 text-sky-400/60 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm text-cult-silver group-hover:text-cult-white truncate">{child.name}</p>
-                <span className="text-[10px] font-mono text-cult-light-gray">{child.dispensary_code}</span>
+                <span className="text-xs font-mono text-cult-light-gray">{child.dispensary_code}</span>
               </div>
             </div>
           </td>
@@ -423,7 +423,7 @@ function ParentRow({
             </span>
           </td>
           <td className="px-4 py-2.5 text-center hidden sm:table-cell">
-            <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase border ${getStatusColor(child.account_status)}`}>
+            <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full uppercase border ${getStatusColor(child.account_status)}`}>
               {child.account_status}
             </span>
           </td>
@@ -464,7 +464,7 @@ function SortHeader({
       <span className="inline-flex items-center gap-1">
         {label}
         {isActive && (
-          <span className="text-[10px]">{dir === 'asc' ? '\u25B2' : '\u25BC'}</span>
+          <span className="text-xs">{dir === 'asc' ? '\u25B2' : '\u25BC'}</span>
         )}
       </span>
     </th>

@@ -187,7 +187,7 @@ function PriceRow({ override, onDelete, variant }: {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-cult-white truncate">{override.product_name}</p>
           {override.product_sku && (
-            <span className="text-[10px] font-mono text-cult-medium-gray">{override.product_sku}</span>
+            <span className="text-xs font-mono text-cult-medium-gray">{override.product_sku}</span>
           )}
         </div>
         <div className="flex items-center gap-3 mt-0.5">
@@ -200,12 +200,12 @@ function PriceRow({ override, onDelete, variant }: {
             ${override.custom_price.toFixed(2)}
           </span>
           {discount !== null && discount > 0 && (
-            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
               {discount.toFixed(0)}% off
             </span>
           )}
           {discount !== null && discount < 0 && (
-            <span className="text-[10px] font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
               +{Math.abs(discount).toFixed(0)}% premium
             </span>
           )}
@@ -213,11 +213,11 @@ function PriceRow({ override, onDelete, variant }: {
       </div>
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="text-right">
-          <p className="text-[10px] text-cult-medium-gray">
+          <p className="text-xs text-cult-medium-gray">
             {variant === 'future' ? 'Starts' : 'Since'} {formatDate(override.effective_date)}
           </p>
           {override.expires_at && (
-            <p className="text-[10px] text-cult-medium-gray">
+            <p className="text-xs text-cult-medium-gray">
               {variant === 'expired' ? 'Expired' : 'Expires'} {formatDate(override.expires_at)}
             </p>
           )}
@@ -292,7 +292,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
     <form onSubmit={handleSubmit} className="px-5 py-4 bg-cult-dark-gray/30 border-b border-cult-charcoal/50">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="sm:col-span-2" ref={dropdownRef}>
-          <label className="block text-[10px] font-medium text-cult-silver uppercase tracking-wider mb-1">Product</label>
+          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Product</label>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
             <input
@@ -353,7 +353,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
         </div>
 
         <div>
-          <label className="block text-[10px] font-medium text-cult-silver uppercase tracking-wider mb-1">Custom Price</label>
+          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Custom Price</label>
           <input
             type="number"
             step="0.01"
@@ -367,7 +367,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
         </div>
 
         <div>
-          <label className="block text-[10px] font-medium text-cult-silver uppercase tracking-wider mb-1">Effective Date</label>
+          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Effective Date</label>
           <input
             type="date"
             value={effectiveDate}
@@ -379,7 +379,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
         <div>
-          <label className="block text-[10px] font-medium text-cult-silver uppercase tracking-wider mb-1">Expires (optional)</label>
+          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Expires (optional)</label>
           <input
             type="date"
             value={expiresAt}
@@ -389,7 +389,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
           />
         </div>
         <div>
-          <label className="block text-[10px] font-medium text-cult-silver uppercase tracking-wider mb-1">Notes (optional)</label>
+          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Notes (optional)</label>
           <input
             type="text"
             value={notes}

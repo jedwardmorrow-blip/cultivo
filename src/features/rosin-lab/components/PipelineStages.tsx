@@ -41,7 +41,7 @@ export function PipelineStages({ counts, onStageClick }: PipelineStagesProps) {
                 className="w-5 h-5 transition-transform group-hover:scale-110"
                 style={{ color: stage.color }}
               />
-              <span className="text-[11px] font-semibold text-cult-silver text-center leading-tight">
+              <span className="text-xs font-semibold text-cult-silver text-center leading-tight">
                 {stage.label}
               </span>
               <span

@@ -80,7 +80,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
           <Building2 className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Top Accounts</h3>
           {periodLabel && (
-            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
@@ -151,7 +151,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                         {account.name}
                       </span>
                       {isHub && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-sky-500/20 text-sky-400 rounded">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
                           <Network className="w-3 h-3" />
                           CHAIN
                         </span>
@@ -167,7 +167,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                         {formatCurrencyShort(isHub ? combinedRevenue : account.period_revenue)}
                       </span>
                       {isHub && account.period_revenue > 0 && account.child_period_revenue > 0 && (
-                        <p className="text-[10px] text-cult-silver">{formatCurrencyShort(account.period_revenue)} direct</p>
+                        <p className="text-xs text-cult-silver">{formatCurrencyShort(account.period_revenue)} direct</p>
                       )}
                     </div>
                   </td>
@@ -176,7 +176,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                       {sparklineData && sparklineData.some(v => v > 0) ? (
                         <RevenueSparkline data={sparklineData} width={80} height={24} />
                       ) : (
-                        <span className="text-[9px] text-cult-medium-gray">--</span>
+                        <span className="text-xs text-cult-medium-gray">--</span>
                       )}
                     </div>
                   </td>
@@ -184,7 +184,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                     <div>
                       <span className="text-sm text-cult-light-gray">{isHub ? combinedOrders : account.period_orders}</span>
                       {isHub && account.period_orders > 0 && account.child_period_orders > 0 && (
-                        <p className="text-[10px] text-cult-silver">{account.period_orders} direct</p>
+                        <p className="text-xs text-cult-silver">{account.period_orders} direct</p>
                       )}
                     </div>
                   </td>
@@ -202,7 +202,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center hidden sm:table-cell">
-                    <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase ${getStatusColor(account.account_status)}`}>
+                    <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full uppercase ${getStatusColor(account.account_status)}`}>
                       {account.account_status}
                     </span>
                   </td>

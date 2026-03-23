@@ -149,9 +149,9 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Avg Score */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Avg Score</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Score</p>
           <p className="text-2xl font-bold text-cult-white">{avgScore}</p>
-          <p className="text-[10px] text-cult-silver">out of 100</p>
+          <p className="text-xs text-cult-silver">out of 100</p>
         </div>
         {/* Health buckets */}
         {(['healthy', 'cooling', 'at_risk', 'dormant'] as const).map((label) => {
@@ -167,17 +167,17 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                   : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
               }`}
             >
-              <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">{cfg.label}</p>
+              <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">{cfg.label}</p>
               <p className={`text-2xl font-bold ${cfg.color}`}>{count}</p>
-              <p className="text-[10px] text-cult-silver">accounts</p>
+              <p className="text-xs text-cult-silver">accounts</p>
             </button>
           );
         })}
         {/* At-risk revenue */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">At-Risk Revenue</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">At-Risk Revenue</p>
           <p className="text-2xl font-bold text-red-400">{fmt$(atRiskRevenue)}</p>
-          <p className="text-[10px] text-cult-silver">lifetime total</p>
+          <p className="text-xs text-cult-silver">lifetime total</p>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
                   <span className="text-red-400/60">·</span>
@@ -210,7 +210,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                 </button>
               ))}
               {criticals.length > 5 && (
-                <span className="text-[11px] text-red-400/60 self-center">+{criticals.length - 5} more</span>
+                <span className="text-xs text-red-400/60 self-center">+{criticals.length - 5} more</span>
               )}
             </div>
           </div>
@@ -244,7 +244,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-[10px] uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
               <th className="text-left py-2 px-3 font-medium">
                 <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
                   Account <SortArrow field="customer_name" />
@@ -295,7 +295,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-[10px] text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
+                      <p className="text-xs text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
                     </button>
                   </td>
                   {/* Score */}
@@ -303,7 +303,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${cfg.bg} ${cfg.border} border ${cfg.color}`}>
                       {a.health_score}
                     </span>
-                    <p className={`text-[9px] mt-0.5 ${cfg.color}`}>{cfg.label}</p>
+                    <p className={`text-xs mt-0.5 ${cfg.color}`}>{cfg.label}</p>
                   </td>
                   {/* Breakdown bars */}
                   <td className="py-2.5 px-2 hidden md:table-cell">
@@ -338,7 +338,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                   </td>
                   {/* Engagement */}
                   <td className="py-2.5 px-2 text-center hidden xl:table-cell">
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-cult-light-gray">
+                    <div className="flex items-center justify-center gap-2 text-xs text-cult-light-gray">
                       {a.open_task_count > 0 && (
                         <span className="flex items-center gap-0.5" title="Open tasks">
                           <CheckCircle2 className="w-3 h-3 text-cult-medium-gray" />{a.open_task_count}
@@ -380,7 +380,7 @@ function ScoreBar({ label, value, max }: { label: string; value: number; max: nu
     pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : pct > 0 ? 'bg-red-500' : 'bg-cult-charcoal';
   return (
     <div className="flex flex-col items-center gap-0.5" title={`${label}: ${value}/${max}`}>
-      <span className="text-[8px] text-cult-medium-gray leading-none">{label}</span>
+      <span className="text-xs text-cult-medium-gray leading-none">{label}</span>
       <div className="w-5 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>

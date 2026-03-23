@@ -42,8 +42,8 @@ export function StageBar({ stages }: { stages: BatchStage[] }) {
                   background: STAGE_COLORS[s.stageName] || '#525252',
                 }}
               />
-              <span className="text-[10px] text-neutral-500">{s.stageName}</span>
-              <span className="text-[10px] font-bold text-neutral-300 tabular-nums">
+              <span className="text-xs text-neutral-500">{s.stageName}</span>
+              <span className="text-xs font-bold text-neutral-300 tabular-nums">
                 {s.unit === 'unit'
                   ? s.availableQty.toLocaleString() + 'u'
                   : fmtGrams(s.availableQty)}

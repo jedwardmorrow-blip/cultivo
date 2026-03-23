@@ -156,13 +156,13 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-cult-white">{activity.subject}</span>
-                  <span className="text-[10px] text-cult-silver capitalize">{activity.activity_type.replace('_', ' ')}</span>
+                  <span className="text-xs text-cult-silver capitalize">{activity.activity_type.replace('_', ' ')}</span>
                   {isPinned && <Pin className="w-3 h-3 text-amber-400" />}
                 </div>
                 {activity.body && (
                   <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{activity.body}</p>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 text-[10px] text-cult-silver">
+                <div className="flex items-center gap-3 mt-1.5 text-xs text-cult-silver">
                   <span>{formatRelativeDate(activity.created_at)}</span>
                   {activity.user_name && <span>by {activity.user_name}</span>}
                   {activity.follow_up_date && (

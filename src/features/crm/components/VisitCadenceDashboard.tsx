@@ -158,11 +158,11 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
         {/* Avg Compliance */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Compliance</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Compliance</p>
           <p className={`text-2xl font-bold ${avgCompliance >= 70 ? 'text-emerald-400' : avgCompliance >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
             {avgCompliance}%
           </p>
-          <p className="text-[10px] text-cult-silver">30-day avg</p>
+          <p className="text-xs text-cult-silver">30-day avg</p>
         </div>
         {/* Status buckets */}
         {(['overdue', 'never_visited', 'due_soon', 'scheduled', 'on_track'] as const).map((status) => {
@@ -178,30 +178,30 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
               }`}
             >
-              <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">{cfg.label}</p>
+              <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">{cfg.label}</p>
               <p className={`text-2xl font-bold ${cfg.color}`}>{count}</p>
-              <p className="text-[10px] text-cult-silver">accounts</p>
+              <p className="text-xs text-cult-silver">accounts</p>
             </button>
           );
         })}
         {/* At-risk Revenue */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray mb-1">Overdue Rev</p>
+          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Overdue Rev</p>
           <p className="text-2xl font-bold text-red-400">{fmt$(overdueRevenue)}</p>
-          <p className="text-[10px] text-cult-silver">lifetime total</p>
+          <p className="text-xs text-cult-silver">lifetime total</p>
         </div>
       </div>
 
       {/* Tier Breakdown */}
       <div className="flex items-center gap-4 px-1">
-        <p className="text-[10px] uppercase tracking-wider text-cult-medium-gray">Tiers:</p>
+        <p className="text-xs uppercase tracking-wider text-cult-medium-gray">Tiers:</p>
         {(['top_10', 'mid_tier', 'tail', 'prospect'] as const).map((tier) => {
           const tc = TIER_CONFIG[tier];
           return (
             <div key={tier} className="flex items-center gap-1.5">
               <span className={`text-xs font-medium ${tc.color}`}>{tierCounts[tier] || 0}</span>
-              <span className="text-[10px] text-cult-light-gray">{tc.label}</span>
-              <span className="text-[9px] text-cult-medium-gray">({tc.freq})</span>
+              <span className="text-xs text-cult-light-gray">{tc.label}</span>
+              <span className="text-xs text-cult-medium-gray">({tc.freq})</span>
             </div>
           );
         })}
@@ -226,7 +226,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
                   <span className="text-red-400/60">·</span>
@@ -236,7 +236,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                 </button>
               ))}
               {criticals.length > 6 && (
-                <span className="text-[11px] text-red-400/60 self-center">+{criticals.length - 6} more</span>
+                <span className="text-xs text-red-400/60 self-center">+{criticals.length - 6} more</span>
               )}
             </div>
           </div>
@@ -270,7 +270,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-[10px] uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
               <th className="text-left py-2 px-3 font-medium">
                 <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
                   Account <SortArrow field="customer_name" />
@@ -324,7 +324,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-[10px] text-cult-light-gray">
+                      <p className="text-xs text-cult-light-gray">
                         {a.dispensary_code}{a.city ? ` · ${a.city}` : ''}
                       </p>
                     </button>
@@ -332,11 +332,11 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   {/* Tier / Freq */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     <span className={`text-xs font-medium ${tier.color}`}>{tier.label}</span>
-                    <p className="text-[9px] text-cult-medium-gray">{a.frequency_label}</p>
+                    <p className="text-xs text-cult-medium-gray">{a.frequency_label}</p>
                   </td>
                   {/* Status */}
                   <td className="py-2.5 px-2 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full ${cfg.bg} ${cfg.border} border ${cfg.color}`}>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${cfg.bg} ${cfg.border} border ${cfg.color}`}>
                       {cfg.label}
                     </span>
                   </td>
@@ -365,14 +365,14 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                           style={{ width: `${a.compliance_pct_30d}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-cult-light-gray w-7">{a.compliance_pct_30d}%</span>
+                      <span className="text-xs text-cult-light-gray w-7">{a.compliance_pct_30d}%</span>
                     </div>
                   </td>
                   {/* Visits (30d) */}
                   <td className="py-2.5 px-2 text-center hidden md:table-cell">
                     <span className="text-xs text-cult-silver">{a.visits_completed_30d}</span>
                     {a.upcoming_scheduled > 0 && (
-                      <span className="text-[9px] text-sky-400 ml-1" title="Upcoming scheduled">
+                      <span className="text-xs text-sky-400 ml-1" title="Upcoming scheduled">
                         +{a.upcoming_scheduled}
                       </span>
                     )}

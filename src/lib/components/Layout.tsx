@@ -50,8 +50,8 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-cult-black">
-      <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal">
-        <div className="max-w-[1400px] mx-auto px-6">
+      <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal safe-top">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-3">
               <button
@@ -190,7 +190,7 @@ export function Layout({ children }: LayoutProps) {
         isAdmin={isAdmin}
       />
 
-      <main className="max-w-[1400px] mx-auto px-6 py-8 animate-fade-in">
+      <main className="max-w-[1400px] mx-auto px-3 sm:px-6 py-4 sm:py-8 animate-fade-in safe-bottom">
         {children}
       </main>
     </div>

@@ -38,7 +38,7 @@ export function AccountHealthBadge({ healthScore, size = 'sm' }: AccountHealthBa
 
   if (size === 'sm') {
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full border ${style.bg} ${style.text} ${style.border}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full border ${style.bg} ${style.text} ${style.border}`}>
         <Activity className="w-3 h-3" />
         {healthScore.health_score}
       </span>
@@ -53,7 +53,7 @@ export function AccountHealthBadge({ healthScore, size = 'sm' }: AccountHealthBa
       </div>
       <div className="border-l border-current/20 pl-2.5">
         <p className={`text-xs font-semibold ${style.text}`}>{getHealthLabel(healthScore.health_label)}</p>
-        <p className="text-[10px] text-cult-silver">{healthScore.revenue_trend}</p>
+        <p className="text-xs text-cult-silver">{healthScore.revenue_trend}</p>
       </div>
     </div>
   );

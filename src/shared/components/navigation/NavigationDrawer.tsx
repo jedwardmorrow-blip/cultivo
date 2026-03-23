@@ -40,8 +40,8 @@ export function NavigationDrawer({
 
       <aside
         className={`
-          fixed top-0 left-0 h-full w-[280px] bg-cult-graphite border-r border-cult-charcoal z-50
-          transform transition-transform duration-300 ease-in-out overflow-y-auto
+          fixed top-0 left-0 h-full w-[260px] sm:w-[280px] bg-cult-graphite border-r border-cult-charcoal z-50
+          transform transition-transform duration-300 ease-in-out overflow-y-auto safe-top safe-bottom
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
         role="navigation"
@@ -53,7 +53,7 @@ export function NavigationDrawer({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-cult-silver hover:text-cult-white transition-colors rounded-cult hover:bg-cult-charcoal"
+            className="p-2.5 text-cult-silver hover:text-cult-white active:bg-cult-charcoal/80 transition-colors rounded-lg hover:bg-cult-charcoal min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Close navigation menu"
           >
             <X className="w-5 h-5" />

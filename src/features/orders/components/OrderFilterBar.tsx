@@ -192,7 +192,7 @@ export function OrderFilterBar({ orders, filters, onFilterChange }: OrderFilterB
             <button
               key={pill.key}
               onClick={() => set({ status: pill.key })}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded text-[11px] font-semibold uppercase tracking-wider transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded text-xs font-semibold uppercase tracking-wider transition-all ${
                 isActive ? pill.activeColors : pill.colors
               } hover:opacity-90`}
             >
@@ -210,7 +210,7 @@ export function OrderFilterBar({ orders, filters, onFilterChange }: OrderFilterB
         <div className="bg-cult-near-black border border-cult-charcoal rounded-cult p-4 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
-              <label className="block text-[10px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
                 Customer
               </label>
               <select
@@ -225,7 +225,7 @@ export function OrderFilterBar({ orders, filters, onFilterChange }: OrderFilterB
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
                 Priority
               </label>
               <select
@@ -240,7 +240,7 @@ export function OrderFilterBar({ orders, filters, onFilterChange }: OrderFilterB
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
                 <Calendar className="w-3 h-3 inline mr-1" />
                 Delivery From
               </label>
@@ -253,7 +253,7 @@ export function OrderFilterBar({ orders, filters, onFilterChange }: OrderFilterB
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">
                 <Calendar className="w-3 h-3 inline mr-1" />
                 Delivery To
               </label>

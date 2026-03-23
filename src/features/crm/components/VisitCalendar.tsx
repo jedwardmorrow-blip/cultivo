@@ -276,7 +276,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
 
         <div className="grid grid-cols-7">
           {DAY_NAMES.map((name) => (
-            <div key={name} className="px-2 py-2 text-center text-[10px] font-medium text-cult-silver uppercase tracking-wider border-b border-cult-charcoal">
+            <div key={name} className="px-2 py-2 text-center text-xs font-medium text-cult-silver uppercase tracking-wider border-b border-cult-charcoal">
               {name}
             </div>
           ))}
@@ -305,7 +305,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
                 onDrop={(e) => { e.preventDefault(); handleDrop(dateKey); }}
               >
                 <div className={`text-xs font-medium mb-1 ${isToday ? 'text-sky-400' : 'text-cult-light-gray'}`}>
-                  {isToday && <span className="inline-block w-5 h-5 leading-5 text-center bg-sky-500 text-cult-black rounded-full text-[10px] font-bold">{day}</span>}
+                  {isToday && <span className="inline-block w-5 h-5 leading-5 text-center bg-sky-500 text-cult-black rounded-full text-xs font-bold">{day}</span>}
                   {!isToday && day}
                 </div>
                 <div className="space-y-0.5 flex-1">
@@ -317,7 +317,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
                         draggable
                         onDragStart={(e) => { e.stopPropagation(); setDraggedVisit(visit); }}
                         onDragEnd={() => { setDraggedVisit(null); setDragOverDate(null); }}
-                        className={`flex items-center gap-1 px-1 py-0.5 rounded text-[10px] truncate cursor-grab active:cursor-grabbing ${colors.bg} ${colors.text} ${visit.status === 'completed' ? 'opacity-50 line-through' : ''}`}
+                        className={`flex items-center gap-1 px-1 py-0.5 rounded text-xs truncate cursor-grab active:cursor-grabbing ${colors.bg} ${colors.text} ${visit.status === 'completed' ? 'opacity-50 line-through' : ''}`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${colors.dot}`} />
                         <span className="truncate">{visit.customer_name}</span>
@@ -325,14 +325,14 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
                     );
                   })}
                   {dayVisits.length > 3 && (
-                    <div className="text-[9px] text-cult-silver text-center">+{dayVisits.length - 3} more</div>
+                    <div className="text-xs text-cult-silver text-center">+{dayVisits.length - 3} more</div>
                   )}
                 </div>
                 {dayOrders.length > 0 && (
                   <div className="mt-auto pt-1">
                     <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-cult-dark-gray/50 border border-cult-charcoal/40">
                       <Truck className="w-2.5 h-2.5 text-amber-400/80 flex-shrink-0" />
-                      <span className="text-[9px] text-cult-lighter-gray font-medium">{dayOrders.length}</span>
+                      <span className="text-xs text-cult-lighter-gray font-medium">{dayOrders.length}</span>
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ml-auto ${getDeliveryStatusDot(dayOrders)}`} />
                     </div>
                   </div>
@@ -343,7 +343,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 text-[10px] text-cult-silver flex-wrap">
+      <div className="flex items-center gap-4 text-xs text-cult-silver flex-wrap">
         {Object.entries(visitTypeColors).map(([type, colors]) => (
           <div key={type} className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
@@ -540,11 +540,11 @@ function DayDetailModal({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-cult-white">{visit.customer_name}</span>
-                      <span className={`px-1.5 py-0.5 text-[10px] rounded ${colors.bg} ${colors.text}`}>
+                      <span className={`px-1.5 py-0.5 text-xs rounded ${colors.bg} ${colors.text}`}>
                         {visitTypeLabels[visit.visit_type]}
                       </span>
                       {visit.status === 'completed' && (
-                        <span className="px-1.5 py-0.5 text-[10px] rounded bg-emerald-500/15 text-emerald-400">Done</span>
+                        <span className="px-1.5 py-0.5 text-xs rounded bg-emerald-500/15 text-emerald-400">Done</span>
                       )}
                     </div>
                     {visit.visit_time_window && (
@@ -585,7 +585,7 @@ function DayDetailModal({
               <div className="px-5 py-3 flex items-center gap-2 bg-cult-dark-gray/30">
                 <Truck className="w-4 h-4 text-amber-400" />
                 <span className="text-xs font-semibold text-cult-white uppercase tracking-wider">Scheduled Deliveries</span>
-                <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full ml-auto">{orders.length}</span>
+                <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full ml-auto">{orders.length}</span>
               </div>
               <div className="divide-y divide-cult-charcoal/30">
                 {orders.map((order) => {
@@ -595,7 +595,7 @@ function DayDetailModal({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-mono font-medium text-cult-white">{order.order_number}</span>
-                          <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded ${statusStyle.bg} ${statusStyle.text}`}>
+                          <span className={`px-1.5 py-0.5 text-xs font-semibold uppercase rounded ${statusStyle.bg} ${statusStyle.text}`}>
                             {statusStyle.label}
                           </span>
                         </div>
@@ -604,13 +604,13 @@ function DayDetailModal({
                           <span className="text-cult-medium-gray">&middot;</span>
                           <span className="text-xs font-semibold text-cult-white">{formatCurrency(order.total_amount)}</span>
                           <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-[10px] text-cult-lighter-gray">{order.item_count} items</span>
+                          <span className="text-xs text-cult-lighter-gray">{order.item_count} items</span>
                         </div>
                       </div>
                       {onSelectOrder && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onSelectOrder(order.id); }}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-cult-light-gray hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded hover:bg-cult-charcoal transition-colors flex-shrink-0"
+                          className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-cult-light-gray hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded hover:bg-cult-charcoal transition-colors flex-shrink-0"
                         >
                           <ExternalLink className="w-3 h-3" />
                           <span className="uppercase tracking-wider">View</span>

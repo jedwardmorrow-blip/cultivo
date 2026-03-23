@@ -92,7 +92,7 @@ export function LandingPage() {
 
               {/* Feature Card 2 */}
               <div className="bg-cult-surface-overlay border border-cult-danger-muted p-8 border-l-4 border-l-cult-danger shadow-[0_0_15px_rgba(220,69,69,0.1)] relative">
-                <div className="absolute top-4 right-4 bg-cult-danger-muted text-cult-danger border border-cult-danger/50 text-[10px] uppercase font-bold px-2 py-0.5 animate-[pulseUrgentRed_2s_infinite]">
+                <div className="absolute top-4 right-4 bg-cult-danger-muted text-cult-danger border border-cult-danger/50 text-xs uppercase font-bold px-2 py-0.5 animate-[pulseUrgentRed_2s_infinite]">
                   Urgent
                 </div>
                 <ShieldAlert className="w-8 h-8 text-cult-danger mb-6" />
@@ -120,7 +120,7 @@ export function LandingPage() {
             <div className="lg:w-1/2 space-y-6">
               <div className="inline-flex items-center gap-2 border border-cult-border bg-cult-surface px-3 py-1 rounded-sm">
                 <Zap className="w-3 h-3 text-cult-success-bright" />
-                <span className="text-[10px] font-mono uppercase tracking-wider text-cult-text-secondary">Powered by Claude</span>
+                <span className="text-xs font-mono uppercase tracking-wider text-cult-text-secondary">Powered by Claude</span>
               </div>
               <h2 className="text-3xl lg:text-4xl font-display font-bold uppercase tracking-tight text-cult-text-primary">
                 Meet "The Eye"

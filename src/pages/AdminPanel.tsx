@@ -88,7 +88,7 @@ function AdminContent() {
               {tab.label}
               {tab.count !== undefined && (
                 <span
-                  className={`ml-1 px-1.5 py-0.5 text-[10px] rounded-sm ${
+                  className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
                     active
                       ? 'bg-cult-gold/20 text-cult-gold'
                       : 'bg-cult-border text-cult-text'

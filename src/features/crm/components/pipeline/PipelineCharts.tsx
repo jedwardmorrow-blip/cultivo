@@ -41,7 +41,7 @@ function DonutChart({ segments, size = 100, strokeWidth = 12, centerValue, cente
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e1e1e" strokeWidth={strokeWidth} />
       {paths}
       <text x={cx} y={cy - 4} textAnchor="middle" className="fill-white text-[15px] font-extrabold">{centerValue}</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" className="fill-neutral-500 text-[7px] font-bold tracking-wider">{centerLabel}</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" className="fill-neutral-500 text-xs font-bold tracking-wider">{centerLabel}</text>
     </svg>
   );
 }
@@ -71,7 +71,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
-        <div className="text-[9px] font-bold text-neutral-500 tracking-[0.1em] mb-3">INVENTORY BREAKDOWN</div>
+        <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">INVENTORY BREAKDOWN</div>
         <div className="flex items-center gap-4">
           <DonutChart
             segments={donutSegments}
@@ -82,8 +82,8 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
             {donutSegments.map((s, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
-                <span className="text-[10px] text-neutral-400">{s.label}</span>
-                <span className="text-[11px] font-bold text-neutral-300">{formatGrams(s.value)}</span>
+                <span className="text-xs text-neutral-400">{s.label}</span>
+                <span className="text-xs font-bold text-neutral-300">{formatGrams(s.value)}</span>
               </div>
             ))}
           </div>
@@ -91,15 +91,15 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
       </div>
 
       <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
-        <div className="text-[9px] font-bold text-neutral-500 tracking-[0.1em] mb-3">PIPELINE BY STAGE</div>
+        <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">PIPELINE BY STAGE</div>
         <div className="flex flex-col gap-[10px]">
           {pipelineStages.map((s, i) => {
             const pct = pipelineTotal > 0 ? (s.value / pipelineTotal) * 100 : 0;
             return (
               <div key={i}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] text-neutral-400">{s.label}</span>
-                  <span className="text-[11px] font-bold text-neutral-300 tabular-nums">{formatGrams(s.value)}g</span>
+                  <span className="text-xs text-neutral-400">{s.label}</span>
+                  <span className="text-xs font-bold text-neutral-300 tabular-nums">{formatGrams(s.value)}g</span>
                 </div>
                 <div className="h-[6px] rounded-full overflow-hidden bg-neutral-800/50">
                   <div
@@ -114,7 +114,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
       </div>
 
       <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
-        <div className="text-[9px] font-bold text-neutral-500 tracking-[0.1em] mb-3">SUPPLY HEALTH</div>
+        <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">SUPPLY HEALTH</div>
         {healthTotal > 0 && (
           <div className="flex gap-[2px] h-5 rounded-lg overflow-hidden mb-3">
             {healthKeys.map(k => {
@@ -122,7 +122,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
               return (
                 <div
                   key={k}
-                  className="flex items-center justify-center text-[9px] font-bold transition-all duration-300"
+                  className="flex items-center justify-center text-xs font-bold transition-all duration-300"
                   style={{ width: `${pct}%`, background: HEALTH_HEX[k] + '22', color: HEALTH_HEX[k] }}
                 >
                   {hd[k] > 0 ? hd[k] : ''}
@@ -136,7 +136,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
             <div key={k} className="flex justify-between items-center">
               <div className="flex items-center gap-[6px]">
                 <span className="w-[6px] h-[6px] rounded-full" style={{ background: HEALTH_HEX[k] }} />
-                <span className="text-[10px] text-neutral-400 capitalize">{k}</span>
+                <span className="text-xs text-neutral-400 capitalize">{k}</span>
               </div>
               <span className="text-[12px] font-bold tabular-nums" style={{ color: HEALTH_HEX[k] }}>{hd[k]}</span>
             </div>

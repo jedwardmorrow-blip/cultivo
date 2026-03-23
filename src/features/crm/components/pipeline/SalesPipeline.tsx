@@ -123,7 +123,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
       {/* ── Health ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Health
         </h4>
         <div className="space-y-1.5">
@@ -132,14 +132,14 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
             const pct = (n / total) * 100;
             return (
               <div key={k} className="flex items-center gap-2">
-                <span className="text-[10px] w-12 capitalize text-neutral-500">{k}</span>
+                <span className="text-xs w-12 capitalize text-neutral-500">{k}</span>
                 <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[k] }}
                   />
                 </div>
-                <span className="text-[10px] w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
+                <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
               </div>
             );
           })}
@@ -148,7 +148,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
 
       {/* ── Breakdown ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Breakdown
         </h4>
         <div className="space-y-1.5">
@@ -160,28 +160,28 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
             const pct = (v / breakdown.grand) * 100;
             return (
               <div key={label} className="flex items-center gap-2">
-                <span className="text-[10px] w-14 text-neutral-500">{label}</span>
+                <span className="text-xs w-14 text-neutral-500">{label}</span>
                 <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: c }}
                   />
                 </div>
-                <span className="text-[10px] w-12 text-right font-bold text-neutral-400 tabular-nums">
+                <span className="text-xs w-12 text-right font-bold text-neutral-400 tabular-nums">
                   {fmt(v)}
                 </span>
               </div>
             );
           })}
         </div>
-        <div className="mt-2 pt-1.5 border-t border-cult-medium-gray/10 text-center text-[10px] text-neutral-600">
+        <div className="mt-2 pt-1.5 border-t border-cult-medium-gray/10 text-center text-xs text-neutral-600">
           Total <span className="text-neutral-400 font-bold">{fmt(breakdown.grand)}</span>
         </div>
       </div>
 
       {/* ── Top 5 ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Top 5 Strains
         </h4>
         <div className="space-y-1.5">
@@ -189,7 +189,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
             const pct = (s.totalGrams / maxW) * 100;
             return (
               <div key={s.strain} className="flex items-center gap-2">
-                <span className="text-[10px] w-16 text-neutral-400 truncate" title={s.strain}>
+                <span className="text-xs w-16 text-neutral-400 truncate" title={s.strain}>
                   {s.strain}
                 </span>
                 <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
@@ -198,7 +198,7 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
                     style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[s.healthStatus] }}
                   />
                 </div>
-                <span className="text-[10px] w-10 text-right font-bold text-neutral-400 tabular-nums">
+                <span className="text-xs w-10 text-right font-bold text-neutral-400 tabular-nums">
                   {fmt(s.totalGrams)}
                 </span>
               </div>
@@ -223,7 +223,7 @@ function HealthDot({ status }: { status: string }) {
         className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg} cursor-default`}
       >
         <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-        <span className={`text-[10px] font-semibold capitalize ${s.text}`}>
+        <span className={`text-xs font-semibold capitalize ${s.text}`}>
           {status}
         </span>
       </div>
@@ -269,7 +269,7 @@ function StrainRow({
             <div className="text-xs font-bold text-neutral-300 tabular-nums">
               {fmt(strain.totalGrams)}
             </div>
-            <div className="text-[9px] text-neutral-600">
+            <div className="text-xs text-neutral-600">
               {fmt(strain.sellableGrams)} sellable
             </div>
           </div>

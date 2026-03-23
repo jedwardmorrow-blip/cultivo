@@ -146,7 +146,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
                               <div className="flex-1 min-w-0">
                                 <div className="text-cult-white font-semibold truncate">Cut {idx + 1}: {label}</div>
                                 {motherPlantId && (
-                                  <div className="text-cult-light-gray font-mono text-[11px]">Mother ID: {motherPlantId}</div>
+                                  <div className="text-cult-light-gray font-mono text-xs">Mother ID: {motherPlantId}</div>
                                 )}
                                 <div className="text-cult-medium-gray">{cs.cut_count} cuts{cs.cut_date ? ` · ${formatDate(cs.cut_date)}` : ''}</div>
                               </div>

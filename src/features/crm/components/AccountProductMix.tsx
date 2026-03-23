@@ -41,7 +41,7 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
           <Package className="w-4 h-4 text-cult-silver" />
           <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Product Mix</h3>
           {periodLabel && (
-            <span className="text-[10px] text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
@@ -52,15 +52,15 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
       {productMix.length > 0 && (
         <div className="px-5 py-3 border-b border-cult-charcoal/50 grid grid-cols-3 gap-3">
           <div className="text-center">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">Revenue</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Revenue</p>
             <p className="text-sm font-bold text-emerald-400">{formatCurrencyShort(totalRevenue)}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">Units</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Units</p>
             <p className="text-sm font-bold text-cult-white">{totalUnits.toLocaleString()}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-cult-silver">Strains</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Strains</p>
             <p className="text-sm font-bold text-cult-white">{uniqueStrains}</p>
           </div>
         </div>
@@ -76,14 +76,14 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-cult-white truncate">{product.product_name}</span>
-                    <span className={`px-1.5 py-0.5 text-[10px] rounded ${getCategoryColor(product.product_category)}`}>
+                    <span className={`px-1.5 py-0.5 text-xs rounded ${getCategoryColor(product.product_category)}`}>
                       {product.product_category}
                     </span>
                   </div>
                   {product.strain && (
                     <p className="text-xs text-cult-light-gray mt-0.5">{product.strain}</p>
                   )}
-                  <div className="flex items-center gap-3 mt-1.5 text-[10px] text-cult-silver">
+                  <div className="flex items-center gap-3 mt-1.5 text-xs text-cult-silver">
                     <span className="flex items-center gap-1">
                       <Hash className="w-3 h-3" />
                       {product.order_count} orders
@@ -96,8 +96,8 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-sm font-semibold text-emerald-400">{formatCurrencyShort(Number(product.total_revenue))}</p>
-                  <p className="text-[10px] text-cult-silver">{product.total_units} units</p>
-                  <p className="text-[10px] text-cult-light-gray">{formatCurrencyShort(Number(product.avg_unit_price))}/ea</p>
+                  <p className="text-xs text-cult-silver">{product.total_units} units</p>
+                  <p className="text-xs text-cult-light-gray">{formatCurrencyShort(Number(product.avg_unit_price))}/ea</p>
                 </div>
               </div>
               <div className="mt-2 h-1 bg-cult-dark-gray rounded-full overflow-hidden">

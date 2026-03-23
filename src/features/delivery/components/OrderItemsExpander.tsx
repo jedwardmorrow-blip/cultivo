@@ -18,7 +18,7 @@ function ItemStatusBadge({ status }: { status: string | null }) {
   if (!cfg) return null;
   const { bg, text, border, label, Icon } = cfg;
   return (
-    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${bg} ${text} border ${border} rounded-sm`}>
+    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${bg} ${text} border ${border} rounded-sm`}>
       <Icon className="w-2.5 h-2.5" />
       {label}
     </span>
@@ -56,7 +56,7 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
     <div>
       <button
         onClick={toggle}
-        className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-cult-lighter-gray hover:text-cult-white transition-colors rounded hover:bg-cult-charcoal/50"
+        className="flex items-center gap-1 px-1.5 py-0.5 text-xs text-cult-lighter-gray hover:text-cult-white transition-colors rounded hover:bg-cult-charcoal/50"
       >
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
         <span className="uppercase tracking-wider font-medium">Items</span>
@@ -77,7 +77,7 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                     <div className="flex items-center gap-1.5">
                       <span className="text-cult-white font-medium truncate">{item.product_name}</span>
                       {item.is_sample && (
-                        <span className="inline-flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-pink-900/30 text-pink-400 border border-pink-600 rounded-sm">
+                        <span className="inline-flex items-center gap-0.5 px-1 py-0.5 text-xs font-semibold uppercase tracking-wider bg-pink-900/30 text-pink-400 border border-pink-600 rounded-sm">
                           <FlaskConical className="w-2 h-2" />
                           Sample
                         </span>
@@ -106,12 +106,12 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                       {item.batch_number ? (
                         <>
                           <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-lighter-gray font-mono text-[10px]">{item.batch_number}</span>
+                          <span className="text-cult-lighter-gray font-mono text-xs">{item.batch_number}</span>
                         </>
                       ) : (
                         <>
                           <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-medium-gray italic text-[10px]">No batch</span>
+                          <span className="text-cult-medium-gray italic text-xs">No batch</span>
                         </>
                       )}
                     </div>
@@ -123,13 +123,13 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                 </div>
               ))}
               <div className="flex items-center justify-between pt-1 border-t border-cult-charcoal/30">
-                <span className="text-[10px] text-cult-lighter-gray">
+                <span className="text-xs text-cult-lighter-gray">
                   {readyCount}/{totalCount} items ready
                 </span>
                 {onSelectOrder && (
                   <button
                     onClick={() => onSelectOrder(orderId)}
-                    className="flex items-center gap-1 text-[10px] text-cult-light-gray hover:text-cult-white transition-colors"
+                    className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
                   >
                     <ExternalLink className="w-2.5 h-2.5" />
                     <span className="uppercase tracking-wider font-medium">View Order</span>

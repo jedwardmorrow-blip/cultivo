@@ -87,7 +87,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
 
   const selectClass = 'w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
   const inputClass = selectClass;
-  const labelClass = 'block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1';
+  const labelClass = 'block text-xs text-cult-light-gray uppercase tracking-wider mb-1';
 
   const formContent = (
     <div className="space-y-4">
@@ -98,7 +98,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
           </div>
           <div>
             <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Log Dead Plants</h3>
-            <p className="text-[10px] text-cult-medium-gray mt-0.5">Record plant mortality</p>
+            <p className="text-xs text-cult-medium-gray mt-0.5">Record plant mortality</p>
           </div>
         </div>
         <button type="button" onClick={onClose} className="p-1 text-cult-medium-gray hover:text-cult-light-gray transition-colors">

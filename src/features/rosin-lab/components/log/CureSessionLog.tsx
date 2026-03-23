@@ -69,7 +69,7 @@ function getCureSessionBatchNumber(session: CureSessionLogEntry): string {
 }
 
 const thBase =
-  'px-3 py-2.5 text-left text-[11px] font-semibold text-cult-text-muted uppercase tracking-wide whitespace-nowrap';
+  'px-3 py-2.5 text-left text-xs font-semibold text-cult-text-muted uppercase tracking-wide whitespace-nowrap';
 
 const STATUS_BUTTONS: { label: string; value: StatusFilter }[] = [
   { label: 'All', value: 'all' },

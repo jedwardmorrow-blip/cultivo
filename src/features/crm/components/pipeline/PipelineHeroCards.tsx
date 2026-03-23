@@ -35,9 +35,9 @@ export function PipelineHeroCards({ summary }: PipelineHeroCardsProps) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {cards.map((c, i) => (
         <div key={i} className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
-          <div className="text-[9px] font-bold text-neutral-500 tracking-[0.1em] mb-1">{c.label}</div>
+          <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-1">{c.label}</div>
           <div className="text-[22px] font-extrabold text-cult-white leading-tight tabular-nums">{c.value}</div>
-          <div className="text-[10px] text-neutral-500 mt-1">{c.sub}</div>
+          <div className="text-xs text-neutral-500 mt-1">{c.sub}</div>
 
           {i === 0 && t.totalSellableGrams > 0 && (
             <div className="flex gap-[3px] mt-2 h-[3px] rounded-full overflow-hidden">

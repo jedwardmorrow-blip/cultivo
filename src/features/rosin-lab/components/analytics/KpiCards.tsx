@@ -22,7 +22,7 @@ function KpiCard({ label, value, accentColor, delta, deltaLabel, invertDelta }: 
       className="flex-1 min-w-[180px] rounded-[6px] border border-[#2E2E2E] bg-[#111111] p-5"
       style={{ borderTop: `3px solid ${accentColor}` }}
     >
-      <p className="uppercase text-[11px] font-semibold text-[#666666] tracking-wider mb-2">
+      <p className="uppercase text-xs font-semibold text-[#666666] tracking-wider mb-2">
         {label}
       </p>
       <p className="text-2xl font-bold text-white">{value}</p>

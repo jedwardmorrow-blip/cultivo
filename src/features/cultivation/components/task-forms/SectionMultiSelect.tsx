@@ -27,7 +27,7 @@ export function SectionMultiSelect({ label, sections, selected, onChange }: Sect
   if (sections.length === 0) {
     return (
       <div>
-        <label className="block text-[10px] text-cult-light-gray uppercase tracking-wider mb-1">{label}</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">{label}</label>
         <p className="text-xs text-cult-medium-gray">No sections configured for this room</p>
       </div>
     );
@@ -36,11 +36,11 @@ export function SectionMultiSelect({ label, sections, selected, onChange }: Sect
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-[10px] text-cult-light-gray uppercase tracking-wider">{label}</label>
+        <label className="text-xs text-cult-light-gray uppercase tracking-wider">{label}</label>
         <button
           type="button"
           onClick={toggleAll}
-          className="text-[10px] text-cult-accent hover:text-cult-accent-hover transition-colors"
+          className="text-xs text-cult-accent hover:text-cult-accent-hover transition-colors"
         >
           {selected.length === sections.length ? 'Clear all' : 'Select all'}
         </button>

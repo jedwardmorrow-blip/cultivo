@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { CheckCircle, Circle, Clock, AlertTriangle } from 'lucide-react';
 import { useWorkerAuth } from '../hooks/useWorkerAuth';
 import { useDailyTasks } from '../../cultivation/hooks/useDailyTasks';
@@ -56,7 +57,7 @@ export function MyTasksView() {
   return (
     <div className="flex flex-col h-full">
       {/* Progress header */}
-      <div className="px-4 py-4 border-b border-cult-dark-gray bg-cult-near-black">
+      <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-cult-dark-gray bg-cult-near-black">
         <div className="flex items-center justify-between mb-2">
           <span className="text-cult-white text-sm font-semibold uppercase tracking-wider">
             Today's Tasks
@@ -105,44 +106,95 @@ export function MyTasksView() {
 
       {/* Task completion bottom sheet */}
       {selectedTask && (
-        <div className="fixed inset-0 z-50 flex flex-col">
-          {/* Backdrop */}
-          <div
-            className="flex-shrink-0 bg-black/60"
-            style={{ height: '10vh' }}
-            onClick={() => setSelectedTask(null)}
-          />
-          {/* Sheet */}
-          <div className="flex-1 bg-cult-black border-t border-cult-medium-gray overflow-y-auto">
-            <div className="px-4 py-3 border-b border-cult-dark-gray flex items-center justify-between sticky top-0 bg-cult-black z-10">
-              <div>
-                <span
-                  className="inline-flex px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-sm"
-                  style={{
-                    backgroundColor: `${(TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).color}20`,
-                    color: (TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).color,
-                  }}
-                >
-                  {(TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).label}
-                </span>
-              </div>
-              <button
-                onClick={() => setSelectedTask(null)}
-                className="text-cult-medium-gray hover:text-cult-white text-sm uppercase tracking-wider"
+        <BottomSheet onDismiss={() => setSelectedTask(null)}>
+          <div className="px-4 py-3 border-b border-cult-dark-gray flex items-center justify-between sticky top-0 bg-cult-black z-10">
+            <div>
+              <span
+                className="inline-flex px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm"
+                style={{
+                  backgroundColor: `${(TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).color}20`,
+                  color: (TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).color,
+                }}
               >
-                Close
-              </button>
+                {(TASK_TYPE_CONFIG[selectedTask.task_type as TaskType] ?? TASK_TYPE_CONFIG.custom).label}
+              </span>
             </div>
-            <div className="p-4">
-              <TaskCompletionForm
-                taskInstance={selectedTask}
-                onComplete={() => { refetch(); setSelectedTask(null); }}
-                onCancel={() => setSelectedTask(null)}
-              />
-            </div>
+            <button
+              onClick={() => setSelectedTask(null)}
+              className="text-cult-medium-gray hover:text-cult-white text-sm uppercase tracking-wider min-h-[44px] px-2"
+            >
+              Close
+            </button>
           </div>
-        </div>
+          <div className="p-4">
+            <TaskCompletionForm
+              taskInstance={selectedTask}
+              onComplete={() => { refetch(); setSelectedTask(null); }}
+              onCancel={() => setSelectedTask(null)}
+            />
+          </div>
+        </BottomSheet>
       )}
+    </div>
+  );
+}
+
+/* ── Swipe-to-dismiss Bottom Sheet ─────────────────────── */
+
+const DISMISS_THRESHOLD = 100;
+
+function BottomSheet({ children, onDismiss }: { children: React.ReactNode; onDismiss: () => void }) {
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const swipeHandlers = useSwipeable({
+    onSwiping: (e) => {
+      if (e.dir === 'Down') {
+        setDragging(true);
+        setDragY(Math.max(0, e.deltaY));
+      }
+    },
+    onSwipedDown: (e) => {
+      if (e.deltaY >= DISMISS_THRESHOLD) {
+        onDismiss();
+      }
+      setDragging(false);
+      setDragY(0);
+    },
+    onSwiped: () => {
+      setDragging(false);
+      setDragY(0);
+    },
+    trackTouch: true,
+    trackMouse: false,
+    delta: 10,
+  });
+
+  const dismissProgress = Math.min(1, dragY / DISMISS_THRESHOLD);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col">
+      {/* Backdrop */}
+      <div
+        className="flex-shrink-0 bg-black/60"
+        style={{ height: '10vh', opacity: 1 - dismissProgress * 0.5 }}
+        onClick={onDismiss}
+      />
+      {/* Sheet */}
+      <div
+        {...swipeHandlers}
+        className="flex-1 bg-cult-black border-t border-cult-medium-gray overflow-y-auto safe-bottom"
+        style={{
+          transform: dragging ? `translateY(${dragY}px)` : 'translateY(0)',
+          transition: dragging ? 'none' : 'transform 0.2s ease-out',
+        }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center py-2">
+          <div className="w-10 h-1 bg-cult-medium-gray rounded-full" />
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
@@ -166,7 +218,7 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
       type="button"
       onClick={onTap}
       disabled={isDone}
-      className={`w-full text-left px-4 py-4 flex items-center gap-3 transition-colors ${
+      className={`w-full text-left px-3 sm:px-4 py-3 sm:py-4 flex items-center gap-3 transition-colors ${
         isDone
           ? 'opacity-50'
           : isCarried
@@ -189,7 +241,7 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className="inline-flex px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
+            className="inline-flex px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
             style={{ backgroundColor: `${config.color}20`, color: config.color }}
           >
             {config.label}

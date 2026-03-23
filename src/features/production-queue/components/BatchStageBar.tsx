@@ -40,7 +40,7 @@ export function BatchStageBar({ batch, height = 'h-2.5' }: BatchStageBarProps) {
       {/* Legend text */}
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {segments.map(seg => (
-          <span key={seg.key} className="flex items-center gap-1 text-[10px] text-gray-400">
+          <span key={seg.key} className="flex items-center gap-1 text-xs text-gray-400">
             <span className={`inline-block w-1.5 h-1.5 rounded-full ${seg.color}`} />
             {seg.label} ({seg.value.toLocaleString()}g)
           </span>

@@ -24,7 +24,7 @@ interface MiniPipelineBarProps {
 
 export function MiniPipelineBar({ stages, width = 60 }: MiniPipelineBarProps) {
   const total = stages.binned + stages.bucked + stages.trimmed + (stages.packaged * 3.5);
-  if (total === 0) return <span className="text-[9px] text-neutral-700">&mdash;</span>;
+  if (total === 0) return <span className="text-xs text-neutral-700">&mdash;</span>;
 
   const keys: (keyof typeof stages)[] = ['binned', 'bucked', 'trimmed', 'packaged'];
 

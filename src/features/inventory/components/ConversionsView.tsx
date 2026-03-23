@@ -405,7 +405,7 @@ function SessionBreakdownPanel({
               </td>
               <td className="py-1.5">
                 {c.source_package_id
-                  ? <span className="font-mono text-cult-text-muted text-[11px]">{c.source_package_id}</span>
+                  ? <span className="font-mono text-cult-text-muted text-xs">{c.source_package_id}</span>
                   : <span className="text-cult-text-faint">—</span>}
               </td>
               <td className="py-1.5 text-right font-medium text-cult-white">

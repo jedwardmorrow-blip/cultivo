@@ -115,22 +115,22 @@ export function ExpandedPlantsList({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1">
           {motherPlantId && (
             <div className="flex flex-col">
-              <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Mother ID</span>
+              <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Mother ID</span>
               <span className="text-xs text-cult-white font-mono">{motherPlantId}</span>
             </div>
           )}
           {cloneDate && (
             <div className="flex flex-col">
-              <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Clone Date</span>
+              <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Clone Date</span>
               <span className="text-xs text-cult-light-gray">{formatDate(cloneDate)}</span>
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Stage Entered</span>
+            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Stage Entered</span>
             <span className="text-xs text-cult-light-gray">{formatDate(group.stage_entered_at)}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">Days in Stage</span>
+            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Days in Stage</span>
             <span className="text-xs text-cult-white font-semibold">{daysInStage}d</span>
           </div>
         </div>
@@ -140,7 +140,7 @@ export function ExpandedPlantsList({
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSelectAll}
-            className="flex items-center gap-1.5 text-[10px] text-cult-medium-gray hover:text-cult-light-gray transition-colors uppercase tracking-wider"
+            className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors uppercase tracking-wider"
           >
             {allSelected
               ? <CheckSquare className="w-3.5 h-3.5 text-cult-white" />
@@ -161,7 +161,7 @@ export function ExpandedPlantsList({
               {!confirmDeactivate ? (
                 <button
                   onClick={() => setConfirmDeactivate(true)}
-                  className="flex items-center gap-1 text-[10px] border border-red-800 text-red-400 px-2 py-0.5 hover:border-red-600 hover:text-red-300 transition-all uppercase tracking-wider"
+                  className="flex items-center gap-1 text-xs border border-red-800 text-red-400 px-2 py-0.5 hover:border-red-600 hover:text-red-300 transition-all uppercase tracking-wider"
                 >
                   <CircleOff className="w-3 h-3" />
                   Deactivate ({selectedIds.size})
@@ -171,14 +171,14 @@ export function ExpandedPlantsList({
                   <button
                     onClick={handleDeactivateSelected}
                     disabled={deactivating}
-                    className="flex items-center gap-1 text-[10px] bg-red-900 border border-red-700 text-red-200 px-2 py-0.5 hover:bg-red-800 transition-all uppercase tracking-wider disabled:opacity-40"
+                    className="flex items-center gap-1 text-xs bg-red-900 border border-red-700 text-red-200 px-2 py-0.5 hover:bg-red-800 transition-all uppercase tracking-wider disabled:opacity-40"
                   >
                     {deactivating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                     Confirm
                   </button>
                   <button
                     onClick={() => setConfirmDeactivate(false)}
-                    className="text-[10px] text-cult-medium-gray hover:text-cult-white px-1 py-0.5 uppercase tracking-wider transition-colors"
+                    className="text-xs text-cult-medium-gray hover:text-cult-white px-1 py-0.5 uppercase tracking-wider transition-colors"
                   >
                     Cancel
                   </button>
@@ -189,7 +189,7 @@ export function ExpandedPlantsList({
           <button
             onClick={handlePrint}
             disabled={activePlants.length === 0}
-            className="flex items-center gap-1.5 text-[10px] border border-cult-medium-gray text-cult-light-gray px-2 py-0.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-2 py-0.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Printer className="w-3 h-3" />
             {someSelected && selectedIds.size < activePlants.length

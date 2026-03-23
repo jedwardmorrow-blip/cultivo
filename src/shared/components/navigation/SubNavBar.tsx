@@ -33,8 +33,8 @@ export function SubNavBar({ currentView, onNavigate, badgeMap }: SubNavBarProps)
   const hasBothGroups = primaryItems.length > 0 && secondaryItems.length > 0;
 
   return (
-    <div className="bg-cult-near-black border-b border-cult-charcoal/60 sticky top-[65px] z-30">
-      <div className="max-w-[1400px] mx-auto px-6">
+    <div className="bg-cult-near-black border-b border-cult-charcoal/60 sticky z-30" style={{ top: 'calc(65px + env(safe-area-inset-top, 0px))' }}>
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
         <div className="flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide">
           {primaryItems.map((item) => (
             <SubNavButton
@@ -94,7 +94,7 @@ function SubNavButton({ item, isActive, onClick, badgeInfo }: SubNavButtonProps)
       <span>{item.label}</span>
       {badge !== undefined && (
         <span
-          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold min-w-[1.25rem] text-center leading-none ${getBadgeStyles(
+          className={`px-1.5 py-0.5 rounded-full text-xs font-bold min-w-[1.25rem] text-center leading-none ${getBadgeStyles(
             badgeColor
           )}`}
         >

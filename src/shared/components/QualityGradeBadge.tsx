@@ -52,7 +52,7 @@ export function QualityGradeBadge({
 
   const sizeClasses = size === 'md'
     ? 'px-2.5 py-1 text-xs'
-    : 'px-1.5 py-0.5 text-[10px]';
+    : 'px-1.5 py-0.5 text-xs';
 
   const badge = (
     <span
@@ -85,7 +85,7 @@ export function QualityGradeBadge({
           className="absolute z-50 mt-1 left-0 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl p-2 min-w-[140px] animate-fade-in"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="text-[10px] text-cult-lighter-gray uppercase tracking-wider px-1 mb-1.5">
+          <div className="text-xs text-cult-lighter-gray uppercase tracking-wider px-1 mb-1.5">
             Set Grade
           </div>
           <div className="space-y-0.5">
