@@ -8,6 +8,7 @@ import { CoversheetLibrary } from './pages/public/CoversheetLibrary';
 import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
 import { LandingPage } from './pages/public/LandingPage';
+import ProductionPlanner from './pages/ProductionPlanner';
 import { StandaloneOrderFormRefactored } from './features/order-form';
 import { NewOrderForm } from './features/orders';
 import { InventoryDataProvider } from './features/inventory/context/InventoryDataContext';
@@ -279,6 +280,7 @@ function AppContent() {
       <Route path="/coa-library" element={<COALibrary />} />
       <Route path="/menu" element={<PublicMenu />} />
       <Route path="/landing" element={<LandingPage />} />
+      <Route path="/test-planner" element={<ProductionPlanner />} />
       
       <Route path="/worker/*" element={<WorkerApp />} />
       
