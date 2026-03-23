@@ -837,7 +837,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
     <>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Add Task</h3>
-        <button type="button" onClick={onClose} className="p-1 hover:bg-cult-charcoal rounded-sm transition-colors">
+        <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
           <X className="w-4 h-4 text-cult-medium-gray" />
         </button>
       </div>

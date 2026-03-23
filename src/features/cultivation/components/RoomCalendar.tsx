@@ -154,7 +154,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   return (
     <div className="space-y-5">
       {/* ── Summary Bar ────────────────────────────────────── */}
-      <div className="flex items-center gap-6 px-1">
+      <div className="flex items-center flex-wrap gap-3 sm:gap-6 px-1">
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold text-cult-white font-mono">{rooms.length}</span>
           <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Rooms</span>
@@ -178,13 +178,13 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
       </div>
 
       {/* ── Controls Row ───────────────────────────────────── */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={prevMonth} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
+          <button type="button" onClick={prevMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
             <ChevronLeft className="w-5 h-5 text-cult-light-gray" />
           </button>
-          <h2 className="text-lg font-semibold text-cult-white min-w-[180px] text-center">{monthLabel}</h2>
-          <button type="button" onClick={nextMonth} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
+          <h2 className="text-base sm:text-lg font-semibold text-cult-white min-w-[140px] sm:min-w-[180px] text-center">{monthLabel}</h2>
+          <button type="button" onClick={nextMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
             <ChevronRight className="w-5 h-5 text-cult-light-gray" />
           </button>
         </div>
@@ -204,7 +204,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
             <button
               type="button"
               onClick={() => setCalendarMode('gantt')}
-              className={`p-1.5 transition-colors ${calendarMode === 'gantt' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'gantt' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
               title="Timeline view"
             >
               <LayoutList className="w-4 h-4" />
@@ -212,7 +212,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
             <button
               type="button"
               onClick={() => setCalendarMode('month')}
-              className={`p-1.5 transition-colors ${calendarMode === 'month' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'month' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
               title="Month view"
             >
               <Grid3X3 className="w-4 h-4" />
@@ -221,7 +221,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           <button
             type="button"
             onClick={goToday}
-            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray rounded-sm transition-colors"
+            className="px-3.5 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray active:bg-cult-charcoal/60 rounded-sm transition-colors"
           >
             Today
           </button>
@@ -480,19 +480,19 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
   return (
     <div className="border border-cult-dark-gray/50 rounded-sm overflow-hidden">
       {/* Day-of-week header */}
-      <div className="grid grid-cols-1 sm:grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
+      <div className="grid grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="py-2.5 text-center text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
-            {name}
+          <div key={name} className="py-2.5 text-center text-[10px] sm:text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
+            {name.charAt(0)}<span className="hidden sm:inline">{name.slice(1)}</span>
           </div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-7">
+      <div className="grid grid-cols-7">
         {cells.map((cell, idx) => {
           if (!cell) {
-            return <div key={`blank-${idx}`} className="min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
+            return <div key={`blank-${idx}`} className="min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
           }
           const isToday = cell.iso === today;
           const taskTypes = getTaskTypesForDay(cell.date);
@@ -502,7 +502,7 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
           return (
             <div
               key={cell.num}
-              className={`min-h-[90px] border-b border-r border-cult-dark-gray/20 p-2 transition-colors hover:bg-cult-charcoal/25 ${
+              className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 p-1 sm:p-2 transition-colors hover:bg-cult-charcoal/25 ${
                 isToday ? 'bg-green-950/20' : isWeekend ? 'bg-cult-charcoal/5' : ''
               }`}
             >
@@ -510,8 +510,8 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
                 <span
                   className={`text-xs font-mono font-bold ${
                     isToday
-                      ? 'bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center'
-                      : 'text-cult-light-gray'
+                      ? 'bg-green-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
+                      : 'text-cult-light-gray text-[10px] sm:text-xs'
                   }`}
                 >
                   {cell.num}
@@ -523,22 +523,36 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
                 )}
               </div>
               {taskTypes.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {taskTypes.slice(0, 6).map((t) => (
-                    <span
-                      key={t}
-                      className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
-                      style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
-                      title={TASK_TYPE_CONFIG[t].label}
-                    >
+                <>
+                  {/* Mobile: dots only */}
+                  <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
+                    {taskTypes.slice(0, 4).map((t) => (
                       <span
-                        className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                        key={t}
+                        className="block w-[6px] h-[6px] rounded-full"
                         style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                        title={TASK_TYPE_CONFIG[t].label}
                       />
-                      {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
-                    </span>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  {/* Desktop: labeled chips */}
+                  <div className="hidden sm:flex flex-wrap gap-1 mt-1">
+                    {taskTypes.slice(0, 6).map((t) => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
+                        style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
+                        title={TASK_TYPE_CONFIG[t].label}
+                      >
+                        <span
+                          className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                          style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                        />
+                        {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
+                      </span>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           );
@@ -593,7 +607,7 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
             <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Room Schedule</span>
             <h3 className="text-base font-bold text-cult-white font-mono mt-0.5">{roomCode}</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1.5 hover:bg-cult-charcoal rounded-sm transition-colors">
+          <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
             <X className="w-4 h-4 text-cult-medium-gray" />
           </button>
         </div>
@@ -796,7 +810,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
 
       <div>
         <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
           {TASK_TYPES.map((t) => {
             const cfg = TASK_TYPE_CONFIG[t];
             const selected = taskType === t;
@@ -805,7 +819,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
                 key={t}
                 type="button"
                 onClick={() => setTaskType(t)}
-                className={`flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all ${
+                className={`flex items-center gap-1.5 px-2 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-all ${
                   selected
                     ? 'text-white border'
                     : 'text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/50 hover:border-cult-medium-gray hover:text-cult-light-gray'
@@ -828,7 +842,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
               key={r}
               type="button"
               onClick={() => setRecurrence(r)}
-              className={`flex-1 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
                 recurrence === r
                   ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
                   : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
@@ -849,7 +863,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
                 key={idx}
                 type="button"
                 onClick={() => toggleDay(idx)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-sm transition-all ${
+                className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-sm transition-all ${
                   dayOfWeek.includes(idx)
                     ? 'text-white'
                     : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
@@ -871,7 +885,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
               key={p}
               type="button"
               onClick={() => setPriority(p)}
-              className={`flex-1 py-1.5 text-xs font-semibold uppercase rounded-sm transition-colors ${
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase rounded-sm transition-colors ${
                 priority === p
                   ? p === 'high'
                     ? 'bg-red-950/60 text-red-400 border border-red-700/50'
@@ -908,7 +922,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="p-2 text-red-400 hover:bg-red-950/40 rounded-sm transition-colors"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:bg-red-950/40 active:bg-red-950/60 rounded-sm transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>

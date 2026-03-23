@@ -290,7 +290,7 @@ export function TaskCompletionForm({
             type="button"
             onClick={() => setShowStaffDropdown(!showStaffDropdown)}
             disabled={assigning}
-            className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs border rounded-sm transition-colors ${
+            className={`w-full flex items-center justify-between gap-2 px-3 py-3 min-h-[44px] text-xs border rounded-sm transition-colors ${
               selectedStaff
                 ? 'bg-cult-charcoal border-cult-medium-gray text-cult-white'
                 : 'bg-cult-charcoal/60 border-amber-700/50 text-amber-400'
@@ -320,7 +320,7 @@ export function TaskCompletionForm({
                 <button
                   type="button"
                   onClick={() => handleAssign(null)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-400 hover:bg-amber-950/30 transition-colors border-b border-cult-dark-gray/50"
+                  className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs text-amber-400 hover:bg-amber-950/30 transition-colors border-b border-cult-dark-gray/50"
                 >
                   <UserX className="w-3.5 h-3.5" />
                   Unassign
@@ -331,7 +331,7 @@ export function TaskCompletionForm({
                   key={s.id}
                   type="button"
                   onClick={() => handleAssign(s.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs transition-colors ${
                     s.id === assignedStaffId
                       ? 'bg-cult-charcoal text-cult-white font-semibold'
                       : 'text-cult-light-gray hover:bg-cult-charcoal/60 hover:text-cult-white'
@@ -459,7 +459,7 @@ function FormHeader({ task, config, onClose }: {
           </span>
         </div>
       </div>
-      <button type="button" onClick={onClose} className="p-1 text-cult-medium-gray hover:text-cult-light-gray transition-colors">
+      <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-medium-gray hover:text-cult-light-gray active:bg-cult-charcoal/40 rounded-lg transition-colors">
         <X className="w-4 h-4" />
       </button>
     </div>
@@ -529,7 +529,7 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
               key={opt}
               type="button"
               onClick={() => setDuration(duration === opt ? null : opt)}
-              className={`px-3 py-1.5 text-xs rounded-sm border transition-colors ${
+              className={`px-3 py-2.5 min-h-[44px] text-xs rounded-sm border transition-colors flex items-center ${
                 duration === opt
                   ? 'bg-cult-accent/20 border-cult-accent text-cult-accent'
                   : 'bg-cult-charcoal border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray'
