@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { InvoiceModal } from './InvoiceModal';
 import { OrderFilterBar, type OrderFilterState } from './OrderFilterBar';
 import { OrderTable } from './OrderTable';
-import { OrderDrawer } from './OrderDrawer';
+import { OrderDetailPanel } from './OrderDetailPanel';
 import { BulkActionBar } from './BulkActionBar';
 import { useOrderList, useOrderActions, useProducts } from '../hooks';
 import { useAdvancedFilteredOrders } from '../hooks/useAdvancedFilteredOrders';
@@ -141,7 +141,7 @@ export function UnifiedOrders({
       />
 
       {drawerOrder && (
-        <OrderDrawer
+        <OrderDetailPanel
           order={drawerOrder}
           products={products}
           onClose={handleCloseDrawer}

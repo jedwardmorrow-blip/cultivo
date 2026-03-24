@@ -265,7 +265,7 @@ export function OrderTable({
                   </td>
 
                   <td className="px-3 py-3 text-right">
-                    <span className="text-sm font-semibold text-green-400">
+                    <span className="text-sm font-semibold text-cult-success">
                       {formatCurrency(order.total_amount || 0)}
                     </span>
                   </td>
@@ -280,7 +280,7 @@ export function OrderTable({
                             day: 'numeric',
                           })}
                         </span>
-                        <span className={`text-xs ${ageColor} ml-4.5`}>{age}</span>
+                        <span className={`text-xs ${ageColor} ml-[18px]`}>{age}</span>
                       </div>
                     ) : (
                       <span className="text-xs text-cult-lighter-gray">--</span>

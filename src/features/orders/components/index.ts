@@ -2,6 +2,8 @@ export { OrdersContainer } from './OrdersContainer';
 export { UnifiedOrders } from './UnifiedOrders';
 export { OrderTable } from './OrderTable';
 export { OrderDrawer } from './OrderDrawer';
+export { OrderDetailPanel } from './OrderDetailPanel';
+export { OrderItemCard } from './OrderItemCard';
 export { OrderFilterBar } from './OrderFilterBar';
 export { BulkActionBar } from './BulkActionBar';
 export { ConfirmDialog } from './ConfirmDialog';
