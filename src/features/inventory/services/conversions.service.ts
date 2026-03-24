@@ -121,8 +121,8 @@ export function getCategoryFromProductName(productName: string): string {
   let type = 'flower'; // default
   if (lower.includes('smalls')) {
     type = 'smalls';
-  } else if (lower.includes('trim') && !lower.includes('trimmed')) {
-    // "Trim" (the product type) vs "Trimmed" (the conversion step)
+  } else if (lower.endsWith('- trim') || lower.startsWith('bulk trim') || lower.includes(' - trim')) {
+    // Match "Bulk - Strain - Trim" (Convention A) and legacy "Bulk Trim (Strain)" (Convention B)
     type = 'trim';
   }
 
