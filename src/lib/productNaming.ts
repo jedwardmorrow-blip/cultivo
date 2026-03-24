@@ -12,7 +12,7 @@
  *
  * Product Name to Stage Mapping:
  * - "Binned - [Strain] - Flower" → Binned stage
- * - "Bucked - [Strain] - Flower" → Bucked stage
+ * - "Bulk - [Strain] - Flower (Bucked)" → Bucked stage
  * - "Bulk - [Strain] - Flower" → Trimmed stage (ready for packaging)
  * - "Bulk - [Strain] - Smalls" → Trimmed stage (ready for packaging)
  * - "1lb Flower - [Strain]" (454g) → Packaged stage (bulk package)
@@ -59,7 +59,7 @@ export function parseProductName(productName: string): ProductNameComponents | n
  *
  * Transformation rules based on category:
  * - "Flower - Binned" → "Binned - [Strain] - Flower" (Binned stage)
- * - "Flower - Bucked" → "Bucked - [Strain] - Flower" (Bucked stage)
+ * - "Flower - Bucked" → "Bulk - [Strain] - Flower (Bucked)" (Bucked stage)
  * - "Flower - Bulk" → "Bulk - [Strain] - [Flower/Smalls]" (Trimmed stage)
  * - "Trim - Bulk" → "Bulk - [Strain] - Trim" (Trimmed stage)
  * - "Flower - Prepack" → "Packaged - [Strain] - [Size]" (Packaged stage)
@@ -90,12 +90,12 @@ export function standardizeProductName(
     return `Binned - ${strain} - Flower`;
   }
 
-  // Bucked items: Keep as-is (not in products catalog)
+  // Bucked items: Convention A hybrid "Bulk - Strain - Type (Bucked)"
   if (lowerCategory.includes('bucked')) {
     if (lowerName.includes('smalls')) {
-      return `Bucked - ${strain} - Smalls`;
+      return `Bulk - ${strain} - Smalls (Bucked)`;
     }
-    return `Bucked - ${strain} - Flower`;
+    return `Bulk - ${strain} - Flower (Bucked)`;
   }
 
   // Bulk Flower items

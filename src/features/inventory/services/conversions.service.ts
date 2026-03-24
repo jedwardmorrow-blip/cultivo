@@ -55,8 +55,7 @@ async function getStageIdMap(): Promise<Record<string, string>> {
  * Stage Progression: Binned -> Bucked -> Trimmed -> Packaged
  *
  * Product Stage Mapping:
- * - "Bulk Flower (Bucked)" -> Bucked stage
- * - "Bucked - [Strain] - Flower" -> Bucked stage
+ * - "Bulk - [Strain] - Flower (Bucked)" -> Bucked stage
  * - "Bulk - [Strain] - Flower" -> Trimmed stage
  * - "Bulk - [Strain] - Smalls" -> Trimmed stage
  * - "1lb Flower/Smalls - [Strain]" (454g) -> Packaged stage
