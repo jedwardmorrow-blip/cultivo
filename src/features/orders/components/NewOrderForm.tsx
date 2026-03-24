@@ -212,6 +212,8 @@ function CartPanel({
   canSubmit,
   loading,
   onAdjustQuantity,
+  onSetQuantity,
+  onSetPrice,
   onToggleSample,
   onRemove,
   onResetPrice,
@@ -227,6 +229,8 @@ function CartPanel({
   canSubmit: boolean;
   loading: boolean;
   onAdjustQuantity: (index: number, delta: number) => void;
+  onSetQuantity: (index: number, qty: number) => void;
+  onSetPrice: (index: number, price: number) => void;
   onToggleSample: (index: number) => void;
   onRemove: (index: number) => void;
   onResetPrice: (index: number) => void;
@@ -327,14 +331,20 @@ function CartPanel({
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <div className="flex-1 text-center">
-                      <span className="text-body font-semibold text-cult-text-primary">
-                        {item.quantity}
-                      </span>
-                      <span className="text-caption text-cult-text-muted ml-1">
-                        {product?.pricing_unit || 'units'}
-                      </span>
-                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      step={product?.allows_fractional_quantity ? '0.25' : '1'}
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) onSetQuantity(index, val);
+                      }}
+                      className="flex-1 text-center px-1 py-1 bg-cult-surface border border-cult-border rounded-cult text-body font-semibold text-cult-text-primary tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-caption text-cult-text-muted">
+                      {product?.pricing_unit || 'unit'}
+                    </span>
                     <button
                       type="button"
                       onClick={() => onAdjustQuantity(index, 1)}
@@ -346,10 +356,21 @@ function CartPanel({
 
                   {/* Price Row */}
                   <div className="flex items-center justify-between text-caption">
-                    <div className="flex items-center gap-2">
-                      <span className="text-cult-text-muted">
-                        ${item.unit_price.toFixed(2)}/{product?.pricing_unit || 'unit'}
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-cult-text-faint">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.unit_price}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val)) onSetPrice(index, val);
+                        }}
+                        disabled={item.price_locked}
+                        className="w-16 px-1.5 py-1 bg-cult-surface border border-cult-border rounded-cult text-caption text-cult-text-primary tabular-nums text-right focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="text-cult-text-faint">/{product?.pricing_unit || 'unit'}</span>
                       {hasCustomPrice && (
                         <button
                           type="button"
@@ -363,14 +384,15 @@ function CartPanel({
                       <button
                         type="button"
                         onClick={() => onTogglePriceLock(index)}
-                        className={`p-1 transition-colors ${
+                        className={`flex items-center gap-0.5 px-1.5 py-1 rounded-cult text-[10px] transition-colors ${
                           item.price_locked
-                            ? 'text-cult-text-secondary'
+                            ? 'bg-cult-surface-overlay text-cult-text-secondary'
                             : 'text-cult-text-faint hover:text-cult-text-muted'
                         }`}
                         title={item.price_locked ? 'Unlock price' : 'Lock price'}
                       >
                         {item.price_locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        <span>{item.price_locked ? 'Locked' : 'Lock'}</span>
                       </button>
                     </div>
                     <span className="font-semibold text-cult-text-primary">
@@ -534,7 +556,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
 
   // ─── Cart Actions ────────────────────────────────────────────────────────
 
-  function addToCart(product: any, batch?: BatchSelection) {
+  function addToCart(product: any, batch?: BatchSelection, quantity?: number) {
     // When a batch is specified, match on product_id + batch_id
     // When no batch, match on product_id + no batch_id (legacy behavior)
     const existingIndex = cartItems.findIndex(item =>
@@ -542,12 +564,13 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
       (batch ? item.batch_id === batch.batch_id : !item.batch_id)
     );
 
+    const addQty = quantity ?? (product.allows_fractional_quantity ? 0.25 : 1);
+
     if (existingIndex >= 0) {
       const updated = [...cartItems];
-      const step = product.allows_fractional_quantity ? 0.25 : 1;
       updated[existingIndex] = {
         ...updated[existingIndex],
-        quantity: parseFloat((updated[existingIndex].quantity + step).toFixed(2)),
+        quantity: parseFloat((updated[existingIndex].quantity + addQty).toFixed(2)),
       };
       setCartItems(updated);
     } else {
@@ -556,7 +579,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
       const newItem: CartItem = {
         product_id: product.id,
         product_name: product.name,
-        quantity: product.allows_fractional_quantity ? 0.25 : 1,
+        quantity: addQty,
         unit_price: isSample ? 0 : (customPrice ?? product.price_per_unit ?? 0),
         is_sample: isSample,
         price_locked: false,
@@ -598,6 +621,22 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
   function togglePriceLock(index: number) {
     const updated = [...cartItems];
     updated[index] = { ...updated[index], price_locked: !updated[index].price_locked };
+    setCartItems(updated);
+  }
+
+  function setCartPrice(index: number, price: number) {
+    const updated = [...cartItems];
+    updated[index] = { ...updated[index], unit_price: Math.max(0, price) };
+    setCartItems(updated);
+  }
+
+  function setCartQuantity(index: number, qty: number) {
+    if (qty <= 0) {
+      removeFromCart(index);
+      return;
+    }
+    const updated = [...cartItems];
+    updated[index] = { ...updated[index], quantity: parseFloat(qty.toFixed(2)) };
     setCartItems(updated);
   }
 
@@ -785,6 +824,8 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
             canSubmit={canSubmit}
             loading={loading}
             onAdjustQuantity={adjustCartQuantity}
+            onSetQuantity={setCartQuantity}
+            onSetPrice={setCartPrice}
             onToggleSample={toggleSample}
             onRemove={removeFromCart}
             onResetPrice={resetCartPrice}

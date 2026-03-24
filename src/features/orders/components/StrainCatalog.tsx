@@ -36,7 +36,7 @@ interface StrainCatalogProps {
   customerName: string | null;
   cartItems: { product_id: string; quantity: number }[];
   customerPrices: Map<string, number> | null;
-  onAddToCart: (product: OrderableProduct, batch?: BatchSelection) => void;
+  onAddToCart: (product: OrderableProduct, batch?: BatchSelection, quantity?: number) => void;
 }
 
 type FilterMode = 'all' | 'new_for_customer' | 'in_stock' | 'has_coa';
@@ -287,10 +287,11 @@ function StrainDetailPanel({
   demandPressure: StrainDemandPressure | undefined;
   cartItems: { product_id: string; quantity: number }[];
   customerPrices: Map<string, number> | null;
-  onAddToCart: (product: OrderableProduct, batch?: BatchSelection) => void;
+  onAddToCart: (product: OrderableProduct, batch?: BatchSelection, quantity?: number) => void;
   onBack: () => void;
 }) {
   const [expandedBatchStage, setExpandedBatchStage] = useState<string | null>(null);
+  const [pendingQty, setPendingQty] = useState<Record<string, string>>({});
 
   // Group products by category for this strain
   const strainProducts = products.filter(
@@ -301,14 +302,19 @@ function StrainDetailPanel({
   const prerolls = strainProducts.filter(p => p.product_category === 'preroll');
   const bulk = strainProducts.filter(p => p.product_category === 'bulk');
 
-  // Group bulk by stage
+  // Group bulk by stage — only show Trimmed (sellable material)
+  // Binned and Bucked are inventory tracking stages, not sellable products
+  const SELLABLE_BULK_MATERIALS = ['flower', 'smalls', 'trim', 'fresh frozen'];
   const bulkByStage = bulk.reduce((acc, p) => {
-    const stageName = (p.product_stage?.name || 'Other').toLowerCase();
-    let stageKey = 'trimmed';
-    if (p.name.startsWith('Binned')) stageKey = 'binned';
-    else if (p.name.startsWith('Bucked')) stageKey = 'bucked';
-    else if (p.name.startsWith('Bulk')) stageKey = 'trimmed';
+    // Only include Trimmed stage (starts with "Bulk")
+    if (!p.name.startsWith('Bulk')) return acc;
 
+    // Only include sellable material types
+    const nameLower = p.name.toLowerCase();
+    const isSellable = SELLABLE_BULK_MATERIALS.some(mat => nameLower.includes(mat));
+    if (!isSellable) return acc;
+
+    const stageKey = 'trimmed';
     if (!acc[stageKey]) acc[stageKey] = [];
     acc[stageKey].push(p);
     return acc;
@@ -422,11 +428,14 @@ function StrainDetailPanel({
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
                 const format = product.name.replace(/^(Packaged|Prerolls)\s*-\s*[^-]+\s*-\s*/, '');
                 const batchDetailKey = `packaged-${product.id}`;
+                const qtyKey = product.id;
+                const qtyVal = pendingQty[qtyKey] ?? '';
+                const parsedQty = parseInt(qtyVal) || 1;
 
                 return (
                   <div key={product.id}>
                     <div
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-cult border transition-all ${
+                      className={`px-3 py-2.5 rounded-cult border transition-all ${
                         inCart
                           ? 'bg-cult-accent/5 border-cult-accent/20'
                           : stageAvail > 0
@@ -434,82 +443,126 @@ function StrainDetailPanel({
                           : 'bg-cult-surface-raised border-cult-border opacity-50'
                       }`}
                     >
-                      {packagedBatches.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setExpandedBatchStage(
-                            expandedBatchStage === batchDetailKey ? null : batchDetailKey
-                          )}
-                          className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
-                        >
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
-                            expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
-                          }`} />
-                        </button>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-body text-cult-text-primary font-medium">{format}</span>
-                          {inCart > 0 && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
-                              {inCart} in cart
-                            </span>
+                      {/* Top row: product info */}
+                      <div className="flex items-center gap-3">
+                        {packagedBatches.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedBatchStage(
+                              expandedBatchStage === batchDetailKey ? null : batchDetailKey
+                            )}
+                            className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
+                          >
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
+                              expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
+                            }`} />
+                          </button>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-body text-cult-text-primary font-medium">{format}</span>
+                            {inCart > 0 && (
+                              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
+                                {inCart} in cart
+                              </span>
+                            )}
+                          </div>
+                          {historyText && (
+                            <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
                           )}
                         </div>
-                        {historyText && (
-                          <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
-                        )}
+                        <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
+                          {price > 0 ? `$${price.toFixed(2)}` : '—'}
+                        </div>
+                        <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap min-w-[40px]">
+                          {Math.round(stageAvail)} avail
+                        </div>
                       </div>
-                      <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
-                        {price > 0 ? `$${price.toFixed(2)}` : '—'}
+
+                      {/* Inline qty + add row */}
+                      <div className="flex items-center gap-2 mt-2 pl-0">
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="1"
+                          value={qtyVal}
+                          onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              onAddToCart(product, undefined, parsedQty);
+                              setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                            }
+                          }}
+                          className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-[10px] text-cult-text-faint">unit</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onAddToCart(product, undefined, parsedQty);
+                            setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                          }}
+                          disabled={stageAvail === 0}
+                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          Add
+                        </button>
                       </div>
-                      <div className="text-right text-caption text-cult-text-muted whitespace-nowrap min-w-[48px]">
-                        {Math.round(stageAvail)} avail
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
-                        className="w-9 h-9 flex items-center justify-center rounded-cult border border-cult-border text-cult-text-secondary hover:bg-cult-surface-overlay hover:border-cult-border-strong active:scale-95 transition-all flex-shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
                     </div>
-                    {/* Batch breakdown — selectable rows */}
+
+                    {/* Batch selection — card-style rows */}
                     {expandedBatchStage === batchDetailKey && packagedBatches.length > 0 && (
-                      <div className="ml-8 mt-1.5 mb-2 space-y-1">
-                        {packagedBatches.map(batch => (
-                          <button
-                            key={`${batch.batch_id}-${batch.stage}`}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddToCart(product, {
-                                batch_id: batch.batch_id,
-                                batch_number: batch.batch_number,
-                                strain: batch.strain,
-                                grade_code: batch.grade_code,
-                                grade_label: batch.grade_label,
-                              });
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-cult-text-muted rounded-cult border border-transparent hover:border-cult-accent/20 hover:bg-cult-accent/5 transition-all group"
-                          >
-                            <span className="font-mono text-cult-text-secondary">{batch.batch_number}</span>
-                            {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
-                              <GradeBadge code={batch.grade_code} color={batch.grade_color} />
-                            )}
-                            {batch.has_coa && (
-                              <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
-                            )}
-                            {batch.thc_percentage != null && (
-                              <span className="text-[10px] text-cult-text-secondary">{batch.thc_percentage}% THC</span>
-                            )}
-                            <span className="text-cult-text-faint">
-                              {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                            </span>
-                            <span className="ml-auto font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
-                            <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
-                          </button>
-                        ))}
+                      <div className="mt-1.5 mb-2 ml-2 space-y-1">
+                        <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
+                          Select Batch — {packagedBatches.length} available
+                        </p>
+                        {packagedBatches.map(batch => {
+                          // For packaged products, estimate unit count from batch weight / product weight
+                          const productWeight = product.name.includes('14g') ? 14
+                            : product.name.includes('3.5g') ? 3.5
+                            : product.name.includes('1lb') || product.name.includes('454g') ? 454
+                            : 3.5;
+                          const estUnits = Math.floor(batch.available_weight_grams / productWeight);
+
+                          return (
+                            <button
+                              key={`${batch.batch_id}-${batch.stage}`}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const qty = parseInt(pendingQty[qtyKey]) || 1;
+                                onAddToCart(product, {
+                                  batch_id: batch.batch_id,
+                                  batch_number: batch.batch_number,
+                                  strain: batch.strain,
+                                  grade_code: batch.grade_code,
+                                  grade_label: batch.grade_label,
+                                }, qty);
+                                setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
+                            >
+                              <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
+                              {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
+                                <GradeBadge code={batch.grade_code} color={batch.grade_color} />
+                              )}
+                              {batch.thc_percentage != null && (
+                                <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
+                              )}
+                              {batch.has_coa && (
+                                <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
+                              )}
+                              <span className="text-[10px] text-cult-text-faint">
+                                {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+                              </span>
+                              <span className="ml-auto text-[11px] font-medium text-cult-text-primary tabular-nums">
+                                ~{estUnits} units
+                              </span>
+                              <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -536,85 +589,116 @@ function StrainDetailPanel({
                 const format = product.name.replace(/^Packaged\s*-\s*[^-]+\s*-\s*/, '');
                 const prerollBatches = batchesByStage['packaged'] || [];
                 const batchDetailKey = `preroll-${product.id}`;
+                const qtyKey = `preroll-${product.id}`;
+                const qtyVal = pendingQty[qtyKey] ?? '';
+                const parsedQty = parseInt(qtyVal) || 1;
 
                 return (
                   <div key={product.id}>
                     <div
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-cult border transition-all ${
+                      className={`px-3 py-2.5 rounded-cult border transition-all ${
                         inCart
                           ? 'bg-cult-accent/5 border-cult-accent/20'
                           : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
                       }`}
                     >
-                      {prerollBatches.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setExpandedBatchStage(
-                            expandedBatchStage === batchDetailKey ? null : batchDetailKey
-                          )}
-                          className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
-                        >
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
-                            expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
-                          }`} />
-                        </button>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-body text-cult-text-primary font-medium">{format}</span>
-                          {inCart > 0 && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
-                              {inCart} in cart
-                            </span>
+                      <div className="flex items-center gap-3">
+                        {prerollBatches.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedBatchStage(
+                              expandedBatchStage === batchDetailKey ? null : batchDetailKey
+                            )}
+                            className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
+                          >
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
+                              expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
+                            }`} />
+                          </button>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-body text-cult-text-primary font-medium">{format}</span>
+                            {inCart > 0 && (
+                              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
+                                {inCart} in cart
+                              </span>
+                            )}
+                          </div>
+                          {historyText && (
+                            <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
                           )}
                         </div>
-                        {historyText && (
-                          <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
-                        )}
+                        <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
+                          {price > 0 ? `$${price.toFixed(2)}/g` : '—'}
+                        </div>
                       </div>
-                      <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
-                        {price > 0 ? `$${price.toFixed(2)}/g` : '—'}
+                      <div className="flex items-center gap-2 mt-2">
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="1"
+                          value={qtyVal}
+                          onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              onAddToCart(product, undefined, parsedQty);
+                              setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                            }
+                          }}
+                          className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-[10px] text-cult-text-faint">unit</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onAddToCart(product, undefined, parsedQty);
+                            setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                          }}
+                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
+                        >
+                          Add
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
-                        className="w-9 h-9 flex items-center justify-center rounded-cult border border-cult-border text-cult-text-secondary hover:bg-cult-surface-overlay hover:border-cult-border-strong active:scale-95 transition-all flex-shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
                     </div>
                     {expandedBatchStage === batchDetailKey && prerollBatches.length > 0 && (
-                      <div className="ml-8 mt-1.5 mb-2 space-y-1">
+                      <div className="mt-1.5 mb-2 ml-2 space-y-1">
+                        <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
+                          Select Batch — {prerollBatches.length} available
+                        </p>
                         {prerollBatches.map(batch => (
                           <button
                             key={`${batch.batch_id}-${batch.stage}`}
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              const qty = parseInt(pendingQty[qtyKey]) || 1;
                               onAddToCart(product, {
                                 batch_id: batch.batch_id,
                                 batch_number: batch.batch_number,
                                 strain: batch.strain,
                                 grade_code: batch.grade_code,
                                 grade_label: batch.grade_label,
-                              });
+                              }, qty);
+                              setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-cult-text-muted rounded-cult border border-transparent hover:border-cult-accent/20 hover:bg-cult-accent/5 transition-all group"
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
                           >
-                            <span className="font-mono text-cult-text-secondary">{batch.batch_number}</span>
+                            <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
                             {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
                               <GradeBadge code={batch.grade_code} color={batch.grade_color} />
                             )}
-                            {batch.has_coa && (
-                              <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
-                            )}
                             {batch.thc_percentage != null && (
-                              <span className="text-[10px] text-cult-text-secondary">{batch.thc_percentage}% THC</span>
+                              <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
                             )}
-                            <span className="text-cult-text-faint">
+                            {batch.has_coa && (
+                              <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
+                            )}
+                            <span className="text-[10px] text-cult-text-faint">
                               {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                             </span>
-                            <span className="ml-auto font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
+                            <span className="ml-auto text-[11px] font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
                             <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
                           </button>
                         ))}
@@ -630,17 +714,13 @@ function StrainDetailPanel({
         {/* BULK — grouped by stage */}
         {Object.entries(bulkByStage).map(([stageKey, stageProducts]) => {
           const stageLabel = stageKey === 'trimmed' ? 'Bulk — Trimmed'
-            : stageKey === 'bucked' ? 'Bulk — Bucked'
-            : stageKey === 'binned' ? 'Bulk — Binned'
             : `Bulk — ${stageKey}`;
           const totalAvail = getStageAvailableGrams(stageKey);
 
           return (
             <div key={stageKey}>
               <div className="flex items-center gap-2 mb-3">
-                {stageKey === 'trimmed' ? <Scissors className="w-3.5 h-3.5 text-cult-text-muted" /> :
-                 stageKey === 'bucked' ? <Layers className="w-3.5 h-3.5 text-cult-text-muted" /> :
-                 <Package className="w-3.5 h-3.5 text-cult-text-muted" />}
+                <Scissors className="w-3.5 h-3.5 text-cult-text-muted" />
                 <span className="text-caption font-semibold text-cult-text-secondary uppercase tracking-wider">
                   {stageLabel}
                 </span>
@@ -654,20 +734,21 @@ function StrainDetailPanel({
                   const historyText = formatProductHistory(product.id);
                   const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
 
-                  // Extract material type from name (e.g., "Bulk - Animal Tsunami - Flower" → "Flower")
                   const nameParts = product.name.split(' - ');
                   const materialType = nameParts[nameParts.length - 1] || product.name;
 
-                  // Get batch-level availability for this specific material type
                   const batchStageKey = getBulkProductBatchStage(product);
                   const stageBatches = batchesByStage[batchStageKey] || [];
                   const materialAvail = stageBatches.reduce((s, b) => s + b.available_weight_grams, 0);
                   const batchDetailKey = `${stageKey}-${materialType}`;
+                  const qtyKey = `bulk-${product.id}`;
+                  const qtyVal = pendingQty[qtyKey] ?? '';
+                  const parsedQty = parseFloat(qtyVal) || 1;
 
                   return (
                     <div key={product.id}>
                       <div
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-cult border transition-all ${
+                        className={`px-3 py-2.5 rounded-cult border transition-all ${
                           inCart
                             ? 'bg-cult-accent/5 border-cult-accent/20'
                             : materialAvail > 0
@@ -675,81 +756,108 @@ function StrainDetailPanel({
                             : 'bg-cult-surface-raised border-cult-border opacity-50'
                         }`}
                       >
-                        {/* Expand toggle for batch detail */}
-                        <button
-                          type="button"
-                          onClick={() => setExpandedBatchStage(
-                            expandedBatchStage === batchDetailKey ? null : batchDetailKey
-                          )}
-                          className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
-                        >
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
-                            expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
-                          }`} />
-                        </button>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-body text-cult-text-primary font-medium">{materialType}</span>
-                            {inCart > 0 && (
-                              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
-                                {inCart} in cart
-                              </span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedBatchStage(
+                              expandedBatchStage === batchDetailKey ? null : batchDetailKey
+                            )}
+                            className="p-0.5 text-cult-text-faint hover:text-cult-text-muted transition-colors"
+                          >
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${
+                              expandedBatchStage === batchDetailKey ? 'rotate-180' : ''
+                            }`} />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-body text-cult-text-primary font-medium">{materialType}</span>
+                              {inCart > 0 && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-accent/15 text-cult-accent rounded-cult">
+                                  {inCart} in cart
+                                </span>
+                              )}
+                            </div>
+                            {historyText && (
+                              <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
                             )}
                           </div>
-                          {historyText && (
-                            <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
-                          )}
+                          <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
+                            {price > 0 ? `$${price.toFixed(2)}/lb` : '—'}
+                          </div>
+                          <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap min-w-[48px]">
+                            {formatWeight(materialAvail)}
+                          </div>
                         </div>
-                        <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
-                          {price > 0 ? `$${price.toFixed(2)}/lb` : '—'}
+                        <div className="flex items-center gap-2 mt-2">
+                          <input
+                            type="number"
+                            min="0.25"
+                            step="0.25"
+                            placeholder="1"
+                            value={qtyVal}
+                            onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                onAddToCart(product, undefined, parsedQty);
+                                setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                              }
+                            }}
+                            className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <span className="text-[10px] text-cult-text-faint">lb</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onAddToCart(product, undefined, parsedQty);
+                              setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                            }}
+                            disabled={materialAvail === 0}
+                            className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            Add
+                          </button>
                         </div>
-                        <div className="text-right text-caption text-cult-text-muted whitespace-nowrap min-w-[56px]">
-                          {formatWeight(materialAvail)}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
-                          disabled={materialAvail === 0}
-                          className="w-9 h-9 flex items-center justify-center rounded-cult border border-cult-border text-cult-text-secondary hover:bg-cult-surface-overlay hover:border-cult-border-strong active:scale-95 transition-all flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
                       </div>
 
-                      {/* Batch breakdown — selectable rows */}
+                      {/* Batch selection — card-style rows */}
                       {expandedBatchStage === batchDetailKey && stageBatches.length > 0 && (
-                        <div className="ml-8 mt-1.5 mb-2 space-y-1">
+                        <div className="mt-1.5 mb-2 ml-2 space-y-1">
+                          <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
+                            Select Batch — {stageBatches.length} available
+                          </p>
                           {stageBatches.map(batch => (
                             <button
                               key={`${batch.batch_id}-${batch.stage}`}
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                const qty = parseFloat(pendingQty[qtyKey]) || 1;
                                 onAddToCart(product, {
                                   batch_id: batch.batch_id,
                                   batch_number: batch.batch_number,
                                   strain: batch.strain,
                                   grade_code: batch.grade_code,
                                   grade_label: batch.grade_label,
-                                });
+                                }, qty);
+                                setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                               }}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-cult-text-muted rounded-cult border border-transparent hover:border-cult-accent/20 hover:bg-cult-accent/5 transition-all group"
+                              className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
                             >
-                              <span className="font-mono text-cult-text-secondary">{batch.batch_number}</span>
+                              <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
                               {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
                                 <GradeBadge code={batch.grade_code} color={batch.grade_color} />
                               )}
-                              {batch.has_coa && (
-                                <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
-                              )}
                               {batch.thc_percentage != null && (
-                                <span className="text-[10px] text-cult-text-secondary">{batch.thc_percentage}% THC</span>
+                                <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
                               )}
-                              <span className="text-cult-text-faint">
+                              {batch.has_coa && (
+                                <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
+                              )}
+                              <span className="text-[10px] text-cult-text-faint">
                                 {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                               </span>
-                              <span className="ml-auto font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
+                              <span className="ml-auto text-[11px] font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
                               <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
                             </button>
                           ))}
