@@ -1,8 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, Table2 } from 'lucide-react';
 import { InvoiceModal } from './InvoiceModal';
 import { OrderFilterBar, type OrderFilterState } from './OrderFilterBar';
 import { OrderTable } from './OrderTable';
+import { OrderCardView } from './OrderCardView';
 import { OrderDetailPanel } from './OrderDetailPanel';
 import { BulkActionBar } from './BulkActionBar';
 import { useOrderList, useOrderActions, useProducts } from '../hooks';
@@ -25,6 +26,8 @@ const DEFAULT_FILTERS: OrderFilterState = {
   dateTo: '',
 };
 
+type ViewMode = 'cards' | 'table';
+
 export function UnifiedOrders({
   onCreateOrder,
   onSelectOrder,
@@ -38,6 +41,7 @@ export function UnifiedOrders({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<{ id: string; number: string } | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
 
   const filteredOrders = useAdvancedFilteredOrders(orders, filters);
 
@@ -93,8 +97,8 @@ export function UnifiedOrders({
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
         </div>
-        <div className="bg-red-900/20 border border-red-800/50 rounded-cult p-8 text-center">
-          <p className="text-red-400 text-sm mb-4">{error.message}</p>
+        <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-cult p-8 text-center">
+          <p className="text-cult-danger text-sm mb-4">{error.message}</p>
           <button
             onClick={() => actions.loadOrders(true)}
             className="px-5 py-2 bg-cult-off-white text-cult-black rounded-cult hover:bg-cult-silver transition-all text-sm font-semibold"
@@ -111,17 +115,47 @@ export function UnifiedOrders({
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
-          <p className="text-cult-light-gray text-sm mt-2">
+          <p className="text-cult-text-secondary text-sm mt-2">
             {orders.length} total orders
           </p>
         </div>
-        <button
-          onClick={() => onCreateOrder()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-cult-green text-cult-black rounded-cult hover:bg-cult-green-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-green/20"
-        >
-          <Plus className="w-4 h-4" />
-          New Order
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View toggle */}
+          <div className="flex items-center bg-cult-surface-raised border border-cult-border rounded-cult p-0.5">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-cult transition-all ${
+                viewMode === 'cards'
+                  ? 'bg-cult-surface-overlay text-cult-text-primary'
+                  : 'text-cult-text-muted hover:text-cult-text-secondary'
+              }`}
+              title="Card view"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Cards
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-cult transition-all ${
+                viewMode === 'table'
+                  ? 'bg-cult-surface-overlay text-cult-text-primary'
+                  : 'text-cult-text-muted hover:text-cult-text-secondary'
+              }`}
+              title="Table view"
+            >
+              <Table2 className="w-3.5 h-3.5" />
+              Table
+            </button>
+          </div>
+
+          <button
+            onClick={() => onCreateOrder()}
+            className="flex items-center gap-2 px-4 py-2.5 bg-cult-success text-cult-black rounded-cult hover:bg-cult-success-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-success/20"
+          >
+            <Plus className="w-4 h-4" />
+            New Order
+          </button>
+        </div>
       </div>
 
       <OrderFilterBar
@@ -130,15 +164,27 @@ export function UnifiedOrders({
         onFilterChange={setFilters}
       />
 
-      <OrderTable
-        orders={filteredOrders}
-        selectedOrderId={drawerOrderId}
-        selectedIds={selectedIds}
-        onSelectOrder={handleSelectOrder}
-        onSelectionChange={setSelectedIds}
-        onToggleSelectAll={handleToggleSelectAll}
-        onStatusChange={actions.updateOrderStatus}
-      />
+      {viewMode === 'cards' ? (
+        <OrderCardView
+          orders={filteredOrders}
+          selectedOrderId={drawerOrderId}
+          selectedIds={selectedIds}
+          onSelectOrder={handleSelectOrder}
+          onSelectionChange={setSelectedIds}
+          onToggleSelectAll={handleToggleSelectAll}
+          onStatusChange={actions.updateOrderStatus}
+        />
+      ) : (
+        <OrderTable
+          orders={filteredOrders}
+          selectedOrderId={drawerOrderId}
+          selectedIds={selectedIds}
+          onSelectOrder={handleSelectOrder}
+          onSelectionChange={setSelectedIds}
+          onToggleSelectAll={handleToggleSelectAll}
+          onStatusChange={actions.updateOrderStatus}
+        />
+      )}
 
       {drawerOrder && (
         <OrderDetailPanel

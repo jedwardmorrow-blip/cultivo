@@ -4,6 +4,8 @@ export { OrderTable } from './OrderTable';
 export { OrderDrawer } from './OrderDrawer';
 export { OrderDetailPanel } from './OrderDetailPanel';
 export { OrderItemCard } from './OrderItemCard';
+export { OrderCard } from './OrderCard';
+export { OrderCardView } from './OrderCardView';
 export { OrderFilterBar } from './OrderFilterBar';
 export { BulkActionBar } from './BulkActionBar';
 export { ConfirmDialog } from './ConfirmDialog';
