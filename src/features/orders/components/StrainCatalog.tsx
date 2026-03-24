@@ -557,19 +557,24 @@ function StrainDetailPanel({
                       </div>
                     </div>
 
-                    {/* Batch selection — card-style rows */}
+                    {/* Batch selection — structured cards */}
                     {expandedBatchStage === batchDetailKey && relevantBatches.length > 0 && (
-                      <div className="mt-1.5 mb-2 ml-2 space-y-1">
-                        <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
-                          Select Batch — {relevantBatches.length} across all stages
-                        </p>
+                      <div className="mt-2 mb-2 space-y-1.5">
+                        <div className="flex items-center gap-2 px-1">
+                          <div className="h-px flex-1 bg-cult-border" />
+                          <span className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
+                            {relevantBatches.length} batch{relevantBatches.length !== 1 ? 'es' : ''} available
+                          </span>
+                          <div className="h-px flex-1 bg-cult-border" />
+                        </div>
                         {relevantBatches.map(batch => {
-                          // For packaged products, estimate unit count from batch weight / product weight
-                          const productWeight = product.name.includes('14g') ? 14
-                            : product.name.includes('3.5g') ? 3.5
-                            : product.name.includes('1lb') || product.name.includes('454g') ? 454
-                            : 3.5;
-                          const estUnits = Math.floor(batch.available_weight_grams / productWeight);
+                          const isReady = batch.stage === 'packaged';
+                          const harvestStr = batch.harvest_date
+                            ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            : null;
+                          const daysSinceHarvest = batch.harvest_date
+                            ? Math.floor((Date.now() - new Date(batch.harvest_date).getTime()) / 86400000)
+                            : null;
 
                           return (
                             <button
@@ -587,30 +592,72 @@ function StrainDetailPanel({
                                 }, qty);
                                 setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                               }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
+                              className={`w-full text-left rounded-cult border transition-all group overflow-hidden ${
+                                isReady
+                                  ? 'bg-cult-success/[0.03] border-cult-success/20 hover:border-cult-success/40 hover:bg-cult-success/[0.06]'
+                                  : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong hover:bg-cult-surface-overlay'
+                              }`}
                             >
-                              <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
-                              <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                                batch.stage === 'packaged' ? 'bg-cult-success/10 text-cult-success' : 'bg-cult-surface-overlay text-cult-text-faint'
-                              }`}>
-                                {STAGE_LABELS[batch.stage] || batch.stage}
-                              </span>
-                              {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
-                                <GradeBadge code={batch.grade_code} color={batch.grade_color} />
-                              )}
-                              {batch.thc_percentage != null && (
-                                <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
-                              )}
-                              {batch.has_coa && (
-                                <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
-                              )}
-                              <span className="text-[10px] text-cult-text-faint">
-                                {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                              </span>
-                              <span className="ml-auto text-[11px] font-medium text-cult-text-primary tabular-nums">
-                                {formatWeight(batch.available_weight_grams)}
-                              </span>
-                              <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
+                              {/* Primary row — batch ID, stage, grade, weight */}
+                              <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1">
+                                <span className="font-mono text-[12px] font-semibold text-cult-text-primary tracking-tight">
+                                  {batch.batch_number}
+                                </span>
+                                <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-cult ${
+                                  isReady
+                                    ? 'bg-cult-success/15 text-cult-success'
+                                    : 'bg-cult-surface-overlay text-cult-text-muted border border-cult-border'
+                                }`}>
+                                  {STAGE_LABELS[batch.stage] || batch.stage}
+                                </span>
+                                {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
+                                  <GradeBadge code={batch.grade_code} color={batch.grade_color} />
+                                )}
+                                <span className="ml-auto text-[13px] font-semibold text-cult-text-primary tabular-nums">
+                                  {formatWeight(batch.available_weight_grams)}
+                                </span>
+                                <Plus className="w-3.5 h-3.5 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
+                              </div>
+
+                              {/* Metadata row — THC, harvest, COA */}
+                              <div className="flex items-center gap-3 px-3 pb-2.5 pt-0.5">
+                                {batch.thc_percentage != null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">THC</span>
+                                    <span className="font-semibold tabular-nums">{batch.thc_percentage}%</span>
+                                  </span>
+                                )}
+                                {batch.thca_percentage != null && batch.thc_percentage == null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">THCa</span>
+                                    <span className="font-semibold tabular-nums">{batch.thca_percentage}%</span>
+                                  </span>
+                                )}
+                                {batch.total_cannabinoids != null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">Total</span>
+                                    <span className="font-semibold tabular-nums">{batch.total_cannabinoids}%</span>
+                                  </span>
+                                )}
+                                {harvestStr && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <Leaf className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                                    <span className="text-cult-text-faint">Harvested</span>
+                                    <span className="tabular-nums">{harvestStr}</span>
+                                    {daysSinceHarvest != null && (
+                                      <span className="text-cult-text-faint">({daysSinceHarvest}d ago)</span>
+                                    )}
+                                  </span>
+                                )}
+                                {batch.has_coa && (
+                                  <span className="flex items-center gap-1 ml-auto">
+                                    <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
+                                    <span className="text-[10px] font-medium text-cult-success">
+                                      COA {batch.coa_pass_fail === 'pass' ? 'Pass' : batch.coa_pass_fail === 'fail' ? 'Fail' : ''}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
                             </button>
                           );
                         })}
@@ -721,53 +768,110 @@ function StrainDetailPanel({
                         </button>
                       </div>
                     </div>
+                    {/* Batch selection — structured cards */}
                     {expandedBatchStage === batchDetailKey && prerollBatches.length > 0 && (
-                      <div className="mt-1.5 mb-2 ml-2 space-y-1">
-                        <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
-                          Select Batch — {prerollBatches.length} across all stages
-                        </p>
-                        {prerollBatches.map(batch => (
-                          <button
-                            key={`${batch.batch_id}-${batch.stage}`}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const qty = parseInt(pendingQty[qtyKey]) || 1;
-                              onAddToCart(product, {
-                                batch_id: batch.batch_id,
-                                batch_number: batch.batch_number,
-                                strain: batch.strain,
-                                grade_code: batch.grade_code,
-                                grade_label: batch.grade_label,
-                              }, qty);
-                              setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
-                          >
-                            <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded-cult ${
-                              batch.stage === 'packaged'
-                                ? 'bg-cult-success/15 text-cult-success'
-                                : 'bg-cult-surface border border-cult-border text-cult-text-muted'
-                            }`}>
-                              {STAGE_LABELS[batch.stage] || batch.stage}
-                            </span>
-                            <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
-                            {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
-                              <GradeBadge code={batch.grade_code} color={batch.grade_color} />
-                            )}
-                            {batch.thc_percentage != null && (
-                              <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
-                            )}
-                            {batch.has_coa && (
-                              <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
-                            )}
-                            <span className="text-[10px] text-cult-text-faint">
-                              {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                            </span>
-                            <span className="ml-auto text-[11px] font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
-                            <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
-                          </button>
-                        ))}
+                      <div className="mt-2 mb-2 space-y-1.5">
+                        <div className="flex items-center gap-2 px-1">
+                          <div className="h-px flex-1 bg-cult-border" />
+                          <span className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
+                            {prerollBatches.length} batch{prerollBatches.length !== 1 ? 'es' : ''} available
+                          </span>
+                          <div className="h-px flex-1 bg-cult-border" />
+                        </div>
+                        {prerollBatches.map(batch => {
+                          const isReady = batch.stage === 'packaged';
+                          const harvestStr = batch.harvest_date
+                            ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            : null;
+                          const daysSinceHarvest = batch.harvest_date
+                            ? Math.floor((Date.now() - new Date(batch.harvest_date).getTime()) / 86400000)
+                            : null;
+
+                          return (
+                            <button
+                              key={`${batch.batch_id}-${batch.stage}`}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const qty = parseInt(pendingQty[qtyKey]) || 1;
+                                onAddToCart(product, {
+                                  batch_id: batch.batch_id,
+                                  batch_number: batch.batch_number,
+                                  strain: batch.strain,
+                                  grade_code: batch.grade_code,
+                                  grade_label: batch.grade_label,
+                                }, qty);
+                                setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                              }}
+                              className={`w-full text-left rounded-cult border transition-all group overflow-hidden ${
+                                isReady
+                                  ? 'bg-cult-success/[0.03] border-cult-success/20 hover:border-cult-success/40 hover:bg-cult-success/[0.06]'
+                                  : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong hover:bg-cult-surface-overlay'
+                              }`}
+                            >
+                              {/* Primary row — batch ID, stage, grade, weight */}
+                              <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1">
+                                <span className="font-mono text-[12px] font-semibold text-cult-text-primary tracking-tight">
+                                  {batch.batch_number}
+                                </span>
+                                <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-cult ${
+                                  isReady
+                                    ? 'bg-cult-success/15 text-cult-success'
+                                    : 'bg-cult-surface-overlay text-cult-text-muted border border-cult-border'
+                                }`}>
+                                  {STAGE_LABELS[batch.stage] || batch.stage}
+                                </span>
+                                {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
+                                  <GradeBadge code={batch.grade_code} color={batch.grade_color} />
+                                )}
+                                <span className="ml-auto text-[13px] font-semibold text-cult-text-primary tabular-nums">
+                                  {formatWeight(batch.available_weight_grams)}
+                                </span>
+                                <Plus className="w-3.5 h-3.5 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
+                              </div>
+
+                              {/* Metadata row — THC, harvest, COA */}
+                              <div className="flex items-center gap-3 px-3 pb-2.5 pt-0.5">
+                                {batch.thc_percentage != null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">THC</span>
+                                    <span className="font-semibold tabular-nums">{batch.thc_percentage}%</span>
+                                  </span>
+                                )}
+                                {batch.thca_percentage != null && batch.thc_percentage == null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">THCa</span>
+                                    <span className="font-semibold tabular-nums">{batch.thca_percentage}%</span>
+                                  </span>
+                                )}
+                                {batch.total_cannabinoids != null && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <span className="text-cult-text-faint">Total</span>
+                                    <span className="font-semibold tabular-nums">{batch.total_cannabinoids}%</span>
+                                  </span>
+                                )}
+                                {harvestStr && (
+                                  <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                    <Leaf className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                                    <span className="text-cult-text-faint">Harvested</span>
+                                    <span className="tabular-nums">{harvestStr}</span>
+                                    {daysSinceHarvest != null && (
+                                      <span className="text-cult-text-faint">({daysSinceHarvest}d ago)</span>
+                                    )}
+                                  </span>
+                                )}
+                                {batch.has_coa && (
+                                  <span className="flex items-center gap-1 ml-auto">
+                                    <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
+                                    <span className="text-[10px] font-medium text-cult-success">
+                                      COA {batch.coa_pass_fail === 'pass' ? 'Pass' : batch.coa_pass_fail === 'fail' ? 'Fail' : ''}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -884,46 +988,98 @@ function StrainDetailPanel({
                       </div>
 
                       {/* Batch selection — card-style rows */}
+                      {/* Batch selection — structured cards */}
                       {expandedBatchStage === batchDetailKey && stageBatches.length > 0 && (
-                        <div className="mt-1.5 mb-2 ml-2 space-y-1">
-                          <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
-                            Select Batch — {stageBatches.length} available
-                          </p>
-                          {stageBatches.map(batch => (
-                            <button
-                              key={`${batch.batch_id}-${batch.stage}`}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const qty = parseFloat(pendingQty[qtyKey]) || 1;
-                                onAddToCart(product, {
-                                  batch_id: batch.batch_id,
-                                  batch_number: batch.batch_number,
-                                  strain: batch.strain,
-                                  grade_code: batch.grade_code,
-                                  grade_label: batch.grade_label,
-                                }, qty);
-                                setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
-                            >
-                              <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
-                              {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
-                                <GradeBadge code={batch.grade_code} color={batch.grade_color} />
-                              )}
-                              {batch.thc_percentage != null && (
-                                <span className="text-[10px] font-medium text-cult-text-secondary">{batch.thc_percentage}%</span>
-                              )}
-                              {batch.has_coa && (
-                                <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" title="COA available" />
-                              )}
-                              <span className="text-[10px] text-cult-text-faint">
-                                {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
-                              </span>
-                              <span className="ml-auto text-[11px] font-medium text-cult-text-primary">{formatWeight(batch.available_weight_grams)}</span>
-                              <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
-                            </button>
-                          ))}
+                        <div className="mt-2 mb-2 space-y-1.5">
+                          <div className="flex items-center gap-2 px-1">
+                            <div className="h-px flex-1 bg-cult-border" />
+                            <span className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
+                              {stageBatches.length} batch{stageBatches.length !== 1 ? 'es' : ''} available
+                            </span>
+                            <div className="h-px flex-1 bg-cult-border" />
+                          </div>
+                          {stageBatches.map(batch => {
+                            const harvestStr = batch.harvest_date
+                              ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : null;
+                            const daysSinceHarvest = batch.harvest_date
+                              ? Math.floor((Date.now() - new Date(batch.harvest_date).getTime()) / 86400000)
+                              : null;
+
+                            return (
+                              <button
+                                key={`${batch.batch_id}-${batch.stage}`}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const qty = parseFloat(pendingQty[qtyKey]) || 1;
+                                  onAddToCart(product, {
+                                    batch_id: batch.batch_id,
+                                    batch_number: batch.batch_number,
+                                    strain: batch.strain,
+                                    grade_code: batch.grade_code,
+                                    grade_label: batch.grade_label,
+                                  }, qty);
+                                  setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
+                                }}
+                                className="w-full text-left rounded-cult border bg-cult-surface-raised border-cult-border hover:border-cult-border-strong hover:bg-cult-surface-overlay transition-all group overflow-hidden"
+                              >
+                                {/* Primary row — batch ID, grade, weight */}
+                                <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1">
+                                  <span className="font-mono text-[12px] font-semibold text-cult-text-primary tracking-tight">
+                                    {batch.batch_number}
+                                  </span>
+                                  {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
+                                    <GradeBadge code={batch.grade_code} color={batch.grade_color} />
+                                  )}
+                                  <span className="ml-auto text-[13px] font-semibold text-cult-text-primary tabular-nums">
+                                    {formatWeight(batch.available_weight_grams)}
+                                  </span>
+                                  <Plus className="w-3.5 h-3.5 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
+                                </div>
+
+                                {/* Metadata row — THC, harvest, COA */}
+                                <div className="flex items-center gap-3 px-3 pb-2.5 pt-0.5">
+                                  {batch.thc_percentage != null && (
+                                    <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                      <span className="text-cult-text-faint">THC</span>
+                                      <span className="font-semibold tabular-nums">{batch.thc_percentage}%</span>
+                                    </span>
+                                  )}
+                                  {batch.thca_percentage != null && batch.thc_percentage == null && (
+                                    <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                      <span className="text-cult-text-faint">THCa</span>
+                                      <span className="font-semibold tabular-nums">{batch.thca_percentage}%</span>
+                                    </span>
+                                  )}
+                                  {batch.total_cannabinoids != null && (
+                                    <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                      <span className="text-cult-text-faint">Total</span>
+                                      <span className="font-semibold tabular-nums">{batch.total_cannabinoids}%</span>
+                                    </span>
+                                  )}
+                                  {harvestStr && (
+                                    <span className="flex items-center gap-1 text-[10px] text-cult-text-secondary">
+                                      <Leaf className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                                      <span className="text-cult-text-faint">Harvested</span>
+                                      <span className="tabular-nums">{harvestStr}</span>
+                                      {daysSinceHarvest != null && (
+                                        <span className="text-cult-text-faint">({daysSinceHarvest}d ago)</span>
+                                      )}
+                                    </span>
+                                  )}
+                                  {batch.has_coa && (
+                                    <span className="flex items-center gap-1 ml-auto">
+                                      <FileCheck className="w-3 h-3 text-cult-success flex-shrink-0" />
+                                      <span className="text-[10px] font-medium text-cult-success">
+                                        COA {batch.coa_pass_fail === 'pass' ? 'Pass' : batch.coa_pass_fail === 'fail' ? 'Fail' : ''}
+                                      </span>
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
