@@ -132,10 +132,11 @@ function StrainCard({
         {summary.packaged_units_available > 0 && (
           <div>{Math.round(summary.packaged_units_available)} packaged</div>
         )}
-        {(summary.bulk_flower_grams + summary.bulk_smalls_grams) > 0 && (
-          <div>{formatWeight(summary.bulk_flower_grams + summary.bulk_smalls_grams)} bulk</div>
-        )}
-        {summary.packaged_units_available === 0 && summary.bulk_flower_grams + summary.bulk_smalls_grams === 0 && (
+        {(() => {
+          const bulkTotal = summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams;
+          return bulkTotal > 0 ? <div>{formatWeight(bulkTotal)} in pipeline</div> : null;
+        })()}
+        {summary.packaged_units_available === 0 && summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams === 0 && (
           <div>{formatWeight(summary.total_available_grams)} total</div>
         )}
       </div>
@@ -360,16 +361,32 @@ function StrainDetailPanel({
     return (batchesByStage[mapped] || []).reduce((s, b) => s + b.available_weight_grams, 0);
   }
 
-  // Map bulk product material type to batch stage for showing per-product availability
-  function getBulkProductBatchStage(product: OrderableProduct): string {
+  // Map product name → relevant batch stage for material-specific pipeline
+  function getMaterialBatchStage(product: OrderableProduct): string {
     const name = product.name.toLowerCase();
-    if (name.includes('flower') && !name.includes('fresh frozen')) return 'bulk_flower';
+    if (name.includes('fresh frozen')) return 'bulk_flower'; // fresh frozen tracked under bulk_flower
+    if (name.includes('flower')) return 'bulk_flower';
     if (name.includes('smalls')) return 'bulk_smalls';
     if (name.includes('trim')) return 'bulk_trim';
-    if (name.includes('fresh frozen')) return 'bulk_flower';
     if (name.includes('preroll')) return 'bulk_smalls';
     return 'bulk_flower';
   }
+
+  // "Ready" = packaged stage weight (what's available to ship now)
+  function getReadyGrams(): number {
+    return (batchesByStage['packaged'] || []).reduce((s, b) => s + b.available_weight_grams, 0);
+  }
+
+  // "In pipeline" = material-specific weight across all processing stages
+  function getPipelineGrams(product: OrderableProduct): number {
+    const materialStage = getMaterialBatchStage(product);
+    return (batchesByStage[materialStage] || []).reduce((s, b) => s + b.available_weight_grams, 0);
+  }
+
+  // Total pipeline across ALL material types for the strain header
+  const totalPipelineGrams = Object.values(batchesByStage)
+    .flat()
+    .reduce((s, b) => s + b.available_weight_grams, 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -389,6 +406,27 @@ function StrainDetailPanel({
             {batches.length > 0 ? `${new Set(batches.map(b => b.batch_id)).size} batches` : ''}
           </span>
         </div>
+        {/* Pipeline inventory summary */}
+        {totalPipelineGrams > 0 && (
+          <div className="mt-2 flex items-center gap-3 text-[11px] text-cult-text-secondary">
+            <span className="font-medium">{formatWeight(totalPipelineGrams)} total in pipeline</span>
+            {Object.entries(batchesByStage).filter(([, arr]) => arr.length > 0).map(([stage, arr]) => {
+              const stageGrams = arr.reduce((s, b) => s + b.available_weight_grams, 0);
+              const label = stage === 'bulk_flower' ? 'Flower'
+                : stage === 'bulk_smalls' ? 'Smalls'
+                : stage === 'bulk_trim' ? 'Trim'
+                : stage === 'packaged' ? 'Packaged'
+                : stage === 'bucked' ? 'Bucked'
+                : stage === 'binned' ? 'Binned'
+                : stage;
+              return (
+                <span key={stage} className="text-cult-text-muted">
+                  {formatWeight(stageGrams)} {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
         {/* Concurrent-order awareness */}
         {demandPressure && demandPressure.pending_order_count > 0 && (
           <div className="mt-2 px-2.5 py-1.5 bg-cult-warning/8 border border-cult-warning/15 rounded-cult">
@@ -423,14 +461,17 @@ function StrainDetailPanel({
               {packaged.map(product => {
                 const inCart = getCartQuantity(product.id);
                 const packagedBatches = batchesByStage['packaged'] || [];
-                const stageAvail = packagedBatches.reduce((s, b) => s + b.available_weight_grams, 0);
+                const readyGrams = getReadyGrams();
+                const pipelineGrams = getPipelineGrams(product);
                 const historyText = formatProductHistory(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
-                const format = product.name.replace(/^(Packaged|Prerolls)\s*-\s*[^-]+\s*-\s*/, '');
+                // Strip prefix: "Packaged - Strain - X" or "Bulk - Strain - X" → "X"
+                const format = product.name.replace(/^(Packaged|Prerolls|Bulk)\s*-\s*[^-]+\s*-\s*/, '');
                 const batchDetailKey = `packaged-${product.id}`;
                 const qtyKey = product.id;
                 const qtyVal = pendingQty[qtyKey] ?? '';
                 const parsedQty = parseInt(qtyVal) || 1;
+                const pricingUnit = product.pricing_unit || 'unit';
 
                 return (
                   <div key={product.id}>
@@ -438,9 +479,7 @@ function StrainDetailPanel({
                       className={`px-3 py-2.5 rounded-cult border transition-all ${
                         inCart
                           ? 'bg-cult-accent/5 border-cult-accent/20'
-                          : stageAvail > 0
-                          ? 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
-                          : 'bg-cult-surface-raised border-cult-border opacity-50'
+                          : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
                       }`}
                     >
                       {/* Top row: product info */}
@@ -472,10 +511,13 @@ function StrainDetailPanel({
                           )}
                         </div>
                         <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
-                          {price > 0 ? `$${price.toFixed(2)}` : '—'}
+                          {price > 0 ? `$${price.toFixed(2)}/${pricingUnit}` : '—'}
                         </div>
-                        <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap min-w-[40px]">
-                          {Math.round(stageAvail)} avail
+                        <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap">
+                          {formatWeight(readyGrams)} ready
+                          {pipelineGrams > 0 && (
+                            <span className="text-cult-text-muted"> · {formatWeight(pipelineGrams)} in pipeline</span>
+                          )}
                         </div>
                       </div>
 
@@ -586,12 +628,13 @@ function StrainDetailPanel({
                 const inCart = getCartQuantity(product.id);
                 const historyText = formatProductHistory(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
-                const format = product.name.replace(/^Packaged\s*-\s*[^-]+\s*-\s*/, '');
+                const format = product.name.replace(/^(Packaged|Prerolls)\s*-\s*[^-]+\s*-\s*/, '');
                 const prerollBatches = batchesByStage['packaged'] || [];
                 const batchDetailKey = `preroll-${product.id}`;
                 const qtyKey = `preroll-${product.id}`;
                 const qtyVal = pendingQty[qtyKey] ?? '';
                 const parsedQty = parseInt(qtyVal) || 1;
+                const pipelineGrams = getPipelineGrams(product);
 
                 return (
                   <div key={product.id}>
@@ -631,6 +674,9 @@ function StrainDetailPanel({
                         </div>
                         <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
                           {price > 0 ? `$${price.toFixed(2)}/g` : '—'}
+                        </div>
+                        <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap">
+                          {pipelineGrams > 0 ? `${formatWeight(pipelineGrams)} in pipeline` : '0g'}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
@@ -737,8 +783,8 @@ function StrainDetailPanel({
                   const nameParts = product.name.split(' - ');
                   const materialType = nameParts[nameParts.length - 1] || product.name;
 
-                  const batchStageKey = getBulkProductBatchStage(product);
-                  const stageBatches = batchesByStage[batchStageKey] || [];
+                  const materialStage = getMaterialBatchStage(product);
+                  const stageBatches = batchesByStage[materialStage] || [];
                   const materialAvail = stageBatches.reduce((s, b) => s + b.available_weight_grams, 0);
                   const batchDetailKey = `${stageKey}-${materialType}`;
                   const qtyKey = `bulk-${product.id}`;
@@ -751,9 +797,7 @@ function StrainDetailPanel({
                         className={`px-3 py-2.5 rounded-cult border transition-all ${
                           inCart
                             ? 'bg-cult-accent/5 border-cult-accent/20'
-                            : materialAvail > 0
-                            ? 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
-                            : 'bg-cult-surface-raised border-cult-border opacity-50'
+                            : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -784,8 +828,8 @@ function StrainDetailPanel({
                           <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
                             {price > 0 ? `$${price.toFixed(2)}/lb` : '—'}
                           </div>
-                          <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap min-w-[48px]">
-                            {formatWeight(materialAvail)}
+                          <div className="text-right text-[10px] text-cult-text-faint whitespace-nowrap">
+                            {formatWeight(materialAvail)} available
                           </div>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
@@ -812,8 +856,7 @@ function StrainDetailPanel({
                               onAddToCart(product, undefined, parsedQty);
                               setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                             }}
-                            disabled={materialAvail === 0}
-                            className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
                           >
                             Add
                           </button>
