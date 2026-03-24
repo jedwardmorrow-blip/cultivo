@@ -460,9 +460,14 @@ function StrainDetailPanel({
             <div className="space-y-1.5">
               {packaged.map(product => {
                 const inCart = getCartQuantity(product.id);
-                const packagedBatches = batchesByStage['packaged'] || [];
                 const readyGrams = getReadyGrams();
                 const pipelineGrams = getPipelineGrams(product);
+                // Show batches from ALL relevant stages (packaged + material pipeline)
+                const materialStage = getMaterialBatchStage(product);
+                const relevantBatches = [
+                  ...(batchesByStage['packaged'] || []),
+                  ...(batchesByStage[materialStage] || []),
+                ].filter((b, i, arr) => arr.findIndex(x => x.batch_id === b.batch_id && x.stage === b.stage) === i);
                 const historyText = formatProductHistory(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
                 // Strip prefix: "Packaged - Strain - X" or "Bulk - Strain - X" → "X"
@@ -484,7 +489,7 @@ function StrainDetailPanel({
                     >
                       {/* Top row: product info */}
                       <div className="flex items-center gap-3">
-                        {packagedBatches.length > 0 && (
+                        {relevantBatches.length > 0 && (
                           <button
                             type="button"
                             onClick={() => setExpandedBatchStage(
@@ -553,12 +558,12 @@ function StrainDetailPanel({
                     </div>
 
                     {/* Batch selection — card-style rows */}
-                    {expandedBatchStage === batchDetailKey && packagedBatches.length > 0 && (
+                    {expandedBatchStage === batchDetailKey && relevantBatches.length > 0 && (
                       <div className="mt-1.5 mb-2 ml-2 space-y-1">
                         <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
-                          Select Batch — {packagedBatches.length} available
+                          Select Batch — {relevantBatches.length} across all stages
                         </p>
-                        {packagedBatches.map(batch => {
+                        {relevantBatches.map(batch => {
                           // For packaged products, estimate unit count from batch weight / product weight
                           const productWeight = product.name.includes('14g') ? 14
                             : product.name.includes('3.5g') ? 3.5
@@ -585,6 +590,11 @@ function StrainDetailPanel({
                               className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
                             >
                               <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
+                              <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                                batch.stage === 'packaged' ? 'bg-cult-success/10 text-cult-success' : 'bg-cult-surface-overlay text-cult-text-faint'
+                              }`}>
+                                {STAGE_LABELS[batch.stage] || batch.stage}
+                              </span>
                               {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
                                 <GradeBadge code={batch.grade_code} color={batch.grade_color} />
                               )}
@@ -598,7 +608,7 @@ function StrainDetailPanel({
                                 {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                               </span>
                               <span className="ml-auto text-[11px] font-medium text-cult-text-primary tabular-nums">
-                                ~{estUnits} units
+                                {formatWeight(batch.available_weight_grams)}
                               </span>
                               <Plus className="w-3 h-3 text-cult-text-faint group-hover:text-cult-accent transition-colors flex-shrink-0" />
                             </button>
@@ -628,7 +638,11 @@ function StrainDetailPanel({
                 const historyText = formatProductHistory(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
                 const format = product.name.replace(/^(Packaged|Prerolls)\s*-\s*[^-]+\s*-\s*/, '');
-                const prerollBatches = batchesByStage['packaged'] || [];
+                const prerollMaterialStage = getMaterialBatchStage(product);
+                const prerollBatches = [
+                  ...(batchesByStage['packaged'] || []),
+                  ...(batchesByStage[prerollMaterialStage] || []),
+                ].filter((b, i, arr) => arr.findIndex(x => x.batch_id === b.batch_id && x.stage === b.stage) === i);
                 const batchDetailKey = `preroll-${product.id}`;
                 const qtyKey = `preroll-${product.id}`;
                 const qtyVal = pendingQty[qtyKey] ?? '';
@@ -710,7 +724,7 @@ function StrainDetailPanel({
                     {expandedBatchStage === batchDetailKey && prerollBatches.length > 0 && (
                       <div className="mt-1.5 mb-2 ml-2 space-y-1">
                         <p className="text-[10px] font-semibold text-cult-text-muted uppercase tracking-wider px-2 py-1">
-                          Select Batch — {prerollBatches.length} available
+                          Select Batch — {prerollBatches.length} across all stages
                         </p>
                         {prerollBatches.map(batch => (
                           <button
@@ -730,6 +744,13 @@ function StrainDetailPanel({
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-cult bg-cult-surface border border-cult-border hover:border-cult-accent/30 hover:bg-cult-accent/5 transition-all group"
                           >
+                            <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded-cult ${
+                              batch.stage === 'packaged'
+                                ? 'bg-cult-success/15 text-cult-success'
+                                : 'bg-cult-surface border border-cult-border text-cult-text-muted'
+                            }`}>
+                              {STAGE_LABELS[batch.stage] || batch.stage}
+                            </span>
                             <span className="font-mono text-[11px] text-cult-text-secondary">{batch.batch_number}</span>
                             {batch.grade_code && batch.grade_code !== 'UNDEFINED' && (
                               <GradeBadge code={batch.grade_code} color={batch.grade_color} />
