@@ -545,8 +545,7 @@ function StrainDetailPanel({
                             onAddToCart(product, undefined, parsedQty);
                             setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                           }}
-                          disabled={stageAvail === 0}
-                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
                         >
                           Add
                         </button>
