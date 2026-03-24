@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { validateDate, getDateInputConstraints } from '@/lib/utils';
 import { useOrderableProducts } from '@/hooks';
-import { formatProductPrice, getCategoryBadge, groupProductsByCategory } from '@/services';
 import {
-  X, Plus, Minus, Search, Gift, ShoppingCart, Trash2,
-  AlertCircle, ChevronDown, ChevronRight, Package, Calendar,
-  FileText, User, Lock, Unlock, RotateCcw,
+  X, Plus, Minus, Gift, ShoppingCart, Trash2,
+  AlertCircle, ChevronDown, Package, Calendar,
+  FileText, User, Lock, Unlock, RotateCcw, ClipboardList, Leaf,
 } from 'lucide-react';
 import { notificationService } from '@/services/notification.service';
 import { getActivePricesForCustomer } from '@/features/crm/services/priceList.service';
+import { StrainCatalog, type BatchSelection } from './StrainCatalog';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,6 +30,11 @@ interface CartItem {
   notes?: string;
   is_sample: boolean;
   price_locked: boolean;
+  batch_id?: string | null;
+  batch_number?: string | null;
+  strain?: string | null;
+  grade_code?: string | null;
+  grade_label?: string | null;
 }
 
 interface NewOrderFormProps {
@@ -40,20 +45,393 @@ interface NewOrderFormProps {
   sampleMode?: boolean;
 }
 
-// ─── Category Labels ─────────────────────────────────────────────────────────
+type MobileTab = 'details' | 'products' | 'cart';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  packaged: 'Packaged Flower',
-  preroll: 'Pre-Rolls',
-  bulk: 'Bulk',
-};
+// ─── Sub-Components ──────────────────────────────────────────────────────────
+
+function OrderDetailsPanel({
+  customers,
+  selectedCustomerId,
+  onCustomerChange,
+  preSelectedCustomerId,
+  priority,
+  onPriorityChange,
+  requestedDeliveryDate,
+  onDeliveryDateChange,
+  dateError,
+  showNotes,
+  onToggleNotes,
+  deliveryNotes,
+  onDeliveryNotesChange,
+  internalNotes,
+  onInternalNotesChange,
+}: {
+  customers: Customer[];
+  selectedCustomerId: string;
+  onCustomerChange: (id: string) => void;
+  preSelectedCustomerId?: string;
+  priority: string;
+  onPriorityChange: (p: string) => void;
+  requestedDeliveryDate: string;
+  onDeliveryDateChange: (date: string) => void;
+  dateError: string | null;
+  showNotes: boolean;
+  onToggleNotes: () => void;
+  deliveryNotes: string;
+  onDeliveryNotesChange: (notes: string) => void;
+  internalNotes: string;
+  onInternalNotesChange: (notes: string) => void;
+}) {
+  return (
+    <div className="p-4 space-y-5">
+      {/* Customer Picker */}
+      <div>
+        <label className="flex items-center gap-1.5 text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2">
+          <User className="w-3.5 h-3.5" />
+          Dispensary
+        </label>
+        <select
+          required
+          value={selectedCustomerId}
+          onChange={(e) => onCustomerChange(e.target.value)}
+          disabled={!!preSelectedCustomerId}
+          className={`w-full px-3 py-3 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors ${
+            preSelectedCustomerId ? 'opacity-75 cursor-not-allowed' : ''
+          }`}
+        >
+          <option value="">Select dispensary…</option>
+          {customers.map(customer => (
+            <option key={customer.id} value={customer.id}>
+              {customer.name}
+            </option>
+          ))}
+        </select>
+        {!selectedCustomerId && (
+          <p className="mt-1.5 text-caption text-cult-danger flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            Required
+          </p>
+        )}
+      </div>
+
+      {/* Priority */}
+      <div>
+        <label className="text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2 block">
+          Priority
+        </label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {(['normal', 'high', 'urgent'] as const).map(p => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPriorityChange(p)}
+              className={`py-2.5 text-caption font-semibold rounded-cult capitalize transition-all ${
+                priority === p
+                  ? p === 'urgent'
+                    ? 'bg-cult-danger/20 text-cult-danger border border-cult-danger/40'
+                    : p === 'high'
+                    ? 'bg-cult-warning/20 text-cult-warning border border-cult-warning/40'
+                    : 'bg-cult-surface-overlay text-cult-text-primary border border-cult-border-strong'
+                  : 'bg-cult-surface-raised text-cult-text-muted border border-transparent hover:border-cult-border hover:text-cult-text-secondary'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Delivery Date */}
+      <div>
+        <label className="flex items-center gap-1.5 text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2">
+          <Calendar className="w-3.5 h-3.5" />
+          Delivery Date
+        </label>
+        <input
+          type="date"
+          value={requestedDeliveryDate}
+          onChange={(e) => onDeliveryDateChange(e.target.value)}
+          min={getDateInputConstraints().min}
+          max={getDateInputConstraints().max}
+          className="w-full px-3 py-3 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors"
+        />
+        {dateError && (
+          <p className="mt-1.5 text-caption text-cult-danger flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            {dateError}
+          </p>
+        )}
+      </div>
+
+      {/* Notes Toggle */}
+      <div>
+        <button
+          type="button"
+          onClick={onToggleNotes}
+          className="flex items-center gap-1.5 text-caption font-medium text-cult-text-muted hover:text-cult-text-secondary transition-colors py-1"
+        >
+          <FileText className="w-3.5 h-3.5" />
+          {showNotes ? 'Hide' : 'Add'} Notes
+          <ChevronDown className={`w-3 h-3 transition-transform ${showNotes ? 'rotate-180' : ''}`} />
+        </button>
+        {showNotes && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="text-caption text-cult-text-muted mb-1 block">Delivery Notes</label>
+              <textarea
+                value={deliveryNotes}
+                onChange={(e) => onDeliveryNotesChange(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2.5 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-accent/40 resize-none"
+                placeholder="Delivery instructions…"
+              />
+            </div>
+            <div>
+              <label className="text-caption text-cult-text-muted mb-1 block">Internal Notes</label>
+              <textarea
+                value={internalNotes}
+                onChange={(e) => onInternalNotesChange(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2.5 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-accent/40 resize-none"
+                placeholder="Internal notes…"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CartPanel({
+  cartItems,
+  products,
+  customerPrices,
+  totalAmount,
+  totalUnits,
+  canSubmit,
+  loading,
+  onAdjustQuantity,
+  onToggleSample,
+  onRemove,
+  onResetPrice,
+  onTogglePriceLock,
+  onSubmit,
+  onClose,
+}: {
+  cartItems: CartItem[];
+  products: any[];
+  customerPrices: Map<string, number> | null;
+  totalAmount: number;
+  totalUnits: number;
+  canSubmit: boolean;
+  loading: boolean;
+  onAdjustQuantity: (index: number, delta: number) => void;
+  onToggleSample: (index: number) => void;
+  onRemove: (index: number) => void;
+  onResetPrice: (index: number) => void;
+  onTogglePriceLock: (index: number) => void;
+  onSubmit: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      {/* Cart Header — hidden on mobile (shown in parent tab bar instead) */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-cult-border hidden lg:flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShoppingCart className="w-4 h-4 text-cult-text-muted" />
+          <span className="text-body font-semibold text-cult-text-primary">Cart</span>
+          {cartItems.length > 0 && (
+            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-text-primary text-cult-surface rounded-full">
+              {cartItems.length}
+            </span>
+          )}
+        </div>
+        {cartItems.length > 0 && (
+          <span className="text-caption text-cult-text-muted">
+            {totalUnits.toFixed(totalUnits % 1 === 0 ? 0 : 2)} units
+          </span>
+        )}
+      </div>
+
+      {/* Cart Items */}
+      <div className="flex-1 overflow-y-auto">
+        {cartItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full px-6 text-center py-16">
+            <Package className="w-10 h-10 text-cult-text-faint mb-3" />
+            <p className="text-body text-cult-text-muted mb-1">Cart is empty</p>
+            <p className="text-caption text-cult-text-muted">Click products to add them</p>
+          </div>
+        ) : (
+          <div className="p-3 space-y-2">
+            {cartItems.map((item, index) => {
+              const product = products.find((p: any) => p.id === item.product_id);
+              const lineTotal = item.quantity * item.unit_price;
+              const defaultPrice = customerPrices?.get(item.product_id) ?? product?.price_per_unit ?? 0;
+              const hasCustomPrice = item.unit_price !== defaultPrice;
+
+              return (
+                <div
+                  key={`${item.product_id}-${index}`}
+                  className="bg-cult-surface-raised border border-cult-border rounded-cult p-3"
+                >
+                  {/* Item Header */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body font-medium text-cult-text-primary truncate">
+                        {item.product_name || product?.name}
+                      </p>
+                      {item.batch_number ? (
+                        <p className="text-[10px] text-cult-text-muted flex items-center gap-1.5">
+                          <span className="font-mono">{item.batch_number}</span>
+                          {item.grade_code && item.grade_code !== 'UNDEFINED' && (
+                            <span className="text-cult-text-secondary">{item.grade_code}</span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-caption text-cult-text-muted">
+                          {item.strain || product?.strain?.name || ''}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => onToggleSample(index)}
+                        className={`p-2 rounded-cult transition-colors ${
+                          item.is_sample
+                            ? 'bg-cult-warning/15 text-cult-warning'
+                            : 'text-cult-text-faint hover:text-cult-text-muted'
+                        }`}
+                        title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
+                      >
+                        <Gift className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onRemove(index)}
+                        className="p-2 text-cult-text-faint hover:text-cult-danger rounded-cult transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quantity Controls */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => onAdjustQuantity(index, -1)}
+                      className="w-9 h-9 flex items-center justify-center bg-cult-surface border border-cult-border rounded-cult text-cult-text-secondary hover:border-cult-border-strong active:bg-cult-surface-overlay transition-colors"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="flex-1 text-center">
+                      <span className="text-body font-semibold text-cult-text-primary">
+                        {item.quantity}
+                      </span>
+                      <span className="text-caption text-cult-text-muted ml-1">
+                        {product?.pricing_unit || 'units'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onAdjustQuantity(index, 1)}
+                      className="w-9 h-9 flex items-center justify-center bg-cult-surface border border-cult-border rounded-cult text-cult-text-secondary hover:border-cult-border-strong active:bg-cult-surface-overlay transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Price Row */}
+                  <div className="flex items-center justify-between text-caption">
+                    <div className="flex items-center gap-2">
+                      <span className="text-cult-text-muted">
+                        ${item.unit_price.toFixed(2)}/{product?.pricing_unit || 'unit'}
+                      </span>
+                      {hasCustomPrice && (
+                        <button
+                          type="button"
+                          onClick={() => onResetPrice(index)}
+                          className="text-cult-warning hover:text-cult-warning/80 transition-colors p-1"
+                          title="Reset to default price"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onTogglePriceLock(index)}
+                        className={`p-1 transition-colors ${
+                          item.price_locked
+                            ? 'text-cult-text-secondary'
+                            : 'text-cult-text-faint hover:text-cult-text-muted'
+                        }`}
+                        title={item.price_locked ? 'Unlock price' : 'Lock price'}
+                      >
+                        {item.price_locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    <span className="font-semibold text-cult-text-primary">
+                      ${lineTotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {item.is_sample && (
+                    <div className="mt-1.5 text-[10px] font-semibold text-cult-warning uppercase tracking-wider">
+                      Sample — $0.00
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Cart Footer: Total + Submit */}
+      <div className="flex-shrink-0 border-t border-cult-border bg-cult-surface-raised p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-caption font-medium text-cult-text-muted uppercase tracking-wider">Total</span>
+          <span className="text-h3 font-semibold text-cult-text-primary">${totalAmount.toFixed(2)}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          className="w-full py-3.5 bg-cult-text-primary text-cult-surface rounded-cult font-semibold text-body hover:bg-cult-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-cult-surface border-t-transparent rounded-full animate-spin" />
+              Creating…
+            </>
+          ) : (
+            <>Create Order</>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="w-full py-2.5 text-cult-text-muted hover:text-cult-text-secondary text-caption font-medium transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustomerId, sampleMode }: NewOrderFormProps) {
   // Data state
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const { products, loading: productsLoading, error: productsError } = useOrderableProducts();
+  const { products, loading: productsLoading } = useOrderableProducts();
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -69,15 +447,11 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
   // Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Product search
-  const [productSearch, setProductSearch] = useState('');
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
-
   // Notes expansion
   const [showNotes, setShowNotes] = useState(false);
 
-  // Refs
-  const catalogRef = useRef<HTMLDivElement>(null);
+  // Mobile tab
+  const [mobileTab, setMobileTab] = useState<MobileTab>('details');
 
   // ─── Data Loading ────────────────────────────────────────────────────────
 
@@ -149,24 +523,6 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
-  const filteredProducts = useMemo(() => {
-    if (!productSearch.trim()) return products;
-    const term = productSearch.toLowerCase();
-    return products.filter(product => {
-      const strainName = product.strain?.name || '';
-      const typeName = product.type?.name || '';
-      return (
-        product.name.toLowerCase().includes(term) ||
-        strainName.toLowerCase().includes(term) ||
-        typeName.toLowerCase().includes(term)
-      );
-    });
-  }, [products, productSearch]);
-
-  const groupedProducts = useMemo(() => {
-    return groupProductsByCategory(filteredProducts);
-  }, [filteredProducts]);
-
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
   const totalUnits = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -174,12 +530,17 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     ? `${selectedCustomer.dispensary_code}${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`
     : null;
 
-  const canSubmit = selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading;
+  const canSubmit = !!selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading;
 
   // ─── Cart Actions ────────────────────────────────────────────────────────
 
-  function addToCart(product: any) {
-    const existingIndex = cartItems.findIndex(item => item.product_id === product.id);
+  function addToCart(product: any, batch?: BatchSelection) {
+    // When a batch is specified, match on product_id + batch_id
+    // When no batch, match on product_id + no batch_id (legacy behavior)
+    const existingIndex = cartItems.findIndex(item =>
+      item.product_id === product.id &&
+      (batch ? item.batch_id === batch.batch_id : !item.batch_id)
+    );
 
     if (existingIndex >= 0) {
       const updated = [...cartItems];
@@ -199,6 +560,11 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         unit_price: isSample ? 0 : (customPrice ?? product.price_per_unit ?? 0),
         is_sample: isSample,
         price_locked: false,
+        batch_id: batch?.batch_id || null,
+        batch_number: batch?.batch_number || null,
+        strain: batch?.strain || product.strain_info?.name || null,
+        grade_code: batch?.grade_code || null,
+        grade_label: batch?.grade_label || null,
       };
       setCartItems([...cartItems, newItem]);
     }
@@ -215,12 +581,6 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     }
     const updated = [...cartItems];
     updated[index] = { ...updated[index], quantity: newQty };
-    setCartItems(updated);
-  }
-
-  function updateCartPrice(index: number, price: number) {
-    const updated = [...cartItems];
-    updated[index] = { ...updated[index], unit_price: price };
     setCartItems(updated);
   }
 
@@ -256,18 +616,10 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     setCartItems(cartItems.filter((_, i) => i !== index));
   }
 
-  function getCartQuantity(productId: string): number {
-    return cartItems.find(item => item.product_id === productId)?.quantity || 0;
-  }
-
-  function toggleCategory(category: string) {
-    const next = new Set(collapsedCategories);
-    if (next.has(category)) {
-      next.delete(category);
-    } else {
-      next.add(category);
-    }
-    setCollapsedCategories(next);
+  function handleDeliveryDateChange(value: string) {
+    setRequestedDeliveryDate(value);
+    const validation = validateDate(value);
+    setDateError(validation.isValid ? null : validation.error || 'Invalid date');
   }
 
   // ─── Submit ──────────────────────────────────────────────────────────────
@@ -310,8 +662,9 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         quantity: item.quantity,
         unit_price: item.is_sample ? 0 : item.unit_price,
         notes: item.notes || null,
-        status: 'trimming',
-        is_sample: item.is_sample,
+        status: 'trimming' as const,
+        batch_id: item.batch_id || null,
+        strain: item.strain || null,
       }));
 
       const { error: itemsError } = await supabase
@@ -319,6 +672,16 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         .insert(itemsToInsert);
 
       if (itemsError) throw itemsError;
+
+      // Fulfillment summary notification
+      const batchAssigned = cartItems.filter(i => i.batch_id).length;
+      const uniqueStrains = new Set(cartItems.map(i => i.strain).filter(Boolean)).size;
+      const summaryParts = [`${cartItems.length} item${cartItems.length !== 1 ? 's' : ''}`];
+      if (uniqueStrains > 0) summaryParts.push(`${uniqueStrains} strain${uniqueStrains !== 1 ? 's' : ''}`);
+      if (batchAssigned > 0) summaryParts.push(`${batchAssigned} with batch`);
+      notificationService.success(
+        `Order #${orderData.order_number} created — ${summaryParts.join(', ')}`
+      );
 
       onSuccess({
         id: orderData.id,
@@ -351,18 +714,18 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
   return (
     <div className="fixed inset-0 bg-cult-surface/95 backdrop-blur-sm z-50 flex flex-col">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 bg-cult-surface-raised border-b border-cult-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-h3 text-cult-text-primary font-semibold tracking-wide">New Order</h1>
+      <div className="flex-shrink-0 bg-cult-surface-raised border-b border-cult-border px-4 lg:px-6 py-3 lg:py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3 lg:gap-4 min-w-0">
+          <h1 className="text-body lg:text-h3 text-cult-text-primary font-semibold tracking-wide">New Order</h1>
           {sampleMode && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-caption font-semibold bg-cult-warning/15 text-cult-warning border border-cult-warning/30 rounded-cult uppercase tracking-wider">
-              <Gift className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] lg:text-caption font-semibold bg-cult-warning/15 text-cult-warning border border-cult-warning/30 rounded-cult uppercase tracking-wider">
+              <Gift className="w-3 h-3" />
               Sample
             </span>
           )}
           {orderNumberPreview && (
-            <span className="text-caption text-cult-text-muted font-mono">
-              Preview: <span className="text-cult-text-secondary">{orderNumberPreview}</span>
+            <span className="text-caption text-cult-text-muted font-mono hidden sm:inline">
+              <span className="text-cult-text-secondary">{orderNumberPreview}</span>
             </span>
           )}
         </div>
@@ -370,434 +733,173 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="p-2 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-overlay rounded-cult transition-colors disabled:opacity-50"
+          className="p-2.5 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-overlay rounded-cult transition-colors disabled:opacity-50"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* ── Three-Column Body ──────────────────────────────────────────────── */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* ── Left: Order Details ────────────────────────────────────────── */}
+      {/* ── Desktop: Three-Column Body (lg+) ────────────────────────────────── */}
+      <div className="flex-1 hidden lg:flex min-h-0 overflow-hidden">
+        {/* Left: Order Details */}
         <div className="w-72 flex-shrink-0 border-r border-cult-border bg-cult-surface overflow-y-auto">
-          <div className="p-4 space-y-5">
-            {/* Customer Picker */}
-            <div>
-              <label className="flex items-center gap-1.5 text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2">
-                <User className="w-3.5 h-3.5" />
-                Dispensary
-              </label>
-              <select
-                required
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                disabled={!!preSelectedCustomerId}
-                className={`w-full px-3 py-2.5 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors ${
-                  preSelectedCustomerId ? 'opacity-75 cursor-not-allowed' : ''
+          <OrderDetailsPanel
+            customers={customers}
+            selectedCustomerId={selectedCustomerId}
+            onCustomerChange={setSelectedCustomerId}
+            preSelectedCustomerId={preSelectedCustomerId}
+            priority={priority}
+            onPriorityChange={setPriority}
+            requestedDeliveryDate={requestedDeliveryDate}
+            onDeliveryDateChange={handleDeliveryDateChange}
+            dateError={dateError}
+            showNotes={showNotes}
+            onToggleNotes={() => setShowNotes(!showNotes)}
+            deliveryNotes={deliveryNotes}
+            onDeliveryNotesChange={setDeliveryNotes}
+            internalNotes={internalNotes}
+            onInternalNotesChange={setInternalNotes}
+          />
+        </div>
+
+        {/* Center: Strain Catalog */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <StrainCatalog
+            products={products}
+            customerId={selectedCustomerId || null}
+            customerName={selectedCustomer?.name || null}
+            cartItems={cartItems}
+            customerPrices={customerPrices}
+            onAddToCart={addToCart}
+          />
+        </div>
+
+        {/* Right: Cart Sidebar */}
+        <div className="w-80 flex-shrink-0 border-l border-cult-border bg-cult-surface flex flex-col">
+          <CartPanel
+            cartItems={cartItems}
+            products={products}
+            customerPrices={customerPrices}
+            totalAmount={totalAmount}
+            totalUnits={totalUnits}
+            canSubmit={canSubmit}
+            loading={loading}
+            onAdjustQuantity={adjustCartQuantity}
+            onToggleSample={toggleSample}
+            onRemove={removeFromCart}
+            onResetPrice={resetCartPrice}
+            onTogglePriceLock={togglePriceLock}
+            onSubmit={handleSubmit}
+            onClose={onClose}
+          />
+        </div>
+      </div>
+
+      {/* ── Mobile: Tabbed View (<lg) ─────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col lg:hidden min-h-0 overflow-hidden">
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto">
+          {mobileTab === 'details' && (
+            <OrderDetailsPanel
+              customers={customers}
+              selectedCustomerId={selectedCustomerId}
+              onCustomerChange={setSelectedCustomerId}
+              preSelectedCustomerId={preSelectedCustomerId}
+              priority={priority}
+              onPriorityChange={setPriority}
+              requestedDeliveryDate={requestedDeliveryDate}
+              onDeliveryDateChange={handleDeliveryDateChange}
+              dateError={dateError}
+              showNotes={showNotes}
+              onToggleNotes={() => setShowNotes(!showNotes)}
+              deliveryNotes={deliveryNotes}
+              onDeliveryNotesChange={setDeliveryNotes}
+              internalNotes={internalNotes}
+              onInternalNotesChange={setInternalNotes}
+            />
+          )}
+          {mobileTab === 'products' && (
+            <StrainCatalog
+              products={products}
+              customerId={selectedCustomerId || null}
+              customerName={selectedCustomer?.name || null}
+              cartItems={cartItems}
+              customerPrices={customerPrices}
+              onAddToCart={addToCart}
+            />
+          )}
+          {mobileTab === 'cart' && (
+            <CartPanel
+              cartItems={cartItems}
+              products={products}
+              customerPrices={customerPrices}
+              totalAmount={totalAmount}
+              totalUnits={totalUnits}
+              canSubmit={canSubmit}
+              loading={loading}
+              onAdjustQuantity={adjustCartQuantity}
+              onToggleSample={toggleSample}
+              onRemove={removeFromCart}
+              onResetPrice={resetCartPrice}
+              onTogglePriceLock={togglePriceLock}
+              onSubmit={handleSubmit}
+              onClose={onClose}
+            />
+          )}
+        </div>
+
+        {/* Mobile Bottom Tab Bar */}
+        <div className="flex-shrink-0 border-t border-cult-border bg-cult-surface-raised">
+          {/* Mini cart summary — show on non-cart tabs when items exist */}
+          {mobileTab !== 'cart' && cartItems.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMobileTab('cart')}
+              className="w-full flex items-center justify-between px-4 py-2.5 bg-cult-surface-overlay border-b border-cult-border"
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4 text-cult-text-secondary" />
+                <span className="text-caption font-semibold text-cult-text-primary">
+                  {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <span className="text-body font-semibold text-cult-text-primary">
+                ${totalAmount.toFixed(2)}
+              </span>
+            </button>
+          )}
+
+          {/* Tab buttons */}
+          <div className="grid grid-cols-3">
+            {([
+              { tab: 'details' as MobileTab, icon: ClipboardList, label: 'Details' },
+              { tab: 'products' as MobileTab, icon: Leaf, label: 'Strains' },
+              { tab: 'cart' as MobileTab, icon: ShoppingCart, label: 'Cart' },
+            ]).map(({ tab, icon: Icon, label }) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMobileTab(tab)}
+                className={`flex flex-col items-center gap-1 py-3 transition-colors relative ${
+                  mobileTab === tab
+                    ? 'text-cult-text-primary'
+                    : 'text-cult-text-muted'
                 }`}
               >
-                <option value="">Select dispensary…</option>
-                {customers.map(customer => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
-              {!selectedCustomerId && (
-                <p className="mt-1.5 text-caption text-cult-danger flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  Required
-                </p>
-              )}
-            </div>
-
-            {/* Priority */}
-            <div>
-              <label className="text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2 block">
-                Priority
-              </label>
-              <div className="grid grid-cols-3 gap-1">
-                {(['normal', 'high', 'urgent'] as const).map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPriority(p)}
-                    className={`py-2 text-caption font-semibold rounded-cult capitalize transition-all ${
-                      priority === p
-                        ? p === 'urgent'
-                          ? 'bg-cult-danger/20 text-cult-danger border border-cult-danger/40'
-                          : p === 'high'
-                          ? 'bg-cult-warning/20 text-cult-warning border border-cult-warning/40'
-                          : 'bg-cult-surface-overlay text-cult-text-primary border border-cult-border-strong'
-                        : 'bg-cult-surface-raised text-cult-text-muted border border-transparent hover:border-cult-border hover:text-cult-text-secondary'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Delivery Date */}
-            <div>
-              <label className="flex items-center gap-1.5 text-caption font-medium text-cult-text-secondary uppercase tracking-wider mb-2">
-                <Calendar className="w-3.5 h-3.5" />
-                Delivery Date
-              </label>
-              <input
-                type="date"
-                value={requestedDeliveryDate}
-                onChange={(e) => {
-                  setRequestedDeliveryDate(e.target.value);
-                  const validation = validateDate(e.target.value);
-                  setDateError(validation.isValid ? null : validation.error || 'Invalid date');
-                }}
-                min={getDateInputConstraints().min}
-                max={getDateInputConstraints().max}
-                className="w-full px-3 py-2.5 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors"
-              />
-              {dateError && (
-                <p className="mt-1.5 text-caption text-cult-danger flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {dateError}
-                </p>
-              )}
-            </div>
-
-            {/* Notes Toggle */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowNotes(!showNotes)}
-                className="flex items-center gap-1.5 text-caption font-medium text-cult-text-muted hover:text-cult-text-secondary transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                {showNotes ? 'Hide' : 'Add'} Notes
-                <ChevronDown className={`w-3 h-3 transition-transform ${showNotes ? 'rotate-180' : ''}`} />
-              </button>
-              {showNotes && (
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <label className="text-caption text-cult-text-muted mb-1 block">Delivery Notes</label>
-                    <textarea
-                      value={deliveryNotes}
-                      onChange={(e) => setDeliveryNotes(e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-accent/40 resize-none"
-                      placeholder="Delivery instructions…"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-caption text-cult-text-muted mb-1 block">Internal Notes</label>
-                    <textarea
-                      value={internalNotes}
-                      onChange={(e) => setInternalNotes(e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-accent/40 resize-none"
-                      placeholder="Internal notes…"
-                    />
-                  </div>
+                <div className="relative">
+                  <Icon className="w-5 h-5" />
+                  {tab === 'cart' && cartItems.length > 0 && (
+                    <span className="absolute -top-1.5 -right-2.5 w-4 h-4 bg-cult-text-primary text-cult-surface text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Center: Product Catalog ─────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden" ref={catalogRef}>
-          {/* Search Bar */}
-          <div className="flex-shrink-0 px-5 py-3 border-b border-cult-border bg-cult-surface">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cult-text-muted w-4 h-4" />
-              <input
-                type="text"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                placeholder="Search products by name, strain, or type…"
-                className="w-full pl-10 pr-10 py-2.5 bg-cult-surface-raised border border-cult-border rounded-cult text-body text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors"
-                autoFocus
-              />
-              {productSearch && (
-                <button
-                  type="button"
-                  onClick={() => setProductSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-text-primary transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-            {productSearch && (
-              <p className="mt-1.5 text-caption text-cult-text-muted">
-                {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-
-          {/* Product Grid */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
-            {productsError ? (
-              <div className="flex flex-col items-center justify-center py-16 text-cult-danger">
-                <AlertCircle className="w-8 h-8 mb-2" />
-                <p className="text-body">Failed to load products</p>
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Search className="w-8 h-8 text-cult-text-muted mb-2" />
-                <p className="text-body text-cult-text-muted">No products found</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {Object.entries(groupedProducts).map(([category, categoryProducts]) => (
-                  <div key={category}>
-                    {/* Category Header */}
-                    <button
-                      type="button"
-                      onClick={() => toggleCategory(category)}
-                      className="flex items-center gap-2 mb-3 group"
-                    >
-                      <ChevronRight className={`w-4 h-4 text-cult-text-muted transition-transform ${
-                        !collapsedCategories.has(category) ? 'rotate-90' : ''
-                      }`} />
-                      <span className="text-caption font-semibold text-cult-text-secondary uppercase tracking-wider">
-                        {getCategoryBadge(category)} {CATEGORY_LABELS[category] || category}
-                      </span>
-                      <span className="text-caption text-cult-text-muted">
-                        ({categoryProducts.length})
-                      </span>
-                    </button>
-
-                    {/* Product Grid */}
-                    {!collapsedCategories.has(category) && (
-                      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2.5">
-                        {categoryProducts.map(product => {
-                          const inCart = getCartQuantity(product.id);
-                          const strainName = product.strain?.name || '';
-                          const priceDisplay = formatProductPrice(product);
-
-                          return (
-                            <button
-                              key={product.id}
-                              type="button"
-                              onClick={() => addToCart(product)}
-                              className={`relative text-left p-3 rounded-cult border transition-all group ${
-                                inCart
-                                  ? 'bg-cult-accent/5 border-cult-accent/20'
-                                  : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
-                              }`}
-                            >
-                              {/* In-cart badge */}
-                              {inCart > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-cult-text-primary text-cult-surface text-[10px] font-bold rounded-full flex items-center justify-center">
-                                  {inCart}
-                                </span>
-                              )}
-
-                              <div className="text-body font-medium text-cult-text-primary truncate mb-0.5">
-                                {product.name}
-                              </div>
-                              <div className="text-caption text-cult-text-muted truncate">
-                                {strainName}
-                              </div>
-                              <div className="flex items-center justify-between mt-2">
-                                <span className="text-caption font-semibold text-cult-text-secondary">{priceDisplay}</span>
-                                {customerPrices?.has(product.id) && (
-                                  <span className="text-[10px] text-cult-warning font-semibold uppercase">Custom</span>
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Right: Cart Sidebar ─────────────────────────────────────────── */}
-        <div className="w-80 flex-shrink-0 border-l border-cult-border bg-cult-surface flex flex-col">
-          {/* Cart Header */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-cult-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4 text-cult-text-muted" />
-              <span className="text-body font-semibold text-cult-text-primary">
-                Cart
-              </span>
-              {cartItems.length > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-cult-text-primary text-cult-surface rounded-full">
-                  {cartItems.length}
-                </span>
-              )}
-            </div>
-            {cartItems.length > 0 && (
-              <span className="text-caption text-cult-text-muted">
-                {totalUnits.toFixed(totalUnits % 1 === 0 ? 0 : 2)} units
-              </span>
-            )}
-          </div>
-
-          {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto">
-            {cartItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-                <Package className="w-10 h-10 text-cult-text-faint mb-3" />
-                <p className="text-body text-cult-text-muted mb-1">Cart is empty</p>
-                <p className="text-caption text-cult-text-muted">Click products to add them</p>
-              </div>
-            ) : (
-              <div className="p-3 space-y-2">
-                {cartItems.map((item, index) => {
-                  const product = products.find(p => p.id === item.product_id);
-                  const lineTotal = item.quantity * item.unit_price;
-                  const defaultPrice = customerPrices?.get(item.product_id) ?? product?.price_per_unit ?? 0;
-                  const hasCustomPrice = item.unit_price !== defaultPrice;
-
-                  return (
-                    <div
-                      key={`${item.product_id}-${index}`}
-                      className="bg-cult-surface-raised border border-cult-border rounded-cult p-3"
-                    >
-                      {/* Item Header */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-body font-medium text-cult-text-primary truncate">
-                            {item.product_name || product?.name}
-                          </p>
-                          <p className="text-caption text-cult-text-muted">
-                            {product?.strain?.name || ''}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => toggleSample(index)}
-                            className={`p-1 rounded-cult transition-colors ${
-                              item.is_sample
-                                ? 'bg-cult-warning/15 text-cult-warning'
-                                : 'text-cult-text-faint hover:text-cult-text-muted'
-                            }`}
-                            title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
-                          >
-                            <Gift className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeFromCart(index)}
-                            className="p-1 text-cult-text-faint hover:text-cult-danger rounded-cult transition-colors"
-                            title="Remove"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <button
-                          type="button"
-                          onClick={() => adjustCartQuantity(index, -1)}
-                          className="w-7 h-7 flex items-center justify-center bg-cult-surface border border-cult-border rounded-cult text-cult-text-secondary hover:border-cult-border-strong transition-colors"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <div className="flex-1 text-center">
-                          <span className="text-body font-semibold text-cult-text-primary">
-                            {item.quantity}
-                          </span>
-                          <span className="text-caption text-cult-text-muted ml-1">
-                            {product?.pricing_unit || 'units'}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => adjustCartQuantity(index, 1)}
-                          className="w-7 h-7 flex items-center justify-center bg-cult-surface border border-cult-border rounded-cult text-cult-text-secondary hover:border-cult-border-strong transition-colors"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      {/* Price Row */}
-                      <div className="flex items-center justify-between text-caption">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-cult-text-muted">
-                            ${item.unit_price.toFixed(2)}/{product?.pricing_unit || 'unit'}
-                          </span>
-                          {hasCustomPrice && (
-                            <button
-                              type="button"
-                              onClick={() => resetCartPrice(index)}
-                              className="text-cult-warning hover:text-cult-warning/80 transition-colors"
-                              title="Reset to default price"
-                            >
-                              <RotateCcw className="w-3 h-3" />
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => togglePriceLock(index)}
-                            className={`transition-colors ${
-                              item.price_locked
-                                ? 'text-cult-text-secondary'
-                                : 'text-cult-text-faint hover:text-cult-text-muted'
-                            }`}
-                            title={item.price_locked ? 'Unlock price' : 'Lock price'}
-                          >
-                            {item.price_locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                          </button>
-                        </div>
-                        <span className="font-semibold text-cult-text-primary">
-                          ${lineTotal.toFixed(2)}
-                        </span>
-                      </div>
-
-                      {/* Sample indicator */}
-                      {item.is_sample && (
-                        <div className="mt-1.5 text-[10px] font-semibold text-cult-warning uppercase tracking-wider">
-                          Sample — $0.00
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Cart Footer: Total + Submit */}
-          <div className="flex-shrink-0 border-t border-cult-border bg-cult-surface-raised p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-caption font-medium text-cult-text-muted uppercase tracking-wider">Total</span>
-              <span className="text-h3 font-semibold text-cult-text-primary">${totalAmount.toFixed(2)}</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="w-full py-3 bg-cult-text-primary text-cult-surface rounded-cult font-semibold text-body hover:bg-cult-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-cult-surface border-t-transparent rounded-full animate-spin" />
-                  Creating…
-                </>
-              ) : (
-                <>Create Order</>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="w-full py-2 text-cult-text-muted hover:text-cult-text-secondary text-caption font-medium transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
+                <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
+                {mobileTab === tab && (
+                  <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-cult-text-primary rounded-full" />
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </div>

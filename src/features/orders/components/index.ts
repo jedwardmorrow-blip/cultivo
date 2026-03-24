@@ -23,6 +23,7 @@ export { ManifestModal } from './ManifestModal';
 export { CoversheetButton } from './CoversheetButton';
 export { OrderLabelGenerator } from './OrderLabelGenerator';
 export { NewOrderForm } from './NewOrderForm';
+export { StrainCatalog } from './StrainCatalog';
 export { InvoiceManagement } from './InvoiceManagement';
 export { LabelGenerator } from './LabelGenerator';
 export { PackageAssignmentModal } from './PackageAssignmentModal';

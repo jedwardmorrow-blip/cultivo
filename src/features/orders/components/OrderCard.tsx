@@ -134,7 +134,7 @@ export function OrderCard({
             e.stopPropagation();
             onStatusChange(order.id, nextStatus);
           }}
-          className="absolute top-2.5 right-2.5 p-1.5 rounded-cult bg-cult-surface-overlay border border-cult-border text-cult-text-muted hover:text-cult-success hover:border-cult-success/30 opacity-0 group-hover:opacity-100 transition-all"
+          className="absolute top-2.5 right-2.5 p-2.5 rounded-cult bg-cult-surface-overlay border border-cult-border text-cult-text-muted hover:text-cult-success hover:border-cult-success/30 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
         >
           <ArrowRight className="w-3.5 h-3.5" />
         </button>

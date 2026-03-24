@@ -21,11 +21,16 @@ import {
   Search,
   X,
   BarChart3,
+  ShoppingCart,
 } from 'lucide-react';
 import {
   useSimplifiedInventory,
   type StrainSummary,
 } from '../../hooks/useSimplifiedInventory';
+import {
+  useStrainDemandPressure,
+  type StrainDemandPressure,
+} from '@/features/orders/hooks/useStrainInventory';
 import { LoadingSpinner } from '@/shared/components';
 import {
   StageBar,
@@ -90,7 +95,7 @@ const HEALTH_DESCRIPTIONS: Record<string, string> = {
  *  SummaryCharts                                  *
  * ────────────────────────────────────────────── */
 
-function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
+function SummaryCharts({ strains, demandMap }: { strains: StrainSummary[]; demandMap: Map<string, StrainDemandPressure> }) {
   const total = strains.length || 1;
 
   /* health distribution */
@@ -100,17 +105,19 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
     return c;
   }, [strains]);
 
-  /* inventory breakdown (sellable / pipeline / byproduct) */
+  /* inventory breakdown (sellable / pipeline / byproduct) + committed demand */
   const breakdown = useMemo(() => {
-    let sellable = 0, pipeline = 0, byproduct = 0;
+    let sellable = 0, pipeline = 0, byproduct = 0, committed = 0;
     strains.forEach((s) => {
       sellable += s.sellableGrams;
       pipeline += s.pipelineGrams;
       byproduct += s.byproductGrams;
+      const d = demandMap.get(s.strain);
+      if (d) committed += d.total_committed_quantity;
     });
     const grand = sellable + pipeline + byproduct || 1;
-    return { sellable, pipeline, byproduct, grand };
-  }, [strains]);
+    return { sellable, pipeline, byproduct, committed, grand };
+  }, [strains, demandMap]);
 
   /* top 5 by weight */
   const top5 = useMemo(
@@ -153,9 +160,9 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
         </h4>
         <div className="space-y-1.5">
           {([
-            { label: 'Sellable', v: breakdown.sellable, c: '#06b6d4' },
-            { label: 'Pipeline', v: breakdown.pipeline, c: '#8b5cf6' },
-            { label: 'Byproduct', v: breakdown.byproduct, c: '#78716c' },
+            { label: 'Sellable', v: breakdown.sellable, c: '#06b6d4', isUnits: false },
+            { label: 'Pipeline', v: breakdown.pipeline, c: '#8b5cf6', isUnits: false },
+            { label: 'Byproduct', v: breakdown.byproduct, c: '#78716c', isUnits: false },
           ] as const).map(({ label, v, c }) => {
             const pct = (v / breakdown.grand) * 100;
             return (
@@ -173,9 +180,31 @@ function SummaryCharts({ strains }: { strains: StrainSummary[] }) {
               </div>
             );
           })}
+          {breakdown.committed > 0 && (
+            <div className="flex items-center gap-2 pt-1 mt-1 border-t border-cult-medium-gray/10">
+              <span className="text-xs w-14 text-cyan-500">Committed</span>
+              <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min((breakdown.committed / (breakdown.sellable || 1)) * 100, 100)}%`,
+                    backgroundColor: '#22d3ee',
+                  }}
+                />
+              </div>
+              <span className="text-xs w-12 text-right font-bold text-cyan-400 tabular-nums">
+                {breakdown.committed.toLocaleString()}u
+              </span>
+            </div>
+          )}
         </div>
         <div className="mt-2 pt-1.5 border-t border-cult-medium-gray/10 text-center text-xs text-neutral-600">
           Total <span className="text-neutral-400 font-bold">{fmt(breakdown.grand)}</span>
+          {breakdown.committed > 0 && (
+            <span className="ml-2 text-cyan-500">
+              · {breakdown.committed.toLocaleString()} units committed
+            </span>
+          )}
         </div>
       </div>
 
@@ -243,14 +272,18 @@ function StrainRow({
   onToggle,
   batches,
   batchesLoading,
+  demand,
 }: {
   strain: StrainSummary;
   isExpanded: boolean;
   onToggle: () => void;
   batches: BatchSummary[];
   batchesLoading: boolean;
+  demand?: StrainDemandPressure;
 }) {
   const Chevron = isExpanded ? ChevronDown : ChevronRight;
+  const committed = demand?.total_committed_quantity || 0;
+  const orderCount = demand?.pending_order_count || 0;
 
   return (
     <div className="border border-cult-medium-gray/20 rounded-xl overflow-hidden">
@@ -265,6 +298,17 @@ function StrainRow({
           {strain.strain}
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
+          {committed > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/10">
+              <ShoppingCart className="w-3 h-3 text-cyan-400" />
+              <span className="text-xs font-semibold text-cyan-400 tabular-nums">
+                {committed}
+              </span>
+              <span className="text-xs text-cyan-400/60 hidden sm:inline">
+                · {orderCount} order{orderCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
           <div className="text-right hidden sm:block">
             <div className="text-xs font-bold text-neutral-300 tabular-nums">
               {fmt(strain.totalGrams)}
@@ -285,6 +329,28 @@ function StrainRow({
       {/* Expanded batch list */}
       {isExpanded && (
         <div className="px-4 pb-3 border-t border-cult-medium-gray/10">
+          {/* Demand detail banner */}
+          {demand && demand.pending_order_details.length > 0 && (
+            <div className="mt-3 mb-2 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/15">
+              <div className="flex items-center gap-2 mb-2">
+                <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+                  Open Demand — {committed} units across {orderCount} order{orderCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {demand.pending_order_details.map((d, i) => (
+                  <span key={i} className="text-xs text-neutral-400">
+                    <span className="text-neutral-300 font-medium">{d.customer_name}</span>
+                    <span className="text-neutral-600 mx-1">·</span>
+                    <span className="tabular-nums">{d.quantity}u</span>
+                    <span className="text-neutral-600 ml-1">({d.status})</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {batchesLoading ? (
             <div className="flex items-center gap-2 py-6 justify-center">
               <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
@@ -324,6 +390,8 @@ export function SalesPipeline() {
     batchesLoading,
     refresh,
   } = useSimplifiedInventory();
+
+  const { demandMap } = useStrainDemandPressure();
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -430,7 +498,7 @@ export function SalesPipeline() {
       </div>
 
       {/* Charts */}
-      {showCharts && strains.length > 0 && <SummaryCharts strains={strains} />}
+      {showCharts && strains.length > 0 && <SummaryCharts strains={strains} demandMap={demandMap} />}
 
       {/* Strain list */}
       <div className="space-y-2">
@@ -454,6 +522,7 @@ export function SalesPipeline() {
               batchesLoading={
                 expandedStrain === s.strain ? batchesLoading : false
               }
+              demand={demandMap.get(s.strain)}
             />
           ))
         )}
