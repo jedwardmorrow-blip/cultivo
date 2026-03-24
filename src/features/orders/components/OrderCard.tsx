@@ -1,4 +1,4 @@
-import { Calendar, Package, Gift, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Calendar, Package, Gift, AlertTriangle, ArrowRight, CalendarCheck } from 'lucide-react';
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
@@ -75,6 +75,12 @@ export function OrderCard({
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-cult-warning/15 text-cult-warning border border-cult-warning/30 rounded-cult uppercase">
                 <Gift className="w-2.5 h-2.5" />
                 Sample
+              </span>
+            )}
+            {order.scheduled_at && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-cult-success/15 text-cult-success border border-cult-success/30 rounded-cult uppercase">
+                <CalendarCheck className="w-2.5 h-2.5" />
+                Scheduled
               </span>
             )}
             {order.priority === 'urgent' && (

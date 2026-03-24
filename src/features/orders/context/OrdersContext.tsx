@@ -24,6 +24,7 @@ interface OrdersContextValue extends OrdersState {
     deleteOrder: (orderId: string) => Promise<void>;
     addItemToOrder: (orderId: string, productId: string, quantity: number) => Promise<void>;
     updateDeliveryDate: (orderId: string, newDate: string) => Promise<void>;
+    toggleScheduled: (orderId: string, isScheduled: boolean) => Promise<void>;
     toggleMonth: (month: string) => void;
     toggleStatus: (monthStatus: string) => void;
     toggleOrder: (orderId: string) => void;
@@ -230,6 +231,11 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
     await loadOrders(true);
   }, [loadOrders]);
 
+  const toggleScheduled = useCallback(async (orderId: string, isScheduled: boolean) => {
+    await ordersDataService.toggleOrderScheduled(orderId, isScheduled);
+    await loadOrders(true);
+  }, [loadOrders]);
+
   const toggleMonth = useCallback((month: string) => {
     dispatch({ type: 'TOGGLE_MONTH', payload: month });
   }, []);
@@ -331,6 +337,7 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
       deleteOrder,
       addItemToOrder,
       updateDeliveryDate,
+      toggleScheduled,
       toggleMonth,
       toggleStatus,
       toggleOrder,

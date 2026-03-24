@@ -111,6 +111,18 @@ class OrdersDataService {
     if (error) throw error;
   }
 
+  async toggleOrderScheduled(orderId: string, isScheduled: boolean): Promise<void> {
+    const { error } = await supabase
+      .from('orders')
+      .update({
+        scheduled_at: isScheduled ? new Date().toISOString() : null,
+        scheduled_by: isScheduled ? 'leo' : null,
+      })
+      .eq('id', orderId);
+
+    if (error) throw error;
+  }
+
   async updateItemStatus(itemId: string, newStatus: string): Promise<void> {
     const { error } = await supabase
       .from('order_items')

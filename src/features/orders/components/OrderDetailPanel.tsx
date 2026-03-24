@@ -3,7 +3,7 @@ import {
   X, MapPin, Phone, Mail, Copy, Trash2, ChevronRight,
   Building2, Clock, Calendar, Shield, Gift, Check,
   ArrowRight, Undo2, XCircle, RotateCcw, AlertTriangle,
-  FileText, Receipt,
+  FileText, Receipt, CalendarCheck,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, parseDeliveryDate, toDateInputValue } from '@/lib/utils';
@@ -62,6 +62,7 @@ interface OrderDetailPanelProps {
   onAddItem: (orderId: string, productId: string, quantity: number) => Promise<void>;
   onGenerateInvoice: (orderId: string, orderNumber: string) => void;
   onCloneOrder: (order: Order) => void;
+  onToggleScheduled?: (orderId: string, isScheduled: boolean) => Promise<void>;
 }
 
 // ─── Status Timeline ────────────────────────────────────────────────────────
@@ -410,6 +411,7 @@ export function OrderDetailPanel({
   onAddItem,
   onGenerateInvoice,
   onCloneOrder,
+  onToggleScheduled,
 }: OrderDetailPanelProps) {
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -593,6 +595,33 @@ export function OrderDetailPanel({
                     </button>
                   )}
                 </div>
+
+                {/* Scheduled toggle */}
+                {onToggleScheduled && (
+                  <div className="flex items-center justify-between py-2 border-t border-cult-border">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleScheduled(order.id, !order.scheduled_at);
+                      }}
+                      className={`flex items-center gap-1.5 text-xs transition-colors ${
+                        order.scheduled_at
+                          ? 'text-cult-success'
+                          : 'text-cult-text-muted hover:text-cult-text-secondary'
+                      }`}
+                    >
+                      <CalendarCheck className="w-3.5 h-3.5" />
+                      <span className="font-semibold uppercase tracking-wider">
+                        {order.scheduled_at ? 'Scheduled' : 'Not Scheduled'}
+                      </span>
+                    </button>
+                    {order.scheduled_at && (
+                      <span className="text-[10px] text-cult-text-faint tabular-nums">
+                        {new Date(order.scheduled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Total */}
                 <div className="flex items-center justify-between py-2 border-t border-cult-border">

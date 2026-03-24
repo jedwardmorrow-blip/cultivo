@@ -203,6 +203,7 @@ export function UnifiedOrders({
           onAddItem={actions.addItemToOrder}
           onGenerateInvoice={handleGenerateInvoice}
           onCloneOrder={handleCloneOrder}
+          onToggleScheduled={actions.toggleScheduled}
         />
       )}
 

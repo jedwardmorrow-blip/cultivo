@@ -3504,6 +3504,8 @@ export type Database = {
           public_token: string | null
           order_source: string | null
           test_mode: boolean
+          scheduled_at: string | null
+          scheduled_by: string | null
         }
         Insert: {
           id?: string
@@ -3525,6 +3527,8 @@ export type Database = {
           public_token?: string | null
           order_source?: string | null
           test_mode?: boolean
+          scheduled_at?: string | null
+          scheduled_by?: string | null
         }
         Update: {
           id?: string

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import {
   Search, X, ChevronLeft, ChevronDown, AlertCircle,
   Package, Layers, Scissors, Leaf, Plus, FileCheck, ShieldCheck,
+  Clock, Sparkles,
 } from 'lucide-react';
 import {
   useStrainInventorySummary,
@@ -171,13 +172,22 @@ function StrainCard({
         );
       })()}
 
-      {/* Customer history — ambient text */}
+      {/* Customer history */}
       {customerName && (
-        <div className="mt-2 text-[10px] text-cult-text-faint truncate">
-          {customerHistory
-            ? `${customerName}: ${Math.round(customerHistory.total_quantity)} units, ${formatDaysAgo(customerHistory.last_order_date)}`
-            : `${customerName}: never ordered`
-          }
+        <div className="mt-2 truncate">
+          {customerHistory ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-cult-text-muted">
+              <Clock className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+              <span className="font-medium tabular-nums">{Math.round(customerHistory.total_quantity)} units</span>
+              <span className="text-cult-text-faint">·</span>
+              <span>{formatDaysAgo(customerHistory.last_order_date)}</span>
+            </div>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-cult bg-cult-accent/10 text-cult-accent">
+              <Sparkles className="w-2.5 h-2.5" />
+              New
+            </span>
+          )}
         </div>
       )}
     </button>
@@ -343,6 +353,11 @@ function StrainDetailPanel({
     return `last: ${Math.round(hist.total_quantity)} units, ${formatDaysAgo(hist.last_order_date)}`;
   }
 
+  function getProductHistoryData(productId: string): CustomerProductHistory | null {
+    if (!customerName) return null;
+    return productHistory.get(productId) || null;
+  }
+
   function getStageAvailableGrams(stageKey: string): number {
     const stageMap: Record<string, string> = {
       trimmed: 'bulk_flower',
@@ -468,7 +483,7 @@ function StrainDetailPanel({
                   ...(batchesByStage['packaged'] || []),
                   ...(batchesByStage[materialStage] || []),
                 ].filter((b, i, arr) => arr.findIndex(x => x.batch_id === b.batch_id && x.stage === b.stage) === i);
-                const historyText = formatProductHistory(product.id);
+                const prodHist = getProductHistoryData(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
                 // Strip prefix: "Packaged - Strain - X" or "Bulk - Strain - X" → "X"
                 const format = product.name.replace(/^(Packaged|Prerolls|Bulk)\s*-\s*[^-]+\s*-\s*/, '');
@@ -511,8 +526,13 @@ function StrainDetailPanel({
                               </span>
                             )}
                           </div>
-                          {historyText && (
-                            <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
+                          {prodHist && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-cult-text-muted mt-0.5">
+                              <Clock className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                              <span className="font-medium tabular-nums">{Math.round(prodHist.total_quantity)} units</span>
+                              <span className="text-cult-text-faint">·</span>
+                              <span>{formatDaysAgo(prodHist.last_order_date)}</span>
+                            </div>
                           )}
                         </div>
                         <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
@@ -531,7 +551,7 @@ function StrainDetailPanel({
                         <input
                           type="number"
                           min="1"
-                          placeholder="1"
+                          placeholder={prodHist ? String(Math.round(prodHist.total_quantity / prodHist.order_count)) : '1'}
                           value={qtyVal}
                           onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
                           onKeyDown={(e) => {
@@ -543,7 +563,13 @@ function StrainDetailPanel({
                           }}
                           className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
-                        <span className="text-[10px] text-cult-text-faint">unit</span>
+                        {prodHist ? (
+                          <span className="text-[10px] text-cult-text-muted tabular-nums" title="Average qty per order">
+                            prev {Math.round(prodHist.total_quantity / prodHist.order_count)}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-cult-text-faint">unit</span>
+                        )}
                         <button
                           type="button"
                           onClick={() => {
@@ -682,7 +708,7 @@ function StrainDetailPanel({
             <div className="space-y-1.5">
               {prerolls.map(product => {
                 const inCart = getCartQuantity(product.id);
-                const historyText = formatProductHistory(product.id);
+                const prodHist = getProductHistoryData(product.id);
                 const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
                 const format = product.name.replace(/^(Packaged|Prerolls)\s*-\s*[^-]+\s*-\s*/, '');
                 const prerollMaterialStage = getMaterialBatchStage(product);
@@ -728,8 +754,13 @@ function StrainDetailPanel({
                               </span>
                             )}
                           </div>
-                          {historyText && (
-                            <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
+                          {prodHist && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-cult-text-muted mt-0.5">
+                              <Clock className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                              <span className="font-medium tabular-nums">{Math.round(prodHist.total_quantity)} units</span>
+                              <span className="text-cult-text-faint">·</span>
+                              <span>{formatDaysAgo(prodHist.last_order_date)}</span>
+                            </div>
                           )}
                         </div>
                         <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
@@ -743,7 +774,7 @@ function StrainDetailPanel({
                         <input
                           type="number"
                           min="1"
-                          placeholder="1"
+                          placeholder={prodHist ? String(Math.round(prodHist.total_quantity / prodHist.order_count)) : '1'}
                           value={qtyVal}
                           onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
                           onKeyDown={(e) => {
@@ -755,7 +786,13 @@ function StrainDetailPanel({
                           }}
                           className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
-                        <span className="text-[10px] text-cult-text-faint">unit</span>
+                        {prodHist ? (
+                          <span className="text-[10px] text-cult-text-muted tabular-nums" title="Average qty per order">
+                            prev {Math.round(prodHist.total_quantity / prodHist.order_count)}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-cult-text-faint">unit</span>
+                        )}
                         <button
                           type="button"
                           onClick={() => {
@@ -901,7 +938,7 @@ function StrainDetailPanel({
               <div className="space-y-1.5">
                 {stageProducts.map(product => {
                   const inCart = getCartQuantity(product.id);
-                  const historyText = formatProductHistory(product.id);
+                  const prodHist = getProductHistoryData(product.id);
                   const price = customerPrices?.get(product.id) ?? product.price_per_unit ?? 0;
 
                   const nameParts = product.name.split(' - ');
@@ -945,8 +982,13 @@ function StrainDetailPanel({
                                 </span>
                               )}
                             </div>
-                            {historyText && (
-                              <div className="text-[10px] text-cult-text-faint mt-0.5">{historyText}</div>
+                            {prodHist && (
+                              <div className="flex items-center gap-1.5 text-[11px] text-cult-text-muted mt-0.5">
+                                <Clock className="w-3 h-3 text-cult-text-faint flex-shrink-0" />
+                                <span className="font-medium tabular-nums">{Math.round(prodHist.total_quantity)} units</span>
+                                <span className="text-cult-text-faint">·</span>
+                                <span>{formatDaysAgo(prodHist.last_order_date)}</span>
+                              </div>
                             )}
                           </div>
                           <div className="text-right text-caption text-cult-text-muted whitespace-nowrap">
@@ -961,7 +1003,7 @@ function StrainDetailPanel({
                             type="number"
                             min="0.25"
                             step="0.25"
-                            placeholder="1"
+                            placeholder={prodHist ? String(parseFloat((prodHist.total_quantity / prodHist.order_count).toFixed(2))) : '1'}
                             value={qtyVal}
                             onChange={(e) => setPendingQty(prev => ({ ...prev, [qtyKey]: e.target.value }))}
                             onKeyDown={(e) => {
@@ -973,7 +1015,13 @@ function StrainDetailPanel({
                             }}
                             className="w-16 px-2 py-1.5 bg-cult-surface border border-cult-border rounded-cult text-body text-cult-text-primary text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-cult-accent/40 focus:border-cult-border-strong transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <span className="text-[10px] text-cult-text-faint">lb</span>
+                          {prodHist ? (
+                            <span className="text-[10px] text-cult-text-muted tabular-nums" title="Average qty per order">
+                              prev {parseFloat((prodHist.total_quantity / prodHist.order_count).toFixed(2))}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-cult-text-faint">lb</span>
+                          )}
                           <button
                             type="button"
                             onClick={() => {

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift, CalendarCheck } from 'lucide-react';
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { useShiftSelect } from '@/shared/hooks';
 import { getStatusColor } from '../utils/orderGrouping';
@@ -195,6 +195,12 @@ export function OrderTable({
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
                           <Gift className="w-2.5 h-2.5" />
                           Sample
+                        </span>
+                      )}
+                      {order.scheduled_at && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-cult-success/15 text-cult-success border border-cult-success/30 rounded uppercase">
+                          <CalendarCheck className="w-2.5 h-2.5" />
+                          Scheduled
                         </span>
                       )}
                       {order.priority === 'urgent' && (
