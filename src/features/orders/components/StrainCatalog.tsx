@@ -145,13 +145,13 @@ function StrainCard({
         {summary.active_batch_count} batch{summary.active_batch_count !== 1 ? 'es' : ''}
       </div>
 
-      {/* Demand pressure bar */}
+      {/* Demand pressure bar — weight-based comparison */}
       {summary.total_available_grams > 0 && (() => {
-        const committed = demandPressure?.total_committed_quantity || 0;
-        // Approximate available units (packaged units + bulk grams / 3.5 as rough unit equiv)
-        const approxAvailable = summary.packaged_units_available + (summary.total_available_grams - summary.packaged_units_available * 3.5) / 28;
-        const pressureRatio = approxAvailable > 0 ? Math.min(committed / Math.max(approxAvailable, 1), 1) : 0;
+        const committedGrams = demandPressure?.total_committed_weight_grams || 0;
+        const availableGrams = summary.total_available_grams;
+        const pressureRatio = availableGrams > 0 ? Math.min(committedGrams / availableGrams, 1) : 0;
         const barColor = pressureRatio > 0.8 ? 'bg-cult-danger' : pressureRatio > 0.5 ? 'bg-cult-warning' : 'bg-cult-success';
+        const fmtW = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${Math.round(g)}g`;
 
         return (
           <div className="mt-2">
@@ -161,9 +161,9 @@ function StrainCard({
                 style={{ width: `${Math.max(100 - pressureRatio * 100, 5)}%` }}
               />
             </div>
-            {committed > 0 && (
+            {committedGrams > 0 && (
               <div className="text-[9px] text-cult-text-faint mt-0.5">
-                {committed} committed · {demandPressure?.pending_order_count} order{demandPressure?.pending_order_count !== 1 ? 's' : ''}
+                {fmtW(committedGrams)} committed · {demandPressure?.pending_order_count} order{demandPressure?.pending_order_count !== 1 ? 's' : ''}
               </div>
             )}
           </div>
@@ -387,7 +387,11 @@ function StrainDetailPanel({
         {demandPressure && demandPressure.pending_order_count > 0 && (
           <div className="mt-2 px-2.5 py-1.5 bg-cult-warning/8 border border-cult-warning/15 rounded-cult">
             <p className="text-[11px] text-cult-warning">
-              {demandPressure.total_committed_quantity} units committed across {demandPressure.pending_order_count} pending order{demandPressure.pending_order_count !== 1 ? 's' : ''}
+              {(() => {
+                const g = demandPressure.total_committed_weight_grams;
+                const w = g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${Math.round(g)}g`;
+                return w;
+              })()} committed across {demandPressure.pending_order_count} pending order{demandPressure.pending_order_count !== 1 ? 's' : ''}
               {(() => {
                 const customers = [...new Set(demandPressure.pending_order_details.map(d => d.customer_name))];
                 if (customers.length <= 3) return ` — ${customers.join(', ')}`;

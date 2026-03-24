@@ -274,13 +274,24 @@ export interface PendingOrderDetail {
   status: string;
   quantity: number;
   product_name: string;
+  product_category: string;
+  size_label: string;
+  weight_grams: number;
+}
+
+export interface SizeBreakdownItem {
+  size_label: string;
+  unit_count: number;
+  weight_grams: number;
 }
 
 export interface StrainDemandPressure {
   strain: string;
   pending_order_count: number;
   total_committed_quantity: number;
+  total_committed_weight_grams: number;
   pending_order_details: PendingOrderDetail[];
+  size_breakdown: SizeBreakdownItem[];
 }
 
 // ─── useStrainDemandPressure ────────────────────────────────────────────────
@@ -300,17 +311,40 @@ export function useStrainDemandPressure() {
 
         const map = new Map<string, StrainDemandPressure>();
         for (const row of (data || [])) {
+          // Aggregate size_breakdown by size_label (view returns per-line-item, we need totals)
+          const rawBreakdown: any[] = row.size_breakdown || [];
+          const sizeMap = new Map<string, SizeBreakdownItem>();
+          for (const entry of rawBreakdown) {
+            const key = entry.size_label || 'Other';
+            const existing = sizeMap.get(key);
+            if (existing) {
+              existing.unit_count += Number(entry.unit_count);
+              existing.weight_grams += Number(entry.weight_grams);
+            } else {
+              sizeMap.set(key, {
+                size_label: key,
+                unit_count: Number(entry.unit_count),
+                weight_grams: Number(entry.weight_grams),
+              });
+            }
+          }
+
           map.set(row.strain, {
             strain: row.strain,
             pending_order_count: Number(row.pending_order_count),
             total_committed_quantity: Number(row.total_committed_quantity),
+            total_committed_weight_grams: Number(row.total_committed_weight_grams || 0),
             pending_order_details: (row.pending_order_details || []).map((d: any) => ({
               order_id: d.order_id,
               customer_name: d.customer_name || 'Unknown',
               status: d.status,
               quantity: Number(d.quantity),
               product_name: d.product_name,
+              product_category: d.product_category || '',
+              size_label: d.size_label || 'Other',
+              weight_grams: Number(d.weight_grams || 0),
             })),
+            size_breakdown: Array.from(sizeMap.values()).sort((a, b) => b.weight_grams - a.weight_grams),
           });
         }
         setDemandMap(map);

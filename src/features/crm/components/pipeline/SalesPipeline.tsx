@@ -105,18 +105,18 @@ function SummaryCharts({ strains, demandMap }: { strains: StrainSummary[]; deman
     return c;
   }, [strains]);
 
-  /* inventory breakdown (sellable / pipeline / byproduct) + committed demand */
+  /* inventory breakdown (sellable / pipeline / byproduct) + committed demand in grams */
   const breakdown = useMemo(() => {
-    let sellable = 0, pipeline = 0, byproduct = 0, committed = 0;
+    let sellable = 0, pipeline = 0, byproduct = 0, committedGrams = 0;
     strains.forEach((s) => {
       sellable += s.sellableGrams;
       pipeline += s.pipelineGrams;
       byproduct += s.byproductGrams;
       const d = demandMap.get(s.strain);
-      if (d) committed += d.total_committed_quantity;
+      if (d) committedGrams += d.total_committed_weight_grams;
     });
     const grand = sellable + pipeline + byproduct || 1;
-    return { sellable, pipeline, byproduct, committed, grand };
+    return { sellable, pipeline, byproduct, committedGrams, grand };
   }, [strains, demandMap]);
 
   /* top 5 by weight */
@@ -180,29 +180,29 @@ function SummaryCharts({ strains, demandMap }: { strains: StrainSummary[]; deman
               </div>
             );
           })}
-          {breakdown.committed > 0 && (
+          {breakdown.committedGrams > 0 && (
             <div className="flex items-center gap-2 pt-1 mt-1 border-t border-cult-medium-gray/10">
               <span className="text-xs w-14 text-cyan-500">Committed</span>
               <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
-                    width: `${Math.min((breakdown.committed / (breakdown.sellable || 1)) * 100, 100)}%`,
+                    width: `${Math.min((breakdown.committedGrams / (breakdown.sellable || 1)) * 100, 100)}%`,
                     backgroundColor: '#22d3ee',
                   }}
                 />
               </div>
               <span className="text-xs w-12 text-right font-bold text-cyan-400 tabular-nums">
-                {breakdown.committed.toLocaleString()}u
+                {fmt(breakdown.committedGrams)}
               </span>
             </div>
           )}
         </div>
         <div className="mt-2 pt-1.5 border-t border-cult-medium-gray/10 text-center text-xs text-neutral-600">
           Total <span className="text-neutral-400 font-bold">{fmt(breakdown.grand)}</span>
-          {breakdown.committed > 0 && (
+          {breakdown.committedGrams > 0 && (
             <span className="ml-2 text-cyan-500">
-              · {breakdown.committed.toLocaleString()} units committed
+              · {fmt(breakdown.committedGrams)} committed
             </span>
           )}
         </div>
@@ -282,7 +282,7 @@ function StrainRow({
   demand?: StrainDemandPressure;
 }) {
   const Chevron = isExpanded ? ChevronDown : ChevronRight;
-  const committed = demand?.total_committed_quantity || 0;
+  const committedWeight = demand?.total_committed_weight_grams || 0;
   const orderCount = demand?.pending_order_count || 0;
 
   return (
@@ -298,11 +298,11 @@ function StrainRow({
           {strain.strain}
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
-          {committed > 0 && (
+          {committedWeight > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/10">
               <ShoppingCart className="w-3 h-3 text-cyan-400" />
               <span className="text-xs font-semibold text-cyan-400 tabular-nums">
-                {committed}
+                {fmt(committedWeight)}
               </span>
               <span className="text-xs text-cyan-400/60 hidden sm:inline">
                 · {orderCount} order{orderCount !== 1 ? 's' : ''}
@@ -335,16 +335,31 @@ function StrainRow({
               <div className="flex items-center gap-2 mb-2">
                 <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
                 <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                  Open Demand — {committed} units across {orderCount} order{orderCount !== 1 ? 's' : ''}
+                  Open Demand — {fmt(committedWeight)} across {orderCount} order{orderCount !== 1 ? 's' : ''}
                 </span>
               </div>
+              {/* Size breakdown chips */}
+              {demand.size_breakdown.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {demand.size_breakdown.map((s) => (
+                    <span
+                      key={s.size_label}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/10 text-[11px] text-cyan-300 tabular-nums"
+                    >
+                      <span className="font-semibold">{s.unit_count}×</span>
+                      <span>{s.size_label}</span>
+                      <span className="text-cyan-400/50">({fmt(s.weight_grams)})</span>
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 {demand.pending_order_details.map((d, i) => (
                   <span key={i} className="text-xs text-neutral-400">
                     <span className="text-neutral-300 font-medium">{d.customer_name}</span>
                     <span className="text-neutral-600 mx-1">·</span>
-                    <span className="tabular-nums">{d.quantity}u</span>
-                    <span className="text-neutral-600 ml-1">({d.status})</span>
+                    <span className="tabular-nums">{d.quantity} {d.size_label}</span>
+                    <span className="text-neutral-600 ml-1">({fmt(d.weight_grams)})</span>
                   </span>
                 ))}
               </div>
