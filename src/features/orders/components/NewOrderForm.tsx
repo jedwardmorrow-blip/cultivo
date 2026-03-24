@@ -562,7 +562,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         price_locked: false,
         batch_id: batch?.batch_id || null,
         batch_number: batch?.batch_number || null,
-        strain: batch?.strain || product.strain_info?.name || null,
+        strain: batch?.strain || product.strain?.name || null,
         grade_code: batch?.grade_code || null,
         grade_label: batch?.grade_label || null,
       };

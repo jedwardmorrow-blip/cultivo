@@ -57,6 +57,13 @@ export interface OrderableProduct extends Omit<Product, 'type' | 'strain'> {
   product_stage: ProductStage;
   product_category?: string;
   pricing_unit?: string;
+  // Supabase join alias: strain:strains(...) puts joined data on `strain` key
+  strain?: {
+    id: string;
+    name: string;
+    abbreviation: string | null;
+  } | null;
+  /** @deprecated Use `strain` instead — kept for backward compatibility */
   strain_info?: {
     id: string;
     name: string;

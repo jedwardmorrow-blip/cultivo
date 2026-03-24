@@ -294,7 +294,7 @@ function StrainDetailPanel({
 
   // Group products by category for this strain
   const strainProducts = products.filter(
-    p => p.strain_info?.name === strain || (p as any).strain === strain
+    p => p.strain?.name === strain || p.strain === strain
   );
 
   const packaged = strainProducts.filter(p => p.product_category === 'packaged');
