@@ -115,13 +115,13 @@ function RunwayBadge({ runway }: { runway: StrainRunway | undefined }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-bold tabular-nums ${style.bg} ${style.text} ${style.border} ${isPulsing ? 'animate-pulse' : ''}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-bold tabular-nums ${style.bg} ${style.text} ${style.border} ${isPulsing ? 'animate-pulse-red' : ''}`}
       title={tip}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
       {label}
       {isEstimated && runway.runway_status !== 'sold_out' && (
-        <span className="text-[9px] opacity-60 font-normal">est.</span>
+        <span className="text-xs opacity-50 font-normal">est.</span>
       )}
     </span>
   );
@@ -141,7 +141,7 @@ function SupplyFunnel({ runway }: { runway: StrainRunway }) {
   const isCalibrated = runway.trim_confidence === 'calibrated';
 
   return (
-    <div className="px-6 py-3 bg-cult-black/40">
+    <div className="px-6 py-3">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">Supply Pipeline</span>
         <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -153,22 +153,22 @@ function SupplyFunnel({ runway }: { runway: StrainRunway }) {
         </div>
       </div>
 
-      {/* Funnel bars */}
-      <div className="flex items-end gap-2 h-10 mb-2">
+      {/* Funnel bars — increased height for readability */}
+      <div className="flex items-end gap-2 h-16 mb-2">
         {FUNNEL_STAGES.map(stage => {
           const lbs = stage.key === 'bulk_flower_lbs'
             ? runway.bulk_flower_lbs + runway.bulk_smalls_lbs
             : runway[stage.key];
-          const pct = lbs > 0 ? Math.max((lbs / maxLbs) * 100, 6) : 0;
+          const pct = lbs > 0 ? Math.max((lbs / maxLbs) * 100, 8) : 0;
           return (
             <div key={stage.key} className="flex-1 flex flex-col items-center gap-1">
-              <span className={`text-[10px] font-semibold tabular-nums ${stage.textColor}`}>
+              <span className={`text-xs font-semibold tabular-nums ${stage.textColor}`}>
                 {lbs > 0 ? `${lbs.toFixed(1)}` : '—'}
               </span>
-              <div className="w-full relative" style={{ height: `${pct}%`, minHeight: lbs > 0 ? '4px' : '0' }}>
+              <div className="w-full relative" style={{ height: `${pct}%`, minHeight: lbs > 0 ? '6px' : '0' }}>
                 <div className={`absolute inset-0 ${stage.color} rounded-t opacity-80`} />
               </div>
-              <span className="text-[9px] text-gray-600 uppercase">{stage.label}</span>
+              <span className="text-xs text-gray-600 uppercase">{stage.label}</span>
             </div>
           );
         })}
@@ -177,24 +177,24 @@ function SupplyFunnel({ runway }: { runway: StrainRunway }) {
         <div className="flex-shrink-0 flex items-center px-1 text-gray-600">→</div>
 
         <div className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-[10px] font-semibold tabular-nums text-cyan-400">
+          <span className="text-xs font-semibold tabular-nums text-cyan-400">
             {runway.packaged_units > 0 ? runway.packaged_units : '—'}
           </span>
-          <div className="w-full relative" style={{ height: `${runway.packaged_units > 0 ? Math.max((runway.packaged_units * 0.00772 / maxLbs) * 100, 6) : 0}%`, minHeight: runway.packaged_units > 0 ? '4px' : '0' }}>
+          <div className="w-full relative" style={{ height: `${runway.packaged_units > 0 ? Math.max((runway.packaged_units * 0.00772 / maxLbs) * 100, 8) : 0}%`, minHeight: runway.packaged_units > 0 ? '6px' : '0' }}>
             <div className="absolute inset-0 bg-cyan-500 rounded-t opacity-80" />
           </div>
-          <span className="text-[9px] text-gray-600 uppercase">Pkgd</span>
+          <span className="text-xs text-gray-600 uppercase">Pkgd</span>
         </div>
       </div>
 
       {/* Projected yield annotation */}
       {hasProjection && (
         <div className={`flex items-center gap-2 mt-1 px-2 py-1 rounded ${isCalibrated ? 'bg-violet-500/5 border border-violet-500/10' : 'bg-gray-800/30 border border-gray-700/20'}`}>
-          <span className="text-[10px] text-gray-500">Bucked → flower yield:</span>
-          <span className={`text-[10px] font-semibold ${isCalibrated ? 'text-violet-400' : 'text-gray-400'}`}>
+          <span className="text-xs text-gray-500">Bucked → flower yield:</span>
+          <span className={`text-xs font-semibold ${isCalibrated ? 'text-violet-400' : 'text-gray-400'}`}>
             ~{runway.projected_flower_from_bucked_lbs} lbs ({runway.flower_pct}% ratio)
           </span>
-          <span className={`text-[9px] px-1 py-0.5 rounded ${
+          <span className={`text-xs px-1 py-0.5 rounded ${
             isCalibrated ? 'bg-violet-500/10 text-violet-400' : 'bg-gray-700/50 text-gray-500'
           }`}>
             {isCalibrated ? `${runway.trim_session_count} sessions` : 'default est.'}
@@ -405,10 +405,9 @@ function EnhancedByStrainView({
           <tr className="border-b border-cult-medium-gray text-left">
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Units needed per day this week">Demand</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Days of supply remaining at current order velocity">Runway</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Weight</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Days of supply remaining at current order velocity">Runway</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Revenue</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
           </tr>
@@ -460,16 +459,11 @@ function EnhancedByStrainView({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center">
-                      {heatmap && <MiniWeekHeatmap cells={heatmap.cells} />}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
                   <td className="px-4 py-3 text-center">
                     <RunwayBadge runway={runway} />
                   </td>
+                  <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     {runway ? (
                       <span className={runway.demand_revenue > 5000 ? 'text-white font-semibold' : 'text-gray-300'}>
@@ -484,7 +478,7 @@ function EnhancedByStrainView({
 
                 {/* Expanded: Format breakdown */}
                 {isExpanded && formats.map((f, i) => (
-                  <tr key={`${strainId}-fmt-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
+                  <tr key={`${strainId}-fmt-${i}`} className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2 pl-8 text-gray-300">
                       <div className="flex items-center gap-2">
@@ -497,7 +491,7 @@ function EnhancedByStrainView({
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-2"></td>
+                    <td className="px-4 py-2 text-center">{urgencyBadge(f.urgency)}</td>
                     <td className="px-4 py-2 text-right text-gray-300 tabular-nums">
                       {f.total_units_needed.toLocaleString()}
                       {f.total_units_assigned > 0 && (
@@ -505,7 +499,6 @@ function EnhancedByStrainView({
                       )}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300 tabular-nums">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2 text-center">{urgencyBadge(f.urgency)}</td>
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2 text-right text-gray-400 tabular-nums">{f.order_count}</td>
                   </tr>
@@ -513,8 +506,8 @@ function EnhancedByStrainView({
 
                 {/* Supply Funnel */}
                 {isExpanded && runway && (runway.total_pipeline_lbs > 0 || runway.total_sellable_lbs > 0) && (
-                  <tr className="border-b border-cult-medium-gray/30">
-                    <td colSpan={8} className="p-0">
+                  <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
+                    <td colSpan={7} className="p-0">
                       <SupplyFunnel runway={runway} />
                     </td>
                   </tr>
@@ -522,8 +515,8 @@ function EnhancedByStrainView({
 
                 {/* Batch Info Panel */}
                 {isExpanded && (
-                  <tr className="border-b border-cult-medium-gray/30">
-                    <td colSpan={8} className="p-0">
+                  <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
+                    <td colSpan={7} className="p-0">
                       <BatchInfoPanel strainId={strainId} strainName={formats[0].strain_name} />
                     </td>
                   </tr>
@@ -547,15 +540,15 @@ function EnhancedByStrainView({
                   });
 
                   return (
-                    <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                      <td colSpan={8} className="px-6 py-3">
+                    <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
+                      <td colSpan={7} className="px-6 py-3">
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
                             <Calendar className="w-3.5 h-3.5" />
                             Orders by Delivery Day
                           </div>
                           {/* Column guide */}
-                          <div className="flex items-center gap-6 text-[10px] text-gray-600 uppercase tracking-wider">
+                          <div className="flex items-center gap-6 text-xs text-gray-600 uppercase tracking-wider">
                             <span className="w-20">Order</span>
                             <span className="w-32">Customer</span>
                             <span className="w-24">Format</span>
@@ -883,9 +876,6 @@ export function ProductionQueue() {
     ? byStrain
     : byStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
 
-  // Stock alerts
-  const alerts = strainSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready');
-
   if (loading && revenueLoading) {
     return (
       <div className="p-6 max-w-[1800px] mx-auto">
@@ -952,24 +942,47 @@ export function ProductionQueue() {
         weekLabel={selectedWeekLabel}
       />
 
-      {/* ── Stock Alerts (compact, only if needed) ────────────────────────── */}
-      {alerts.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-cult px-4 py-3">
-          <div className="flex items-center gap-2 text-amber-400 text-sm">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium">Stock:</span>
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
-              {alerts.slice(0, 6).map(a => (
-                <span key={a.strain_id || a.strain_name} className="flex items-center gap-1.5">
-                  <span className="text-white font-medium">{a.strain_name}</span>
-                  <span className={a.stock_status === 'no_stock' ? 'text-red-400' : 'text-amber-400'}>
-                    {a.stock_status === 'no_stock' ? 'None' : `${a.fill_rate_pct}%`}
-                  </span>
-                </span>
-              ))}
-              {alerts.length > 6 && <span className="text-gray-500">+{alerts.length - 6} more</span>}
-            </div>
-          </div>
+      {/* ── Runway Summary Bar ──────────────────────────────────────────── */}
+      {(runwaySummary.soldOut > 0 || runwaySummary.critical > 0 || runwaySummary.tight > 0) && (
+        <div className="flex items-center gap-4 px-4 py-2.5 rounded-cult border border-cult-medium-gray/40 bg-cult-near-black">
+          {runwaySummary.soldOut > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse-red" />
+              <span className="font-bold text-red-400">{runwaySummary.soldOut}</span>
+              <span className="text-gray-500">sold out</span>
+            </span>
+          )}
+          {runwaySummary.critical > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-red-400" />
+              <span className="font-bold text-red-400">{runwaySummary.critical}</span>
+              <span className="text-gray-500">critical</span>
+            </span>
+          )}
+          {runwaySummary.tight > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="font-bold text-amber-400">{runwaySummary.tight}</span>
+              <span className="text-gray-500">tight</span>
+            </span>
+          )}
+          {runwaySummary.comfortable + runwaySummary.surplus > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-bold text-emerald-400">{runwaySummary.comfortable + runwaySummary.surplus}</span>
+              <span className="text-gray-500">OK</span>
+            </span>
+          )}
+          <span className="border-l border-cult-medium-gray/40 h-4" />
+          {runwaySummary.totalRevenueAtRisk > 0 && (
+            <span className="text-sm">
+              <span className="font-bold text-red-400">${runwaySummary.totalRevenueAtRisk.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
+              <span className="text-gray-500 ml-1">at risk</span>
+            </span>
+          )}
+          <span className="ml-auto text-xs text-gray-600">
+            {runwaySummary.calibrated} calibrated · {runwaySummary.estimated} estimated
+          </span>
         </div>
       )}
 

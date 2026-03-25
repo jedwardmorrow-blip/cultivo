@@ -331,14 +331,14 @@ function RunwayDot({ runway }: { runway?: StrainRunway }) {
   return (
     <div className="relative group/runway">
       <div
-        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${style.bg} border ${style.border} cursor-default ${isPulsing ? 'animate-pulse' : ''}`}
+        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${style.bg} border ${style.border} cursor-default ${isPulsing ? 'animate-pulse-red' : ''}`}
       >
         <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
         <span className={`text-xs font-bold tabular-nums ${style.text}`}>
           {label}
         </span>
         {isEstimated && runway.runway_status !== 'sold_out' && (
-          <span className={`text-[9px] opacity-60 font-normal ${style.text}`}>est.</span>
+          <span className={`text-xs opacity-50 font-normal ${style.text}`}>est.</span>
         )}
       </div>
       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/runway:opacity-100 group-hover/runway:visible transition-all duration-200 z-50 pointer-events-none max-w-xs">
