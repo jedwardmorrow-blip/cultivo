@@ -94,13 +94,14 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
   const [priorHarvestMap, setPriorHarvestMap] = useState<Record<string, number>>({});
 
   // Load existing active sessions, keyed by batch_registry_id
-  // Also load completed sessions to calculate prior harvested plant counts
+  // Also load completed + finalized sessions to calculate prior harvested plant counts
   const loadExistingSessions = useCallback(async () => {
     setLoadingSessions(true);
     try {
-      const [activeSessions, completedSessions] = await Promise.all([
+      const [activeSessions, completedSessions, finalizedSessions] = await Promise.all([
         cultivationService.listHarvestSessions({ status: 'active' }),
         cultivationService.listHarvestSessions({ status: 'completed' }),
+        cultivationService.listHarvestSessions({ status: 'finalized' }),
       ]);
       const map: Record<string, HarvestSession> = {};
       for (const s of activeSessions) {
@@ -110,9 +111,9 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
       }
       setBatchSessionMap(map);
 
-      // Sum plant_count_harvested from completed sessions per batch+room
+      // Sum plant_count_harvested from completed AND finalized sessions per batch+room
       const priorMap: Record<string, number> = {};
-      for (const s of completedSessions) {
+      for (const s of [...completedSessions, ...finalizedSessions]) {
         if (s.batch_registry_id && selectedRoom && s.grow_room_id === selectedRoom.id) {
           priorMap[s.batch_registry_id] = (priorMap[s.batch_registry_id] ?? 0) + s.plant_count_harvested;
         }

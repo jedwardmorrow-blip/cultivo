@@ -77,10 +77,15 @@ export function OrderCard({
                 Sample
               </span>
             )}
-            {order.scheduled_at && (
+            {order.scheduled_at ? (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-cult-success/15 text-cult-success border border-cult-success/30 rounded-cult uppercase">
                 <CalendarCheck className="w-2.5 h-2.5" />
                 Scheduled
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-cult-surface-raised text-cult-text-muted border border-cult-border rounded-cult uppercase tracking-wider">
+                <CalendarCheck className="w-2.5 h-2.5" />
+                Not Scheduled
               </span>
             )}
             {order.priority === 'urgent' && (

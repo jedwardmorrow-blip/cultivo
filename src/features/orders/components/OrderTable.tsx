@@ -197,10 +197,15 @@ export function OrderTable({
                           Sample
                         </span>
                       )}
-                      {order.scheduled_at && (
+                      {order.scheduled_at ? (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-cult-success/15 text-cult-success border border-cult-success/30 rounded uppercase">
                           <CalendarCheck className="w-2.5 h-2.5" />
                           Scheduled
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-white/[0.03] text-cult-lighter-gray border border-cult-charcoal rounded uppercase tracking-wider">
+                          <CalendarCheck className="w-2.5 h-2.5" />
+                          Unscheduled
                         </span>
                       )}
                       {order.priority === 'urgent' && (
