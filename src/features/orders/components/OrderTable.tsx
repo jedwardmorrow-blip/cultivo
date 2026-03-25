@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRi
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { useShiftSelect } from '@/shared/hooks';
 import { getStatusColor } from '../utils/orderGrouping';
-import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
+import { getAttentionFlags, getOrderAge, getOrderAgeColor, getTurnaroundDays, getTurnaroundColor, getTurnaroundBgColor, type AttentionFlag } from '../utils/orderAttention';
 import { getNextStatus, getTransitionLabel } from '../utils/orderTransitions';
 import type { Order } from '../types';
 import type { OrderExtended } from '@/types';
@@ -164,6 +164,9 @@ export function OrderTable({
               const deliveryDate = order.scheduled_delivery_date || order.requested_delivery_date;
               const age = getOrderAge(order.created_at);
               const ageColor = getOrderAgeColor(order.created_at, order.status);
+              const turnaroundDays = getTurnaroundDays(order.created_at, deliveryDate);
+              const turnaroundColor = getTurnaroundColor(turnaroundDays);
+              const turnaroundBg = getTurnaroundBgColor(turnaroundDays);
               const statusColors = getStatusColor(order.status || 'submitted');
               const nextStatus = getNextStatus(order.status || 'submitted');
 
@@ -262,6 +265,11 @@ export function OrderTable({
                           month: 'short',
                           day: 'numeric',
                         }) ?? 'No date'}
+                        {turnaroundDays !== null && (
+                          <span className={`${turnaroundColor} ${turnaroundBg} px-1.5 py-0.5 rounded text-[10px] font-bold tabular-nums`}>
+                            {turnaroundDays}d
+                          </span>
+                        )}
                       </span>
                     ) : (
                       <span className="text-xs text-cult-lighter-gray">No date</span>

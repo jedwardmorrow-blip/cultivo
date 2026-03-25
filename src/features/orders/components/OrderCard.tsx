@@ -1,7 +1,7 @@
 import { Calendar, Package, Gift, AlertTriangle, ArrowRight, CalendarCheck } from 'lucide-react';
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
-import { getAttentionFlags, getOrderAge, getOrderAgeColor, type AttentionFlag } from '../utils/orderAttention';
+import { getAttentionFlags, getOrderAge, getOrderAgeColor, getTurnaroundDays, getTurnaroundColor, getTurnaroundBgColor, type AttentionFlag } from '../utils/orderAttention';
 import { getNextStatus, getTransitionLabel } from '../utils/orderTransitions';
 import type { Order } from '../types';
 import type { OrderExtended } from '@/types';
@@ -41,6 +41,9 @@ export function OrderCard({
   const deliveryDate = order.scheduled_delivery_date || order.requested_delivery_date;
   const age = getOrderAge(order.created_at);
   const ageColor = getOrderAgeColor(order.created_at, order.status);
+  const turnaroundDays = getTurnaroundDays(order.created_at, deliveryDate);
+  const turnaroundColor = getTurnaroundColor(turnaroundDays);
+  const turnaroundBg = getTurnaroundBgColor(turnaroundDays);
   const nextStatus = getNextStatus(order.status || 'submitted');
 
   return (
@@ -123,6 +126,11 @@ export function OrderCard({
               month: 'short',
               day: 'numeric',
             }) ?? 'No date'}
+            {turnaroundDays !== null && (
+              <span className={`${turnaroundColor} ${turnaroundBg} px-1 py-px rounded text-[10px] font-bold tabular-nums`}>
+                {turnaroundDays}d
+              </span>
+            )}
           </span>
         )}
         <span className="flex items-center gap-1">

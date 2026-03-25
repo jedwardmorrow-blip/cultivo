@@ -171,13 +171,13 @@ export async function getCustomerNames(customerIds: string[]) {
 }
 
 /**
- * Updates an order's requested delivery date
+ * Updates an order's delivery date (both requested and scheduled to keep them in sync)
  */
 export async function updateOrderDeliveryDate(orderId: string, newDate: string) {
   try {
     const { error } = await supabase
       .from('orders')
-      .update({ requested_delivery_date: newDate })
+      .update({ requested_delivery_date: newDate, scheduled_delivery_date: newDate })
       .eq('id', orderId)
       .select();
 

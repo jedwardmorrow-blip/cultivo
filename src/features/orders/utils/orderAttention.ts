@@ -110,3 +110,41 @@ export function getOrderAgeColor(createdAt: string | null, status: string | null
   if (status === 'submitted' && diffHours > 24) return 'text-amber-400';
   return 'text-cult-silver';
 }
+
+/**
+ * Calculate the number of days between order creation and delivery date.
+ * Uses COALESCE(scheduled_delivery_date, requested_delivery_date) per canonical revenue definitions.
+ */
+export function getTurnaroundDays(createdAt: string | null, deliveryDateStr: string | null | undefined): number | null {
+  if (!createdAt || !deliveryDateStr) return null;
+  const created = new Date(createdAt);
+  const delivery = parseDeliveryDate(deliveryDateStr);
+  if (!delivery) return null;
+  // Use date-only comparison (strip time)
+  const createdDate = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+  const deliveryDate = new Date(delivery.getFullYear(), delivery.getMonth(), delivery.getDate());
+  return Math.round((deliveryDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Get color class for turnaround days based on 7-10 day SLA target.
+ * < 7 days = green (ahead of schedule)
+ * 7-10 days = amber (within window)
+ * > 10 days = red (over target)
+ */
+export function getTurnaroundColor(days: number | null): string {
+  if (days === null) return 'text-cult-text-muted';
+  if (days < 7) return 'text-emerald-400';
+  if (days <= 10) return 'text-amber-400';
+  return 'text-red-400';
+}
+
+/**
+ * Get background color class for turnaround badge.
+ */
+export function getTurnaroundBgColor(days: number | null): string {
+  if (days === null) return 'bg-cult-surface-raised/50';
+  if (days < 7) return 'bg-emerald-500/10';
+  if (days <= 10) return 'bg-amber-500/10';
+  return 'bg-red-500/10';
+}
