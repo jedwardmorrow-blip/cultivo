@@ -258,22 +258,30 @@ export function OrderTable({
                   </td>
 
                   <td className="px-3 py-3">
-                    {deliveryDate ? (
-                      <span className="text-sm text-cult-silver flex items-center gap-1.5">
-                        <Calendar className="w-3 h-3 text-cult-lighter-gray" />
-                        {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        }) ?? 'No date'}
-                        {turnaroundDays !== null && (
-                          <span className={`${turnaroundColor} ${turnaroundBg} px-1.5 py-0.5 rounded text-[10px] font-bold tabular-nums`}>
-                            {turnaroundDays}d
-                          </span>
-                        )}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-cult-lighter-gray">No date</span>
-                    )}
+                    <div className="flex flex-col gap-1">
+                      {deliveryDate ? (
+                        <span className="text-sm text-cult-silver flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-cult-lighter-gray" />
+                          {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          }) ?? 'No date'}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-cult-lighter-gray">No date</span>
+                      )}
+                      {turnaroundDays !== null && (
+                        <span className={`inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                          turnaroundDays < 7
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                            : turnaroundDays <= 10
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                              : 'bg-red-500/10 border-red-500/30 text-red-400'
+                        }`}>
+                          {turnaroundDays}d turnaround
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   <td className="px-3 py-3">

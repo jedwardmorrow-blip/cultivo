@@ -1,4 +1,4 @@
-import { Calendar, Package, Gift, AlertTriangle, ArrowRight, CalendarCheck } from 'lucide-react';
+import { Calendar, Package, Gift, AlertTriangle, ArrowRight, CalendarCheck, Clock } from 'lucide-react';
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { getStatusColor } from '../utils/orderGrouping';
 import { getAttentionFlags, getOrderAge, getOrderAgeColor, getTurnaroundDays, getTurnaroundColor, getTurnaroundBgColor, type AttentionFlag } from '../utils/orderAttention';
@@ -117,6 +117,20 @@ export function OrderCard({
         {order.customer_name || 'Unknown Customer'}
       </div>
 
+      {/* Turnaround indicator */}
+      {turnaroundDays !== null && (
+        <div className={`flex items-center gap-1.5 mb-2 ml-6 px-2 py-1 rounded-cult border w-fit text-xs font-semibold ${
+          turnaroundDays < 7
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            : turnaroundDays <= 10
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>
+          <Clock className="w-3 h-3" />
+          <span>Turnaround: {turnaroundDays}d</span>
+        </div>
+      )}
+
       {/* Bottom row: delivery, items, total, age */}
       <div className="flex items-center gap-3 text-xs text-cult-text-secondary pl-6">
         {deliveryDate && (
@@ -126,11 +140,6 @@ export function OrderCard({
               month: 'short',
               day: 'numeric',
             }) ?? 'No date'}
-            {turnaroundDays !== null && (
-              <span className={`${turnaroundColor} ${turnaroundBg} px-1 py-px rounded text-[10px] font-bold tabular-nums`}>
-                {turnaroundDays}d
-              </span>
-            )}
           </span>
         )}
         <span className="flex items-center gap-1">

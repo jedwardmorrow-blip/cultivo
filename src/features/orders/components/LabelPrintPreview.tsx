@@ -321,19 +321,16 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
         </div>
       </div>
 
-      <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
+      <div style={{ fontSize: label.customer_license_name ? '3.5pt' : '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
         <div><span style={{ fontWeight: 'bold' }}>Additives: </span>{ADDITIVES_TEXT}</div>
       </div>
 
-      <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
-        <span style={{ fontWeight: 'bold' }}>License: </span>{DEFAULT_LICENSE_NAME} - {license}
+      <div style={{ fontSize: label.customer_license_name ? '3.5pt' : '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
+        <div><span style={{ fontWeight: 'bold' }}>License: </span>{DEFAULT_LICENSE_NAME} - {license}</div>
+        {label.customer_license_name && (
+          <div><span style={{ fontWeight: 'bold' }}>License: </span>{label.customer_license_name}{label.customer_license_number ? ` - ${label.customer_license_number}` : ''}</div>
+        )}
       </div>
-
-      {label.customer_license_name && (
-        <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
-          <span style={{ fontWeight: 'bold' }}>License: </span>{label.customer_license_name}{label.customer_license_number ? ` - ${label.customer_license_number}` : ''}
-        </div>
-      )}
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {barcodeUrl && (
