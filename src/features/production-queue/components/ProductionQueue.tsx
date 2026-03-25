@@ -1,8 +1,9 @@
 import { useState, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar, Info } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
+import { useStrainRunway, RUNWAY_STYLES, runwayLabel, runwayTooltip, type StrainRunway } from '@/shared/hooks/useStrainRunway';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
 import { BatchInfoPanel } from './BatchInfoPanel';
@@ -96,6 +97,109 @@ function batchStageBadge(item: OrderLineItem) {
         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
           Quarantined
         </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Runway Badge ───────────────────────────────────────────────────────────
+
+function RunwayBadge({ runway }: { runway: StrainRunway | undefined }) {
+  if (!runway) return <span className="text-xs text-gray-600">—</span>;
+
+  const style = RUNWAY_STYLES[runway.runway_status];
+  const label = runwayLabel(runway);
+  const tip = runwayTooltip(runway);
+  const isEstimated = runway.confidence === 'estimated' && runway.runway_status !== 'no_demand';
+  const isPulsing = runway.runway_status === 'sold_out' || runway.runway_status === 'critical';
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-bold tabular-nums ${style.bg} ${style.text} ${style.border} ${isPulsing ? 'animate-pulse' : ''}`}
+      title={tip}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
+      {label}
+      {isEstimated && runway.runway_status !== 'sold_out' && (
+        <span className="text-[9px] opacity-60 font-normal">est.</span>
+      )}
+    </span>
+  );
+}
+
+// ─── Supply Funnel (strain expansion) ───────────────────────────────────────
+
+const FUNNEL_STAGES = [
+  { key: 'binned_lbs' as const, label: 'Binned', color: 'bg-indigo-500', textColor: 'text-indigo-400' },
+  { key: 'bucked_lbs' as const, label: 'Bucked', color: 'bg-violet-500', textColor: 'text-violet-400' },
+  { key: 'bulk_flower_lbs' as const, label: 'Bulk', color: 'bg-emerald-500', textColor: 'text-emerald-400' },
+] as const;
+
+function SupplyFunnel({ runway }: { runway: StrainRunway }) {
+  const maxLbs = Math.max(runway.binned_lbs, runway.bucked_lbs, runway.bulk_flower_lbs + runway.bulk_smalls_lbs, runway.packaged_units * 0.00772, 0.1);
+  const hasProjection = runway.bucked_lbs > 0;
+  const isCalibrated = runway.trim_confidence === 'calibrated';
+
+  return (
+    <div className="px-6 py-3 bg-cult-black/40">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">Supply Pipeline</span>
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          <span>Sellable: <span className="text-white font-semibold">{runway.total_sellable_lbs} lbs</span></span>
+          <span>Pipeline: <span className="text-gray-300 font-semibold">{runway.total_pipeline_lbs} lbs</span></span>
+          {runway.packaged_units > 0 && (
+            <span>Packaged: <span className="text-cyan-400 font-semibold">{runway.packaged_units} units</span></span>
+          )}
+        </div>
+      </div>
+
+      {/* Funnel bars */}
+      <div className="flex items-end gap-2 h-10 mb-2">
+        {FUNNEL_STAGES.map(stage => {
+          const lbs = stage.key === 'bulk_flower_lbs'
+            ? runway.bulk_flower_lbs + runway.bulk_smalls_lbs
+            : runway[stage.key];
+          const pct = lbs > 0 ? Math.max((lbs / maxLbs) * 100, 6) : 0;
+          return (
+            <div key={stage.key} className="flex-1 flex flex-col items-center gap-1">
+              <span className={`text-[10px] font-semibold tabular-nums ${stage.textColor}`}>
+                {lbs > 0 ? `${lbs.toFixed(1)}` : '—'}
+              </span>
+              <div className="w-full relative" style={{ height: `${pct}%`, minHeight: lbs > 0 ? '4px' : '0' }}>
+                <div className={`absolute inset-0 ${stage.color} rounded-t opacity-80`} />
+              </div>
+              <span className="text-[9px] text-gray-600 uppercase">{stage.label}</span>
+            </div>
+          );
+        })}
+
+        {/* Arrow → Packaged */}
+        <div className="flex-shrink-0 flex items-center px-1 text-gray-600">→</div>
+
+        <div className="flex-1 flex flex-col items-center gap-1">
+          <span className="text-[10px] font-semibold tabular-nums text-cyan-400">
+            {runway.packaged_units > 0 ? runway.packaged_units : '—'}
+          </span>
+          <div className="w-full relative" style={{ height: `${runway.packaged_units > 0 ? Math.max((runway.packaged_units * 0.00772 / maxLbs) * 100, 6) : 0}%`, minHeight: runway.packaged_units > 0 ? '4px' : '0' }}>
+            <div className="absolute inset-0 bg-cyan-500 rounded-t opacity-80" />
+          </div>
+          <span className="text-[9px] text-gray-600 uppercase">Pkgd</span>
+        </div>
+      </div>
+
+      {/* Projected yield annotation */}
+      {hasProjection && (
+        <div className={`flex items-center gap-2 mt-1 px-2 py-1 rounded ${isCalibrated ? 'bg-violet-500/5 border border-violet-500/10' : 'bg-gray-800/30 border border-gray-700/20'}`}>
+          <span className="text-[10px] text-gray-500">Bucked → flower yield:</span>
+          <span className={`text-[10px] font-semibold ${isCalibrated ? 'text-violet-400' : 'text-gray-400'}`}>
+            ~{runway.projected_flower_from_bucked_lbs} lbs ({runway.flower_pct}% ratio)
+          </span>
+          <span className={`text-[9px] px-1 py-0.5 rounded ${
+            isCalibrated ? 'bg-violet-500/10 text-violet-400' : 'bg-gray-700/50 text-gray-500'
+          }`}>
+            {isCalibrated ? `${runway.trim_session_count} sessions` : 'default est.'}
+          </span>
+        </div>
       )}
     </div>
   );
@@ -205,14 +309,23 @@ function EnhancedByStrainView({
   byStrain,
   byOrder,
   selectedDeliveryDate,
+  runwayData,
 }: {
   byStrain: StrainFormatRow[];
   byOrder: OrderLineItem[];
   selectedDeliveryDate: string | null;
+  runwayData: StrainRunway[];
 }) {
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
   const weekDates = useMemo(() => getWeekDatesForHeatmap(), []);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+  // Build a runway lookup by strain name
+  const runwayMap = useMemo(() => {
+    const map = new Map<string, StrainRunway>();
+    runwayData.forEach(r => map.set(r.strain, r));
+    return map;
+  }, [runwayData]);
 
   // Group by strain_id
   const strainGroups = useMemo(() => {
@@ -293,11 +406,10 @@ function EnhancedByStrainView({
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Units needed per day this week">Demand</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Needed</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Demand</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Ready</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Stock</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Weight</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Days of supply remaining at current order velocity">Runway</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Revenue</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
           </tr>
         </thead>
@@ -311,10 +423,8 @@ function EnhancedByStrainView({
             const totalNeeded = formats.reduce((sum, f) => sum + f.total_units_needed, 0);
             const totalDemandG = formats.reduce((sum, f) => sum + f.total_demand_g, 0);
 
-            const worstUrgency = formats.reduce((worst, f) => {
-              const order: Urgency[] = ['overdue', 'urgent', 'soon', 'normal', 'no_date'];
-              return order.indexOf(f.urgency) < order.indexOf(worst) ? f.urgency : worst;
-            }, 'no_date' as Urgency);
+            // Runway data for this strain
+            const runway = runwayMap.get(strainName);
 
             // Get all orders for this strain, optionally filtered by selected date
             const byDay = strainOrdersByDay.get(strainId);
@@ -357,14 +467,16 @@ function EnhancedByStrainView({
                   </td>
                   <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="text-white">{formats[0].ready_lbs.toFixed(1)} lbs</div>
-                    <div className="text-xs text-gray-500">
-                      F:{formatWeight(formats[0].ready_flower_g)} · S:{formatWeight(formats[0].ready_smalls_g)}
-                    </div>
+                  <td className="px-4 py-3 text-center">
+                    <RunwayBadge runway={runway} />
                   </td>
-                  <td className="px-4 py-3">{stockBadge(formats[0].stock_status)}</td>
-                  <td className="px-4 py-3">{urgencyBadge(worstUrgency)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {runway ? (
+                      <span className={runway.demand_revenue > 5000 ? 'text-white font-semibold' : 'text-gray-300'}>
+                        ${runway.demand_revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                      </span>
+                    ) : <span className="text-gray-600">—</span>}
+                  </td>
                   <td className="px-4 py-3 text-right text-gray-300 tabular-nums">
                     {formats[0].order_count}
                   </td>
@@ -375,10 +487,15 @@ function EnhancedByStrainView({
                   <tr key={`${strainId}-fmt-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2 pl-8 text-gray-300">
-                      {f.format_label}
-                      {f.product_category && f.product_category !== 'Flower' && (
-                        <span className="ml-1.5 text-xs text-gray-500">{f.product_category}</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span>{f.format_label}</span>
+                        {f.product_category && f.product_category !== 'Flower' && (
+                          <span className="text-xs text-gray-500">{f.product_category}</span>
+                        )}
+                        {f.already_packaged_units > 0 && (
+                          <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2 text-right text-gray-300 tabular-nums">
@@ -388,21 +505,25 @@ function EnhancedByStrainView({
                       )}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300 tabular-nums">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2 text-right">
-                      {f.already_packaged_units > 0 && (
-                        <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
-                      )}
-                    </td>
+                    <td className="px-4 py-2 text-center">{urgencyBadge(f.urgency)}</td>
                     <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
                     <td className="px-4 py-2 text-right text-gray-400 tabular-nums">{f.order_count}</td>
                   </tr>
                 ))}
 
+                {/* Supply Funnel */}
+                {isExpanded && runway && (runway.total_pipeline_lbs > 0 || runway.total_sellable_lbs > 0) && (
+                  <tr className="border-b border-cult-medium-gray/30">
+                    <td colSpan={8} className="p-0">
+                      <SupplyFunnel runway={runway} />
+                    </td>
+                  </tr>
+                )}
+
                 {/* Batch Info Panel */}
                 {isExpanded && (
                   <tr className="border-b border-cult-medium-gray/30">
-                    <td colSpan={9} className="p-0">
+                    <td colSpan={8} className="p-0">
                       <BatchInfoPanel strainId={strainId} strainName={formats[0].strain_name} />
                     </td>
                   </tr>
@@ -427,7 +548,7 @@ function EnhancedByStrainView({
 
                   return (
                     <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                      <td colSpan={9} className="px-6 py-3">
+                      <td colSpan={8} className="px-6 py-3">
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
                             <Calendar className="w-3.5 h-3.5" />
@@ -741,6 +862,7 @@ export function ProductionQueue() {
     selectedWeekLabel, selectedWeekRange,
     loading: revenueLoading,
   } = useRevenuePipeline();
+  const { data: runwayData, summary: runwaySummary } = useStrainRunway();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
@@ -886,6 +1008,7 @@ export function ProductionQueue() {
           byStrain={filteredByStrain}
           byOrder={filteredByOrder}
           selectedDeliveryDate={selectedDeliveryDate}
+          runwayData={runwayData}
         />
       )}
       {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}

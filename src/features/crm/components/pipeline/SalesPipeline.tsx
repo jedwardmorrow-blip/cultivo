@@ -31,6 +31,13 @@ import {
   useStrainDemandPressure,
   type StrainDemandPressure,
 } from '@/features/orders/hooks/useStrainInventory';
+import {
+  useStrainRunway,
+  RUNWAY_STYLES,
+  runwayLabel,
+  runwayTooltip,
+  type StrainRunway,
+} from '@/shared/hooks/useStrainRunway';
 import { LoadingSpinner } from '@/shared/components';
 import {
   StageBar,
@@ -95,15 +102,29 @@ const HEALTH_DESCRIPTIONS: Record<string, string> = {
  *  SummaryCharts                                  *
  * ────────────────────────────────────────────── */
 
-function SummaryCharts({ strains, demandMap }: { strains: StrainSummary[]; demandMap: Map<string, StrainDemandPressure> }) {
+function SummaryCharts({ strains, demandMap, runwayMap }: { strains: StrainSummary[]; demandMap: Map<string, StrainDemandPressure>; runwayMap: Map<string, StrainRunway> }) {
   const total = strains.length || 1;
 
-  /* health distribution */
+  /* health distribution — use runway if available, fall back to old health */
   const healthCounts = useMemo(() => {
     const c: Record<string, number> = { healthy: 0, low: 0, warning: 0, critical: 0 };
     strains.forEach((s) => { c[s.healthStatus] = (c[s.healthStatus] || 0) + 1; });
     return c;
   }, [strains]);
+
+  /* runway distribution */
+  const runwayCounts = useMemo(() => {
+    const c = { sold_out: 0, critical: 0, tight: 0, comfortable: 0, surplus: 0, no_demand: 0, revenueAtRisk: 0 };
+    runwayMap.forEach(r => {
+      c[r.runway_status]++;
+      if (r.runway_status === 'sold_out' || r.runway_status === 'critical') {
+        c.revenueAtRisk += r.demand_revenue;
+      }
+    });
+    return c;
+  }, [runwayMap]);
+
+  const hasRunway = runwayMap.size > 0;
 
   /* inventory breakdown (sellable / pipeline / byproduct) + committed demand in grams */
   const breakdown = useMemo(() => {
@@ -128,29 +149,64 @@ function SummaryCharts({ strains, demandMap }: { strains: StrainSummary[]; deman
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
-      {/* ── Health ── */}
+      {/* ── Runway / Health ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-          Health
+          {hasRunway ? 'Sell-Out Runway' : 'Health'}
         </h4>
-        <div className="space-y-1.5">
-          {(['healthy', 'low', 'warning', 'critical'] as const).map((k) => {
-            const n = healthCounts[k];
-            const pct = (n / total) * 100;
-            return (
-              <div key={k} className="flex items-center gap-2">
-                <span className="text-xs w-12 capitalize text-neutral-500">{k}</span>
-                <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[k] }}
-                  />
+        {hasRunway ? (
+          <div className="space-y-1.5">
+            {([
+              { key: 'sold_out' as const, label: 'Sold Out', hex: '#ef4444' },
+              { key: 'critical' as const, label: 'Critical', hex: '#f87171' },
+              { key: 'tight' as const, label: 'Tight', hex: '#f59e0b' },
+              { key: 'comfortable' as const, label: 'OK', hex: '#10b981' },
+              { key: 'surplus' as const, label: 'Surplus', hex: '#10b981' },
+            ]).map(({ key, label, hex }) => {
+              const n = runwayCounts[key];
+              if (n === 0) return null;
+              const pct = (n / Math.max(runwayMap.size, 1)) * 100;
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="text-xs w-14 text-neutral-500">{label}</span>
+                  <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: hex }}
+                    />
+                  </div>
+                  <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
                 </div>
-                <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
+              );
+            })}
+            {runwayCounts.revenueAtRisk > 0 && (
+              <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 text-center">
+                <span className="text-xs text-red-400 font-semibold">
+                  ${runwayCounts.revenueAtRisk.toLocaleString()} at risk
+                </span>
               </div>
-            );
-          })}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {(['healthy', 'low', 'warning', 'critical'] as const).map((k) => {
+              const n = healthCounts[k];
+              const pct = (n / total) * 100;
+              return (
+                <div key={k} className="flex items-center gap-2">
+                  <span className="text-xs w-12 capitalize text-neutral-500">{k}</span>
+                  <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[k] }}
+                    />
+                  </div>
+                  <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Breakdown ── */}
@@ -264,6 +320,35 @@ function HealthDot({ status }: { status: string }) {
   );
 }
 
+function RunwayDot({ runway }: { runway?: StrainRunway }) {
+  if (!runway) return null;
+  const style = RUNWAY_STYLES[runway.runway_status];
+  const label = runwayLabel(runway);
+  const tip = runwayTooltip(runway);
+  const isPulsing = runway.runway_status === 'sold_out' || runway.runway_status === 'critical';
+  const isEstimated = runway.confidence === 'estimated' && runway.runway_status !== 'no_demand';
+
+  return (
+    <div className="relative group/runway">
+      <div
+        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${style.bg} border ${style.border} cursor-default ${isPulsing ? 'animate-pulse' : ''}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
+        <span className={`text-xs font-bold tabular-nums ${style.text}`}>
+          {label}
+        </span>
+        {isEstimated && runway.runway_status !== 'sold_out' && (
+          <span className={`text-[9px] opacity-60 font-normal ${style.text}`}>est.</span>
+        )}
+      </div>
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/runway:opacity-100 group-hover/runway:visible transition-all duration-200 z-50 pointer-events-none max-w-xs">
+        {tip}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+      </div>
+    </div>
+  );
+}
+
 /* StageBar & BatchCard now imported from @/shared/components/inventory */
 
 function StrainRow({
@@ -273,6 +358,7 @@ function StrainRow({
   batches,
   batchesLoading,
   demand,
+  runway,
 }: {
   strain: StrainSummary;
   isExpanded: boolean;
@@ -280,6 +366,7 @@ function StrainRow({
   batches: BatchSummary[];
   batchesLoading: boolean;
   demand?: StrainDemandPressure;
+  runway?: StrainRunway;
 }) {
   const Chevron = isExpanded ? ChevronDown : ChevronRight;
   const committedWeight = demand?.total_committed_weight_grams || 0;
@@ -322,7 +409,7 @@ function StrainRow({
               {fmt(strain.totalGrams)}
             </div>
           </div>
-          <HealthDot status={strain.healthStatus} />
+          {runway ? <RunwayDot runway={runway} /> : <HealthDot status={strain.healthStatus} />}
         </div>
       </button>
 
@@ -407,6 +494,14 @@ export function SalesPipeline() {
   } = useSimplifiedInventory();
 
   const { demandMap } = useStrainDemandPressure();
+  const { data: runwayData } = useStrainRunway();
+
+  // Build runway lookup by strain name
+  const runwayMap = useMemo(() => {
+    const map = new Map<string, StrainRunway>();
+    runwayData.forEach(r => map.set(r.strain, r));
+    return map;
+  }, [runwayData]);
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -513,7 +608,7 @@ export function SalesPipeline() {
       </div>
 
       {/* Charts */}
-      {showCharts && strains.length > 0 && <SummaryCharts strains={strains} demandMap={demandMap} />}
+      {showCharts && strains.length > 0 && <SummaryCharts strains={strains} demandMap={demandMap} runwayMap={runwayMap} />}
 
       {/* Strain list */}
       <div className="space-y-2">
@@ -538,6 +633,7 @@ export function SalesPipeline() {
                 expandedStrain === s.strain ? batchesLoading : false
               }
               demand={demandMap.get(s.strain)}
+              runway={runwayMap.get(s.strain)}
             />
           ))
         )}
