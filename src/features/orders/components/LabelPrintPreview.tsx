@@ -29,6 +29,8 @@ interface LabelData {
   lineage: string | null;
   dominance_type: string | null;
   compliance_uid: string | null;
+  customer_license_name: string | null;
+  customer_license_number: string | null;
 }
 
 const ADDITIVES_TEXT = 'Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B';
@@ -326,6 +328,12 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
       <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
         <span style={{ fontWeight: 'bold' }}>License: </span>{DEFAULT_LICENSE_NAME} - {license}
       </div>
+
+      {label.customer_license_name && (
+        <div style={{ fontSize: '4pt', lineHeight: '1.25', marginBottom: '0.005in' }}>
+          <span style={{ fontWeight: 'bold' }}>License: </span>{label.customer_license_name}{label.customer_license_number ? ` - ${label.customer_license_number}` : ''}
+        </div>
+      )}
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {barcodeUrl && (

@@ -309,6 +309,23 @@ export const labelAutoFillService = {
         }
       }
 
+      // Look up customer license via order → customer
+      let customerLicenseName: string | null = null;
+      let customerLicenseNumber: string | null = null;
+      if (orderId) {
+        const { data: orderData } = await supabase
+          .from('orders')
+          .select('customers:customer_id ( license_name, license_number )')
+          .eq('id', orderId)
+          .single();
+
+        const customer = (orderData as any)?.customers;
+        if (customer?.license_name || customer?.license_number) {
+          customerLicenseName = customer.license_name || null;
+          customerLicenseNumber = customer.license_number || null;
+        }
+      }
+
       // Calculate expiration date (1 year from package date)
       let expirationDate = null;
       if (labelData.package_date) {
@@ -343,6 +360,8 @@ export const labelAutoFillService = {
           lineage: labelData.lineage,
           dominance_type: labelData.dominance_type,
           compliance_uid: DEFAULT_LICENSE_NUMBER,
+          customer_license_name: customerLicenseName,
+          customer_license_number: customerLicenseNumber,
           warnings: ['Keep out of reach of children', 'For use only by adults 21 years of age and older'],
         })
         .select('id, label_number, package_id, qr_code_data, created_at')

@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, TrendingUp, Users, Clock, Timer } from 'lucide-react';
+import { useState, Fragment, useMemo } from 'react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
-import { supabase } from '@/lib/supabase';
 import { useProductionQueue } from '../hooks/useProductionQueue';
+import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
+import { RevenuePipeline } from './RevenuePipeline';
+import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
 import { BatchInfoPanel } from './BatchInfoPanel';
-import type { ProductionQueueTab, DeliveryDateFilter, ProductCategory, StrainSummary, StrainFormatRow, OrderLineItem, Urgency, StockStatus } from '../types';
-import { Calendar } from 'lucide-react';
 import { formatDateShort } from '@/shared/utils/format';
+import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
+
+// ─── Shared Badges & Formatters ─────────────────────────────────────────────
 
 function urgencyBadge(urgency: Urgency) {
   const styles: Record<Urgency, string> = {
@@ -32,11 +35,9 @@ function urgencyBadge(urgency: Urgency) {
 
 function stockBadge(status: StockStatus) {
   const styles: Record<StockStatus, string> = {
-    // v3 statuses
     ready: 'bg-green-500/20 text-green-400',
     needs_processing: 'bg-amber-500/20 text-amber-400',
     no_stock: 'bg-red-500/20 text-red-400',
-    // v2 legacy (still used by summary view)
     can_fill: 'bg-green-500/20 text-green-400',
     available: 'bg-green-500/20 text-green-400',
     partial: 'bg-amber-500/20 text-amber-400',
@@ -56,19 +57,13 @@ function stockBadge(status: StockStatus) {
   );
 }
 
-
 function formatWeight(grams: number) {
-  if (grams >= 454) {
-    return `${(grams / 454).toFixed(1)} lbs`;
-  }
+  if (grams >= 454) return `${(grams / 454).toFixed(1)} lbs`;
   return `${grams.toFixed(1)}g`;
 }
 
-// ─── Batch stage badge ──────────────────────────────────────────────────────
-
 function batchStageBadge(item: OrderLineItem) {
   if (!item.batch_number) return null;
-
   const stageColors: Record<string, string> = {
     'Created': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
     'Pre-Harvest': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
@@ -83,11 +78,8 @@ function batchStageBadge(item: OrderLineItem) {
   const stageStyle = stageColors[stageLabel] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
 
   const gradeColors: Record<string, string> = {
-    emerald: 'text-emerald-400',
-    sky: 'text-sky-400',
-    amber: 'text-amber-400',
-    rose: 'text-rose-400',
-    gray: 'text-gray-400',
+    emerald: 'text-emerald-400', sky: 'text-sky-400', amber: 'text-amber-400',
+    rose: 'text-rose-400', gray: 'text-gray-400',
   };
   const gradeTextColor = item.batch_grade_color ? (gradeColors[item.batch_grade_color] || 'text-gray-400') : '';
 
@@ -98,9 +90,7 @@ function batchStageBadge(item: OrderLineItem) {
         {stageLabel}
       </span>
       {item.batch_quality_grade && item.batch_quality_grade !== 'Ungraded' && (
-        <span className={`text-xs font-medium ${gradeTextColor}`}>
-          {item.batch_quality_grade}
-        </span>
+        <span className={`text-xs font-medium ${gradeTextColor}`}>{item.batch_quality_grade}</span>
       )}
       {item.batch_quarantined && (
         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
@@ -111,118 +101,85 @@ function batchStageBadge(item: OrderLineItem) {
   );
 }
 
-// ─── Date range filter helpers ──────────────────────────────────────────────
+// ─── Mini Week Heatmap (per strain row) ─────────────────────────────────────
 
-function getWeekBounds(offsetWeeks: number): [Date, Date] {
+const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F'];
+
+function getWeekDatesForHeatmap(): string[] {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun
+  const day = now.getDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset + offsetWeeks * 7);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  return [monday, sunday];
-}
-
-function dateInRange(dateStr: string | null, filter: DeliveryDateFilter): boolean {
-  if (filter === 'all') return true;
-  if (!dateStr) return filter === 'overdue'; // null dates show under overdue (no date = risky)
-  const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (filter === 'overdue') {
-    return d < today;
-  }
-  const weekOffset = filter === 'this-week' ? 0 : 1;
-  const [start, end] = getWeekBounds(weekOffset);
-  return d >= start && d <= end;
-}
-
-function filterByDeliveryDate<T extends { requested_delivery_date?: string | null; earliest_delivery_date?: string | null; earliest_delivery?: string | null }>(
-  rows: T[],
-  filter: DeliveryDateFilter,
-): T[] {
-  if (filter === 'all') return rows;
-  return rows.filter(r => {
-    const dateField = r.requested_delivery_date ?? r.earliest_delivery_date ?? r.earliest_delivery ?? null;
-    return dateInRange(dateField, filter);
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0, 10);
   });
 }
 
-// ─── Date Filter Strip ──────────────────────────────────────────────────────
+interface HeatmapCell {
+  date: string;
+  units: number;
+  isToday: boolean;
+}
 
-function DateFilterStrip({ value, onChange }: { value: DeliveryDateFilter; onChange: (f: DeliveryDateFilter) => void }) {
-  const [thisWeekStart, thisWeekEnd] = getWeekBounds(0);
-  const [nextWeekStart, nextWeekEnd] = getWeekBounds(1);
-  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-  const options: { id: DeliveryDateFilter; label: string; sublabel?: string }[] = [
-    { id: 'all', label: 'All' },
-    { id: 'overdue', label: 'Overdue' },
-    { id: 'this-week', label: 'This Week', sublabel: `${fmt(thisWeekStart)} – ${fmt(thisWeekEnd)}` },
-    { id: 'next-week', label: 'Next Week', sublabel: `${fmt(nextWeekStart)} – ${fmt(nextWeekEnd)}` },
-  ];
+function MiniWeekHeatmap({ cells }: { cells: HeatmapCell[] }) {
+  const maxUnits = Math.max(...cells.map(c => c.units), 1);
 
   return (
-    <div className="flex items-center gap-2">
-      <Calendar className="w-4 h-4 text-gray-500" />
-      <span className="text-xs text-gray-500 uppercase tracking-wider mr-1">Delivery</span>
-      {options.map(opt => (
-        <button
-          key={opt.id}
-          onClick={() => onChange(opt.id)}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            value === opt.id
-              ? 'bg-white/10 text-white border border-white/20'
-              : 'text-gray-500 hover:text-gray-300 border border-transparent'
-          }`}
-          title={opt.sublabel}
-        >
-          {opt.label}
-          {opt.sublabel && value === opt.id && (
-            <span className="ml-1.5 text-xs text-gray-400 font-normal">{opt.sublabel}</span>
-          )}
-        </button>
-      ))}
+    <div className="flex items-center gap-1">
+      {cells.map((cell, i) => {
+        const intensity = cell.units > 0 ? Math.max(cell.units / maxUnits, 0.25) : 0;
+        return (
+          <div key={cell.date} className="flex flex-col items-center gap-0.5" title={`${WEEKDAY_LABELS[i]}: ${cell.units} units`}>
+            <span className={`text-[9px] leading-none ${cell.isToday ? 'text-sky-400 font-bold' : 'text-gray-600'}`}>
+              {WEEKDAY_LABELS[i]}
+            </span>
+            <div
+              className={`w-4 h-4 rounded-sm transition-colors ${
+                cell.units === 0
+                  ? 'bg-gray-800/50'
+                  : cell.isToday
+                    ? 'bg-sky-500'
+                    : 'bg-emerald-500'
+              }`}
+              style={cell.units > 0 ? { opacity: 0.3 + intensity * 0.7 } : undefined}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-// ─── Product Category Filter Strip ──────────────────────────────────────────
+// ─── Product Category Filter (compact) ──────────────────────────────────────
 
 function ProductCategoryStrip({
-  value,
-  onChange,
-  counts,
+  value, onChange, counts,
 }: {
   value: ProductCategory;
   onChange: (c: ProductCategory) => void;
   counts: Record<string, { lines: number; lbs: number }>;
 }) {
   const categories: ProductCategory[] = ['All', 'Flower', 'Smalls', 'Fresh Frozen'];
-
   return (
     <div className="flex items-center gap-2">
       <Package className="w-4 h-4 text-gray-500" />
-      <span className="text-xs text-gray-500 uppercase tracking-wider mr-1">Product</span>
       {categories.map(cat => {
         const count = cat === 'All'
           ? { lines: Object.values(counts).reduce((s, c) => s + c.lines, 0), lbs: Object.values(counts).reduce((s, c) => s + c.lbs, 0) }
           : counts[cat] || { lines: 0, lbs: 0 };
-
-        // Skip categories with 0 lines (except All)
         if (cat !== 'All' && count.lines === 0) return null;
-
         return (
           <button
             key={cat}
             onClick={() => onChange(cat)}
-            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-cult text-sm font-medium transition-colors ${
               value === cat
                 ? 'bg-white/10 text-white border border-white/20'
                 : 'text-gray-500 hover:text-gray-300 border border-transparent'
             }`}
-            title={`${count.lines} line items · ${count.lbs.toFixed(1)} lbs`}
+            title={`${count.lines} items · ${count.lbs.toFixed(1)} lbs`}
           >
             {cat}
             {value === cat && cat !== 'All' && (
@@ -235,464 +192,71 @@ function ProductCategoryStrip({
   );
 }
 
-// ─── Supply vs Demand Chart ──────────────────────────────────────────────────
+// ─── Enhanced By Strain View ────────────────────────────────────────────────
+// Strain-first with per-day demand heatmap, batch opportunity signals,
+// and orders grouped by delivery day in expansion.
 
-interface StrainPipelineAgg {
-  strain_id: string | null;
-  strain_name: string;
-  demand_g: number;
-  packaged_g: number;
-  ready_g: number;    // ready_flower + ready_smalls + ready_trim
-  bucked_g: number;
-  binned_g: number;
-  total_supply_g: number;
-  fill_pct: number;
-}
-
-function aggregateStrainPipeline(byStrain: StrainFormatRow[]): StrainPipelineAgg[] {
-  const map = new Map<string, StrainPipelineAgg>();
-
-  byStrain.forEach(row => {
-    const key = row.strain_id || row.strain_name;
-    const existing = map.get(key);
-    if (existing) {
-      existing.demand_g += row.total_demand_g;
-      existing.packaged_g += row.already_packaged_g;
-      existing.ready_g += row.ready_flower_g + row.ready_smalls_g + row.ready_trim_g;
-      existing.bucked_g += row.pipeline_bucked_g;
-      existing.binned_g += row.pipeline_binned_g;
-    } else {
-      map.set(key, {
-        strain_id: row.strain_id,
-        strain_name: row.strain_name,
-        demand_g: row.total_demand_g,
-        packaged_g: row.already_packaged_g,
-        ready_g: row.ready_flower_g + row.ready_smalls_g + row.ready_trim_g,
-        bucked_g: row.pipeline_bucked_g,
-        binned_g: row.pipeline_binned_g,
-        total_supply_g: 0,
-        fill_pct: 0,
-      });
-    }
-  });
-
-  // Finalize totals and sort worst-first
-  const result = Array.from(map.values()).map(s => {
-    s.total_supply_g = s.packaged_g + s.ready_g + s.bucked_g + s.binned_g;
-    s.fill_pct = s.demand_g > 0 ? Math.round((s.total_supply_g / s.demand_g) * 100) : 0;
-    return s;
-  });
-
-  result.sort((a, b) => a.fill_pct - b.fill_pct);
-  return result;
-}
-
-const pipelineStages = [
-  { key: 'packaged_g' as const, label: 'Packaged', color: 'bg-green-500' },
-  { key: 'ready_g' as const, label: 'Ready', color: 'bg-cyan-500' },
-  { key: 'bucked_g' as const, label: 'Bucked', color: 'bg-blue-500' },
-  { key: 'binned_g' as const, label: 'Binned', color: 'bg-indigo-500' },
-];
-
-function SupplyDemandChart({ byStrain }: { byStrain: StrainFormatRow[] }) {
-  const strains = useMemo(() => aggregateStrainPipeline(byStrain), [byStrain]);
-
-  if (strains.length === 0) return null;
-
-  const maxDemand = Math.max(...strains.map(s => s.demand_g), 1);
-
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-gray-400" />
-          <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Supply vs Demand</span>
-        </div>
-        <div className="flex items-center gap-3">
-          {pipelineStages.map(s => (
-            <div key={s.key} className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-sm ${s.color}`} />
-              <span className="text-xs text-gray-500">{s.label}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-gray-700 border border-gray-600" />
-            <span className="text-xs text-gray-500">Gap</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        {strains.map(strain => {
-          const barWidthPct = (strain.demand_g / maxDemand) * 100;
-          const fillColor = strain.fill_pct >= 100 ? 'text-green-400'
-            : strain.fill_pct >= 50 ? 'text-amber-400' : 'text-red-400';
-
-          return (
-            <div key={strain.strain_id || strain.strain_name} className="flex items-center gap-3">
-              {/* Strain name */}
-              <div className="w-28 flex-shrink-0 text-right">
-                <span className="text-xs text-gray-300 font-medium truncate block">{strain.strain_name}</span>
-              </div>
-
-              {/* Bar */}
-              <div className="flex-1 h-5 bg-gray-800/50 rounded overflow-hidden relative" style={{ width: `${barWidthPct}%` }}>
-                {/* Stacked supply segments */}
-                <div className="absolute inset-0 flex">
-                  {pipelineStages.map(stage => {
-                    const segPct = strain.demand_g > 0
-                      ? (strain[stage.key] / strain.demand_g) * 100
-                      : 0;
-                    if (segPct <= 0) return null;
-                    return (
-                      <div
-                        key={stage.key}
-                        className={`${stage.color} h-full opacity-80 hover:opacity-100 transition-opacity`}
-                        style={{ width: `${Math.min(segPct, 100)}%` }}
-                        title={`${stage.label}: ${formatWeight(strain[stage.key])}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Fill rate */}
-              <div className="w-16 flex-shrink-0 text-right">
-                <span className={`text-xs font-semibold ${fillColor}`}>
-                  {strain.fill_pct}%
-                </span>
-              </div>
-
-              {/* Demand label */}
-              <div className="w-20 flex-shrink-0 text-right">
-                <span className="text-xs text-gray-500">
-                  {formatWeight(strain.demand_g)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Trimmer Scoreboard (Phase 3) ────────────────────────────────────────────
-
-interface TrimmerStats {
-  trimmer_name: string;
-  session_count: number;
-  avg_grams_per_hour: number;
-  total_flower_g: number;
-  total_trim_g: number;
-  total_waste_g: number;
-  total_minutes: number;
-  waste_pct: number;
-}
-
-function useTrimmerStats() {
-  const [data, setData] = useState<TrimmerStats[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Get last 30 days of completed trim sessions, grouped by trimmer
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const since = thirtyDaysAgo.toISOString().slice(0, 10);
-
-      const { data: raw, error } = await supabase
-        .from('trim_sessions')
-        .select('trimmer_name, grams_per_hour, big_buds_grams, small_buds_grams, trim_grams, waste_grams, minutes_trimmed')
-        .eq('session_status', 'completed')
-        .gte('session_date', since);
-
-      if (error || !raw) { setData([]); return; }
-
-      // Aggregate per trimmer
-      const map = new Map<string, TrimmerStats>();
-      raw.forEach((r: { trimmer_name: string | null; grams_per_hour: number | null; big_buds_grams: number | null; small_buds_grams: number | null; trim_grams: number | null; waste_grams: number | null; minutes_trimmed: number | null }) => {
-        const name = r.trimmer_name || 'Unknown';
-        const existing = map.get(name);
-        const flower = Number(r.big_buds_grams || 0) + Number(r.small_buds_grams || 0);
-        const trim = Number(r.trim_grams || 0);
-        const waste = Number(r.waste_grams || 0);
-        const mins = Number(r.minutes_trimmed || 0);
-        const gph = Number(r.grams_per_hour || 0);
-
-        if (existing) {
-          existing.session_count += 1;
-          existing.total_flower_g += flower;
-          existing.total_trim_g += trim;
-          existing.total_waste_g += waste;
-          existing.total_minutes += mins;
-          // Weighted avg g/hr
-          existing.avg_grams_per_hour = existing.total_minutes > 0
-            ? ((existing.total_flower_g + existing.total_trim_g) / existing.total_minutes) * 60
-            : 0;
-        } else {
-          map.set(name, {
-            trimmer_name: name,
-            session_count: 1,
-            avg_grams_per_hour: gph,
-            total_flower_g: flower,
-            total_trim_g: trim,
-            total_waste_g: waste,
-            total_minutes: mins,
-            waste_pct: 0,
-          });
-        }
-      });
-
-      // Calculate waste %
-      const results = Array.from(map.values()).map(t => {
-        const totalOutput = t.total_flower_g + t.total_trim_g + t.total_waste_g;
-        t.waste_pct = totalOutput > 0 ? (t.total_waste_g / totalOutput) * 100 : 0;
-        return t;
-      });
-
-      // Sort by avg g/hr descending
-      results.sort((a, b) => b.avg_grams_per_hour - a.avg_grams_per_hour);
-      setData(results);
-    } catch {
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetch(); }, [fetch]);
-
-  return { data, loading, refresh: fetch };
-}
-
-function TrimmerScoreboard() {
-  const { data: trimmers, loading } = useTrimmerStats();
-
-  if (loading) return null;
-  if (trimmers.length === 0) return null;
-
-  const maxGph = Math.max(...trimmers.map(t => t.avg_grams_per_hour), 1);
-
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Users className="w-4 h-4 text-gray-400" />
-        <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Trimmer Performance</span>
-        <span className="text-xs text-gray-600 ml-auto">Last 30 days</span>
-      </div>
-
-      <div className="space-y-2">
-        {trimmers.map((t, i) => {
-          const barPct = (t.avg_grams_per_hour / maxGph) * 100;
-          const rankColor = i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-amber-600' : 'text-gray-500';
-
-          return (
-            <div key={t.trimmer_name} className="flex items-center gap-3">
-              {/* Rank */}
-              <div className="w-5 flex-shrink-0 text-center">
-                <span className={`text-xs font-bold ${rankColor}`}>{i + 1}</span>
-              </div>
-
-              {/* Name */}
-              <div className="w-20 flex-shrink-0">
-                <span className="text-xs text-gray-300 font-medium truncate block">{t.trimmer_name}</span>
-              </div>
-
-              {/* Speed bar */}
-              <div className="flex-1 h-4 bg-gray-800/50 rounded overflow-hidden relative">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded opacity-80"
-                  style={{ width: `${barPct}%` }}
-                />
-                <span className="absolute inset-0 flex items-center px-2 text-xs text-white font-semibold">
-                  {Math.round(t.avg_grams_per_hour)} g/hr
-                </span>
-              </div>
-
-              {/* Stats */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="text-right w-14" title="Sessions">
-                  <span className="text-xs text-gray-500">{t.session_count} sess</span>
-                </div>
-                <div className="text-right w-16" title="Total flower output">
-                  <span className="text-xs text-green-400">{formatWeight(t.total_flower_g)}</span>
-                </div>
-                <div className="text-right w-12" title="Waste percentage">
-                  <span className={`text-xs ${t.waste_pct > 5 ? 'text-amber-400' : 'text-gray-500'}`}>
-                    {t.waste_pct.toFixed(1)}% w
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Order Lead Time Widget (Phase 4) ────────────────────────────────────────
-
-interface LeadTimeData {
-  avg_lead_days: number;
-  completed_avg_days: number;
-  open_avg_days: number;
-  total_orders: number;
-  on_time_pct: number;
-}
-
-function useOrderLeadTime() {
-  const [data, setData] = useState<LeadTimeData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Grab recent non-cancelled orders with dates
-      const sixtyDaysAgo = new Date();
-      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-      const since = sixtyDaysAgo.toISOString().slice(0, 10);
-
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select('id, status, created_at, requested_delivery_date, updated_at')
-        .gte('created_at', since)
-        .not('status', 'eq', 'cancelled');
-
-      if (error || !orders) { setData(null); return; }
-
-      const now = new Date();
-      let completedDays: number[] = [];
-      let openDays: number[] = [];
-      let onTime = 0;
-      let total = 0;
-
-      orders.forEach((o: { id: string; status: string; created_at: string | null; requested_delivery_date: string | null; updated_at: string | null }) => {
-        if (!o.created_at) return;
-        const created = new Date(o.created_at);
-
-        if (o.status === 'delivered' && o.updated_at) {
-          const delivered = new Date(o.updated_at);
-          const days = (delivered.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-          completedDays.push(days);
-          total++;
-          if (o.requested_delivery_date) {
-            const requestedDate = new Date(o.requested_delivery_date);
-            if (delivered <= requestedDate) onTime++;
-          }
-        } else {
-          const days = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-          openDays.push(days);
-          total++;
-          if (o.requested_delivery_date) {
-            const requestedDate = new Date(o.requested_delivery_date);
-            if (now <= requestedDate) onTime++;
-          }
-        }
-      });
-
-      const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-      const allDays = [...completedDays, ...openDays];
-
-      setData({
-        avg_lead_days: avg(allDays),
-        completed_avg_days: avg(completedDays),
-        open_avg_days: avg(openDays),
-        total_orders: total,
-        on_time_pct: total > 0 ? (onTime / total) * 100 : 0,
-      });
-    } catch {
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetch(); }, [fetch]);
-
-  return { data, loading };
-}
-
-function OrderLeadTimeWidget() {
-  const { data, loading } = useOrderLeadTime();
-
-  if (loading || !data) return null;
-
-  const kpis = [
-    { label: 'Avg Lead Time', value: `${data.avg_lead_days.toFixed(1)}d`, color: 'text-white', icon: Clock },
-    { label: 'Completed Avg', value: `${data.completed_avg_days.toFixed(1)}d`, color: 'text-green-400', icon: Timer },
-    { label: 'Open Avg Age', value: `${data.open_avg_days.toFixed(1)}d`, color: 'text-amber-400', icon: Timer },
-    { label: 'On-Time Rate', value: `${data.on_time_pct.toFixed(0)}%`, color: data.on_time_pct >= 80 ? 'text-green-400' : data.on_time_pct >= 50 ? 'text-amber-400' : 'text-red-400', icon: Calendar },
-  ];
-
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock className="w-4 h-4 text-gray-400" />
-        <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Order Lead Time</span>
-        <span className="text-xs text-gray-600 ml-auto">Last 60 days · {data.total_orders} orders</span>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {kpis.map(k => {
-          const Icon = k.icon;
-          return (
-            <div key={k.label} className="flex items-center gap-2">
-              <Icon className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
-              <div>
-                <div className={`text-lg font-bold ${k.color}`}>{k.value}</div>
-                <div className="text-xs text-gray-500">{k.label}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Stats Strip ────────────────────────────────────────────────────────────
-
-function StatsStrip({ stats }: { stats: { totalStrains: number; totalOrders: number; overdueOrders: number; stockAlerts: number } }) {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Strains</div>
-        <div className="text-2xl font-bold text-white">{stats.totalStrains}</div>
-      </div>
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Open Orders</div>
-        <div className="text-2xl font-bold text-white">{stats.totalOrders}</div>
-      </div>
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Overdue</div>
-        <div className={`text-2xl font-bold ${stats.overdueOrders > 0 ? 'text-red-400' : 'text-green-400'}`}>
-          {stats.overdueOrders}
-        </div>
-      </div>
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Stock Alerts</div>
-        <div className={`text-2xl font-bold ${stats.stockAlerts > 0 ? 'text-amber-400' : 'text-green-400'}`}>
-          {stats.stockAlerts}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── By Strain Tab (View 1 — expandable rows) ──────────────────────────────
-
-function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOrder: OrderLineItem[] }) {
+function EnhancedByStrainView({
+  byStrain,
+  byOrder,
+  selectedDeliveryDate,
+}: {
+  byStrain: StrainFormatRow[];
+  byOrder: OrderLineItem[];
+  selectedDeliveryDate: string | null;
+}) {
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
+  const weekDates = useMemo(() => getWeekDatesForHeatmap(), []);
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   // Group by strain_id
-  const strainGroups = new Map<string, StrainFormatRow[]>();
-  byStrain.forEach(row => {
-    const key = row.strain_id || 'unknown';
-    if (!strainGroups.has(key)) strainGroups.set(key, []);
-    strainGroups.get(key)!.push(row);
-  });
+  const strainGroups = useMemo(() => {
+    const map = new Map<string, StrainFormatRow[]>();
+    byStrain.forEach(row => {
+      const key = row.strain_id || 'unknown';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(row);
+    });
+    return map;
+  }, [byStrain]);
+
+  // Pre-compute per-strain order data grouped by delivery date
+  const strainOrdersByDay = useMemo(() => {
+    const map = new Map<string, Map<string, OrderLineItem[]>>();
+
+    byOrder.forEach(o => {
+      const strainKey = o.strain_id || 'unknown';
+      if (!map.has(strainKey)) map.set(strainKey, new Map());
+      const byDay = map.get(strainKey)!;
+
+      const deliveryDate = o.scheduled_delivery_date || o.requested_delivery_date || 'no-date';
+      if (!byDay.has(deliveryDate)) byDay.set(deliveryDate, []);
+      byDay.get(deliveryDate)!.push(o);
+    });
+
+    return map;
+  }, [byOrder]);
+
+  // Pre-compute heatmap data per strain
+  const strainHeatmaps = useMemo(() => {
+    const result = new Map<string, { cells: HeatmapCell[]; daysWithDemand: number }>();
+
+    strainGroups.forEach((_, strainId) => {
+      const byDay = strainOrdersByDay.get(strainId);
+      let daysWithDemand = 0;
+
+      const cells: HeatmapCell[] = weekDates.map(date => {
+        const orders = byDay?.get(date) || [];
+        const units = orders.reduce((s, o) => s + o.quantity, 0);
+        if (units > 0) daysWithDemand++;
+        return { date, units, isToday: date === today };
+      });
+
+      result.set(strainId, { cells, daysWithDemand });
+    });
+
+    return result;
+  }, [strainGroups, strainOrdersByDay, weekDates, today]);
 
   function toggleStrain(strainId: string) {
     setExpandedStrains(prev => {
@@ -703,164 +267,237 @@ function ByStrainView({ byStrain, byOrder }: { byStrain: StrainFormatRow[]; byOr
     });
   }
 
-  // Get order detail for a strain
-  function getOrdersForStrain(strainId: string | null) {
-    return byOrder.filter(o => o.strain_id === strainId);
-  }
-
-  /* toggleInfoPanel and infoStrainId no longer needed —
-     BatchInfoPanel now renders inline when strain is expanded */
+  // If a delivery date is selected, filter strain groups to only those with orders on that date
+  const filteredStrainGroups = useMemo(() => {
+    if (!selectedDeliveryDate) return strainGroups;
+    const filtered = new Map<string, StrainFormatRow[]>();
+    strainGroups.forEach((formats, strainId) => {
+      const byDay = strainOrdersByDay.get(strainId);
+      if (byDay?.has(selectedDeliveryDate)) {
+        filtered.set(strainId, formats);
+      }
+    });
+    return filtered;
+  }, [strainGroups, strainOrdersByDay, selectedDeliveryDate]);
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-cult-medium-gray text-left">
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Format</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center">Week</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Needed</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Demand</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Ready</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Pipeline</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Stock</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400"></th>
           </tr>
         </thead>
         <tbody>
-          {Array.from(strainGroups.entries()).map(([strainId, formats]) => {
+          {Array.from(filteredStrainGroups.entries()).map(([strainId, formats]) => {
             const isExpanded = expandedStrains.has(strainId);
             const strainName = formats[0].strain_name;
+            const heatmap = strainHeatmaps.get(strainId);
+            const hasBatchOpportunity = (heatmap?.daysWithDemand || 0) >= 2;
+
+            const totalNeeded = formats.reduce((sum, f) => sum + f.total_units_needed, 0);
+            const totalDemandG = formats.reduce((sum, f) => sum + f.total_demand_g, 0);
+
             const worstUrgency = formats.reduce((worst, f) => {
               const order: Urgency[] = ['overdue', 'urgent', 'soon', 'normal', 'no_date'];
               return order.indexOf(f.urgency) < order.indexOf(worst) ? f.urgency : worst;
             }, 'no_date' as Urgency);
 
+            // Get all orders for this strain, optionally filtered by selected date
+            const byDay = strainOrdersByDay.get(strainId);
+            const allOrders: OrderLineItem[] = [];
+            byDay?.forEach((orders) => allOrders.push(...orders));
+
             return (
               <Fragment key={strainId}>
-                {/* Strain header row — clickable to expand */}
+                {/* Strain header row */}
                 <tr
-                  className="border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/50 cursor-pointer"
+                  className={`border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/50 cursor-pointer transition-colors ${
+                    hasBatchOpportunity ? 'bg-amber-500/[0.03]' : ''
+                  }`}
                   onClick={() => toggleStrain(strainId)}
                 >
                   <td className="px-4 py-3 text-gray-400">
                     {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                   </td>
-                  <td className="px-4 py-3 font-medium text-white">{strainName}</td>
-                  <td className="px-4 py-3 text-gray-400">{formats.length} format{formats.length > 1 ? 's' : ''}</td>
-                  <td className="px-4 py-3 text-right text-white">
-                    {formats.reduce((sum, f) => sum + f.total_units_needed, 0).toLocaleString()}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-white">{strainName}</span>
+                      <span className="text-xs text-gray-600">
+                        {formats.length} format{formats.length > 1 ? 's' : ''}
+                      </span>
+                      {hasBatchOpportunity && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 font-medium">
+                          <Zap className="w-3 h-3" />
+                          batch {heatmap!.daysWithDemand} days
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-white">
-                    {formatWeight(formats.reduce((sum, f) => sum + f.total_demand_g, 0))}
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
+                      {heatmap && <MiniWeekHeatmap cells={heatmap.cells} />}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-white">
-                    <div>{formats[0].ready_lbs.toFixed(1)} lbs</div>
+                  <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="text-white">{formats[0].ready_lbs.toFixed(1)} lbs</div>
                     <div className="text-xs text-gray-500">
                       F:{formatWeight(formats[0].ready_flower_g)} · S:{formatWeight(formats[0].ready_smalls_g)}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-gray-400">
-                    {formats[0].pipeline_lbs > 0 ? (
-                      <div>
-                        <div>{formats[0].pipeline_lbs.toFixed(1)} lbs</div>
-                        <div className="text-xs text-gray-500">
-                          {formats[0].pipeline_bucked_g > 0 && `Bucked: ${formatWeight(formats[0].pipeline_bucked_g)}`}
-                          {formats[0].pipeline_bucked_g > 0 && formats[0].pipeline_binned_g > 0 && ' · '}
-                          {formats[0].pipeline_binned_g > 0 && `Binned: ${formatWeight(formats[0].pipeline_binned_g)}`}
-                        </div>
-                      </div>
-                    ) : '—'}
-                  </td>
                   <td className="px-4 py-3">{stockBadge(formats[0].stock_status)}</td>
                   <td className="px-4 py-3">{urgencyBadge(worstUrgency)}</td>
-                  <td className="px-4 py-3 text-right text-gray-300">
-                    {new Set(formats.flatMap(f => Array(f.order_count))).size > 0 ? formats[0].order_count : '—'}
+                  <td className="px-4 py-3 text-right text-gray-300 tabular-nums">
+                    {formats[0].order_count}
                   </td>
-                  <td className="px-2 py-3"></td>
                 </tr>
 
-                {/* Expanded: format breakdown */}
+                {/* Expanded: Format breakdown */}
                 {isExpanded && formats.map((f, i) => (
-                    <tr key={`${strainId}-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
-                      <td className="px-4 py-2"></td>
-                      <td className="px-4 py-2"></td>
-                      <td className="px-4 py-2 text-gray-300 pl-8">
-                        {f.format_label}
-                        {f.product_category && f.product_category !== 'Flower' && (
-                          <span className="ml-1.5 text-xs text-gray-500">{f.product_category}</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right text-gray-300">{f.total_units_needed.toLocaleString()}</td>
-                      <td className="px-4 py-2 text-right text-gray-300">{formatWeight(f.total_demand_g)}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">
-                        {f.already_packaged_units > 0 && (
-                          <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2"></td>
-                      <td className="px-4 py-2"></td>
-                      <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">{f.order_count}</td>
-                      <td className="px-2 py-2"></td>
-                    </tr>
+                  <tr key={`${strainId}-fmt-${i}`} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
+                    <td className="px-4 py-2"></td>
+                    <td className="px-4 py-2 pl-8 text-gray-300">
+                      {f.format_label}
+                      {f.product_category && f.product_category !== 'Flower' && (
+                        <span className="ml-1.5 text-xs text-gray-500">{f.product_category}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2"></td>
+                    <td className="px-4 py-2 text-right text-gray-300 tabular-nums">
+                      {f.total_units_needed.toLocaleString()}
+                      {f.total_units_assigned > 0 && (
+                        <span className="text-xs text-green-400 ml-1">({f.total_units_assigned} assigned)</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-right text-gray-300 tabular-nums">{formatWeight(f.total_demand_g)}</td>
+                    <td className="px-4 py-2 text-right">
+                      {f.already_packaged_units > 0 && (
+                        <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2"></td>
+                    <td className="px-4 py-2">{urgencyBadge(f.urgency)}</td>
+                    <td className="px-4 py-2 text-right text-gray-400 tabular-nums">{f.order_count}</td>
+                  </tr>
                 ))}
 
-                {/* Batch Info Panel — strain-level inventory breakdown */}
+                {/* Batch Info Panel */}
                 {isExpanded && (
                   <tr className="border-b border-cult-medium-gray/30">
-                    <td colSpan={11} className="p-0">
-                      <BatchInfoPanel
-                        strainId={strainId}
-                        strainName={formats[0].strain_name}
-                      />
+                    <td colSpan={9} className="p-0">
+                      <BatchInfoPanel strainId={strainId} strainName={formats[0].strain_name} />
                     </td>
                   </tr>
                 )}
 
+                {/* Expanded: Orders grouped by delivery day */}
+                {isExpanded && (() => {
+                  // Group orders by delivery date
+                  const ordersByDate = new Map<string, OrderLineItem[]>();
+                  allOrders.forEach(o => {
+                    const date = o.scheduled_delivery_date || o.requested_delivery_date || 'No Date';
+                    if (!ordersByDate.has(date)) ordersByDate.set(date, []);
+                    ordersByDate.get(date)!.push(o);
+                  });
 
-                {/* Expanded: order detail */}
-                {isExpanded && (
-                  <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={11} className="px-8 py-3">
-                      <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">Contributing Orders</div>
-                      <div className="space-y-1">
-                        {getOrdersForStrain(formats[0].strain_id).map(o => (
-                          <div key={o.order_item_id} className="flex items-center gap-4 text-sm text-gray-300">
-                            <span className="text-gray-500 w-20">{o.order_number}</span>
-                            <span className="w-40 truncate">{o.customer_name}</span>
-                            <span className="w-28">{o.format_label}</span>
-                            <span className="w-16 text-right">{o.quantity} units</span>
-                            <span className="w-20 text-right">{formatWeight(o.line_demand_g)}</span>
-                            <span className="w-20">{formatDateShort(o.requested_delivery_date)}</span>
-                            {urgencyBadge(o.urgency)}
-                            {o.batch_number && batchStageBadge(o)}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                )}
+                  // Sort dates chronologically
+                  const sortedDates = Array.from(ordersByDate.keys()).sort((a, b) => {
+                    if (a === 'No Date') return 1;
+                    if (b === 'No Date') return -1;
+                    return a.localeCompare(b);
+                  });
+
+                  return (
+                    <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
+                      <td colSpan={9} className="px-6 py-3">
+                        <div className="text-xs uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5" />
+                          Orders by Delivery Day
+                        </div>
+                        <div className="space-y-3">
+                          {sortedDates.map(date => {
+                            const dateOrders = ordersByDate.get(date)!;
+                            const isToday = date === today;
+                            const totalUnits = dateOrders.reduce((s, o) => s + o.quantity, 0);
+                            const totalRevenue = dateOrders.reduce((s, o) => s + (o.subtotal || 0), 0);
+
+                            return (
+                              <div key={date} className={`rounded-cult border p-3 ${
+                                isToday
+                                  ? 'border-sky-500/30 bg-sky-500/5'
+                                  : 'border-cult-medium-gray/30 bg-cult-dark-gray/30'
+                              }`}>
+                                {/* Day header */}
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-xs font-semibold ${isToday ? 'text-sky-400' : 'text-gray-400'}`}>
+                                      {date === 'No Date' ? 'No Date' : (() => {
+                                        const d = new Date(date + 'T12:00:00');
+                                        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                                      })()}
+                                    </span>
+                                    {isToday && <span className="text-xs text-sky-400 font-medium">Today</span>}
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>{totalUnits} units</span>
+                                    {totalRevenue > 0 && <span>${totalRevenue.toLocaleString()}</span>}
+                                    <span>{dateOrders.length} line{dateOrders.length !== 1 ? 's' : ''}</span>
+                                  </div>
+                                </div>
+
+                                {/* Order rows */}
+                                <div className="space-y-1">
+                                  {dateOrders.map(o => (
+                                    <div key={o.order_item_id} className="flex items-center gap-3 text-sm text-gray-300">
+                                      <span className="text-gray-500 font-mono w-20 flex-shrink-0">{o.order_number}</span>
+                                      <span className="w-36 truncate flex-shrink-0">{o.customer_name}</span>
+                                      <span className="w-24 flex-shrink-0 text-gray-400">{o.format_label}</span>
+                                      <span className="w-16 text-right flex-shrink-0 tabular-nums">{o.quantity} units</span>
+                                      <span className="w-16 text-right flex-shrink-0 tabular-nums text-gray-400">{formatWeight(o.line_demand_g)}</span>
+                                      {urgencyBadge(o.urgency)}
+                                      {o.batch_number && batchStageBadge(o)}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })()}
               </Fragment>
             );
           })}
         </tbody>
       </table>
-      {strainGroups.size === 0 && (
-        <div className="p-8 text-center text-gray-500">No open orders in the production queue.</div>
+      {filteredStrainGroups.size === 0 && (
+        <div className="p-8 text-center text-gray-500">
+          {selectedDeliveryDate
+            ? 'No strains needed for this delivery date.'
+            : 'No open orders in the production queue.'}
+        </div>
       )}
     </div>
   );
 }
 
-// ─── By Order Tab (View 2) ──────────────────────────────────────────────────
+// ─── By Order Tab (kept for secondary view) ─────────────────────────────────
 
 function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
 
-  // Group by order_id
   const orderGroups = new Map<string, OrderLineItem[]>();
   byOrder.forEach(row => {
     if (!orderGroups.has(row.order_id)) orderGroups.set(row.order_id, []);
@@ -877,7 +514,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-cult-medium-gray text-left">
@@ -928,9 +565,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2">
                       <div className="text-gray-300">{item.strain_name}</div>
-                      {item.batch_number && (
-                        <div className="mt-1">{batchStageBadge(item)}</div>
-                      )}
+                      {item.batch_number && <div className="mt-1">{batchStageBadge(item)}</div>}
                     </td>
                     <td className="px-4 py-2 text-gray-400">{item.format_label}</td>
                     <td className="px-4 py-2 text-gray-400">{item.quantity} units</td>
@@ -963,11 +598,11 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
   );
 }
 
-// ─── Summary Tab (View 3 — strain-level fill rates) ─────────────────────────
+// ─── Summary Tab ────────────────────────────────────────────────────────────
 
 function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
+    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-cult-medium-gray text-left">
@@ -1037,41 +672,31 @@ function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
 
 export function ProductionQueue() {
   const { strainSummary, byStrain, byOrder, loading, error, stats, refresh } = useProductionQueue();
+  const { pipeline, deliveryDays, loading: revenueLoading } = useRevenuePipeline();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
-  const [dateFilter, setDateFilter] = useState<DeliveryDateFilter>('this-week');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
+  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
 
-  // Apply delivery-date filter to all three data sets
-  const dateFilteredByOrder = filterByDeliveryDate(byOrder, dateFilter);
-  const dateFilteredByStrain = filterByDeliveryDate(byStrain, dateFilter);
-  const filteredSummary = filterByDeliveryDate(strainSummary, dateFilter);
-
-  // Compute category counts from date-filtered data (so counts update with date filter)
+  // Apply product category filter
   const categoryCounts: Record<string, { lines: number; lbs: number }> = {};
-  dateFilteredByOrder.forEach(o => {
+  byOrder.forEach(o => {
     const cat = o.product_category || 'Flower';
     if (!categoryCounts[cat]) categoryCounts[cat] = { lines: 0, lbs: 0 };
     categoryCounts[cat].lines += 1;
     categoryCounts[cat].lbs += o.line_demand_g / 454;
   });
 
-  // Apply product category filter
   const filteredByOrder = categoryFilter === 'All'
-    ? dateFilteredByOrder
-    : dateFilteredByOrder.filter(o => (o.product_category || 'Flower') === categoryFilter);
+    ? byOrder
+    : byOrder.filter(o => (o.product_category || 'Flower') === categoryFilter);
   const filteredByStrain = categoryFilter === 'All'
-    ? dateFilteredByStrain
-    : dateFilteredByStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
+    ? byStrain
+    : byStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
 
-  // Recompute stats from filtered data
-  const filteredStats = dateFilter === 'all' ? stats : {
-    totalStrains: new Set(filteredSummary.map(s => s.strain_id || s.strain_name)).size,
-    totalOrders: new Set(filteredByOrder.map(o => o.order_id)).size,
-    overdueOrders: new Set(filteredByOrder.filter(o => o.urgency === 'overdue').map(o => o.order_id)).size,
-    stockAlerts: filteredSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready').length,
-  };
+  // Stock alerts
+  const alerts = strainSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready');
 
-  if (loading) {
+  if (loading && revenueLoading) {
     return (
       <div className="p-6 max-w-[1800px] mx-auto">
         <PageSkeleton variant="table" />
@@ -1082,11 +707,11 @@ export function ProductionQueue() {
   if (error) {
     return (
       <div className="p-6 max-w-[1800px] mx-auto">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-cult p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
           <div className="text-red-400 font-medium">Failed to load production queue</div>
           <div className="text-gray-400 text-sm mt-1">{error}</div>
-          <button onClick={refresh} className="mt-4 px-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded hover:bg-cult-dark-gray text-sm text-white">
+          <button onClick={refresh} className="mt-4 px-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded-cult hover:bg-cult-dark-gray text-sm text-white">
             Try Again
           </button>
         </div>
@@ -1100,93 +725,95 @@ export function ProductionQueue() {
     { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
 
-  // Stock alerts strip
-  const alerts = filteredSummary.filter(s => s.stock_status !== 'can_fill' && s.stock_status !== 'ready');
-
   return (
-    <div className="p-6 max-w-[1800px] mx-auto space-y-6">
-      {/* Header */}
+    <div className="p-6 max-w-[1800px] mx-auto space-y-5">
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Production Queue</h1>
-          <p className="text-sm text-gray-400 mt-1">What to package — aggregated demand across all open orders</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {stats.totalOrders} orders · {stats.totalStrains} strains · hit {pipeline.pct}% of weekly target
+          </p>
         </div>
         <button
           onClick={refresh}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray text-gray-300"
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-cult-near-black border border-cult-medium-gray rounded-cult hover:bg-cult-dark-gray text-gray-300"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="space-y-3">
-        <DateFilterStrip value={dateFilter} onChange={setDateFilter} />
+      {/* ── Revenue Pipeline ──────────────────────────────────────────────── */}
+      <RevenuePipeline data={pipeline} />
+
+      {/* ── Delivery Load Balancer ────────────────────────────────────────── */}
+      <DeliveryLoadBalancer
+        days={deliveryDays}
+        selectedDate={selectedDeliveryDate}
+        onSelectDate={setSelectedDeliveryDate}
+      />
+
+      {/* ── Stock Alerts (compact, only if needed) ────────────────────────── */}
+      {alerts.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-cult px-4 py-3">
+          <div className="flex items-center gap-2 text-amber-400 text-sm">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium">Stock:</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {alerts.slice(0, 6).map(a => (
+                <span key={a.strain_id || a.strain_name} className="flex items-center gap-1.5">
+                  <span className="text-white font-medium">{a.strain_name}</span>
+                  <span className={a.stock_status === 'no_stock' ? 'text-red-400' : 'text-amber-400'}>
+                    {a.stock_status === 'no_stock' ? 'None' : `${a.fill_rate_pct}%`}
+                  </span>
+                </span>
+              ))}
+              {alerts.length > 6 && <span className="text-gray-500">+{alerts.length - 6} more</span>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Filters + Tabs Row ────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between border-b border-cult-medium-gray pb-0">
+        {/* Tabs */}
+        <div className="flex items-center gap-1">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-white text-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Category filter (right side) */}
         {activeTab !== 'summary' && (
           <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
         )}
       </div>
 
-      {/* Stats */}
-      <StatsStrip stats={filteredStats} />
-
-      {/* Supply vs Demand Chart */}
-      <SupplyDemandChart byStrain={filteredByStrain} />
-
-      {/* Production Insights Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TrimmerScoreboard />
-        <OrderLeadTimeWidget />
-      </div>
-
-      {/* Stock alerts */}
-      {alerts.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-amber-400 font-medium text-sm mb-2">
-            <AlertTriangle className="w-4 h-4" />
-            Stock Alerts
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {alerts.map(a => (
-              <div key={a.strain_id || a.strain_name} className="flex items-center gap-2 text-sm">
-                <span className="text-white font-medium">{a.strain_name}</span>
-                <span className="text-gray-400">—</span>
-                <span className={a.stock_status === 'no_stock' ? 'text-red-400' : 'text-amber-400'}>
-                  {a.stock_status === 'no_stock' ? 'No stock' : `${a.fill_rate_pct}% fill`}
-                </span>
-                <span className="text-gray-500">({a.total_demand_lbs} lbs needed)</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ── Tab Content (primary work surface) ────────────────────────────── */}
+      {activeTab === 'by-strain' && (
+        <EnhancedByStrainView
+          byStrain={filteredByStrain}
+          byOrder={filteredByOrder}
+          selectedDeliveryDate={selectedDeliveryDate}
+        />
       )}
-
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-cult-medium-gray">
-        {tabs.map(tab => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-white text-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab content */}
-      {activeTab === 'by-strain' && <ByStrainView byStrain={filteredByStrain} byOrder={filteredByOrder} />}
       {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
-      {activeTab === 'summary' && <SummaryView strainSummary={filteredSummary} />}
+      {activeTab === 'summary' && <SummaryView strainSummary={strainSummary} />}
     </div>
   );
 }
