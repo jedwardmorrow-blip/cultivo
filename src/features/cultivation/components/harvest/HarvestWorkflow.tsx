@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Leaf, Plus, Trash2, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Leaf, Plus, Trash2, Scale, AlertTriangle, CheckCircle, ChevronRight, Minus, Snowflake } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { supabase } from '@/lib/supabase';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
@@ -16,7 +16,7 @@ import type { GrowRoom, PlantGroup, HarvestSession, HarvestType } from '../../ty
 
 type Step = 'select-room' | 'record-weights' | 'review';
 
-interface BatchGroup {
+export interface BatchGroup {
   batchRegistryId: string;
   batchNumber: string;
   strainName: string;
@@ -169,8 +169,12 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
     });
   }, []);
 
-  async function handleFinalize(dryRoomId: string | null) {
-    const sessionsToFinalize = Object.values(batchSessionMap);
+  // Finalize only selected batches
+  async function handleFinalize(batchIds: string[], dryRoomId: string | null) {
+    const sessionsToFinalize = batchIds
+      .map((id) => batchSessionMap[id])
+      .filter(Boolean);
+
     for (const session of sessionsToFinalize) {
       const waste = wasteMap[session.batch_registry_id ?? ''] || 0;
       if (waste > 0) {
@@ -183,32 +187,45 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
       await finalizeHarvest(session.id, dryRoomId);
     }
     await reloadSessions();
-    onComplete();
+
+    // If all batches in the room were finalized, complete
+    const remainingActive = batchGroups.filter(
+      (b) => batchSessionMap[b.batchRegistryId] && !batchIds.includes(b.batchRegistryId)
+    );
+    if (remainingActive.length === 0) {
+      onComplete();
+    } else {
+      // Partial finalize — go back to weight recording for remaining
+      await loadExistingSessions();
+      setStep('record-weights');
+    }
   }
 
-  // Build batch-level summaries for review screen
-  const batchSummaries = batchGroups
-    .filter((b) => batchSessionMap[b.batchRegistryId])
-    .map((batch) => {
-      const session = batchSessionMap[batch.batchRegistryId];
-      const totals = batchTotals[batch.batchRegistryId] ?? { weight: 0, plants: 0, flowerWeight: 0, frozenWeight: 0 };
-      return {
-        batch,
-        session,
-        totalWeight: totals.weight,
-        totalPlants: totals.plants,
-        flowerWeight: totals.flowerWeight,
-        frozenWeight: totals.frozenWeight,
-        wasteGrams: wasteMap[batch.batchRegistryId] ?? 0,
-      };
-    });
+  // Build batch-level summaries for review screen — include ALL batches, not just active
+  const batchSummaries = batchGroups.map((batch) => {
+    const session = batchSessionMap[batch.batchRegistryId] ?? null;
+    const totals = batchTotals[batch.batchRegistryId] ?? { weight: 0, plants: 0, flowerWeight: 0, frozenWeight: 0 };
+    const priorPlants = priorHarvestMap[batch.batchRegistryId] ?? 0;
+    return {
+      batch,
+      session,
+      totalWeight: totals.weight,
+      totalPlants: totals.plants,
+      flowerWeight: totals.flowerWeight,
+      frozenWeight: totals.frozenWeight,
+      wasteGrams: wasteMap[batch.batchRegistryId] ?? 0,
+      priorHarvestedPlants: priorPlants,
+      hasEntries: session !== null,
+    };
+  });
 
   const activeBatches = batchGroups.filter((b) => batchSessionMap[b.batchRegistryId]).length;
+  const totalBatches = batchGroups.length;
 
   const stepLabels: Record<Step, string> = {
     'select-room': 'Select Room',
     'record-weights': 'Record Weights',
-    'review': 'Review & Finalize',
+    'review': 'Review',
   };
 
   const stepKeys = Object.keys(stepLabels) as Step[];
@@ -263,13 +280,19 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
           {/* Step 2 header */}
           <div className="border-l-2 border-cult-stage-harvest pl-4">
             <h2 className="text-xs text-cult-stage-harvest uppercase tracking-widest font-bold mb-1">
-              Step 2
+              Step 2 — Record Weights
             </h2>
             <p className="text-cult-silver text-sm">
-              Record weights by batch in{' '}
+              Weigh batches in{' '}
               <span className="text-cult-white font-mono font-bold">{selectedRoom.room_code}</span>
               <span className="text-cult-light-gray"> ({selectedRoom.name})</span>
+              <span className="text-cult-lighter-gray"> · {totalBatches} batch{totalBatches !== 1 ? 'es' : ''}</span>
             </p>
+            {activeBatches > 0 && activeBatches < totalBatches && (
+              <p className="text-xs text-cult-stage-harvest mt-1">
+                {activeBatches} of {totalBatches} batches started — you can review and finalize what&apos;s ready
+              </p>
+            )}
           </div>
 
           {loadingSessions ? (
@@ -293,22 +316,28 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
           </div>
           )}
 
-          {activeBatches > 0 && (
-            <div className="flex gap-3 pt-2">
+          {/* Action bar */}
+          <div className="flex items-center gap-3 pt-2">
+            {activeBatches > 0 && (
               <Button
                 onClick={() => setStep('review')}
-                icon={<CheckCircle className="w-4 h-4" />}
+                icon={<ChevronRight className="w-4 h-4" />}
               >
-                Review & Finalize
+                Review {activeBatches === totalBatches ? 'All' : `${activeBatches}`} Batch{activeBatches !== 1 ? 'es' : ''}
               </Button>
-              <button
-                onClick={() => setStep('select-room')}
-                className="px-6 py-3 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
-              >
-                Back
-              </button>
-            </div>
-          )}
+            )}
+            <button
+              onClick={() => setStep('select-room')}
+              className="px-6 py-3 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+            >
+              Back
+            </button>
+            {activeBatches === 0 && (
+              <span className="text-cult-lighter-gray text-xs ml-2">
+                Start weighing at least one batch to continue
+              </span>
+            )}
+          </div>
         </div>
       )}
 
@@ -367,6 +396,7 @@ function BatchWeightCard({
   const [destination, setDestination] = useState<HarvestType>('flower');
   const [saving, setSaving] = useState(false);
   const [entryError, setEntryError] = useState<string | null>(null);
+  const [showWaste, setShowWaste] = useState(wasteGrams > 0);
 
   // Account for plants already harvested in prior completed sessions
   const cumulativePlants = priorHarvestedPlants + totalPlants;
@@ -406,11 +436,7 @@ function BatchWeightCard({
         currentSession = await onStartBatch(batch.batchRegistryId);
         setCreating(false);
       }
-      // addEntry uses the hook's sessionId, which updates when session prop changes.
-      // But since state update is async, we need to call the service directly for the first entry.
       if (!session) {
-        // Session was just created — addEntry won't work yet because sessionId is still null.
-        // Call service directly with the new session id.
         await cultivationService.createHarvestWeightEntry({
           harvest_session_id: currentSession.id,
           weight_grams: parsedWeight,
@@ -473,6 +499,15 @@ function BatchWeightCard({
                 <span className="text-cult-stage-harvest text-xs font-mono font-semibold">{formatWeight(totalWeight)} recorded</span>
               </>
             )}
+            {frozenWeight > 0 && (
+              <>
+                <span className="text-cult-medium-gray">·</span>
+                <span className="text-cyan-400 text-xs font-mono font-semibold flex items-center gap-1">
+                  <Snowflake className="w-3 h-3" />
+                  {formatWeight(frozenWeight)} FF
+                </span>
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -480,6 +515,11 @@ function BatchWeightCard({
             <span className="flex items-center gap-1.5 bg-green-950/40 border border-green-800 text-green-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1">
               <CheckCircle className="w-3.5 h-3.5" />
               Done
+            </span>
+          )}
+          {!isComplete && entries.length > 0 && (
+            <span className="flex items-center gap-1.5 bg-cult-stage-harvest/10 border border-cult-stage-harvest/40 text-cult-stage-harvest text-xs font-bold uppercase tracking-wider px-2.5 py-1">
+              Partial
             </span>
           )}
         </div>
@@ -626,23 +666,44 @@ function BatchWeightCard({
         </div>
       )}
 
-      {/* Waste input */}
-      {session && (
-        <div className="mt-4 flex items-end gap-3">
-          <div>
-            <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-1 font-medium">
-              Waste (g) <span className="text-cult-medium-gray normal-case">— optional</span>
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={wasteGrams || ''}
-              onChange={(e) => onWasteChange(batch.batchRegistryId, parseFloat(e.target.value) || 0)}
-              placeholder="0"
-              className="w-36 bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm font-mono focus:outline-none focus:border-cult-lighter-gray transition-colors"
-            />
-          </div>
+      {/* Waste input — always visible when form is open, not gated on session */}
+      {formOpen && entries.length > 0 && (
+        <div className="mt-3">
+          {!showWaste ? (
+            <button
+              onClick={() => setShowWaste(true)}
+              className="flex items-center gap-1.5 text-xs text-cult-lighter-gray hover:text-cult-silver transition-colors uppercase tracking-wider"
+            >
+              <Plus className="w-3 h-3" />
+              Add Waste
+            </button>
+          ) : (
+            <div className="flex items-end gap-3 bg-cult-black/30 border border-cult-charcoal p-3">
+              <div>
+                <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-1 font-medium">
+                  Waste (g) <span className="text-cult-medium-gray normal-case">— stems, leaves, etc.</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={wasteGrams || ''}
+                  onChange={(e) => onWasteChange(batch.batchRegistryId, parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                  className="w-36 bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm font-mono focus:outline-none focus:border-cult-lighter-gray transition-colors"
+                />
+              </div>
+              {wasteGrams === 0 && (
+                <button
+                  onClick={() => setShowWaste(false)}
+                  className="text-cult-medium-gray hover:text-cult-lighter-gray transition-colors p-2"
+                  title="Remove waste"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
