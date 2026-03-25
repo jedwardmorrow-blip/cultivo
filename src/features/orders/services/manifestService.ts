@@ -135,6 +135,7 @@ export async function generateManifestData(
         quantity,
         unit_price,
         subtotal,
+        batch_id,
         products:product_id (
           name,
           strain,
@@ -208,6 +209,24 @@ export async function generateManifestData(
     });
   }
 
+  // Fetch batch numbers for items that have batch_id set directly (not via package assignment)
+  const directBatchIds = items
+    .filter(item => item.batch_id && !assignmentsMap.has(item.id))
+    .map(item => item.batch_id!)
+    .filter((id, i, arr) => arr.indexOf(id) === i);
+
+  let batchRegistryMap = new Map<string, string>();
+  if (directBatchIds.length > 0) {
+    const { data: batchData } = await supabase
+      .from('batch_registry')
+      .select('id, batch_number')
+      .in('id', directBatchIds);
+
+    batchData?.forEach(b => {
+      batchRegistryMap.set(b.id, b.batch_number);
+    });
+  }
+
   const lineItems: ManifestLineItem[] = items.map((item, index) => {
     const product = item.products;
     const assignments = assignmentsMap.get(item.id) || [];
@@ -224,6 +243,11 @@ export async function generateManifestData(
         batchNumber = inventory.batch_number || inventory.batch;
         netWeight = inventory.net_weight || 0;
       }
+    }
+
+    // Fallback: if no package assignment but order item has a batch_id, use that
+    if (!batchNumber && item.batch_id) {
+      batchNumber = batchRegistryMap.get(item.batch_id) || null;
     }
 
     const grossWeight = product?.gross_weight || 0;

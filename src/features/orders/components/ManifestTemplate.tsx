@@ -276,6 +276,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
               <tr className="border-b-2 border-black">
                 <th className="border-r border-black p-2 text-left font-bold">#</th>
                 <th className="border-r border-black p-2 text-left font-bold">Item Description</th>
+                <th className="border-r border-black p-2 text-left font-bold">Batch #</th>
                 <th className="border-r border-black p-2 text-right font-bold">Qty</th>
                 <th className="border-r border-black p-2 text-right font-bold">Unit Price</th>
                 <th className="border-r border-black p-2 text-right font-bold">Net Wt (g)</th>
@@ -286,8 +287,8 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
             <tbody>
               {manifestData.line_items.map((item, index) => {
                 const productDisplay = item.strain ? `${item.strain}` : item.product_name;
-                const packageInfo = item.package_id && item.batch_number
-                  ? `Package: ${item.package_id} | Batch: ${item.batch_number}`
+                const packageInfo = item.package_id
+                  ? `Pkg: ${item.package_id}`
                   : '';
 
                 return (
@@ -298,6 +299,9 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                       {packageInfo && (
                         <div className="text-xs text-cult-text-muted mt-0.5">{packageInfo}</div>
                       )}
+                    </td>
+                    <td className="border-r border-black p-2 align-top font-mono text-xs">
+                      {item.batch_number || '—'}
                     </td>
                     <td className="border-r border-black p-2 text-right align-top">
                       {item.quantity} {item.unit}
@@ -325,11 +329,12 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                   <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="border-r border-black p-2">&nbsp;</td>
+                  <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="p-2">&nbsp;</td>
                 </tr>
               ))}
               <tr className="border-t-2 border-black">
-                <td colSpan={6} className="border-r border-black p-2 text-right font-bold">Total</td>
+                <td colSpan={7} className="border-r border-black p-2 text-right font-bold">Total</td>
                 <td className="p-2 text-right font-bold">${manifestData.total_amount.toFixed(2)}</td>
               </tr>
             </tbody>

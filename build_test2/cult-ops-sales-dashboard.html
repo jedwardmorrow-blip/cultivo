@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cult Ops — Sales Inventory Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        cult: {
+          bg: '#0a0a0a',
+          card: '#0e0e0e',
+          card2: '#111111',
+          surface: '#141414',
+          border: '#1e1e1e',
+          border2: '#1c1c1c',
+          border3: '#161616',
+          muted: '#2e2e2e',
+          subtle: '#1a1a1a',
+        },
+        teal: {
+          DEFAULT: '#22c55e',
+          light: '#4ade80',
+        },
+      },
+      fontFamily: {
+        mont: ['Montserrat', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        inter: ['Inter', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease forwards',
+        'slide-in': 'slideIn 0.3s ease forwards',
+        'slide-out': 'slideOut 0.2s ease forwards',
+        'expand-in': 'expandIn 0.25s ease forwards',
+      },
+      keyframes: {
+        fadeIn: { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        slideIn: { from: { transform: 'translateX(100%)' }, to: { transform: 'translateX(0)' } },
+        slideOut: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(100%)' } },
+        expandIn: { from: { opacity: '0', maxHeight: '0' }, to: { opacity: '1', maxHeight: '500px' } },
+      },
+    },
+  },
+}
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif; background: #0a0a0a; color: #f8f8f8; min-height: 100vh; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #141414; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useCallback, useEffect, useRef } = React;
+
+// ============================================================
+// DATA — enriched with stage-level + grade detail
+// ============================================================
+const DATA = {
+  summary: {
+    totals: {
+      sellable_flower_grams: 12731.7,
+      sellable_smalls_grams: 10260.4,
+      packaged_units: 992,
+      pipeline_grams: 240376.7,
+      byproduct_grams: 59446.8,
+      total_sellable_grams: 22992.1,
+      active_demand_revenue: 425972.77,
+      active_orders: 442
+    },
+    stage_totals: { binned: 208529.7, bucked: 31847, trimmed: 22992.1, packaged: 992, byproduct: 59446.8 },
+    health_distribution: { low: 17, healthy: 14, warning: 1, critical: 4 },
+    strain_count: { total: 36, with_active_demand: 28, supply_only: 8 }
+  },
+  strains: [
+    { strain: "Animal Tsunami", sellable_flower_grams: 384.0, sellable_smalls_grams: 15.5, packaged_units: 119, pipeline_grams: 16299.9, byproduct_grams: 5836.0, demand_packaged_units: 683, demand_bulk_flower_qty: 6, demand_bulk_smalls_qty: 1, total_demand_revenue: 36900.2, total_orders: 38, supply_health: "low",
+      stages: { binned: 13568.9, bucked: 2731, trimmed: 399.5, packaged: 119, byproduct: 5836 }, primary_grade: "CULT" },
+    { strain: "Orange Sherb", sellable_flower_grams: 561.0, sellable_smalls_grams: 95.7, packaged_units: 50, pipeline_grams: 6311.0, byproduct_grams: 3366.8, demand_packaged_units: 864, demand_bulk_flower_qty: 17, demand_bulk_smalls_qty: 0, total_demand_revenue: 35160.0, total_orders: 40, supply_health: "low",
+      stages: { binned: 2807, bucked: 3504, trimmed: 656.7, packaged: 50, byproduct: 3366.8 }, primary_grade: "B" },
+    { strain: "Capulator Junky", sellable_flower_grams: 0, sellable_smalls_grams: 1816.0, packaged_units: 245, pipeline_grams: 7846.3, byproduct_grams: 1764.0, demand_packaged_units: 495, demand_bulk_flower_qty: 3, demand_bulk_smalls_qty: 0, total_demand_revenue: 33644.7, total_orders: 23, supply_health: "low",
+      stages: { binned: 7846.3, bucked: 0, trimmed: 1816, packaged: 245, byproduct: 1764 }, primary_grade: "CULT" },
+    { strain: "Swamp Water Fumez", sellable_flower_grams: 510.0, sellable_smalls_grams: 10.0, packaged_units: 57, pipeline_grams: 9187.0, byproduct_grams: 2758.0, demand_packaged_units: 1021, demand_bulk_flower_qty: 3, demand_bulk_smalls_qty: 1, total_demand_revenue: 33222.18, total_orders: 46, supply_health: "low",
+      stages: { binned: 8043, bucked: 1144, trimmed: 520, packaged: 57, byproduct: 2758 }, primary_grade: "B" },
+    { strain: "Dog Walker", sellable_flower_grams: 990.4, sellable_smalls_grams: 274.0, packaged_units: 0, pipeline_grams: 14136.0, byproduct_grams: 4107.0, demand_packaged_units: 800, demand_bulk_flower_qty: 3, demand_bulk_smalls_qty: 0, total_demand_revenue: 28580.0, total_orders: 35, supply_health: "low",
+      stages: { binned: 14136, bucked: 0, trimmed: 1264.4, packaged: 0, byproduct: 4107 }, primary_grade: "B" },
+    { strain: "Black Maple", sellable_flower_grams: 1495.9, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 4966.0, byproduct_grams: 2982.0, demand_packaged_units: 815, demand_bulk_flower_qty: 3, demand_bulk_smalls_qty: 3, total_demand_revenue: 28030.15, total_orders: 33, supply_health: "low",
+      stages: { binned: 4966, bucked: 0, trimmed: 1495.9, packaged: 0, byproduct: 2982 }, primary_grade: "CULT" },
+    { strain: "Gas Face", sellable_flower_grams: 425.5, sellable_smalls_grams: 0, packaged_units: 1, pipeline_grams: 13226.0, byproduct_grams: 4963.0, demand_packaged_units: 775, demand_bulk_flower_qty: 3, demand_bulk_smalls_qty: 1, total_demand_revenue: 26910.7, total_orders: 33, supply_health: "low",
+      stages: { binned: 13226, bucked: 0, trimmed: 425.5, packaged: 1, byproduct: 4963 }, primary_grade: "B" },
+    { strain: "Stay Puft", sellable_flower_grams: 0, sellable_smalls_grams: 23.6, packaged_units: 0, pipeline_grams: 6760.0, byproduct_grams: 5052.0, demand_packaged_units: 384, demand_bulk_flower_qty: 16, demand_bulk_smalls_qty: 0, total_demand_revenue: 19840.0, total_orders: 20, supply_health: "low",
+      stages: { binned: 1322, bucked: 5438, trimmed: 23.6, packaged: 0, byproduct: 5052 }, primary_grade: "U" },
+    { strain: "Magic Marker", sellable_flower_grams: 1558.0, sellable_smalls_grams: 1000.0, packaged_units: 20, pipeline_grams: 4464.0, byproduct_grams: 3116.0, demand_packaged_units: 623, demand_bulk_flower_qty: 5, demand_bulk_smalls_qty: 1, total_demand_revenue: 19700.6, total_orders: 33, supply_health: "low",
+      stages: { binned: 4464, bucked: 0, trimmed: 2558, packaged: 20, byproduct: 3116 }, primary_grade: "B" },
+    { strain: "Lemondary", sellable_flower_grams: 2856.0, sellable_smalls_grams: 360.0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 4335.0, demand_packaged_units: 192, demand_bulk_flower_qty: 16748, demand_bulk_smalls_qty: 0, total_demand_revenue: 19051.48, total_orders: 18, supply_health: "low",
+      stages: { binned: 0, bucked: 0, trimmed: 3216, packaged: 0, byproduct: 4335 }, primary_grade: "B" },
+    { strain: "Peanut Butter Breath", sellable_flower_grams: 349.0, sellable_smalls_grams: 326.0, packaged_units: 0, pipeline_grams: 10636.0, byproduct_grams: 801.0, demand_packaged_units: 384, demand_bulk_flower_qty: 12, demand_bulk_smalls_qty: 0, total_demand_revenue: 17680.0, total_orders: 13, supply_health: "low",
+      stages: { binned: 6924, bucked: 3712, trimmed: 675, packaged: 0, byproduct: 801 }, primary_grade: "B" },
+    { strain: "Cherry Paloma", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 5, pipeline_grams: 0, byproduct_grams: 1816.0, demand_packaged_units: 128, demand_bulk_flower_qty: 19, demand_bulk_smalls_qty: 0, total_demand_revenue: 16750.0, total_orders: 14, supply_health: "low",
+      stages: { binned: 0, bucked: 0, trimmed: 0, packaged: 5, byproduct: 1816 }, primary_grade: "U" },
+    { strain: "Blue Pave", sellable_flower_grams: 246.0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 5984.0, byproduct_grams: 2250.0, demand_packaged_units: 64, demand_bulk_flower_qty: 25, demand_bulk_smalls_qty: 0, total_demand_revenue: 13920.0, total_orders: 9, supply_health: "low",
+      stages: { binned: 5984, bucked: 0, trimmed: 246, packaged: 0, byproduct: 2250 }, primary_grade: "B" },
+    { strain: "Z Marker", sellable_flower_grams: 405.0, sellable_smalls_grams: 119.7, packaged_units: 218, pipeline_grams: 23558.0, byproduct_grams: 958.0, demand_packaged_units: 128, demand_bulk_flower_qty: 36764, demand_bulk_smalls_qty: 0, total_demand_revenue: 13846.76, total_orders: 12, supply_health: "healthy",
+      stages: { binned: 23558, bucked: 0, trimmed: 524.7, packaged: 218, byproduct: 958 }, primary_grade: "B" },
+    { strain: "Chemlatto", sellable_flower_grams: 104.0, sellable_smalls_grams: 0, packaged_units: 10, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 384, demand_bulk_flower_qty: 2, demand_bulk_smalls_qty: 0, total_demand_revenue: 12900.0, total_orders: 13, supply_health: "low",
+      stages: { binned: 0, bucked: 0, trimmed: 104, packaged: 10, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Georgia Apple Pie", sellable_flower_grams: 0, sellable_smalls_grams: 116.0, packaged_units: 185, pipeline_grams: 12437.0, byproduct_grams: 3740.0, demand_packaged_units: 224, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 11670.0, total_orders: 11, supply_health: "warning",
+      stages: { binned: 11267, bucked: 1170, trimmed: 116, packaged: 185, byproduct: 3740 }, primary_grade: "U" },
+    { strain: "Flavor Flav", sellable_flower_grams: 496.0, sellable_smalls_grams: 278.0, packaged_units: 52, pipeline_grams: 14563.5, byproduct_grams: 3173.5, demand_packaged_units: 160, demand_bulk_flower_qty: 1, demand_bulk_smalls_qty: 0, total_demand_revenue: 10100.0, total_orders: 8, supply_health: "low",
+      stages: { binned: 14563.5, bucked: 0, trimmed: 774, packaged: 52, byproduct: 3173.5 }, primary_grade: "B" },
+    { strain: "Bananaconda", sellable_flower_grams: 96.0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 25, demand_bulk_smalls_qty: 0, total_demand_revenue: 10000, total_orders: 1, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 96, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Pie Scream", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 1010.0, demand_packaged_units: 320, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 8820.0, total_orders: 10, supply_health: "critical",
+      stages: { binned: 0, bucked: 0, trimmed: 0, packaged: 0, byproduct: 1010 }, primary_grade: "U" },
+    { strain: "Violet Fog", sellable_flower_grams: 658.0, sellable_smalls_grams: 758.0, packaged_units: 30, pipeline_grams: 11689.0, byproduct_grams: 1170.0, demand_packaged_units: 192, demand_bulk_flower_qty: 1, demand_bulk_smalls_qty: 0, total_demand_revenue: 8400.0, total_orders: 12, supply_health: "low",
+      stages: { binned: 10629, bucked: 1060, trimmed: 1416, packaged: 30, byproduct: 1170 }, primary_grade: "U" },
+    { strain: "Z Chem", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 20314, demand_bulk_smalls_qty: 0, total_demand_revenue: 6068.64, total_orders: 3, supply_health: "critical",
+      stages: { binned: 0, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Bananaconda Smalls", sellable_flower_grams: 0, sellable_smalls_grams: 1306.0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 1, total_demand_revenue: 5880.0, total_orders: 1, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 1306, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Cherry Pancakes", sellable_flower_grams: 0, sellable_smalls_grams: 1500.0, packaged_units: 0, pipeline_grams: 5538.0, byproduct_grams: 1500.0, demand_packaged_units: 96, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 4920.0, total_orders: 4, supply_health: "healthy",
+      stages: { binned: 5538, bucked: 0, trimmed: 1500, packaged: 0, byproduct: 1500 }, primary_grade: "C" },
+    { strain: "Banana Daddy", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 12750.0, byproduct_grams: 0, demand_packaged_units: 128, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 3760.0, total_orders: 5, supply_health: "healthy",
+      stages: { binned: 12750, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Cream Cake", sellable_flower_grams: 50.0, sellable_smalls_grams: 47.9, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 64, demand_bulk_flower_qty: 1, demand_bulk_smalls_qty: 0, total_demand_revenue: 3340.0, total_orders: 3, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 97.9, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Pancake Batter", sellable_flower_grams: 0, sellable_smalls_grams: 2180.0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 1, total_demand_revenue: 1890.0, total_orders: 1, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 2180, packaged: 0, byproduct: 0 }, primary_grade: "D" },
+    { strain: "Gas Pedal", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 12660.0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 1140.0, total_orders: 2, supply_health: "healthy",
+      stages: { binned: 12660, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Georgia Pie", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 270.0, total_orders: 2, supply_health: "critical",
+      stages: { binned: 0, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Cult Classic", sellable_flower_grams: 58.0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 58, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Maple Bar", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 8414.0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 8414, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Violet Fog (Light Dep)", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 8505.0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 8505, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Thin Mintz", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "critical",
+      stages: { binned: 0, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+    { strain: "Creep N Crawl", sellable_flower_grams: 396.9, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 396.9, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Lemon Cherry", sellable_flower_grams: 42.0, sellable_smalls_grams: 1988.0, packaged_units: 0, pipeline_grams: 17197.0, byproduct_grams: 3449.0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 12567, bucked: 4630, trimmed: 2030, packaged: 0, byproduct: 3449 }, primary_grade: "C" },
+    { strain: "ChemStar", sellable_flower_grams: 0, sellable_smalls_grams: 96.0, packaged_units: 0, pipeline_grams: 0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 0, bucked: 0, trimmed: 96, packaged: 0, byproduct: 0 }, primary_grade: "B" },
+    { strain: "Capulator Smalls", sellable_flower_grams: 0, sellable_smalls_grams: 0, packaged_units: 0, pipeline_grams: 7150.0, byproduct_grams: 0, demand_packaged_units: 0, demand_bulk_flower_qty: 0, demand_bulk_smalls_qty: 0, total_demand_revenue: 0, total_orders: 0, supply_health: "healthy",
+      stages: { binned: 7150, bucked: 0, trimmed: 0, packaged: 0, byproduct: 0 }, primary_grade: "U" },
+  ]
+};
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const TEAL = '#22c55e';
+const TEAL_LIGHT = '#4ade80';
+const HEALTH_COLORS = {
+  critical: { bg: '#3f0e0e', text: '#ff6b6b', border: '#5a1a1a', label: 'Critical' },
+  low:      { bg: '#3f2a0e', text: '#ffb347', border: '#5a3a1a', label: 'Low' },
+  warning:  { bg: '#3f3a0e', text: '#ffd93d', border: '#5a521a', label: 'Warning' },
+  healthy:  { bg: '#0e3f1a', text: '#22c55e', border: '#1a5a2a', label: 'Healthy' }
+};
+const GRADE_COLORS = {
+  CULT: { bg: '#1a0a2e', text: '#a855f7', border: '#2d1650', label: 'CULT' },
+  B:    { bg: '#0a1a2e', text: '#60a5fa', border: '#102850', label: 'B Grade' },
+  C:    { bg: '#1a1a0a', text: '#facc15', border: '#2e2e10', label: 'C Grade' },
+  D:    { bg: '#1a1a1a', text: '#888888', border: '#2e2e2e', label: 'D Grade' },
+  U:    { bg: '#111111', text: '#555555', border: '#1e1e1e', label: 'Ungraded' },
+};
+const STAGE_COLORS = { binned: '#3b82f6', bucked: '#8b5cf6', trimmed: '#f59e0b', packaged: '#22c55e', byproduct: '#525252' };
+
+const fmt = {
+  g: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v).toLocaleString(),
+  n: v => v.toLocaleString(),
+  $: v => '$' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : Math.round(v).toLocaleString()),
+  $full: v => '$' + Math.round(v).toLocaleString()
+};
+
+// ============================================================
+// BATCH DATA
+// ============================================================
+const BATCH_DATA = {
+  "Animal Tsunami": [
+    { batch: "AT-2501A", stage: "binned", state: "processing", grams: 8234.5, thc: null, pkg_date: null, age_days: 12, harvest: "Jan 15",
+      stages: { binned: { w: 8234.5, a: 8234.5 } } },
+    { batch: "AT-2501B", stage: "bucked", state: "ready", grams: 2731, thc: 28.4, pkg_date: null, age_days: 18, harvest: "Jan 10",
+      stages: { binned: { w: 5334.4, a: 5334.4 }, bucked: { w: 2731, a: 2731 } } },
+    { batch: "AT-2412C", stage: "trimmed", state: "available", grams: 399.5, thc: 31.2, pkg_date: "2024-12-20", age_days: 45, harvest: "Dec 05",
+      stages: { trimmed: { w: 399.5, a: 399.5 }, packaged: { w: 119, a: 119 } } }
+  ],
+  "Orange Sherb": [
+    { batch: "OS-2501A", stage: "binned", state: "processing", grams: 2807, thc: null, pkg_date: null, age_days: 8, harvest: "Jan 20",
+      stages: { binned: { w: 2807, a: 2807 } } },
+    { batch: "OS-2412B", stage: "bucked", state: "drying", grams: 3504, thc: 26.8, pkg_date: null, age_days: 30, harvest: "Dec 18",
+      stages: { bucked: { w: 3504, a: 3504 }, trimmed: { w: 656.7, a: 656.7 } } }
+  ],
+  "Capulator Junky": [
+    { batch: "CJ-2501A", stage: "binned", state: "processing", grams: 7846.3, thc: null, pkg_date: null, age_days: 6, harvest: "Jan 22",
+      stages: { binned: { w: 7846.3, a: 7846.3 } } },
+    { batch: "CJ-2412B", stage: "trimmed", state: "available", grams: 1816, thc: 29.1, pkg_date: "2024-12-15", age_days: 50, harvest: "Nov 28",
+      stages: { trimmed: { w: 1816, a: 1816 }, packaged: { w: 245, a: 245 } } }
+  ],
+  "Black Maple": [
+    { batch: "BM-2501A", stage: "binned", state: "processing", grams: 4966, thc: null, pkg_date: null, age_days: 10, harvest: "Jan 18",
+      stages: { binned: { w: 4966, a: 4966 } } },
+    { batch: "BM-2412B", stage: "trimmed", state: "available", grams: 1495.9, thc: 32.5, pkg_date: null, age_days: 38, harvest: "Dec 10",
+      stages: { trimmed: { w: 1495.9, a: 1495.9 } } }
+  ]
+};
+const BATCH_STAGE_LABELS = { binned: 'BIN', bucked: 'BUCK', trimmed: 'TRIM', packaged: 'PKG' };
+const BATCH_STATE_LABELS = { processing: 'Processing', drying: 'Drying', curing: 'Curing', ready: 'Ready', available: 'Available' };
+
+// ============================================================
+// SVG chart helpers
+// ============================================================
+function describeArc(x, y, r, startAngle, endAngle) {
+  const rad = a => (a - 90) * Math.PI / 180;
+  const sx = x + r * Math.cos(rad(startAngle));
+  const sy = y + r * Math.sin(rad(startAngle));
+  const ex = x + r * Math.cos(rad(endAngle));
+  const ey = y + r * Math.sin(rad(endAngle));
+  const large = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${sx} ${sy} A ${r} ${r} 0 ${large} 1 ${ex} ${ey}`;
+}
+
+function DonutChart({ segments, size = 120, strokeWidth = 14, label }) {
+  const r = (size - strokeWidth) / 2;
+  const cx = size / 2, cy = size / 2;
+  let current = 0;
+  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e1e1e" strokeWidth={strokeWidth} />
+      {segments.map((seg, i) => {
+        if (seg.value === 0) return null;
+        const angle = (seg.value / total) * 360;
+        const path = describeArc(cx, cy, r, current, current + angle - 0.5);
+        current += angle;
+        return <path key={i} d={path} fill="none" stroke={seg.color} strokeWidth={strokeWidth} strokeLinecap="round" />;
+      })}
+      {label && (
+        <>
+          <text x={cx} y={cy - 6} textAnchor="middle" className="fill-[#f8f8f8] text-[16px] font-extrabold font-mont">{label.value}</text>
+          <text x={cx} y={cy + 10} textAnchor="middle" className="fill-[#555] text-[8px] font-bold font-mont tracking-wider">{label.sub}</text>
+        </>
+      )}
+    </svg>
+  );
+}
+
+// ============================================================
+// Badge components
+// ============================================================
+function HealthBadge({ status, size = 'sm' }) {
+  const hc = HEALTH_COLORS[status] || HEALTH_COLORS.healthy;
+  const isSmall = size === 'sm';
+  return (
+    <span
+      className={`inline-flex items-center font-bold font-inter rounded-full whitespace-nowrap ${isSmall ? 'text-[9px] px-[6px] py-[1px]' : 'text-[10px] px-2 py-[2px]'}`}
+      style={{ background: hc.bg, color: hc.text, border: `1px solid ${hc.border}` }}
+    >{hc.label}</span>
+  );
+}
+
+function GradeBadge({ grade, size = 'sm' }) {
+  const gc = GRADE_COLORS[grade] || GRADE_COLORS.U;
+  const isSmall = size === 'sm';
+  return (
+    <span
+      className={`inline-flex items-center font-bold font-inter rounded-full whitespace-nowrap ${isSmall ? 'text-[9px] px-[6px] py-[1px]' : 'text-[10px] px-2 py-[2px]'}`}
+      style={{ background: gc.bg, color: gc.text, border: `1px solid ${gc.border}` }}
+    >{gc.label}</span>
+  );
+}
+
+// ============================================================
+// HeroCards
+// ============================================================
+function HeroCards() {
+  const t = DATA.summary.totals;
+  const pct = Math.round((t.total_sellable_grams / (t.total_sellable_grams + t.pipeline_grams)) * 100);
+  const hd = DATA.summary.health_distribution;
+  const healthTotal = Object.values(hd).reduce((a, b) => a + b, 0);
+  const cards = [
+    { label: 'SELLABLE INVENTORY', value: fmt.g(t.total_sellable_grams) + 'g', sub: `${fmt.n(t.packaged_units)} pkgd · ${fmt.g(t.sellable_flower_grams)}g flower · ${fmt.g(t.sellable_smalls_grams)}g smalls` },
+    { label: 'PIPELINE', value: fmt.g(t.pipeline_grams) + 'g', sub: `${pct}% sellable · ${fmt.g(t.byproduct_grams)}g byproduct` },
+    { label: 'ACTIVE DEMAND', value: fmt.$(t.active_demand_revenue), sub: `${fmt.n(t.active_orders)} orders · ${DATA.summary.strain_count.with_active_demand} strains` }
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-3 mb-4">
+      {cards.map((c, i) => (
+        <div key={i} className="rounded-xl p-4 border border-cult-border bg-cult-card">
+          <div className="text-[9px] font-bold text-[#444] tracking-[0.1em] mb-1">{c.label}</div>
+          <div className="text-[22px] font-extrabold text-[#f8f8f8] font-mont leading-tight">{c.value}</div>
+          <div className="text-[10px] text-[#555] mt-1">{c.sub}</div>
+          {i === 0 && (
+            <div className="flex gap-[3px] mt-2 h-[3px] rounded-full overflow-hidden">
+              <div className="rounded-full" style={{ width: `${(t.sellable_flower_grams / t.total_sellable_grams) * 100}%`, background: TEAL }} />
+              <div className="rounded-full" style={{ width: `${(t.sellable_smalls_grams / t.total_sellable_grams) * 100}%`, background: TEAL_LIGHT }} />
+              <div className="rounded-full" style={{ width: `${(t.packaged_units * 3.5 / t.total_sellable_grams) * 100}%`, background: '#065f46' }} />
+            </div>
+          )}
+          {i === 2 && (
+            <div className="flex gap-[2px] mt-2 h-[3px] rounded-full overflow-hidden">
+              {['critical', 'low', 'warning', 'healthy'].map(k => (
+                <div key={k} className="rounded-full" style={{ width: `${(hd[k] / healthTotal) * 100}%`, background: HEALTH_COLORS[k].text }} />
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// InventoryBreakdown
+// ============================================================
+function InventoryBreakdown() {
+  const t = DATA.summary.totals;
+  const segments = [
+    { label: 'Flower', value: t.sellable_flower_grams, color: TEAL },
+    { label: 'Smalls', value: t.sellable_smalls_grams, color: TEAL_LIGHT },
+    { label: 'Packaged', value: t.packaged_units * 3.5, color: '#065f46' }
+  ];
+  return (
+    <div className="rounded-xl p-4 border border-cult-border bg-cult-card">
+      <div className="text-[9px] font-bold text-[#444] tracking-[0.1em] mb-3">INVENTORY BREAKDOWN</div>
+      <div className="flex items-center gap-4">
+        <DonutChart segments={segments} size={100} strokeWidth={12} label={{ value: fmt.g(t.total_sellable_grams), sub: 'GRAMS' }} />
+        <div className="flex flex-col gap-2">
+          {segments.map((s, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: s.color }} />
+              <span className="text-[10px] text-[#888]">{s.label}</span>
+              <span className="text-[11px] font-bold text-[#c8c8c8]">{fmt.g(s.value)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// PipelineOverview
+// ============================================================
+function PipelineOverview() {
+  const st = DATA.summary.stage_totals;
+  const total = st.binned + st.bucked + st.trimmed;
+  const stages = [
+    { label: 'Binned', value: st.binned, color: STAGE_COLORS.binned },
+    { label: 'Bucked', value: st.bucked, color: STAGE_COLORS.bucked },
+    { label: 'Trimmed', value: st.trimmed, color: STAGE_COLORS.trimmed },
+  ];
+  return (
+    <div className="rounded-xl p-4 border border-cult-border bg-cult-card">
+      <div className="text-[9px] font-bold text-[#444] tracking-[0.1em] mb-3">PIPELINE BY STAGE</div>
+      <div className="flex flex-col gap-[10px]">
+        {stages.map((s, i) => {
+          const pct = total > 0 ? (s.value / total) * 100 : 0;
+          return (
+            <div key={i}>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] text-[#888]">{s.label}</span>
+                <span className="text-[11px] font-bold text-[#c8c8c8]">{fmt.g(s.value)}g</span>
+              </div>
+              <div className="h-[6px] rounded-full overflow-hidden bg-cult-subtle">
+                <div className="h-full rounded-full transition-all duration-300" style={{ width: `${pct}%`, background: s.color }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// HealthSummary
+// ============================================================
+function HealthSummary() {
+  const hd = DATA.summary.health_distribution;
+  const total = Object.values(hd).reduce((a, b) => a + b, 0);
+  const keys = ['critical', 'low', 'warning', 'healthy'];
+  return (
+    <div className="rounded-xl p-4 border border-cult-border bg-cult-card">
+      <div className="text-[9px] font-bold text-[#444] tracking-[0.1em] mb-3">SUPPLY HEALTH</div>
+      <div className="flex gap-[2px] h-5 rounded-lg overflow-hidden mb-3">
+        {keys.map(k => {
+          const pct = (hd[k] / total) * 100;
+          return (
+            <div key={k} className="flex items-center justify-center text-[9px] font-bold transition-all duration-300" style={{ width: `${pct}%`, background: HEALTH_COLORS[k].text + '22', color: HEALTH_COLORS[k].text }}>
+              {hd[k]}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex flex-col gap-[6px]">
+        {keys.map(k => (
+          <div key={k} className="flex justify-between items-center">
+            <div className="flex items-center gap-[6px]">
+              <span className="w-[6px] h-[6px] rounded-full" style={{ background: HEALTH_COLORS[k].text }} />
+              <span className="text-[10px] text-[#888] capitalize">{k}</span>
+            </div>
+            <span className="text-[12px] font-bold" style={{ color: HEALTH_COLORS[k].text }}>{hd[k]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// FilterBar
+// ============================================================
+function FilterBar({ filter, setFilter, gradeFilter, setGradeFilter, sort, setSort }) {
+  return (
+    <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+      <div className="flex items-center gap-[6px]">
+        <span className="text-[9px] font-bold text-[#333] tracking-[0.08em] mr-1">HEALTH</span>
+        {['all', 'critical', 'low', 'warning', 'healthy'].map(h => {
+          const active = filter === h;
+          const hc = h !== 'all' ? HEALTH_COLORS[h] : null;
+          return (
+            <button key={h} onClick={() => setFilter(h)}
+              className="px-[8px] py-[3px] rounded-md text-[10px] font-semibold border cursor-pointer transition-all duration-150 capitalize"
+              style={{
+                background: active ? (hc ? hc.bg : '#111') : 'transparent',
+                color: active ? (hc ? hc.text : '#888') : '#444',
+                borderColor: active ? (hc ? hc.border : '#333') : '#1a1a1a'
+              }}
+            >{h}</button>
+          );
+        })}
+        <span className="mx-2 w-px h-4 bg-cult-border3" />
+        <span className="text-[9px] font-bold text-[#333] tracking-[0.08em] mr-1">GRADE</span>
+        {['all', 'CULT', 'B', 'C', 'D', 'U'].map(g => {
+          const active = gradeFilter === g;
+          const gc = g !== 'all' ? GRADE_COLORS[g] : null;
+          return (
+            <button key={g} onClick={() => setGradeFilter(g)}
+              className="px-[8px] py-[3px] rounded-md text-[10px] font-semibold border cursor-pointer transition-all duration-150"
+              style={{
+                background: active ? (gc ? gc.bg : '#111') : 'transparent',
+                color: active ? (gc ? gc.text : '#888') : '#444',
+                borderColor: active ? (gc ? gc.border : '#333') : '#1a1a1a'
+              }}
+            >{g === 'all' ? 'All' : g}</button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] font-bold text-[#333] tracking-[0.08em]">SORT</span>
+        <select value={sort} onChange={e => setSort(e.target.value)}
+          className="text-[10px] font-semibold rounded-md px-2 py-[3px] border cursor-pointer outline-none font-inter bg-cult-card2 text-[#888] border-cult-border"
+        >
+          <option value="revenue">Revenue</option>
+          <option value="health">Health</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Micro visualization components
+// ============================================================
+function MicroBar({ value, max, color = TEAL, width = 48, height = 4 }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  return (
+    <div className="rounded-full overflow-hidden bg-cult-subtle" style={{ width: `${width}px`, height: `${height}px` }}>
+      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
+function MiniPipelineBar({ stages, width = 60 }) {
+  const total = Object.values(stages).reduce((a, b) => a + b, 0);
+  if (total === 0) return <span className="text-[9px] text-[#222]">—</span>;
+  return (
+    <div className="flex gap-px rounded-sm overflow-hidden" style={{ width: `${width}px`, height: '4px' }}>
+      {['binned', 'bucked', 'trimmed', 'packaged'].map(k => {
+        const pct = (stages[k] / total) * 100;
+        return pct > 0 ? <div key={k} className="h-full" style={{ width: `${pct}%`, background: STAGE_COLORS[k] }} /> : null;
+      })}
+    </div>
+  );
+}
+
+// ============================================================
+// StrainTable with expansion
+// ============================================================
+function StrainTable({ strains, filter, setFilter, gradeFilter, setGradeFilter, sort, setSort }) {
+  const [expanded, setExpanded] = useState(null);
+  const maxRev = Math.max(...DATA.strains.map(s => s.total_demand_revenue));
+  const maxPipeline = Math.max(...DATA.strains.map(s => s.pipeline_grams));
+
+  return (
+    <div className="rounded-xl border border-cult-border overflow-hidden bg-cult-card">
+      <div className="p-3 pb-2 border-b border-cult-border">
+        <FilterBar filter={filter} setFilter={setFilter} gradeFilter={gradeFilter} setGradeFilter={setGradeFilter} sort={sort} setSort={setSort} />
+      </div>
+
+      {/* Header */}
+      <div className="grid items-center px-3 py-2 border-b border-cult-border3 text-[9px] font-bold text-[#333] tracking-[0.08em]"
+        style={{ gridTemplateColumns: '1.8fr 0.5fr 0.7fr 0.7fr 0.7fr 0.6fr 0.5fr' }}>
+        <span>STRAIN</span><span>GRADE</span><span>SELLABLE</span><span>PIPELINE</span><span>DEMAND</span><span>HEALTH</span><span>SUPPLY</span>
+      </div>
+
+      {/* Rows */}
+      {strains.map((s, i) => {
+        const isExpanded = expanded === s.strain;
+        const gc = GRADE_COLORS[s.primary_grade] || GRADE_COLORS.U;
+        return (
+          <div key={s.strain}>
+            <div
+              className="grid items-center px-3 py-[10px] cursor-pointer transition-colors duration-150 border-b border-cult-card2 hover:bg-[#111]"
+              style={{ gridTemplateColumns: '1.8fr 0.5fr 0.7fr 0.7fr 0.7fr 0.6fr 0.5fr' }}
+              onClick={() => setExpanded(isExpanded ? null : s.strain)}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] transition-transform duration-200" style={{ color: '#333', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+                <span className="text-[13px] font-bold text-[#e8e8e8] font-mont">{s.strain}</span>
+              </div>
+              <div><GradeBadge grade={s.primary_grade} /></div>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-semibold text-[#c8c8c8]">{fmt.g(s.sellable_flower_grams + s.sellable_smalls_grams)}g</span>
+                <MicroBar value={s.sellable_flower_grams + s.sellable_smalls_grams} max={5000} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-semibold text-[#888]">{fmt.g(s.pipeline_grams)}g</span>
+                <MiniPipelineBar stages={s.stages} />
+              </div>
+              <div>
+                <div className="text-[12px] font-bold text-[#c8c8c8]">{fmt.$(s.total_demand_revenue)}</div>
+                <div className="text-[9px] text-[#444]">{s.total_orders} orders</div>
+              </div>
+              <div><HealthBadge status={s.supply_health} /></div>
+              <div>
+                <MicroBar value={s.sellable_flower_grams + s.sellable_smalls_grams} max={s.demand_packaged_units * 3.5 + s.demand_bulk_flower_qty + s.demand_bulk_smalls_qty} color={HEALTH_COLORS[s.supply_health].text} />
+              </div>
+            </div>
+            {isExpanded && (
+              <div className="animate-expand-in overflow-hidden">
+                <ExpandedStrainDetail strain={s} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {strains.length === 0 && (
+        <div className="text-center py-8 text-[12px] text-[#333]">No strains match current filters</div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// ExpandedStrainDetail
+// ============================================================
+function ExpandedStrainDetail({ strain: s }) {
+  const batches = BATCH_DATA[s.strain] || [];
+  const totalSellable = s.sellable_flower_grams + s.sellable_smalls_grams;
+  const totalDemandUnits = s.demand_packaged_units + s.demand_bulk_flower_qty + s.demand_bulk_smalls_qty;
+  const gc = GRADE_COLORS[s.primary_grade] || GRADE_COLORS.U;
+
+  return (
+    <div className="px-4 py-3 border-b bg-[#090909] border-cult-border3">
+      <div className="grid grid-cols-4 gap-3 mb-3">
+        <MetricBox label="Sellable Flower" value={fmt.g(s.sellable_flower_grams) + 'g'} color={TEAL} />
+        <MetricBox label="Sellable Smalls" value={fmt.g(s.sellable_smalls_grams) + 'g'} color={TEAL_LIGHT} />
+        <MetricBox label="Packaged Units" value={fmt.n(s.packaged_units)} color="#065f46" />
+        <MetricBox label="Pipeline" value={fmt.g(s.pipeline_grams) + 'g'} color="#3b82f6" />
+      </div>
+
+      {/* Pipeline stages */}
+      <div className="mb-3">
+        <div className="text-[9px] font-bold text-[#333] tracking-[0.08em] mb-[6px]">PIPELINE STAGES</div>
+        <div className="flex gap-[3px] h-[10px] rounded-md overflow-hidden mb-[6px]">
+          {Object.entries(s.stages).filter(([k]) => k !== 'byproduct').map(([k, v]) => {
+            const total = s.pipeline_grams + totalSellable;
+            const pct = total > 0 ? (v / total) * 100 : 0;
+            return pct > 0 ? <div key={k} className="h-full rounded-sm" style={{ width: `${pct}%`, background: STAGE_COLORS[k] }} /> : null;
+          })}
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          {Object.entries(s.stages).filter(([k]) => k !== 'byproduct').map(([k, v]) => (
+            <div key={k} className="flex items-center gap-[4px]">
+              <span className="w-[5px] h-[5px] rounded-full" style={{ background: STAGE_COLORS[k] }} />
+              <span className="text-[9px] text-[#555] capitalize">{k}</span>
+              <span className="text-[10px] font-bold text-[#888]">{fmt.g(v)}g</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Supply vs Demand */}
+      <div className="mb-3">
+        <div className="text-[9px] font-bold text-[#333] tracking-[0.08em] mb-[6px]">SUPPLY vs DEMAND</div>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <div className="flex justify-between text-[9px] mb-1">
+              <span className="text-[#555]">Supply</span>
+              <span className="font-bold text-teal">{fmt.g(totalSellable)}g</span>
+            </div>
+            <div className="h-[6px] rounded-full overflow-hidden bg-[#1a1a1a]">
+              <div className="h-full rounded-full" style={{ width: `${Math.min((totalSellable / Math.max(totalSellable, totalDemandUnits * 3.5)) * 100, 100)}%`, background: TEAL }} />
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex justify-between text-[9px] mb-1">
+              <span className="text-[#555]">Demand</span>
+              <span className="font-bold text-[#ff6b6b]">{fmt.n(totalDemandUnits)} units</span>
+            </div>
+            <div className="h-[6px] rounded-full overflow-hidden bg-[#1a1a1a]">
+              <div className="h-full rounded-full" style={{ width: `${Math.min((totalDemandUnits * 3.5 / Math.max(totalSellable, totalDemandUnits * 3.5)) * 100, 100)}%`, background: '#ff6b6b' }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Batch details */}
+      {batches.length > 0 && (
+        <div>
+          <div className="text-[9px] font-bold text-[#333] tracking-[0.08em] mb-[6px]">BATCHES ({batches.length})</div>
+          <div className="grid grid-cols-3 gap-2">
+            {batches.map(b => (
+              <div key={b.batch} className="rounded-lg p-[10px] border bg-cult-card border-cult-border3">
+                <div className="flex justify-between items-center mb-[6px]">
+                  <span className="text-[11px] font-bold text-[#c8c8c8] font-mont">{b.batch}</span>
+                  <span className="text-[9px] px-[6px] py-px rounded font-semibold bg-cult-card2 text-[#555] border border-cult-subtle">
+                    {BATCH_STATE_LABELS[b.state] || b.state}
+                  </span>
+                </div>
+                <div className="flex gap-3 text-[10px]">
+                  <span className="text-[#555]">{fmt.g(b.grams)}g</span>
+                  {b.thc != null && <span style={{ color: TEAL }}>THC {b.thc}%</span>}
+                  <span className="text-[#333]">{b.age_days}d old</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetricBox({ label, value, color }) {
+  return (
+    <div className="rounded-lg p-[10px] border bg-cult-card border-cult-border3">
+      <div className="text-[8px] font-bold text-[#444] tracking-[0.08em] mb-1">{label}</div>
+      <div className="text-[16px] font-extrabold font-mont" style={{ color }}>{value}</div>
+    </div>
+  );
+}
+
+// ============================================================
+// PRODUCT FORMATS & MENU BUILDER
+// ============================================================
+const PRODUCT_FORMATS = [
+  { id: '3.5g', label: '3.5g Flower', weight: 3.5, defaultPrice: 35 },
+  { id: '14g', label: '14g Smalls', weight: 14, defaultPrice: 80 },
+  { id: '1lb', label: '1lb Flower', weight: 454, defaultPrice: 1800 },
+];
+
+const CULT_LOGO_B64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABkCAYAAABl1MxoAAAACXBIWXMAACxLAAAsSwGlPZapAAAF0WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4wLWMwMDEgNzkuYzAyMDRiMiwgMjAyMy8wMi8wOS0wNjoyNjoxNCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDI0LjQgKE1hY2ludG9zaCkiIHhtcDpDcmVhdGVEYXRlPSIyMDI1LTAyLTAxVDE0OjMwOjI4LTA4OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNS0wMi0wMVQxNDozMTo0Mi0wODowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyNS0wMi0wMVQxNDozMTo0Mi0wODowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6YjJlNTBlNjEtNjJmNy00MjFjLWFlMDktNjdiMzFjM2RlY2M0IiB4bXBNTTpEb2N1bWVudElE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';
+function CultLogo({ size = 32 }) {
+  return <img src={CULT_LOGO_B64} width={size} height={size} className="rounded-lg object-contain" />;
+}
+
+function MenuBuilder({ strains: allStrains, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const [pickerGrade, setPickerGrade] = useState('all');
+  const [search, setSearch] = useState('');
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [expandedBatches, setExpandedBatches] = useState({});
+  const [selectedBatches, setSelectedBatches] = useState({});
+
+  const toggleBatch = strain => setExpandedBatches(p => ({ ...p, [strain]: !p[strain] }));
+  const toggleBatchSelection = (strain, batchId) => {
+    setSelectedBatches(p => {
+      const current = p[strain] || [];
+      return { ...p, [strain]: current.includes(batchId) ? current.filter(b => b !== batchId) : [...current, batchId] };
+    });
+  };
+  const isBatchSelected = (strain, batchId) => (selectedBatches[strain] || []).includes(batchId);
+
+  const availableStrains = useMemo(() => {
+    let list = allStrains;
+    if (pickerGrade !== 'all') list = list.filter(s => (s.primary_grade || 'U') === pickerGrade);
+    if (search) list = list.filter(s => s.strain.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [allStrains, pickerGrade, search]);
+
+  const addStrain = strain => {
+    if (selectedItems.find(i => i.strain === strain.strain)) return;
+    const formats = {};
+    PRODUCT_FORMATS.forEach(f => { formats[f.id] = { qty: 0, price: f.defaultPrice }; });
+    setSelectedItems([...selectedItems, { strain: strain.strain, grade: strain.primary_grade, formats }]);
+  };
+  const removeStrain = name => setSelectedItems(selectedItems.filter(i => i.strain !== name));
+  const updateQty = (strain, formatId, qty) => {
+    setSelectedItems(selectedItems.map(i => i.strain === strain ? { ...i, formats: { ...i.formats, [formatId]: { ...i.formats[formatId], qty: Math.max(0, parseInt(qty) || 0) } } } : i));
+  };
+  const updatePrice = (strain, formatId, price) => {
+    setSelectedItems(selectedItems.map(i => i.strain === strain ? { ...i, formats: { ...i.formats, [formatId]: { ...i.formats[formatId], price: Math.max(0, parseFloat(price) || 0) } } } : i));
+  };
+
+  const totals = useMemo(() => {
+    let units = 0, revenue = 0;
+    selectedItems.forEach(item => {
+      Object.values(item.formats).forEach(d => {
+        units += d.qty;
+        revenue += d.qty * d.price;
+      });
+    });
+    return { units, revenue };
+  }, [selectedItems]);
+
+  const activeItems = selectedItems.filter(i => Object.values(i.formats).some(f => f.qty > 0));
+
+  const buildPlainText = () => {
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    let lines = [`CULT OPS — Order Menu`, `Date: ${today}`, ''];
+    activeItems.forEach(item => {
+      const gc = GRADE_COLORS[item.grade] || GRADE_COLORS.U;
+      lines.push(`${item.strain} [${gc.label}]`);
+      const batches = selectedBatches[item.strain] || [];
+      if (batches.length > 0) lines.push(`  Batches: ${batches.join(', ')}`);
+      PRODUCT_FORMATS.forEach(f => {
+        const d = item.formats[f.id];
+        if (d.qty > 0) lines.push(`  ${f.label}: ${d.qty} × $${d.price} = $${(d.qty * d.price).toLocaleString()}`);
+      });
+      lines.push('');
+    });
+    lines.push(`Total: ${totals.units} units — $${totals.revenue.toLocaleString()}`);
+    return lines.join('\n');
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(buildPlainText());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handlePrint = () => {
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><title>Cult Ops Menu</title>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Inter', sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
+        h1 { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        h2 { font-family: 'Montserrat', sans-serif; font-size: 11px; color: #888; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 24px; }
+        .item { margin-bottom: 18px; border-bottom: 1px solid #eee; padding-bottom: 14px; }
+        .strain { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .grade { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; margin-left: 8px; }
+        .line { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+        .batches { font-size: 11px; color: #888; margin-bottom: 6px; }
+        .total { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; margin-top: 20px; padding-top: 16px; border-top: 2px solid #1a1a1a; display: flex; justify-content: space-between; }
+        .foot { font-size: 10px; color: #bbb; text-align: center; margin-top: 30px; }
+        @media print { body { margin: 20px; } }
+      </style></head><body>`);
+    w.document.write(`<h1>CULT OPS</h1><h2>ORDER MENU · ${today}</h2>`);
+    activeItems.forEach(item => {
+      const gc = GRADE_COLORS[item.grade] || GRADE_COLORS.U;
+      w.document.write(`<div class="item"><div class="strain">${item.strain}<span class="grade" style="background:${gc.bg};color:${gc.text};border:1px solid ${gc.border}">${gc.label}</span></div>`);
+      const batches = selectedBatches[item.strain] || [];
+      if (batches.length > 0) w.document.write(`<div class="batches">Batches: ${batches.join(', ')}</div>`);
+      PRODUCT_FORMATS.forEach(f => {
+        const d = item.formats[f.id];
+        if (d.qty > 0) w.document.write(`<div class="line"><span>${f.label}: ${d.qty} units</span><span>$${(d.qty * d.price).toLocaleString()}</span></div>`);
+      });
+      w.document.write('</div>');
+    });
+    w.document.write(`<div class="total"><span>${totals.units} units</span><span>$${totals.revenue.toLocaleString()}</span></div>`);
+    w.document.write(`<div class="foot">Cult Ops · Generated ${today}</div>`);
+    w.document.write('</body></html>');
+    w.document.close();
+    setTimeout(() => w.print(), 300);
+  };
+
+  const gradeOptions = ['all', 'CULT', 'B', 'C', 'D', 'U'];
+
+  return (
+    <>
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999]" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="fixed z-[1000] flex flex-col animate-fade-in rounded-2xl border border-cult-border overflow-hidden bg-[#0c0c0c]"
+        style={{ top: '6vh', left: '50%', transform: 'translateX(-50%)', width: '1020px', maxHeight: '88vh' }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-cult-border flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <CultLogo size={28} />
+            <div>
+              <div className="text-[14px] font-extrabold text-[#f8f8f8] font-mont">Order Builder</div>
+              <div className="text-[9px] text-[#333]">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleCopy}
+              className="px-3 py-[6px] rounded-lg text-[11px] font-bold border-none cursor-pointer font-inter transition-all duration-150"
+              style={{ background: copied ? TEAL + '22' : '#141414', color: copied ? TEAL : '#888' }}
+            >{copied ? '✓ Copied' : 'Copy'}</button>
+            <button onClick={handlePrint}
+              className="px-3 py-[6px] rounded-lg text-[11px] font-bold border-none cursor-pointer font-inter transition-all duration-150 bg-cult-surface text-[#888]"
+            >Print</button>
+            <button onClick={onClose}
+              className="w-7 h-7 rounded-lg flex items-center justify-center border-none cursor-pointer text-[14px] transition-all duration-150"
+              style={{ background: '#141414', color: '#555' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
+              onMouseLeave={e => e.currentTarget.style.color = '#555'}
+            >×</button>
+          </div>
+        </div>
+
+        {/* Two-panel body */}
+        <div className="flex flex-1 min-h-0">
+          {/* Left: strain picker */}
+          <div className="flex flex-col border-r border-cult-border flex-shrink-0 w-[270px] bg-cult-bg">
+            <div className="p-3 border-b border-cult-border">
+              <input type="text" placeholder="Search strains..." value={search} onChange={e => setSearch(e.target.value)}
+                className="w-full rounded-lg border px-3 py-[6px] text-[12px] text-[#f8f8f8] font-inter outline-none transition-colors duration-150"
+                style={{ background: '#111', borderColor: '#1e1e1e' }}
+                onFocus={e => e.currentTarget.style.borderColor = TEAL}
+                onBlur={e => e.currentTarget.style.borderColor = '#1e1e1e'}
+
+              />
+              <div className="flex gap-1 mt-2 flex-wrap">
+                {gradeOptions.map(g => {
+                  const active = pickerGrade === g;
+                  const gc = g !== 'all' ? GRADE_COLORS[g] : null;
+                  return (
+                    <button key={g} onClick={() => setPickerGrade(g)}
+                      className="px-[6px] py-[2px] rounded text-[9px] font-bold border cursor-pointer transition-all duration-150"
+                      style={{
+                        background: active ? (gc ? gc.bg : '#111') : 'transparent',
+                        color: active ? (gc ? gc.text : '#888') : '#333',
+                        borderColor: active ? (gc ? gc.border : '#333') : '#1a1a1a'
+                      }}
+                    >{g === 'all' ? 'All' : g}</button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {availableStrains.map(s => {
+                const gc = GRADE_COLORS[s.primary_grade] || GRADE_COLORS.U;
+                const already = selectedItems.find(i => i.strain === s.strain);
+                const batches = BATCH_DATA[s.strain] || [];
+                return (
+                  <div key={s.strain} onClick={() => !already && addStrain(s)}
+                    className={`flex items-center gap-2 px-3 py-[7px] border-b border-cult-card2 transition-colors duration-150 ${already ? 'opacity-40 cursor-default' : 'cursor-pointer hover:bg-[#111]'}`}
+                  >
+                    <span className="w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: gc.text }} />
+                    <span className="text-[11px] font-semibold text-[#c8c8c8] flex-1 truncate">{s.strain}</span>
+                    {batches.length > 0 && <span className="text-[8px] text-[#333] font-semibold">{batches.length}b</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-3 py-2 text-[9px] text-[#222] border-t border-cult-border font-semibold">{availableStrains.length} available</div>
+          </div>
+
+          {/* Right: order builder */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 overflow-y-auto p-4">
+              {selectedItems.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-[#222]">
+                  <div className="text-[28px] mb-2">←</div>
+                  <div className="text-[12px] font-semibold">Select strains from the left panel</div>
+                </div>
+              )}
+
+              {selectedItems.map(item => {
+                const gc = GRADE_COLORS[item.grade] || GRADE_COLORS.U;
+                const batches = BATCH_DATA[item.strain] || [];
+                const showBatches = expandedBatches[item.strain];
+                return (
+                  <div key={item.strain} className="mb-3 rounded-xl border overflow-hidden bg-cult-card border-cult-border3">
+                    <div className="flex items-center justify-between px-4 py-[10px]">
+                      <div className="flex items-center gap-2">
+                        <GradeBadge grade={item.grade} />
+                        <span className="text-[13px] font-bold text-[#e8e8e8] font-mont">{item.strain}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {batches.length > 0 && (
+                          <button onClick={() => toggleBatch(item.strain)}
+                            className="px-2 py-[3px] rounded-md text-[9px] font-bold border cursor-pointer transition-all duration-150"
+                            style={{
+                              background: showBatches ? TEAL + '11' : '#111',
+                              color: showBatches ? TEAL : '#444',
+                              borderColor: showBatches ? TEAL + '33' : '#1a1a1a'
+                            }}
+                          >{showBatches ? 'Hide' : 'Batches'} ({batches.length})</button>
+                        )}
+                        <button onClick={() => removeStrain(item.strain)}
+                          className="w-6 h-6 rounded-md flex items-center justify-center text-[11px] border-none cursor-pointer transition-all duration-150"
+                          style={{ background: '#111', color: '#333' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#1a0a0a'; e.currentTarget.style.color = '#ff6b6b'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#111'; e.currentTarget.style.color = '#333'; }}
+                        >×</button>
+                      </div>
+                    </div>
+
+                    {/* Product formats */}
+                    <div className="px-4 pb-3">
+                      {PRODUCT_FORMATS.map(f => {
+                        const d = item.formats[f.id] || { qty: 0, price: f.defaultPrice };
+                        const hasQty = d.qty > 0;
+                        return (
+                          <div key={f.id} className="flex items-center gap-2 py-[5px] rounded-lg px-2 mb-[2px]" style={{ background: hasQty ? '#0a1a0e' : 'transparent' }}>
+                            <span className="text-[11px] font-semibold min-w-[85px]" style={{ color: hasQty ? '#c8c8c8' : '#555' }}>{f.label}</span>
+                            <input type="number" min="0" value={d.qty || ''} placeholder="0"
+                              onChange={e => updateQty(item.strain, f.id, e.target.value)}
+                              className="w-[52px] py-[5px] px-2 rounded-md border text-[13px] font-semibold text-right text-[#f8f8f8] outline-none font-mont transition-colors duration-150"
+                              style={{ background: '#141414', borderColor: '#262626' }}
+                              onFocus={e => e.currentTarget.style.borderColor = TEAL}
+                              onBlur={e => e.currentTarget.style.borderColor = '#262626'} />
+                            <span className="text-[11px] text-[#333]">×</span>
+                            <div className="flex items-center">
+                              <span className="text-[12px] text-[#555] mr-[2px]">$</span>
+                              <input type="number" min="0" value={d.price || ''}
+                                onChange={e => updatePrice(item.strain, f.id, e.target.value)}
+                                className="w-[60px] py-[5px] px-2 rounded-md border text-[13px] font-semibold text-right text-[#f8f8f8] outline-none font-mont transition-colors duration-150"
+                                style={{ background: '#141414', borderColor: '#262626' }}
+                                onFocus={e => e.currentTarget.style.borderColor = TEAL}
+                                onBlur={e => e.currentTarget.style.borderColor = '#262626'} />
+                            </div>
+                            {hasQty && (
+                              <span className="text-[12px] font-bold min-w-[70px] text-right ml-auto" style={{ color: TEAL }}>
+                                = ${(d.qty * d.price).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Expandable batch breakdown with selection */}
+                    {showBatches && batches.length > 0 && (
+                      <div className="border-t px-[14px] py-[10px] border-cult-subtle bg-[#090909]">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="text-[9px] font-bold text-[#444] tracking-[0.08em]">SELECT BATCHES</div>
+                          {(selectedBatches[item.strain] || []).length > 0 && (
+                            <span className="text-[9px] font-bold" style={{ color: TEAL }}>
+                              {(selectedBatches[item.strain] || []).length} selected
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-[6px]">
+                          {batches.map(b => {
+                            const sel = isBatchSelected(item.strain, b.batch);
+                            return (
+                              <div key={b.batch} onClick={() => toggleBatchSelection(item.strain, b.batch)}
+                                className="rounded-lg p-2 cursor-pointer transition-all duration-150"
+                                style={{
+                                  background: sel ? `${TEAL}08` : '#0e0e0e',
+                                  border: `1px solid ${sel ? TEAL + '33' : '#161616'}`
+                                }}>
+                                <div className="flex justify-between items-center mb-[6px]">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-black transition-all duration-150"
+                                      style={{
+                                        border: `2px solid ${sel ? TEAL : '#333'}`,
+                                        background: sel ? TEAL : 'transparent',
+                                        color: '#0a0a0a'
+                                      }}>{sel ? '✓' : ''}</span>
+                                    <span className="text-[12px] font-bold font-mont" style={{ color: sel ? '#f0f0f0' : '#c8c8c8' }}>{b.batch}</span>
+                                    <span className="text-[9px] px-[6px] py-px rounded font-semibold border bg-[#151515] text-[#555] border-cult-subtle">
+                                      {BATCH_STATE_LABELS[b.state] || b.state}
+                                    </span>
+                                    {b.thc != null && <span className="text-[9px] px-[6px] py-px rounded font-bold border" style={{ background: '#0a2a0a', color: TEAL, borderColor: '#22c55e33' }}>THC {b.thc}%</span>}
+                                  </div>
+                                  <span className="text-[10px] text-[#333]">{b.harvest}</span>
+                                </div>
+                                <div className="flex gap-1 flex-wrap">
+                                  {Object.entries(b.stages).map(([stage, data]) => {
+                                    const avail = data.a || 0;
+                                    const total = data.w || 0;
+                                    const pct = total > 0 ? Math.round((avail / total) * 100) : 0;
+                                    return (
+                                      <div key={stage} className="flex flex-col min-w-[70px] rounded-md p-[4px_8px] border bg-cult-card2 border-cult-subtle">
+                                        <span className="text-[8px] text-[#444] font-bold tracking-[0.06em]">
+                                          {BATCH_STAGE_LABELS[stage] || stage}
+                                        </span>
+                                        <span className="text-[12px] font-bold" style={{ color: avail > 0 ? TEAL : '#2a2a2a' }}>
+                                          {fmt.g(avail)}
+                                        </span>
+                                        <span className="text-[8px] text-[#333]">
+                                          of {fmt.g(total)} ({pct}%)
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Summary footer */}
+            <div className="flex justify-between items-center px-[18px] py-3 border-t border-cult-border flex-shrink-0 bg-[#0c0c0c]">
+              <div className="flex gap-5">
+                <div>
+                  <div className="text-[9px] font-bold text-[#444] tracking-[0.1em]">STRAINS</div>
+                  <div className="text-[18px] font-extrabold" style={{ color: activeItems.length > 0 ? '#f8f8f8' : '#222' }}>{activeItems.length}</div>
+                </div>
+                <div>
+                  <div className="text-[9px] font-bold text-[#444] tracking-[0.1em]">UNITS</div>
+                  <div className="text-[18px] font-extrabold" style={{ color: totals.units > 0 ? '#f8f8f8' : '#222' }}>{totals.units}</div>
+                </div>
+                <div>
+                  <div className="text-[9px] font-bold text-[#444] tracking-[0.1em]">EST. REVENUE</div>
+                  <div className="text-[18px] font-extrabold" style={{ color: totals.revenue > 0 ? TEAL : '#222' }}>${totals.revenue.toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-[#222] font-semibold tracking-[0.06em]">CULT OPS</span>
+                <span className="w-1 h-1 rounded-full opacity-40" style={{ background: TEAL }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function App() {
+  const [filter, setFilter] = useState('all');
+  const [gradeFilter, setGradeFilter] = useState('all');
+  const [sort, setSort] = useState('revenue');
+  const [showMenu, setShowMenu] = useState(false);
+  const healthOrder = { critical: 0, low: 1, warning: 2, healthy: 3 };
+
+  const strains = useMemo(() => {
+    let list = DATA.strains;
+    if (filter !== 'all') list = list.filter(s => s.supply_health === filter);
+    if (gradeFilter !== 'all') list = list.filter(s => (s.primary_grade || 'U') === gradeFilter);
+    return [...list].sort((a, b) => {
+      if (sort === 'revenue') return b.total_demand_revenue - a.total_demand_revenue;
+      if (sort === 'health') return (healthOrder[a.supply_health] - healthOrder[b.supply_health]) || (b.total_demand_revenue - a.total_demand_revenue);
+      return a.strain.localeCompare(b.strain);
+    });
+  }, [filter, gradeFilter, sort]);
+
+  return (
+    <div className="max-w-[1280px] mx-auto px-6 py-5 no-print">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <div className="text-[10px] font-bold tracking-[0.12em] mb-[2px]" style={{ color: TEAL }}>CULT OPS</div>
+          <h1 className="text-[22px] font-extrabold text-[#f8f8f8] m-0">Inventory Pipeline</h1>
+        </div>
+        <div className="flex gap-[10px] items-center">
+          <button onClick={() => setShowMenu(true)}
+            className="px-4 py-2 rounded-lg text-[12px] font-bold cursor-pointer transition-all duration-150 tracking-[0.02em]"
+            style={{
+              border: `1px solid ${TEAL}44`,
+              background: `${TEAL}12`,
+              color: TEAL
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${TEAL}22`; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${TEAL}12`; }}
+          >Build Menu</button>
+          <div className="text-[10px] text-cult-muted text-right">
+            <div>36 strains · {DATA.summary.strain_count.with_active_demand} with demand</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <HeroCards />
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <InventoryBreakdown />
+        <PipelineOverview />
+        <HealthSummary />
+      </div>
+
+      {/* Strain Table */}
+      <StrainTable strains={strains} filter={filter} setFilter={setFilter} gradeFilter={gradeFilter} setGradeFilter={setGradeFilter} sort={sort} setSort={setSort} />
+
+      {/* Footer */}
+      <div className="border-t border-cult-surface pt-3 mt-5 text-[10px] text-cult-muted text-center">
+        Cult Ops Sales Dashboard · v5 · Simplified view
+      </div>
+
+      {showMenu && <MenuBuilder strains={strains} onClose={() => setShowMenu(false)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
