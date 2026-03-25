@@ -125,9 +125,10 @@ interface HeatmapCell {
 
 function MiniWeekHeatmap({ cells }: { cells: HeatmapCell[] }) {
   const maxUnits = Math.max(...cells.map(c => c.units), 1);
+  const totalUnits = cells.reduce((s, c) => s + c.units, 0);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" title={`${totalUnits} units this week across ${cells.filter(c => c.units > 0).length} days`}>
       {cells.map((cell, i) => {
         const intensity = cell.units > 0 ? Math.max(cell.units / maxUnits, 0.25) : 0;
         return (
@@ -136,7 +137,7 @@ function MiniWeekHeatmap({ cells }: { cells: HeatmapCell[] }) {
               {WEEKDAY_LABELS[i]}
             </span>
             <div
-              className={`w-4 h-4 rounded-sm transition-colors ${
+              className={`w-5 h-5 rounded-sm transition-colors flex items-center justify-center ${
                 cell.units === 0
                   ? 'bg-gray-800/50'
                   : cell.isToday
@@ -144,7 +145,11 @@ function MiniWeekHeatmap({ cells }: { cells: HeatmapCell[] }) {
                     : 'bg-emerald-500'
               }`}
               style={cell.units > 0 ? { opacity: 0.3 + intensity * 0.7 } : undefined}
-            />
+            >
+              {cell.units > 0 && (
+                <span className="text-[8px] font-bold text-white leading-none">{cell.units}</span>
+              )}
+            </div>
           </div>
         );
       })}
@@ -287,7 +292,7 @@ function EnhancedByStrainView({
           <tr className="border-b border-cult-medium-gray text-left">
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center">Week</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Units needed per day this week">Demand</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Needed</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Demand</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Ready</th>
@@ -335,9 +340,12 @@ function EnhancedByStrainView({
                         {formats.length} format{formats.length > 1 ? 's' : ''}
                       </span>
                       {hasBatchOpportunity && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 font-medium">
+                        <span
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 font-medium"
+                          title={`This strain has orders on ${heatmap!.daysWithDemand} different days — consider batching the packaging work`}
+                        >
                           <Zap className="w-3 h-3" />
-                          batch {heatmap!.daysWithDemand} days
+                          {heatmap!.daysWithDemand}-day demand
                         </span>
                       )}
                     </div>
@@ -420,9 +428,19 @@ function EnhancedByStrainView({
                   return (
                     <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
                       <td colSpan={9} className="px-6 py-3">
-                        <div className="text-xs uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-2">
-                          <Calendar className="w-3.5 h-3.5" />
-                          Orders by Delivery Day
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5" />
+                            Orders by Delivery Day
+                          </div>
+                          {/* Column guide */}
+                          <div className="flex items-center gap-6 text-[10px] text-gray-600 uppercase tracking-wider">
+                            <span className="w-20">Order</span>
+                            <span className="w-32">Customer</span>
+                            <span className="w-24">Format</span>
+                            <span className="w-36">Packed</span>
+                            <span>Source Batch</span>
+                          </div>
                         </div>
                         <div className="space-y-3">
                           {sortedDates.map(date => {
@@ -472,8 +490,11 @@ function EnhancedByStrainView({
                                         <span className="w-32 truncate flex-shrink-0 text-gray-300">{o.customer_name}</span>
                                         <span className="w-24 flex-shrink-0 text-gray-400">{o.format_label}</span>
 
-                                        {/* Assignment progress */}
-                                        <div className="w-36 flex-shrink-0 flex items-center gap-2">
+                                        {/* Assignment progress — "Packed" = units assigned from packaged inventory */}
+                                        <div
+                                          className="w-36 flex-shrink-0 flex items-center gap-2"
+                                          title={`${assigned} of ${o.quantity} units packed and assigned to this order`}
+                                        >
                                           <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                                             <div
                                               className={`h-full rounded-full transition-all ${
