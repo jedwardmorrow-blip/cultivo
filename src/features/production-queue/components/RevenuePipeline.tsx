@@ -1,13 +1,16 @@
-import { DollarSign, TrendingUp, Truck, Package, Clock } from 'lucide-react';
+import { DollarSign, TrendingUp, Truck, Package, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatCurrency, formatCurrencyShort } from '@/shared/utils/format';
-import type { RevenuePipelineData } from '../hooks/useRevenuePipeline';
+import type { RevenuePipelineData, WeekOutlook } from '../hooks/useRevenuePipeline';
 
 // ─── Revenue Pipeline Bar ───────────────────────────────────────────────────
-// Shows progress toward weekly $45K delivery target as a stacked bar.
-// Segments: Delivered → Ready for Delivery → Packaging → Not Started
 
 interface Props {
   data: RevenuePipelineData;
+  weekOutlook: WeekOutlook[];
+  weekOffset: number;
+  onWeekChange: (offset: number) => void;
+  weekLabel: string;
+  weekRange: string;
 }
 
 const segments = [
@@ -17,23 +20,25 @@ const segments = [
   { key: 'notStarted' as const, label: 'Not Started', color: 'bg-gray-600', textColor: 'text-gray-400', icon: Clock },
 ];
 
-export function RevenuePipeline({ data }: Props) {
+export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, weekLabel, weekRange }: Props) {
   const { target, total, pct } = data;
   const overTarget = total > target;
-
-  // Calculate segment widths as percentage of target (capped at 100% total)
   const denominator = Math.max(target, total);
 
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult p-5">
-      {/* Header row */}
+      {/* Header row with week navigation */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-8 h-8 rounded-cult bg-emerald-500/10 border border-emerald-500/20">
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Weekly Revenue Target</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Weekly Revenue Target</span>
+              <span className="text-xs text-gray-600">·</span>
+              <span className="text-xs text-gray-500">{weekRange}</span>
+            </div>
             <div className="flex items-baseline gap-2">
               <span className={`text-2xl font-bold tabular-nums ${overTarget ? 'text-emerald-400' : 'text-white'}`}>
                 {formatCurrencyShort(total)}
@@ -46,6 +51,33 @@ export function RevenuePipeline({ data }: Props) {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Week navigation */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onWeekChange(Math.max(0, weekOffset - 1))}
+            disabled={weekOffset === 0}
+            className={`p-1.5 rounded-cult border transition-colors ${
+              weekOffset === 0
+                ? 'border-transparent text-gray-700 cursor-not-allowed'
+                : 'border-cult-medium-gray/50 text-gray-400 hover:text-white hover:bg-cult-dark-gray'
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-sm font-medium text-white px-2 min-w-[90px] text-center">{weekLabel}</span>
+          <button
+            onClick={() => onWeekChange(Math.min(2, weekOffset + 1))}
+            disabled={weekOffset >= 2}
+            className={`p-1.5 rounded-cult border transition-colors ${
+              weekOffset >= 2
+                ? 'border-transparent text-gray-700 cursor-not-allowed'
+                : 'border-cult-medium-gray/50 text-gray-400 hover:text-white hover:bg-cult-dark-gray'
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -66,8 +98,6 @@ export function RevenuePipeline({ data }: Props) {
             );
           })}
         </div>
-
-        {/* Target marker line */}
         {overTarget && (
           <div
             className="absolute top-0 bottom-0 w-0.5 bg-white/60 z-10"
@@ -77,20 +107,65 @@ export function RevenuePipeline({ data }: Props) {
         )}
       </div>
 
-      {/* Segment labels */}
-      <div className="flex items-center gap-5 mt-3">
-        {segments.map(seg => {
-          const value = data[seg.key];
-          if (value <= 0) return null;
-          const Icon = seg.icon;
-          return (
-            <div key={seg.key} className="flex items-center gap-2">
-              <Icon className={`w-3.5 h-3.5 ${seg.textColor}`} />
-              <span className="text-xs text-gray-500">{seg.label}</span>
-              <span className={`text-xs font-semibold ${seg.textColor}`}>{formatCurrencyShort(value)}</span>
-            </div>
-          );
-        })}
+      {/* Bottom row: segment labels left, week outlook right */}
+      <div className="flex items-start justify-between mt-3">
+        {/* Segment labels */}
+        <div className="flex items-center gap-5">
+          {segments.map(seg => {
+            const value = data[seg.key];
+            if (value <= 0) return null;
+            const Icon = seg.icon;
+            return (
+              <div key={seg.key} className="flex items-center gap-2">
+                <Icon className={`w-3.5 h-3.5 ${seg.textColor}`} />
+                <span className="text-xs text-gray-500">{seg.label}</span>
+                <span className={`text-xs font-semibold ${seg.textColor}`}>{formatCurrencyShort(value)}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Week outlook mini-strip */}
+        <div className="flex items-center gap-2">
+          {weekOutlook.map(week => {
+            const isSelected = week.weekOffset === weekOffset;
+            const barFill = Math.min(week.pctOfTarget, 100);
+            const fillColor = week.pctOfTarget >= 100 ? 'bg-emerald-500' :
+              week.pctOfTarget >= 75 ? 'bg-cyan-500' :
+              week.pctOfTarget >= 50 ? 'bg-amber-500' : 'bg-red-500';
+
+            return (
+              <button
+                key={week.weekOffset}
+                onClick={() => onWeekChange(week.weekOffset)}
+                className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-cult border transition-all ${
+                  isSelected
+                    ? 'border-white/20 bg-white/5'
+                    : 'border-transparent hover:border-cult-medium-gray/50 hover:bg-cult-dark-gray/50'
+                }`}
+                title={`${week.label}: ${formatCurrencyShort(week.totalRevenue)} (${week.orderCount} orders, ${week.routeCount} routes)`}
+              >
+                <span className={`text-[10px] font-medium uppercase tracking-wider ${
+                  isSelected ? 'text-white' : 'text-gray-600'
+                }`}>
+                  {week.weekOffset === 0 ? 'This' : week.weekOffset === 1 ? 'Next' : '+2'}
+                </span>
+                {/* Mini progress bar */}
+                <div className="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${fillColor}`}
+                    style={{ width: `${barFill}%` }}
+                  />
+                </div>
+                <span className={`text-[10px] font-semibold tabular-nums ${
+                  isSelected ? 'text-white' : 'text-gray-500'
+                }`}>
+                  {formatCurrencyShort(week.totalRevenue)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

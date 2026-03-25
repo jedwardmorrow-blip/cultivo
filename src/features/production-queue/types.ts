@@ -90,6 +90,11 @@ export interface OrderLineItem {
   batch_grade_code: string | null;
   batch_grade_color: string | null;
   batch_stage_label: string | null;
+  // Assignment progress (from package_assignments)
+  units_assigned: number;
+  units_remaining: number;
+  assignment_pct: number;
+  assigned_package_ids: string[] | null;
 }
 
 export type ProductionQueueTab = 'by-strain' | 'by-order' | 'summary';
@@ -124,15 +129,6 @@ export interface BatchPlanData {
   strain_demand_g: number;
   strain_order_count: number;
   strain_urgency: Urgency | 'no_date';
-}
-
-/** Props for the strain-level BatchPlanExpansion container */
-export interface BatchPlanProps {
-  strainId: string;
-  strainName: string;
-  /** ALL orders for this strain (all formats) */
-  orderItems: OrderLineItem[];
-  onClose: () => void;
 }
 
 /** A single batch_allocations row (for display within a batch card) */

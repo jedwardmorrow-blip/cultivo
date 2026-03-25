@@ -33,13 +33,27 @@ export interface DeliveryOrderSummary {
   itemCount: number;
 }
 
+export interface WeekOutlook {
+  weekOffset: number; // 0 = this week, 1 = next, 2 = week after
+  label: string; // "This Week", "Next Week", "Apr 7–11"
+  dateRange: string; // "Mar 24 – 28"
+  totalRevenue: number;
+  orderCount: number;
+  routeCount: number;
+  pctOfTarget: number;
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function getWeekDates(): string[] {
+function getWeekDatesForOffset(weekOffset: number): string[] {
   const now = new Date();
   const day = now.getDay(); // 0=Sun
   const mondayOffset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+  const monday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + mondayOffset + weekOffset * 7
+  );
 
   const dates: string[] = [];
   for (let i = 0; i < 5; i++) { // Mon-Fri
@@ -54,23 +68,54 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function formatWeekLabel(weekOffset: number, dates: string[]): string {
+  if (weekOffset === 0) return 'This Week';
+  if (weekOffset === 1) return 'Next Week';
+  const d = new Date(dates[0] + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' week';
+}
+
+function formatDateRange(dates: string[]): string {
+  const start = new Date(dates[0] + 'T12:00:00');
+  const end = new Date(dates[dates.length - 1] + 'T12:00:00');
+  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 export function useRevenuePipeline(weeklyTarget = 45000) {
-  const [orderData, setOrderData] = useState<DeliveryOrderSummary[]>([]);
-  const [orderStatuses, setOrderStatuses] = useState<Map<string, string>>(new Map());
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [allOrderData, setAllOrderData] = useState<(DeliveryOrderSummary & { deliveryDate: string })[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const weekDates = useMemo(() => getWeekDates(), []);
-  const weekStart = weekDates[0];
-  const weekEnd = weekDates[weekDates.length - 1];
+  // Compute date ranges for this week + 2 future weeks (for outlook)
+  const allWeeks = useMemo(() => {
+    return [0, 1, 2].map(offset => {
+      const dates = getWeekDatesForOffset(offset);
+      return {
+        offset,
+        dates,
+        start: dates[0],
+        end: dates[dates.length - 1],
+        label: formatWeekLabel(offset, dates),
+        dateRange: formatDateRange(dates),
+      };
+    });
+  }, []);
+
+  // The selected week
+  const selectedWeek = allWeeks[weekOffset] || allWeeks[0];
 
   const fetchData = useCallback(async () => {
     setLoading(true);
 
-    // Fetch all orders with delivery dates this week (including completed ones)
+    // Fetch orders spanning all 3 weeks in one query
+    const globalStart = allWeeks[0].start;
+    const globalEnd = allWeeks[allWeeks.length - 1].end;
+
     const { data: rows, error } = await supabase
       .from('orders')
       .select(`
@@ -85,25 +130,24 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
       .eq('archived', false)
       .eq('test_mode', false)
       .neq('status', 'cancelled')
-      .or(`scheduled_delivery_date.gte.${weekStart},requested_delivery_date.gte.${weekStart}`)
-      .or(`scheduled_delivery_date.lte.${weekEnd},requested_delivery_date.lte.${weekEnd}`);
+      .or(`scheduled_delivery_date.gte.${globalStart},requested_delivery_date.gte.${globalStart}`)
+      .or(`scheduled_delivery_date.lte.${globalEnd},requested_delivery_date.lte.${globalEnd}`);
 
     if (error || !rows) {
       console.error('Revenue pipeline fetch error:', error);
-      setOrderData([]);
+      setAllOrderData([]);
       setLoading(false);
       return;
     }
 
-    const statusMap = new Map<string, string>();
     const summaries: (DeliveryOrderSummary & { deliveryDate: string })[] = [];
 
     rows.forEach((row: any) => {
       const effectiveDate = row.scheduled_delivery_date || row.requested_delivery_date;
       if (!effectiveDate) return;
 
-      // Only include orders whose effective delivery date is within this week
-      if (effectiveDate < weekStart || effectiveDate > weekEnd) return;
+      // Only include orders within our 3-week window
+      if (effectiveDate < globalStart || effectiveDate > globalEnd) return;
 
       const revenue = (row.order_items || []).reduce(
         (sum: number, oi: { quantity: number; unit_price: number }) =>
@@ -112,7 +156,6 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
       );
 
       const customerName = row.customer?.name || 'Unknown';
-      statusMap.set(row.id, row.status);
 
       summaries.push({
         orderId: row.id,
@@ -125,10 +168,9 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
       });
     });
 
-    setOrderData(summaries);
-    setOrderStatuses(statusMap);
+    setAllOrderData(summaries);
     setLoading(false);
-  }, [weekStart, weekEnd]);
+  }, [allWeeks]);
 
   useEffect(() => {
     fetchData();
@@ -143,7 +185,15 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
 
-  // ─── Revenue Pipeline Segments ──────────────────────────────────────────
+  // ─── Filter order data for the selected week ──────────────────────────
+
+  const weekOrderData = useMemo(() => {
+    return allOrderData.filter(
+      o => o.deliveryDate >= selectedWeek.start && o.deliveryDate <= selectedWeek.end
+    );
+  }, [allOrderData, selectedWeek]);
+
+  // ─── Revenue Pipeline Segments (for selected week) ────────────────────
 
   const pipeline: RevenuePipelineData = useMemo(() => {
     let delivered = 0;
@@ -151,9 +201,8 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
     let packaging = 0;
     let notStarted = 0;
 
-    orderData.forEach(o => {
-      const status = orderStatuses.get(o.orderId) || o.status;
-      switch (status) {
+    weekOrderData.forEach(o => {
+      switch (o.status) {
         case 'delivered':
         case 'completed':
           delivered += o.revenue;
@@ -180,20 +229,18 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
       total,
       pct: weeklyTarget > 0 ? Math.round((total / weeklyTarget) * 100) : 0,
     };
-  }, [orderData, orderStatuses, weeklyTarget]);
+  }, [weekOrderData, weeklyTarget]);
 
-  // ─── Delivery Load by Day ───────────────────────────────────────────────
+  // ─── Delivery Load by Day (for selected week) ────────────────────────
 
   const deliveryDays: DeliveryDayData[] = useMemo(() => {
     const today = todayIso();
+    const weekDates = selectedWeek.dates;
 
-    // Group orders by delivery date
     const byDate = new Map<string, DeliveryOrderSummary[]>();
-    orderData.forEach(o => {
-      const date = (o as any).deliveryDate;
-      if (!date) return;
-      if (!byDate.has(date)) byDate.set(date, []);
-      byDate.get(date)!.push(o);
+    weekOrderData.forEach(o => {
+      if (!byDate.has(o.deliveryDate)) byDate.set(o.deliveryDate, []);
+      byDate.get(o.deliveryDate)!.push(o);
     });
 
     return weekDates.map((date, i) => {
@@ -215,11 +262,39 @@ export function useRevenuePipeline(weeklyTarget = 45000) {
         routeCount: uniqueCustomers.size,
       };
     });
-  }, [orderData, weekDates]);
+  }, [weekOrderData, selectedWeek]);
+
+  // ─── Week Outlook (all 3 weeks at a glance) ──────────────────────────
+
+  const weekOutlook: WeekOutlook[] = useMemo(() => {
+    return allWeeks.map(week => {
+      const orders = allOrderData.filter(
+        o => o.deliveryDate >= week.start && o.deliveryDate <= week.end
+      );
+      const totalRevenue = orders.reduce((s, o) => s + o.revenue, 0);
+      const uniqueOrders = new Set(orders.map(o => o.orderId));
+      const uniqueCustomers = new Set(orders.map(o => o.customerName));
+
+      return {
+        weekOffset: week.offset,
+        label: week.label,
+        dateRange: week.dateRange,
+        totalRevenue,
+        orderCount: uniqueOrders.size,
+        routeCount: uniqueCustomers.size,
+        pctOfTarget: weeklyTarget > 0 ? Math.round((totalRevenue / weeklyTarget) * 100) : 0,
+      };
+    });
+  }, [allOrderData, allWeeks, weeklyTarget]);
 
   return {
     pipeline,
     deliveryDays,
+    weekOutlook,
+    weekOffset,
+    setWeekOffset,
+    selectedWeekLabel: selectedWeek.label,
+    selectedWeekRange: selectedWeek.dateRange,
     loading,
     refresh: fetchData,
   };

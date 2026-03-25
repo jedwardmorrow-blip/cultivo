@@ -10,6 +10,7 @@ interface Props {
   days: DeliveryDayData[];
   selectedDate: string | null;
   onSelectDate: (date: string | null) => void;
+  weekLabel?: string;
 }
 
 function routeIndicator(count: number) {
@@ -27,7 +28,7 @@ function routeIndicator(count: number) {
   );
 }
 
-export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate }: Props) {
+export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLabel }: Props) {
   const maxRevenue = Math.max(...days.map(d => d.totalRevenue), 1);
 
   function handleClick(date: string) {
@@ -44,7 +45,7 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate }: Props
           </div>
           <div>
             <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Delivery Load</div>
-            <div className="text-sm text-gray-400">This week &middot; click a day to filter</div>
+            <div className="text-sm text-gray-400">{weekLabel || 'This week'} &middot; click a day to filter</div>
           </div>
         </div>
 

@@ -456,18 +456,60 @@ function EnhancedByStrainView({
                                 </div>
 
                                 {/* Order rows */}
-                                <div className="space-y-1">
-                                  {dateOrders.map(o => (
-                                    <div key={o.order_item_id} className="flex items-center gap-3 text-sm text-gray-300">
-                                      <span className="text-gray-500 font-mono w-20 flex-shrink-0">{o.order_number}</span>
-                                      <span className="w-36 truncate flex-shrink-0">{o.customer_name}</span>
-                                      <span className="w-24 flex-shrink-0 text-gray-400">{o.format_label}</span>
-                                      <span className="w-16 text-right flex-shrink-0 tabular-nums">{o.quantity} units</span>
-                                      <span className="w-16 text-right flex-shrink-0 tabular-nums text-gray-400">{formatWeight(o.line_demand_g)}</span>
-                                      {urgencyBadge(o.urgency)}
-                                      {o.batch_number && batchStageBadge(o)}
-                                    </div>
-                                  ))}
+                                <div className="space-y-1.5">
+                                  {dateOrders.map(o => {
+                                    const assigned = o.units_assigned || 0;
+                                    const remaining = o.units_remaining ?? o.quantity;
+                                    const pct = o.assignment_pct || 0;
+                                    const isFullyAssigned = remaining <= 0;
+                                    const hasAssignment = assigned > 0;
+
+                                    return (
+                                      <div key={o.order_item_id} className={`flex items-center gap-3 text-sm rounded-cult px-2 py-1.5 ${
+                                        isFullyAssigned ? 'bg-emerald-500/5' : hasAssignment ? 'bg-amber-500/5' : ''
+                                      }`}>
+                                        <span className="text-gray-500 font-mono w-20 flex-shrink-0">{o.order_number}</span>
+                                        <span className="w-32 truncate flex-shrink-0 text-gray-300">{o.customer_name}</span>
+                                        <span className="w-24 flex-shrink-0 text-gray-400">{o.format_label}</span>
+
+                                        {/* Assignment progress */}
+                                        <div className="w-36 flex-shrink-0 flex items-center gap-2">
+                                          <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                            <div
+                                              className={`h-full rounded-full transition-all ${
+                                                pct >= 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-amber-500' : 'bg-gray-700'
+                                              }`}
+                                              style={{ width: `${Math.min(pct, 100)}%` }}
+                                            />
+                                          </div>
+                                          <span className={`text-xs tabular-nums font-medium ${
+                                            isFullyAssigned ? 'text-emerald-400' : hasAssignment ? 'text-amber-400' : 'text-gray-600'
+                                          }`}>
+                                            {assigned}/{o.quantity}
+                                          </span>
+                                        </div>
+
+                                        {/* Source batch + stage */}
+                                        {o.batch_number ? (
+                                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                                            <span className="text-xs text-gray-500 font-mono">{o.batch_number}</span>
+                                            <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                                              o.batch_stage_label === 'Packaged' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                              o.batch_stage_label === 'Trimming' || o.batch_stage_label === 'Bulk Available' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
+                                              o.batch_stage_label === 'Bucked' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                              'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                            }`}>
+                                              {o.batch_stage_label}
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <span className="text-xs text-gray-600 flex-shrink-0">No batch</span>
+                                        )}
+
+                                        {urgencyBadge(o.urgency)}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             );
@@ -672,7 +714,12 @@ function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
 
 export function ProductionQueue() {
   const { strainSummary, byStrain, byOrder, loading, error, stats, refresh } = useProductionQueue();
-  const { pipeline, deliveryDays, loading: revenueLoading } = useRevenuePipeline();
+  const {
+    pipeline, deliveryDays, weekOutlook,
+    weekOffset, setWeekOffset,
+    selectedWeekLabel, selectedWeekRange,
+    loading: revenueLoading,
+  } = useRevenuePipeline();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
@@ -732,7 +779,7 @@ export function ProductionQueue() {
         <div>
           <h1 className="text-2xl font-bold text-white">Production Queue</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {stats.totalOrders} orders · {stats.totalStrains} strains · hit {pipeline.pct}% of weekly target
+            {stats.totalOrders} open orders · {stats.totalStrains} strains · {selectedWeekLabel} at {pipeline.pct}% of target
           </p>
         </div>
         <button
@@ -745,13 +792,21 @@ export function ProductionQueue() {
       </div>
 
       {/* ── Revenue Pipeline ──────────────────────────────────────────────── */}
-      <RevenuePipeline data={pipeline} />
+      <RevenuePipeline
+        data={pipeline}
+        weekOutlook={weekOutlook}
+        weekOffset={weekOffset}
+        onWeekChange={setWeekOffset}
+        weekLabel={selectedWeekLabel}
+        weekRange={selectedWeekRange}
+      />
 
       {/* ── Delivery Load Balancer ────────────────────────────────────────── */}
       <DeliveryLoadBalancer
         days={deliveryDays}
         selectedDate={selectedDeliveryDate}
         onSelectDate={setSelectedDeliveryDate}
+        weekLabel={selectedWeekLabel}
       />
 
       {/* ── Stock Alerts (compact, only if needed) ────────────────────────── */}
