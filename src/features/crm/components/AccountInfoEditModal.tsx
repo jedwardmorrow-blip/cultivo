@@ -129,12 +129,12 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <FormField label="Email">
+            <FormField label="Email" helpText="Separate multiple emails with commas">
               <FormInput
-                type="email"
+                type="text"
                 value={formData.email || ''}
                 onChange={(v) => update('email', v)}
-                placeholder="contact@dispensary.com"
+                placeholder="buyer@dispensary.com, manager@dispensary.com"
               />
             </FormField>
 

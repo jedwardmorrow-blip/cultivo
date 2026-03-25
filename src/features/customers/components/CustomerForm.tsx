@@ -188,12 +188,12 @@ export function CustomerForm({ customer, isOpen, onClose, onSave, isSubmitting }
               />
             </FormField>
 
-            <FormField label="Email">
+            <FormField label="Email" helpText="Separate multiple emails with commas">
               <FormInput
-                type="email"
+                type="text"
                 value={formData.email || ''}
                 onChange={(value) => setFormData({ ...formData, email: value })}
-                placeholder="contact@dispensary.com"
+                placeholder="buyer@dispensary.com, manager@dispensary.com"
               />
             </FormField>
 
