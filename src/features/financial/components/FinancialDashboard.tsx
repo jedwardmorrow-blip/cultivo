@@ -8,7 +8,7 @@ interface FinancialPulse {
   revenue_last_30d: number;
   open_pipeline_value: number;
   burn_rate_monthly: number;
-  monthly_deficit: number;
+  monthly_surplus_deficit: number;
 }
 
 interface ARRecord {
@@ -153,10 +153,10 @@ export function FinancialDashboard() {
             <StatCard label="MTD Revenue" value={fmt(pulse.revenue_mtd)} />
             <StatCard label="Burn Rate Target" value={fmt(pulse.burn_rate_monthly)} subtitle="/month" />
             <StatCard
-              label="Monthly Deficit"
-              value={fmt(Math.abs(pulse.monthly_deficit))}
-              color={pulse.monthly_deficit < -40000 ? 'red' : pulse.monthly_deficit < 0 ? 'amber' : 'green'}
-              subtitle={pulse.monthly_deficit < 0 ? 'shortfall' : 'surplus'}
+              label={pulse.monthly_surplus_deficit < 0 ? 'Monthly Shortfall' : 'Monthly Surplus'}
+              value={fmt(Math.abs(pulse.monthly_surplus_deficit))}
+              color={pulse.monthly_surplus_deficit < -40000 ? 'red' : pulse.monthly_surplus_deficit < 0 ? 'amber' : 'green'}
+              subtitle={pulse.monthly_surplus_deficit < 0 ? 'shortfall' : 'surplus'}
             />
             <StatCard label="Open Pipeline" value={fmt(pulse.open_pipeline_value)} />
           </div>

@@ -143,6 +143,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     defaultView: 'financial',
     items: [
       { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
+      { id: 'financial-ar', label: 'Accounts Receivable', icon: DollarSign, group: 'primary' },
       { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
     ],
   },

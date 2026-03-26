@@ -63,6 +63,7 @@ const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'Automated
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
 const FinancialDashboard = lazyRetry(() => import('./features/financial'), 'FinancialDashboard');
 const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorBillEntry');
+const AccountsReceivable = lazyRetry(() => import('./features/financial'), 'AccountsReceivable');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
@@ -194,6 +195,7 @@ function AuthenticatedApp() {
               <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/financial" element={<FinancialDashboard />} />
+              <Route path="/financial-ar" element={<AccountsReceivable />} />
               <Route path="/financial-ap" element={<VendorBillEntry />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/strain-analytics" element={<StrainAnalyticsDashboard />} />

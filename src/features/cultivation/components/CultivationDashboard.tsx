@@ -298,16 +298,24 @@ export function CultivationDashboard() {
               Rooms
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {opsRooms.map((opsState) => {
-                const fullRoom = rooms.find((r) => r.id === opsState.room_id);
-                return (
-                  <RoomCommandCard
-                    key={opsState.room_id}
-                    state={opsState}
-                    onClick={() => { if (fullRoom) setSelectedRoom(fullRoom); }}
-                  />
-                );
-              })}
+              {[...opsRooms]
+                .sort((a, b) => {
+                  const order: Record<string, number> = { mother: 0, clone: 1, veg: 2, flower: 3, mixed: 4 };
+                  const aOrd = order[a.room_type] ?? 5;
+                  const bOrd = order[b.room_type] ?? 5;
+                  if (aOrd !== bOrd) return aOrd - bOrd;
+                  return a.room_code.localeCompare(b.room_code);
+                })
+                .map((opsState) => {
+                  const fullRoom = rooms.find((r) => r.id === opsState.room_id);
+                  return (
+                    <RoomCommandCard
+                      key={opsState.room_id}
+                      state={opsState}
+                      onClick={() => { if (fullRoom) setSelectedRoom(fullRoom); }}
+                    />
+                  );
+                })}
             </div>
           </div>
         )}
