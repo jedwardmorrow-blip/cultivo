@@ -29,6 +29,7 @@ export interface BatchYield {
   existing_3_5g: number;
   existing_14g: number;
   existing_1lb: number;
+  existing_preroll: number;
   existing_other_units: number;
 
   // Totals
@@ -39,6 +40,8 @@ export interface BatchYield {
   proj_3_5g: number;
   proj_14g: number;
   proj_1lb: number;
+  proj_preroll: number;
+  proj_trim_g: number;
   est_loose_bulk_g: number;
 
   // Age
@@ -88,6 +91,8 @@ export interface StrainAllocation {
   total_proj_3_5g: number;
   total_proj_14g: number;
   total_proj_1lb: number;
+  total_proj_preroll: number;
+  total_proj_trim_g: number;
   total_est_loose_bulk_g: number;
 }
 
@@ -100,6 +105,8 @@ export interface SkuYieldSummary {
   total_proj_3_5g: number;
   total_proj_14g: number;
   total_proj_1lb: number;
+  total_proj_preroll: number;
+  total_proj_trim_g: number;
 }
 
 // ─── Age pressure styles ────────────────────────────────────────────────────
@@ -138,6 +145,7 @@ function parseRow(r: Record<string, unknown>): BatchYield & { _conversion: Strai
     existing_3_5g: num(r.existing_3_5g),
     existing_14g: num(r.existing_14g),
     existing_1lb: num(r.existing_1lb),
+    existing_preroll: num(r.existing_preroll),
     existing_other_units: num(r.existing_other_units),
 
     total_remaining_g: num(r.total_remaining_g),
@@ -146,6 +154,8 @@ function parseRow(r: Record<string, unknown>): BatchYield & { _conversion: Strai
     proj_3_5g: num(r.proj_3_5g),
     proj_14g: num(r.proj_14g),
     proj_1lb: num(r.proj_1lb),
+    proj_preroll: num(r.proj_preroll),
+    proj_trim_g: num(r.proj_trim_g),
     est_loose_bulk_g: num(r.est_loose_bulk_g),
 
     age_pressure: (r.age_pressure as AgePressure) || 'normal',
@@ -240,6 +250,8 @@ export function useSkuYield() {
           total_proj_3_5g: 0,
           total_proj_14g: 0,
           total_proj_1lb: 0,
+          total_proj_preroll: 0,
+          total_proj_trim_g: 0,
           total_est_loose_bulk_g: 0,
         });
       }
@@ -254,6 +266,8 @@ export function useSkuYield() {
       s.total_proj_3_5g += b.proj_3_5g;
       s.total_proj_14g += b.proj_14g;
       s.total_proj_1lb += b.proj_1lb;
+      s.total_proj_preroll += b.proj_preroll;
+      s.total_proj_trim_g += b.proj_trim_g;
       s.total_est_loose_bulk_g += b.est_loose_bulk_g;
     }
 
@@ -283,6 +297,8 @@ export function useSkuYield() {
       total_proj_3_5g: strains.reduce((sum, s) => sum + s.total_proj_3_5g, 0),
       total_proj_14g: strains.reduce((sum, s) => sum + s.total_proj_14g, 0),
       total_proj_1lb: strains.reduce((sum, s) => sum + s.total_proj_1lb, 0),
+      total_proj_preroll: strains.reduce((sum, s) => sum + s.total_proj_preroll, 0),
+      total_proj_trim_g: strains.reduce((sum, s) => sum + s.total_proj_trim_g, 0),
     };
   }, [rawData, strains]);
 

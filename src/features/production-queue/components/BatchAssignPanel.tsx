@@ -4,7 +4,7 @@ import { useAvailablePackagesForStrain, useBatchAssign } from '../hooks/useBatch
 import { useBatchesForStrain } from '../hooks/useBatchPlanning';
 import type { BatchAssignContext, BatchPlanData, OrderLineItem, Urgency } from '../types';
 import type { AvailablePackage } from '@/features/orders/services';
-import { formatDateShort } from '@/shared/utils/format';
+import { formatDateShort, formatWeight } from '@/shared/utils/format';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -25,13 +25,6 @@ interface BatchAssignPanelProps {
   context: BatchAssignContext;
   onClose: () => void;
   onCommitComplete?: () => void;
-}
-
-function formatWeight(grams: number): string {
-  if (grams >= 453.592) {
-    return `${(grams / 453.592).toFixed(1)} lbs`;
-  }
-  return `${grams.toLocaleString()}g`;
 }
 
 export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAssignPanelProps) {

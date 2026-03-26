@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { ConsistencyBreakdownItem } from '../../types/rosin-lab.types';
 import { getConsistencyBreakdown } from '../../services/rosinLabService';
 import { CONSISTENCY_COLORS, CONSISTENCY_LABELS } from '../../utils/analyticsHelpers';
+import { formatWeight } from '@/shared/utils/format';
 
 const OUTER_R = 95;
 const STROKE_W = 50;
@@ -83,10 +84,7 @@ export const ConsistencyBreakdown: React.FC<ConsistencyBreakdownProps> = ({
     return result;
   });
 
-  const totalLabel =
-    totalWeight >= 1000
-      ? `${(totalWeight / 1000).toFixed(2)}kg`
-      : `${Math.round(totalWeight)}g`;
+  const totalLabel = formatWeight(totalWeight);
 
   if (loading) {
     return (

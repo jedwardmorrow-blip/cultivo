@@ -15,16 +15,11 @@ import {
   type BatchYield,
   type Confidence,
 } from '@/shared/hooks/useSkuYield';
+import { SKU_COLORS } from '@/shared/components/inventory';
+
+import { formatWeight } from '@/shared/utils/format';
 
 // ─── Formatters ─────────────────────────────────────────────────────────────
-
-function formatWeight(grams: number): string {
-  if (grams >= 453.592) {
-    const lbs = grams / 453.592;
-    return `${lbs.toFixed(1)} lbs`;
-  }
-  return `${Math.round(grams)}g`;
-}
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '—';
@@ -127,24 +122,24 @@ function ConversionFunnel({ conversion }: { conversion: StrainConversion }) {
 
 // ─── SKU Split Bar ──────────────────────────────────────────────────────────
 
-const SKU_COLORS = {
-  '3.5g': { bg: 'bg-emerald-500', text: 'text-emerald-400', label: '3.5g Jars' },
-  '14g':  { bg: 'bg-sky-500',     text: 'text-sky-400',     label: '14g Mylars' },
-  '1lb':  { bg: 'bg-violet-500',  text: 'text-violet-400',  label: '1lb Bags' },
-} as const;
+// SKU_COLORS imported from @/shared/components/inventory (canonical source)
 
 function SkuSplitBar({ allocation }: { allocation: StrainAllocation }) {
   const total = allocation.total_proj_3_5g * 3.5
     + allocation.total_proj_14g * 14
     + allocation.total_proj_1lb * 454
+    + allocation.total_proj_preroll * 1
+    + allocation.total_proj_trim_g
     + allocation.total_est_loose_bulk_g;
 
   if (total <= 0) return null;
 
   const segments = [
-    { key: '3.5g' as const, grams: allocation.total_proj_3_5g * 3.5, units: allocation.total_proj_3_5g },
-    { key: '14g' as const,  grams: allocation.total_proj_14g * 14,   units: allocation.total_proj_14g },
-    { key: '1lb' as const,  grams: allocation.total_proj_1lb * 454,  units: allocation.total_proj_1lb },
+    { key: '3.5g' as const,    grams: allocation.total_proj_3_5g * 3.5,   units: allocation.total_proj_3_5g,    unitLabel: true },
+    { key: '14g' as const,     grams: allocation.total_proj_14g * 14,      units: allocation.total_proj_14g,     unitLabel: true },
+    { key: '1lb' as const,     grams: allocation.total_proj_1lb * 454,     units: allocation.total_proj_1lb,     unitLabel: true },
+    { key: 'preroll' as const, grams: allocation.total_proj_preroll * 1,   units: allocation.total_proj_preroll,  unitLabel: true },
+    { key: 'trim' as const,    grams: allocation.total_proj_trim_g,        units: 0,                             unitLabel: false },
   ].filter(s => s.grams > 0);
 
   return (
@@ -161,11 +156,11 @@ function SkuSplitBar({ allocation }: { allocation: StrainAllocation }) {
         ))}
       </div>
       {/* Legend */}
-      <div className="flex items-center gap-3 text-[11px]">
+      <div className="flex items-center gap-3 text-[11px] flex-wrap">
         {segments.map(s => (
           <span key={s.key} className={`flex items-center gap-1 ${SKU_COLORS[s.key].text}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${SKU_COLORS[s.key].bg}`} />
-            <span className="font-semibold tabular-nums">{s.units}</span>
+            <span className="font-semibold tabular-nums">{s.unitLabel ? s.units : formatWeight(s.grams)}</span>
             <span className="text-gray-600">{SKU_COLORS[s.key].label}</span>
           </span>
         ))}
@@ -211,23 +206,23 @@ function RemainingBar({ batch }: { batch: BatchYield }) {
 // ─── SKU Projection Chips ───────────────────────────────────────────────────
 
 function SkuChips({ batch }: { batch: BatchYield }) {
-  const chips = [
+  const unitChips = [
     { label: '3.5g', count: batch.proj_3_5g, color: SKU_COLORS['3.5g'] },
     { label: '14g',  count: batch.proj_14g,  color: SKU_COLORS['14g'] },
     { label: '1lb',  count: batch.proj_1lb,  color: SKU_COLORS['1lb'] },
+    { label: 'pre',  count: batch.proj_preroll, color: SKU_COLORS['preroll'] },
   ].filter(c => c.count > 0);
 
-  if (chips.length === 0) {
-    // Batch is all trim or depleted
-    if (batch.trim_g > 0) {
-      return <span className="text-[11px] text-amber-400/70 tabular-nums">{formatWeight(batch.trim_g)} trim</span>;
-    }
+  const hasTrim = batch.proj_trim_g > 0;
+  const hasAnything = unitChips.length > 0 || hasTrim;
+
+  if (!hasAnything) {
     return <span className="text-xs text-gray-600">—</span>;
   }
 
   return (
     <div className="flex items-center gap-2">
-      {chips.map(c => (
+      {unitChips.map(c => (
         <span
           key={c.label}
           className={`inline-flex items-center gap-0.5 text-[11px] tabular-nums ${c.color.text}`}
@@ -237,6 +232,12 @@ function SkuChips({ batch }: { batch: BatchYield }) {
           <span>{c.label}</span>
         </span>
       ))}
+      {hasTrim && (
+        <span className={`inline-flex items-center gap-0.5 text-[11px] tabular-nums ${SKU_COLORS['trim'].text}`}>
+          <span className="font-semibold">{formatWeight(batch.proj_trim_g)}</span>
+          <span className="text-gray-600">trim</span>
+        </span>
+      )}
     </div>
   );
 }
@@ -273,7 +274,7 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
   }
 
   const { conversion, batches } = allocation;
-  const hasProjections = allocation.total_proj_3_5g > 0 || allocation.total_proj_14g > 0 || allocation.total_proj_1lb > 0;
+  const hasProjections = allocation.total_proj_3_5g > 0 || allocation.total_proj_14g > 0 || allocation.total_proj_1lb > 0 || allocation.total_proj_preroll > 0 || allocation.total_proj_trim_g > 0;
 
   return (
     <div className="px-6 py-4 space-y-3">

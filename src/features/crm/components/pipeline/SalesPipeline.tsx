@@ -1,13 +1,14 @@
 /**
- * SalesPipeline — Phase 5 "Inventory Simplification"
+ * SalesPipeline — Phase 6 "SKU Yield Unification"
  *
- * Replaces the previous dense 7-column pipeline grid with a clean
- * strain → batch → stage drill-down.
+ * Migrated from runway-based depletion model to SKU yield projections.
+ * Now shares the same data model as ProductionQueue (useSkuYield).
  *
- * Click a strain  → see its batches
- * Each batch card → horizontal stage bar + qty labels
+ * Keeps demand overlay (useStrainDemandPressure) since Leo needs
+ * to see committed orders alongside projected inventory.
  *
- * v2 — search filter + summary charts (pure CSS, zero deps)
+ * Click a strain  → see its batches + BatchAllocationPanel
+ * Summary charts → SKU projections + demand vs. capacity
  */
 
 import { useState, useMemo } from 'react';
@@ -22,6 +23,7 @@ import {
   X,
   BarChart3,
   ShoppingCart,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   useSimplifiedInventory,
@@ -32,246 +34,174 @@ import {
   type StrainDemandPressure,
 } from '@/features/orders/hooks/useStrainInventory';
 import {
-  useStrainRunway,
-  RUNWAY_STYLES,
-  runwayLabel,
-  runwayTooltip,
-  type StrainRunway,
-} from '@/shared/hooks/useStrainRunway';
+  useSkuYield,
+  AGE_STYLES,
+  type StrainAllocation,
+  type AgePressure,
+} from '@/shared/hooks/useSkuYield';
 import { LoadingSpinner } from '@/shared/components';
 import {
   StageBar,
   BatchCard,
+  SKU_COLORS,
   fmtGrams as fmt,
   type BatchSummary,
 } from '@/shared/components/inventory';
+import { BatchAllocationPanel } from '@/features/production-queue/components/BatchAllocationPanel';
+import { formatWeight } from '@/shared/utils/format';
 
 /* ────────────────────────────────────────────── *
- *  Constants                                      *
+ *  SummaryCharts — SKU yield projections          *
  * ────────────────────────────────────────────── */
 
-/* STAGE_COLORS now imported from @/shared/components/inventory */
-
-const HEALTH_STYLES: Record<
-  string,
-  { bg: string; text: string; dot: string }
-> = {
-  healthy: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
-  },
-  low: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
-    dot: 'bg-amber-400',
-  },
-  warning: {
-    bg: 'bg-orange-500/10',
-    text: 'text-orange-400',
-    dot: 'bg-orange-400',
-  },
-  critical: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-400',
-    dot: 'bg-red-400',
-  },
-};
-
-const HEALTH_HEX: Record<string, string> = {
-  healthy: '#10b981',
-  low: '#f59e0b',
-  warning: '#f97316',
-  critical: '#ef4444',
-};
-
-const HEALTH_DESCRIPTIONS: Record<string, string> = {
-  healthy: 'Good supply — sellable stock on hand or 10kg+ in the pipeline',
-  low: 'Running low — under 500g sellable with little or no pipeline to replenish',
-  warning: 'Watch closely — low sellable stock, but some pipeline inventory is in progress',
-  critical: 'Out of stock — open demand with zero sellable and zero pipeline inventory',
-};
-
-/* ────────────────────────────────────────────── *
- *  Helpers                                        *
- * ────────────────────────────────────────────── */
-
-/* fmt() now imported as fmtGrams from @/shared/components/inventory */
-
-/* ────────────────────────────────────────────── *
- *  SummaryCharts                                  *
- * ────────────────────────────────────────────── */
-
-function SummaryCharts({ strains, demandMap, runwayMap }: { strains: StrainSummary[]; demandMap: Map<string, StrainDemandPressure>; runwayMap: Map<string, StrainRunway> }) {
-  const total = strains.length || 1;
-
-  /* health distribution — use runway if available, fall back to old health */
-  const healthCounts = useMemo(() => {
-    const c: Record<string, number> = { healthy: 0, low: 0, warning: 0, critical: 0 };
-    strains.forEach((s) => { c[s.healthStatus] = (c[s.healthStatus] || 0) + 1; });
-    return c;
-  }, [strains]);
-
-  /* runway distribution */
-  const runwayCounts = useMemo(() => {
-    const c = { sold_out: 0, critical: 0, tight: 0, comfortable: 0, surplus: 0, no_demand: 0, revenueAtRisk: 0 };
-    runwayMap.forEach(r => {
-      c[r.runway_status]++;
-      if (r.runway_status === 'sold_out' || r.runway_status === 'critical') {
-        c.revenueAtRisk += r.demand_revenue;
-      }
+function SummaryCharts({
+  strains,
+  demandMap,
+  skuStrains,
+  summary,
+}: {
+  strains: StrainSummary[];
+  demandMap: Map<string, StrainDemandPressure>;
+  skuStrains: StrainAllocation[];
+  summary: { total_proj_3_5g: number; total_proj_14g: number; total_proj_1lb: number; total_proj_preroll: number; total_proj_trim_g: number; total_batches: number; aging_batches: number; total_remaining_g: number };
+}) {
+  /* ── Age pressure distribution ── */
+  const ageCounts = useMemo(() => {
+    const c = { fresh: 0, normal: 0, watch: 0, aging: 0 };
+    skuStrains.forEach(s => {
+      s.batches.forEach(b => { c[b.age_pressure]++; });
     });
     return c;
-  }, [runwayMap]);
+  }, [skuStrains]);
+  const totalBatches = summary.total_batches || 1;
 
-  const hasRunway = runwayMap.size > 0;
-
-  /* inventory breakdown (sellable / pipeline / byproduct) + committed demand in grams */
-  const breakdown = useMemo(() => {
-    let sellable = 0, pipeline = 0, byproduct = 0, committedGrams = 0;
-    strains.forEach((s) => {
-      sellable += s.sellableGrams;
-      pipeline += s.pipelineGrams;
-      byproduct += s.byproductGrams;
+  /* ── Demand vs. projected capacity ── */
+  const demandVsCapacity = useMemo(() => {
+    let committedGrams = 0;
+    strains.forEach(s => {
       const d = demandMap.get(s.strain);
       if (d) committedGrams += d.total_committed_weight_grams;
     });
-    const grand = sellable + pipeline + byproduct || 1;
-    return { sellable, pipeline, byproduct, committedGrams, grand };
-  }, [strains, demandMap]);
+    const projectedGrams =
+      summary.total_proj_3_5g * 3.5 +
+      summary.total_proj_14g * 14 +
+      summary.total_proj_1lb * 454;
+    return { committedGrams, projectedGrams };
+  }, [strains, demandMap, summary]);
 
-  /* top 5 by weight */
-  const top5 = useMemo(
-    () => [...strains].sort((a, b) => b.totalGrams - a.totalGrams).slice(0, 5),
-    [strains],
-  );
-  const maxW = top5[0]?.totalGrams || 1;
+  /* ── Top 5 by projected yield ── */
+  const top5 = useMemo(() => {
+    return [...skuStrains]
+      .sort((a, b) => {
+        const aTotal = a.total_proj_3_5g + a.total_proj_14g + a.total_proj_1lb;
+        const bTotal = b.total_proj_3_5g + b.total_proj_14g + b.total_proj_1lb;
+        return bTotal - aTotal;
+      })
+      .slice(0, 5);
+  }, [skuStrains]);
+  const maxUnits = top5[0] ? (top5[0].total_proj_3_5g + top5[0].total_proj_14g + top5[0].total_proj_1lb) : 1;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
-      {/* ── Runway / Health ── */}
+      {/* ── Batch Health (Age Pressure) ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-          {hasRunway ? 'Sell-Out Runway' : 'Health'}
-        </h4>
-        {hasRunway ? (
-          <div className="space-y-1.5">
-            {([
-              { key: 'sold_out' as const, label: 'Sold Out', hex: '#ef4444' },
-              { key: 'critical' as const, label: 'Critical', hex: '#f87171' },
-              { key: 'tight' as const, label: 'Tight', hex: '#f59e0b' },
-              { key: 'comfortable' as const, label: 'OK', hex: '#10b981' },
-              { key: 'surplus' as const, label: 'Surplus', hex: '#10b981' },
-            ]).map(({ key, label, hex }) => {
-              const n = runwayCounts[key];
-              if (n === 0) return null;
-              const pct = (n / Math.max(runwayMap.size, 1)) * 100;
-              return (
-                <div key={key} className="flex items-center gap-2">
-                  <span className="text-xs w-14 text-neutral-500">{label}</span>
-                  <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, backgroundColor: hex }}
-                    />
-                  </div>
-                  <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
-                </div>
-              );
-            })}
-            {runwayCounts.revenueAtRisk > 0 && (
-              <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 text-center">
-                <span className="text-xs text-red-400 font-semibold">
-                  ${runwayCounts.revenueAtRisk.toLocaleString()} at risk
-                </span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            {(['healthy', 'low', 'warning', 'critical'] as const).map((k) => {
-              const n = healthCounts[k];
-              const pct = (n / total) * 100;
-              return (
-                <div key={k} className="flex items-center gap-2">
-                  <span className="text-xs w-12 capitalize text-neutral-500">{k}</span>
-                  <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[k] }}
-                    />
-                  </div>
-                  <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ── Breakdown ── */}
-      <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-          Breakdown
+          Batch Health
         </h4>
         <div className="space-y-1.5">
           {([
-            { label: 'Sellable', v: breakdown.sellable, c: '#06b6d4', isUnits: false },
-            { label: 'Pipeline', v: breakdown.pipeline, c: '#8b5cf6', isUnits: false },
-            { label: 'Byproduct', v: breakdown.byproduct, c: '#78716c', isUnits: false },
-          ] as const).map(({ label, v, c }) => {
-            const pct = (v / breakdown.grand) * 100;
+            { key: 'aging' as const, hex: '#ef4444' },
+            { key: 'watch' as const, hex: '#f59e0b' },
+            { key: 'normal' as const, hex: '#9ca3af' },
+            { key: 'fresh' as const, hex: '#10b981' },
+          ]).map(({ key, hex }) => {
+            const n = ageCounts[key];
+            if (n === 0) return null;
+            const pct = (n / totalBatches) * 100;
             return (
-              <div key={label} className="flex items-center gap-2">
-                <span className="text-xs w-14 text-neutral-500">{label}</span>
+              <div key={key} className="flex items-center gap-2">
+                <span className="text-xs w-14 text-neutral-500 capitalize">{AGE_STYLES[key].label}</span>
                 <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%`, backgroundColor: c }}
+                    style={{ width: `${pct}%`, backgroundColor: hex }}
                   />
                 </div>
-                <span className="text-xs w-12 text-right font-bold text-neutral-400 tabular-nums">
-                  {fmt(v)}
-                </span>
+                <span className="text-xs w-5 text-right font-bold text-neutral-400 tabular-nums">{n}</span>
               </div>
             );
           })}
-          {breakdown.committedGrams > 0 && (
-            <div className="flex items-center gap-2 pt-1 mt-1 border-t border-cult-medium-gray/10">
-              <span className="text-xs w-14 text-cyan-500">Committed</span>
-              <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min((breakdown.committedGrams / (breakdown.sellable || 1)) * 100, 100)}%`,
-                    backgroundColor: '#22d3ee',
-                  }}
-                />
-              </div>
-              <span className="text-xs w-12 text-right font-bold text-cyan-400 tabular-nums">
-                {fmt(breakdown.committedGrams)}
+          {summary.aging_batches > 0 && (
+            <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 text-center">
+              <span className="text-xs text-red-400 font-semibold">
+                {summary.aging_batches} batch{summary.aging_batches !== 1 ? 'es' : ''} aging — process ASAP
               </span>
             </div>
           )}
         </div>
-        <div className="mt-2 pt-1.5 border-t border-cult-medium-gray/10 text-center text-xs text-neutral-600">
-          Total <span className="text-neutral-400 font-bold">{fmt(breakdown.grand)}</span>
-          {breakdown.committedGrams > 0 && (
-            <span className="ml-2 text-cyan-500">
-              · {fmt(breakdown.committedGrams)} committed
-            </span>
+      </div>
+
+      {/* ── SKU Projections ── */}
+      <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+          Projected Output
+        </h4>
+        <div className="space-y-1.5">
+          {([
+            { label: '3.5g Jars', v: summary.total_proj_3_5g, hex: SKU_COLORS['3.5g'].hex, display: summary.total_proj_3_5g.toLocaleString() },
+            { label: '14g Mylars', v: summary.total_proj_14g, hex: SKU_COLORS['14g'].hex, display: summary.total_proj_14g.toLocaleString() },
+            { label: '1lb Bags', v: summary.total_proj_1lb, hex: SKU_COLORS['1lb'].hex, display: summary.total_proj_1lb.toLocaleString() },
+            { label: 'Prerolls', v: summary.total_proj_preroll, hex: SKU_COLORS['preroll'].hex, display: summary.total_proj_preroll.toLocaleString() },
+            { label: 'Trim', v: summary.total_proj_trim_g, hex: SKU_COLORS['trim'].hex, display: formatWeight(summary.total_proj_trim_g) },
+          ]).filter(r => r.v > 0).map(({ label, v, hex, display }) => {
+            const maxVal = Math.max(summary.total_proj_3_5g, summary.total_proj_14g, summary.total_proj_1lb, summary.total_proj_preroll, summary.total_proj_trim_g, 1);
+            const pct = (v / maxVal) * 100;
+            return (
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-xs w-16 text-neutral-500">{label}</span>
+                <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%`, backgroundColor: hex }}
+                  />
+                </div>
+                <span className="text-xs w-12 text-right font-bold text-neutral-400 tabular-nums">
+                  {display}
+                </span>
+              </div>
+            );
+          })}
+          {demandVsCapacity.committedGrams > 0 && (
+            <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 flex items-center gap-2">
+              <ShoppingCart className="w-3 h-3 text-cyan-400" />
+              <span className="text-xs text-cyan-400">
+                {fmt(demandVsCapacity.committedGrams)} committed
+              </span>
+              <span className="text-xs text-neutral-600">vs.</span>
+              <span className="text-xs text-neutral-400">
+                {fmt(demandVsCapacity.projectedGrams)} projected
+              </span>
+            </div>
           )}
         </div>
       </div>
 
-      {/* ── Top 5 ── */}
+      {/* ── Top 5 Strains (by projected units) ── */}
       <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Top 5 Strains
         </h4>
         <div className="space-y-1.5">
           {top5.map((s) => {
-            const pct = (s.totalGrams / maxW) * 100;
+            const totalUnits = s.total_proj_3_5g + s.total_proj_14g + s.total_proj_1lb;
+            const pct = (totalUnits / maxUnits) * 100;
+            // Color: use the dominant SKU type
+            const hex = s.total_proj_3_5g >= s.total_proj_14g && s.total_proj_3_5g >= s.total_proj_1lb
+              ? SKU_COLORS['3.5g'].hex
+              : s.total_proj_14g >= s.total_proj_1lb
+                ? SKU_COLORS['14g'].hex
+                : SKU_COLORS['1lb'].hex;
+
             return (
               <div key={s.strain} className="flex items-center gap-2">
                 <span className="text-xs w-16 text-neutral-400 truncate" title={s.strain}>
@@ -280,11 +210,11 @@ function SummaryCharts({ strains, demandMap, runwayMap }: { strains: StrainSumma
                 <div className="flex-1 h-2.5 rounded-full bg-neutral-900 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%`, backgroundColor: HEALTH_HEX[s.healthStatus] }}
+                    style={{ width: `${pct}%`, backgroundColor: hex }}
                   />
                 </div>
-                <span className="text-xs w-10 text-right font-bold text-neutral-400 tabular-nums">
-                  {fmt(s.totalGrams)}
+                <span className="text-xs w-12 text-right font-bold text-neutral-400 tabular-nums">
+                  {totalUnits.toLocaleString()}
                 </span>
               </div>
             );
@@ -299,52 +229,84 @@ function SummaryCharts({ strains, demandMap, runwayMap }: { strains: StrainSumma
  *  Sub-components                                 *
  * ────────────────────────────────────────────── */
 
-function HealthDot({ status }: { status: string }) {
-  const s = HEALTH_STYLES[status] || HEALTH_STYLES.healthy;
-  const desc = HEALTH_DESCRIPTIONS[status] || status;
+function AgePressureDot({ allocation }: { allocation: StrainAllocation | undefined }) {
+  if (!allocation) return null;
+
+  // Show the worst age pressure across batches
+  const worstPressure: AgePressure =
+    allocation.aging_batches > 0 ? 'aging' :
+    allocation.batches.some(b => b.age_pressure === 'watch') ? 'watch' :
+    allocation.batches.some(b => b.age_pressure === 'normal') ? 'normal' : 'fresh';
+
+  const style = AGE_STYLES[worstPressure];
+
   return (
-    <div className="relative group/health">
+    <div className="relative group/age">
       <div
-        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${s.bg} cursor-default`}
+        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${style.bg} border ${style.border} cursor-default ${
+          worstPressure === 'aging' ? 'animate-pulse' : ''
+        }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-        <span className={`text-xs font-semibold capitalize ${s.text}`}>
-          {status}
+        <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+        <span className={`text-xs font-bold tabular-nums ${style.text}`}>
+          {allocation.oldest_age_days}d
         </span>
       </div>
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/health:opacity-100 group-hover/health:visible transition-all duration-200 z-50 pointer-events-none">
-        {desc}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/age:opacity-100 group-hover/age:visible transition-all duration-200 z-50 pointer-events-none max-w-xs">
+        Oldest batch: {allocation.oldest_age_days} days ({style.label})
+        {allocation.aging_batches > 0 && ` · ${allocation.aging_batches} aging`}
         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
       </div>
     </div>
   );
 }
 
-function RunwayDot({ runway }: { runway?: StrainRunway }) {
-  if (!runway) return null;
-  const style = RUNWAY_STYLES[runway.runway_status];
-  const label = runwayLabel(runway);
-  const tip = runwayTooltip(runway);
-  const isPulsing = runway.runway_status === 'sold_out' || runway.runway_status === 'critical';
-  const isEstimated = runway.confidence === 'estimated' && runway.runway_status !== 'no_demand';
+function SkuProjectionBadge({ allocation }: { allocation: StrainAllocation | undefined }) {
+  if (!allocation) return null;
+
+  const { total_proj_3_5g, total_proj_14g, total_proj_1lb, total_proj_preroll, total_proj_trim_g } = allocation;
+  const hasProjections = total_proj_3_5g > 0 || total_proj_14g > 0 || total_proj_1lb > 0 || total_proj_preroll > 0 || total_proj_trim_g > 0;
+
+  if (!hasProjections) {
+    return (
+      <span className="text-xs text-gray-500" title="No projections — inventory may be unprocessed">
+        —
+      </span>
+    );
+  }
 
   return (
-    <div className="relative group/runway">
-      <div
-        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${style.bg} border ${style.border} cursor-default ${isPulsing ? 'animate-pulse-red' : ''}`}
-      >
-        <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
-        <span className={`text-xs font-bold tabular-nums ${style.text}`}>
-          {label}
+    <div className="flex items-center gap-1.5">
+      {total_proj_3_5g > 0 && (
+        <span className={`text-[11px] tabular-nums ${SKU_COLORS['3.5g'].text}`} title={`${total_proj_3_5g} × 3.5g jars projected`}>
+          <span className="font-semibold">{total_proj_3_5g}</span>
+          <span className="text-gray-600 ml-0.5">3.5g</span>
         </span>
-        {isEstimated && runway.runway_status !== 'sold_out' && (
-          <span className={`text-xs opacity-50 font-normal ${style.text}`}>est.</span>
-        )}
-      </div>
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 invisible group-hover/runway:opacity-100 group-hover/runway:visible transition-all duration-200 z-50 pointer-events-none max-w-xs">
-        {tip}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-      </div>
+      )}
+      {total_proj_14g > 0 && (
+        <span className={`text-[11px] tabular-nums ${SKU_COLORS['14g'].text}`} title={`${total_proj_14g} × 14g mylars projected`}>
+          <span className="font-semibold">{total_proj_14g}</span>
+          <span className="text-gray-600 ml-0.5">14g</span>
+        </span>
+      )}
+      {total_proj_1lb > 0 && (
+        <span className={`text-[11px] tabular-nums ${SKU_COLORS['1lb'].text}`} title={`${total_proj_1lb} × 1lb bags projected`}>
+          <span className="font-semibold">{total_proj_1lb}</span>
+          <span className="text-gray-600 ml-0.5">1lb</span>
+        </span>
+      )}
+      {total_proj_preroll > 0 && (
+        <span className={`text-[11px] tabular-nums ${SKU_COLORS['preroll'].text}`} title={`${total_proj_preroll} × 1g prerolls`}>
+          <span className="font-semibold">{total_proj_preroll}</span>
+          <span className="text-gray-600 ml-0.5">pre</span>
+        </span>
+      )}
+      {total_proj_trim_g > 0 && (
+        <span className={`text-[11px] tabular-nums ${SKU_COLORS['trim'].text}`} title={`${formatWeight(total_proj_trim_g)} trim projected`}>
+          <span className="font-semibold">{formatWeight(total_proj_trim_g)}</span>
+          <span className="text-gray-600 ml-0.5">trim</span>
+        </span>
+      )}
     </div>
   );
 }
@@ -358,7 +320,7 @@ function StrainRow({
   batches,
   batchesLoading,
   demand,
-  runway,
+  allocation,
 }: {
   strain: StrainSummary;
   isExpanded: boolean;
@@ -366,7 +328,7 @@ function StrainRow({
   batches: BatchSummary[];
   batchesLoading: boolean;
   demand?: StrainDemandPressure;
-  runway?: StrainRunway;
+  allocation?: StrainAllocation;
 }) {
   const Chevron = isExpanded ? ChevronDown : ChevronRight;
   const committedWeight = demand?.total_committed_weight_grams || 0;
@@ -385,6 +347,10 @@ function StrainRow({
           {strain.strain}
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
+          {/* SKU projection badge */}
+          <SkuProjectionBadge allocation={allocation} />
+
+          {/* Committed demand */}
           {committedWeight > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/10">
               <ShoppingCart className="w-3 h-3 text-cyan-400" />
@@ -396,29 +362,36 @@ function StrainRow({
               </span>
             </div>
           )}
+
+          {/* Weight + aging alert */}
           <div className="text-right hidden sm:block">
             <div className="text-xs font-bold text-neutral-300 tabular-nums">
-              {fmt(strain.totalGrams)}
+              {formatWeight(allocation?.total_remaining_g ?? strain.totalGrams)}
             </div>
-            <div className="text-xs text-neutral-600">
-              {fmt(strain.sellableGrams)} sellable
-            </div>
+            {allocation && allocation.aging_batches > 0 && (
+              <div className="flex items-center gap-1 justify-end">
+                <AlertTriangle className="w-3 h-3 text-red-400" />
+                <span className="text-xs text-red-400">{allocation.aging_batches} aging</span>
+              </div>
+            )}
           </div>
           <div className="text-right sm:hidden">
             <div className="text-xs font-bold text-neutral-300 tabular-nums">
-              {fmt(strain.totalGrams)}
+              {formatWeight(allocation?.total_remaining_g ?? strain.totalGrams)}
             </div>
           </div>
-          {runway ? <RunwayDot runway={runway} /> : <HealthDot status={strain.healthStatus} />}
+
+          {/* Age pressure dot (replaces RunwayDot / HealthDot) */}
+          <AgePressureDot allocation={allocation} />
         </div>
       </button>
 
       {/* Expanded batch list */}
       {isExpanded && (
-        <div className="px-4 pb-3 border-t border-cult-medium-gray/10">
+        <div className="border-t border-cult-medium-gray/10">
           {/* Demand detail banner */}
           {demand && demand.pending_order_details.length > 0 && (
-            <div className="mt-3 mb-2 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/15">
+            <div className="mx-4 mt-3 mb-2 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/15">
               <div className="flex items-center gap-2 mb-2">
                 <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
                 <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
@@ -453,24 +426,26 @@ function StrainRow({
             </div>
           )}
 
-          {batchesLoading ? (
-            <div className="flex items-center gap-2 py-6 justify-center">
-              <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
-              <span className="text-xs text-neutral-500">
-                Loading batches…
-              </span>
-            </div>
-          ) : batches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
-              {batches.map((b) => (
-                <BatchCard key={b.batchNumber} batch={b} />
-              ))}
-            </div>
-          ) : (
-            <div className="py-6 text-center text-xs text-neutral-600">
-              No available inventory for this strain
-            </div>
-          )}
+          {/* BatchAllocationPanel — conversion funnel + SKU yield projections */}
+          <BatchAllocationPanel allocation={allocation} strainName={strain.strain} />
+
+          {/* Batch cards (legacy view for stage detail) */}
+          <div className="px-4 pb-3">
+            {batchesLoading ? (
+              <div className="flex items-center gap-2 py-6 justify-center">
+                <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
+                <span className="text-xs text-neutral-500">
+                  Loading batches…
+                </span>
+              </div>
+            ) : batches.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
+                {batches.map((b) => (
+                  <BatchCard key={b.batchNumber} batch={b} />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
     </div>
@@ -494,14 +469,7 @@ export function SalesPipeline() {
   } = useSimplifiedInventory();
 
   const { demandMap } = useStrainDemandPressure();
-  const { data: runwayData } = useStrainRunway();
-
-  // Build runway lookup by strain name
-  const runwayMap = useMemo(() => {
-    const map = new Map<string, StrainRunway>();
-    runwayData.forEach(r => map.set(r.strain, r));
-    return map;
-  }, [runwayData]);
+  const { byStrain: skuByStrain, strains: skuStrains, summary: skuSummary, loading: skuLoading } = useSkuYield();
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -521,7 +489,7 @@ export function SalesPipeline() {
   }, [strains, searchTerm]);
 
   /* ── Loading state ── */
-  if (loading) {
+  if (loading && skuLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <LoadingSpinner />
@@ -558,6 +526,11 @@ export function SalesPipeline() {
               ? `${strains.length} strains`
               : `${filtered.length} / ${strains.length} strains`}
           </span>
+          {skuSummary.total_batches > 0 && (
+            <span className="text-xs text-neutral-600">
+              · {skuSummary.total_batches} batches · {formatWeight(skuSummary.total_remaining_g)}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           <button
@@ -608,7 +581,14 @@ export function SalesPipeline() {
       </div>
 
       {/* Charts */}
-      {showCharts && strains.length > 0 && <SummaryCharts strains={strains} demandMap={demandMap} runwayMap={runwayMap} />}
+      {showCharts && strains.length > 0 && (
+        <SummaryCharts
+          strains={strains}
+          demandMap={demandMap}
+          skuStrains={skuStrains}
+          summary={skuSummary}
+        />
+      )}
 
       {/* Strain list */}
       <div className="space-y-2">
@@ -633,7 +613,7 @@ export function SalesPipeline() {
                 expandedStrain === s.strain ? batchesLoading : false
               }
               demand={demandMap.get(s.strain)}
-              runway={runwayMap.get(s.strain)}
+              allocation={skuByStrain.get(s.strain)}
             />
           ))
         )}

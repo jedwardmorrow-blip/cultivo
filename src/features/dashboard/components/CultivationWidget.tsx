@@ -4,6 +4,7 @@ import { Sprout, Scissors, Scale, ArrowRight, AlertTriangle } from 'lucide-react
 import { cultivationService } from '@/features/cultivation/services';
 import { isValidStrainAbbreviation } from '@/features/cultivation/utils';
 import type { HarvestSession, BinningSession } from '@/features/cultivation/types';
+import { formatWeight } from '@/shared/utils/format';
 
 interface CultivationSummary {
   activeGroups: number;
@@ -22,11 +23,6 @@ const STAGE_STYLES: Record<string, { bar: string; text: string }> = {
   veg: { bar: 'bg-cult-stage-veg', text: 'text-cult-stage-veg' },
   flower: { bar: 'bg-cult-stage-flower', text: 'text-cult-stage-flower' },
 };
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)} kg`;
-  return `${Math.round(grams)} g`;
-}
 
 export function CultivationWidget() {
   const navigate = useNavigate();

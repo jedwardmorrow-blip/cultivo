@@ -1,4 +1,7 @@
 import type { FunnelStage } from '../hooks/useDashboardData';
+import { useSkuYield } from '@/shared/hooks/useSkuYield';
+import { SKU_COLORS } from '@/shared/components/inventory';
+import { formatWeight } from '@/shared/utils/format';
 
 interface Props {
   stages: FunnelStage[];
@@ -15,6 +18,10 @@ export function InventoryFunnel({ stages }: Props) {
   const maxLbs = Math.max(...stages.map(s => s.lbs), 1);
   const packagedStage = stages.find(s => s.label === 'Packaged');
   const finishedUpstream = stages.filter(s => s.label !== 'Packaged').reduce((s, st) => s + st.finishedLbs, 0);
+
+  // SKU yield projections for the footer callout
+  const { summary, loading: skuLoading } = useSkuYield();
+  const hasProjections = !skuLoading && (summary.total_proj_3_5g > 0 || summary.total_proj_14g > 0 || summary.total_proj_1lb > 0 || summary.total_proj_preroll > 0 || summary.total_proj_trim_g > 0);
 
   return (
     <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
@@ -64,6 +71,52 @@ export function InventoryFunnel({ stages }: Props) {
           );
         })}
       </div>
+
+      {/* SKU yield projection callout */}
+      {hasProjections && (
+        <div className="mt-3.5 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult flex items-center gap-4 border-l-2 border-cult-success">
+          <span className="text-[0.6875rem] text-cult-text-secondary font-medium">
+            Est. output →
+          </span>
+          <div className="flex items-center gap-3 flex-wrap">
+            {summary.total_proj_3_5g > 0 && (
+              <span className={`text-[0.6875rem] tabular-nums ${SKU_COLORS['3.5g'].text}`}>
+                <span className="font-bold">{summary.total_proj_3_5g.toLocaleString()}</span>
+                <span className="text-cult-text-muted ml-1">3.5g</span>
+              </span>
+            )}
+            {summary.total_proj_14g > 0 && (
+              <span className={`text-[0.6875rem] tabular-nums ${SKU_COLORS['14g'].text}`}>
+                <span className="font-bold">{summary.total_proj_14g.toLocaleString()}</span>
+                <span className="text-cult-text-muted ml-1">14g</span>
+              </span>
+            )}
+            {summary.total_proj_1lb > 0 && (
+              <span className={`text-[0.6875rem] tabular-nums ${SKU_COLORS['1lb'].text}`}>
+                <span className="font-bold">{summary.total_proj_1lb.toLocaleString()}</span>
+                <span className="text-cult-text-muted ml-1">1lb</span>
+              </span>
+            )}
+            {summary.total_proj_preroll > 0 && (
+              <span className={`text-[0.6875rem] tabular-nums ${SKU_COLORS['preroll'].text}`}>
+                <span className="font-bold">{summary.total_proj_preroll.toLocaleString()}</span>
+                <span className="text-cult-text-muted ml-1">pre</span>
+              </span>
+            )}
+            {summary.total_proj_trim_g > 0 && (
+              <span className={`text-[0.6875rem] tabular-nums ${SKU_COLORS['trim'].text}`}>
+                <span className="font-bold">{formatWeight(summary.total_proj_trim_g)}</span>
+                <span className="text-cult-text-muted ml-1">trim</span>
+              </span>
+            )}
+          </div>
+          {summary.aging_batches > 0 && (
+            <span className="text-[0.625rem] text-red-400 font-semibold ml-auto">
+              {summary.aging_batches} aging
+            </span>
+          )}
+        </div>
+      )}
 
       {packagedStage && finishedUpstream > 10 && packagedStage.lbs < 5 && (
         <div className="mt-3.5 px-3.5 py-2.5 bg-cult-surface-overlay rounded-cult text-[0.6875rem] font-light text-cult-text-secondary flex items-center gap-2.5 border-l-2 border-cult-stage-harvest">

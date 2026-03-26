@@ -38,6 +38,12 @@ export function useHarvestWeightEntries(harvestSessionId: string | null) {
     return entry;
   }
 
+  async function updateEntry(id: string, updates: Partial<Pick<HarvestWeightEntry, 'weight_grams' | 'plant_count' | 'destination' | 'notes'>>): Promise<HarvestWeightEntry> {
+    const entry = await cultivationService.updateHarvestWeightEntry(id, updates);
+    await load();
+    return entry;
+  }
+
   async function removeEntry(id: string): Promise<void> {
     await cultivationService.deleteHarvestWeightEntry(id);
     await load();
@@ -51,7 +57,9 @@ export function useHarvestWeightEntries(harvestSessionId: string | null) {
     loading,
     error,
     reload: load,
+    setEntries,
     addEntry,
+    updateEntry,
     removeEntry,
     totalWeight,
     totalPlants,

@@ -1,7 +1,5 @@
-export function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(2)} kg`;
-  return `${grams.toFixed(1)} g`;
-}
+// Re-export canonical formatWeight from shared utils (lbs at 453.592g threshold)
+export { formatWeight } from '@/shared/utils/format';
 
 export function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');

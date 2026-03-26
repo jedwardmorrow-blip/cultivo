@@ -61,6 +61,8 @@ const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'Accoun
 const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
 const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
 const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
+const FinancialDashboard = lazyRetry(() => import('./features/financial'), 'FinancialDashboard');
+const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorBillEntry');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
@@ -190,6 +192,8 @@ function AuthenticatedApp() {
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
               <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
+              <Route path="/financial" element={<FinancialDashboard />} />
+              <Route path="/financial-ap" element={<VendorBillEntry />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/eod-summary" element={<EODSummary />} />
               <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />

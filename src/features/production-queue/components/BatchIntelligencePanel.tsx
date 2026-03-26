@@ -1,4 +1,7 @@
 /**
+ * @deprecated — Replaced by BatchAllocationPanel. No active consumers.
+ * Kept for reference during transition. Safe to delete.
+ *
  * BatchIntelligencePanel — batch-centric inventory intelligence panel.
  *
  * Replaces the old BatchInfoPanel with a richer view:

@@ -586,6 +586,17 @@ export const cultivationService = {
     return data as HarvestWeightEntry;
   },
 
+  async updateHarvestWeightEntry(id: string, updates: Partial<Pick<HarvestWeightEntry, 'weight_grams' | 'plant_count' | 'destination' | 'notes'>>): Promise<HarvestWeightEntry> {
+    const { data, error } = await supabase
+      .from('harvest_weight_entries')
+      .update(updates)
+      .eq('id', id)
+      .select('id, harvest_session_id, weight_grams, plant_count, entry_order, destination, location_id, notes, created_at, created_by')
+      .single();
+    if (error) throwError(error, 'updateHarvestWeightEntry');
+    return data as HarvestWeightEntry;
+  },
+
   async deleteHarvestWeightEntry(id: string): Promise<void> {
     const { error } = await supabase
       .from('harvest_weight_entries')

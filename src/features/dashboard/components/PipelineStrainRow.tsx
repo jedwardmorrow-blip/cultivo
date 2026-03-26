@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronRight, ChevronDown, ExternalLink } from 'lucide-react';
 import type { StrainPipelineData, StageName, BatchStageData, PipelineTotals } from '../hooks/useInventoryPipeline';
 import { STAGES } from '../hooks/useInventoryPipeline';
+import { formatWeight } from '@/shared/utils/format';
 
 interface PipelineStrainRowProps {
   strain: StrainPipelineData;
@@ -21,8 +22,7 @@ function formatValue(stage: StageName, weight: number, units: number): string {
     return units > 0 ? `${units.toLocaleString()}u` : '';
   }
   if (weight <= 0) return '';
-  if (weight >= 1000) return `${(weight / 1000).toFixed(1)}kg`;
-  return `${Math.round(weight)}g`;
+  return formatWeight(weight);
 }
 
 function getCellOpacity(stage: StageName, weight: number, units: number, maxByStage: Record<StageName, number>): number {

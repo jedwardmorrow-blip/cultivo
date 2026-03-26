@@ -17,6 +17,7 @@ import { combineInventoryPackages, generateCombinedPackageId } from '../services
 import { notificationService } from '@/services/notification.service';
 import { supabase } from '@/lib/supabase';
 import type { InventoryItem } from '../types';
+import { formatWeight } from '@/shared/utils/format';
 
 interface ConsolidateViewProps {
   items: InventoryItem[];
@@ -93,8 +94,7 @@ const RECLASSIFY_TARGETS: Record<string, string[]> = {
 
 function formatQty(qty: number, unit: string): string {
   if (unit === 'unit') return `${qty} units`;
-  if (qty >= 1000) return `${(qty / 1000).toFixed(2)} kg`;
-  return `${qty.toFixed(1)} g`;
+  return formatWeight(qty);
 }
 
 export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) {

@@ -54,3 +54,24 @@ export function formatDateShort(dateStr: string | null): string {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+/**
+ * Canonical weight formatter — kg threshold at 1000g.
+ * All inventory-facing views import from here.
+ */
+export function formatWeight(grams: number): string {
+  if (grams >= 1000) {
+    return `${(grams / 1000).toFixed(1)} kg`;
+  }
+  return `${Math.round(grams)}g`;
+}
+
+/**
+ * Short weight: compact grams formatter for inline badges (e.g. "1.2K" for 1200g).
+ */
+export function formatWeightShort(grams: number): string {
+  if (grams >= 100_000) return `${(grams / 1000).toFixed(0)}kg`;
+  if (grams >= 10_000) return `${(grams / 1000).toFixed(1)}kg`;
+  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
+  return `${Math.round(grams)}g`;
+}

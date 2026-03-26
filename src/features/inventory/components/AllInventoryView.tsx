@@ -26,6 +26,7 @@ import {
 } from '../types/adjustment.types';
 import type { InventoryItem, AllInventoryStats, StageFilter, QuickAdjustmentModalState, VarianceReason } from '../types';
 import type { SelectedPackage } from '../types/combine.types';
+import { formatWeight } from '@/shared/utils/format';
 
 interface AllInventoryViewProps {
   items: InventoryItem[];
@@ -33,11 +34,6 @@ interface AllInventoryViewProps {
   stageFilter: StageFilter;
   onStageFilterChange: (filter: StageFilter) => void;
   onDataRefresh?: () => void;
-}
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
-  return `${grams.toFixed(0)}g`;
 }
 
 const stageBadgeStyles: Record<string, string> = {

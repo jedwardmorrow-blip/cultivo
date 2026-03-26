@@ -1,3 +1,8 @@
+/**
+ * @deprecated — Replaced by useSkuYield. No active consumers.
+ * The runway/depletion model was replaced with SKU yield projections.
+ * Kept for reference during transition. Safe to delete.
+ */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Leaf, Plus, Trash2, Scale, AlertTriangle, CheckCircle, ChevronRight, Minus, Snowflake } from 'lucide-react';
+import { ArrowLeft, Leaf, Plus, Trash2, Scale, AlertTriangle, CheckCircle, ChevronRight, Minus, Snowflake, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { supabase } from '@/lib/supabase';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
@@ -379,7 +379,7 @@ function BatchWeightCard({
   onTotalsUpdate,
 }: BatchWeightCardProps) {
   const sessionId = session?.id ?? null;
-  const { entries, totalWeight, totalPlants, addEntry, removeEntry, reload } = useHarvestWeightEntries(sessionId);
+  const { entries, totalWeight, totalPlants, addEntry, updateEntry, removeEntry, reload, setEntries } = useHarvestWeightEntries(sessionId);
 
   // Form open state — decoupled from session existence
   const [formOpen, setFormOpen] = useState(!!session);
@@ -398,6 +398,39 @@ function BatchWeightCard({
   const [saving, setSaving] = useState(false);
   const [entryError, setEntryError] = useState<string | null>(null);
   const [showWaste, setShowWaste] = useState(wasteGrams > 0);
+
+  // Inline edit state
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState('');
+  const [editPlants, setEditPlants] = useState('');
+  const [editDest, setEditDest] = useState<HarvestType>('flower');
+  const [editSaving, setEditSaving] = useState(false);
+
+  function startEdit(entry: { id: string; weight_grams: number; plant_count: number; destination: HarvestType | null }) {
+    setEditingEntryId(entry.id);
+    setEditWeight(String(entry.weight_grams));
+    setEditPlants(String(entry.plant_count));
+    setEditDest((entry.destination as HarvestType) ?? 'flower');
+  }
+
+  function cancelEdit() {
+    setEditingEntryId(null);
+  }
+
+  async function saveEdit(entryId: string) {
+    const w = parseFloat(editWeight);
+    const p = parseInt(editPlants);
+    if (!(w > 0) || !(p >= 1)) return;
+    setEditSaving(true);
+    try {
+      await updateEntry(entryId, { weight_grams: w, plant_count: p, destination: editDest });
+      setEditingEntryId(null);
+    } catch {
+      // stay in edit mode on failure
+    } finally {
+      setEditSaving(false);
+    }
+  }
 
   // Account for plants already harvested in prior completed sessions
   const cumulativePlants = priorHarvestedPlants + totalPlants;
@@ -438,13 +471,15 @@ function BatchWeightCard({
         setCreating(false);
       }
       if (!session) {
-        await cultivationService.createHarvestWeightEntry({
+        // Session was just created — hook's sessionId is still null so reload() would return empty.
+        // Call service directly and manually set entries to avoid the race condition.
+        const newEntry = await cultivationService.createHarvestWeightEntry({
           harvest_session_id: currentSession.id,
           weight_grams: parsedWeight,
           plant_count: parsedPlants,
           destination,
         });
-        await reload();
+        setEntries((prev) => [...prev, newEntry]);
       } else {
         await addEntry({ weight_grams: parsedWeight, plant_count: parsedPlants, destination });
       }
@@ -569,37 +604,115 @@ function BatchWeightCard({
 
       {/* Weight entries list */}
       {entries.length > 0 && (
-        <div className="mt-4 space-y-1">
-          {entries.map((entry, idx) => (
-            <div
-              key={entry.id}
-              className={`flex items-center justify-between px-3 py-2 text-xs ${
-                idx % 2 === 0 ? 'bg-cult-black/60' : 'bg-cult-dark-gray/40'
-              } border border-cult-charcoal`}
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-cult-white font-mono font-semibold text-sm">{formatWeight(Number(entry.weight_grams))}</span>
-                <span className="text-cult-lighter-gray">·</span>
-                <span className="text-cult-silver">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
-                {entry.destination && (
-                  <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${
-                    entry.destination === 'fresh_frozen'
-                      ? 'border-cyan-700 text-cyan-400 bg-cyan-950/30'
-                      : 'border-green-700 text-green-400 bg-green-950/30'
-                  }`}>
-                    {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => handleRemoveEntry(entry.id)}
-                className="text-cult-medium-gray hover:text-red-400 transition-colors p-1"
-                title="Remove entry"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-cult-lighter-gray uppercase tracking-wider font-medium">
+              Entries ({entries.length})
+            </span>
+          </div>
+          <div className="space-y-1">
+            {entries.map((entry, idx) => (
+              editingEntryId === entry.id ? (
+                /* ─── Inline edit mode ─── */
+                <div
+                  key={entry.id}
+                  className="bg-cult-black border border-cult-stage-harvest/50 px-3 py-2"
+                >
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-0.5">Weight (g)</label>
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value={editWeight}
+                        onChange={(e) => setEditWeight(e.target.value)}
+                        className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-cult-stage-harvest transition-colors"
+                      />
+                    </div>
+                    <div className="w-20">
+                      <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-0.5">Plants</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={editPlants}
+                        onChange={(e) => setEditPlants(e.target.value)}
+                        className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-cult-stage-harvest transition-colors"
+                      />
+                    </div>
+                    <div className="w-24">
+                      <label className="block text-xs text-cult-lighter-gray uppercase tracking-wider mb-0.5">Dest</label>
+                      <select
+                        value={editDest}
+                        onChange={(e) => setEditDest(e.target.value as HarvestType)}
+                        className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-stage-harvest uppercase tracking-wider transition-colors"
+                      >
+                        <option value="flower">Flower</option>
+                        <option value="fresh_frozen">Frozen</option>
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => saveEdit(entry.id)}
+                      disabled={editSaving}
+                      className="p-1.5 text-green-400 hover:text-green-300 transition-colors"
+                      title="Save"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      disabled={editSaving}
+                      className="p-1.5 text-cult-medium-gray hover:text-cult-lighter-gray transition-colors"
+                      title="Cancel"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ─── Display mode ─── */
+                <div
+                  key={entry.id}
+                  className={`flex items-center justify-between px-3 py-2 text-xs ${
+                    idx % 2 === 0 ? 'bg-cult-black/60' : 'bg-cult-dark-gray/40'
+                  } border border-cult-charcoal group`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-cult-lighter-gray font-mono text-xs w-4 text-right">{idx + 1}.</span>
+                    <span className="text-cult-white font-mono font-semibold text-sm">{formatWeight(Number(entry.weight_grams))}</span>
+                    <span className="text-cult-lighter-gray">·</span>
+                    <span className="text-cult-silver">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
+                    {entry.destination && (
+                      <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${
+                        entry.destination === 'fresh_frozen'
+                          ? 'border-cyan-700 text-cyan-400 bg-cyan-950/30'
+                          : 'border-green-700 text-green-400 bg-green-950/30'
+                      }`}>
+                        {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => startEdit(entry)}
+                      className="text-cult-medium-gray hover:text-cult-stage-harvest transition-colors p-1 opacity-0 group-hover:opacity-100"
+                      title="Edit entry"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleRemoveEntry(entry.id)}
+                      className="text-cult-medium-gray hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100"
+                      title="Remove entry"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
         </div>
       )}
 

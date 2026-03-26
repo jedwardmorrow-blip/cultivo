@@ -1,3 +1,7 @@
+/**
+ * @deprecated — Replaced by useSkuYield. No active consumers.
+ * Kept for reference during transition. Safe to delete.
+ */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 

@@ -4,6 +4,7 @@ import { Layers, RefreshCw, List, LayoutGrid } from 'lucide-react';
 import { LoadingSpinner, ErrorDisplay } from '@/shared/components';
 import { useInventoryPipeline, STAGES, type StageName } from '../hooks/useInventoryPipeline';
 import { PipelineStrainRow } from './PipelineStrainRow';
+import { formatWeight } from '@/shared/utils/format';
 
 const STAGE_META: Record<StageName, { color: string; borderColor: string; icon: string }> = {
   Binned: { color: 'text-cult-stage-clone', borderColor: 'border-l-cult-stage-clone', icon: 'bg-cult-stage-clone/10' },
@@ -11,11 +12,6 @@ const STAGE_META: Record<StageName, { color: string; borderColor: string; icon: 
   Trimmed: { color: 'text-cult-stage-veg', borderColor: 'border-l-cult-stage-veg', icon: 'bg-cult-stage-veg/10' },
   Packaged: { color: 'text-cult-success', borderColor: 'border-l-cult-success', icon: 'bg-cult-success/10' },
 };
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)} kg`;
-  return `${Math.round(grams)} g`;
-}
 
 export function InventoryPipelineWidget() {
   const navigate = useNavigate();
@@ -158,7 +154,7 @@ export function InventoryPipelineWidget() {
                       const value = isPackaged ? d.units : d.weight;
                       const display = isPackaged
                         ? (d.units > 0 ? `${d.units.toLocaleString()}u` : '')
-                        : (d.weight > 0 ? (d.weight >= 1000 ? `${(d.weight / 1000).toFixed(1)}kg` : `${Math.round(d.weight)}g`) : '');
+                        : (d.weight > 0 ? formatWeight(d.weight) : '');
 
                       const max = grandTotals.maxByStage[stage];
                       const opacity = max > 0 && value > 0 ? Math.max(0.08, (value / max) * 0.35) : 0;

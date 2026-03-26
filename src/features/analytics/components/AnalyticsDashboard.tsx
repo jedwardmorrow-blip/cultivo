@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Users, Package, Scissors, RefreshCw } from 'lucide-react';
 import { ProductionSummary } from './ProductionSummary';
 import { getThroughputSummary, getConversionAnalysis, type ThroughputData, type ConversionData } from '../services';
+import { formatWeight } from '@/shared/utils/format';
 
 export function AnalyticsDashboard() {
   const [throughputData, setThroughputData] = useState<ThroughputData[]>([]);
@@ -150,7 +151,7 @@ export function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <div className="text-white font-semibold">{stat.avg_grams_per_hour.toFixed(0)} g/hr</div>
-                    <div className="text-sm text-cult-text-muted">{(stat.total_weight_grams / 1000).toFixed(1)} kg total</div>
+                    <div className="text-sm text-cult-text-muted">{formatWeight(stat.total_weight_grams)} total</div>
                   </div>
                 </div>
               ))}

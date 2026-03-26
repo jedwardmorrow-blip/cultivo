@@ -2,16 +2,16 @@ import { parseDeliveryDate } from '@/lib/utils';
 import type { Order } from '../types';
 
 export interface AttentionFlag {
-  type: 'overdue' | 'awaiting_acceptance' | 'delivery_soon' | 'unfulfilled';
+  type: 'overdue' | 'delivery_soon' | 'stale';
   label: string;
   severity: 'high' | 'medium';
 }
 
+// Time-pressure wins: overdue > delivery_soon > stale
 const FLAG_PRIORITY: Record<AttentionFlag['type'], number> = {
   overdue: 0,
-  awaiting_acceptance: 1,
-  delivery_soon: 2,
-  unfulfilled: 3,
+  delivery_soon: 1,
+  stale: 2,
 };
 
 export function getAttentionFlags(order: Order): AttentionFlag[] {
@@ -30,14 +30,7 @@ export function getAttentionFlags(order: Order): AttentionFlag[] {
   const terminalStatuses = ['completed', 'cancelled', 'delivered'];
   if (terminalStatuses.includes(status)) return flags;
 
-  if (status === 'submitted' && hoursOld > 24) {
-    flags.push({
-      type: 'awaiting_acceptance',
-      label: 'Awaiting acceptance',
-      severity: hoursOld > 72 ? 'high' : 'medium',
-    });
-  }
-
+  // Overdue: delivery date has passed and order isn't done
   if (
     deliveryTime &&
     hoursUntilDelivery !== null &&
@@ -51,6 +44,7 @@ export function getAttentionFlags(order: Order): AttentionFlag[] {
     });
   }
 
+  // Delivery soon: within 48h and not yet ready/delivered
   if (
     deliveryTime &&
     hoursUntilDelivery !== null &&
@@ -65,14 +59,12 @@ export function getAttentionFlags(order: Order): AttentionFlag[] {
     });
   }
 
-  if (
-    ['accepted', 'processing'].includes(status) &&
-    (order.item_count || 0) > 0
-  ) {
+  // Stale: submitted order sitting untouched for >72h — something is stuck
+  if (status === 'submitted' && hoursOld > 72) {
     flags.push({
-      type: 'unfulfilled',
-      label: 'Needs fulfillment',
-      severity: 'medium',
+      type: 'stale',
+      label: 'Stale',
+      severity: 'high',
     });
   }
 

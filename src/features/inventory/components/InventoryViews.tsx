@@ -14,11 +14,7 @@ import { InventoryItemExtended } from '@/types';
 import { useInventoryLabel } from '../hooks';
 import { useMultiLabelPrint } from '../hooks/useMultiLabelPrint';
 import type { InventoryItem, InventoryStats, BulkStats, PackagedStats, BulkSubTab } from '../types';
-
-function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
-  return `${grams.toFixed(0)}g`;
-}
+import { formatWeight } from '@/shared/utils/format';
 
 function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLabel> }) {
   return (

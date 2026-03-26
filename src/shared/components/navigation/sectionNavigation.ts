@@ -31,6 +31,8 @@ import {
   TrendingUp,
   Zap,
   Combine,
+  Wallet,
+  CreditCard,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -122,6 +124,16 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'crm-pipeline', label: 'Inventory Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'crm-accounts-hub', label: 'Accounts Hub', icon: Building2, group: 'primary' },
       { id: 'crm-prospect-pipeline', label: 'Prospect Pipeline', icon: TrendingUp, group: 'primary' }
+    ],
+  },
+  {
+    id: 'financial',
+    label: 'Financial',
+    icon: Wallet,
+    defaultView: 'financial',
+    items: [
+      { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
+      { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
     ],
   },
   {

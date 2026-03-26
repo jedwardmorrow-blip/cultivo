@@ -7,7 +7,7 @@ import { useSkuYield, type StrainAllocation } from '@/shared/hooks/useSkuYield';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
 import { BatchAllocationPanel } from './BatchAllocationPanel';
-import { formatDateShort } from '@/shared/utils/format';
+import { formatDateShort, formatWeight } from '@/shared/utils/format';
 import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
 
 // ─── Shared Badges & Formatters ─────────────────────────────────────────────
@@ -56,11 +56,6 @@ function stockBadge(status: StockStatus) {
       {labels[status]}
     </span>
   );
-}
-
-function formatWeight(grams: number) {
-  if (grams >= 454) return `${(grams / 454).toFixed(1)} lbs`;
-  return `${grams.toFixed(1)}g`;
 }
 
 function batchStageBadge(item: OrderLineItem) {

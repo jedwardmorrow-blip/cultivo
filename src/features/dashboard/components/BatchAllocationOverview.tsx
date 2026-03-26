@@ -1,3 +1,9 @@
+/**
+ * @deprecated — Renamed from BatchAllocationOverview to DemandUtilizationWidget.
+ * This widget shows order demand vs. batch capacity (the allocation model),
+ * NOT the SKU yield projection model used by BatchAllocationPanel.
+ * Currently not rendered in any view. Safe to remove or replace.
+ */
 import { useEffect, useState } from 'react';
 import { Package, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';

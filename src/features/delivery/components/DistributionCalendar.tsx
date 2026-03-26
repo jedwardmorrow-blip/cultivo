@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
 import { DayDetailModal } from './DayDetailModal';
 import { OrderItemsExpander } from './OrderItemsExpander';
+import { formatWeight } from '@/shared/utils/format';
 
 
 function formatDateToLocal(date: Date): string {
@@ -19,12 +20,6 @@ function formatDateToLocal(date: Date): string {
 
 function getDayOfWeek(date: Date): string {
   return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
-}
-
-function formatWeight(grams: number): string {
-  if (grams <= 0) return '0g';
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
-  return `${Math.round(grams)}g`;
 }
 
 interface DistributionCalendarProps {

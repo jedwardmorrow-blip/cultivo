@@ -19,6 +19,8 @@ import type {
   CustomerProductHistory,
   StrainDemandPressure,
 } from '../hooks/useStrainInventory';
+import { useSkuYield, type StrainAllocation } from '@/shared/hooks/useSkuYield';
+import { formatWeight as sharedFormatWeight } from '@/shared/utils/format';
 import type { OrderableProduct } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -64,13 +66,9 @@ function AvailabilityDot({ level }: { level: 'high' | 'medium' | 'low' | 'out' }
   return <span className={`inline-block w-2 h-2 rounded-full ${colors[level]}`} />;
 }
 
-// ─── Format Weight ───────────────────────────────────────────────────────────
+// ─── Format Weight (canonical lbs-based shared formatter) ────────────────────
 
-function formatWeight(grams: number): string {
-  if (grams === 0) return '0g';
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
-  return `${Math.round(grams)}g`;
-}
+const formatWeight = sharedFormatWeight;
 
 // ─── Grade Badge ─────────────────────────────────────────────────────────
 
@@ -98,6 +96,7 @@ function StrainCard({
   customerHistory,
   customerName,
   demandPressure,
+  skuAllocation,
   isSelected,
   onClick,
 }: {
@@ -105,10 +104,19 @@ function StrainCard({
   customerHistory: CustomerStrainHistory | undefined;
   customerName: string | null;
   demandPressure: StrainDemandPressure | undefined;
+  skuAllocation: StrainAllocation | undefined;
   isSelected: boolean;
   onClick: () => void;
 }) {
   const level = getAvailabilityLevel(summary);
+
+  const hasSkuProjections = skuAllocation && (
+    skuAllocation.total_proj_3_5g > 0 ||
+    skuAllocation.total_proj_14g > 0 ||
+    skuAllocation.total_proj_1lb > 0 ||
+    skuAllocation.total_proj_preroll > 0 ||
+    skuAllocation.total_proj_trim_g > 0
+  );
 
   return (
     <button
@@ -128,23 +136,62 @@ function StrainCard({
         <AvailabilityDot level={level} />
       </div>
 
-      {/* Inventory Summary */}
-      <div className="space-y-0.5 text-caption text-cult-text-muted">
-        {summary.packaged_units_available > 0 && (
-          <div>{Math.round(summary.packaged_units_available)} packaged</div>
-        )}
-        {(() => {
-          const bulkTotal = summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams;
-          return bulkTotal > 0 ? <div>{formatWeight(bulkTotal)} in pipeline</div> : null;
-        })()}
-        {summary.packaged_units_available === 0 && summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams === 0 && (
-          <div>{formatWeight(summary.total_available_grams)} total</div>
-        )}
-      </div>
+      {/* SKU Projections — what this strain can produce */}
+      {hasSkuProjections ? (
+        <div className="flex flex-wrap gap-1.5 mb-1.5">
+          {skuAllocation!.total_proj_3_5g > 0 && (
+            <span className="text-[10px] tabular-nums text-emerald-400" title={`${skuAllocation!.total_proj_3_5g} × 3.5g jars projected`}>
+              <span className="font-semibold">{skuAllocation!.total_proj_3_5g}</span>
+              <span className="text-cult-text-faint ml-0.5">3.5g</span>
+            </span>
+          )}
+          {skuAllocation!.total_proj_14g > 0 && (
+            <span className="text-[10px] tabular-nums text-sky-400" title={`${skuAllocation!.total_proj_14g} × 14g mylars projected`}>
+              <span className="font-semibold">{skuAllocation!.total_proj_14g}</span>
+              <span className="text-cult-text-faint ml-0.5">14g</span>
+            </span>
+          )}
+          {skuAllocation!.total_proj_1lb > 0 && (
+            <span className="text-[10px] tabular-nums text-violet-400" title={`${skuAllocation!.total_proj_1lb} × 1lb bags projected`}>
+              <span className="font-semibold">{skuAllocation!.total_proj_1lb}</span>
+              <span className="text-cult-text-faint ml-0.5">1lb</span>
+            </span>
+          )}
+          {skuAllocation!.total_proj_preroll > 0 && (
+            <span className="text-[10px] tabular-nums text-rose-400" title={`${skuAllocation!.total_proj_preroll} × 1g prerolls`}>
+              <span className="font-semibold">{skuAllocation!.total_proj_preroll}</span>
+              <span className="text-cult-text-faint ml-0.5">pre</span>
+            </span>
+          )}
+          {skuAllocation!.total_proj_trim_g > 0 && (
+            <span className="text-[10px] tabular-nums text-amber-400" title={`${formatWeight(skuAllocation!.total_proj_trim_g)} trim projected`}>
+              <span className="font-semibold">{formatWeight(skuAllocation!.total_proj_trim_g)}</span>
+              <span className="text-cult-text-faint ml-0.5">trim</span>
+            </span>
+          )}
+        </div>
+      ) : (
+        /* Fallback: basic inventory summary */
+        <div className="space-y-0.5 text-caption text-cult-text-muted mb-1.5">
+          {summary.packaged_units_available > 0 && (
+            <div>{Math.round(summary.packaged_units_available)} packaged</div>
+          )}
+          {(() => {
+            const bulkTotal = summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams;
+            return bulkTotal > 0 ? <div>{formatWeight(bulkTotal)} in pipeline</div> : null;
+          })()}
+          {summary.packaged_units_available === 0 && summary.bulk_flower_grams + summary.bulk_smalls_grams + summary.bulk_trim_grams + summary.bucked_grams === 0 && (
+            <div>{formatWeight(summary.total_available_grams)} total</div>
+          )}
+        </div>
+      )}
 
-      {/* Batch count */}
-      <div className="mt-1.5 text-[10px] text-cult-text-faint">
-        {summary.active_batch_count} batch{summary.active_batch_count !== 1 ? 'es' : ''}
+      {/* Batch count + weight */}
+      <div className="mt-1 text-[10px] text-cult-text-faint">
+        {skuAllocation
+          ? `${skuAllocation.batch_count} batch${skuAllocation.batch_count !== 1 ? 'es' : ''} · ${formatWeight(skuAllocation.total_remaining_g)}`
+          : `${summary.active_batch_count} batch${summary.active_batch_count !== 1 ? 'es' : ''}`
+        }
       </div>
 
       {/* Demand pressure bar — weight-based comparison */}
@@ -153,7 +200,7 @@ function StrainCard({
         const availableGrams = summary.total_available_grams;
         const pressureRatio = availableGrams > 0 ? Math.min(committedGrams / availableGrams, 1) : 0;
         const barColor = pressureRatio > 0.8 ? 'bg-cult-danger' : pressureRatio > 0.5 ? 'bg-cult-warning' : 'bg-cult-success';
-        const fmtW = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${Math.round(g)}g`;
+        const fmtW = formatWeight;
 
         return (
           <div className="mt-2">
@@ -446,11 +493,7 @@ function StrainDetailPanel({
         {demandPressure && demandPressure.pending_order_count > 0 && (
           <div className="mt-2 px-2.5 py-1.5 bg-cult-warning/8 border border-cult-warning/15 rounded-cult">
             <p className="text-[11px] text-cult-warning">
-              {(() => {
-                const g = demandPressure.total_committed_weight_grams;
-                const w = g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${Math.round(g)}g`;
-                return w;
-              })()} committed across {demandPressure.pending_order_count} pending order{demandPressure.pending_order_count !== 1 ? 's' : ''}
+              {formatWeight(demandPressure.total_committed_weight_grams)} committed across {demandPressure.pending_order_count} pending order{demandPressure.pending_order_count !== 1 ? 's' : ''}
               {(() => {
                 const customers = [...new Set(demandPressure.pending_order_details.map(d => d.customer_name))];
                 if (customers.length <= 3) return ` — ${customers.join(', ')}`;
@@ -1163,6 +1206,7 @@ export function StrainCatalog({
   const { strains, loading: strainsLoading, error: strainsError } = useStrainInventorySummary();
   const { strainHistory, productHistory } = useCustomerOrderHistory(customerId);
   const { demandMap } = useStrainDemandPressure();
+  const { byStrain: skuByStrain } = useSkuYield();
 
   const [selectedStrain, setSelectedStrain] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -1280,6 +1324,7 @@ export function StrainCatalog({
                 customerHistory={strainHistory.get(summary.strain)}
                 customerName={customerName}
                 demandPressure={demandMap.get(summary.strain)}
+                skuAllocation={skuByStrain.get(summary.strain)}
                 isSelected={false}
                 onClick={() => setSelectedStrain(summary.strain)}
               />
