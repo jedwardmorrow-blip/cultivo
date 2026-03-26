@@ -102,7 +102,7 @@ export const sectionDefinitions: SectionDefinition[] = [
   },
   {
     id: 'strain-analytics',
-    label: 'Strains',
+    label: 'Analytics',
     icon: Dna,
     defaultView: 'strain-analytics',
     items: [
@@ -148,7 +148,7 @@ export const sectionDefinitions: SectionDefinition[] = [
   },
   {
     id: 'rosin-lab',
-    label: 'Rosin Lab',
+    label: 'Lab',
     icon: FlaskConical,
     defaultView: 'rosin-lab',
     items: [
