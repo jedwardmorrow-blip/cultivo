@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Archive, Box, Leaf, Package, Scissors } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useSharedInventoryData } from '../context/InventoryDataContext';
 import { useInventoryFilters } from '../hooks/useInventoryFilters';
@@ -15,6 +16,8 @@ import { ConversionHistoryView } from './ConversionHistoryView';
 import { AuditManagement } from './AuditManagement';
 import { ConsolidateView } from './ConsolidateView';
 import type { BulkSubTab } from '../types';
+
+/* ── Shared layout shell ──────────────────────────────────────── */
 
 function ViewShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -38,6 +41,100 @@ function useInventoryContext() {
   const onDataRefresh = () => fetchInventory(true);
   return { loading, onDataRefresh, ...filters };
 }
+
+/* ── Stage tab types ──────────────────────────────────────────── */
+
+type StageTab = 'all' | 'binned' | 'bucked' | 'bulk' | 'packaged';
+
+const STAGE_TABS: { key: StageTab; label: string; icon: typeof Package }[] = [
+  { key: 'all', label: 'All', icon: Archive },
+  { key: 'binned', label: 'Binned', icon: Leaf },
+  { key: 'bucked', label: 'Bucked', icon: Archive },
+  { key: 'bulk', label: 'Bulk', icon: Box },
+  { key: 'packaged', label: 'Packaged', icon: Package },
+];
+
+/* ── Unified Inventory View (replaces 5 separate nav items) ─── */
+
+export function UnifiedInventoryViewWrapper() {
+  const ctx = useInventoryContext();
+  const [activeStage, setActiveStage] = useState<StageTab>('all');
+  const [bulkSubTab, setBulkSubTab] = useState<BulkSubTab>('flower');
+
+  if (ctx.loading) return <InventoryLoadingState />;
+
+  // Stage item counts for tab badges
+  const stageCounts = {
+    all: ctx.allItems.length,
+    binned: ctx.binnedItems.length,
+    bucked: ctx.buckedItems.length,
+    bulk: ctx.bulkItems.length,
+    packaged: ctx.packagedItems.length,
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Inventory</h1>
+        <p className="text-cult-light-gray text-sm mt-2">
+          {activeStage === 'all' && 'View all inventory across all stages'}
+          {activeStage === 'binned' && 'Fresh flower directly from harvest, ready for processing'}
+          {activeStage === 'bucked' && 'Flower that has been bucked and is ready for trimming'}
+          {activeStage === 'bulk' && 'Processed flower, smalls, and trim ready for packaging'}
+          {activeStage === 'packaged' && 'Final packaged products ready for distribution'}
+        </p>
+      </div>
+
+      {/* Stage tabs */}
+      <div className="flex gap-1 p-1 bg-cult-dark-gray rounded-lg w-fit">
+        {STAGE_TABS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setActiveStage(key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              activeStage === key
+                ? 'bg-cult-medium-gray text-cult-white shadow-sm'
+                : 'text-cult-silver hover:text-cult-white'
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {label}
+            <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
+              activeStage === key ? 'bg-cult-lighter-gray/30 text-cult-white' : 'bg-cult-medium-gray/50 text-cult-lighter-gray'
+            }`}>
+              {stageCounts[key]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Stage content */}
+      {activeStage === 'all' && (
+        <AllInventoryView
+          items={ctx.allItems}
+          stats={ctx.allInventoryStats}
+          stageFilter="all"
+          onStageFilterChange={() => {}}
+          onDataRefresh={ctx.onDataRefresh}
+        />
+      )}
+      {activeStage === 'binned' && (
+        <BinnedInventoryView items={ctx.binnedItems} stats={ctx.binnedStats} onDataRefresh={ctx.onDataRefresh} />
+      )}
+      {activeStage === 'bucked' && (
+        <BuckedInventoryView items={ctx.buckedItems} stats={ctx.buckedStats} onDataRefresh={ctx.onDataRefresh} />
+      )}
+      {activeStage === 'bulk' && (
+        <BulkInventoryView items={ctx.bulkItems} stats={ctx.bulkStats} subTab={bulkSubTab} onSubTabChange={setBulkSubTab} onDataRefresh={ctx.onDataRefresh} />
+      )}
+      {activeStage === 'packaged' && (
+        <PackagedInventoryView items={ctx.packagedItems} stats={ctx.packagedStats} onDataRefresh={ctx.onDataRefresh} />
+      )}
+    </div>
+  );
+}
+
+/* ── Legacy wrappers (kept for redirect compatibility) ─────── */
 
 export function AllInventoryViewWrapper() {
   const { loading, allItems, allInventoryStats, onDataRefresh } = useInventoryContext();

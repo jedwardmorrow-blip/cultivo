@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ClipboardList,
   AlertTriangle,
   Calendar,
   CheckCircle2,
-  Clock,
   MoreHorizontal,
   MapPin,
   Bell,
@@ -16,28 +15,33 @@ import {
   Timer,
   Star,
   X,
+  Search,
+  Sparkles,
+  Loader2,
+  Zap,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/shared/components';
 import { useSalesQueue } from '../hooks';
-import type { CRMTask, VisitSchedule, TaskType, VisitType } from '../types';
+import { runTaskEngine } from '../services/crm.service';
+import type { CRMTask, VisitSchedule, TaskType, VisitType, TriggerSource } from '../types';
 import { TaskCreateModal } from './TaskCreateModal';
 
-interface SalesQueueProps {}
+/* ── Constants ─────────────────────────────────────────────────── */
 
 const taskTypeIcons: Record<TaskType, typeof RefreshCw> = {
-    reorder_reminder: RefreshCw,
-    visit_overdue: MapPin,
-    visit_follow_up: Calendar,
-    prospect_advancement: TrendingUp,
-    general: Bell,
+  reorder_reminder: RefreshCw,
+  visit_overdue: MapPin,
+  visit_follow_up: Calendar,
+  prospect_advancement: TrendingUp,
+  general: Bell,
 };
 
 const taskTypeLabels: Record<TaskType, string> = {
-    reorder_reminder: 'Reorder',
-    visit_overdue: 'Visit Overdue',
-    visit_follow_up: 'Follow-Up',
-    prospect_advancement: 'Prospect',
-    general: 'General',
+  reorder_reminder: 'Reorder',
+  visit_overdue: 'Visit Overdue',
+  visit_follow_up: 'Follow-Up',
+  prospect_advancement: 'Prospect',
+  general: 'General',
 };
 
 const priorityColors: Record<string, string> = {
@@ -61,12 +65,17 @@ const visitTypeLabels: Record<VisitType, string> = {
   relationship: 'Relationship',
 };
 
+type TypeFilter = TaskType | 'all';
+type SourceFilter = TriggerSource | 'all';
+
 function daysOverdue(dueDate: string): number {
   const due = new Date(dueDate + 'T00:00:00');
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
 }
+
+/* ── TaskRow ───────────────────────────────────────────────────── */
 
 function TaskRow({
   task,
@@ -75,6 +84,7 @@ function TaskRow({
   onComplete,
   onSnooze,
   onCancel,
+  onDismiss,
   onNavigate,
   onToggleFocus,
   onToggleExpand,
@@ -86,6 +96,7 @@ function TaskRow({
   onComplete: () => void;
   onSnooze: (days: number) => void;
   onCancel: () => void;
+  onDismiss: () => void;
   onNavigate: () => void;
   onToggleFocus: () => void;
   onToggleExpand: () => void;
@@ -126,7 +137,6 @@ function TaskRow({
   return (
     <div className={`transition-colors ${task.focus_today ? 'border-l-2 border-l-amber-400' : ''}`}>
       <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
-        {/* Star / Focus Today button */}
         <button
           onClick={onToggleFocus}
           className={`p-0.5 flex-shrink-0 transition-colors ${
@@ -151,6 +161,11 @@ function TaskRow({
               {task.title}
             </button>
             <span className="text-xs text-cult-silver">{taskTypeLabels[task.task_type]}</span>
+            {task.trigger_source === 'auto' && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-500/10 px-1 py-0.5 rounded">
+                <Zap className="w-2.5 h-2.5" /> auto
+              </span>
+            )}
             {task.focus_today && (
               <span className="text-xs text-amber-400 font-medium">★ Focus</span>
             )}
@@ -166,7 +181,6 @@ function TaskRow({
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Expand / Edit button */}
           <button
             onClick={onToggleExpand}
             className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
@@ -210,6 +224,12 @@ function TaskRow({
                 </button>
                 <div className="border-t border-cult-charcoal my-1" />
                 <button
+                  onClick={() => { onDismiss(); setShowActions(false); }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                >
+                  Dismiss
+                </button>
+                <button
                   onClick={() => { onCancel(); setShowActions(false); }}
                   className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                 >
@@ -221,7 +241,6 @@ function TaskRow({
         </div>
       </div>
 
-      {/* Expandable inline edit panel */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 bg-cult-dark-gray/30 border-t border-cult-charcoal/50 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -290,6 +309,8 @@ function TaskRow({
   );
 }
 
+/* ── VisitRow ──────────────────────────────────────────────────── */
+
 function VisitRow({
   visit,
   onComplete,
@@ -332,7 +353,47 @@ function VisitRow({
   );
 }
 
-export function SalesQueue({}: SalesQueueProps) {
+/* ── Filter helpers ────────────────────────────────────────────── */
+
+function filterTasks(
+  tasks: CRMTask[],
+  search: string,
+  typeFilter: TypeFilter,
+  sourceFilter: SourceFilter,
+): CRMTask[] {
+  let result = tasks;
+
+  if (typeFilter !== 'all') {
+    result = result.filter((t) => t.task_type === typeFilter);
+  }
+  if (sourceFilter !== 'all') {
+    result = result.filter((t) => t.trigger_source === sourceFilter);
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    result = result.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.customer_name?.toLowerCase().includes(q) ||
+        t.description?.toLowerCase().includes(q)
+    );
+  }
+  return result;
+}
+
+function filterVisits(visits: VisitSchedule[], search: string): VisitSchedule[] {
+  if (!search) return visits;
+  const q = search.toLowerCase();
+  return visits.filter(
+    (v) =>
+      v.customer_name?.toLowerCase().includes(q) ||
+      v.location_notes?.toLowerCase().includes(q)
+  );
+}
+
+/* ── Main Component ────────────────────────────────────────────── */
+
+export function SalesQueue() {
   const navigate = useNavigate();
   const {
     overdueTasks,
@@ -352,8 +413,29 @@ export function SalesQueue({}: SalesQueueProps) {
   const [taskNotes, setTaskNotes] = useState('');
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
-  const totalToday = todayTasks.length + todayVisits.length;
-  const totalWeek = todayTasks.length + upcomingTasks.length + todayVisits.length + weekVisits.length;
+  // Absorbed from AutomatedTaskEngine
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  const [runningEngine, setRunningEngine] = useState(false);
+
+  const hasFilters = search !== '' || typeFilter !== 'all' || sourceFilter !== 'all';
+
+  // Apply filters to each section
+  const fOverdue = useMemo(() => filterTasks(overdueTasks, search, typeFilter, sourceFilter), [overdueTasks, search, typeFilter, sourceFilter]);
+  const fToday = useMemo(() => filterTasks(todayTasks, search, typeFilter, sourceFilter), [todayTasks, search, typeFilter, sourceFilter]);
+  const fUpcoming = useMemo(() => filterTasks(upcomingTasks, search, typeFilter, sourceFilter), [upcomingTasks, search, typeFilter, sourceFilter]);
+  const fTodayVisits = useMemo(() => filterVisits(todayVisits, search), [todayVisits, search]);
+  const fWeekVisits = useMemo(() => filterVisits(weekVisits, search), [weekVisits, search]);
+
+  const totalToday = fToday.length + fTodayVisits.length;
+  const totalWeek = fToday.length + fUpcoming.length + fTodayVisits.length + fWeekVisits.length;
+  const totalOpen = fOverdue.length + fToday.length + fUpcoming.length;
+
+  // Count auto-generated tasks (unfiltered) for the stat block
+  const autoCount = overdueTasks.filter((t) => t.trigger_source === 'auto').length
+    + todayTasks.filter((t) => t.trigger_source === 'auto').length
+    + upcomingTasks.filter((t) => t.trigger_source === 'auto').length;
 
   const navigateToAccount = (customerId: string) => {
     navigate(`/crm-account-detail/${customerId}`);
@@ -380,6 +462,17 @@ export function SalesQueue({}: SalesQueueProps) {
     setTaskNotes('');
   };
 
+  const handleRunEngine = async () => {
+    setRunningEngine(true);
+    await runTaskEngine();
+    await reload();
+    setRunningEngine(false);
+  };
+
+  const handleDismissTask = async (taskId: string) => {
+    await actions.cancelTask(taskId);
+  };
+
   const renderTaskRow = (task: CRMTask, isOverdue: boolean) => (
     <TaskRow
       key={task.id}
@@ -389,6 +482,7 @@ export function SalesQueue({}: SalesQueueProps) {
       onComplete={() => setCompletingTaskId(task.id)}
       onSnooze={(days) => actions.snoozeTask(task.id, days)}
       onCancel={() => actions.cancelTask(task.id)}
+      onDismiss={() => handleDismissTask(task.id)}
       onNavigate={() => navigateToAccount(task.customer_id)}
       onToggleFocus={() => actions.toggleFocusToday(task.id)}
       onToggleExpand={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
@@ -400,12 +494,22 @@ export function SalesQueue({}: SalesQueueProps) {
 
   return (
     <div className="space-y-6 pb-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">My Queue</h1>
           <p className="text-cult-light-gray mt-2">Tasks and visits requiring your attention</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRunEngine}
+            disabled={runningEngine}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-purple-500/15 text-purple-300 hover:bg-purple-500/25 border border-purple-500/20 transition-colors disabled:opacity-50"
+            title="Generate auto-tasks from account health, visit cadence, and prospect data"
+          >
+            {runningEngine ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {runningEngine ? 'Running...' : 'Generate Tasks'}
+          </button>
           <button
             onClick={() => setShowCreateTask(true)}
             className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded-lg hover:bg-cult-off-white transition-colors"
@@ -421,22 +525,65 @@ export function SalesQueue({}: SalesQueueProps) {
         </div>
       </div>
 
+      {/* Stat blocks */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatBlock label="Overdue" value={overdueTasks.length} accent={overdueTasks.length > 0 ? 'red' : undefined} />
-        <StatBlock label="Today" value={totalToday} accent={totalToday > 0 ? 'amber' : undefined} />
-        <StatBlock label="This Week" value={totalWeek} />
-        <StatBlock label="Open Tasks" value={overdueTasks.length + todayTasks.length + upcomingTasks.length} />
+        <StatBlock label="Today" value={todayTasks.length + todayVisits.length} accent={(todayTasks.length + todayVisits.length) > 0 ? 'amber' : undefined} />
+        <StatBlock label="This Week" value={todayTasks.length + upcomingTasks.length + todayVisits.length + weekVisits.length} />
+        <StatBlock label="Open Tasks" value={overdueTasks.length + todayTasks.length + upcomingTasks.length} sub={autoCount > 0 ? `${autoCount} auto` : undefined} />
       </div>
 
-      {overdueTasks.length > 0 && (
+      {/* Filter bar — compact, always visible */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks or customers..."
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder:text-cult-medium-gray focus:outline-none focus:border-cult-lighter-gray"
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+          className="px-2.5 py-1.5 text-xs bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-light-gray focus:outline-none focus:border-cult-lighter-gray"
+        >
+          <option value="all">All Types</option>
+          {Object.entries(taskTypeLabels).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+        <select
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value as SourceFilter)}
+          className="px-2.5 py-1.5 text-xs bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-light-gray focus:outline-none focus:border-cult-lighter-gray"
+        >
+          <option value="all">All Sources</option>
+          <option value="auto">Auto-Generated</option>
+          <option value="manual">Manual</option>
+        </select>
+        {hasFilters && (
+          <button
+            onClick={() => { setSearch(''); setTypeFilter('all'); setSourceFilter('all'); }}
+            className="px-2 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Queue sections */}
+      {fOverdue.length > 0 && (
         <QueueSection
           title="Overdue"
           icon={AlertTriangle}
           iconColor="text-red-400"
-          count={overdueTasks.length}
+          count={fOverdue.length}
           accentBorder="border-red-500/30"
         >
-          {overdueTasks.map((task) => renderTaskRow(task, true))}
+          {fOverdue.map((task) => renderTaskRow(task, true))}
         </QueueSection>
       )}
 
@@ -446,8 +593,8 @@ export function SalesQueue({}: SalesQueueProps) {
         iconColor="text-amber-400"
         count={totalToday}
       >
-        {todayTasks.map((task) => renderTaskRow(task, false))}
-        {todayVisits.map((visit) => (
+        {fToday.map((task) => renderTaskRow(task, false))}
+        {fTodayVisits.map((visit) => (
           <VisitRow
             key={visit.id}
             visit={visit}
@@ -457,7 +604,7 @@ export function SalesQueue({}: SalesQueueProps) {
         ))}
         {totalToday === 0 && (
           <div className="px-4 py-8 text-center text-sm text-cult-light-gray">
-            No tasks or visits scheduled for today.
+            {hasFilters ? 'No items match your filters.' : 'No tasks or visits scheduled for today.'}
           </div>
         )}
       </QueueSection>
@@ -466,10 +613,10 @@ export function SalesQueue({}: SalesQueueProps) {
         title="This Week"
         icon={Timer}
         iconColor="text-cult-silver"
-        count={upcomingTasks.length + weekVisits.length}
+        count={fUpcoming.length + fWeekVisits.length}
       >
-        {upcomingTasks.map((task) => renderTaskRow(task, false))}
-        {weekVisits.map((visit) => (
+        {fUpcoming.map((task) => renderTaskRow(task, false))}
+        {fWeekVisits.map((visit) => (
           <VisitRow
             key={visit.id}
             visit={visit}
@@ -477,9 +624,9 @@ export function SalesQueue({}: SalesQueueProps) {
             onNavigate={() => navigateToAccount(visit.customer_id)}
           />
         ))}
-        {upcomingTasks.length + weekVisits.length === 0 && (
+        {fUpcoming.length + fWeekVisits.length === 0 && (
           <div className="px-4 py-8 text-center text-sm text-cult-light-gray">
-            No upcoming tasks or visits this week.
+            {hasFilters ? 'No items match your filters.' : 'No upcoming tasks or visits this week.'}
           </div>
         )}
       </QueueSection>
@@ -563,6 +710,8 @@ export function SalesQueue({}: SalesQueueProps) {
   );
 }
 
+/* ── Section wrapper ───────────────────────────────────────────── */
+
 function QueueSection({
   title,
   icon: Icon,
@@ -592,12 +741,15 @@ function QueueSection({
   );
 }
 
-function StatBlock({ label, value, accent }: { label: string; value: number; accent?: 'red' | 'amber' }) {
+/* ── Stat block ────────────────────────────────────────────────── */
+
+function StatBlock({ label, value, accent, sub }: { label: string; value: number; accent?: 'red' | 'amber'; sub?: string }) {
   const valueColor = accent === 'red' ? 'text-red-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
       <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
       <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
+      {sub && <p className="text-[10px] text-purple-400 mt-0.5">{sub}</p>}
     </div>
   );
 }

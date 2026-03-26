@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Map } from 'lucide-react';
+import { Map, Sprout, Layers, AlertTriangle, Clock, DoorOpen } from 'lucide-react';
 import type { RoomOperationalState } from '../../hooks/useRoomOperationalState';
 import type { GrowRoom } from '../../types';
 import { ROOM_LAYOUT_MAP } from '../../constants/buildingLayout';
@@ -10,6 +10,15 @@ interface BuildingMapViewProps {
   rooms: GrowRoom[];
   onRoomSelect: (room: GrowRoom) => void;
 }
+
+/** Stat card icon mapping — tiny contextual icons for visual identity */
+const STAT_ICONS: Record<string, typeof Sprout> = {
+  'Active Rooms': DoorOpen,
+  'Total Plants': Sprout,
+  'Strains': Layers,
+  'Attention': AlertTriangle,
+  'Next Harvest': Clock,
+};
 
 /**
  * Building Map View — container component.
@@ -79,30 +88,49 @@ export function BuildingMapView({ opsRooms, rooms, onRoomSelect }: BuildingMapVi
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-bold text-cult-text-muted uppercase tracking-wider flex items-center gap-2">
-        <Map className="w-3.5 h-3.5" />
-        Building Map
-        <span className="text-cult-text-faint font-normal text-xs normal-case tracking-normal ml-1">40th St · Phase 2</span>
-      </h2>
+      {/* Section header with accent line */}
+      <div>
+        <h2 className="text-sm font-bold text-cult-text-muted uppercase tracking-wider flex items-center gap-2">
+          <Map className="w-3.5 h-3.5" />
+          Building Map
+          <span className="text-cult-text-faint font-normal text-xs normal-case tracking-normal ml-1">40th St · Phase 2</span>
+        </h2>
+        <div className="mt-1.5 h-px w-10 bg-cult-green/30" />
+      </div>
 
       {/* Stat bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className={`bg-cult-surface-raised border p-2.5 ${
-              s.warn ? 'border-cult-warning/40' : 'border-cult-border'
-            }`}
-          >
-            <div className="text-[8px] text-cult-text-muted uppercase tracking-wider font-semibold mb-1 font-mono">
-              {s.label}
+        {stats.map((s) => {
+          const Icon = STAT_ICONS[s.label];
+          return (
+            <div
+              key={s.label}
+              className={`relative border p-2.5 overflow-hidden ${
+                s.warn
+                  ? 'bg-cult-warning/[0.04] border-cult-warning/40'
+                  : 'bg-cult-surface-raised border-cult-border'
+              }`}
+            >
+              {/* Micro-icon watermark */}
+              {Icon && (
+                <Icon
+                  className={`absolute top-1.5 right-1.5 w-4 h-4 ${
+                    s.warn ? 'text-cult-warning' : 'text-cult-text-faint'
+                  }`}
+                  style={{ opacity: 0.12 }}
+                  strokeWidth={1.5}
+                />
+              )}
+              <div className="text-[8px] text-cult-text-muted uppercase tracking-wider font-semibold mb-1 font-mono">
+                {s.label}
+              </div>
+              <div className={`text-xl font-extrabold font-mono ${s.warn ? 'text-cult-warning' : 'text-cult-white'}`}>
+                {s.value}
+                {s.sub && <span className="text-sm font-normal text-cult-text-muted ml-0.5">{s.sub}</span>}
+              </div>
             </div>
-            <div className={`text-xl font-extrabold font-mono ${s.warn ? 'text-cult-warning' : 'text-cult-white'}`}>
-              {s.value}
-              {s.sub && <span className="text-sm font-normal text-cult-text-muted ml-0.5">{s.sub}</span>}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* SVG Map */}

@@ -22,16 +22,15 @@ const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
 const DistributionCalendar = lazyRetry(() => import('./features/delivery'), 'DistributionCalendar');
 const ProductionDashboard = lazyRetry(() => import('./features/sessions'), 'ProductionDashboard');
-const BuckingSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'BuckingSessionsRefactored');
-const TrimSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'TrimSessionsRefactored');
-const PackagingSessionsRefactored = lazyRetry(() => import('./features/sessions'), 'PackagingSessionsRefactored');
+const SessionsHub = lazyRetry(() => import('./features/sessions'), 'SessionsHub');
+// Legacy individual session views — routes now redirect to sessions hub
+// BuckingSessionsRefactored, TrimSessionsRefactored, PackagingSessionsRefactored
 const BatchManagement = lazyRetry(() => import('./features/batches'), 'BatchManagement');
-const AllInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'AllInventoryViewWrapper');
-const BinnedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BinnedInventoryViewWrapper');
-const BuckedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BuckedInventoryViewWrapper');
-const BulkInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'BulkInventoryViewWrapper');
-const PackagedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'PackagedInventoryViewWrapper');
-const DailyActivityViewWrapper = lazyRetry(() => import('./features/inventory'), 'DailyActivityViewWrapper');
+const UnifiedInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'UnifiedInventoryViewWrapper');
+// Legacy individual stage views — routes now redirect to unified view
+// AllInventoryViewWrapper, BinnedInventoryViewWrapper, BuckedInventoryViewWrapper,
+// BulkInventoryViewWrapper, PackagedInventoryViewWrapper consolidated into UnifiedInventoryViewWrapper
+// DailyActivityViewWrapper removed (stub)
 const ConversionsViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionsViewWrapper');
 const ConversionHistoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionHistoryViewWrapper');
 const AuditsViewWrapper = lazyRetry(() => import('./features/inventory'), 'AuditsViewWrapper');
@@ -57,10 +56,11 @@ const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar')
 const SalesPipeline = lazyRetry(() => import('./features/crm'), 'SalesPipeline');
 const ProspectPipeline = lazyRetry(() => import('./features/crm'), 'ProspectPipeline');
 const AccountsHub = lazyRetry(() => import('./features/crm'), 'AccountsHub');
-const AccountHealthDashboard = lazyRetry(() => import('./features/crm'), 'AccountHealthDashboard');
-const RevenueTrackingDashboard = lazyRetry(() => import('./features/crm'), 'RevenueTrackingDashboard');
-const AutomatedTaskEngine = lazyRetry(() => import('./features/crm'), 'AutomatedTaskEngine');
-const StorePerformanceScorecard = lazyRetry(() => import('./features/crm'), 'StorePerformanceScorecard');
+// Standalone pages consolidated into AccountsHub tabs — routes redirect
+// AccountHealthDashboard → AccountsHub Overview tab
+// RevenueTrackingDashboard → AccountsHub Revenue tab
+// StorePerformanceScorecard → AccountsHub Overview tab
+// AutomatedTaskEngine → SalesQueue (merged)
 const FinancialDashboard = lazyRetry(() => import('./features/financial'), 'FinancialDashboard');
 const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorBillEntry');
 const AccountsReceivable = lazyRetry(() => import('./features/financial'), 'AccountsReceivable');
@@ -178,17 +178,18 @@ function AuthenticatedApp() {
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/cultivation-dry-rooms" element={<CultivationErrorBoundary><DryRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/production-overview" element={<ProductionDashboard />} />
-              <Route path="/bucking-sessions" element={<BuckingSessionsRefactored />} />
-              <Route path="/trim-sessions" element={<TrimSessionsRefactored />} />
-              <Route path="/packaging-sessions" element={<PackagingSessionsRefactored />} />
+              <Route path="/production-sessions" element={<SessionsHub />} />
+              <Route path="/bucking-sessions" element={<Navigate to="/production-sessions" replace />} />
+              <Route path="/trim-sessions" element={<Navigate to="/production-sessions" replace />} />
+              <Route path="/packaging-sessions" element={<Navigate to="/production-sessions" replace />} />
               <Route path="/production-queue" element={<ProductionQueue />} />
               <Route path="/batches" element={<BatchManagement />} />
-              <Route path="/inventory-all" element={<InventoryDataProvider><AllInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-binned" element={<InventoryDataProvider><BinnedInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-bucked" element={<InventoryDataProvider><BuckedInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-bulk" element={<InventoryDataProvider><BulkInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-packaged" element={<InventoryDataProvider><PackagedInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-daily-activity" element={<DailyActivityViewWrapper />} />
+              <Route path="/inventory-all" element={<InventoryDataProvider><UnifiedInventoryViewWrapper /></InventoryDataProvider>} />
+              <Route path="/inventory-binned" element={<Navigate to="/inventory-all" replace />} />
+              <Route path="/inventory-bucked" element={<Navigate to="/inventory-all" replace />} />
+              <Route path="/inventory-bulk" element={<Navigate to="/inventory-all" replace />} />
+              <Route path="/inventory-packaged" element={<Navigate to="/inventory-all" replace />} />
+              <Route path="/inventory-daily-activity" element={<Navigate to="/inventory-all" replace />} />
               <Route path="/inventory-conversions" element={<ConversionsViewWrapper />} />
               <Route path="/inventory-conversion-history" element={<ConversionHistoryViewWrapper />} />
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
@@ -205,11 +206,11 @@ function AuthenticatedApp() {
               <Route path="/crm-visit-calendar" element={<VisitCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/crm-pipeline" element={<SalesPipeline />} />
               <Route path="/crm-prospect-pipeline" element={<ProspectPipeline />} />
-              <Route path="/crm-tasks" element={<AutomatedTaskEngine />} />
+              <Route path="/crm-tasks" element={<Navigate to="/crm-queue" replace />} />
               <Route path="/crm-accounts-hub" element={<AccountsHub />} />
-              <Route path="/crm-health" element={<AccountHealthDashboard />} />
-              <Route path="/crm-revenue" element={<RevenueTrackingDashboard />} />
-              <Route path="/crm-scorecard" element={<StorePerformanceScorecard />} />
+              <Route path="/crm-health" element={<Navigate to="/crm-accounts-hub" replace />} />
+              <Route path="/crm-revenue" element={<Navigate to="/crm-accounts-hub" replace />} />
+              <Route path="/crm-scorecard" element={<Navigate to="/crm-accounts-hub" replace />} />
               <Route path="/crm-accounts" element={<Navigate to="/crm-accounts-hub" replace />} />
               <Route path="/crm-account-detail/:id" element={<AccountDetailRoute onCreateOrder={handleCreateOrderForCustomer} onCreateSampleOrder={handleCreateSampleOrder} onSelectOrder={handleSelectOrder} />} />
               <Route path="/rosin-lab/*" element={<RosinLabRoute />} />

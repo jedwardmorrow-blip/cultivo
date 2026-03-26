@@ -84,6 +84,7 @@ export interface RosinPackage {
 
 export type RosinLabScreen =
   | 'dashboard'
+  | 'materials'
   | 'fresh-frozen'
   | 'hash'
   | 'rosin'

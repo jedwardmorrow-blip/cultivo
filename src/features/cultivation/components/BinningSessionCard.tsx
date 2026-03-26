@@ -1,6 +1,7 @@
 import { CheckCircle, ExternalLink, Wind, Leaf, AlertTriangle, Loader2 } from 'lucide-react';
 import { formatWeight, formatDate } from '../utils';
 import { BinEntryWorkspace, CompletedBinEntries } from './BinEntryWorkspace';
+import type { BinLabelContext } from '../hooks/useBinEntryLabel';
 import type { BinningSession, BinningSessionStatus, BinEntry, HarvestSession } from '../types';
 
 function yieldPct(wet: number, dry: number): string {
@@ -32,6 +33,10 @@ export function SessionCard({ session, onComplete, onCancel, onViewBatch, listBi
   const harvestDate = session.harvest_sessions?.harvest_date
     ? formatDate(session.harvest_sessions.harvest_date)
     : '--';
+
+  const labelContext: BinLabelContext | null = strainName !== 'Unknown Strain'
+    ? { strain: strainName, batchNumber: batchNumber, harvestDate }
+    : null;
 
   const statusColor: Record<BinningSessionStatus, string> = {
     active: 'text-green-400 border-green-700 bg-green-950',
@@ -101,6 +106,7 @@ export function SessionCard({ session, onComplete, onCancel, onViewBatch, listBi
           onComplete={() => onComplete(session.id)}
           onCancel={() => onCancel(session.id)}
           wetWeight={wetWeight}
+          labelContext={labelContext}
         />
       )}
 

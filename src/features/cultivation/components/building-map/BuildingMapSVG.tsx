@@ -11,7 +11,7 @@ import {
   LAYOUT_TYPE_COLORS,
   type RoomLayoutType,
 } from '../../constants/buildingLayout';
-import { RoomPolygon } from './RoomPolygon';
+import { RoomPolygon, RoomTooltip } from './RoomPolygon';
 
 interface BuildingMapSVGProps {
   opsRooms: RoomOperationalState[];
@@ -21,17 +21,42 @@ interface BuildingMapSVGProps {
   onClick: (code: string) => void;
 }
 
-/** Background grid + building structure */
+/** Background grid + building structure + atmosphere effects */
 function BuildingStructure() {
+  const vw = SVG_VIEWPORT.width;
+  const vh = SVG_VIEWPORT.height;
+
   return (
     <g>
-      {/* Subtle grid pattern */}
+      {/* Defs: grid, noise texture, vignette */}
       <defs>
         <pattern id="bmap-grid" width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2E2E2E" strokeWidth={0.2} opacity={0.2} />
         </pattern>
+
+        {/* Subtle noise texture */}
+        <filter id="bmap-noise" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
+          <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise" />
+          <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" />
+        </filter>
+
+        {/* Radial vignette — darkens edges, focuses center */}
+        <radialGradient id="bmap-vignette" cx="50%" cy="45%" r="60%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="70%" stopColor="transparent" />
+          <stop offset="100%" stopColor="#0A0A0A" stopOpacity="0.4" />
+        </radialGradient>
       </defs>
-      <rect width={SVG_VIEWPORT.width} height={SVG_VIEWPORT.height} fill="url(#bmap-grid)" />
+
+      {/* Base grid */}
+      <rect width={vw} height={vh} fill="url(#bmap-grid)" />
+
+      {/* Noise overlay — very subtle grain */}
+      <rect width={vw} height={vh} fill="#111111" opacity={0.02} filter="url(#bmap-noise)" />
+
+      {/* Vignette overlay */}
+      <rect width={vw} height={vh} fill="url(#bmap-vignette)" />
 
       {/* Building outline */}
       <rect
@@ -68,9 +93,10 @@ function BuildingStructure() {
         dominantBaseline="central"
         fill="#404040"
         fontSize={7}
-        fontFamily="system-ui"
+        fontFamily="'Montserrat', system-ui"
+        fontWeight={300}
         opacity={0.25}
-        letterSpacing="0.15em"
+        letterSpacing="0.2em"
       >
         CORRIDOR
       </text>
@@ -87,16 +113,17 @@ function BuildingStructure() {
         stroke="#2E2E2E" strokeWidth={0.5} strokeDasharray="4,3" opacity={0.3}
       />
 
-      {/* Wing labels */}
+      {/* Wing labels — Montserrat light weight for architectural wayfinding */}
       <text
         x={WING_LABELS.west.x}
         y={WING_LABELS.west.y}
         textAnchor="middle"
         fill="#404040"
         fontSize={7}
-        fontFamily="system-ui"
+        fontFamily="'Montserrat', system-ui"
+        fontWeight={300}
         opacity={0.2}
-        letterSpacing="0.12em"
+        letterSpacing="0.15em"
       >
         WEST WING
       </text>
@@ -106,9 +133,10 @@ function BuildingStructure() {
         textAnchor="middle"
         fill="#404040"
         fontSize={7}
-        fontFamily="system-ui"
+        fontFamily="'Montserrat', system-ui"
+        fontWeight={300}
         opacity={0.2}
-        letterSpacing="0.12em"
+        letterSpacing="0.15em"
       >
         EAST WING
       </text>
@@ -120,62 +148,85 @@ function BuildingStructure() {
         textAnchor="middle"
         fill="#404040"
         fontSize={8}
-        fontFamily="system-ui"
+        fontFamily="'Montserrat', system-ui"
+        fontWeight={300}
         opacity={0.15}
-        letterSpacing="0.12em"
+        letterSpacing="0.15em"
         transform={`rotate(-90, 18, ${130 + 60})`}
       >
         S. 40TH ST
       </text>
 
       {/* Compass */}
-      <g transform={`translate(${SVG_VIEWPORT.width - 30}, ${SVG_VIEWPORT.height - 25})`} opacity={0.2}>
+      <g transform={`translate(${vw - 30}, ${vh - 25})`} opacity={0.2}>
         <line x1={0} y1={-10} x2={0} y2={10} stroke="#404040" strokeWidth={0.8} />
         <line x1={-10} y1={0} x2={10} y2={0} stroke="#404040" strokeWidth={0.8} />
         <polygon points="0,-12 -2.5,-7 2.5,-7" fill="#404040" />
-        <text x={0} y={-15} textAnchor="middle" fill="#404040" fontSize={7} fontWeight={700}>N</text>
+        <text x={0} y={-15} textAnchor="middle" fill="#404040" fontSize={7} fontFamily="'Montserrat', system-ui" fontWeight={700}>N</text>
       </g>
     </g>
   );
 }
 
-/** Map legend row */
-function MapLegend() {
-  const items: { label: string; type: RoomLayoutType }[] = [
-    { label: 'Flower', type: 'flower' },
-    { label: 'Veg', type: 'veg' },
-    { label: 'Water', type: 'water' },
-    { label: 'Dry', type: 'dry' },
-    { label: 'Lab', type: 'lab' },
+/** Inline SVG legend rendered at the bottom-left of the viewport */
+function SVGLegend() {
+  const items: { label: string; color: string }[] = [
+    { label: 'Flower', color: LAYOUT_TYPE_COLORS.flower },
+    { label: 'Veg', color: LAYOUT_TYPE_COLORS.veg },
+    { label: 'Water', color: LAYOUT_TYPE_COLORS.water },
+    { label: 'Dry', color: LAYOUT_TYPE_COLORS.dry },
+    { label: 'Lab', color: LAYOUT_TYPE_COLORS.lab },
   ];
 
-  return (
-    <div className="flex gap-3.5 flex-wrap items-center">
-      {items.map((item) => (
-        <div key={item.type} className="flex items-center gap-1.5">
-          <div
-            className="w-2.5 h-2.5 rounded-sm opacity-50"
-            style={{
-              background: LAYOUT_TYPE_COLORS[item.type],
-              border: `1px solid ${LAYOUT_TYPE_COLORS[item.type]}80`,
-            }}
-          />
-          <span className="text-cult-text-muted text-[8px] uppercase tracking-wider font-semibold font-mono">
-            {item.label}
-          </span>
-        </div>
-      ))}
+  const urgencyItems = [
+    { label: 'Urgent', color: '#DC4545' },
+    { label: 'Attn', color: '#F59E0B' },
+  ];
 
-      {/* Urgency indicators */}
-      <div className="flex items-center gap-1.5">
-        <div className="w-2.5 h-2.5 rounded-sm border border-cult-red" style={{ boxShadow: '0 0 5px rgba(220,69,69,0.6)' }} />
-        <span className="text-cult-text-muted text-[8px] uppercase tracking-wider font-semibold font-mono">Urgent</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <div className="w-2.5 h-2.5 rounded-sm border border-cult-warning" style={{ boxShadow: '0 0 5px rgba(245,158,11,0.5)' }} />
-        <span className="text-cult-text-muted text-[8px] uppercase tracking-wider font-semibold font-mono">Attention</span>
-      </div>
-    </div>
+  const y = SVG_VIEWPORT.height - 14;
+  let cx = 40;
+
+  return (
+    <g opacity={0.6}>
+      {/* Semi-transparent backdrop */}
+      <rect
+        x={30}
+        y={y - 8}
+        width={390}
+        height={18}
+        rx={1}
+        fill="#0A0A0A"
+        fillOpacity={0.7}
+      />
+      {items.map((item) => {
+        const thisX = cx;
+        cx += 50;
+        return (
+          <g key={item.label}>
+            <rect x={thisX} y={y - 3} width={7} height={7} rx={1} fill={item.color} fillOpacity={0.55} stroke={item.color} strokeWidth={0.4} strokeOpacity={0.4} />
+            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={7} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
+              {item.label}
+            </text>
+          </g>
+        );
+      })}
+      {/* Separator */}
+      <line x1={cx - 4} y1={y - 3} x2={cx - 4} y2={y + 5} stroke="#2E2E2E" strokeWidth={0.6} />
+      {urgencyItems.map((item) => {
+        const thisX = cx + 4;
+        cx += 52;
+        return (
+          <g key={item.label}>
+            <rect x={thisX} y={y - 3} width={7} height={7} rx={1} fill="transparent" stroke={item.color} strokeWidth={0.8}>
+              <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+            </rect>
+            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={7} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
+              {item.label}
+            </text>
+          </g>
+        );
+      })}
+    </g>
   );
 }
 
@@ -186,9 +237,12 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
     opsMap.set(ops.room_code, ops);
   }
 
+  const hoveredLayout = hoveredCode ? ROOM_LAYOUT_MAP[hoveredCode] : null;
+  const hoveredOps = hoveredCode ? (opsMap.get(hoveredCode) ?? null) : null;
+
   return (
-    <div>
-      <div className="bg-cult-surface-raised border border-cult-border p-4 mb-4 overflow-x-auto">
+    <div className="relative">
+      <div className="bg-cult-surface-raised border border-cult-border p-4 overflow-x-auto">
         <svg
           viewBox={`0 0 ${SVG_VIEWPORT.width} ${SVG_VIEWPORT.height}`}
           style={{ width: '100%', height: 'auto', minHeight: 420 }}
@@ -206,9 +260,31 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
               onClick={onClick}
             />
           ))}
+          <SVGLegend />
         </svg>
+
+        {/* Selected room context badge */}
+        {selectedCode && (
+          <div
+            className="absolute bottom-6 right-6 flex items-center gap-1.5 bg-cult-near-black/90 border border-cult-border px-2.5 py-1"
+            style={{ animation: 'badgeSlideIn 0.2s ease-out both' }}
+          >
+            <style>{`
+              @keyframes badgeSlideIn {
+                from { opacity: 0; transform: translateX(8px); }
+                to { opacity: 1; transform: translateX(0); }
+              }
+            `}</style>
+            <div className="w-1.5 h-1.5 rounded-full bg-cult-white animate-pulse" />
+            <span className="text-cult-white font-mono text-[10px] font-bold tracking-wide">{selectedCode}</span>
+          </div>
+        )}
       </div>
-      <MapLegend />
+
+      {/* Hover tooltip — HTML overlay positioned by percentage */}
+      {hoveredLayout && hoveredCode !== selectedCode && (
+        <RoomTooltip layout={hoveredLayout} ops={hoveredOps} />
+      )}
     </div>
   );
 }

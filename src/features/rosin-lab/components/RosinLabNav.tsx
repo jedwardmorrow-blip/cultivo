@@ -1,11 +1,8 @@
 import {
   LayoutDashboard,
-  Snowflake,
-  Circle,
-  Droplet,
+  Layers,
   Waves,
   ArrowDownToLine,
-  ClipboardList,
   BarChart3,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -20,12 +17,9 @@ interface NavItemConfig {
 
 const NAV_ITEMS: NavItemConfig[] = [
   { key: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
-  { key: 'fresh-frozen', label: 'Fresh Frozen', Icon: Snowflake },
-  { key: 'hash', label: 'Hash', Icon: Circle },
-  { key: 'rosin', label: 'Rosin', Icon: Droplet },
-  { key: 'wash', label: 'New Wash', Icon: Waves, dotColor: '#3B82F6' },
-  { key: 'press', label: 'Press', Icon: ArrowDownToLine, dotColor: '#F97316' },
-  { key: 'log', label: 'Press & Cure Log', Icon: ClipboardList, dotColor: '#8B5CF6' },
+  { key: 'materials', label: 'Materials', Icon: Layers },
+  { key: 'wash', label: 'Wash & Dry', Icon: Waves, dotColor: '#3B82F6' },
+  { key: 'press', label: 'Press & Cure', Icon: ArrowDownToLine, dotColor: '#F97316' },
   { key: 'analytics', label: 'Analytics', Icon: BarChart3 },
 ];
 

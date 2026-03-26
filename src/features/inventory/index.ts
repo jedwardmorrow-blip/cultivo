@@ -2,6 +2,7 @@ export { InventoryOversightDashboard } from './components/InventoryOversightDash
 export { useInventoryOversight } from './hooks/useInventoryOversight';
 export * from './types';
 export {
+  UnifiedInventoryViewWrapper,
   AllInventoryViewWrapper,
   BinnedInventoryViewWrapper,
   BuckedInventoryViewWrapper,

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, AlertTriangle, Trash2, XCircle, Package, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, AlertTriangle, Trash2, XCircle, Package, Loader2, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import { formatWeight } from '../utils';
+import { useBinEntryLabel } from '../hooks/useBinEntryLabel';
+import type { BinLabelContext } from '../hooks/useBinEntryLabel';
 import type { BinEntry } from '../types';
 
 function yieldPct(wet: number, dry: number): string {
@@ -18,9 +20,11 @@ export interface BinEntryWorkspaceProps {
   onComplete: () => Promise<void>;
   onCancel: () => Promise<void>;
   wetWeight: number | null;
+  labelContext: BinLabelContext | null;
 }
 
-export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, removeBinEntry, onComplete, onCancel, wetWeight }: BinEntryWorkspaceProps) {
+export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, removeBinEntry, onComplete, onCancel, wetWeight, labelContext }: BinEntryWorkspaceProps) {
+  const { printBinLabel } = useBinEntryLabel(labelContext);
   const [entries, setEntries] = useState<BinEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [weight, setWeight] = useState('');
@@ -52,7 +56,7 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
     setAdding(true);
     setError(null);
     try {
-      await addBinEntry({
+      const newEntry = await addBinEntry({
         binning_session_id: sessionId,
         bin_weight_grams: w,
         notes: entryNotes.trim() || undefined,
@@ -60,6 +64,13 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
       setWeight('');
       setEntryNotes('');
       await loadEntries();
+
+      // Auto-print label for the new bin entry
+      printBinLabel({
+        weightGrams: w,
+        entryOrder: newEntry.entry_order,
+        notes: newEntry.notes ?? undefined,
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to add entry');
     } finally {
@@ -131,13 +142,22 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
                   <span className="text-sm font-medium text-cult-white">{formatWeight(Number(entry.bin_weight_grams))}</span>
                   {entry.notes && <span className="text-xs text-cult-medium-gray truncate">{entry.notes}</span>}
                 </div>
-                <button
-                  onClick={() => handleRemoveEntry(entry.id)}
-                  className="text-cult-medium-gray hover:text-red-400 transition-colors flex-shrink-0"
-                  title="Remove entry"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button
+                    onClick={() => printBinLabel({ weightGrams: Number(entry.bin_weight_grams), entryOrder: entry.entry_order, notes: entry.notes ?? undefined })}
+                    className="text-cult-medium-gray hover:text-cult-white transition-colors"
+                    title="Reprint label"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleRemoveEntry(entry.id)}
+                    className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                    title="Remove entry"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

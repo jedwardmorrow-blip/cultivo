@@ -1,12 +1,9 @@
 import { FlaskConical } from 'lucide-react';
 import { RosinLabNav } from './components/RosinLabNav';
 import { RosinDashboard } from './screens/RosinDashboard';
-import { FreshFrozenInventory } from './screens/FreshFrozenInventory';
-import { HashInventory } from './screens/HashInventory';
-import { RosinInventory } from './screens/RosinInventory';
+import { MaterialsHub } from './screens/MaterialsHub';
 import { WashDryHub } from './screens/WashDryHub';
 import { PressHub } from './screens/PressHub';
-import { PressCureLog } from './screens/PressCureLog';
 import { Analytics } from './screens/Analytics';
 import type { RosinLabScreen } from './types/rosin-lab.types';
 
@@ -53,18 +50,16 @@ export function RosinLabModule({ setCurrentView, currentView }: RosinLabModulePr
     switch (activeScreen) {
       case 'dashboard':
         return <RosinDashboard onNavigate={handleNavigate} />;
+      case 'materials':
       case 'fresh-frozen':
-        return <FreshFrozenInventory onNavigate={handleNavigate} />;
       case 'hash':
-        return <HashInventory onNavigate={handleNavigate} />;
       case 'rosin':
-        return <RosinInventory onNavigate={handleNavigate} />;
+        return <MaterialsHub onNavigate={handleNavigate} />;
       case 'wash':
         return <WashDryHub onNavigate={handleNavigate} />;
       case 'press':
-        return <PressHub onNavigate={handleNavigate} />;
       case 'log':
-        return <PressCureLog onNavigate={handleNavigate} />;
+        return <PressHub onNavigate={handleNavigate} />;
       case 'analytics':
         return <Analytics />;
       default:

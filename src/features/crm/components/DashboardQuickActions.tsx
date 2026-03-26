@@ -41,7 +41,7 @@ export function DashboardQuickActions({ onCreateOrder }: DashboardQuickActionsPr
       description: 'Monitor at-risk accounts',
       icon: Activity,
       color: 'bg-orange-500/15 text-orange-400 border-orange-500/30 hover:bg-orange-500/25',
-      onClick: () => navigate('/crm-health'),
+      onClick: () => navigate('/crm-accounts-hub'),
     },
   ];
 

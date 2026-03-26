@@ -4,6 +4,7 @@ import {
   type RoomLayoutEntry,
   LAYOUT_TYPE_COLORS,
   URGENCY_STYLES,
+  SVG_VIEWPORT,
 } from '../../constants/buildingLayout';
 
 interface RoomPolygonProps {
@@ -17,8 +18,8 @@ interface RoomPolygonProps {
 
 /**
  * Individual room SVG element for the building map.
- * Renders the rect, room code, plant count, strain pills,
- * harvest countdown, task micro-bar, and urgency glow.
+ * Renders gradient fill, left-edge accent, room code, plant count,
+ * strain pills, harvest countdown, task micro-bar, and urgency glow.
  */
 function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick }: RoomPolygonProps) {
   const base = LAYOUT_TYPE_COLORS[layout.layoutType];
@@ -35,20 +36,47 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
   const tasksTotal = Number(ops?.tasks_today) || 0;
   const tasksDone = Number(ops?.tasks_completed_today) || 0;
 
-  // Visual states
-  const fillOpacity = isUtility ? 0.1 : isEmpty ? 0.05 : isSelected ? 0.37 : isHovered ? 0.30 : 0.22;
+  // Occupancy-driven fill intensity — busier rooms glow hotter
+  const occupancyBoost = !isUtility && !isEmpty && plants > 0
+    ? Math.min(0.12, (plants / 500) * 0.12)
+    : 0;
+
+  const baseFillOpacity = isUtility ? 0.1 : isEmpty ? 0.05 : isSelected ? 0.37 : isHovered ? 0.30 : 0.22;
+  const fillOpacity = baseFillOpacity + occupancyBoost;
   const strokeOpacity = isUtility ? 0.2 : isEmpty ? 0.12 : 0.55;
   const glow = urgency >= 1 && urgency <= 3 ? URGENCY_STYLES[urgency as 1 | 2 | 3] : null;
 
   const isClickable = !isUtility;
 
+  // Unique gradient ID for this room
+  const gradId = `grad-${layout.code}`;
+
+  // Hover scale: transform from center of room
+  const cx = layout.x + layout.w / 2;
+  const cy = layout.y + layout.h / 2;
+  const scale = isHovered && isClickable ? 1.02 : 1;
+
   return (
     <g
-      style={{ cursor: isClickable ? 'pointer' : 'default' }}
+      style={{
+        cursor: isClickable ? 'pointer' : 'default',
+        transform: `translate(${cx}px, ${cy}px) scale(${scale}) translate(${-cx}px, ${-cy}px)`,
+        transition: 'transform 0.15s ease',
+      }}
       onMouseEnter={() => isClickable && onHover(layout.code)}
       onMouseLeave={() => onHover(null)}
       onClick={() => isClickable && onClick(layout.code)}
     >
+      {/* Gradient definition — top-to-bottom fade for dimensionality */}
+      {!isUtility && !isEmpty && (
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={base} stopOpacity={fillOpacity * 1.3} />
+            <stop offset="100%" stopColor={base} stopOpacity={fillOpacity * 0.5} />
+          </linearGradient>
+        </defs>
+      )}
+
       {/* Urgency glow ring */}
       {glow && urgency >= 2 && (
         <rect
@@ -67,20 +95,33 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
         </rect>
       )}
 
-      {/* Room fill */}
+      {/* Room fill — gradient for occupied, flat for empty/utility */}
       <rect
         x={layout.x}
         y={layout.y}
         width={layout.w}
         height={layout.h}
         rx={2}
-        fill={base}
-        fillOpacity={fillOpacity}
+        fill={!isUtility && !isEmpty ? `url(#${gradId})` : base}
+        fillOpacity={isUtility || isEmpty ? fillOpacity : 1}
         stroke={isSelected ? '#FFFFFF' : glow && urgency >= 2 ? glow.color : base}
         strokeWidth={isSelected ? 1.5 : 0.8}
         strokeOpacity={isSelected ? 1 : strokeOpacity}
-        style={{ transition: 'all 0.15s ease' }}
+        style={{ transition: 'fill-opacity 0.15s ease, stroke 0.15s ease' }}
       />
+
+      {/* Left-edge accent bar — room type color at full intensity */}
+      {!isUtility && (
+        <rect
+          x={layout.x}
+          y={layout.y + 1}
+          width={2}
+          height={layout.h - 2}
+          rx={1}
+          fill={base}
+          opacity={isEmpty ? 0.2 : 0.7}
+        />
+      )}
 
       {/* Room code label */}
       <text
@@ -111,43 +152,59 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
         </text>
       )}
 
-      {/* Strain pills (max 3 for wide rooms, 1 for narrow) */}
+      {/* Strain pills (max 3 for wide rooms, 1 for narrow) + overflow indicator */}
       {!isUtility && !isTiny && strains.length > 0 && layout.w >= 60 && (() => {
         const maxPills = layout.w > 90 ? 3 : 1;
         const pills = strains.slice(0, maxPills);
+        const overflow = strains.length - maxPills;
         const pillW = layout.w > 90 ? 30 : Math.min(layout.w - 12, 40);
         const pillGap = 3;
         const totalW = pills.length === 1 ? pillW : pills.length * (pillW + pillGap) - pillGap;
         const startX = layout.x + (layout.w - totalW) / 2;
         const pillY = layout.y + 44;
 
-        return pills.map((s, i) => (
-          <g key={s}>
-            <rect
-              x={startX + i * (pillW + pillGap)}
-              y={pillY}
-              width={pillW}
-              height={14}
-              rx={1.5}
-              fill={base}
-              fillOpacity={0.25}
-              stroke={base}
-              strokeWidth={0.4}
-              strokeOpacity={0.35}
-            />
-            <text
-              x={startX + i * (pillW + pillGap) + pillW / 2}
-              y={pillY + 10}
-              textAnchor="middle"
-              fill="#999999"
-              fontSize={7}
-              fontFamily="'JetBrains Mono', monospace"
-              fontWeight={600}
-            >
-              {s}
-            </text>
-          </g>
-        ));
+        return (
+          <>
+            {pills.map((s, i) => (
+              <g key={s}>
+                <rect
+                  x={startX + i * (pillW + pillGap)}
+                  y={pillY}
+                  width={pillW}
+                  height={14}
+                  rx={1.5}
+                  fill={base}
+                  fillOpacity={0.25}
+                  stroke={base}
+                  strokeWidth={0.4}
+                  strokeOpacity={0.35}
+                />
+                <text
+                  x={startX + i * (pillW + pillGap) + pillW / 2}
+                  y={pillY + 10}
+                  textAnchor="middle"
+                  fill="#999999"
+                  fontSize={7}
+                  fontFamily="'JetBrains Mono', monospace"
+                  fontWeight={600}
+                >
+                  {s}
+                </text>
+              </g>
+            ))}
+            {overflow > 0 && (
+              <text
+                x={startX + totalW + 4}
+                y={pillY + 10}
+                fill="#666666"
+                fontSize={7}
+                fontFamily="'JetBrains Mono', monospace"
+              >
+                +{overflow}
+              </text>
+            )}
+          </>
+        );
       })()}
 
       {/* Harvest countdown (flower rooms only) */}
@@ -218,20 +275,61 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
         </g>
       )}
 
-      {/* Empty state */}
-      {isEmpty && !isTiny && layout.h >= 100 && (
-        <text
-          x={layout.x + layout.w / 2}
-          y={layout.y + layout.h / 2 + 6}
-          textAnchor="middle"
-          fill="#404040"
-          fontSize={8}
-          fontFamily="system-ui"
-          fontStyle="italic"
-          opacity={0.35}
-        >
-          Empty
-        </text>
+      {/* Ghost task bar — zero tasks on active non-utility rooms */}
+      {!isUtility && !isTiny && !isEmpty && tasksTotal === 0 && (
+        <g opacity={0.2}>
+          <rect
+            x={layout.x + 6}
+            y={layout.y + layout.h - 12}
+            width={layout.w - 12}
+            height={3}
+            rx={1.5}
+            fill="#2E2E2E"
+          />
+          <text
+            x={layout.x + layout.w / 2}
+            y={layout.y + layout.h - 16}
+            textAnchor="middle"
+            fill="#404040"
+            fontSize={6.5}
+            fontFamily="'JetBrains Mono', monospace"
+          >
+            0 tasks
+          </text>
+        </g>
+      )}
+
+      {/* Empty state — hatch pattern + label */}
+      {isEmpty && !isTiny && (
+        <g>
+          <defs>
+            <pattern id={`hatch-${layout.code}`} width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="0" y2="6" stroke={base} strokeWidth={0.6} opacity={0.12} />
+            </pattern>
+          </defs>
+          <rect
+            x={layout.x + 1}
+            y={layout.y + 1}
+            width={layout.w - 2}
+            height={layout.h - 2}
+            rx={1.5}
+            fill={`url(#hatch-${layout.code})`}
+          />
+          {layout.h >= 100 && (
+            <text
+              x={layout.x + layout.w / 2}
+              y={layout.y + layout.h / 2 + 6}
+              textAnchor="middle"
+              fill="#404040"
+              fontSize={8}
+              fontFamily="'Montserrat', system-ui"
+              fontStyle="italic"
+              opacity={0.3}
+            >
+              Empty
+            </text>
+          )}
+        </g>
       )}
 
       {/* Urgency badge */}
@@ -267,3 +365,110 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
 }
 
 export const RoomPolygon = memo(RoomPolygonInner);
+
+/**
+ * Hover tooltip rendered as an HTML overlay positioned
+ * by percentage within the SVG container.
+ * Entrance animation: fade in + slide up.
+ */
+interface RoomTooltipProps {
+  layout: RoomLayoutEntry;
+  ops: RoomOperationalState | null;
+}
+
+function RoomTooltipInner({ layout, ops }: RoomTooltipProps) {
+  const isEmpty = !ops || ops.occupancy_status === 'empty';
+  const plants = ops?.total_plants ?? 0;
+  const strains = ops?.strain_names ?? [];
+  const daysToHarvest = ops?.days_to_harvest ?? null;
+  const daysInStage = ops?.days_in_stage ?? null;
+  const tasksTotal = Number(ops?.tasks_today) || 0;
+  const tasksDone = Number(ops?.tasks_completed_today) || 0;
+  const roomType = ops?.room_type ?? layout.layoutType;
+  const base = LAYOUT_TYPE_COLORS[layout.layoutType];
+
+  // Position: center above the room
+  const leftPct = ((layout.x + layout.w / 2) / SVG_VIEWPORT.width) * 100;
+  const topPct = ((layout.y - 4) / SVG_VIEWPORT.height) * 100;
+
+  return (
+    <div
+      className="absolute pointer-events-none z-50"
+      style={{
+        left: `${leftPct}%`,
+        top: `${topPct}%`,
+        transform: 'translate(-50%, -100%)',
+        animation: 'tooltipIn 0.15s ease-out both',
+      }}
+    >
+      {/* Inline keyframes for tooltip entrance */}
+      <style>{`
+        @keyframes tooltipIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div
+        className="bg-cult-near-black border border-cult-border px-3 py-2 shadow-lg"
+        style={{ minWidth: 160, maxWidth: 200 }}
+      >
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-sm" style={{ background: base, opacity: 0.7 }} />
+            <span className="text-cult-white font-mono font-bold text-xs">{layout.code}</span>
+          </div>
+          <span className="text-cult-text-muted font-mono text-[9px] uppercase">{roomType}</span>
+        </div>
+        {isEmpty ? (
+          <span className="text-cult-text-faint text-[10px] italic">No active plants</span>
+        ) : (
+          <div className="space-y-1">
+            <div className="flex justify-between text-[10px] font-mono">
+              <span className="text-cult-text-muted">Plants</span>
+              <span className="text-cult-white font-semibold">{plants}</span>
+            </div>
+            {strains.length > 0 && (
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-cult-text-muted">Strains</span>
+                <span className="text-cult-white font-semibold">{strains.slice(0, 3).join(', ')}{strains.length > 3 ? ` +${strains.length - 3}` : ''}</span>
+              </div>
+            )}
+            {daysInStage !== null && (
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-cult-text-muted">Day in stage</span>
+                <span className="text-cult-white font-semibold">{daysInStage}</span>
+              </div>
+            )}
+            {daysToHarvest !== null && (
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-cult-text-muted">Harvest</span>
+                <span className={`font-semibold ${daysToHarvest <= 0 ? 'text-cult-red' : daysToHarvest <= 7 ? 'text-cult-warning' : 'text-cult-white'}`}>
+                  {daysToHarvest <= 0 ? `${Math.abs(daysToHarvest)}d overdue` : `${daysToHarvest}d`}
+                </span>
+              </div>
+            )}
+            {tasksTotal > 0 && (
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-cult-text-muted">Tasks</span>
+                <span className={`font-semibold ${tasksDone === tasksTotal ? 'text-cult-green' : 'text-cult-warning'}`}>{tasksDone}/{tasksTotal}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {/* Caret */}
+      <div
+        className="mx-auto w-0 h-0"
+        style={{
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderTop: '5px solid #2E2E2E',
+          width: 0,
+          marginTop: -1,
+        }}
+      />
+    </div>
+  );
+}
+
+export const RoomTooltip = memo(RoomTooltipInner);
