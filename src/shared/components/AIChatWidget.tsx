@@ -14,6 +14,7 @@ const ALLOWED_FILE_TYPES = [
   "image/png", "image/jpeg", "image/gif", "image/webp",
   "application/pdf", "text/plain", "text/csv",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
 ];
 
 // ─── BRAND COLORS ───

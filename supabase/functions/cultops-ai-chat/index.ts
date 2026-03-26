@@ -143,8 +143,35 @@ Deno.serve(async (req: Request) => {
     const messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }> = [];
     if (body.history?.length) messages.push(...body.history.slice(-10));
 
-    // v36: If attachments include images, build multimodal content array for Claude vision
+    // v36+v50: Handle attachments — images via Claude vision, documents via text extraction
     const imageAttachments = attachments.filter((a: { mimeType: string }) => a.mimeType.startsWith("image/"));
+    const docAttachments = attachments.filter((a: { mimeType: string }) => !a.mimeType.startsWith("image/"));
+
+    // Extract text content from document attachments
+    const docContextParts: string[] = [];
+    for (const doc of docAttachments) {
+      try {
+        if (doc.mimeType === "text/plain" || doc.mimeType === "text/csv") {
+          // Decode base64 text directly
+          const text = atob(doc.base64Data);
+          docContextParts.push(`--- ATTACHED FILE: ${doc.fileName} (${doc.mimeType}) ---\n${text.slice(0, 15000)}`);
+        } else if (doc.mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || doc.mimeType === "application/vnd.ms-excel") {
+          // Excel files: can't parse in Deno without a library — acknowledge and describe
+          docContextParts.push(`--- ATTACHED FILE: ${doc.fileName} (Excel spreadsheet, ${Math.round(doc.base64Data.length * 0.75 / 1024)}KB) ---\nThis is a binary Excel file. You cannot read its contents directly, but it has been uploaded and stored. Acknowledge the attachment and let the user know you can see they attached "${doc.fileName}" but cannot parse Excel data directly in chat. Suggest they paste key data as text or ask specific questions about it.`);
+        } else if (doc.mimeType === "application/pdf") {
+          docContextParts.push(`--- ATTACHED FILE: ${doc.fileName} (PDF, ${Math.round(doc.base64Data.length * 0.75 / 1024)}KB) ---\nThis is a PDF file. It has been uploaded and stored. Acknowledge the attachment and let the user know you can see they attached "${doc.fileName}". For PDF analysis, suggest they paste relevant text or describe what they need.`);
+        } else {
+          docContextParts.push(`--- ATTACHED FILE: ${doc.fileName} (${doc.mimeType}) ---\nFile uploaded and stored. Cannot parse this format directly.`);
+        }
+      } catch (e) {
+        console.error(`[v50] doc attachment parse error for ${doc.fileName}: ${e}`);
+        docContextParts.push(`--- ATTACHED FILE: ${doc.fileName} ---\nFile received but could not be processed.`);
+      }
+    }
+
+    const docContext = docContextParts.length > 0 ? "\n\n" + docContextParts.join("\n\n") : "";
+    const userMessageWithDocs = body.message + docContext;
+
     if (imageAttachments.length > 0) {
       const contentBlocks: Array<Record<string, unknown>> = [];
       for (const img of imageAttachments) {
@@ -153,11 +180,12 @@ Deno.serve(async (req: Request) => {
           source: { type: "base64", media_type: img.mimeType, data: img.base64Data },
         });
       }
-      contentBlocks.push({ type: "text", text: body.message });
+      contentBlocks.push({ type: "text", text: userMessageWithDocs });
       messages.push({ role: "user", content: contentBlocks });
-      console.log(`[v36] Sending ${imageAttachments.length} image(s) to Claude vision`);
+      console.log(`[v50] Sending ${imageAttachments.length} image(s) + ${docAttachments.length} doc(s) to Claude`);
     } else {
-      messages.push({ role: "user", content: body.message });
+      messages.push({ role: "user", content: userMessageWithDocs });
+      if (docAttachments.length > 0) console.log(`[v50] ${docAttachments.length} doc attachment(s): ${docAttachments.map(d => d.fileName).join(", ")}`);
     }
 
     // v36: Upload attachments to storage in parallel (non-blocking, for record-keeping)
@@ -187,7 +215,7 @@ Deno.serve(async (req: Request) => {
       } else if (status === 401) {
         throw new Error("AI service authentication error. Please notify an admin.");
       }
-      throw new Error("The AI assistant encountered an unexpected error. Please try again.");
+      throw new Error(`API ${status}: ${errBody.substring(0, 200)}`);
     }
 
     updateLearnedPreferences(userProfile.userId, intent, body.message.length).catch(() => {});

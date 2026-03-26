@@ -28,6 +28,7 @@ type BinningViewAction =
   | { type: 'START_BINNING'; harvestId: string }
   | { type: 'START_BINNING_ERROR'; error: string }
   | { type: 'START_BINNING_DONE' }
+  | { type: 'CLEAR_START_ERROR' }
   | { type: 'FORM_SUCCESS' };
 
 // ─── Reducer ───
@@ -50,9 +51,11 @@ function binningViewReducer(state: BinningViewState, action: BinningViewAction):
     case 'START_BINNING':
       return { ...state, startingId: action.harvestId, startError: null };
     case 'START_BINNING_ERROR':
-      return { ...state, startError: action.error, startingId: null };
+      return { ...state, startError: action.error };
     case 'START_BINNING_DONE':
-      return { ...state, startingId: null };
+      return { ...state, startingId: state.startError ? state.startingId : null };
+    case 'CLEAR_START_ERROR':
+      return { ...state, startError: null, startingId: null };
     case 'FORM_SUCCESS':
       return { ...state, showNewForm: false, activeTab: 'active' };
     default:
