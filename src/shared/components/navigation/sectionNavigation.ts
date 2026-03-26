@@ -33,6 +33,7 @@ import {
   Combine,
   Wallet,
   CreditCard,
+  Dna,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -97,6 +98,15 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
       { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
       { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
+    ],
+  },
+  {
+    id: 'strain-analytics',
+    label: 'Strains',
+    icon: Dna,
+    defaultView: 'strain-analytics',
+    items: [
+      { id: 'strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'primary' },
     ],
   },
   {

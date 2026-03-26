@@ -35,6 +35,7 @@ import type {
   AddIndividualPlantInput,
   BulkImportPlantResult,
   FreshFrozenPackage,
+  CreateFreshFrozenPackageInput,
 } from '../types';
 import { inventoryMovementService } from '@/services';
 import {
@@ -635,7 +636,43 @@ export const cultivationService = {
       .select(HARVEST_SESSION_SELECT)
       .single();
     if (error) throwError(error, 'finalizeHarvest');
-    return data as unknown as HarvestSession;
+
+    const session = data as unknown as HarvestSession;
+
+    // Auto-create fresh_frozen_packages for entries with destination='fresh_frozen'
+    const frozenEntries = entries.filter((e) => e.destination === 'fresh_frozen');
+    if (frozenEntries.length > 0 && session.batch_registry_id) {
+      const frozenWeight = frozenEntries.reduce((sum, e) => sum + Number(e.weight_grams), 0);
+      // Get strain_id from the plant_group relation
+      const strainId = (session as any).plant_groups?.strain_id ?? null;
+
+      // Determine next package_number for this batch
+      const { data: existing } = await supabase
+        .from('fresh_frozen_packages')
+        .select('package_number')
+        .eq('batch_id', session.batch_registry_id)
+        .order('package_number', { ascending: false })
+        .limit(1);
+      const nextPackageNumber = (existing?.[0]?.package_number ?? 0) + 1;
+
+      const input: CreateFreshFrozenPackageInput = {
+        batch_id: session.batch_registry_id,
+        weight_grams: frozenWeight,
+        strain_id: strainId,
+        package_number: nextPackageNumber,
+        frozen_at: new Date().toISOString(),
+      };
+
+      const { error: ffError } = await supabase
+        .from('fresh_frozen_packages')
+        .insert(input);
+      if (ffError) {
+        console.error('Failed to create fresh frozen package:', ffError);
+        // Non-fatal: harvest is already finalized, log but don't throw
+      }
+    }
+
+    return session;
   },
 
   async listFreshFrozenPackages(batchId: string): Promise<FreshFrozenPackage[]> {

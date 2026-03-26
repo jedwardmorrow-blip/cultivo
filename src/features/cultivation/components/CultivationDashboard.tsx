@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sprout, Scissors, Package, AlertTriangle, Calendar } from 'lucide-react';
+import { Sprout, Scissors, Package, AlertTriangle, Calendar, Map, LayoutGrid } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
@@ -8,11 +8,14 @@ import { useRoomOperationalState, type RoomOperationalState } from '../hooks/use
 import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
+import { BuildingMapView } from './building-map';
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
+
+type CultivationViewMode = 'map' | 'cards';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -159,6 +162,9 @@ export function CultivationDashboard() {
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [advanceError, setAdvanceError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<CultivationViewMode>(() => {
+    try { return (localStorage.getItem('cult-view-mode') as CultivationViewMode) || 'map'; } catch { return 'map'; }
+  });
 
   const loading = roomsLoading || groupsLoading || sessionsLoading || summariesLoading || opsLoading;
 
@@ -233,9 +239,35 @@ export function CultivationDashboard() {
 
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
-        <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
+          <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
+        </div>
+        <div className="flex border border-cult-border overflow-hidden">
+          <button
+            onClick={() => { setViewMode('map'); try { localStorage.setItem('cult-view-mode', 'map'); } catch {} }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+              viewMode === 'map'
+                ? 'bg-cult-surface-overlay text-cult-white'
+                : 'text-cult-text-muted hover:text-cult-text-secondary'
+            }`}
+          >
+            <Map className="w-3 h-3" />
+            Map
+          </button>
+          <button
+            onClick={() => { setViewMode('cards'); try { localStorage.setItem('cult-view-mode', 'cards'); } catch {} }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+              viewMode === 'cards'
+                ? 'bg-cult-surface-overlay text-cult-white'
+                : 'text-cult-text-muted hover:text-cult-text-secondary'
+            }`}
+          >
+            <LayoutGrid className="w-3 h-3" />
+            Cards
+          </button>
+        </div>
       </div>
 
       {strainsWithoutAbbrev.length > 0 && (
@@ -280,13 +312,17 @@ export function CultivationDashboard() {
             <Package className="w-10 h-10 text-cult-medium-gray" />
             <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
           </div>
+        ) : viewMode === 'map' ? (
+          <BuildingMapView
+            opsRooms={opsRooms}
+            rooms={rooms}
+            onRoomSelect={setSelectedRoom}
+          />
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {opsRooms.map((opsState) => {
                 const fullRoom = rooms.find((r) => r.id === opsState.room_id);
-                // Even if fullRoom isn't mapped, render the command card since all data needed is in opsState.
-                // We'll pass fullRoom safely when clicked. If null, the drawer won't open.
                 return (
                   <RoomCommandCard
                     key={opsState.room_id}

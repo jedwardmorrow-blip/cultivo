@@ -66,6 +66,7 @@ const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorB
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
+const StrainAnalyticsDashboard = lazyRetry(() => import('./features/strain-analytics'), 'StrainAnalyticsDashboard');
 
 function ViewFallback() {
   return (
@@ -195,6 +196,7 @@ function AuthenticatedApp() {
               <Route path="/financial" element={<FinancialDashboard />} />
               <Route path="/financial-ap" element={<VendorBillEntry />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
+              <Route path="/strain-analytics" element={<StrainAnalyticsDashboard />} />
               <Route path="/eod-summary" element={<EODSummary />} />
               <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />
               <Route path="/crm-queue" element={<SalesQueue />} />
