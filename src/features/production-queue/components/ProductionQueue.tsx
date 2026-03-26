@@ -1,13 +1,12 @@
 import { useState, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar, Info } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
-import { useStrainRunway, RUNWAY_STYLES, runwayLabel, runwayTooltip, type StrainRunway } from '@/shared/hooks/useStrainRunway';
-import { useBatchIntelligence, AGE_STYLES, type StrainBatchSummary } from '@/shared/hooks/useBatchIntelligence';
+import { useSkuYield, type StrainAllocation } from '@/shared/hooks/useSkuYield';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
-import { BatchIntelligencePanel } from './BatchIntelligencePanel';
+import { BatchAllocationPanel } from './BatchAllocationPanel';
 import { formatDateShort } from '@/shared/utils/format';
 import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
 
@@ -103,104 +102,41 @@ function batchStageBadge(item: OrderLineItem) {
   );
 }
 
-// ─── Runway Badge ───────────────────────────────────────────────────────────
+// ─── SKU Projection Badge (replaces RunwayBadge) ────────────────────────────
 
-function RunwayBadge({ runway }: { runway: StrainRunway | undefined }) {
-  if (!runway) return <span className="text-xs text-gray-600">—</span>;
+function SkuProjectionBadge({ allocation }: { allocation: StrainAllocation | undefined }) {
+  if (!allocation) return <span className="text-xs text-gray-600">—</span>;
 
-  const style = RUNWAY_STYLES[runway.runway_status];
-  const label = runwayLabel(runway);
-  const tip = runwayTooltip(runway);
-  const isEstimated = runway.confidence === 'estimated' && runway.runway_status !== 'no_demand';
-  const isPulsing = runway.runway_status === 'sold_out' || runway.runway_status === 'critical';
+  const { total_proj_3_5g, total_proj_14g, total_proj_1lb } = allocation;
+  const hasProjections = total_proj_3_5g > 0 || total_proj_14g > 0 || total_proj_1lb > 0;
+
+  if (!hasProjections) {
+    return (
+      <span className="text-xs text-gray-500" title="No packaging projections — inventory may be trim-only or unprocessed">
+        —
+      </span>
+    );
+  }
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-bold tabular-nums ${style.bg} ${style.text} ${style.border} ${isPulsing ? 'animate-pulse-red' : ''}`}
-      title={tip}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${isEstimated ? 'ring-1 ring-current bg-transparent' : style.dot}`} />
-      {label}
-      {isEstimated && runway.runway_status !== 'sold_out' && (
-        <span className="text-xs opacity-50 font-normal">est.</span>
+    <div className="flex items-center gap-1.5">
+      {total_proj_3_5g > 0 && (
+        <span className="text-[11px] tabular-nums text-emerald-400" title={`${total_proj_3_5g} × 3.5g jars projected`}>
+          <span className="font-semibold">{total_proj_3_5g}</span>
+          <span className="text-gray-600 ml-0.5">3.5g</span>
+        </span>
       )}
-    </span>
-  );
-}
-
-// ─── Supply Funnel (strain expansion) ───────────────────────────────────────
-
-const FUNNEL_STAGES = [
-  { key: 'binned_lbs' as const, label: 'Binned', color: 'bg-indigo-500', textColor: 'text-indigo-400' },
-  { key: 'bucked_lbs' as const, label: 'Bucked', color: 'bg-violet-500', textColor: 'text-violet-400' },
-  { key: 'bulk_flower_lbs' as const, label: 'Bulk', color: 'bg-emerald-500', textColor: 'text-emerald-400' },
-] as const;
-
-function SupplyFunnel({ runway }: { runway: StrainRunway }) {
-  const maxLbs = Math.max(runway.binned_lbs, runway.bucked_lbs, runway.bulk_flower_lbs + runway.bulk_smalls_lbs, runway.packaged_units * 0.00772, 0.1);
-  const hasProjection = runway.bucked_lbs > 0;
-  const isCalibrated = runway.trim_confidence === 'calibrated';
-
-  return (
-    <div className="px-6 py-3">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">Supply Pipeline</span>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span>Sellable: <span className="text-white font-semibold">{runway.total_sellable_lbs} lbs</span></span>
-          <span>Pipeline: <span className="text-gray-300 font-semibold">{runway.total_pipeline_lbs} lbs</span></span>
-          {runway.packaged_units > 0 && (
-            <span>Packaged: <span className="text-cyan-400 font-semibold">{runway.packaged_units} units</span></span>
-          )}
-        </div>
-      </div>
-
-      {/* Funnel bars — increased height for readability */}
-      <div className="flex items-end gap-2 h-16 mb-2">
-        {FUNNEL_STAGES.map(stage => {
-          const lbs = stage.key === 'bulk_flower_lbs'
-            ? runway.bulk_flower_lbs + runway.bulk_smalls_lbs
-            : runway[stage.key];
-          const pct = lbs > 0 ? Math.max((lbs / maxLbs) * 100, 8) : 0;
-          return (
-            <div key={stage.key} className="flex-1 flex flex-col items-center gap-1">
-              <span className={`text-xs font-semibold tabular-nums ${stage.textColor}`}>
-                {lbs > 0 ? `${lbs.toFixed(1)}` : '—'}
-              </span>
-              <div className="w-full relative" style={{ height: `${pct}%`, minHeight: lbs > 0 ? '6px' : '0' }}>
-                <div className={`absolute inset-0 ${stage.color} rounded-t opacity-80`} />
-              </div>
-              <span className="text-xs text-gray-600 uppercase">{stage.label}</span>
-            </div>
-          );
-        })}
-
-        {/* Arrow → Packaged */}
-        <div className="flex-shrink-0 flex items-center px-1 text-gray-600">→</div>
-
-        <div className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-xs font-semibold tabular-nums text-cyan-400">
-            {runway.packaged_units > 0 ? runway.packaged_units : '—'}
-          </span>
-          <div className="w-full relative" style={{ height: `${runway.packaged_units > 0 ? Math.max((runway.packaged_units * 0.00772 / maxLbs) * 100, 8) : 0}%`, minHeight: runway.packaged_units > 0 ? '6px' : '0' }}>
-            <div className="absolute inset-0 bg-cyan-500 rounded-t opacity-80" />
-          </div>
-          <span className="text-xs text-gray-600 uppercase">Pkgd</span>
-        </div>
-      </div>
-
-      {/* Projected yield annotation */}
-      {hasProjection && (
-        <div className={`flex items-center gap-2 mt-1 px-2 py-1 rounded ${isCalibrated ? 'bg-violet-500/5 border border-violet-500/10' : 'bg-gray-800/30 border border-gray-700/20'}`}>
-          <span className="text-xs text-gray-500">Bucked → flower yield:</span>
-          <span className={`text-xs font-semibold ${isCalibrated ? 'text-violet-400' : 'text-gray-400'}`}>
-            ~{runway.projected_flower_from_bucked_lbs} lbs ({runway.flower_pct}% ratio)
-          </span>
-          <span className={`text-xs px-1 py-0.5 rounded ${
-            isCalibrated ? 'bg-violet-500/10 text-violet-400' : 'bg-gray-700/50 text-gray-500'
-          }`}>
-            {isCalibrated ? `${runway.trim_session_count} sessions` : 'default est.'}
-          </span>
-        </div>
+      {total_proj_14g > 0 && (
+        <span className="text-[11px] tabular-nums text-sky-400" title={`${total_proj_14g} × 14g mylars projected`}>
+          <span className="font-semibold">{total_proj_14g}</span>
+          <span className="text-gray-600 ml-0.5">14g</span>
+        </span>
+      )}
+      {total_proj_1lb > 0 && (
+        <span className="text-[11px] tabular-nums text-violet-400" title={`${total_proj_1lb} × 1lb bags projected`}>
+          <span className="font-semibold">{total_proj_1lb}</span>
+          <span className="text-gray-600 ml-0.5">1lb</span>
+        </span>
       )}
     </div>
   );
@@ -310,25 +246,16 @@ function EnhancedByStrainView({
   byStrain,
   byOrder,
   selectedDeliveryDate,
-  runwayData,
-  batchByStrain,
+  skuByStrain,
 }: {
   byStrain: StrainFormatRow[];
   byOrder: OrderLineItem[];
   selectedDeliveryDate: string | null;
-  runwayData: StrainRunway[];
-  batchByStrain: Map<string, StrainBatchSummary>;
+  skuByStrain: Map<string, StrainAllocation>;
 }) {
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
   const weekDates = useMemo(() => getWeekDatesForHeatmap(), []);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-
-  // Build a runway lookup by strain name
-  const runwayMap = useMemo(() => {
-    const map = new Map<string, StrainRunway>();
-    runwayData.forEach(r => map.set(r.strain, r));
-    return map;
-  }, [runwayData]);
 
   // Group by strain_id
   const strainGroups = useMemo(() => {
@@ -408,10 +335,9 @@ function EnhancedByStrainView({
           <tr className="border-b border-cult-medium-gray text-left">
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Days of supply remaining at current order velocity">Runway</th>
+            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Projected SKU yield from remaining inventory">Projected SKUs</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Weight</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Revenue</th>
             <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
           </tr>
         </thead>
@@ -425,9 +351,8 @@ function EnhancedByStrainView({
             const totalNeeded = formats.reduce((sum, f) => sum + f.total_units_needed, 0);
             const totalDemandG = formats.reduce((sum, f) => sum + f.total_demand_g, 0);
 
-            // Runway + batch intelligence for this strain
-            const runway = runwayMap.get(strainName);
-            const batchSummary = batchByStrain.get(strainName);
+            // SKU yield allocation for this strain
+            const allocation = skuByStrain.get(strainName);
 
             // Get all orders for this strain, optionally filtered by selected date
             const byDay = strainOrdersByDay.get(strainId);
@@ -449,33 +374,25 @@ function EnhancedByStrainView({
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-white">{strainName}</span>
-                      {batchSummary ? (
-                        <span className="text-xs text-gray-600" title={`${batchSummary.batch_count} batches, oldest ${batchSummary.oldest_age_days}d`}>
-                          {batchSummary.batch_count} batch{batchSummary.batch_count !== 1 ? 'es' : ''}
+                      {allocation ? (
+                        <span className="text-xs text-gray-600" title={`${allocation.batch_count} batches, ${formatWeight(allocation.total_remaining_g)} remaining`}>
+                          {allocation.batch_count} batch{allocation.batch_count !== 1 ? 'es' : ''}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-600">
                           {formats.length} format{formats.length > 1 ? 's' : ''}
                         </span>
                       )}
-                      {batchSummary && batchSummary.aging_batches > 0 && (
+                      {allocation && allocation.aging_batches > 0 && (
                         <span
                           className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium"
-                          title={`${batchSummary.aging_batches} batch${batchSummary.aging_batches !== 1 ? 'es' : ''} over 6 months old — cost clock critical`}
+                          title={`${allocation.aging_batches} batch${allocation.aging_batches !== 1 ? 'es' : ''} over 6 months old — cost clock critical`}
                         >
                           <AlertTriangle className="w-3 h-3" />
-                          {batchSummary.oldest_age_days}d oldest
+                          {allocation.oldest_age_days}d oldest
                         </span>
                       )}
-                      {batchSummary && batchSummary.unalloc_orders > 0 && (
-                        <span
-                          className="text-xs text-amber-400/70"
-                          title={`${batchSummary.unalloc_orders} orders ($${batchSummary.unalloc_revenue.toLocaleString()}) have no batch assigned`}
-                        >
-                          ${(batchSummary.unalloc_revenue / 1000).toFixed(1)}k unalloc
-                        </span>
-                      )}
-                      {hasBatchOpportunity && !batchSummary?.aging_batches && (
+                      {hasBatchOpportunity && !(allocation?.aging_batches) && (
                         <span
                           className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 font-medium"
                           title={`This strain has orders on ${heatmap!.daysWithDemand} different days — consider batching the packaging work`}
@@ -487,17 +404,10 @@ function EnhancedByStrainView({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <RunwayBadge runway={runway} />
+                    <SkuProjectionBadge allocation={allocation} />
                   </td>
                   <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {runway ? (
-                      <span className={runway.demand_revenue > 5000 ? 'text-white font-semibold' : 'text-gray-300'}>
-                        ${runway.demand_revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                      </span>
-                    ) : <span className="text-gray-600">—</span>}
-                  </td>
                   <td className="px-4 py-3 text-right text-gray-300 tabular-nums">
                     {formats[0].order_count}
                   </td>
@@ -526,16 +436,15 @@ function EnhancedByStrainView({
                       )}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300 tabular-nums">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2"></td>
                     <td className="px-4 py-2 text-right text-gray-400 tabular-nums">{f.order_count}</td>
                   </tr>
                 ))}
 
-                {/* Batch Intelligence Panel (replaces SupplyFunnel + BatchInfoPanel) */}
+                {/* Batch Allocation Panel — conversion funnel + SKU yield projections */}
                 {isExpanded && (
                   <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
-                    <td colSpan={7} className="p-0">
-                      <BatchIntelligencePanel strainSummary={batchSummary} strainName={strainName} />
+                    <td colSpan={6} className="p-0">
+                      <BatchAllocationPanel allocation={allocation} strainName={strainName} />
                     </td>
                   </tr>
                 )}
@@ -559,7 +468,7 @@ function EnhancedByStrainView({
 
                   return (
                     <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
-                      <td colSpan={7} className="px-6 py-3">
+                      <td colSpan={6} className="px-6 py-3">
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
                             <Calendar className="w-3.5 h-3.5" />
@@ -775,7 +684,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
 
                 {isExpanded && first.delivery_notes && (
                   <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={7} className="px-8 py-2">
+                    <td colSpan={6} className="px-8 py-2">
                       <span className="text-xs text-gray-500">Notes: </span>
                       <span className="text-xs text-gray-400">{first.delivery_notes}</span>
                     </td>
@@ -873,8 +782,7 @@ export function ProductionQueue() {
     selectedWeekLabel, selectedWeekRange,
     loading: revenueLoading,
   } = useRevenuePipeline();
-  const { data: runwayData, summary: runwaySummary } = useStrainRunway();
-  const { byStrain: batchByStrain, summary: batchSummary } = useBatchIntelligence();
+  const { byStrain: skuByStrain, summary: skuSummary } = useSkuYield();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
@@ -962,58 +870,47 @@ export function ProductionQueue() {
       />
 
       {/* ── Inventory Intelligence Bar ────────────────────────────────────── */}
-      {(runwaySummary.soldOut > 0 || runwaySummary.critical > 0 || runwaySummary.tight > 0 || batchSummary.aging_batches > 0) && (
+      {(skuSummary.aging_batches > 0 || skuSummary.total_batches > 0) && (
         <div className="flex items-center gap-4 px-4 py-2.5 rounded-cult border border-cult-medium-gray/40 bg-cult-near-black">
-          {runwaySummary.soldOut > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse-red" />
-              <span className="font-bold text-red-400">{runwaySummary.soldOut}</span>
-              <span className="text-gray-500">sold out</span>
-            </span>
-          )}
-          {runwaySummary.critical > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-red-400" />
-              <span className="font-bold text-red-400">{runwaySummary.critical}</span>
-              <span className="text-gray-500">critical</span>
-            </span>
-          )}
-          {runwaySummary.tight > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="font-bold text-amber-400">{runwaySummary.tight}</span>
-              <span className="text-gray-500">tight</span>
-            </span>
-          )}
-          {runwaySummary.comfortable + runwaySummary.surplus > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="font-bold text-emerald-400">{runwaySummary.comfortable + runwaySummary.surplus}</span>
-              <span className="text-gray-500">OK</span>
-            </span>
-          )}
+          <span className="flex items-center gap-1.5 text-sm">
+            <Package className="w-3.5 h-3.5 text-gray-500" />
+            <span className="font-bold text-white">{skuSummary.total_batches}</span>
+            <span className="text-gray-500">batches</span>
+          </span>
           <span className="border-l border-cult-medium-gray/40 h-4" />
-          {batchSummary.aging_batches > 0 && (
-            <span className="flex items-center gap-1.5 text-sm" title={`${batchSummary.aging_batches} batches over 6 months old — cost clock critical`}>
-              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-              <span className="font-bold text-red-400">{batchSummary.aging_batches}</span>
-              <span className="text-gray-500">aging batches</span>
+          {skuSummary.total_proj_3_5g > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="font-bold text-emerald-400">{skuSummary.total_proj_3_5g.toLocaleString()}</span>
+              <span className="text-gray-500">3.5g jars</span>
             </span>
           )}
-          {batchSummary.total_unalloc_revenue > 0 && (
-            <span className="text-sm" title={`${batchSummary.total_unalloc_orders} orders with no batch assigned`}>
-              <span className="font-bold text-amber-400">${batchSummary.total_unalloc_revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
-              <span className="text-gray-500 ml-1">unallocated</span>
+          {skuSummary.total_proj_14g > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-sky-500" />
+              <span className="font-bold text-sky-400">{skuSummary.total_proj_14g.toLocaleString()}</span>
+              <span className="text-gray-500">14g mylars</span>
             </span>
           )}
-          {runwaySummary.totalRevenueAtRisk > 0 && (
-            <span className="text-sm">
-              <span className="font-bold text-red-400">${runwaySummary.totalRevenueAtRisk.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
-              <span className="text-gray-500 ml-1">at risk</span>
+          {skuSummary.total_proj_1lb > 0 && (
+            <span className="flex items-center gap-1.5 text-sm">
+              <span className="w-2 h-2 rounded-full bg-violet-500" />
+              <span className="font-bold text-violet-400">{skuSummary.total_proj_1lb.toLocaleString()}</span>
+              <span className="text-gray-500">1lb bags</span>
             </span>
+          )}
+          {skuSummary.aging_batches > 0 && (
+            <>
+              <span className="border-l border-cult-medium-gray/40 h-4" />
+              <span className="flex items-center gap-1.5 text-sm" title={`${skuSummary.aging_batches} batches over 6 months old — cost clock critical`}>
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                <span className="font-bold text-red-400">{skuSummary.aging_batches}</span>
+                <span className="text-gray-500">aging</span>
+              </span>
+            </>
           )}
           <span className="ml-auto text-xs text-gray-600">
-            {batchSummary.total_batches} batches · {runwaySummary.calibrated} calibrated · {runwaySummary.estimated} estimated
+            {skuSummary.total_strains} strains · {formatWeight(skuSummary.total_remaining_g)} total inventory
           </span>
         </div>
       )}
@@ -1053,8 +950,7 @@ export function ProductionQueue() {
           byStrain={filteredByStrain}
           byOrder={filteredByOrder}
           selectedDeliveryDate={selectedDeliveryDate}
-          runwayData={runwayData}
-          batchByStrain={batchByStrain}
+          skuByStrain={skuByStrain}
         />
       )}
       {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
