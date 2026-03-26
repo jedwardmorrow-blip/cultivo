@@ -188,10 +188,10 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
 
   return (
     <div>
-      <div className="bg-cult-surface-raised border border-cult-border p-3 mb-4 overflow-x-auto">
+      <div className="bg-cult-surface-raised border border-cult-border p-4 mb-4 overflow-x-auto">
         <svg
           viewBox={`0 0 ${SVG_VIEWPORT.width} ${SVG_VIEWPORT.height}`}
-          style={{ width: '100%', height: 'auto', minHeight: 280 }}
+          style={{ width: '100%', height: 'auto', minHeight: 420 }}
           xmlns="http://www.w3.org/2000/svg"
         >
           <BuildingStructure />

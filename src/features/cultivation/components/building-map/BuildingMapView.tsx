@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Map } from 'lucide-react';
 import type { RoomOperationalState } from '../../hooks/useRoomOperationalState';
 import type { GrowRoom } from '../../types';
 import { ROOM_LAYOUT_MAP } from '../../constants/buildingLayout';
@@ -78,6 +79,12 @@ export function BuildingMapView({ opsRooms, rooms, onRoomSelect }: BuildingMapVi
 
   return (
     <div className="space-y-4">
+      <h2 className="text-sm font-bold text-cult-text-muted uppercase tracking-wider flex items-center gap-2">
+        <Map className="w-3.5 h-3.5" />
+        Building Map
+        <span className="text-cult-text-faint font-normal text-xs normal-case tracking-normal ml-1">40th St · Phase 2</span>
+      </h2>
+
       {/* Stat bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {stats.map((s) => (

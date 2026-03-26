@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sprout, Scissors, Package, AlertTriangle, Calendar, Map, LayoutGrid } from 'lucide-react';
+import { Sprout, Scissors, Package, AlertTriangle, Calendar, LayoutGrid } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useHarvestSessions } from '../hooks/useHarvestSessions';
@@ -14,8 +14,6 @@ import { daysBetween, todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
-
-type CultivationViewMode = 'map' | 'cards';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -162,9 +160,6 @@ export function CultivationDashboard() {
   const [selectedRoom, setSelectedRoom] = useState<GrowRoom | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [advanceError, setAdvanceError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<CultivationViewMode>(() => {
-    try { return (localStorage.getItem('cult-view-mode') as CultivationViewMode) || 'map'; } catch { return 'map'; }
-  });
 
   const loading = roomsLoading || groupsLoading || sessionsLoading || summariesLoading || opsLoading;
 
@@ -239,35 +234,9 @@ export function CultivationDashboard() {
 
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
-          <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
-        </div>
-        <div className="flex border border-cult-border overflow-hidden">
-          <button
-            onClick={() => { setViewMode('map'); try { localStorage.setItem('cult-view-mode', 'map'); } catch {} }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
-              viewMode === 'map'
-                ? 'bg-cult-surface-overlay text-cult-white'
-                : 'text-cult-text-muted hover:text-cult-text-secondary'
-            }`}
-          >
-            <Map className="w-3 h-3" />
-            Map
-          </button>
-          <button
-            onClick={() => { setViewMode('cards'); try { localStorage.setItem('cult-view-mode', 'cards'); } catch {} }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
-              viewMode === 'cards'
-                ? 'bg-cult-surface-overlay text-cult-white'
-                : 'text-cult-text-muted hover:text-cult-text-secondary'
-            }`}
-          >
-            <LayoutGrid className="w-3 h-3" />
-            Cards
-          </button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
+        <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
       </div>
 
       {strainsWithoutAbbrev.length > 0 && (
@@ -307,19 +276,27 @@ export function CultivationDashboard() {
           />
         </div>
 
-        {activeRooms.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Package className="w-10 h-10 text-cult-medium-gray" />
-            <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
-          </div>
-        ) : viewMode === 'map' ? (
+        {/* Building Map */}
+        {activeRooms.length > 0 && (
           <BuildingMapView
             opsRooms={opsRooms}
             rooms={rooms}
             onRoomSelect={setSelectedRoom}
           />
+        )}
+
+        {/* Room Cards */}
+        {activeRooms.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Package className="w-10 h-10 text-cult-medium-gray" />
+            <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
+          </div>
         ) : (
-          <div className="space-y-6">
+          <div>
+            <h2 className="text-sm font-bold text-cult-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Rooms
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {opsRooms.map((opsState) => {
                 const fullRoom = rooms.find((r) => r.id === opsState.room_id);
