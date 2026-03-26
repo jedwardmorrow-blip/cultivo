@@ -166,6 +166,8 @@ export function VendorBillEntry() {
   const [showNewBillModal, setShowNewBillModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
+  const [isDraggingPage, setIsDraggingPage] = useState(false);
+  const dragCounterRef = useRef(0);
 
   // State - New Bill Form
   const [newBillForm, setNewBillForm] = useState<NewBillFormState>({
@@ -590,6 +592,25 @@ export function VendorBillEntry() {
       </div>
 
       <div className="flex items-center gap-2">
+        <label
+          className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-cult text-sm font-semibold hover:bg-green-500 transition-colors cursor-pointer"
+        >
+          <FileUp className="w-4 h-4" />
+          Scan Invoice
+          <input
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={e => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setShowNewBillModal(true);
+                setTimeout(() => handlePDFUpload(file), 100);
+              }
+              e.target.value = '';
+            }}
+          />
+        </label>
         <button
           onClick={() => setShowNewBillModal(true)}
           className="flex items-center gap-2 bg-cult-white text-cult-black px-3 py-1.5 rounded-cult text-sm font-semibold hover:bg-cult-light-gray transition-colors"
@@ -1288,11 +1309,43 @@ export function VendorBillEntry() {
 
   // Main Render
   return (
-    <div className="space-y-6 pb-8 stagger-fade-in">
+    <div
+      className="space-y-6 pb-8 stagger-fade-in"
+      onDragEnter={e => {
+        e.preventDefault();
+        dragCounterRef.current++;
+        setIsDraggingPage(true);
+      }}
+      onDragLeave={e => {
+        e.preventDefault();
+        dragCounterRef.current--;
+        if (dragCounterRef.current === 0) setIsDraggingPage(false);
+      }}
+      onDragOver={e => e.preventDefault()}
+      onDrop={e => {
+        e.preventDefault();
+        dragCounterRef.current = 0;
+        setIsDraggingPage(false);
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/pdf') {
+          setShowNewBillModal(true);
+          setTimeout(() => handlePDFUpload(file), 100);
+        }
+      }}
+    >
       <div>
         <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Accounts Payable</h1>
         <p className="text-cult-light-gray mt-2">Manage vendor bills, track payment status, and monitor aging</p>
       </div>
+
+      {/* Full-page drag overlay */}
+      {isDraggingPage && (
+        <div className="border-2 border-dashed border-green-500 bg-green-900/20 rounded-cult p-8 flex flex-col items-center justify-center text-center transition-all">
+          <FileUp className="w-10 h-10 text-green-400 mb-3" />
+          <div className="text-lg font-semibold text-green-400">Drop invoice PDF to scan</div>
+          <div className="text-sm text-cult-text-muted mt-1">We'll extract vendor, amounts, dates, and line items automatically</div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12 text-cult-text-muted">Loading AP data...</div>

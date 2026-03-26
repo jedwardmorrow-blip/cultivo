@@ -66,40 +66,6 @@ export const sectionDefinitions: SectionDefinition[] = [
     ],
   },
   {
-    id: 'sales',
-    label: 'Distribution',
-    icon: Truck,
-    defaultView: 'orders',
-    items: [
-      { id: 'orders', label: 'Orders', icon: Package, group: 'primary' },
-      { id: 'delivery', label: 'Delivery Calendar', icon: Calendar, group: 'primary' },
-      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' }
-    ],
-  },
-  {
-    id: 'inventory',
-    label: 'Inventory',
-    icon: Archive,
-    defaultView: 'inventory-all',
-    items: [
-      { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'primary' },
-      { id: 'batches', label: 'Batches', icon: Layers, group: 'primary' },
-      { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'primary' },
-      { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
-      { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
-      { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
-    ],
-  },
-  {
-    id: 'strain-analytics',
-    label: 'Analytics',
-    icon: Dna,
-    defaultView: 'strain-analytics',
-    items: [
-      { id: 'strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'primary' },
-    ],
-  },
-  {
     id: 'production',
     label: 'Production',
     icon: Scissors,
@@ -125,14 +91,28 @@ export const sectionDefinitions: SectionDefinition[] = [
     ],
   },
   {
-    id: 'financial',
-    label: 'Financial',
-    icon: Wallet,
-    defaultView: 'financial',
+    id: 'sales',
+    label: 'Distribution',
+    icon: Truck,
+    defaultView: 'orders',
     items: [
-      { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
-      { id: 'financial-ar', label: 'Accounts Receivable', icon: DollarSign, group: 'primary' },
-      { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
+      { id: 'orders', label: 'Orders', icon: Package, group: 'primary' },
+      { id: 'delivery', label: 'Delivery Calendar', icon: Calendar, group: 'primary' },
+      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' }
+    ],
+  },
+  {
+    id: 'inventory',
+    label: 'Inventory',
+    icon: Archive,
+    defaultView: 'inventory-all',
+    items: [
+      { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'primary' },
+      { id: 'batches', label: 'Batches', icon: Layers, group: 'primary' },
+      { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'primary' },
+      { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
+      { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
+      { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
     ],
   },
   {
@@ -146,6 +126,26 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'rosin-lab-wash', label: 'Wash & Dry', icon: Waves, group: 'primary' },
       { id: 'rosin-lab-press', label: 'Press & Cure', icon: ArrowDownToLine, group: 'primary' },
       { id: 'rosin-lab-analytics', label: 'Analytics', icon: BarChart3, group: 'secondary' }
+    ],
+  },
+  {
+    id: 'financial',
+    label: 'Financial',
+    icon: Wallet,
+    defaultView: 'financial',
+    items: [
+      { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
+      { id: 'financial-ar', label: 'Accounts Receivable', icon: DollarSign, group: 'primary' },
+      { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
+    ],
+  },
+  {
+    id: 'strain-analytics',
+    label: 'Analytics',
+    icon: Dna,
+    defaultView: 'strain-analytics',
+    items: [
+      { id: 'strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'primary' },
     ],
   }
 ];
