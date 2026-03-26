@@ -1,16 +1,15 @@
 import { useState, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Zap, Calendar } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
-import { useSkuYield, type StrainAllocation } from '@/shared/hooks/useSkuYield';
+import { useSkuYield, type StrainAllocation, type BatchYield } from '@/shared/hooks/useSkuYield';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
-import { BatchAllocationPanel } from './BatchAllocationPanel';
-import { formatDateShort, formatWeight } from '@/shared/utils/format';
+import { formatDateShort, formatWeight, todayIso } from '@/shared/utils/format';
 import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
 
-// ─── Shared Badges & Formatters ─────────────────────────────────────────────
+// ─── Shared Badges ──────────────────────────────────────────────────────────
 
 function urgencyBadge(urgency: Urgency) {
   const styles: Record<Urgency, string> = {
@@ -24,11 +23,17 @@ function urgencyBadge(urgency: Urgency) {
     overdue: 'Overdue',
     urgent: 'Urgent',
     soon: 'Soon',
-    normal: 'Normal',
+    normal: 'On Track',
     no_date: 'No Date',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${styles[urgency]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border ${styles[urgency]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${
+        urgency === 'overdue' ? 'bg-red-400' :
+        urgency === 'urgent' ? 'bg-amber-400' :
+        urgency === 'soon' ? 'bg-yellow-400' :
+        urgency === 'normal' ? 'bg-green-400' : 'bg-gray-400'
+      }`} />
       {labels[urgency]}
     </span>
   );
@@ -58,142 +63,107 @@ function stockBadge(status: StockStatus) {
   );
 }
 
-function batchStageBadge(item: OrderLineItem) {
-  if (!item.batch_number) return null;
-  const stageColors: Record<string, string> = {
-    'Created': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-    'Pre-Harvest': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    'Bucking': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    'Bucked': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    'Bulk Available': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-    'Trimming': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-    'Packaging': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    'Packaged': 'bg-green-500/20 text-green-400 border-green-500/30',
-  };
-  const stageLabel = item.batch_stage_label || item.batch_lifecycle_state || 'Unknown';
-  const stageStyle = stageColors[stageLabel] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+// ─── Stage badge for batch processing stage ────────────────────────────────
 
-  const gradeColors: Record<string, string> = {
-    emerald: 'text-emerald-400', sky: 'text-sky-400', amber: 'text-amber-400',
-    rose: 'text-rose-400', gray: 'text-gray-400',
-  };
-  const gradeTextColor = item.batch_grade_color ? (gradeColors[item.batch_grade_color] || 'text-gray-400') : '';
+const STAGE_STYLES: Record<string, string> = {
+  'Packaged': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  'Trimming': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  'Bulk Available': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  'Bucked': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'Bucking': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'Binned': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'Trimmed': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+};
+
+function stageBadge(stage: string) {
+  const style = STAGE_STYLES[stage] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${style}`}>
+      {stage}
+    </span>
+  );
+}
+
+// ─── Batch Inventory Snippet (inline on order rows) ────────────────────────
+
+function BatchInventorySnippet({ batch }: { batch: BatchYield | undefined }) {
+  if (!batch) return null;
+
+  const stages = [
+    batch.packaged_g > 0 && { label: 'pkgd', value: formatWeight(batch.packaged_g), color: 'text-emerald-400' },
+    (batch.bulk_flower_g + batch.bulk_smalls_g) > 0 && { label: 'bulk', value: formatWeight(batch.bulk_flower_g + batch.bulk_smalls_g), color: 'text-cyan-400' },
+    (batch.bucked_flower_g + batch.bucked_smalls_g) > 0 && { label: 'bucked', value: formatWeight(batch.bucked_flower_g + batch.bucked_smalls_g), color: 'text-blue-400' },
+    batch.binned_g > 0 && { label: 'binned', value: formatWeight(batch.binned_g), color: 'text-indigo-400' },
+    batch.trim_g > 0 && { label: 'trim', value: formatWeight(batch.trim_g), color: 'text-amber-400/70' },
+  ].filter(Boolean) as { label: string; value: string; color: string }[];
+
+  if (stages.length === 0) return <span className="text-xs text-gray-600">depleted</span>;
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-500 font-mono">{item.batch_number}</span>
-      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${stageStyle}`}>
-        {stageLabel}
-      </span>
-      {item.batch_quality_grade && item.batch_quality_grade !== 'Ungraded' && (
-        <span className={`text-xs font-medium ${gradeTextColor}`}>{item.batch_quality_grade}</span>
-      )}
-      {item.batch_quarantined && (
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-          Quarantined
+    <span className="inline-flex items-center gap-2 text-xs">
+      {stages.map(s => (
+        <span key={s.label} className="inline-flex items-center gap-0.5">
+          <span className={`font-semibold tabular-nums ${s.color}`}>{s.value}</span>
+          <span className="text-gray-600">{s.label}</span>
         </span>
-      )}
+      ))}
+    </span>
+  );
+}
+
+// ─── Strain Inventory Summary (shown when unassigned orders exist) ──────────
+
+function StrainInventorySummary({ formats }: { formats: StrainFormatRow[] }) {
+  const f = formats[0];
+  if (!f) return null;
+
+  const items = [
+    f.already_packaged_units > 0 && { value: `${f.already_packaged_units} units`, label: 'packaged', color: 'text-emerald-400' },
+    f.ready_flower_g > 0 && { value: formatWeight(f.ready_flower_g), label: 'flower ready', color: 'text-emerald-400' },
+    f.ready_smalls_g > 0 && { value: formatWeight(f.ready_smalls_g), label: 'smalls ready', color: 'text-cyan-400' },
+    f.pipeline_bucked_g > 0 && { value: formatWeight(f.pipeline_bucked_g), label: 'bucked', color: 'text-blue-400' },
+    f.pipeline_binned_g > 0 && { value: formatWeight(f.pipeline_binned_g), label: 'binned', color: 'text-indigo-400' },
+  ].filter(Boolean) as { value: string; label: string; color: string }[];
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-cult bg-cult-dark-gray/40 border border-cult-medium-gray/30 mb-3">
+      <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0">Available Stock</span>
+      <div className="flex items-center gap-3 text-xs flex-wrap">
+        {items.map(item => (
+          <span key={item.label} className="inline-flex items-center gap-1">
+            <span className={`font-semibold tabular-nums ${item.color}`}>{item.value}</span>
+            <span className="text-gray-600">{item.label}</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── SKU Projection Badge (replaces RunwayBadge) ────────────────────────────
+// ─── Stock Status Indicator (strain header) ─────────────────────────────────
 
-function SkuProjectionBadge({ allocation }: { allocation: StrainAllocation | undefined }) {
-  if (!allocation) return <span className="text-xs text-gray-600">—</span>;
+function stockStatusIndicator(formats: StrainFormatRow[]) {
+  const f = formats[0];
+  if (!f) return null;
 
-  const { total_proj_3_5g, total_proj_14g, total_proj_1lb } = allocation;
-  const hasProjections = total_proj_3_5g > 0 || total_proj_14g > 0 || total_proj_1lb > 0;
+  const hasPackaged = f.already_packaged_units > 0;
+  const hasReady = f.ready_flower_g > 0 || f.ready_smalls_g > 0;
 
-  if (!hasProjections) {
-    return (
-      <span className="text-xs text-gray-500" title="No packaging projections — inventory may be trim-only or unprocessed">
-        —
-      </span>
-    );
-  }
+  const label = hasPackaged ? 'Has stock' : hasReady ? 'Needs packaging' : 'Needs processing';
+  const dotColor = hasPackaged ? 'bg-emerald-400' : hasReady ? 'bg-amber-400' : 'bg-red-400';
+  const textColor = hasPackaged ? 'text-emerald-400' : hasReady ? 'text-amber-400' : 'text-red-400';
 
   return (
-    <div className="flex items-center gap-1.5">
-      {total_proj_3_5g > 0 && (
-        <span className="text-[11px] tabular-nums text-emerald-400" title={`${total_proj_3_5g} × 3.5g jars projected`}>
-          <span className="font-semibold">{total_proj_3_5g}</span>
-          <span className="text-gray-600 ml-0.5">3.5g</span>
-        </span>
-      )}
-      {total_proj_14g > 0 && (
-        <span className="text-[11px] tabular-nums text-sky-400" title={`${total_proj_14g} × 14g mylars projected`}>
-          <span className="font-semibold">{total_proj_14g}</span>
-          <span className="text-gray-600 ml-0.5">14g</span>
-        </span>
-      )}
-      {total_proj_1lb > 0 && (
-        <span className="text-[11px] tabular-nums text-violet-400" title={`${total_proj_1lb} × 1lb bags projected`}>
-          <span className="font-semibold">{total_proj_1lb}</span>
-          <span className="text-gray-600 ml-0.5">1lb</span>
-        </span>
-      )}
-    </div>
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+      <span className={`text-xs font-medium ${textColor}`}>{label}</span>
+    </span>
   );
 }
 
-// ─── Mini Week Heatmap (per strain row) ─────────────────────────────────────
-
-const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F'];
-
-function getWeekDatesForHeatmap(): string[] {
-  const now = new Date();
-  const day = now.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toISOString().slice(0, 10);
-  });
-}
-
-interface HeatmapCell {
-  date: string;
-  units: number;
-  isToday: boolean;
-}
-
-function MiniWeekHeatmap({ cells }: { cells: HeatmapCell[] }) {
-  const maxUnits = Math.max(...cells.map(c => c.units), 1);
-  const totalUnits = cells.reduce((s, c) => s + c.units, 0);
-
-  return (
-    <div className="flex items-center gap-1" title={`${totalUnits} units this week across ${cells.filter(c => c.units > 0).length} days`}>
-      {cells.map((cell, i) => {
-        const intensity = cell.units > 0 ? Math.max(cell.units / maxUnits, 0.25) : 0;
-        return (
-          <div key={cell.date} className="flex flex-col items-center gap-0.5" title={`${WEEKDAY_LABELS[i]}: ${cell.units} units`}>
-            <span className={`text-[9px] leading-none ${cell.isToday ? 'text-sky-400 font-bold' : 'text-gray-600'}`}>
-              {WEEKDAY_LABELS[i]}
-            </span>
-            <div
-              className={`w-5 h-5 rounded-sm transition-colors flex items-center justify-center ${
-                cell.units === 0
-                  ? 'bg-gray-800/50'
-                  : cell.isToday
-                    ? 'bg-sky-500'
-                    : 'bg-emerald-500'
-              }`}
-              style={cell.units > 0 ? { opacity: 0.3 + intensity * 0.7 } : undefined}
-            >
-              {cell.units > 0 && (
-                <span className="text-[8px] font-bold text-white leading-none">{cell.units}</span>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── Product Category Filter (compact) ──────────────────────────────────────
+// ─── Product Category Filter ────────────────────────────────────────────────
 
 function ProductCategoryStrip({
   value, onChange, counts,
@@ -233,11 +203,10 @@ function ProductCategoryStrip({
   );
 }
 
-// ─── Enhanced By Strain View ────────────────────────────────────────────────
-// Strain-first with per-day demand heatmap, batch opportunity signals,
-// and orders grouped by delivery day in expansion.
+// ─── Simplified By Strain View ──────────────────────────────────────────────
+// Strain header → expand → orders grouped by delivery day with inline batch inventory
 
-function EnhancedByStrainView({
+function SimplifiedByStrainView({
   byStrain,
   byOrder,
   selectedDeliveryDate,
@@ -249,11 +218,10 @@ function EnhancedByStrainView({
   skuByStrain: Map<string, StrainAllocation>;
 }) {
   const [expandedStrains, setExpandedStrains] = useState<Set<string>>(new Set());
-  const weekDates = useMemo(() => getWeekDatesForHeatmap(), []);
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => todayIso(), []);
 
-  // Group by strain_id
-  const strainGroups = useMemo(() => {
+  // Group format rows by strain_id
+  const strainFormats = useMemo(() => {
     const map = new Map<string, StrainFormatRow[]>();
     byStrain.forEach(row => {
       const key = row.strain_id || 'unknown';
@@ -263,43 +231,51 @@ function EnhancedByStrainView({
     return map;
   }, [byStrain]);
 
-  // Pre-compute per-strain order data grouped by delivery date
-  const strainOrdersByDay = useMemo(() => {
-    const map = new Map<string, Map<string, OrderLineItem[]>>();
-
+  // Group orders by strain
+  const strainOrders = useMemo(() => {
+    const map = new Map<string, OrderLineItem[]>();
     byOrder.forEach(o => {
-      const strainKey = o.strain_id || 'unknown';
-      if (!map.has(strainKey)) map.set(strainKey, new Map());
-      const byDay = map.get(strainKey)!;
-
-      const deliveryDate = o.scheduled_delivery_date || o.requested_delivery_date || 'no-date';
-      if (!byDay.has(deliveryDate)) byDay.set(deliveryDate, []);
-      byDay.get(deliveryDate)!.push(o);
+      const key = o.strain_id || 'unknown';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(o);
     });
-
     return map;
   }, [byOrder]);
 
-  // Pre-compute heatmap data per strain
-  const strainHeatmaps = useMemo(() => {
-    const result = new Map<string, { cells: HeatmapCell[]; daysWithDemand: number }>();
-
-    strainGroups.forEach((_, strainId) => {
-      const byDay = strainOrdersByDay.get(strainId);
-      let daysWithDemand = 0;
-
-      const cells: HeatmapCell[] = weekDates.map(date => {
-        const orders = byDay?.get(date) || [];
-        const units = orders.reduce((s, o) => s + o.quantity, 0);
-        if (units > 0) daysWithDemand++;
-        return { date, units, isToday: date === today };
+  // Build a batch lookup from skuByStrain for quick access
+  const batchLookup = useMemo(() => {
+    const map = new Map<string, BatchYield>();
+    skuByStrain.forEach(alloc => {
+      alloc.batches.forEach(b => {
+        map.set(b.batch_number, b);
       });
-
-      result.set(strainId, { cells, daysWithDemand });
     });
+    return map;
+  }, [skuByStrain]);
 
-    return result;
-  }, [strainGroups, strainOrdersByDay, weekDates, today]);
+  // Filter strains by selected delivery date
+  const filteredStrainIds = useMemo(() => {
+    if (!selectedDeliveryDate) return Array.from(strainFormats.keys());
+    return Array.from(strainFormats.keys()).filter(strainId => {
+      const orders = strainOrders.get(strainId) || [];
+      return orders.some(o => (o.scheduled_delivery_date || o.requested_delivery_date) === selectedDeliveryDate);
+    });
+  }, [strainFormats, strainOrders, selectedDeliveryDate]);
+
+  // Sort strains by worst urgency, then demand
+  const sortedStrainIds = useMemo(() => {
+    const urgencyRank: Record<string, number> = { overdue: 0, urgent: 1, soon: 2, normal: 3, no_date: 4 };
+    return [...filteredStrainIds].sort((a, b) => {
+      const aOrders = strainOrders.get(a) || [];
+      const bOrders = strainOrders.get(b) || [];
+      const aWorst = Math.min(...aOrders.map(o => urgencyRank[o.urgency] ?? 4));
+      const bWorst = Math.min(...bOrders.map(o => urgencyRank[o.urgency] ?? 4));
+      if (aWorst !== bWorst) return aWorst - bWorst;
+      const aDemand = aOrders.reduce((s, o) => s + (o.units_remaining ?? o.quantity), 0);
+      const bDemand = bOrders.reduce((s, o) => s + (o.units_remaining ?? o.quantity), 0);
+      return bDemand - aDemand;
+    });
+  }, [filteredStrainIds, strainOrders]);
 
   function toggleStrain(strainId: string) {
     setExpandedStrains(prev => {
@@ -310,278 +286,222 @@ function EnhancedByStrainView({
     });
   }
 
-  // If a delivery date is selected, filter strain groups to only those with orders on that date
-  const filteredStrainGroups = useMemo(() => {
-    if (!selectedDeliveryDate) return strainGroups;
-    const filtered = new Map<string, StrainFormatRow[]>();
-    strainGroups.forEach((formats, strainId) => {
-      const byDay = strainOrdersByDay.get(strainId);
-      if (byDay?.has(selectedDeliveryDate)) {
-        filtered.set(strainId, formats);
-      }
-    });
-    return filtered;
-  }, [strainGroups, strainOrdersByDay, selectedDeliveryDate]);
-
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-cult-medium-gray text-left">
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-center" title="Projected SKU yield from remaining inventory">Projected SKUs</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Units</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Weight</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from(filteredStrainGroups.entries()).map(([strainId, formats]) => {
-            const isExpanded = expandedStrains.has(strainId);
-            const strainName = formats[0].strain_name;
-            const heatmap = strainHeatmaps.get(strainId);
-            const hasBatchOpportunity = (heatmap?.daysWithDemand || 0) >= 2;
+      {/* Column headers */}
+      <div className="flex items-center gap-0 px-5 py-2.5 border-b border-cult-medium-gray">
+        <div className="w-8" />
+        <div className="w-60 text-xs uppercase tracking-wider text-gray-500 font-semibold">Strain</div>
+        <div className="w-36 text-xs uppercase tracking-wider text-gray-500 font-semibold">Stock Status</div>
+        <div className="w-24 text-right text-xs uppercase tracking-wider text-gray-500 font-semibold">Demand</div>
+        <div className="w-20 text-right text-xs uppercase tracking-wider text-gray-500 font-semibold">Weight</div>
+        <div className="w-20 text-right text-xs uppercase tracking-wider text-gray-500 font-semibold">Orders</div>
+        <div className="w-28 text-right text-xs uppercase tracking-wider text-gray-500 font-semibold" />
+      </div>
 
-            const totalNeeded = formats.reduce((sum, f) => sum + f.total_units_needed, 0);
-            const totalDemandG = formats.reduce((sum, f) => sum + f.total_demand_g, 0);
+      {/* Strain rows */}
+      {sortedStrainIds.map(strainId => {
+        const formats = strainFormats.get(strainId) || [];
+        const orders = strainOrders.get(strainId) || [];
+        const isExpanded = expandedStrains.has(strainId);
+        const strainName = formats[0]?.strain_name || orders[0]?.strain_name || 'Unknown';
 
-            // SKU yield allocation for this strain
-            const allocation = skuByStrain.get(strainName);
+        const totalUnits = orders.reduce((s, o) => s + (o.units_remaining ?? o.quantity), 0);
+        const totalDemandG = formats.reduce((s, f) => s + f.total_demand_g, 0);
+        const orderCount = new Set(orders.map(o => o.order_id)).size;
+        const unassignedCount = orders.filter(o => !o.batch_number).length;
 
-            // Get all orders for this strain, optionally filtered by selected date
-            const byDay = strainOrdersByDay.get(strainId);
-            const allOrders: OrderLineItem[] = [];
-            byDay?.forEach((orders) => allOrders.push(...orders));
+        const urgencyRank: Record<string, number> = { overdue: 0, urgent: 1, soon: 2, normal: 3, no_date: 4 };
+        const worstUrgency = orders.reduce((worst, o) =>
+          (urgencyRank[o.urgency] ?? 4) < (urgencyRank[worst] ?? 4) ? o.urgency : worst
+        , 'no_date' as Urgency);
 
-            return (
-              <Fragment key={strainId}>
-                {/* Strain header row */}
-                <tr
-                  className={`border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/50 cursor-pointer transition-colors ${
-                    hasBatchOpportunity ? 'bg-amber-500/[0.03]' : ''
-                  }`}
-                  onClick={() => toggleStrain(strainId)}
-                >
-                  <td className="px-4 py-3 text-gray-400">
-                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white">{strainName}</span>
-                      {allocation ? (
-                        <span className="text-xs text-gray-600" title={`${allocation.batch_count} batches, ${formatWeight(allocation.total_remaining_g)} remaining`}>
-                          {allocation.batch_count} batch{allocation.batch_count !== 1 ? 'es' : ''}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-600">
-                          {formats.length} format{formats.length > 1 ? 's' : ''}
-                        </span>
-                      )}
-                      {allocation && allocation.aging_batches > 0 && (
-                        <span
-                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium"
-                          title={`${allocation.aging_batches} batch${allocation.aging_batches !== 1 ? 'es' : ''} over 6 months old — cost clock critical`}
-                        >
-                          <AlertTriangle className="w-3 h-3" />
-                          {allocation.oldest_age_days}d oldest
-                        </span>
-                      )}
-                      {hasBatchOpportunity && !(allocation?.aging_batches) && (
-                        <span
-                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 font-medium"
-                          title={`This strain has orders on ${heatmap!.daysWithDemand} different days — consider batching the packaging work`}
-                        >
-                          <Zap className="w-3 h-3" />
-                          {heatmap!.daysWithDemand}-day demand
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <SkuProjectionBadge allocation={allocation} />
-                  </td>
-                  <td className="px-4 py-3 text-right text-white tabular-nums">{totalNeeded.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-white tabular-nums">{formatWeight(totalDemandG)}</td>
-                  <td className="px-4 py-3 text-right text-gray-300 tabular-nums">
-                    {formats[0].order_count}
-                  </td>
-                </tr>
+        // Group orders by delivery date for expansion
+        const ordersByDate = (() => {
+          if (!isExpanded) return [];
+          const map = new Map<string, OrderLineItem[]>();
+          orders.forEach(o => {
+            const date = o.scheduled_delivery_date || o.requested_delivery_date || 'No Date';
+            if (!map.has(date)) map.set(date, []);
+            map.get(date)!.push(o);
+          });
+          return Array.from(map.entries()).sort(([a], [b]) => {
+            if (a === 'No Date') return 1;
+            if (b === 'No Date') return -1;
+            return a.localeCompare(b);
+          });
+        })();
 
-                {/* Expanded: Format breakdown */}
-                {isExpanded && formats.map((f, i) => (
-                  <tr key={`${strainId}-fmt-${i}`} className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2 pl-8 text-gray-300">
-                      <div className="flex items-center gap-2">
-                        <span>{f.format_label}</span>
-                        {f.product_category && f.product_category !== 'Flower' && (
-                          <span className="text-xs text-gray-500">{f.product_category}</span>
-                        )}
-                        {f.already_packaged_units > 0 && (
-                          <span className="text-xs text-green-400">{f.already_packaged_units} pkgd</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-center">{urgencyBadge(f.urgency)}</td>
-                    <td className="px-4 py-2 text-right text-gray-300 tabular-nums">
-                      {f.total_units_needed.toLocaleString()}
-                      {f.total_units_assigned > 0 && (
-                        <span className="text-xs text-green-400 ml-1">({f.total_units_assigned} assigned)</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-right text-gray-300 tabular-nums">{formatWeight(f.total_demand_g)}</td>
-                    <td className="px-4 py-2 text-right text-gray-400 tabular-nums">{f.order_count}</td>
-                  </tr>
-                ))}
-
-                {/* Batch Allocation Panel — conversion funnel + SKU yield projections */}
-                {isExpanded && (
-                  <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
-                    <td colSpan={6} className="p-0">
-                      <BatchAllocationPanel allocation={allocation} strainName={strainName} />
-                    </td>
-                  </tr>
+        return (
+          <Fragment key={strainId}>
+            {/* ── Strain header row ──────────────────────────────────── */}
+            <button
+              onClick={() => toggleStrain(strainId)}
+              className="w-full flex items-center gap-0 px-5 py-3.5 text-left border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/30 transition-colors cursor-pointer"
+            >
+              <div className="w-8 shrink-0 flex justify-center">
+                {isExpanded
+                  ? <ChevronDown className="w-4 h-4 text-gray-500" />
+                  : <ChevronRight className="w-4 h-4 text-gray-500" />}
+              </div>
+              <div className="w-60 shrink-0 flex items-center gap-2.5">
+                <span className="font-semibold text-white text-sm">{strainName}</span>
+                {urgencyBadge(worstUrgency)}
+              </div>
+              <div className="w-36 shrink-0">
+                {stockStatusIndicator(formats)}
+              </div>
+              <div className="w-24 shrink-0 text-right">
+                <span className="font-semibold text-white tabular-nums text-sm">{totalUnits.toLocaleString()}</span>
+                <span className="text-gray-600 text-xs ml-1">units</span>
+              </div>
+              <div className="w-20 shrink-0 text-right">
+                <span className="text-gray-300 tabular-nums text-sm">{formatWeight(totalDemandG)}</span>
+              </div>
+              <div className="w-20 shrink-0 text-right">
+                <span className="text-gray-400 tabular-nums text-sm">{orderCount}</span>
+                <span className="text-gray-600 text-xs ml-1">orders</span>
+              </div>
+              <div className="w-28 shrink-0 text-right">
+                {unassignedCount > 0 && (
+                  <span className="text-xs text-amber-400/70 font-medium">{unassignedCount} unassigned</span>
                 )}
+              </div>
+            </button>
 
-                {/* Expanded: Orders grouped by delivery day */}
-                {isExpanded && (() => {
-                  // Group orders by delivery date
-                  const ordersByDate = new Map<string, OrderLineItem[]>();
-                  allOrders.forEach(o => {
-                    const date = o.scheduled_delivery_date || o.requested_delivery_date || 'No Date';
-                    if (!ordersByDate.has(date)) ordersByDate.set(date, []);
-                    ordersByDate.get(date)!.push(o);
-                  });
+            {/* ── Expanded: orders by delivery day ───────────────────── */}
+            {isExpanded && (
+              <div className="px-5 pb-5 pt-3 border-b border-cult-medium-gray/50" style={{ paddingLeft: '3.25rem' }}>
+                {/* Strain inventory context for unassigned orders */}
+                {unassignedCount > 0 && <StrainInventorySummary formats={formats} />}
 
-                  // Sort dates chronologically
-                  const sortedDates = Array.from(ordersByDate.keys()).sort((a, b) => {
-                    if (a === 'No Date') return 1;
-                    if (b === 'No Date') return -1;
-                    return a.localeCompare(b);
-                  });
+                {/* Day groups */}
+                <div className="space-y-2.5">
+                  {ordersByDate.map(([date, dayOrders]) => {
+                    const isDateToday = date === today;
+                    const isPast = date < today && date !== 'No Date';
+                    const totalUnitsDay = dayOrders.reduce((s, o) => s + o.quantity, 0);
+                    const totalRevenue = dayOrders.reduce((s, o) => s + (o.subtotal || 0), 0);
+                    const dayUrgency = dayOrders[0]?.urgency || 'normal';
 
-                  return (
-                    <tr className="border-b border-cult-medium-gray/30 bg-[#0D0D0D]" style={{ boxShadow: 'inset 3px 0 0 0 rgba(255,255,255,0.06)' }}>
-                      <td colSpan={6} className="px-6 py-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
-                            <Calendar className="w-3.5 h-3.5" />
-                            Orders by Delivery Day
+                    return (
+                      <div
+                        key={date}
+                        className={`rounded-cult border overflow-hidden ${
+                          isDateToday ? 'border-sky-500/30 bg-sky-500/[0.03]' :
+                          isPast ? 'border-red-500/20 bg-red-500/[0.02]' :
+                          'border-cult-medium-gray/30 bg-cult-dark-gray/20'
+                        }`}
+                      >
+                        {/* Day header */}
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-cult-medium-gray/20">
+                          <div className="flex items-center gap-2.5">
+                            <Calendar className="w-3.5 h-3.5 text-gray-600" />
+                            <span className={`text-sm font-semibold ${
+                              isDateToday ? 'text-sky-400' : isPast ? 'text-red-400' : 'text-gray-300'
+                            }`}>
+                              {date === 'No Date' ? 'No Date' : (() => {
+                                const d = new Date(date + 'T12:00:00');
+                                return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                              })()}
+                            </span>
+                            {isDateToday && <span className="text-xs text-sky-400/80 font-medium">Today</span>}
+                            {urgencyBadge(dayUrgency)}
                           </div>
-                          {/* Column guide */}
-                          <div className="flex items-center gap-6 text-xs text-gray-600 uppercase tracking-wider">
-                            <span className="w-20">Order</span>
-                            <span className="w-32">Customer</span>
-                            <span className="w-24">Format</span>
-                            <span className="w-36">Packed</span>
-                            <span>Source Batch</span>
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <span className="tabular-nums">{totalUnitsDay} units</span>
+                            {totalRevenue > 0 && (
+                              <span className="tabular-nums font-medium text-gray-400">
+                                ${totalRevenue.toLocaleString()}
+                              </span>
+                            )}
+                            <span>{dayOrders.length} line{dayOrders.length !== 1 ? 's' : ''}</span>
                           </div>
                         </div>
-                        <div className="space-y-3">
-                          {sortedDates.map(date => {
-                            const dateOrders = ordersByDate.get(date)!;
-                            const isToday = date === today;
-                            const totalUnits = dateOrders.reduce((s, o) => s + o.quantity, 0);
-                            const totalRevenue = dateOrders.reduce((s, o) => s + (o.subtotal || 0), 0);
+
+                        {/* Order rows */}
+                        <div className="py-1 px-1">
+                          {dayOrders.map((o, i) => {
+                            const assigned = o.units_assigned || 0;
+                            const remaining = o.units_remaining ?? o.quantity;
+                            const pct = o.assignment_pct || 0;
+                            const isFullyAssigned = remaining <= 0;
+                            const hasAssignment = assigned > 0;
+                            const batchData = o.batch_number ? batchLookup.get(o.batch_number) : undefined;
 
                             return (
-                              <div key={date} className={`rounded-cult border p-3 ${
-                                isToday
-                                  ? 'border-sky-500/30 bg-sky-500/5'
-                                  : 'border-cult-medium-gray/30 bg-cult-dark-gray/30'
-                              }`}>
-                                {/* Day header */}
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-xs font-semibold ${isToday ? 'text-sky-400' : 'text-gray-400'}`}>
-                                      {date === 'No Date' ? 'No Date' : (() => {
-                                        const d = new Date(date + 'T12:00:00');
-                                        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                                      })()}
-                                    </span>
-                                    {isToday && <span className="text-xs text-sky-400 font-medium">Today</span>}
-                                  </div>
-                                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                                    <span>{totalUnits} units</span>
-                                    {totalRevenue > 0 && <span>${totalRevenue.toLocaleString()}</span>}
-                                    <span>{dateOrders.length} line{dateOrders.length !== 1 ? 's' : ''}</span>
-                                  </div>
+                              <div
+                                key={`${o.order_item_id}-${i}`}
+                                className={`flex items-center gap-0 py-2 px-3 rounded-cult text-sm transition-colors ${
+                                  isFullyAssigned ? 'bg-emerald-500/5' :
+                                  hasAssignment ? 'bg-amber-500/5' :
+                                  'hover:bg-white/[0.02]'
+                                }`}
+                              >
+                                {/* Order number */}
+                                <div className="w-28 shrink-0">
+                                  <span className="text-xs text-gray-500 font-mono">{o.order_number}</span>
                                 </div>
-
-                                {/* Order rows */}
-                                <div className="space-y-1.5">
-                                  {dateOrders.map(o => {
-                                    const assigned = o.units_assigned || 0;
-                                    const remaining = o.units_remaining ?? o.quantity;
-                                    const pct = o.assignment_pct || 0;
-                                    const isFullyAssigned = remaining <= 0;
-                                    const hasAssignment = assigned > 0;
-
-                                    return (
-                                      <div key={o.order_item_id} className={`flex items-center gap-3 text-sm rounded-cult px-2 py-1.5 ${
-                                        isFullyAssigned ? 'bg-emerald-500/5' : hasAssignment ? 'bg-amber-500/5' : ''
-                                      }`}>
-                                        <span className="text-gray-500 font-mono w-20 flex-shrink-0">{o.order_number}</span>
-                                        <span className="w-32 truncate flex-shrink-0 text-gray-300">{o.customer_name}</span>
-                                        <span className="w-24 flex-shrink-0 text-gray-400">{o.format_label}</span>
-
-                                        {/* Assignment progress — "Packed" = units assigned from packaged inventory */}
+                                {/* Customer */}
+                                <div className="w-40 shrink-0 truncate text-gray-300 text-sm">
+                                  {o.customer_name}
+                                </div>
+                                {/* Format */}
+                                <div className="w-24 shrink-0">
+                                  <span className="text-xs text-gray-400">{o.format_label}</span>
+                                </div>
+                                {/* Qty */}
+                                <div className="w-14 shrink-0 text-right">
+                                  <span className="text-white tabular-nums font-medium">{o.quantity}</span>
+                                </div>
+                                {/* Assignment progress */}
+                                <div className="w-24 shrink-0 flex items-center gap-1.5 justify-center">
+                                  {(hasAssignment || isFullyAssigned) ? (
+                                    <>
+                                      <div className="w-12 h-1 bg-gray-800 rounded-full overflow-hidden">
                                         <div
-                                          className="w-36 flex-shrink-0 flex items-center gap-2"
-                                          title={`${assigned} of ${o.quantity} units packed and assigned to this order`}
-                                        >
-                                          <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                            <div
-                                              className={`h-full rounded-full transition-all ${
-                                                pct >= 100 ? 'bg-emerald-500' : pct > 0 ? 'bg-amber-500' : 'bg-gray-700'
-                                              }`}
-                                              style={{ width: `${Math.min(pct, 100)}%` }}
-                                            />
-                                          </div>
-                                          <span className={`text-xs tabular-nums font-medium ${
-                                            isFullyAssigned ? 'text-emerald-400' : hasAssignment ? 'text-amber-400' : 'text-gray-600'
-                                          }`}>
-                                            {assigned}/{o.quantity}
-                                          </span>
-                                        </div>
-
-                                        {/* Source batch + stage */}
-                                        {o.batch_number ? (
-                                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                                            <span className="text-xs text-gray-500 font-mono">{o.batch_number}</span>
-                                            <span className={`text-xs px-1.5 py-0.5 rounded border ${
-                                              o.batch_stage_label === 'Packaged' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                              o.batch_stage_label === 'Trimming' || o.batch_stage_label === 'Bulk Available' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
-                                              o.batch_stage_label === 'Bucked' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                              'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                                            }`}>
-                                              {o.batch_stage_label}
-                                            </span>
-                                          </div>
-                                        ) : (
-                                          <span className="text-xs text-gray-600 flex-shrink-0">No batch</span>
-                                        )}
-
-                                        {urgencyBadge(o.urgency)}
+                                          className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                          style={{ width: `${Math.min(pct, 100)}%` }}
+                                        />
                                       </div>
-                                    );
-                                  })}
+                                      <span className={`text-xs tabular-nums font-medium ${
+                                        isFullyAssigned ? 'text-emerald-400' : 'text-amber-400'
+                                      }`}>
+                                        {assigned}/{o.quantity}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-gray-700">—</span>
+                                  )}
+                                </div>
+                                {/* Batch + stage + inventory */}
+                                <div className="flex-1 min-w-0 flex items-center gap-2 pl-3">
+                                  {o.batch_number ? (
+                                    <>
+                                      <span className="text-xs text-gray-500 font-mono shrink-0">{o.batch_number}</span>
+                                      {o.batch_stage_label && stageBadge(o.batch_stage_label)}
+                                      <span className="text-gray-700 text-xs">·</span>
+                                      <BatchInventorySnippet batch={batchData} />
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-gray-600 italic">No batch assigned</span>
+                                  )}
                                 </div>
                               </div>
                             );
                           })}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })()}
-              </Fragment>
-            );
-          })}
-        </tbody>
-      </table>
-      {filteredStrainGroups.size === 0 && (
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </Fragment>
+        );
+      })}
+
+      {sortedStrainIds.length === 0 && (
         <div className="p-8 text-center text-gray-500">
           {selectedDeliveryDate
             ? 'No strains needed for this delivery date.'
@@ -592,7 +512,7 @@ function EnhancedByStrainView({
   );
 }
 
-// ─── By Order Tab (kept for secondary view) ─────────────────────────────────
+// ─── By Order Tab ───────────────────────────────────────────────────────────
 
 function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
@@ -664,13 +584,12 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                     <td className="px-4 py-2"></td>
                     <td className="px-4 py-2">
                       <div className="text-gray-300">{item.strain_name}</div>
-                      {item.batch_number && <div className="mt-1">{batchStageBadge(item)}</div>}
                     </td>
                     <td className="px-4 py-2 text-gray-400">{item.format_label}</td>
                     <td className="px-4 py-2 text-gray-400">{item.quantity} units</td>
                     <td className="px-4 py-2 text-center">
                       {item.batch_number
-                        ? <span className="text-xs text-green-400">✓ Batch</span>
+                        ? <span className="text-xs text-green-400">✓ {item.batch_stage_label}</span>
                         : <span className="text-xs text-gray-600">No batch</span>}
                     </td>
                     <td className="px-4 py-2 text-right text-gray-300">{formatWeight(item.line_demand_g)}</td>
@@ -679,7 +598,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
 
                 {isExpanded && first.delivery_notes && (
                   <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={6} className="px-8 py-2">
+                    <td colSpan={7} className="px-8 py-2">
                       <span className="text-xs text-gray-500">Notes: </span>
                       <span className="text-xs text-gray-400">{first.delivery_notes}</span>
                     </td>
@@ -864,55 +783,8 @@ export function ProductionQueue() {
         weekLabel={selectedWeekLabel}
       />
 
-      {/* ── Inventory Intelligence Bar ────────────────────────────────────── */}
-      {(skuSummary.aging_batches > 0 || skuSummary.total_batches > 0) && (
-        <div className="flex items-center gap-4 px-4 py-2.5 rounded-cult border border-cult-medium-gray/40 bg-cult-near-black">
-          <span className="flex items-center gap-1.5 text-sm">
-            <Package className="w-3.5 h-3.5 text-gray-500" />
-            <span className="font-bold text-white">{skuSummary.total_batches}</span>
-            <span className="text-gray-500">batches</span>
-          </span>
-          <span className="border-l border-cult-medium-gray/40 h-4" />
-          {skuSummary.total_proj_3_5g > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="font-bold text-emerald-400">{skuSummary.total_proj_3_5g.toLocaleString()}</span>
-              <span className="text-gray-500">3.5g jars</span>
-            </span>
-          )}
-          {skuSummary.total_proj_14g > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-sky-500" />
-              <span className="font-bold text-sky-400">{skuSummary.total_proj_14g.toLocaleString()}</span>
-              <span className="text-gray-500">14g mylars</span>
-            </span>
-          )}
-          {skuSummary.total_proj_1lb > 0 && (
-            <span className="flex items-center gap-1.5 text-sm">
-              <span className="w-2 h-2 rounded-full bg-violet-500" />
-              <span className="font-bold text-violet-400">{skuSummary.total_proj_1lb.toLocaleString()}</span>
-              <span className="text-gray-500">1lb bags</span>
-            </span>
-          )}
-          {skuSummary.aging_batches > 0 && (
-            <>
-              <span className="border-l border-cult-medium-gray/40 h-4" />
-              <span className="flex items-center gap-1.5 text-sm" title={`${skuSummary.aging_batches} batches over 6 months old — cost clock critical`}>
-                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-                <span className="font-bold text-red-400">{skuSummary.aging_batches}</span>
-                <span className="text-gray-500">aging</span>
-              </span>
-            </>
-          )}
-          <span className="ml-auto text-xs text-gray-600">
-            {skuSummary.total_strains} strains · {formatWeight(skuSummary.total_remaining_g)} total inventory
-          </span>
-        </div>
-      )}
-
       {/* ── Filters + Tabs Row ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-cult-medium-gray pb-0">
-        {/* Tabs */}
         <div className="flex items-center gap-1">
           {tabs.map(tab => {
             const Icon = tab.icon;
@@ -933,15 +805,14 @@ export function ProductionQueue() {
           })}
         </div>
 
-        {/* Category filter (right side) */}
         {activeTab !== 'summary' && (
           <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
         )}
       </div>
 
-      {/* ── Tab Content (primary work surface) ────────────────────────────── */}
+      {/* ── Tab Content ───────────────────────────────────────────────────── */}
       {activeTab === 'by-strain' && (
-        <EnhancedByStrainView
+        <SimplifiedByStrainView
           byStrain={filteredByStrain}
           byOrder={filteredByOrder}
           selectedDeliveryDate={selectedDeliveryDate}
