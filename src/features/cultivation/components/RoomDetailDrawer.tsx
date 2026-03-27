@@ -9,7 +9,7 @@ import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { ExpandedPlantsList } from './ExpandedPlantsList';
 import { todayIso, daysBetween, formatDate } from '../utils/dateUtils';
-import { ROOM_TYPE_BORDER, STAGE_BADGE } from '../constants/stageColors';
+import { ROOM_TYPE_BORDER, STAGE_BADGE, harvestCountdownColor } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 function buildGridData(groups: PlantGroup[]): Map<string, PlantGroup[]> {
@@ -162,7 +162,7 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
         {groups.map((g) => (
           <div
             key={g.id}
-            className="flex items-center gap-3 px-3 py-2 border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
+            className="flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
           >
             <span className="font-mono text-xs font-bold text-cult-white">
               {g.batch_registry?.batch_number ?? '—'}
@@ -265,10 +265,7 @@ export function RoomDetailDrawer({
   const unplacedGroups = groups.filter((g) => !g.room_table_id || !g.room_section_id);
 
   function countdownColor(): string {
-    if (daysToHarvest === null) return 'text-cult-medium-gray';
-    if (daysToHarvest < 0) return 'text-red-400';
-    if (daysToHarvest <= 7) return 'text-amber-400';
-    return 'text-cult-light-gray';
+    return harvestCountdownColor(daysToHarvest);
   }
 
   function countdownText(): string {
@@ -294,9 +291,9 @@ export function RoomDetailDrawer({
         className="fixed inset-0 z-50 flex items-stretch bg-black/70 animate-fade-in"
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
-        <div className={`relative ml-auto bg-cult-near-black border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden animate-slide-in-right`}>
-          <div className="flex items-start justify-between px-6 py-5 border-b border-cult-medium-gray flex-shrink-0">
-            <div className="flex flex-col gap-1">
+        <div className={`relative ml-auto bg-cult-near-black border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden animate-slide-in-right md:rounded-none`}>
+          <div className="flex flex-col md:flex-row md:items-start justify-between px-4 md:px-6 py-4 md:py-5 border-b border-cult-medium-gray flex-shrink-0 gap-3">
+            <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-mono text-xl font-bold text-cult-white tracking-wider">
                   {room.room_code}
@@ -341,10 +338,10 @@ export function RoomDetailDrawer({
               )}
             </div>
 
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex items-center gap-2 md:ml-4 flex-shrink-0">
               <button
                 onClick={() => { onClose(); navigate('/cultivation-schedules'); }}
-                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-dark-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-medium-gray hover:text-cult-white transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-dark-gray text-cult-light-gray px-3 py-2 min-h-[44px] hover:border-cult-medium-gray hover:text-cult-white transition-colors"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Schedule
@@ -352,7 +349,7 @@ export function RoomDetailDrawer({
               {isFlower && (
                 <button
                   onClick={() => setShowFlipModal(true)}
-                  className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-rose-700 text-rose-400 px-3 py-1.5 hover:border-rose-500 hover:text-rose-300 transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-rose-700 text-rose-400 px-3 py-2 min-h-[44px] hover:border-rose-500 hover:text-rose-300 transition-colors"
                 >
                   <Flower2 className="w-3.5 h-3.5" />
                   {earliestFlipDate ? 'Update Flip Date' : 'Flip Room'}
@@ -360,7 +357,7 @@ export function RoomDetailDrawer({
               )}
               <button
                 onClick={onClose}
-                className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
+                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-medium-gray hover:text-cult-white transition-colors"
                 title="Close"
               >
                 <X className="w-5 h-5" />
@@ -368,7 +365,7 @@ export function RoomDetailDrawer({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-xs text-cult-light-gray uppercase tracking-wider">Room Map</h3>
               <a
@@ -436,7 +433,7 @@ export function RoomDetailDrawer({
                         >
                           {/* ── Batch-level row ── */}
                           <div
-                            className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-cult-near-black transition-colors"
+                            className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer select-none hover:bg-cult-near-black transition-colors"
                             onClick={() => {
                               setExpandedBatchId(isBatchExpanded ? null : batchNumber);
                               if (isBatchExpanded) setExpandedGroupId(null);
@@ -493,7 +490,7 @@ export function RoomDetailDrawer({
                                 return (
                                   <div key={g.id} className="border-t border-cult-dark-gray/50 overflow-hidden">
                                     <div
-                                      className="flex items-center gap-3 pl-10 pr-4 py-2.5 cursor-pointer select-none hover:bg-cult-black/60 transition-colors"
+                                      className="flex items-center gap-3 pl-10 pr-4 py-2.5 min-h-[44px] cursor-pointer select-none hover:bg-cult-black/60 transition-colors"
                                       onClick={() => setExpandedGroupId(isGroupExpanded ? null : g.id)}
                                     >
                                       <div className="flex-shrink-0 text-cult-dark-gray">

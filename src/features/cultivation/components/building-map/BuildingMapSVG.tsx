@@ -204,7 +204,7 @@ function SVGLegend() {
         return (
           <g key={item.label}>
             <rect x={thisX} y={y - 3} width={7} height={7} rx={1} fill={item.color} fillOpacity={0.55} stroke={item.color} strokeWidth={0.4} strokeOpacity={0.4} />
-            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={7} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
+            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={8} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
               {item.label}
             </text>
           </g>
@@ -220,7 +220,7 @@ function SVGLegend() {
             <rect x={thisX} y={y - 3} width={7} height={7} rx={1} fill="transparent" stroke={item.color} strokeWidth={0.8}>
               <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
             </rect>
-            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={7} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
+            <text x={thisX + 11} y={y + 4} fill="#999999" fontSize={8} fontFamily="'JetBrains Mono', monospace" fontWeight={600} letterSpacing="0.04em">
               {item.label}
             </text>
           </g>
@@ -242,14 +242,17 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
 
   return (
     <div className="relative">
-      <div className="bg-cult-surface-raised border border-cult-border p-4 overflow-x-auto">
+      <div
+        className="bg-cult-surface-raised border border-cult-border p-2 sm:p-4 overflow-x-auto"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+      >
         <svg
           viewBox={`0 0 ${SVG_VIEWPORT.width} ${SVG_VIEWPORT.height}`}
-          style={{ width: '100%', height: 'auto', minHeight: 420 }}
+          style={{ width: '100%', height: 'auto', minWidth: 600, minHeight: 320 }}
           xmlns="http://www.w3.org/2000/svg"
         >
           <BuildingStructure />
-          {ROOM_LAYOUT.map((layout) => (
+          {ROOM_LAYOUT.map((layout, idx) => (
             <RoomPolygon
               key={layout.code}
               layout={layout}
@@ -258,6 +261,7 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
               isHovered={hoveredCode === layout.code}
               onHover={onHover}
               onClick={onClick}
+              drawIndex={idx}
             />
           ))}
           <SVGLegend />
@@ -273,6 +277,15 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
               @keyframes badgeSlideIn {
                 from { opacity: 0; transform: translateX(8px); }
                 to { opacity: 1; transform: translateX(0); }
+              }
+              @keyframes roomDrawIn {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              g[role="button"]:focus-visible .room-fill {
+                stroke: #FFFFFF;
+                stroke-width: 2;
+                stroke-opacity: 0.9;
               }
             `}</style>
             <div className="w-1.5 h-1.5 rounded-full bg-cult-white animate-pulse" />

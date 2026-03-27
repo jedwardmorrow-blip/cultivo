@@ -98,35 +98,57 @@ export function BuildingMapView({ opsRooms, rooms, onRoomSelect }: BuildingMapVi
         <div className="mt-1.5 h-px w-10 bg-cult-green/30" />
       </div>
 
-      {/* Stat bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-        {stats.map((s) => {
+      {/* Stat bar — scrollable on mobile, grid on desktop */}
+      <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-thin sm:grid sm:grid-cols-3 sm:overflow-visible sm:snap-none sm:pb-0 lg:grid-cols-5">
+        {stats.map((s, idx) => {
           const Icon = STAT_ICONS[s.label];
+          const hasAnyUrgency = urgentCount > 0;
+          const isAttentionCard = s.label === 'Attention';
+          const isHarvestWarn = s.label === 'Next Harvest' && s.warn;
+
+          // When urgency exists: attention card emphasizes, others recede
+          const emphasize = hasAnyUrgency && (isAttentionCard || isHarvestWarn);
+          const recede = hasAnyUrgency && !emphasize;
+
           return (
             <div
               key={s.label}
-              className={`relative border p-2.5 overflow-hidden ${
-                s.warn
+              className={`relative border p-2.5 overflow-hidden transition-all duration-300 min-w-[130px] flex-shrink-0 snap-start sm:min-w-0 sm:flex-shrink sm:snap-align-none ${
+                emphasize
+                  ? 'bg-cult-warning/[0.06] border-cult-warning/50 animate-stat-emphasize'
+                  : recede
+                  ? 'bg-cult-surface-raised border-cult-border animate-stat-recede'
+                  : s.warn
                   ? 'bg-cult-warning/[0.04] border-cult-warning/40'
                   : 'bg-cult-surface-raised border-cult-border'
               }`}
+              style={{
+                animationDelay: `${idx * 50}ms`,
+                backgroundImage: !emphasize && !recede
+                  ? 'linear-gradient(to bottom, rgba(255,255,255,0.015), transparent)'
+                  : undefined,
+              }}
             >
               {/* Micro-icon watermark */}
               {Icon && (
                 <Icon
                   className={`absolute top-1.5 right-1.5 w-4 h-4 ${
-                    s.warn ? 'text-cult-warning' : 'text-cult-text-faint'
+                    emphasize ? 'text-cult-warning' : s.warn ? 'text-cult-warning' : 'text-cult-text-faint'
                   }`}
-                  style={{ opacity: 0.12 }}
+                  style={{ opacity: emphasize ? 0.25 : 0.12 }}
                   strokeWidth={1.5}
                 />
               )}
-              <div className="text-[8px] text-cult-text-muted uppercase tracking-wider font-semibold mb-1 font-mono">
+              <div className={`text-[11px] uppercase tracking-wider font-semibold mb-1 font-mono ${
+                emphasize ? 'text-cult-warning/80' : 'text-cult-text-secondary'
+              }`}>
                 {s.label}
               </div>
-              <div className={`text-xl font-extrabold font-mono ${s.warn ? 'text-cult-warning' : 'text-cult-white'}`}>
+              <div className={`text-xl font-extrabold font-mono ${
+                emphasize ? 'text-cult-warning' : s.warn ? 'text-cult-warning' : recede ? 'text-cult-text-secondary' : 'text-cult-white'
+              }`}>
                 {s.value}
-                {s.sub && <span className="text-sm font-normal text-cult-text-muted ml-0.5">{s.sub}</span>}
+                {s.sub && <span className="text-sm font-normal text-cult-light-gray ml-0.5">{s.sub}</span>}
               </div>
             </div>
           );
@@ -144,3 +166,5 @@ export function BuildingMapView({ opsRooms, rooms, onRoomSelect }: BuildingMapVi
     </div>
   );
 }
+
+export default BuildingMapView;

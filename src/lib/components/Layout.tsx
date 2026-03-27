@@ -101,13 +101,13 @@ export function Layout({ children }: LayoutProps) {
                   <Home className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => navigate('/analytics')}
+                  onClick={() => navigate('/hub')}
                   className={`p-2 rounded-cult transition-colors hidden sm:block ${
-                    currentView === 'analytics'
+                    currentView === 'hub' || currentView.startsWith('hub-')
                       ? 'text-cult-white bg-cult-charcoal'
                       : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
                   }`}
-                  title="Analytics"
+                  title="Hub"
                 >
                   <TrendingUp className="w-4 h-4" />
                 </button>

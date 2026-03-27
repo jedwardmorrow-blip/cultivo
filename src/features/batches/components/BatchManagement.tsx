@@ -15,16 +15,22 @@ import { COAUploadModal } from './COAUploadModal';
 type ActiveTab = 'active' | 'archived';
 
 const LIFECYCLE_DISPLAY: Record<string, { label: string; color: string }> = {
-  pre_harvest: { label: 'Pre-Harvest', color: 'text-sky-400 bg-sky-900/20 border-sky-700' },
-  created: { label: 'Created', color: 'text-blue-400 bg-blue-900/20 border-blue-700' },
-  bucked: { label: 'Bucked', color: 'text-teal-400 bg-teal-900/20 border-teal-700' },
-  in_trim: { label: 'In Trim', color: 'text-cyan-400 bg-cyan-900/20 border-cyan-700' },
-  bulk_available: { label: 'Bulk Available', color: 'text-green-400 bg-green-900/20 border-green-700' },
-  in_packaging: { label: 'Packaging', color: 'text-emerald-400 bg-emerald-900/20 border-emerald-700' },
+  // Cultivation stages
+  clone: { label: 'Clone', color: 'text-violet-400 bg-violet-900/20 border-violet-700' },
+  veg: { label: 'Veg', color: 'text-lime-400 bg-lime-900/20 border-lime-700' },
+  flower: { label: 'Flower', color: 'text-pink-400 bg-pink-900/20 border-pink-700' },
+  // Flower production path
+  drying: { label: 'Drying', color: 'text-yellow-400 bg-yellow-900/20 border-yellow-700' },
+  bucking: { label: 'Bucking', color: 'text-teal-400 bg-teal-900/20 border-teal-700' },
+  trimming: { label: 'Trimming', color: 'text-cyan-400 bg-cyan-900/20 border-cyan-700' },
+  bulk: { label: 'Bulk', color: 'text-green-400 bg-green-900/20 border-green-700' },
+  packaging: { label: 'Packaging', color: 'text-emerald-400 bg-emerald-900/20 border-emerald-700' },
   packaged: { label: 'Packaged', color: 'text-green-300 bg-green-900/20 border-green-700' },
-  partially_depleted: { label: 'Partial', color: 'text-amber-400 bg-amber-900/20 border-amber-700' },
+  // FF / Lab path
+  fresh_frozen: { label: 'Fresh Frozen', color: 'text-sky-400 bg-sky-900/20 border-sky-700' },
+  lab: { label: 'Lab', color: 'text-indigo-400 bg-indigo-900/20 border-indigo-700' },
+  // Terminal
   depleted: { label: 'Depleted', color: 'text-orange-400 bg-orange-900/20 border-orange-700' },
-  quarantined: { label: 'Quarantined', color: 'text-red-400 bg-red-900/20 border-red-700' },
   archived: { label: 'Archived', color: 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray' },
 };
 

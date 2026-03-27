@@ -104,7 +104,7 @@ export async function createBatch(input: CreateBatchInput): Promise<BatchRegistr
     .insert({
       ...input,
       status: 'active',
-      lifecycle_state: 'created'
+      lifecycle_state: 'clone'
     })
     .select()
     .single();
@@ -781,20 +781,36 @@ export async function fetchBatchProductionHistory(batchId: string): Promise<any[
  * @returns boolean - True if transition is valid
  * @description Enforces state machine rules from BATCHES.md
  */
+/**
+ * Validates whether a lifecycle state transition is allowed.
+ *
+ * Two production paths diverge at harvest:
+ *   Flower:  clone → veg → flower → drying → bucking → trimming → bulk → packaging → packaged → depleted → archived
+ *   FF/Lab:  clone → veg → flower → fresh_frozen → lab → depleted → archived
+ *
+ * Quarantine is a boolean flag (is_quarantined), not a lifecycle state.
+ */
 export function validateLifecycleTransition(
   currentState: string,
   targetState: string
 ): boolean {
   const validTransitions: Record<string, string[]> = {
-    'created': ['bucked', 'quarantined'],
-    'bucked': ['in_trim', 'quarantined'],
-    'in_trim': ['bulk_available', 'bucked', 'quarantined'],
-    'bulk_available': ['in_packaging', 'quarantined'],
-    'in_packaging': ['packaged', 'bulk_available', 'quarantined'],
-    'packaged': ['partially_depleted', 'quarantined'],
-    'partially_depleted': ['depleted', 'quarantined'],
+    // Cultivation
+    'clone': ['veg', 'archived'],
+    'veg': ['flower', 'archived'],
+    'flower': ['drying', 'fresh_frozen', 'archived'],
+    // Flower path
+    'drying': ['bucking', 'flower'],
+    'bucking': ['trimming', 'drying'],
+    'trimming': ['bulk', 'bucking'],
+    'bulk': ['packaging', 'trimming'],
+    'packaging': ['packaged', 'bulk'],
+    'packaged': ['depleted'],
+    // FF / Lab path
+    'fresh_frozen': ['lab', 'depleted'],
+    'lab': ['depleted'],
+    // Terminal
     'depleted': ['archived'],
-    'quarantined': ['created', 'bucked', 'bulk_available', 'packaged']
   };
 
   return validTransitions[currentState]?.includes(targetState) || false;

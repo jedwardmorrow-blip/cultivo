@@ -14,6 +14,8 @@ interface RoomPolygonProps {
   isHovered: boolean;
   onHover: (code: string | null) => void;
   onClick: (code: string) => void;
+  /** Sequential index for entrance draw-in animation */
+  drawIndex?: number;
 }
 
 /**
@@ -21,7 +23,7 @@ interface RoomPolygonProps {
  * Renders gradient fill, left-edge accent, room code, plant count,
  * strain pills, harvest countdown, task micro-bar, and urgency glow.
  */
-function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick }: RoomPolygonProps) {
+function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick, drawIndex = 0 }: RoomPolygonProps) {
   const base = LAYOUT_TYPE_COLORS[layout.layoutType];
   const isUtility = layout.layoutType === 'non-grow';
   const isTiny = layout.h < 50;
@@ -56,13 +58,39 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
   const cy = layout.y + layout.h / 2;
   const scale = isHovered && isClickable ? 1.02 : 1;
 
+  // Draw-in entrance animation: fade-up per room, staggered left-to-right
+  const drawDelay = drawIndex * 35; // 35ms stagger between rooms
+
+  // Accessible room label
+  const ariaLabel = isUtility
+    ? `${layout.code} — ${layout.layoutType} room`
+    : isEmpty
+    ? `${layout.code} — empty ${layout.layoutType} room`
+    : `${layout.code} — ${layout.layoutType} room, ${plants} plants${strains.length > 0 ? `, strains: ${strains.slice(0, 3).join(', ')}` : ''}${daysToHarvest !== null ? `, harvest in ${daysToHarvest} days` : ''}`;
+
   return (
     <g
       style={{
         cursor: isClickable ? 'pointer' : 'default',
         transform: `translate(${cx}px, ${cy}px) scale(${scale}) translate(${-cx}px, ${-cy}px)`,
         transition: 'transform 0.15s ease',
+        opacity: 0,
+        animation: `roomDrawIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${drawDelay}ms both`,
+        outline: 'none',
       }}
+      {...(isClickable ? {
+        tabIndex: 0,
+        role: 'button',
+        'aria-label': ariaLabel,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(layout.code);
+          }
+        },
+        onFocus: () => onHover(layout.code),
+        onBlur: () => onHover(null),
+      } : {})}
       onMouseEnter={() => isClickable && onHover(layout.code)}
       onMouseLeave={() => onHover(null)}
       onClick={() => isClickable && onClick(layout.code)}
@@ -97,6 +125,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
 
       {/* Room fill — gradient for occupied, flat for empty/utility */}
       <rect
+        className="room-fill"
         x={layout.x}
         y={layout.y}
         width={layout.w}
@@ -129,7 +158,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
         y={layout.y + (isTiny ? layout.h / 2 + 3 : 16)}
         textAnchor="middle"
         fill={isUtility ? '#404040' : '#FFFFFF'}
-        fontSize={isTiny ? 6.5 : layout.w > 90 ? 11 : layout.w > 65 ? 9 : 8}
+        fontSize={isTiny ? 7.5 : layout.w > 90 ? 11 : layout.w > 65 ? 9.5 : 8.5}
         fontFamily="'JetBrains Mono', 'SF Mono', monospace"
         fontWeight={700}
         letterSpacing="0.04em"
@@ -184,7 +213,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
                   y={pillY + 10}
                   textAnchor="middle"
                   fill="#999999"
-                  fontSize={7}
+                  fontSize={8}
                   fontFamily="'JetBrains Mono', monospace"
                   fontWeight={600}
                 >
@@ -197,7 +226,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
                 x={startX + totalW + 4}
                 y={pillY + 10}
                 fill="#666666"
-                fontSize={7}
+                fontSize={8}
                 fontFamily="'JetBrains Mono', monospace"
               >
                 +{overflow}
@@ -267,7 +296,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
             y={layout.y + layout.h - 16}
             textAnchor="middle"
             fill="#404040"
-            fontSize={7}
+            fontSize={8}
             fontFamily="'JetBrains Mono', monospace"
           >
             {tasksDone}/{tasksTotal}
@@ -291,7 +320,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
             y={layout.y + layout.h - 16}
             textAnchor="middle"
             fill="#404040"
-            fontSize={6.5}
+            fontSize={7.5}
             fontFamily="'JetBrains Mono', monospace"
           >
             0 tasks

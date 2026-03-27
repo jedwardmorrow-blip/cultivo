@@ -15,11 +15,11 @@ export const menuStructure: MenuSection[] = [
     ],
   },
   {
-    id: 'analytics',
-    label: 'Analytics',
+    id: 'hub',
+    label: 'Hub',
     icon: TrendingUp,
     items: [
-      { id: 'analytics', label: 'Analytics Dashboard', icon: TrendingUp },
+      { id: 'hub', label: 'Batch Pipeline', icon: TrendingUp },
     ],
   },
   {

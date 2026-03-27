@@ -140,12 +140,13 @@ export const sectionDefinitions: SectionDefinition[] = [
     ],
   },
   {
-    id: 'strain-analytics',
-    label: 'Analytics',
+    id: 'hub',
+    label: 'Hub',
     icon: Dna,
-    defaultView: 'strain-analytics',
+    defaultView: 'hub',
     items: [
-      { id: 'strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'primary' },
+      { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
+      { id: 'hub-strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'secondary' },
     ],
   }
 ];

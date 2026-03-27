@@ -5,7 +5,7 @@ import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { FlipRoomModal } from './FlipRoomModal';
 import { todayIso, daysBetween } from '../utils/dateUtils';
-import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, INNER_GLOW } from '../constants/stageColors';
+import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, INNER_GLOW, harvestCountdownColor } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 interface PlacedGroup {
@@ -301,8 +301,8 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
 
   function countdownColor(): string {
     if (daysToHarvest === null) return 'text-cult-medium-gray';
-    if (daysToHarvest < 0) return 'text-red-400';
-    if (daysToHarvest <= 7) return 'text-amber-400';
+    if (daysToHarvest < 0) return harvestCountdownColor(daysToHarvest);
+    if (daysToHarvest <= 7) return harvestCountdownColor(daysToHarvest);
     return 'text-cult-light-gray';
   }
 

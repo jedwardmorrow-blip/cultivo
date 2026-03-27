@@ -87,3 +87,49 @@ export const ROOM_TYPE_BADGE: Record<string, string> = {
   mother: 'bg-cult-stage-harvest/10 border-cult-stage-harvest/50 text-cult-stage-harvest',
   mixed: 'bg-cult-surface border-cult-border-strong text-cult-text-secondary',
 };
+
+// ─── Semantic Status Tokens ───────────────────────────────────────────
+// Replaces raw Tailwind colors (red-950, green-400, etc.) with cult-* equivalents.
+// Use these across cultivation components for error, warning, success, and info states.
+
+/** Error/danger banner: bg + border + text */
+export const STATUS_ERROR_BANNER = 'bg-cult-danger/10 border border-cult-danger/40 text-cult-danger';
+
+/** Error/danger inline text */
+export const STATUS_ERROR_TEXT = 'text-cult-danger';
+
+/** Error/danger button: destructive action */
+export const STATUS_ERROR_BTN = 'bg-cult-danger/10 border border-cult-danger/40 text-cult-danger hover:bg-cult-danger/20 transition-colors';
+
+/** Warning banner: bg + border + text */
+export const STATUS_WARN_BANNER = 'bg-cult-warning/10 border border-cult-warning/40 text-cult-warning';
+
+/** Warning inline text */
+export const STATUS_WARN_TEXT = 'text-cult-warning';
+
+/** Success/active inline text */
+export const STATUS_SUCCESS_TEXT = 'text-cult-success';
+
+/** Success badge: bg + border + text */
+export const STATUS_SUCCESS_BADGE = 'bg-cult-success/10 border border-cult-success/40 text-cult-success';
+
+/** Success button */
+export const STATUS_SUCCESS_BTN = 'bg-cult-success/10 border border-cult-success/40 text-cult-success hover:bg-cult-success/20 transition-colors';
+
+/** Info/completed badge: uses clone-blue */
+export const STATUS_INFO_BADGE = 'bg-cult-stage-clone/10 border border-cult-stage-clone/40 text-cult-stage-clone';
+
+/** Status badge map for session states */
+export const SESSION_STATUS_BADGE: Record<string, string> = {
+  active: STATUS_SUCCESS_BADGE,
+  completed: STATUS_INFO_BADGE,
+  cancelled: 'text-cult-text-muted border-cult-border bg-cult-surface-raised',
+};
+
+/** Harvest countdown color by days remaining */
+export function harvestCountdownColor(days: number | null): string {
+  if (days === null) return 'text-cult-text-secondary';
+  if (days < 0) return STATUS_ERROR_TEXT;
+  if (days <= 7) return STATUS_WARN_TEXT;
+  return 'text-cult-text-secondary';
+}

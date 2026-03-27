@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Sprout, Scissors, Package, AlertTriangle, Calendar, LayoutGrid } from 'lucide-react';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroups } from '../hooks/usePlantGroups';
@@ -8,10 +8,12 @@ import { useRoomOperationalState, type RoomOperationalState } from '../hooks/use
 import { RoomDetailDrawer } from './RoomDetailDrawer';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { MoveToRoomModal } from './MoveToRoomModal';
-import { BuildingMapView } from './building-map';
+
+const BuildingMapView = lazy(() => import('./building-map/BuildingMapView'));
+
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
-import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT } from '../constants/stageColors';
+import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT, INNER_GLOW, STATUS_WARN_BANNER, STATUS_ERROR_BANNER } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
@@ -31,12 +33,27 @@ function computeHarvestDays(harvestDate: string | null): number | null {
 
 
 
+/** Inline SVG noise texture — 2% opacity grain for card depth */
+const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E")`;
+
+/** Top-edge glow color by room type — used for selected state */
+const SELECTED_TOP_GLOW: Record<string, string> = {
+  clone: '0 -2px 12px rgba(14,165,233,0.25)',
+  veg: '0 -2px 12px rgba(16,185,129,0.25)',
+  flower: '0 -2px 12px rgba(244,63,94,0.25)',
+  mother: '0 -2px 12px rgba(245,158,11,0.25)',
+};
+
 interface RoomCommandCardProps {
   state: RoomOperationalState;
   onClick: () => void;
+  /** Stagger index for entrance animation delay */
+  animIndex?: number;
+  /** Whether this card's room is currently selected */
+  isSelected?: boolean;
 }
 
-function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
+function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: RoomCommandCardProps) {
   const isEmpty = state.occupancy_status === 'empty';
   
   let pulseClass = '';
@@ -55,6 +72,9 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
 
   const borderCls = ROOM_TYPE_LEFT_BORDER[state.room_type] ?? ROOM_TYPE_LEFT_BORDER.mixed;
   const typeTextCls = ROOM_TYPE_TEXT[state.room_type] ?? ROOM_TYPE_TEXT.mixed;
+  const innerGlow = !isEmpty ? (INNER_GLOW[state.room_type] ?? '') : '';
+  const topGlow = isSelected && !isEmpty ? (SELECTED_TOP_GLOW[state.room_type] ?? '') : '';
+  const combinedShadow = [innerGlow, topGlow].filter(Boolean).join(', ') || undefined;
 
   const totalTasks = Number(state.tasks_today) || 0;
   const doneTasks = Number(state.tasks_completed_today) || 0;
@@ -65,7 +85,12 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
   return (
     <button
       onClick={onClick}
-      className={`relative w-full text-left bg-cult-near-black border ${pulseClass || 'border-cult-dark-gray'} border-l-4 ${!isEmpty ? borderCls : 'border-l-cult-dark-gray'} hover:bg-cult-black transition-all group flex flex-col h-full ${isEmpty ? 'opacity-50 grayscale-[0.5]' : ''}`}
+      className={`relative w-full text-left bg-cult-near-black border ${pulseClass || (isSelected && !isEmpty ? 'border-cult-border-strong' : 'border-cult-dark-gray')} border-l-4 ${!isEmpty ? borderCls : 'border-l-cult-dark-gray'} hover:bg-cult-black transition-all duration-200 group flex flex-col h-full ${isEmpty ? 'opacity-50 grayscale-[0.5]' : 'hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)]'} animate-card-fade-up`}
+      style={{
+        animationDelay: `${animIndex * 60}ms`,
+        backgroundImage: !isEmpty ? NOISE_BG : undefined,
+        boxShadow: combinedShadow,
+      }}
     >
       <div className="p-4 flex-1 space-y-4 w-full">
         <div className="flex items-start justify-between">
@@ -129,8 +154,14 @@ function RoomCommandCard({ state, onClick }: RoomCommandCardProps) {
         <div className="h-1.5 w-full bg-cult-dark-gray flex overflow-hidden rounded-sm">
           {totalTasks > 0 && (
             <>
-              <div className="h-full bg-cult-green transition-all" style={{ width: `${donePct}%` }} />
-              <div className="h-full bg-cult-stage-harvest transition-all opacity-80" style={{ width: `${inProgPct}%` }} />
+              <div
+                className="h-full bg-cult-green animate-bar-fill"
+                style={{ width: `${donePct}%`, animationDelay: `${animIndex * 60 + 300}ms` }}
+              />
+              <div
+                className="h-full bg-cult-stage-harvest opacity-80 animate-bar-fill"
+                style={{ width: `${inProgPct}%`, animationDelay: `${animIndex * 60 + 400}ms` }}
+              />
             </>
           )}
         </div>
@@ -240,7 +271,7 @@ export function CultivationDashboard() {
       </div>
 
       {strainsWithoutAbbrev.length > 0 && (
-        <div className="flex items-start gap-3 bg-amber-950 border border-amber-700 text-amber-300 p-4 text-sm">
+        <div className={`flex items-start gap-3 p-4 text-sm ${STATUS_WARN_BANNER}`}>
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div>
             <span className="font-semibold">Abbreviation required for harvest: </span>
@@ -276,13 +307,19 @@ export function CultivationDashboard() {
           />
         </div>
 
-        {/* Building Map */}
+        {/* Building Map — lazy loaded for bundle splitting */}
         {activeRooms.length > 0 && (
-          <BuildingMapView
-            opsRooms={opsRooms}
-            rooms={rooms}
-            onRoomSelect={setSelectedRoom}
-          />
+          <Suspense fallback={
+            <div className="bg-cult-surface-raised border border-cult-border p-8 flex items-center justify-center min-h-[200px]">
+              <span className="text-xs text-cult-text-muted uppercase tracking-wider animate-pulse">Loading map…</span>
+            </div>
+          }>
+            <BuildingMapView
+              opsRooms={opsRooms}
+              rooms={rooms}
+              onRoomSelect={setSelectedRoom}
+            />
+          </Suspense>
         )}
 
         {/* Room Cards */}
@@ -306,12 +343,14 @@ export function CultivationDashboard() {
                   if (aOrd !== bOrd) return aOrd - bOrd;
                   return a.room_code.localeCompare(b.room_code);
                 })
-                .map((opsState) => {
+                .map((opsState, idx) => {
                   const fullRoom = rooms.find((r) => r.id === opsState.room_id);
                   return (
                     <RoomCommandCard
                       key={opsState.room_id}
                       state={opsState}
+                      animIndex={idx}
+                      isSelected={selectedRoom?.id === opsState.room_id}
                       onClick={() => { if (fullRoom) setSelectedRoom(fullRoom); }}
                     />
                   );
@@ -386,7 +425,7 @@ export function CultivationDashboard() {
             </p>
 
             {advanceError && (
-              <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+              <div className={`flex items-start gap-2 text-sm p-3 ${STATUS_ERROR_BANNER}`}>
                 <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 {advanceError}
               </div>

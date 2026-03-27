@@ -86,6 +86,11 @@ export default {
         'flicker': 'flicker 0.3s ease-in-out',
         'pulse-red': 'pulseUrgentRed 2s infinite',
         'pulse-amber': 'pulseUrgentAmber 2s infinite',
+        'card-fade-up': 'cardFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'stat-emphasize': 'statEmphasize 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'stat-recede': 'statRecede 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'bar-fill': 'barFill 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'countdown-tick': 'countdownTick 2s ease-in-out infinite',
       },
       keyframes: {
         pulseUrgentRed: {
@@ -116,6 +121,26 @@ export default {
         flicker: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.8' },
+        },
+        cardFadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(14px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        statEmphasize: {
+          '0%': { transform: 'scale(1)', boxShadow: 'none' },
+          '100%': { transform: 'scale(1.03)', boxShadow: '0 0 24px rgba(245, 158, 11, 0.15)' },
+        },
+        statRecede: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0.6' },
+        },
+        barFill: {
+          '0%': { transform: 'scaleX(0)', transformOrigin: 'left' },
+          '100%': { transform: 'scaleX(1)', transformOrigin: 'left' },
+        },
+        countdownTick: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
         },
       },
       transitionTimingFunction: {

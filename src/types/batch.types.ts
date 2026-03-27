@@ -209,7 +209,52 @@ export interface BatchAllocationWarning {
   message: string;
 }
 
-// Batch stage enum
+// Batch lifecycle state — the full journey from cutting to customer
+export type BatchLifecycleState =
+  // Cultivation stages (shared)
+  | 'clone'
+  | 'veg'
+  | 'flower'
+  // Flower production path
+  | 'drying'
+  | 'bucking'
+  | 'trimming'
+  | 'bulk'
+  | 'packaging'
+  | 'packaged'
+  // Fresh frozen / lab path
+  | 'fresh_frozen'
+  | 'lab'
+  // Terminal
+  | 'depleted'
+  | 'archived';
+
+// Production path — which branch post-harvest
+export type ProductionPath = 'flower' | 'fresh_frozen';
+
+// Cultivation stages (pre-harvest)
+export const CULTIVATION_STAGES: BatchLifecycleState[] = ['clone', 'veg', 'flower'];
+
+// Flower production stages (post-harvest)
+export const FLOWER_PATH_STAGES: BatchLifecycleState[] = [
+  'drying', 'bucking', 'trimming', 'bulk', 'packaging', 'packaged'
+];
+
+// Fresh frozen / lab stages
+export const FF_LAB_STAGES: BatchLifecycleState[] = ['fresh_frozen', 'lab'];
+
+// Terminal stages
+export const TERMINAL_STAGES: BatchLifecycleState[] = ['depleted', 'archived'];
+
+// All stages in lifecycle order (for kanban columns)
+export const LIFECYCLE_ORDER: BatchLifecycleState[] = [
+  'clone', 'veg', 'flower',
+  'drying', 'bucking', 'trimming', 'bulk', 'packaging', 'packaged',
+  'fresh_frozen', 'lab',
+  'depleted', 'archived'
+];
+
+// Batch stage enum (inventory stages within batch_stage_tracking)
 export type BatchStage =
   | 'binned'
   | 'bucked'
