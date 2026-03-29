@@ -30,6 +30,7 @@ export interface TaskCardData {
 export interface StaffOption {
   id: string;
   first_name: string;
+  is_present?: boolean;
 }
 
 interface TaskCardProps {
@@ -160,23 +161,46 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
         <button
           type="button"
           onClick={onClick}
-          className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors p-2.5 sm:p-3 group ${
+          className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors px-2.5 sm:px-3 py-2 group ${
             isCarried ? 'border-l-2 border-l-amber-500 bg-amber-950/10' : ''
           }`}
         >
-          <div className="flex items-start justify-between gap-3">
+          {/* Single-row compact layout: type badge | assignment | status */}
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {/* Task type icon dot */}
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: config.color }}
-              />
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
                 style={{ backgroundColor: `${config.color}20`, color: config.color }}
               >
                 {config.label}
               </span>
+
+              {task.assigned_to_name ? (
+                <span className="flex items-center gap-1 text-xs text-cult-light-gray min-w-0">
+                  <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                    {task.assigned_to_name.charAt(0)}
+                  </span>
+                  <span className="truncate">{task.assigned_to_name}</span>
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-amber-400/80 text-xs">
+                  <UserPlus className="w-3 h-3" />
+                </span>
+              )}
+
+              {isCarried && (
+                <span className="flex items-center gap-1 text-xs text-amber-400">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span className="font-medium hidden sm:inline">Carried</span>
+                </span>
+              )}
+
+              {task.estimated_duration && (
+                <span className="hidden sm:flex items-center gap-1 text-xs text-cult-medium-gray">
+                  <Clock className="w-3 h-3" />
+                  {task.estimated_duration}
+                </span>
+              )}
             </div>
 
             <span className={`inline-flex px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0 ${statusStyle.bg} ${statusStyle.text}`}>
@@ -184,37 +208,10 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
             </span>
           </div>
 
-          <div className="flex items-center gap-3 mt-2 text-xs text-cult-light-gray">
-            {task.assigned_to_name ? (
-              <span className="flex items-center gap-1">
-                <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
-                  {task.assigned_to_name.charAt(0)}
-                </span>
-                {task.assigned_to_name}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-amber-400/80">
-                <UserPlus className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">Unassigned</span>
-              </span>
-            )}
-            {task.estimated_duration && (
-              <span className="flex items-center gap-1 text-cult-medium-gray">
-                <Clock className="w-3 h-3" />
-                {task.estimated_duration}
-              </span>
-            )}
-            {task.estimated_cost != null && task.estimated_cost > 0 && (
-              <span className="text-cult-medium-gray font-mono">
-                ${task.estimated_cost.toFixed(0)}
-              </span>
-            )}
-          </div>
-
           {isMultiDay && task.progress_current != null && task.progress_total != null && (
-            <div className="mt-2">
-              <div className="flex items-center justify-between text-xs text-cult-light-gray mb-1">
-                <span>{task.progress_current} of {task.progress_total} sections</span>
+            <div className="mt-1.5">
+              <div className="flex items-center justify-between text-xs text-cult-light-gray mb-0.5">
+                <span>{task.progress_current}/{task.progress_total} sections</span>
                 <span>{Math.round((task.progress_current / task.progress_total) * 100)}%</span>
               </div>
               <div className="w-full h-1 bg-cult-charcoal rounded-full overflow-hidden">
@@ -223,14 +220,6 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                   style={{ width: `${(task.progress_current / task.progress_total) * 100}%` }}
                 />
               </div>
-            </div>
-          )}
-
-          {isCarried && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-400">
-              <AlertTriangle className="w-3 h-3" />
-              <span className="font-medium">Carried from yesterday</span>
-              {task.notes && <span className="text-amber-400/70 ml-1">— {task.notes}</span>}
             </div>
           )}
         </button>
@@ -270,7 +259,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
             </button>
 
             {showAssignDropdown && (
-              <div className="absolute top-full right-0 mt-1 w-36 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-20">
+              <div className="absolute top-full right-0 mt-1 w-44 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-20 max-h-60 overflow-y-auto">
                 {staffOptions.map((s) => (
                   <button
                     key={s.id}
@@ -280,12 +269,22 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                       onQuickAssign(task.id, s.id);
                       setShowAssignDropdown(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-3 text-sm text-cult-light-gray hover:bg-cult-charcoal active:bg-cult-charcoal/80 transition-colors text-left min-h-[44px]"
+                    className={`w-full flex items-center gap-2 px-3 py-3 text-sm hover:bg-cult-charcoal active:bg-cult-charcoal/80 transition-colors text-left min-h-[44px] ${
+                      s.is_present === false ? 'text-cult-medium-gray' : 'text-cult-light-gray'
+                    }`}
                   >
-                    <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
-                      {s.first_name.charAt(0)}
+                    <span className="relative flex-shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white">
+                        {s.first_name.charAt(0)}
+                      </span>
+                      {s.is_present && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-1 ring-cult-near-black" />
+                      )}
                     </span>
-                    {s.first_name}
+                    <span>{s.first_name}</span>
+                    {s.is_present === false && (
+                      <span className="text-xs text-cult-dark-gray ml-auto">Off</span>
+                    )}
                   </button>
                 ))}
               </div>

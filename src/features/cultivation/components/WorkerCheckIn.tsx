@@ -146,13 +146,18 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
               const isSaving = saving === s.id;
 
               return (
-                <div key={s.id} className={`px-3 sm:px-4 py-3 flex flex-col gap-2 ${isSaving ? 'opacity-60' : ''}`}>
+                <div key={s.id} className={`px-3 sm:px-4 py-3 flex flex-col gap-2 transition-colors ${isSaving ? 'opacity-60' : ''} ${isPresent ? 'bg-green-950/10' : ''}`}>
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-7 h-7 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
+                      <span className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        isPresent ? 'bg-green-950 text-green-400' : 'bg-cult-charcoal text-cult-medium-gray'
+                      }`}>
                         {s.first_name.charAt(0)}
+                        {isPresent && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-400 ring-2 ring-cult-near-black" />
+                        )}
                       </span>
-                      <span className="text-sm text-cult-white font-medium truncate">{s.first_name}</span>
+                      <span className={`text-sm font-medium truncate ${isPresent ? 'text-cult-white' : 'text-cult-medium-gray'}`}>{s.first_name}</span>
                       <span className={`hidden sm:inline-flex px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
                         {s.role.replace(/_/g, ' ')}
                       </span>

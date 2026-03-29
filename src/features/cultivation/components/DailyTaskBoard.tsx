@@ -286,7 +286,7 @@ export function DailyTaskBoard() {
       )}
       {activeTab === 'types' && <TaskTypesTab />}
       {activeTab === 'workers' && (
-        <WorkersTab staff={allStaff} tasks={taskCards} attendance={attendance} />
+        <WorkersTab staff={cultivationStaff} tasks={taskCards} attendance={attendance} />
       )}
     </div>
   );
@@ -331,12 +331,12 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
     return { total, completed, inProgress, pending, carried, skipped, unassigned, pct };
   }, [tasks]);
 
-  // Staff options for quick-assign (only present cultivation staff)
+  // Staff options for quick-assign — all cultivation staff, present ones first with indicator
   const quickAssignStaff: StaffOption[] = useMemo(() => {
     const presentIds = new Set(attendance.filter((a) => a.is_present).map((a) => a.staff_id));
     return staff
-      .filter((s) => presentIds.has(s.id))
-      .map((s) => ({ id: s.id, first_name: s.first_name }));
+      .map((s) => ({ id: s.id, first_name: s.first_name, is_present: presentIds.has(s.id) }))
+      .sort((a, b) => (a.is_present === b.is_present ? 0 : a.is_present ? -1 : 1));
   }, [staff, attendance]);
 
   const filteredTasks = useMemo(() => {
@@ -686,7 +686,7 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
       {showAddTask && (
         <AddTaskModal
           rooms={rooms}
-          staff={allStaff}
+          staff={staff}
           preSelectedRoomId={addTaskRoomId}
           taskDate={date}
           onClose={() => setShowAddTask(false)}

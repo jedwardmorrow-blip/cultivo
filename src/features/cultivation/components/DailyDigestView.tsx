@@ -444,6 +444,8 @@ export function DailyDigestView() {
           costByTaskType={costByTaskType}
           totalLaborHours={totalLaborHours}
           totalLaborCost={totalLaborCost}
+          tasksCompleted={completed}
+          tasksTotal={total}
         />
       )}
 
@@ -642,16 +644,67 @@ function ByRoomTab({ roomDigests }: { roomDigests: RoomDigest[] }) {
 }
 
 function LaborTab({
-  laborCostByWorker, laborByRoom, costByTaskType, totalLaborHours, totalLaborCost,
+  laborCostByWorker, laborByRoom, costByTaskType, totalLaborHours, totalLaborCost, tasksCompleted, tasksTotal,
 }: {
   laborCostByWorker: { name: string; hours: number; rate: number; cost: number; role: string }[];
   laborByRoom: { room: string; workers: string[]; hours: number; cost: number }[];
   costByTaskType: { type: string; tasks: number; hours: number; cost: number }[];
   totalLaborHours: number;
   totalLaborCost: number;
+  tasksCompleted: number;
+  tasksTotal: number;
 }) {
+  const completionPct = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
+  const maxCost = Math.max(...costByTaskType.map((c) => c.cost), 1);
+
   return (
     <div className="space-y-6">
+      {/* Completion + Cost summary cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider">Tasks Done</span>
+          <div className="mt-1 text-lg font-bold text-cult-text-primary">{tasksCompleted}/{tasksTotal}</div>
+          <div className="mt-1.5 w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
+            <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+          </div>
+        </div>
+        <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider">Completion</span>
+          <div className={`mt-1 text-lg font-bold ${completionPct >= 80 ? 'text-green-400' : completionPct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{completionPct}%</div>
+        </div>
+        <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider">Labor Hours</span>
+          <div className="mt-1 text-lg font-bold text-cult-text-primary">{totalLaborHours.toFixed(1)}</div>
+        </div>
+        <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider">Labor Cost</span>
+          <div className="mt-1 text-lg font-bold text-cult-text-primary">${totalLaborCost.toFixed(0)}</div>
+        </div>
+      </div>
+
+      {/* Cost by task type — visual bar chart */}
+      {costByTaskType.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-cult-text-primary mb-3">Cost by Task Type</h3>
+          <div className="space-y-2">
+            {costByTaskType.map((c) => (
+              <div key={c.type} className="flex items-center gap-3">
+                <span className="w-24 text-xs text-cult-text-secondary truncate">{TASK_TYPE_LABELS[c.type] ?? c.type}</span>
+                <div className="flex-1 h-5 bg-cult-surface-overlay rounded-sm overflow-hidden">
+                  <div
+                    className="h-full bg-green-700/60 rounded-sm transition-all flex items-center px-2"
+                    style={{ width: `${Math.max(5, (c.cost / maxCost) * 100)}%` }}
+                  >
+                    <span className="text-[10px] text-green-200 font-semibold whitespace-nowrap">${c.cost.toFixed(0)}</span>
+                  </div>
+                </div>
+                <span className="text-xs text-cult-text-muted w-16 text-right">{c.tasks} task{c.tasks !== 1 ? 's' : ''}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-sm font-semibold text-cult-text-primary mb-3">Worker Summary</h3>
         <div className="rounded-lg border border-cult-border overflow-hidden">
@@ -719,35 +772,6 @@ function LaborTab({
         )}
       </div>
 
-      <div>
-        <h3 className="text-sm font-semibold text-cult-text-primary mb-3">Cost by Task Type</h3>
-        {costByTaskType.length > 0 ? (
-          <div className="rounded-lg border border-cult-border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-cult-surface-overlay text-cult-text-muted text-xs uppercase tracking-wider">
-                  <th className="text-left px-4 py-2.5 font-medium">Type</th>
-                  <th className="text-right px-4 py-2.5 font-medium">Tasks</th>
-                  <th className="text-right px-4 py-2.5 font-medium">Est. Hours</th>
-                  <th className="text-right px-4 py-2.5 font-medium">Est. Cost</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-cult-border">
-                {costByTaskType.map((c) => (
-                  <tr key={c.type} className="text-cult-text-secondary hover:bg-cult-surface-overlay/50 transition-colors">
-                    <td className="px-4 py-2.5 text-cult-text-primary">{TASK_TYPE_LABELS[c.type] ?? c.type}</td>
-                    <td className="text-right px-4 py-2.5">{c.tasks}</td>
-                    <td className="text-right px-4 py-2.5">{c.hours.toFixed(1)}</td>
-                    <td className="text-right px-4 py-2.5 font-medium text-cult-text-primary">${c.cost.toFixed(0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-cult-text-muted text-center py-4">No completed tasks for this date.</p>
-        )}
-      </div>
     </div>
   );
 }

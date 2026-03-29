@@ -67,6 +67,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date());
   const [calendarMode, setCalendarMode] = useState<'gantt' | 'month'>('gantt');
   const [editorState, setEditorState] = useState<{ roomId: string; roomCode: string } | null>(null);
+  const [filterUnconfigured, setFilterUnconfigured] = useState(false);
   const todayRef = useRef<HTMLTableCellElement>(null);
 
   const { schedules, createSchedule, updateSchedule, deleteSchedule, copySchedulesFromRoom } = useTaskSchedules();
@@ -137,11 +138,17 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
     }
   }, [month, year]);
 
+  // Filtered rooms when "unconfigured" filter is active
+  const displayRooms = useMemo(() => {
+    if (!filterUnconfigured) return sortedRooms;
+    return sortedRooms.filter((r) => (schedulesByRoom.get(r.id) ?? []).length === 0);
+  }, [sortedRooms, filterUnconfigured, schedulesByRoom]);
+
   // Group rooms by type for section headers
   const roomsByType = useMemo(() => {
     const groups: { type: string; meta: typeof ROOM_TYPE_META[string]; rooms: RoomCalendarRoom[] }[] = [];
     let currentType = '';
-    for (const room of sortedRooms) {
+    for (const room of displayRooms) {
       if (room.room_type !== currentType) {
         currentType = room.room_type;
         groups.push({ type: currentType, meta: ROOM_TYPE_META[currentType] ?? ROOM_TYPE_META.mixed, rooms: [] });
@@ -149,7 +156,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
       groups[groups.length - 1].rooms.push(room);
     }
     return groups;
-  }, [sortedRooms]);
+  }, [displayRooms]);
 
   return (
     <div className="space-y-5">
@@ -167,12 +174,23 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
         {unconfiguredRooms > 0 && (
           <>
             <div className="w-px h-6 bg-cult-dark-gray" />
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFilterUnconfigured((prev) => !prev)}
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-sm transition-all ${
+                filterUnconfigured
+                  ? 'bg-amber-950/60 border border-amber-700/50'
+                  : 'hover:bg-cult-charcoal/40'
+              }`}
+            >
               <AlertCircle className="w-4 h-4 text-amber-400" />
               <span className="text-xs text-amber-400 font-semibold">
                 {unconfiguredRooms} room{unconfiguredRooms !== 1 ? 's' : ''} with no schedule
               </span>
-            </div>
+              {filterUnconfigured && (
+                <X className="w-3 h-3 text-amber-400/60" />
+              )}
+            </button>
           </>
         )}
       </div>
@@ -409,15 +427,21 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                           }`}
                         >
                           {dots.length > 0 ? (
-                            <div className="flex flex-wrap justify-center gap-[3px] px-0.5">
-                              {dots.slice(0, 4).map((t) => (
-                                <span
-                                  key={t}
-                                  className="block w-[7px] h-[7px] rounded-full ring-1 ring-black/20"
-                                  style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                                  title={TASK_TYPE_CONFIG[t].label}
-                                />
-                              ))}
+                            <div className="flex flex-wrap justify-center gap-[2px] px-0.5">
+                              {dots.slice(0, 4).map((t) => {
+                                const cfg = TASK_TYPE_CONFIG[t];
+                                const initial = cfg.label.charAt(0).toUpperCase();
+                                return (
+                                  <span
+                                    key={t}
+                                    className="flex items-center justify-center w-[14px] h-[14px] rounded-sm text-[8px] font-bold leading-none"
+                                    style={{ backgroundColor: `${cfg.color}25`, color: cfg.color }}
+                                    title={cfg.label}
+                                  >
+                                    {initial}
+                                  </span>
+                                );
+                              })}
                             </div>
                           ) : hasSchedules ? (
                             /* Room has schedules but none fire on this day — subtle dash */
