@@ -278,20 +278,23 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
                 from { opacity: 0; transform: translateX(8px); }
                 to { opacity: 1; transform: translateX(0); }
               }
-              @keyframes roomDrawIn {
-                from { opacity: 0; transform: translateY(6px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              g[role="button"]:focus-visible .room-fill {
-                stroke: #FFFFFF;
-                stroke-width: 2;
-                stroke-opacity: 0.9;
-              }
             `}</style>
             <div className="w-1.5 h-1.5 rounded-full bg-cult-white animate-pulse" />
             <span className="text-cult-white font-mono text-[10px] font-bold tracking-wide">{selectedCode}</span>
           </div>
         )}
+        {/* Global keyframes — always rendered so draw-in animation works on load */}
+        <style>{`
+          @keyframes roomDrawIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          g[role="button"]:focus-visible .room-fill {
+            stroke: #FFFFFF;
+            stroke-width: 2;
+            stroke-opacity: 0.9;
+          }
+        `}</style>
       </div>
 
       {/* Hover tooltip — HTML overlay positioned by percentage */}
