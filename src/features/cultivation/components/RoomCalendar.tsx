@@ -65,7 +65,7 @@ function doesScheduleOccur(schedule: RoomTaskSchedule, date: Date): boolean {
 
 export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date());
-  const [calendarMode, setCalendarMode] = useState<'gantt' | 'month'>('gantt');
+  const [calendarMode, setCalendarMode] = useState<'gantt' | 'month'>('month');
   const [editorState, setEditorState] = useState<{ roomId: string; roomCode: string } | null>(null);
   const [filterUnconfigured, setFilterUnconfigured] = useState(false);
   const todayRef = useRef<HTMLTableCellElement>(null);

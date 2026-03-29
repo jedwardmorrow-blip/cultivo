@@ -27,12 +27,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
+import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
 import { RoomCalendar } from './RoomCalendar';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
+import type { RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { TaskCard } from './TaskCard';
 import type { TaskCardData, StaffOption } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
@@ -119,6 +121,7 @@ export function DailyTaskBoard() {
   const { tasks: dbTasks, completeWithLog, assignWorker, updateStatus, refetch: refetchTasks, createTask } = useDailyTasks(selectedDate);
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
   const { staff: activeStaff } = useActiveStaff();
+  const { rooms: opsRooms } = useRoomOperationalState();
 
   // Map DB staff to StaffMember shape — filter to cultivation roles only
   const cultivationStaff: StaffMember[] = useMemo(() => {
@@ -263,6 +266,7 @@ export function DailyTaskBoard() {
       {activeTab === 'board' && (
         <DailyBoardTab
           rooms={rooms}
+          opsRooms={opsRooms}
           staff={cultivationStaff}
           allStaff={allStaff}
           tasks={taskCards}
@@ -298,6 +302,7 @@ export function DailyTaskBoard() {
 
 interface DailyBoardTabProps {
   rooms: { id: string; name: string; room_type: RoomType; room_code: string }[];
+  opsRooms: RoomOperationalState[];
   staff: StaffMember[];
   allStaff: StaffMember[];
   tasks: TaskCardData[];
@@ -310,13 +315,20 @@ interface DailyBoardTabProps {
   onStartTask: (taskId: string) => Promise<void>;
 }
 
-function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
   const [showDeadPlantForm, setShowDeadPlantForm] = useState(false);
   const [deadPlantRoomId, setDeadPlantRoomId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
+
+  // ── Ops data lookup (for room context + urgency sorting) ──
+  const opsMap = useMemo(() => {
+    const map = new Map<string, RoomOperationalState>();
+    for (const ops of opsRooms) map.set(ops.room_code, ops);
+    return map;
+  }, [opsRooms]);
 
   // ── Task aggregation ──────────────────────────────────
   const stats = useMemo(() => {
@@ -391,9 +403,17 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
         });
       }
     }
-    entries.sort((a, b) => (ROOM_TYPE_ORDER[a.room.room_type] ?? 9) - (ROOM_TYPE_ORDER[b.room.room_type] ?? 9));
+    // Sort by room type group first, then urgency_score (highest first) within each group
+    entries.sort((a, b) => {
+      const typeA = ROOM_TYPE_ORDER[a.room.room_type] ?? 9;
+      const typeB = ROOM_TYPE_ORDER[b.room.room_type] ?? 9;
+      if (typeA !== typeB) return typeA - typeB;
+      const urgA = opsMap.get(a.room.room_code)?.urgency_score ?? 0;
+      const urgB = opsMap.get(b.room.room_code)?.urgency_score ?? 0;
+      return urgB - urgA; // higher urgency first
+    });
     return entries;
-  }, [rooms, tasksByRoom, tasks]);
+  }, [rooms, tasksByRoom, tasks, opsMap]);
 
   // Staff present count (cultivation only)
   const staffPresent = useMemo(() => {
@@ -517,10 +537,9 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
         </div>
       )}
 
-      {/* ── Staff Check-In (cultivation only, collapsed by default) ── */}
-      <WorkerCheckIn
+      {/* ── Inline Crew Strip ─────────────────────────────── */}
+      <InlineCrewStrip
         staff={staff}
-        rooms={rooms.map((r) => ({ id: r.id, room_code: r.room_code }))}
         attendance={attendance}
         date={date}
         onUpsertAttendance={onUpsertAttendance}
@@ -595,11 +614,36 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
                 } animate-fade-in`}
                 style={{ animationDelay: `${currentIndex * 50}ms`, animationFillMode: 'both' }}
               >
-                {/* Room Header */}
+                {/* Room Header — with operational context */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-                    <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>
+                    {(() => {
+                      const ops = opsMap.get(room.room_code);
+                      if (!ops) return <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>;
+                      return (
+                        <>
+                          <span className="text-[11px] text-cult-medium-gray font-mono">{ops.total_plants}p</span>
+                          {ops.dominant_stage && ops.days_in_stage != null && (
+                            <span className="text-[11px] text-cult-medium-gray font-mono">
+                              Day {ops.days_in_stage}
+                            </span>
+                          )}
+                          {ops.days_to_harvest != null && ops.days_to_harvest > 0 && (
+                            <span className={`text-[11px] font-mono font-semibold ${
+                              ops.days_to_harvest <= 7 ? 'text-amber-400' : 'text-cult-medium-gray'
+                            }`}>
+                              Harvest {ops.days_to_harvest}d
+                            </span>
+                          )}
+                          {(ops.urgency_score ?? 0) >= 70 && (
+                            <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider animate-pulse">
+                              URGENT
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -720,6 +764,65 @@ function DailyBoardTab({ rooms, staff, allStaff, tasks, attendance, date, onUpse
           onClose={() => setShowDeadPlantForm(false)}
         />
       )}
+    </div>
+  );
+}
+
+/* ── Inline Crew Strip ──────────────────────────────────── */
+
+function InlineCrewStrip({
+  staff,
+  attendance,
+  date,
+  onUpsertAttendance,
+}: {
+  staff: StaffMember[];
+  attendance: ReturnType<typeof useAttendance>['records'];
+  date: string;
+  onUpsertAttendance: (input: Parameters<ReturnType<typeof useAttendance>['upsertAttendance']>[0]) => Promise<void>;
+}) {
+  const presentIds = useMemo(() => new Set(attendance.filter((a) => a.is_present).map((a) => a.staff_id)), [attendance]);
+  const presentCount = staff.filter((s) => presentIds.has(s.id)).length;
+
+  function togglePresence(staffId: string) {
+    const current = presentIds.has(staffId);
+    onUpsertAttendance({ staff_id: staffId, date, is_present: !current, hours_worked: current ? 0 : 8 });
+  }
+
+  // Initials helper
+  function initials(name: string) {
+    const parts = name.trim().split(/\s+/);
+    return parts.length > 1 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
+  }
+
+  return (
+    <div className="bg-cult-near-black border border-cult-dark-gray px-4 py-2.5 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <span className="text-[10px] text-cult-medium-gray uppercase tracking-widest font-semibold flex-shrink-0">
+        Crew
+      </span>
+      <div className="flex items-center gap-1.5">
+        {staff.map((s) => {
+          const isPresent = presentIds.has(s.id);
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => togglePresence(s.id)}
+              title={`${s.first_name} — ${isPresent ? 'Present' : 'Absent'} (tap to toggle)`}
+              className={`relative w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-200 flex-shrink-0 ${
+                isPresent
+                  ? 'bg-green-900/50 text-green-300 ring-2 ring-green-500/70'
+                  : 'bg-cult-charcoal text-cult-medium-gray opacity-40 hover:opacity-70'
+              }`}
+            >
+              {initials(s.first_name)}
+            </button>
+          );
+        })}
+      </div>
+      <span className="text-xs text-cult-medium-gray flex-shrink-0 ml-auto font-mono">
+        {presentCount}/{staff.length}
+      </span>
     </div>
   );
 }
