@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList, Plus, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList, Plus, AlertCircle, Copy, Check } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useTaskSchedules } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
@@ -69,7 +69,7 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
   const [editorState, setEditorState] = useState<{ roomId: string; roomCode: string } | null>(null);
   const todayRef = useRef<HTMLTableCellElement>(null);
 
-  const { schedules, createSchedule, updateSchedule, deleteSchedule } = useTaskSchedules();
+  const { schedules, createSchedule, updateSchedule, deleteSchedule, copySchedulesFromRoom } = useTaskSchedules();
 
   const sortedRooms = useMemo(
     () => [...rooms].sort((a, b) => (ROOM_TYPE_ORDER[a.room_type] ?? 9) - (ROOM_TYPE_ORDER[b.room_type] ?? 9)),
@@ -268,6 +268,9 @@ export function RoomCalendar({ rooms }: RoomCalendarProps) {
           onCreate={createSchedule}
           onUpdate={updateSchedule}
           onDelete={deleteSchedule}
+          onCopyFromRoom={copySchedulesFromRoom}
+          allRooms={sortedRooms}
+          schedulesByRoom={schedulesByRoom}
         />
       )}
     </div>
@@ -574,11 +577,17 @@ interface ScheduleEditorDrawerProps {
   onCreate: (input: CreateTaskScheduleInput) => Promise<RoomTaskSchedule>;
   onUpdate: (id: string, input: Partial<RoomTaskSchedule>) => Promise<RoomTaskSchedule>;
   onDelete: (id: string) => Promise<void>;
+  onCopyFromRoom: (sourceRoomId: string, targetRoomId: string) => Promise<number>;
+  allRooms: RoomCalendarRoom[];
+  schedulesByRoom: Map<string, RoomTaskSchedule[]>;
 }
 
-function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, onUpdate, onDelete }: ScheduleEditorDrawerProps) {
+function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, onUpdate, onDelete, onCopyFromRoom, allRooms, schedulesByRoom }: ScheduleEditorDrawerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [showCopyPicker, setShowCopyPicker] = useState(false);
+  const [copying, setCopying] = useState(false);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   function startNew() {
     setEditingId(null);
@@ -617,35 +626,84 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
           <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
             {schedules.length} active schedule{schedules.length !== 1 ? 's' : ''}
           </span>
-          {!isNew && editingId === null && (
-            <button
-              type="button"
-              onClick={startNew}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-              Add
-            </button>
+          {!isNew && editingId === null && !showCopyPicker && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowCopyPicker(true)}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+              >
+                <Copy className="w-3 h-3" />
+                Copy
+              </button>
+              <button
+                type="button"
+                onClick={startNew}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                Add
+              </button>
+            </div>
           )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-          {schedules.length === 0 && !isNew && (
+          {schedules.length === 0 && !isNew && !showCopyPicker && (
             <div className="text-center py-10">
               <div className="w-12 h-12 mx-auto rounded-full bg-cult-charcoal/40 flex items-center justify-center mb-3">
                 <AlertCircle className="w-5 h-5 text-cult-dark-gray" />
               </div>
               <p className="text-sm text-cult-medium-gray">No schedules configured</p>
-              <p className="text-xs text-cult-dark-gray mt-1">Add a schedule to auto-generate daily tasks for this room</p>
-              <button
-                type="button"
-                onClick={startNew}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Create First Schedule
-              </button>
+              <p className="text-xs text-cult-dark-gray mt-1">Add a schedule or copy from another room</p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCopyPicker(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy from Room
+                </button>
+                <button
+                  type="button"
+                  onClick={startNew}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Create Manually
+                </button>
+              </div>
             </div>
+          )}
+
+          {showCopyPicker && (
+            <CopyFromRoomPicker
+              targetRoomId={roomId}
+              targetRoomCode={roomCode}
+              allRooms={allRooms}
+              schedulesByRoom={schedulesByRoom}
+              copying={copying}
+              copySuccess={copySuccess}
+              onCopy={async (sourceRoomId) => {
+                setCopying(true);
+                setCopySuccess(null);
+                try {
+                  const count = await onCopyFromRoom(sourceRoomId, roomId);
+                  const sourceRoom = allRooms.find((r) => r.id === sourceRoomId);
+                  setCopySuccess(`Copied ${count} schedule${count !== 1 ? 's' : ''} from ${sourceRoom?.room_code ?? 'room'}`);
+                  setTimeout(() => {
+                    setShowCopyPicker(false);
+                    setCopySuccess(null);
+                  }, 1500);
+                } catch {
+                  setCopySuccess('Failed to copy schedules');
+                } finally {
+                  setCopying(false);
+                }
+              }}
+              onCancel={() => { setShowCopyPicker(false); setCopySuccess(null); }}
+            />
           )}
 
           {schedules.map((s) => (
@@ -682,6 +740,109 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Copy from Room Picker
+   ═══════════════════════════════════════════════════════════════ */
+
+interface CopyFromRoomPickerProps {
+  targetRoomId: string;
+  targetRoomCode: string;
+  allRooms: RoomCalendarRoom[];
+  schedulesByRoom: Map<string, RoomTaskSchedule[]>;
+  copying: boolean;
+  copySuccess: string | null;
+  onCopy: (sourceRoomId: string) => void;
+  onCancel: () => void;
+}
+
+function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, schedulesByRoom, copying, copySuccess, onCopy, onCancel }: CopyFromRoomPickerProps) {
+  const roomsWithSchedules = allRooms.filter(
+    (r) => r.id !== targetRoomId && (schedulesByRoom.get(r.id) ?? []).length > 0
+  );
+
+  if (copySuccess) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-12 h-12 mx-auto rounded-full bg-green-950/60 flex items-center justify-center mb-3">
+          <Check className="w-6 h-6 text-green-400" />
+        </div>
+        <p className="text-sm font-semibold text-green-400">{copySuccess}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold text-sky-400 uppercase tracking-wider">Copy schedules to {targetRoomCode}</p>
+          <p className="text-xs text-cult-dark-gray mt-0.5">Select a source room below</p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-2.5 py-1 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+
+      {roomsWithSchedules.length === 0 ? (
+        <p className="text-xs text-cult-medium-gray py-4 text-center">No other rooms have schedules to copy from</p>
+      ) : (
+        <div className="space-y-1.5">
+          {roomsWithSchedules.map((room) => {
+            const roomSchedules = schedulesByRoom.get(room.id) ?? [];
+            const meta = ROOM_TYPE_META[room.room_type] ?? ROOM_TYPE_META.mixed;
+            return (
+              <button
+                key={room.id}
+                type="button"
+                disabled={copying}
+                onClick={() => onCopy(room.id)}
+                className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-sky-700/60 hover:bg-sky-950/10 p-3 transition-all disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.color }} />
+                    <span className="text-xs font-bold text-cult-white uppercase tracking-wider font-mono">{room.room_code}</span>
+                    <span className={`px-1.5 py-0.5 text-xs uppercase tracking-wider rounded-sm ${meta.bg} ${meta.border} border`} style={{ color: meta.color }}>
+                      {meta.label}
+                    </span>
+                  </div>
+                  <span className="text-xs text-cult-medium-gray">
+                    {roomSchedules.length} schedule{roomSchedules.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {roomSchedules.map((s) => {
+                    const cfg = TASK_TYPE_CONFIG[s.task_type] ?? TASK_TYPE_CONFIG.custom;
+                    return (
+                      <span
+                        key={s.id}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs rounded-sm"
+                        style={{ backgroundColor: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
+                        {cfg.label}
+                        <span className="text-cult-dark-gray ml-0.5">{s.recurrence === 'daily' ? 'D' : s.recurrence === 'weekly' ? 'W' : s.recurrence === 'biweekly' ? 'B' : 'M'}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {copying && (
+        <p className="text-xs text-sky-400 text-center animate-pulse">Copying schedules...</p>
+      )}
     </div>
   );
 }

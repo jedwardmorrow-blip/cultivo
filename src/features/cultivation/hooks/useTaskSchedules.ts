@@ -67,5 +67,36 @@ export function useTaskSchedules(roomId?: string) {
     await load();
   }
 
-  return { schedules, loading, error, refetch: load, createSchedule, updateSchedule, deleteSchedule };
+  async function copySchedulesFromRoom(sourceRoomId: string, targetRoomId: string): Promise<number> {
+    const { data: sourceSchedules, error: fetchErr } = await supabase
+      .from('room_task_schedules')
+      .select('task_type, recurrence, day_of_week, default_config, scope, priority, notes')
+      .eq('room_id', sourceRoomId)
+      .eq('is_active', true);
+    if (fetchErr) throw fetchErr;
+    if (!sourceSchedules || sourceSchedules.length === 0) return 0;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = sourceSchedules.map((s) => ({
+      room_id: targetRoomId,
+      task_type: s.task_type,
+      recurrence: s.recurrence,
+      day_of_week: s.day_of_week,
+      default_config: s.default_config ?? {},
+      scope: s.scope ?? 'single_day',
+      priority: s.priority ?? 'medium',
+      notes: s.notes,
+      start_date: today,
+      is_active: true,
+    }));
+
+    const { error: insertErr } = await supabase
+      .from('room_task_schedules')
+      .insert(rows);
+    if (insertErr) throw insertErr;
+    await load();
+    return rows.length;
+  }
+
+  return { schedules, loading, error, refetch: load, createSchedule, updateSchedule, deleteSchedule, copySchedulesFromRoom };
 }

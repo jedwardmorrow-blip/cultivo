@@ -40,11 +40,10 @@ import { DeadPlantForm } from './DeadPlantForm';
 import { todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_DOT } from '../constants/stageColors';
 
-type TabId = 'calendar' | 'board' | 'types' | 'workers';
+type TabId = 'board' | 'types' | 'workers';
 
 const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
   { id: 'board', label: 'Daily Board', icon: ClipboardList },
-  { id: 'calendar', label: 'Schedule', icon: Calendar },
   { id: 'types', label: 'Task Types', icon: Layers },
   { id: 'workers', label: 'Workers', icon: Users },
 ];
@@ -261,7 +260,6 @@ export function DailyTaskBoard() {
         </div>
       </div>
 
-      {activeTab === 'calendar' && <RoomCalendar rooms={rooms} />}
       {activeTab === 'board' && (
         <DailyBoardTab
           rooms={rooms}
