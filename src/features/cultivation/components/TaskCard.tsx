@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2 } from 'lucide-react';
+import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus } from '../types';
 
@@ -42,12 +42,16 @@ interface TaskCardProps {
   onQuickAssign?: (taskId: string, staffId: string) => void;
   /** Callback to transition task to in_progress */
   onStartTask?: (taskId: string) => void;
+  /** Callback to skip this task */
+  onSkipTask?: (taskId: string) => void;
+  /** Callback to carry this task forward to next day */
+  onCarryForward?: (taskId: string) => void;
 }
 
 const SWIPE_THRESHOLD = 80; // px needed to trigger action
 const SWIPE_MAX = 120; // max visual offset
 
-export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, onQuickAssign, onStartTask }: TaskCardProps) {
+export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, onQuickAssign, onStartTask, onSkipTask, onCarryForward }: TaskCardProps) {
   const config = TASK_TYPE_CONFIG[task.task_type] ?? TASK_TYPE_CONFIG.custom;
   const statusStyle = STATUS_STYLES[task.status] ?? STATUS_STYLES.pending;
   const isCarried = task.status === 'carry_forward';
@@ -224,9 +228,37 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           )}
         </button>
 
-        {/* Quick-start button — one tap to move pending → in_progress */}
+        {/* Quick-start + skip/carry buttons — pending tasks */}
         {isPending && onStartTask && (
-          <div className="absolute bottom-2 right-3 z-10">
+          <div className="absolute bottom-2 right-3 z-10 flex items-center gap-1">
+            {onSkipTask && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSkipTask(task.id);
+                }}
+                className="flex items-center gap-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 hover:border-zinc-600 rounded-md transition-colors min-h-[36px]"
+                title="Skip this task"
+              >
+                <SkipForward className="w-3 h-3" />
+                Skip
+              </button>
+            )}
+            {onCarryForward && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCarryForward(task.id);
+                }}
+                className="flex items-center gap-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80 bg-amber-950/40 border border-amber-800/30 hover:bg-amber-950/70 hover:border-amber-700 rounded-md transition-colors min-h-[36px]"
+                title="Carry forward to next day"
+              >
+                <FastForward className="w-3 h-3" />
+                Defer
+              </button>
+            )}
             <button
               type="button"
               disabled={starting}

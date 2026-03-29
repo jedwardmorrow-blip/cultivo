@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList, Plus, AlertCircle, Copy, Check } from 'lucide-react';
 import { Button } from '@/shared/components';
-import { useTaskSchedules } from '../hooks';
+import { useTaskSchedules, useScheduleTemplates } from '../hooks';
+import type { ScheduleTemplate } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput } from '../types';
 import type { RoomType } from '../types';
@@ -738,8 +739,16 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [showCopyPicker, setShowCopyPicker] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+
+  // Template support
+  const roomType = allRooms.find((r) => r.id === roomId)?.room_type ?? 'flower';
+  const { templates, applyTemplate, saveAsTemplate } = useScheduleTemplates();
+  const [templateApplying, setTemplateApplying] = useState(false);
+  const [savingAsTemplate, setSavingAsTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
   function startNew() {
     setEditingId(null);
@@ -778,8 +787,15 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
           <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
             {schedules.length} active schedule{schedules.length !== 1 ? 's' : ''}
           </span>
-          {!isNew && editingId === null && !showCopyPicker && (
+          {!isNew && editingId === null && !showCopyPicker && !showTemplatePicker && (
             <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowTemplatePicker(true)}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+              >
+                Template
+              </button>
               <button
                 type="button"
                 onClick={() => setShowCopyPicker(true)}
@@ -801,30 +817,41 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-          {schedules.length === 0 && !isNew && !showCopyPicker && (
+          {schedules.length === 0 && !isNew && !showCopyPicker && !showTemplatePicker && (
             <div className="text-center py-10">
               <div className="w-12 h-12 mx-auto rounded-full bg-cult-charcoal/40 flex items-center justify-center mb-3">
                 <AlertCircle className="w-5 h-5 text-cult-dark-gray" />
               </div>
               <p className="text-sm text-cult-medium-gray">No schedules configured</p>
-              <p className="text-xs text-cult-dark-gray mt-1">Add a schedule or copy from another room</p>
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCopyPicker(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  Copy from Room
-                </button>
-                <button
-                  type="button"
-                  onClick={startNew}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Create Manually
-                </button>
+              <p className="text-xs text-cult-dark-gray mt-1">Apply a template, copy from another room, or create manually</p>
+              <div className="mt-4 flex flex-col items-center gap-2">
+                {templates.filter((t) => t.room_type === roomType).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplatePicker(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors w-52"
+                  >
+                    Apply Template
+                  </button>
+                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCopyPicker(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy from Room
+                  </button>
+                  <button
+                    type="button"
+                    onClick={startNew}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Create Manually
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -855,6 +882,27 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
                 }
               }}
               onCancel={() => { setShowCopyPicker(false); setCopySuccess(null); }}
+            />
+          )}
+
+          {/* Template Picker */}
+          {showTemplatePicker && (
+            <TemplatePicker
+              templates={templates}
+              roomType={roomType}
+              applying={templateApplying}
+              onApply={async (templateId) => {
+                setTemplateApplying(true);
+                try {
+                  const todayStr = new Date().toISOString().slice(0, 10);
+                  await applyTemplate(templateId, roomId, todayStr);
+                  setShowTemplatePicker(false);
+                  // Schedules will refresh via parent re-render
+                } finally {
+                  setTemplateApplying(false);
+                }
+              }}
+              onCancel={() => setShowTemplatePicker(false)}
             />
           )}
 
@@ -889,6 +937,66 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
               }}
               onCancel={stopEdit}
             />
+          )}
+
+          {/* Save as Template — show when room has schedules and nothing else is open */}
+          {schedules.length > 0 && !isNew && !editingId && !showCopyPicker && !showTemplatePicker && (
+            <div className="border-t border-cult-dark-gray/50 pt-3 mt-4">
+              {savingAsTemplate ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="Template name..."
+                    className="w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm px-3 py-2 rounded-sm focus:outline-none focus:border-cult-accent"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={!templateName.trim()}
+                      onClick={async () => {
+                        await saveAsTemplate(
+                          templateName.trim(),
+                          null,
+                          roomType,
+                          schedules.map((s) => ({
+                            task_type: s.task_type,
+                            recurrence: s.recurrence,
+                            day_of_week: s.day_of_week,
+                            priority: s.priority,
+                            notes: s.notes,
+                          }))
+                        );
+                        setSavingAsTemplate(false);
+                        setTemplateName('');
+                      }}
+                      className="flex-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 disabled:opacity-30 rounded-sm transition-colors"
+                    >
+                      <Save className="w-3 h-3 inline mr-1" />
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setSavingAsTemplate(false); setTemplateName(''); }}
+                      className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray rounded-sm transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSavingAsTemplate(true)}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-white border border-dashed border-cult-dark-gray hover:border-cult-medium-gray rounded-sm transition-colors"
+                >
+                  <Save className="w-3 h-3" />
+                  Save as Template
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -994,6 +1102,107 @@ function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, schedulesB
 
       {copying && (
         <p className="text-xs text-sky-400 text-center animate-pulse">Copying schedules...</p>
+      )}
+    </div>
+  );
+}
+
+/* ── Template Picker ───────────────────────────────────── */
+
+function TemplatePicker({
+  templates,
+  roomType,
+  applying,
+  onApply,
+  onCancel,
+}: {
+  templates: ScheduleTemplate[];
+  roomType: string;
+  applying: boolean;
+  onApply: (templateId: string) => void;
+  onCancel: () => void;
+}) {
+  // Show matching room type first, then all others
+  const matchingTemplates = templates.filter((t) => t.room_type === roomType);
+  const otherTemplates = templates.filter((t) => t.room_type !== roomType);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Apply Template</p>
+          <p className="text-xs text-cult-dark-gray mt-0.5">Select a template to apply its schedules</p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-2.5 py-1 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+
+      {matchingTemplates.length === 0 && otherTemplates.length === 0 ? (
+        <p className="text-xs text-cult-medium-gray py-4 text-center">No templates available yet. Create schedules and save them as a template.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {[...matchingTemplates, ...otherTemplates].map((tmpl) => {
+            const isMatch = tmpl.room_type === roomType;
+            return (
+              <button
+                key={tmpl.id}
+                type="button"
+                disabled={applying}
+                onClick={() => onApply(tmpl.id)}
+                className={`w-full text-left border p-3 transition-all disabled:opacity-50 ${
+                  isMatch
+                    ? 'bg-amber-950/10 border-amber-800/40 hover:border-amber-600/60 hover:bg-amber-950/20'
+                    : 'bg-cult-charcoal/30 border-cult-dark-gray/60 hover:border-cult-medium-gray hover:bg-cult-charcoal/50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-cult-white">{tmpl.name}</span>
+                    {tmpl.is_default && (
+                      <span className="text-[9px] text-amber-400 uppercase font-bold px-1 py-0.5 bg-amber-950/50 border border-amber-800/30 rounded-sm">
+                        Default
+                      </span>
+                    )}
+                    {isMatch && (
+                      <span className="text-[9px] text-green-400 uppercase font-bold px-1 py-0.5 bg-green-950/50 border border-green-800/30 rounded-sm">
+                        Match
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-cult-dark-gray uppercase">{tmpl.room_type}</span>
+                </div>
+                {tmpl.description && (
+                  <p className="text-[11px] text-cult-medium-gray mb-2">{tmpl.description}</p>
+                )}
+                <div className="flex flex-wrap gap-1">
+                  {tmpl.schedules.map((s, i) => {
+                    const cfg = TASK_TYPE_CONFIG[s.task_type] ?? TASK_TYPE_CONFIG.custom;
+                    return (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-sm"
+                        style={{ backgroundColor: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
+                        {cfg.label}
+                        <span className="opacity-50">{s.recurrence === 'daily' ? 'D' : s.recurrence === 'weekly' ? 'W' : s.recurrence === 'biweekly' ? 'B' : 'M'}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {applying && (
+        <p className="text-xs text-amber-400 text-center animate-pulse">Applying template...</p>
       )}
     </div>
   );

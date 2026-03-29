@@ -27,3 +27,5 @@ export type { HarvestMetricRow, StrainAggregate, RoomAggregate, HarvestTotals } 
 export { useFreshFrozenPackages } from './useFreshFrozenPackages';
 export { useRoomOperationalState } from './useRoomOperationalState';
 export type { RoomOperationalState } from './useRoomOperationalState';
+export { useScheduleTemplates } from './useScheduleTemplates';
+export type { ScheduleTemplate, TemplateScheduleItem, CreateTemplateInput } from './useScheduleTemplates';

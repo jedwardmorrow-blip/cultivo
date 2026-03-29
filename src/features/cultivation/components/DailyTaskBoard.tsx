@@ -286,6 +286,12 @@ export function DailyTaskBoard() {
           onStartTask={async (taskId) => {
             await updateStatus(taskId, 'in_progress');
           }}
+          onSkipTask={async (taskId) => {
+            await updateStatus(taskId, 'skipped');
+          }}
+          onCarryForward={async (taskId) => {
+            await updateStatus(taskId, 'carry_forward');
+          }}
         />
       )}
       {activeTab === 'types' && <TaskTypesTab />}
@@ -313,9 +319,11 @@ interface DailyBoardTabProps {
   onCreateTask: (input: { room_id: string; task_type: string; assigned_to?: string | null; notes?: string | null; task_date: string }) => Promise<void>;
   onAssignWorker: (taskId: string, staffId: string) => Promise<void>;
   onStartTask: (taskId: string) => Promise<void>;
+  onSkipTask: (taskId: string) => Promise<void>;
+  onCarryForward: (taskId: string) => Promise<void>;
 }
 
-function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask, onSkipTask, onCarryForward }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
@@ -545,28 +553,32 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
         onUpsertAttendance={onUpsertAttendance}
       />
 
-      {/* ── Empty State ──────────────────────────────────── */}
+      {/* ── Empty State — Coaching-style ─────────────────── */}
       {hasNoTasks && (
-        <div className="border border-dashed border-cult-dark-gray py-16 flex flex-col items-center gap-4">
+        <div className="border border-dashed border-cult-dark-gray py-12 px-6 flex flex-col items-center gap-5">
           <div className="w-14 h-14 rounded-full bg-cult-charcoal flex items-center justify-center">
             <ClipboardList className="w-6 h-6 text-cult-medium-gray" />
           </div>
-          <div className="text-center">
+          <div className="text-center max-w-md">
             <p className="text-sm text-cult-light-gray font-medium">No tasks scheduled for this day</p>
-            <p className="text-xs text-cult-medium-gray mt-1 max-w-xs">
-              Tasks are auto-generated from room schedules, or you can add one manually.
+            <p className="text-xs text-cult-medium-gray mt-2 leading-relaxed">
+              Tasks are auto-generated daily at midnight from room schedules.
+              Set up recurring schedules in the Schedule tab, or add a one-off task below.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors min-w-[160px] justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
-              Add Task
+              Add Task Now
             </button>
           </div>
+          <p className="text-[10px] text-cult-dark-gray mt-1">
+            Tip: Use templates in the Schedule tab to quickly apply standard schedules to new rooms
+          </p>
         </div>
       )}
 
@@ -669,7 +681,15 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {/* Batch assign — only show when there are unassigned active tasks */}
+                      {activeTasks.filter((t) => !t.assigned_to).length > 0 && (
+                        <BatchAssignButton
+                          unassignedTasks={activeTasks.filter((t) => !t.assigned_to)}
+                          staffOptions={quickAssignStaff}
+                          onAssign={onAssignWorker}
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => openDeadPlantForm(room.id)}
@@ -701,6 +721,8 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                         staffOptions={quickAssignStaff}
                         onQuickAssign={onAssignWorker}
                         onStartTask={onStartTask}
+                        onSkipTask={onSkipTask}
+                        onCarryForward={onCarryForward}
                       />
                     ))}
                   </div>
@@ -763,6 +785,77 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
           onComplete={() => setShowDeadPlantForm(false)}
           onClose={() => setShowDeadPlantForm(false)}
         />
+      )}
+    </div>
+  );
+}
+
+/* ── Batch Assign Button ───────────────────────────────── */
+
+function BatchAssignButton({
+  unassignedTasks,
+  staffOptions,
+  onAssign,
+}: {
+  unassignedTasks: TaskCardData[];
+  staffOptions: StaffOption[];
+  onAssign: (taskId: string, staffId: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+
+  async function handleAssignAll(staffId: string) {
+    setAssigning(true);
+    try {
+      for (const task of unassignedTasks) {
+        await onAssign(task.id, staffId);
+      }
+    } finally {
+      setAssigning(false);
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-amber-400/70 hover:text-amber-400 active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
+        title={`Batch assign ${unassignedTasks.length} unassigned task${unassignedTasks.length !== 1 ? 's' : ''}`}
+      >
+        <Users className="w-4 h-4" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-30 bg-cult-near-black border border-cult-dark-gray shadow-xl min-w-[180px] py-1 animate-fade-in">
+          <div className="px-3 py-1.5 border-b border-cult-dark-gray/50">
+            <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+              Assign {unassignedTasks.length} task{unassignedTasks.length !== 1 ? 's' : ''} to:
+            </span>
+          </div>
+          {staffOptions.filter((s) => s.is_present).length === 0 ? (
+            <p className="px-3 py-2 text-xs text-cult-medium-gray italic">No crew present</p>
+          ) : (
+            staffOptions.filter((s) => s.is_present).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                disabled={assigning}
+                onClick={() => handleAssignAll(s.id)}
+                className="w-full text-left px-3 py-2 text-xs text-cult-light-gray hover:bg-cult-charcoal/50 hover:text-cult-white transition-colors disabled:opacity-40 flex items-center gap-2"
+              >
+                <span className="w-6 h-6 rounded-full bg-green-900/50 text-green-300 ring-1 ring-green-500/50 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                  {s.first_name.slice(0, 2).toUpperCase()}
+                </span>
+                {s.first_name}
+              </button>
+            ))
+          )}
+          {assigning && (
+            <div className="px-3 py-1.5 text-[10px] text-amber-400 animate-pulse text-center">Assigning...</div>
+          )}
+        </div>
       )}
     </div>
   );
