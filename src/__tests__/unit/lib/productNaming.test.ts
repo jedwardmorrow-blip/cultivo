@@ -58,14 +58,14 @@ describe('standardizeProductName', () => {
   });
 
   describe('Bucked items', () => {
-    it('should standardize bucked flower', () => {
+    it('should standardize bucked flower to Convention A hybrid format', () => {
       const result = standardizeProductName('Bucked Flower', 'Flower - Bucked', 'Test Strain');
-      expect(result).toBe('Bucked - Test Strain - Flower');
+      expect(result).toBe('Bulk - Test Strain - Flower (Bucked)');
     });
 
-    it('should standardize bucked smalls', () => {
+    it('should standardize bucked smalls to Convention A hybrid format', () => {
       const result = standardizeProductName('Bucked Smalls', 'Flower - Bucked', 'Test Strain');
-      expect(result).toBe('Bucked - Test Strain - Smalls');
+      expect(result).toBe('Bulk - Test Strain - Smalls (Bucked)');
     });
   });
 

@@ -57,60 +57,83 @@ describe('conversions.service', () => {
   // =====================================================
 
   describe('getCategoryFromProductName', () => {
-    it('"Binned - Test Strain - Flower" maps to Binned category', () => {
-      expect(getCategoryFromProductName('Binned - Test Strain - Flower')).toBe('Binned');
+    // Returns snake_case categories matching chk_inventory_category_valid:
+    // flower_binned, flower_bucked, flower_bulk, flower_packaged,
+    // smalls_bucked, smalls_bulk, trim_bulk, binned, fresh_frozen,
+    // rosin_badder, rosin_jam, rosin_aio
+
+    it('"Binned - Test Strain - Flower" maps to flower_binned', () => {
+      expect(getCategoryFromProductName('Binned - Test Strain - Flower')).toBe('flower_binned');
     });
 
-    it('"Bulk Flower (Bucked)" maps to Bucked category', () => {
-      expect(getCategoryFromProductName('Bulk Flower (Bucked)')).toBe('Bucked');
+    it('"Bulk Flower (Bucked)" maps to flower_bucked', () => {
+      expect(getCategoryFromProductName('Bulk Flower (Bucked)')).toBe('flower_bucked');
     });
 
-    it('"Bucked - Blue Pave - Flower" maps to Bucked category', () => {
-      expect(getCategoryFromProductName('Bucked - Blue Pave - Flower')).toBe('Bucked');
+    it('"Bucked - Blue Pave - Flower" maps to flower_bucked', () => {
+      expect(getCategoryFromProductName('Bucked - Blue Pave - Flower')).toBe('flower_bucked');
     });
 
-    it('"Bulk - Test Strain - Flower" maps to Bulk category', () => {
-      expect(getCategoryFromProductName('Bulk - Test Strain - Flower')).toBe('Bulk');
+    it('"Bulk - Test Strain - Flower" maps to flower_bulk', () => {
+      expect(getCategoryFromProductName('Bulk - Test Strain - Flower')).toBe('flower_bulk');
     });
 
-    it('"Bulk - Test Strain - Smalls" maps to Bulk category', () => {
-      expect(getCategoryFromProductName('Bulk - Test Strain - Smalls')).toBe('Bulk');
+    it('"Bulk - Test Strain - Smalls" maps to smalls_bulk', () => {
+      expect(getCategoryFromProductName('Bulk - Test Strain - Smalls')).toBe('smalls_bulk');
     });
 
-    it('"Bulk Flower (Trimmed)" maps to Bulk category', () => {
-      expect(getCategoryFromProductName('Bulk Flower (Trimmed)')).toBe('Bulk');
+    it('"Bulk Flower (Trimmed)" maps to flower_bulk', () => {
+      expect(getCategoryFromProductName('Bulk Flower (Trimmed)')).toBe('flower_bulk');
     });
 
-    it('"Packaged - Z Marker - 3.5g" maps to Packaged category', () => {
-      expect(getCategoryFromProductName('Packaged - Z Marker - 3.5g')).toBe('Packaged');
+    it('"Packaged - Z Marker - 3.5g" maps to flower_packaged', () => {
+      expect(getCategoryFromProductName('Packaged - Z Marker - 3.5g')).toBe('flower_packaged');
     });
 
-    it('"Packaged - Z Marker - 14g" maps to Packaged category', () => {
-      expect(getCategoryFromProductName('Packaged - Z Marker - 14g')).toBe('Packaged');
+    it('"Packaged - Z Marker - 14g" maps to flower_packaged', () => {
+      expect(getCategoryFromProductName('Packaged - Z Marker - 14g')).toBe('flower_packaged');
     });
 
-    it('"1lb Flower/Smalls - Test Strain" (454g retail unit) maps to Packaged category', () => {
-      expect(getCategoryFromProductName('1lb Flower/Smalls - Test Strain')).toBe('Packaged');
+    it('"1lb Flower/Smalls - Test Strain" (454g retail unit) maps to smalls_packaged', () => {
+      // Contains "Smalls" so type resolves to smalls, stage resolves to packaged via "1lb"
+      expect(getCategoryFromProductName('1lb Flower/Smalls - Test Strain')).toBe('smalls_packaged');
     });
 
-    it('"454g - Test Strain - Flower" maps to Packaged category', () => {
-      expect(getCategoryFromProductName('454g - Test Strain - Flower')).toBe('Packaged');
+    it('"454g - Test Strain - Flower" maps to flower_packaged', () => {
+      expect(getCategoryFromProductName('454g - Test Strain - Flower')).toBe('flower_packaged');
     });
 
-    it('Packaged check precedes Bulk check — "Packaged Bulk Bag - Test" maps to Packaged not Bulk', () => {
+    it('Packaged check precedes Bulk check — "Packaged Bulk Bag - Test" maps to flower_packaged not flower_bulk', () => {
       // Edge case: a product name that contains both "packaged" and "bulk"
-      // Must resolve to Packaged due to ordering in the function
-      expect(getCategoryFromProductName('Packaged Bulk Bag - Test')).toBe('Packaged');
+      // Must resolve to packaged due to ordering in the function
+      expect(getCategoryFromProductName('Packaged Bulk Bag - Test')).toBe('flower_packaged');
     });
 
-    it('unknown product name defaults to Bulk to ensure visibility in inventory UI', () => {
-      expect(getCategoryFromProductName('Unknown Product Type - XYZ')).toBe('Bulk');
+    it('unknown product name defaults to flower_bulk to ensure visibility in inventory UI', () => {
+      expect(getCategoryFromProductName('Unknown Product Type - XYZ')).toBe('flower_bulk');
     });
 
     it('is case-insensitive', () => {
-      expect(getCategoryFromProductName('PACKAGED - TEST - 3.5G')).toBe('Packaged');
-      expect(getCategoryFromProductName('bulk - test - flower')).toBe('Bulk');
-      expect(getCategoryFromProductName('BUCKED - TEST')).toBe('Bucked');
+      expect(getCategoryFromProductName('PACKAGED - TEST - 3.5G')).toBe('flower_packaged');
+      expect(getCategoryFromProductName('bulk - test - flower')).toBe('flower_bulk');
+      expect(getCategoryFromProductName('BUCKED - TEST')).toBe('flower_bucked');
+    });
+
+    // Specialty types
+    it('"Fresh Frozen - Test Strain" maps to fresh_frozen', () => {
+      expect(getCategoryFromProductName('Fresh Frozen - Test Strain')).toBe('fresh_frozen');
+    });
+
+    it('"Bulk - Test Strain - Trim" maps to trim_bulk', () => {
+      expect(getCategoryFromProductName('Bulk - Test Strain - Trim')).toBe('trim_bulk');
+    });
+
+    it('"Bulk - Test Strain - Smalls (Bucked)" maps to smalls_bucked', () => {
+      expect(getCategoryFromProductName('Bulk - Test Strain - Smalls (Bucked)')).toBe('smalls_bucked');
+    });
+
+    it('standalone binned without type suffix maps to binned', () => {
+      expect(getCategoryFromProductName('Animal Tsunami - Binned')).toBe('binned');
     });
   });
 

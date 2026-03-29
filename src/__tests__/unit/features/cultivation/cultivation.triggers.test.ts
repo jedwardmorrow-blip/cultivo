@@ -631,21 +631,24 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
   // ===========================================================================
 
   describe('T11 — Unbinned harvest sessions list', () => {
-    it('first queries binning_sessions to get binned harvest IDs', async () => {
-      const mockOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
-      const mockNotFilter = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockEqFilter = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter, not: mockNotFilter, order: mockOrder });
-      const mockSelectBinned = vi.fn().mockReturnValue({
-        not: vi.fn().mockResolvedValue(mockSupabaseSuccess([])),
-      });
+    // Implementation uses Promise.all to run both queries concurrently:
+    //   binning_sessions: .select('harvest_session_id').not('session_status', 'eq', 'cancelled')
+    //   harvest_sessions: .select(...).in('session_status', ['completed', 'finalized']).order(...)
 
-      let callIdx = 0;
+    function mockUnbinnedQueries(binnedResult: unknown, harvestResult: unknown) {
       (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
-        callIdx++;
-        if (table === 'binning_sessions') return { select: mockSelectBinned };
-        return { select: mockSelectHarvest };
+        if (table === 'binning_sessions') {
+          const mockNot = vi.fn().mockResolvedValue(binnedResult);
+          return { select: vi.fn().mockReturnValue({ not: mockNot }) };
+        }
+        const mockOrder = vi.fn().mockResolvedValue(harvestResult);
+        const mockIn = vi.fn().mockReturnValue({ order: mockOrder });
+        return { select: vi.fn().mockReturnValue({ in: mockIn }) };
       });
+    }
+
+    it('first queries binning_sessions to get binned harvest IDs', async () => {
+      mockUnbinnedQueries(mockSupabaseSuccess([]), mockSupabaseSuccess([]));
 
       await cultivationService.listUnbinnedHarvestSessions();
 
@@ -654,17 +657,7 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
     });
 
     it('when no binned sessions exist, queries all completed harvest sessions', async () => {
-      const mockOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess([mockCompletedHarvest]));
-      const mockEqFilter = vi.fn().mockReturnValue({ order: mockOrder });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter, order: mockOrder });
-      const mockSelectBinned = vi.fn().mockReturnValue({
-        not: vi.fn().mockResolvedValue(mockSupabaseSuccess([])),
-      });
-
-      (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
-        if (table === 'binning_sessions') return { select: mockSelectBinned };
-        return { select: mockSelectHarvest };
-      });
+      mockUnbinnedQueries(mockSupabaseSuccess([]), mockSupabaseSuccess([mockCompletedHarvest]));
 
       const result = await cultivationService.listUnbinnedHarvestSessions();
 
@@ -678,18 +671,7 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
         { ...mockCompletedHarvest, id: 'hs-binned-001' },
         { ...mockCompletedHarvest, id: 'hs-unbinned-002' },
       ];
-      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess(allHarvests));
-      const mockNotIs = vi.fn().mockReturnValue({ order: mockOrderFinal });
-      const mockEqFilter = vi.fn().mockReturnValue({ not: mockNotIs, order: mockOrderFinal });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter });
-      const mockSelectBinned = vi.fn().mockReturnValue({
-        not: vi.fn().mockResolvedValue(mockSupabaseSuccess(binnedIds)),
-      });
-
-      (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
-        if (table === 'binning_sessions') return { select: mockSelectBinned };
-        return { select: mockSelectHarvest };
-      });
+      mockUnbinnedQueries(mockSupabaseSuccess(binnedIds), mockSupabaseSuccess(allHarvests));
 
       const result = await cultivationService.listUnbinnedHarvestSessions();
 
@@ -700,18 +682,7 @@ describe('Cultivation trigger invariants — service-layer contracts', () => {
     it('returns empty list when all harvests are already binned', async () => {
       const binnedIds = [{ harvest_session_id: 'hs-001' }];
       const allHarvests = [{ ...mockCompletedHarvest, id: 'hs-001' }];
-      const mockOrderFinal = vi.fn().mockResolvedValue(mockSupabaseSuccess(allHarvests));
-      const mockNotIs = vi.fn().mockReturnValue({ order: mockOrderFinal });
-      const mockEqFilter = vi.fn().mockReturnValue({ not: mockNotIs, order: mockOrderFinal });
-      const mockSelectHarvest = vi.fn().mockReturnValue({ eq: mockEqFilter });
-      const mockSelectBinned = vi.fn().mockReturnValue({
-        not: vi.fn().mockResolvedValue(mockSupabaseSuccess(binnedIds)),
-      });
-
-      (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
-        if (table === 'binning_sessions') return { select: mockSelectBinned };
-        return { select: mockSelectHarvest };
-      });
+      mockUnbinnedQueries(mockSupabaseSuccess(binnedIds), mockSupabaseSuccess(allHarvests));
 
       const result = await cultivationService.listUnbinnedHarvestSessions();
 

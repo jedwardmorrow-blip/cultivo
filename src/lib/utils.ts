@@ -71,7 +71,9 @@ export function validateDate(dateString: string): { isValid: boolean; error?: st
     return { isValid: true };
   }
 
-  const date = new Date(dateString);
+  // Append time to avoid UTC-to-local timezone shift on date-only strings
+  // e.g. new Date('2020-01-01') parses as UTC midnight, which becomes 2019-12-31 in US timezones
+  const date = new Date(dateString + 'T00:00:00');
   const year = date.getFullYear();
   const currentYear = new Date().getFullYear();
 

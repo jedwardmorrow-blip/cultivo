@@ -176,7 +176,7 @@ describe('ordersDataService — status transitions', () => {
   });
 
   describe('updateDeliveryDate', () => {
-    it('updates the requested_delivery_date field', async () => {
+    it('updates both requested_delivery_date and scheduled_delivery_date', async () => {
       const newDate = '2026-03-15';
       mockClient.mocks.eq.mockResolvedValueOnce(mockSupabaseSuccess(null));
 
@@ -184,6 +184,7 @@ describe('ordersDataService — status transitions', () => {
 
       expect(mockClient.mocks.update).toHaveBeenCalledWith({
         requested_delivery_date: newDate,
+        scheduled_delivery_date: newDate,
       });
     });
   });
