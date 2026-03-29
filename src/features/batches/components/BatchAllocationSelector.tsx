@@ -37,7 +37,7 @@ export function BatchAllocationSelector({
     try {
       setLoading(true);
       // Only show batches that have progressed past harvest and are allocatable
-      const ALLOCATABLE_STAGES = ['bucking', 'trimming', 'bulk', 'packaging', 'packaged', 'fresh_frozen', 'lab'];
+      const ALLOCATABLE_STAGES = ['bucked', 'in_trim', 'bulk_available', 'in_packaging', 'packaged', 'fresh_frozen', 'lab'];
       const allBatches = await batchService.fetchBatchWithCOAStatus();
       const strainBatches = allBatches.filter(
         b => b.strain === strain

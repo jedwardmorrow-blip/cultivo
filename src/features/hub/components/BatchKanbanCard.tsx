@@ -30,11 +30,11 @@ function getNextPredictedWeight(p: BatchPrediction | undefined, state: string): 
       return p.predicted_wet;
     case 'drying':
       return p.actual_wet ?? p.predicted_wet;
-    case 'bucking':
+    case 'bucked':
       return p.actual_dry ?? p.predicted_dry;
-    case 'trimming':
+    case 'in_trim':
       return p.actual_bucked ?? p.predicted_bucked;
-    case 'bulk': case 'packaging': case 'packaged':
+    case 'bulk_available': case 'in_packaging': case 'packaged':
       return p.actual_trimmed ?? p.predicted_trimmed;
     default:
       return null;

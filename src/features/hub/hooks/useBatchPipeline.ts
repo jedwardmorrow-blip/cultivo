@@ -47,10 +47,10 @@ const STAGE_LABELS: Record<BatchLifecycleState, string> = {
   veg: 'Veg',
   flower: 'Flower',
   drying: 'Drying',
-  bucking: 'Bucking',
-  trimming: 'Trimming',
-  bulk: 'Bulk',
-  packaging: 'Packaging',
+  bucked: 'Bucking',
+  in_trim: 'Trimming',
+  bulk_available: 'Bulk',
+  in_packaging: 'Packaging',
   packaged: 'Packaged',
   fresh_frozen: 'Fresh Frozen',
   lab: 'Lab',
@@ -65,9 +65,9 @@ function getStageEntryTimestamp(batch: PipelineBatch): string | null {
     case 'veg': return batch.veg_started_at;
     case 'flower': return batch.flower_started_at;
     case 'drying': return batch.drying_started_at;
-    case 'bucking': return batch.bucking_started_at;
-    case 'trimming': return batch.trimming_started_at;
-    case 'packaging': return batch.packaging_started_at;
+    case 'bucked': return batch.bucking_started_at;
+    case 'in_trim': return batch.trimming_started_at;
+    case 'in_packaging': return batch.packaging_started_at;
     case 'fresh_frozen': return batch.fresh_frozen_at;
     case 'lab': return batch.lab_started_at;
     default: return batch.updated_at;

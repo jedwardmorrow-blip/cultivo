@@ -217,10 +217,10 @@ export type BatchLifecycleState =
   | 'flower'
   // Flower production path
   | 'drying'
-  | 'bucking'
-  | 'trimming'
-  | 'bulk'
-  | 'packaging'
+  | 'bucked'
+  | 'in_trim'
+  | 'bulk_available'
+  | 'in_packaging'
   | 'packaged'
   // Fresh frozen / lab path
   | 'fresh_frozen'
@@ -237,7 +237,7 @@ export const CULTIVATION_STAGES: BatchLifecycleState[] = ['clone', 'veg', 'flowe
 
 // Flower production stages (post-harvest)
 export const FLOWER_PATH_STAGES: BatchLifecycleState[] = [
-  'drying', 'bucking', 'trimming', 'bulk', 'packaging', 'packaged'
+  'drying', 'bucked', 'in_trim', 'bulk_available', 'in_packaging', 'packaged'
 ];
 
 // Fresh frozen / lab stages
@@ -249,7 +249,7 @@ export const TERMINAL_STAGES: BatchLifecycleState[] = ['depleted', 'archived'];
 // All stages in lifecycle order (for kanban columns)
 export const LIFECYCLE_ORDER: BatchLifecycleState[] = [
   'clone', 'veg', 'flower',
-  'drying', 'bucking', 'trimming', 'bulk', 'packaging', 'packaged',
+  'drying', 'bucked', 'in_trim', 'bulk_available', 'in_packaging', 'packaged',
   'fresh_frozen', 'lab',
   'depleted', 'archived'
 ];

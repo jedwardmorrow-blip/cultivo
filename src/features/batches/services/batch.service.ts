@@ -800,11 +800,11 @@ export function validateLifecycleTransition(
     'veg': ['flower', 'archived'],
     'flower': ['drying', 'fresh_frozen', 'archived'],
     // Flower path
-    'drying': ['bucking', 'flower'],
-    'bucking': ['trimming', 'drying'],
-    'trimming': ['bulk', 'bucking'],
-    'bulk': ['packaging', 'trimming'],
-    'packaging': ['packaged', 'bulk'],
+    'drying': ['bucked', 'flower'],
+    'bucked': ['in_trim', 'drying'],
+    'in_trim': ['bulk_available', 'bucked'],
+    'bulk_available': ['in_packaging', 'in_trim'],
+    'in_packaging': ['packaged', 'bulk_available'],
     'packaged': ['depleted'],
     // FF / Lab path
     'fresh_frozen': ['lab', 'depleted'],
