@@ -474,6 +474,7 @@ interface MonthCalendarGridProps {
 }
 
 function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: MonthCalendarGridProps) {
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const daysCount = getDaysInMonth(year, month);
   const firstDayOfWeek = new Date(year, month, 1).getDay();
 
@@ -482,6 +483,12 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
   for (let d = 1; d <= daysCount; d++) {
     const date = new Date(year, month, d);
     cells.push({ num: d, date, iso: toIsoDate(date) });
+  }
+
+  // Split cells into rows of 7 for inline panel insertion
+  const rows: (null | { num: number; date: Date; iso: string })[][] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    rows.push(cells.slice(i, i + 7));
   }
 
   function getTaskTypesForDay(date: Date): TaskType[] {
@@ -504,6 +511,27 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
     return count;
   }
 
+  /** Get per-room breakdown for selected day */
+  function getRoomBreakdownForDay(date: Date): { room: RoomCalendarRoom; taskTypes: TaskType[]; schedules: RoomTaskSchedule[] }[] {
+    const result: { room: RoomCalendarRoom; taskTypes: TaskType[]; schedules: RoomTaskSchedule[] }[] = [];
+    for (const room of rooms) {
+      const roomSchedules = schedulesByRoom.get(room.id) ?? [];
+      const active = roomSchedules.filter((s) => doesScheduleOccur(s, date));
+      if (active.length > 0) {
+        const types = Array.from(new Set(active.map((s) => s.task_type)));
+        result.push({ room, taskTypes: types, schedules: active });
+      }
+    }
+    return result;
+  }
+
+  // Find which row the selected day is in
+  const selectedRowIdx = selectedDay !== null
+    ? rows.findIndex((row) => row.some((c) => c?.num === selectedDay))
+    : -1;
+
+  const selectedDate = selectedDay !== null ? new Date(year, month, selectedDay) : null;
+
   return (
     <div className="border border-cult-dark-gray/50 rounded-sm overflow-hidden">
       {/* Day-of-week header */}
@@ -515,76 +543,176 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom }: Month
         ))}
       </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7">
-        {cells.map((cell, idx) => {
-          if (!cell) {
-            return <div key={`blank-${idx}`} className="min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
-          }
-          const isToday = cell.iso === today;
-          const taskTypes = getTaskTypesForDay(cell.date);
-          const roomCount = taskTypes.length > 0 ? getRoomCountForDay(cell.date) : 0;
-          const isWeekend = cell.date.getDay() === 0 || cell.date.getDay() === 6;
+      {/* Calendar rows with inline expand panel */}
+      {rows.map((row, rowIdx) => (
+        <div key={rowIdx}>
+          <div className="grid grid-cols-7">
+            {row.map((cell, colIdx) => {
+              if (!cell) {
+                return <div key={`blank-${rowIdx}-${colIdx}`} className="min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
+              }
+              const isToday = cell.iso === today;
+              const taskTypes = getTaskTypesForDay(cell.date);
+              const roomCount = taskTypes.length > 0 ? getRoomCountForDay(cell.date) : 0;
+              const isWeekend = cell.date.getDay() === 0 || cell.date.getDay() === 6;
+              const isSelected = selectedDay === cell.num;
 
-          return (
-            <div
-              key={cell.num}
-              className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 p-1 sm:p-2 transition-colors hover:bg-cult-charcoal/25 ${
-                isToday ? 'bg-green-950/20' : isWeekend ? 'bg-cult-charcoal/5' : ''
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <span
-                  className={`text-xs font-mono font-bold ${
-                    isToday
-                      ? 'bg-green-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
-                      : 'text-cult-light-gray text-[10px] sm:text-xs'
+              return (
+                <div
+                  key={cell.num}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedDay(isSelected ? null : cell.num)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDay(isSelected ? null : cell.num); } }}
+                  className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 p-1 sm:p-2 transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-green-950/30 ring-1 ring-inset ring-green-500/40'
+                      : isToday
+                        ? 'bg-green-950/20 hover:bg-green-950/30'
+                        : isWeekend
+                          ? 'bg-cult-charcoal/5 hover:bg-cult-charcoal/25'
+                          : 'hover:bg-cult-charcoal/25'
                   }`}
                 >
-                  {cell.num}
-                </span>
-                {roomCount > 0 && (
-                  <span className="text-xs text-cult-medium-gray font-mono">
-                    {roomCount} <span className="text-cult-dark-gray">rm</span>
-                  </span>
-                )}
-              </div>
-              {taskTypes.length > 0 && (
-                <>
-                  {/* Mobile: dots only */}
-                  <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
-                    {taskTypes.slice(0, 4).map((t) => (
-                      <span
-                        key={t}
-                        className="block w-[6px] h-[6px] rounded-full"
-                        style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                        title={TASK_TYPE_CONFIG[t].label}
-                      />
-                    ))}
-                  </div>
-                  {/* Desktop: labeled chips */}
-                  <div className="hidden sm:flex flex-wrap gap-1 mt-1">
-                    {taskTypes.slice(0, 6).map((t) => (
-                      <span
-                        key={t}
-                        className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
-                        style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
-                        title={TASK_TYPE_CONFIG[t].label}
-                      >
-                        <span
-                          className="w-[5px] h-[5px] rounded-full flex-shrink-0"
-                          style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                        />
-                        {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className={`text-xs font-mono font-bold ${
+                        isToday
+                          ? 'bg-green-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
+                          : 'text-cult-light-gray text-[10px] sm:text-xs'
+                      }`}
+                    >
+                      {cell.num}
+                    </span>
+                    {roomCount > 0 && (
+                      <span className="text-xs text-cult-medium-gray font-mono">
+                        {roomCount} <span className="text-cult-dark-gray">rm</span>
                       </span>
-                    ))}
+                    )}
                   </div>
-                </>
-              )}
-            </div>
-          );
-        })}
+                  {taskTypes.length > 0 && (
+                    <>
+                      {/* Mobile: dots only */}
+                      <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
+                        {taskTypes.slice(0, 4).map((t) => (
+                          <span
+                            key={t}
+                            className="block w-[6px] h-[6px] rounded-full"
+                            style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                            title={TASK_TYPE_CONFIG[t].label}
+                          />
+                        ))}
+                      </div>
+                      {/* Desktop: labeled chips */}
+                      <div className="hidden sm:flex flex-wrap gap-1 mt-1">
+                        {taskTypes.slice(0, 6).map((t) => (
+                          <span
+                            key={t}
+                            className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
+                            style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
+                            title={TASK_TYPE_CONFIG[t].label}
+                          >
+                            <span
+                              className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                              style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                            />
+                            {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Inline Day Detail Panel (appears below the row containing the selected day) ── */}
+          {selectedRowIdx === rowIdx && selectedDate && (
+            <DayDetailPanel
+              date={selectedDate}
+              breakdown={getRoomBreakdownForDay(selectedDate)}
+              onClose={() => setSelectedDay(null)}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Day Detail Panel (inline below calendar row) ──────── */
+
+function DayDetailPanel({
+  date,
+  breakdown,
+  onClose,
+}: {
+  date: Date;
+  breakdown: { room: RoomCalendarRoom; taskTypes: TaskType[]; schedules: RoomTaskSchedule[] }[];
+  onClose: () => void;
+}) {
+  const dateLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const ROOM_TYPE_COLORS: Record<string, string> = {
+    mother: '#D97706', clone: '#0EA5E9', veg: '#10B981', flower: '#F43F5E', mixed: '#6B7280',
+  };
+
+  return (
+    <div className="bg-cult-charcoal/40 border-b border-cult-dark-gray/50 px-3 sm:px-5 py-3 animate-fade-in">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-cult-white">{dateLabel}</span>
+          <span className="text-xs text-cult-medium-gray font-mono">
+            {breakdown.length} room{breakdown.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 -m-1 hover:bg-cult-charcoal rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+        >
+          <X className="w-4 h-4 text-cult-medium-gray" />
+        </button>
       </div>
+
+      {breakdown.length === 0 ? (
+        <p className="text-xs text-cult-medium-gray italic py-2">No scheduled tasks for this day.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {breakdown.map(({ room, taskTypes, schedules: daySchedules }) => (
+            <div
+              key={room.id}
+              className="bg-cult-near-black border border-cult-dark-gray/50 border-l-2 p-2.5"
+              style={{ borderLeftColor: ROOM_TYPE_COLORS[room.room_type] ?? '#6B7280' }}
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="font-mono text-xs font-bold text-cult-white">{room.room_code}</span>
+                <span className="text-[10px] text-cult-medium-gray uppercase">{room.room_type}</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {taskTypes.map((t) => {
+                  const cfg = TASK_TYPE_CONFIG[t];
+                  // Find the schedule for detail
+                  const sched = daySchedules.find((s) => s.task_type === t);
+                  return (
+                    <div
+                      key={t}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-medium"
+                      style={{ backgroundColor: `${cfg.color}15`, color: cfg.color }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                      {cfg.label}
+                      {sched?.priority === 'high' && (
+                        <span className="text-[9px] font-bold text-red-400 ml-0.5">!</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
