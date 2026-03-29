@@ -52,6 +52,14 @@ export interface StrainFormatRow {
   stock_status: StockStatus;
   earliest_delivery_date: string | null;
   urgency: Urgency;
+  // v6: conversion rate columns from v_strain_conversion_rates
+  bucking_flower_pct: number;
+  bucking_smalls_pct: number;
+  trimming_big_bud_pct: number;
+  trimming_small_bud_pct: number;
+  packaging_efficiency_pct: number;
+  confidence: 'none' | 'low' | 'medium' | 'high';
+  conversion_sessions: number;
 }
 
 /** v_production_queue_by_order — one row per order line item */

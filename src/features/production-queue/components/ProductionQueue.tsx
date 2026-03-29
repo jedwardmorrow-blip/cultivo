@@ -6,6 +6,7 @@ import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
 import { useSkuYield, type StrainAllocation, type BatchYield } from '@/shared/hooks/useSkuYield';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
+import LaborView from './LaborView';
 import { formatDateShort, formatWeight, todayIso } from '@/shared/utils/format';
 import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
 
@@ -812,11 +813,10 @@ export function ProductionQueue() {
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
       {activeTab === 'by-strain' && (
-        <SimplifiedByStrainView
+        <LaborView
           byStrain={filteredByStrain}
           byOrder={filteredByOrder}
-          selectedDeliveryDate={selectedDeliveryDate}
-          skuByStrain={skuByStrain}
+          loading={loading}
         />
       )}
       {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
