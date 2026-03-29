@@ -672,6 +672,54 @@ export const cultivationService = {
       }
     }
 
+    // --- Post-finalization side effects ---
+    // A) Transition all plant groups for this batch in this room to 'harvested'
+    if (session.grow_room_id && session.batch_registry_id) {
+      const { error: pgError } = await supabase
+        .from('plant_groups')
+        .update({
+          growth_stage: 'harvested',
+          stage_entered_at: new Date().toISOString(),
+        })
+        .eq('grow_room_id', session.grow_room_id)
+        .eq('batch_registry_id', session.batch_registry_id)
+        .neq('growth_stage', 'harvested');
+      if (pgError) {
+        console.error('Failed to transition plant groups to harvested:', pgError);
+      }
+    }
+
+    // B) Advance batch lifecycle: flower → drying (only if currently in flower)
+    if (session.batch_registry_id) {
+      const hasFlowerEntries = entries.some((e) => e.destination === 'flower');
+      const hasFrozenOnly = !hasFlowerEntries && frozenEntries.length > 0;
+
+      const batchUpdate: Record<string, unknown> = {
+        harvest_date: session.harvest_date,
+      };
+
+      if (hasFrozenOnly) {
+        // All material went to fresh frozen — skip drying, go to fresh_frozen
+        batchUpdate.lifecycle_state = 'fresh_frozen';
+        batchUpdate.production_path = 'ff_lab';
+        batchUpdate.fresh_frozen_at = new Date().toISOString();
+      } else {
+        // Standard flower path — goes to drying
+        batchUpdate.lifecycle_state = 'drying';
+        batchUpdate.production_path = 'flower';
+        batchUpdate.drying_started_at = new Date().toISOString();
+      }
+
+      const { error: brError } = await supabase
+        .from('batch_registry')
+        .update(batchUpdate)
+        .eq('id', session.batch_registry_id)
+        .eq('lifecycle_state', 'flower');
+      if (brError) {
+        console.error('Failed to advance batch lifecycle:', brError);
+      }
+    }
+
     return session;
   },
 
