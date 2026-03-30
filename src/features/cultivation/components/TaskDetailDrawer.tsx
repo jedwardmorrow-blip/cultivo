@@ -60,7 +60,6 @@ export function TaskDetailDrawer({
   const [notes, setNotes] = useState(task.notes ?? '');
   const [showReschedule, setShowReschedule] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState('');
-  const [showCrewPicker, setShowCrewPicker] = useState(false);
   const [selectedCrew, setSelectedCrew] = useState<string[]>(crewIds);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -74,14 +73,6 @@ export function TaskDetailDrawer({
       .map((id) => staffOptions.find((s) => s.id === id))
       .filter(Boolean) as StaffOption[];
   }, [selectedCrew, staffOptions]);
-
-  function toggleCrewMember(staffId: string) {
-    setSelectedCrew((prev) =>
-      prev.includes(staffId)
-        ? prev.filter((id) => id !== staffId)
-        : [...prev, staffId]
-    );
-  }
 
   async function handleSave() {
     setSaving(true);
@@ -117,8 +108,23 @@ export function TaskDetailDrawer({
     }
   }
 
-  async function handleReassign(staffId: string) {
-    await onAssignWorker(task.id, staffId);
+  async function handleStaffTap(staffId: string) {
+    const isCurrentLead = task.assigned_to === staffId;
+    const isInCrew = selectedCrew.includes(staffId);
+
+    if (isCurrentLead) {
+      // Tapping the lead again — unassign them
+      await onAssignWorker(task.id, '');
+    } else if (isInCrew) {
+      // Tapping a crew member — remove from crew
+      setSelectedCrew((prev) => prev.filter((id) => id !== staffId));
+    } else if (!task.assigned_to) {
+      // No lead yet — assign as lead
+      await onAssignWorker(task.id, staffId);
+    } else {
+      // Lead exists — add as crew
+      setSelectedCrew((prev) => [...prev, staffId]);
+    }
   }
 
   return (
@@ -211,109 +217,68 @@ export function TaskDetailDrawer({
             </div>
           )}
 
-          {/* ── Primary Assignee ──────────────────────── */}
+          {/* ── Staff Assignment (Lead + Crew) ─────────── */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
-              <UserPlus className="w-3.5 h-3.5" />
-              Assigned To
+            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+              <Users className="w-3.5 h-3.5" />
+              Assign Staff
             </label>
+            <p className="text-[10px] text-cult-dark-gray mb-2">Tap once for lead. Tap others to add crew.</p>
             {!isCompleted ? (
               <div className="grid grid-cols-3 gap-1.5">
                 {staffOptions.map((s) => {
-                  const isAssigned = task.assigned_to === s.id;
+                  const isLead = task.assigned_to === s.id;
+                  const inCrew = selectedCrew.includes(s.id);
+                  const isSelected = isLead || inCrew;
                   return (
                     <button
                       key={s.id}
                       type="button"
-                      onClick={() => handleReassign(s.id)}
-                      className={`flex items-center gap-2 px-2.5 py-2.5 text-xs rounded-sm transition-all min-h-[44px] ${
-                        isAssigned
+                      onClick={() => handleStaffTap(s.id)}
+                      className={`relative flex items-center gap-2 px-2.5 py-2.5 text-xs rounded-sm transition-all min-h-[44px] ${
+                        isLead
                           ? 'bg-green-950/40 border border-green-700/50 text-green-400 font-semibold'
+                          : inCrew
+                          ? 'bg-sky-950/40 border border-sky-700/50 text-sky-400 font-semibold'
                           : 'bg-cult-charcoal/30 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-light-gray'
                       }`}
                     >
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                        isAssigned ? 'bg-green-700 text-white' : 'bg-cult-charcoal text-cult-white'
+                        isLead ? 'bg-green-700 text-white'
+                        : inCrew ? 'bg-sky-700 text-white'
+                        : 'bg-cult-charcoal text-cult-white'
                       }`}>
                         {s.first_name.charAt(0)}
                       </span>
                       <span className="truncate">{s.first_name}</span>
-                      {s.is_present && (
+                      {s.is_present && !isSelected && (
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0 ml-auto" />
+                      )}
+                      {isLead && (
+                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-green-700 text-white rounded-sm leading-none">Lead</span>
+                      )}
+                      {inCrew && (
+                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-sky-700 text-white rounded-sm leading-none">Crew</span>
                       )}
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <span className="text-sm text-cult-light-gray">{task.assigned_to_name ?? 'Unassigned'}</span>
+              <div className="space-y-1">
+                <span className="text-sm text-cult-light-gray">{task.assigned_to_name ?? 'Unassigned'}</span>
+                {crewMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {crewMembers.map((s) => (
+                      <span key={s.id} className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-sky-950/30 text-sky-400 rounded-sm">
+                        {s.first_name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-          {/* ── Crew / Additional Staff ───────────────── */}
-          {!isCompleted && (
-            <div>
-              <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
-                <Users className="w-3.5 h-3.5" />
-                Crew Members
-                <span className="text-cult-dark-gray font-normal">(optional, for multi-person tasks)</span>
-              </label>
-
-              {crewMembers.length > 0 && !showCrewPicker && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {crewMembers.map((s) => (
-                    <span
-                      key={s.id}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-sky-950/40 border border-sky-800/40 text-sky-400 rounded-sm"
-                    >
-                      <span className="w-4 h-4 rounded-full bg-sky-800 flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0">
-                        {s.first_name.charAt(0)}
-                      </span>
-                      {s.first_name}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setShowCrewPicker(!showCrewPicker)}
-                className="text-xs text-sky-400 hover:text-sky-300 font-semibold uppercase tracking-wider transition-colors"
-              >
-                {showCrewPicker ? 'Done' : crewMembers.length > 0 ? 'Edit Crew' : '+ Add Crew'}
-              </button>
-
-              {showCrewPicker && (
-                <div className="mt-2 grid grid-cols-2 gap-1.5">
-                  {staffOptions.filter((s) => s.id !== task.assigned_to).map((s) => {
-                    const inCrew = selectedCrew.includes(s.id);
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => toggleCrewMember(s.id)}
-                        className={`flex items-center gap-2 px-2.5 py-2 text-xs rounded-sm transition-all min-h-[40px] ${
-                          inCrew
-                            ? 'bg-sky-950/40 border border-sky-700/50 text-sky-400'
-                            : 'bg-cult-charcoal/20 border border-cult-dark-gray/40 text-cult-medium-gray hover:border-cult-medium-gray'
-                        }`}
-                      >
-                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                          inCrew ? 'bg-sky-700 text-white' : 'bg-cult-charcoal text-cult-white'
-                        }`}>
-                          {s.first_name.charAt(0)}
-                        </span>
-                        <span className="truncate">{s.first_name}</span>
-                        {s.is_present && !inCrew && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0 ml-auto" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* ── Notes ────────────────────────────────── */}
           <div>
