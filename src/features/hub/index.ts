@@ -1,3 +1,4 @@
+export { PipelinePlanner } from './components/PipelinePlanner';
 export { BatchPipeline } from './components/BatchPipeline';
 export { BatchKanbanCard } from './components/BatchKanbanCard';
 export { StrainYieldAnalytics } from './components/StrainYieldAnalytics';

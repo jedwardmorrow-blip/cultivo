@@ -10,6 +10,7 @@ const BatchManagement = lazy(() => import('./features/batches').then(m => ({ def
 const InventoryOversightDashboard = lazy(() => import('./features/inventory').then(m => ({ default: m.InventoryOversightDashboard })));
 const DistributionCalendar = lazy(() => import('./features/delivery').then(m => ({ default: m.DistributionCalendar })));
 const AnalyticsDashboard = lazy(() => import('./features/analytics').then(m => ({ default: m.AnalyticsDashboard })));
+const PipelinePlanner = lazy(() => import('./features/hub').then(m => ({ default: m.PipelinePlanner })));
 const BatchPipeline = lazy(() => import('./features/hub').then(m => ({ default: m.BatchPipeline })));
 const StrainYieldAnalytics = lazy(() => import('./features/hub').then(m => ({ default: m.StrainYieldAnalytics })));
 const EODSummary = lazy(() => import('./features/analytics').then(m => ({ default: m.EODSummary })));
@@ -79,6 +80,10 @@ export const protectedRoutes: RouteObject[] = [
   {
     path: '/delivery',
     element: <DistributionCalendar />,
+  },
+  {
+    path: '/pipeline-planner',
+    element: <PipelinePlanner />,
   },
   {
     path: '/hub',

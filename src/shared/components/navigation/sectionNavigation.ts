@@ -29,6 +29,8 @@ import {
   Wallet,
   CreditCard,
   Dna,
+  Target,
+  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -50,6 +52,19 @@ export interface SectionDefinition {
 }
 
 export const sectionDefinitions: SectionDefinition[] = [
+  {
+    id: 'pipeline',
+    label: 'Pipeline',
+    icon: Dna,
+    defaultView: 'pipeline-planner',
+    items: [
+      { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
+      { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
+      { id: 'pipeline-forecast', label: 'Forecast', icon: TrendingUp, group: 'primary' },
+      { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
+      { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
+    ],
+  },
   {
     id: 'cultivation',
     label: 'Cultivation',
@@ -139,16 +154,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
     ],
   },
-  {
-    id: 'hub',
-    label: 'Hub',
-    icon: Dna,
-    defaultView: 'hub',
-    items: [
-      { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
-      { id: 'hub-strain-analytics', label: 'Strain Analytics', icon: BarChart3, group: 'secondary' },
-    ],
-  }
+  // Hub section relocated to Pipeline (top of nav)
 ];
 
 export function getSectionForView(viewId: string): SectionDefinition | undefined {
