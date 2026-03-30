@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowRight, AlertTriangle, MapPin, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, AlertTriangle, MapPin, Plus, Trash2, Skull, Minus } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
+import { useMortalityLog } from '../hooks';
 import type { GrowRoom, PlantGroup, RoomTable, SplitAndMoveInput, PlacementEntry } from '../types';
 
 interface MoveToRoomModalProps {
@@ -34,6 +35,10 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Kill plants state
+  const [killCount, setKillCount] = useState(0);
+  const { insertMortalityLog } = useMortalityLog();
+
   // Placement builder state
   const [placements, setPlacements] = useState<PlacementRow[]>([]);
 
@@ -60,8 +65,9 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
 
   // Compute assigned / remaining — force integer math
   const totalPlants = group.plant_count;
+  const availablePlants = totalPlants - killCount;
   const assignedPlants = placements.reduce((sum, p) => sum + (Number(p.plantCount) || 0), 0);
-  const remainingPlants = totalPlants - assignedPlants;
+  const remainingPlants = availablePlants - assignedPlants;
 
   // Sections already used in placements (prevent duplicates)
   const usedSectionIds = new Set(placements.map((p) => p.sectionId).filter(Boolean));
@@ -125,6 +131,19 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
         setError('Add at least one placement with a section and plant count.');
         setSaving(false);
         return;
+      }
+
+      // Log mortality first — trigger auto-decrements source group plant_count
+      if (killCount > 0) {
+        const roomId = group.grow_room_id;
+        await insertMortalityLog({
+          plant_group_id: group.id,
+          room_id: roomId,
+          quantity: killCount,
+          cause: 'cull_at_move',
+          cause_detail: `Culled during move to ${selectedRoom?.room_code ?? toRoomId}`,
+          notes: `${killCount} plant${killCount !== 1 ? 's' : ''} culled — too small/unhealthy for move`,
+        });
       }
 
       await onSplitAndMove({
@@ -256,9 +275,53 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
               </div>
             </div>
 
+            {/* Kill plants row */}
+            <div className="flex items-center gap-3 bg-red-950/30 border border-red-900/40 px-3 py-2.5 mb-3">
+              <div className="w-7 h-7 rounded-sm flex items-center justify-center bg-red-950 flex-shrink-0">
+                <Skull className="w-3.5 h-3.5 text-red-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-red-300 font-medium uppercase tracking-wider">Kill Plants</p>
+                <p className="text-[10px] text-red-400/60">Removed before placement</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setKillCount((c) => Math.max(c - 1, 0))}
+                  disabled={killCount <= 0}
+                  className="w-7 h-7 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={totalPlants - 1}
+                  value={killCount > 0 ? killCount : ''}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.floor(Number(e.target.value) || 0));
+                    setKillCount(Math.min(v, totalPlants - 1));
+                  }}
+                  placeholder="0"
+                  className="w-14 bg-cult-black border border-red-900/50 text-red-300 px-1.5 py-1 text-xs text-center font-mono focus:outline-none focus:border-red-700"
+                />
+                <button
+                  type="button"
+                  onClick={() => setKillCount((c) => Math.min(c + 1, totalPlants - 1))}
+                  disabled={killCount >= totalPlants - 1}
+                  className="w-7 h-7 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
             {/* Running counter */}
             <div className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-3 py-2 mb-3">
               <div className="text-xs text-cult-medium-gray">
+                {killCount > 0 && (
+                  <span className="text-red-400 font-mono font-bold mr-1.5">{killCount} killed</span>
+                )}
                 <span className="text-cult-white font-mono font-bold">{assignedPlants}</span> assigned
               </div>
               <div className="text-xs text-cult-medium-gray">
@@ -267,7 +330,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                 </span> remaining
               </div>
               <div className="text-xs text-cult-medium-gray">
-                of <span className="text-cult-white font-mono font-bold">{totalPlants}</span> total
+                of <span className="text-cult-white font-mono font-bold">{availablePlants}</span> avail
               </div>
             </div>
 
@@ -280,7 +343,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
             {remainingPlants < 0 && (
               <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-3">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                Over-assigned by {Math.abs(remainingPlants)} — reduce plant counts.
+                Over-assigned by {Math.abs(remainingPlants)} — reduce plant counts{killCount > 0 ? ' or kill count' : ''}.
               </div>
             )}
 
@@ -349,10 +412,10 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                 size="sm"
                 icon={<ArrowRight className="w-4 h-4" />}
               >
-                {saving ? 'Moving...' : `Move ${assignedPlants} Plant${assignedPlants !== 1 ? 's' : ''}`}
+                {saving ? 'Moving...' : `${killCount > 0 ? `Kill ${killCount} & ` : ''}Move ${assignedPlants} Plant${assignedPlants !== 1 ? 's' : ''}`}
               </Button>
               <button
-                onClick={() => { setStep('room'); setPlacements([]); }}
+                onClick={() => { setStep('room'); setPlacements([]); setKillCount(0); }}
                 disabled={saving}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
               >

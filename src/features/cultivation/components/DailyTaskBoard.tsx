@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Calendar,
   ClipboardList,
-  Layers,
   Users,
   Plus,
   X,
@@ -34,7 +33,7 @@ import { useAttendance, useDailyTasks, useGrowRooms, useTaskTypeSettings } from 
 import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
-import type { TaskType, TaskStatus, RoomType } from '../types';
+import type { TaskType, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
 import { TemplateManager } from './TemplateManager';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
@@ -48,13 +47,8 @@ import { DeadPlantForm } from './DeadPlantForm';
 import { todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_DOT } from '../constants/stageColors';
 
-type TabId = 'board' | 'types' | 'workers';
-
-const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
-  { id: 'board', label: 'Daily Board', icon: ClipboardList },
-  { id: 'types', label: 'Task Types', icon: Layers },
-  { id: 'workers', label: 'Workers', icon: Users },
-];
+/* Tab system removed — Task Types opens as overlay via gear icon,
+   Workers tab removed in favour of standalone /worker-tasks route */
 
 const TASK_TYPE_DESCRIPTIONS: Partial<Record<TaskType, string>> = {
   ipm_spray: 'Apply integrated pest management sprays and treatments to prevent or control pests and diseases.',
@@ -201,7 +195,7 @@ export function SchedulesPage() {
 }
 
 export function DailyTaskBoard() {
-  const [activeTab, setActiveTab] = useState<TabId>('board');
+  const [showTaskTypes, setShowTaskTypes] = useState(false);
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
@@ -274,9 +268,19 @@ export function DailyTaskBoard() {
       {/* ── Header: Date Nav + Title ────────────────────────── */}
       <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-lg sm:text-2xl font-bold text-cult-white uppercase tracking-wide">
-            Task Board
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg sm:text-2xl font-bold text-cult-white uppercase tracking-wide">
+              Task Board
+            </h1>
+            <button
+              type="button"
+              onClick={() => setShowTaskTypes(true)}
+              className="p-2 text-cult-medium-gray hover:text-cult-white hover:bg-cult-charcoal/40 active:bg-cult-charcoal/60 transition-colors rounded-lg"
+              title="Manage task types"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
           <div className="flex items-center gap-3 mt-1.5">
             <button
               type="button"
@@ -326,72 +330,45 @@ export function DailyTaskBoard() {
         </div>
       </div>
 
-      {/* ── Tab Bar ────────────────────────────────────────── */}
-      <div className="bg-cult-surface-overlay border-b border-cult-dark-gray overflow-x-auto scrollbar-hide mb-6">
-        <div className="flex items-center gap-0 min-w-max">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 -mb-px flex-shrink-0 min-h-[48px] ${
-                  isActive
-                    ? 'text-cult-white border-cult-accent'
-                    : 'text-cult-medium-gray hover:text-cult-light-gray border-transparent'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* ── Board (single view — no tabs) ─────────────────── */}
+      <DailyBoardTab
+        rooms={rooms}
+        opsRooms={opsRooms}
+        staff={cultivationStaff}
+        allStaff={allStaff}
+        tasks={taskCards}
+        attendance={attendance}
+        date={selectedDate}
+        onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
+        onCompleteWithLog={async (taskId, refTable, refId, dur) => {
+          await completeWithLog(taskId, refTable, refId, dur ?? undefined);
+          await refetchTasks();
+        }}
+        onCreateTask={async (input) => {
+          await createTask(input);
+        }}
+        onAssignWorker={async (taskId, staffId) => {
+          await assignWorker(taskId, staffId);
+        }}
+        onStartTask={async (taskId) => {
+          await updateStatus(taskId, 'in_progress');
+        }}
+        onSkipTask={async (taskId) => {
+          await updateStatus(taskId, 'skipped');
+        }}
+        onCarryForward={async (taskId) => {
+          await updateStatus(taskId, 'carry_forward');
+        }}
+        onUpdateTask={async (taskId, updates) => {
+          await updateTask(taskId, updates);
+        }}
+        onDeleteTask={async (taskId) => {
+          await deleteTask(taskId);
+        }}
+      />
 
-      {activeTab === 'board' && (
-        <DailyBoardTab
-          rooms={rooms}
-          opsRooms={opsRooms}
-          staff={cultivationStaff}
-          allStaff={allStaff}
-          tasks={taskCards}
-          attendance={attendance}
-          date={selectedDate}
-          onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
-          onCompleteWithLog={async (taskId, refTable, refId, dur) => {
-            await completeWithLog(taskId, refTable, refId, dur ?? undefined);
-            await refetchTasks();
-          }}
-          onCreateTask={async (input) => {
-            await createTask(input);
-          }}
-          onAssignWorker={async (taskId, staffId) => {
-            await assignWorker(taskId, staffId);
-          }}
-          onStartTask={async (taskId) => {
-            await updateStatus(taskId, 'in_progress');
-          }}
-          onSkipTask={async (taskId) => {
-            await updateStatus(taskId, 'skipped');
-          }}
-          onCarryForward={async (taskId) => {
-            await updateStatus(taskId, 'carry_forward');
-          }}
-          onUpdateTask={async (taskId, updates) => {
-            await updateTask(taskId, updates);
-          }}
-          onDeleteTask={async (taskId) => {
-            await deleteTask(taskId);
-          }}
-        />
-      )}
-      {activeTab === 'types' && <TaskTypesTab />}
-      {activeTab === 'workers' && (
-        <WorkersTab staff={cultivationStaff} tasks={taskCards} attendance={attendance} />
-      )}
+      {/* ── Task Type Manager overlay (gear icon) ────────── */}
+      {showTaskTypes && <TaskTypesOverlay onClose={() => setShowTaskTypes(false)} />}
     </div>
   );
 }
@@ -1263,7 +1240,7 @@ function AddTaskFormFields({
 const AVAILABLE_ICONS = ['SprayCan', 'Scissors', 'ArrowRightLeft', 'Sparkles', 'Wheat', 'Droplets', 'Search', 'GitBranch', 'Sprout', 'Wrench', 'Beaker', 'Settings', 'Clock', 'Skull'] as const;
 const PRESET_COLORS = ['#0EA5E9', '#10B981', '#8B5CF6', '#6B7280', '#F43F5E', '#3B82F6', '#F59E0B', '#06B6D4', '#EC4899', '#14B8A6', '#78716C', '#6366F1', '#A6A6A6', '#EF4444', '#D97706'];
 
-function TaskTypesTab() {
+function TaskTypesOverlay({ onClose }: { onClose: () => void }) {
   const { settings, loading, createTaskType, updateTaskType, deleteTaskType } = useTaskTypeSettings();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -1286,72 +1263,93 @@ function TaskTypesTab() {
         updated_at: '',
       }));
 
-  if (loading) {
-    return <div className="text-sm text-cult-medium-gray py-8 text-center">Loading task types...</div>;
-  }
-
   return (
-    <div className="space-y-4">
-      {/* Header with Add button */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-cult-medium-gray">
-          {types.filter((t) => t.is_enabled).length} active task types · Click a card to edit
-        </p>
-        <button
-          type="button"
-          onClick={() => { setEditingId(null); setShowAdd(true); }}
-          className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add Task Type
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Task type cards grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {types.map((tt) => {
-          const Icon = ICON_MAP[tt.icon] ?? Wrench;
-          return (
+      {/* Panel */}
+      <div className="relative w-full max-w-4xl bg-cult-near-black border border-cult-dark-gray rounded-lg shadow-2xl flex flex-col max-h-[85vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray/50 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <Settings className="w-5 h-5 text-cult-accent" />
+            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+              Manage Task Types
+            </h3>
+            {!loading && (
+              <span className="text-xs text-cult-medium-gray">
+                {types.filter((t) => t.is_enabled).length} active
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              key={tt.id}
               type="button"
-              onClick={() => { setShowAdd(false); setEditingId(tt.id); }}
-              className={`text-left bg-cult-near-black border p-4 space-y-3 transition-all hover:border-cult-accent/50 ${
-                !tt.is_enabled ? 'opacity-40 border-cult-dark-gray/50' : editingId === tt.id ? 'border-cult-accent ring-1 ring-cult-accent/30' : 'border-cult-dark-gray'
-              }`}
+              onClick={() => { setEditingId(null); setShowAdd(true); }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
             >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${tt.color}20` }}
-                >
-                  <Icon className="w-4 h-4" style={{ color: tt.color }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="text-xs font-semibold text-cult-white uppercase tracking-wider block truncate">{tt.label}</span>
-                  {!tt.is_enabled && <span className="text-[10px] text-amber-400 uppercase">Disabled</span>}
-                </div>
-                <Pencil className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
-              </div>
-              <p className="text-xs text-cult-light-gray leading-relaxed line-clamp-2">
-                {tt.description}
-              </p>
-              {tt.fields.length > 0 && (
-                <div className="pt-2 border-t border-cult-dark-gray/50">
-                  <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Fields</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {tt.fields.map((f) => (
-                      <span key={f} className="px-1.5 py-0.5 text-xs bg-cult-charcoal text-cult-light-gray rounded-sm">{f}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <Plus className="w-3.5 h-3.5" />
+              Add Type
             </button>
-          );
-        })}
+            <button type="button" onClick={onClose} className="p-2 hover:bg-cult-charcoal rounded transition-colors">
+              <X className="w-4 h-4 text-cult-medium-gray" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body — scrollable */}
+        <div className="overflow-y-auto flex-1 p-5">
+          {loading ? (
+            <div className="text-sm text-cult-medium-gray py-8 text-center">Loading task types...</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {types.map((tt) => {
+                const Icon = ICON_MAP[tt.icon] ?? Wrench;
+                return (
+                  <button
+                    key={tt.id}
+                    type="button"
+                    onClick={() => { setShowAdd(false); setEditingId(tt.id); }}
+                    className={`text-left bg-cult-near-black border p-4 space-y-3 transition-all hover:border-cult-accent/50 ${
+                      !tt.is_enabled ? 'opacity-40 border-cult-dark-gray/50' : editingId === tt.id ? 'border-cult-accent ring-1 ring-cult-accent/30' : 'border-cult-dark-gray'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${tt.color}20` }}
+                      >
+                        <Icon className="w-4 h-4" style={{ color: tt.color }} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-semibold text-cult-white uppercase tracking-wider block truncate">{tt.label}</span>
+                        {!tt.is_enabled && <span className="text-[10px] text-amber-400 uppercase">Disabled</span>}
+                      </div>
+                      <Pencil className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+                    </div>
+                    <p className="text-xs text-cult-light-gray leading-relaxed line-clamp-2">
+                      {tt.description}
+                    </p>
+                    {tt.fields.length > 0 && (
+                      <div className="pt-2 border-t border-cult-dark-gray/50">
+                        <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Fields</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {tt.fields.map((f) => (
+                            <span key={f} className="px-1.5 py-0.5 text-xs bg-cult-charcoal text-cult-light-gray rounded-sm">{f}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Edit modal */}
+      {/* Edit modal (stacks on top) */}
       {editingId && (() => {
         const tt = types.find((t) => t.id === editingId);
         if (!tt) return null;
@@ -1612,194 +1610,7 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   WORKERS TAB
-   ═══════════════════════════════════════════════════════════ */
-
-interface WorkersTabProps {
-  staff: StaffMember[];
-  tasks: TaskCardData[];
-  attendance: ReturnType<typeof useAttendance>['records'];
-}
-
-function WorkersTab({ staff, tasks, attendance }: WorkersTabProps) {
-  const [expandedWorker, setExpandedWorker] = useState<string | null>(null);
-
-  const attendanceMap = useMemo(() => {
-    const map = new Map<string, (typeof attendance)[0]>();
-    for (const a of attendance) map.set(a.staff_id, a);
-    return map;
-  }, [attendance]);
-
-  const taskCountByWorker = useMemo(() => {
-    const map = new Map<string, { total: number; completed: number }>();
-    for (const t of tasks) {
-      if (!t.assigned_to_name) continue;
-      const match = staff.find((s) => s.first_name === t.assigned_to_name);
-      if (!match) continue;
-      const curr = map.get(match.id) ?? { total: 0, completed: 0 };
-      curr.total++;
-      if (t.status === 'completed') curr.completed++;
-      map.set(match.id, curr);
-    }
-    return map;
-  }, [tasks, staff]);
-
-  const tasksByWorker = useMemo(() => {
-    const map = new Map<string, TaskCardData[]>();
-    for (const t of tasks) {
-      if (!t.assigned_to_name) continue;
-      const match = staff.find((s) => s.first_name === t.assigned_to_name);
-      if (!match) continue;
-      const list = map.get(match.id) ?? [];
-      list.push(t);
-      map.set(match.id, list);
-    }
-    return map;
-  }, [tasks, staff]);
-
-  const totalPresent = attendance.filter((a) => a.is_present).length;
-  const totalTasksAssigned = tasks.length;
-  const totalCompleted = tasks.filter((t) => t.status === 'completed').length;
-  const totalHours = attendance.reduce((sum, a) => sum + (a.is_present ? (a.hours_worked ?? 8) : 0), 0);
-
-  const STATUS_DOT: Record<TaskStatus, string> = {
-    pending: 'bg-zinc-500',
-    in_progress: 'bg-sky-400',
-    completed: 'bg-green-400',
-    skipped: 'bg-zinc-600',
-    carry_forward: 'bg-amber-400',
-  };
-
-  const ROLE_BADGE: Record<string, string> = {
-    manager: 'bg-amber-950 text-amber-400 border border-amber-800',
-    cultivation_manager: 'bg-amber-950 text-amber-400 border border-amber-800',
-    cultivation_lead: 'bg-amber-950 text-amber-400 border border-amber-800',
-    cultivator: 'bg-green-950 text-green-400 border border-green-800',
-    operations: 'bg-sky-950 text-sky-400 border border-sky-800',
-    operations_manager: 'bg-sky-950 text-sky-400 border border-sky-800',
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <SummaryCard label="Present" value={`${totalPresent} / ${staff.length}`} />
-        <SummaryCard label="Tasks Assigned" value={String(totalTasksAssigned)} />
-        <SummaryCard label="Completed" value={String(totalCompleted)} />
-        <SummaryCard label="Total Hours" value={String(totalHours)} />
-      </div>
-
-      <div className="bg-cult-near-black border border-cult-dark-gray divide-y divide-cult-dark-gray/50">
-        {staff.map((s) => {
-          const rec = attendanceMap.get(s.id);
-          const isPresent = rec?.is_present ?? false;
-          const hours = rec?.hours_worked ?? 0;
-          const roomAssignments = rec?.room_assignments ?? [];
-          const counts = taskCountByWorker.get(s.id) ?? { total: 0, completed: 0 };
-          const isExpanded = expandedWorker === s.id;
-          const workerTasks = tasksByWorker.get(s.id) ?? [];
-          const workerCost = isPresent ? s.hourly_rate * (hours || 8) : 0;
-
-          return (
-            <div key={s.id}>
-              <button
-                type="button"
-                onClick={() => isPresent && setExpandedWorker(isExpanded ? null : s.id)}
-                className={`w-full text-left px-4 py-3 flex items-center justify-between gap-3 transition-colors ${
-                  !isPresent ? 'opacity-40' : 'hover:bg-cult-charcoal/20 active:bg-cult-charcoal/30'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="w-8 h-8 rounded-full bg-cult-charcoal flex items-center justify-center text-sm font-bold text-cult-white flex-shrink-0">
-                    {s.first_name.charAt(0)}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-cult-white font-medium">{s.first_name}</span>
-                      <span className={`px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_BADGE[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
-                        {s.role.replace(/_/g, ' ')}
-                      </span>
-                      {!isPresent && (
-                        <span className="text-xs text-zinc-500 uppercase">Absent</span>
-                      )}
-                    </div>
-                    {isPresent && roomAssignments.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {roomAssignments.map((rid) => (
-                          <span key={rid} className="px-1.5 py-0.5 text-xs font-mono bg-cult-charcoal text-cult-light-gray rounded-sm">{rid}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {isPresent && (
-                  <div className="flex items-center gap-3 flex-shrink-0 text-xs">
-                    <div className="text-center">
-                      <div className="text-cult-white font-semibold">{counts.total}</div>
-                      <div className="text-xs text-cult-medium-gray uppercase">Tasks</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-cult-green font-semibold">{counts.completed}</div>
-                      <div className="text-xs text-cult-medium-gray uppercase">Done</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-cult-white font-semibold">{hours}h</div>
-                      <div className="text-xs text-cult-medium-gray uppercase">Hours</div>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-cult-medium-gray transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                  </div>
-                )}
-              </button>
-
-              {isExpanded && isPresent && (
-                <div className="px-4 pb-4 bg-cult-black/50">
-                  <div className="pl-11 space-y-2">
-                    {/* Worker cost summary */}
-                    <div className="flex items-center gap-4 text-xs text-cult-medium-gray pb-2 border-b border-cult-dark-gray/50">
-                      <span>${s.hourly_rate}/hr</span>
-                      <span>{hours || 8}h shift</span>
-                      <span className="text-cult-white font-semibold">${workerCost.toFixed(0)} est. cost</span>
-                    </div>
-
-                    {workerTasks.length === 0 ? (
-                      <div className="py-3 text-xs text-cult-medium-gray italic">No tasks assigned</div>
-                    ) : (
-                      workerTasks.map((t) => {
-                        const config = TASK_TYPE_CONFIG[t.task_type] ?? TASK_TYPE_CONFIG.custom;
-                        return (
-                          <div key={t.id} className="flex items-center gap-3 py-2">
-                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[t.status] ?? 'bg-zinc-500'}`} />
-                            <span
-                              className="px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
-                              style={{ backgroundColor: `${config.color}20`, color: config.color }}
-                            >
-                              {config.label}
-                            </span>
-                            <span className="text-xs font-mono text-cult-white">{t.room_name}</span>
-                            {t.estimated_duration && (
-                              <span className="flex items-center gap-1 text-xs text-cult-medium-gray ml-auto">
-                                <Clock className="w-3 h-3" />
-                                {t.estimated_duration}
-                              </span>
-                            )}
-                            {t.estimated_cost != null && t.estimated_cost > 0 && (
-                              <span className="text-xs text-cult-medium-gray font-mono">${t.estimated_cost.toFixed(0)}</span>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+/* WorkersTab removed — use standalone /worker-tasks (Crew) route instead. */
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
