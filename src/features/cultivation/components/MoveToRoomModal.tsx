@@ -58,9 +58,9 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
     [tables]
   );
 
-  // Compute assigned / remaining
+  // Compute assigned / remaining — force integer math
   const totalPlants = group.plant_count;
-  const assignedPlants = placements.reduce((sum, p) => sum + (p.plantCount || 0), 0);
+  const assignedPlants = placements.reduce((sum, p) => sum + (Number(p.plantCount) || 0), 0);
   const remainingPlants = totalPlants - assignedPlants;
 
   // Sections already used in placements (prevent duplicates)
@@ -156,6 +156,11 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
           const section = allSections.find((s) => s.id === value);
           return { ...p, sectionId: value as string, tableId: section?.tableId ?? '' };
         }
+        if (field === 'plantCount') {
+          // Always store as integer
+          const num = Math.max(0, Math.floor(Number(value) || 0));
+          return { ...p, plantCount: num };
+        }
         return { ...p, [field]: value };
       })
     );
@@ -163,7 +168,9 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
 
   const groupLabel = group.batch_registry?.batch_number ?? group.strains?.name ?? 'this group';
   const fromRoom = group.grow_rooms?.name ?? group.grow_room_id;
-  const canConfirm = remainingPlants === 0 && assignedPlants > 0 && placements.every((p) => p.sectionId && p.plantCount > 0);
+  // Valid placements = rows with both section and count filled in
+  const filledPlacements = placements.filter((p) => p.sectionId && p.plantCount > 0);
+  const canConfirm = remainingPlants >= 0 && filledPlacements.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -264,6 +271,12 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
               </div>
             </div>
 
+            {remainingPlants > 0 && filledPlacements.length > 0 && (
+              <p className="text-xs text-cult-medium-gray mb-3">
+                {remainingPlants} plant{remainingPlants !== 1 ? 's' : ''} will stay in {fromRoom}.
+              </p>
+            )}
+
             {remainingPlants < 0 && (
               <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-3">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
@@ -296,10 +309,10 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                   {/* Plant count */}
                   <input
                     type="number"
-                    min={1}
+                    min={0}
                     max={totalPlants}
-                    value={row.plantCount || ''}
-                    onChange={(e) => updatePlacement(row.id, 'plantCount', parseInt(e.target.value) || 0)}
+                    value={row.plantCount > 0 ? row.plantCount : ''}
+                    onChange={(e) => updatePlacement(row.id, 'plantCount', e.target.value)}
                     placeholder="qty"
                     className="w-16 bg-cult-black border border-cult-dark-gray text-cult-white px-2 py-1.5 text-xs text-center font-mono focus:outline-none focus:border-cult-lighter-gray"
                   />
@@ -336,7 +349,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                 size="sm"
                 icon={<ArrowRight className="w-4 h-4" />}
               >
-                {saving ? 'Moving...' : `Confirm Move — ${assignedPlants}p`}
+                {saving ? 'Moving...' : `Move ${assignedPlants} Plant${assignedPlants !== 1 ? 's' : ''}`}
               </Button>
               <button
                 onClick={() => { setStep('room'); setPlacements([]); }}
