@@ -1,5 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -8,6 +8,16 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+}
+
+function isChunkLoadError(error: Error): boolean {
+  const msg = error.message || '';
+  return (
+    msg.includes('dynamically imported module') ||
+    msg.includes('Failed to fetch') ||
+    msg.includes('Loading chunk') ||
+    msg.includes('ChunkLoadError')
+  );
 }
 
 export class CultivationErrorBoundary extends Component<Props, State> {
@@ -22,26 +32,50 @@ export class CultivationErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[CultivationErrorBoundary]', error, info.componentStack);
+
+    if (isChunkLoadError(error)) {
+      const reloadKey = 'cult-chunk-reload';
+      const lastReload = sessionStorage.getItem(reloadKey);
+      const now = Date.now();
+      if (!lastReload || now - Number(lastReload) > 10000) {
+        sessionStorage.setItem(reloadKey, String(now));
+        window.location.reload();
+        return;
+      }
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      const isChunk = this.state.error ? isChunkLoadError(this.state.error) : false;
+
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8">
-          <div className="flex items-center gap-3 rounded-lg border border-red-700 bg-red-950/40 px-6 py-4">
+          <div className="flex items-center gap-3 rounded-lg border border-red-700 bg-red-950/40 px-6 py-4 max-w-md">
             <AlertTriangle className="h-6 w-6 text-red-400 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-cult-white">Something went wrong in Cultivation</h3>
+              <h3 className="text-sm font-semibold text-cult-white">
+                {isChunk ? 'App update available' : 'Something went wrong in Cultivation'}
+              </h3>
               <p className="text-xs text-cult-medium-gray mt-1">
-                {this.state.error?.message || 'An unexpected error occurred.'}
+                {isChunk
+                  ? 'A new version has been deployed. Please reload to get the latest.'
+                  : (this.state.error?.message || 'An unexpected error occurred.')}
               </p>
             </div>
           </div>
           <button
-            onClick={() => this.setState({ hasError: false, error: null })}
-            className="px-4 py-2 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
+            onClick={() => {
+              if (isChunk) {
+                window.location.reload();
+              } else {
+                this.setState({ hasError: false, error: null });
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
           >
-            Try Again
+            <RefreshCw className="h-4 w-4" />
+            {isChunk ? 'Reload Page' : 'Try Again'}
           </button>
         </div>
       );
