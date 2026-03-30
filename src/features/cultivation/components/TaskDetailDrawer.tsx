@@ -113,8 +113,8 @@ export function TaskDetailDrawer({
     const isInCrew = selectedCrew.includes(staffId);
 
     if (isCurrentLead) {
-      // Tapping the lead again — unassign them
-      await onAssignWorker(task.id, '');
+      // Tapping the lead again — unassign them (use null, not empty string)
+      await onUpdateTask(task.id, { assigned_to: null });
     } else if (isInCrew) {
       // Tapping a crew member — remove from crew
       setSelectedCrew((prev) => prev.filter((id) => id !== staffId));
