@@ -18,6 +18,7 @@ export { ExpandedPlantsList } from './ExpandedPlantsList';
 export { HarvestWorkflow } from './harvest';
 export { DailyTaskBoard, SchedulesPage } from './DailyTaskBoard';
 export { TaskCard } from './TaskCard';
+export { TaskDetailDrawer } from './TaskDetailDrawer';
 export { TaskCompletionForm } from './TaskCompletionForm';
 export { DeadPlantForm } from './DeadPlantForm';
 export { WorkerCheckIn } from './WorkerCheckIn';

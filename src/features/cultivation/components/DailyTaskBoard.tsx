@@ -32,6 +32,7 @@ import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
+import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
 import type { RoomOperationalState } from '../hooks/useRoomOperationalState';
@@ -167,7 +168,7 @@ export function DailyTaskBoard() {
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
   const { rooms: dbRooms } = useGrowRooms();
-  const { tasks: dbTasks, completeWithLog, assignWorker, updateStatus, refetch: refetchTasks, createTask } = useDailyTasks(selectedDate);
+  const { tasks: dbTasks, completeWithLog, assignWorker, updateStatus, refetch: refetchTasks, createTask, updateTask, deleteTask } = useDailyTasks(selectedDate);
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
   const { staff: activeStaff } = useActiveStaff();
   const { rooms: opsRooms } = useRoomOperationalState();
@@ -219,6 +220,7 @@ export function DailyTaskBoard() {
         progress_current: (t.progress_data as Record<string, number>)?.current,
         progress_total: (t.progress_data as Record<string, number>)?.total,
         estimated_cost: cost,
+        task_config: t.task_config,
       };
     });
   }, [dbTasks, rooms, allStaff]);
@@ -341,6 +343,12 @@ export function DailyTaskBoard() {
           onCarryForward={async (taskId) => {
             await updateStatus(taskId, 'carry_forward');
           }}
+          onUpdateTask={async (taskId, updates) => {
+            await updateTask(taskId, updates);
+          }}
+          onDeleteTask={async (taskId) => {
+            await deleteTask(taskId);
+          }}
         />
       )}
       {activeTab === 'types' && <TaskTypesTab />}
@@ -370,12 +378,15 @@ interface DailyBoardTabProps {
   onStartTask: (taskId: string) => Promise<void>;
   onSkipTask: (taskId: string) => Promise<void>;
   onCarryForward: (taskId: string) => Promise<void>;
+  onUpdateTask: (taskId: string, updates: { notes?: string | null; task_date?: string; assigned_to?: string | null; task_config?: Record<string, unknown> }) => Promise<void>;
+  onDeleteTask: (taskId: string) => Promise<void>;
 }
 
-function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask, onSkipTask, onCarryForward }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask, onSkipTask, onCarryForward, onUpdateTask, onDeleteTask }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
+  const [detailTask, setDetailTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
   const [showDeadPlantForm, setShowDeadPlantForm] = useState(false);
   const [deadPlantRoomId, setDeadPlantRoomId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
@@ -491,6 +502,11 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
   function openCompletionForm(task: TaskCardData) {
     const roomMatch = rooms.find((r) => r.room_code === task.room_name);
     setCompletingTask({ task, roomId: roomMatch?.id ?? '' });
+  }
+
+  function openDetailDrawer(task: TaskCardData) {
+    const roomMatch = rooms.find((r) => r.room_code === task.room_name);
+    setDetailTask({ task, roomId: roomMatch?.id ?? '' });
   }
 
   const roomsWithTasks = sortedRoomEntries.length;
@@ -766,7 +782,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                       <TaskCard
                         key={t.id}
                         task={t}
-                        onClick={() => openCompletionForm(t)}
+                        onClick={() => openDetailDrawer(t)}
                         staffOptions={quickAssignStaff}
                         onQuickAssign={onAssignWorker}
                         onStartTask={onStartTask}
@@ -809,6 +825,27 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             await onCreateTask({ ...input, task_date: date });
             setShowAddTask(false);
           }}
+        />
+      )}
+
+      {detailTask && (
+        <TaskDetailDrawer
+          task={detailTask.task}
+          roomId={detailTask.roomId}
+          staffOptions={quickAssignStaff}
+          crewIds={(detailTask.task.task_config?.crew as string[]) ?? []}
+          onClose={() => setDetailTask(null)}
+          onOpenCompletionForm={() => {
+            const t = detailTask;
+            setDetailTask(null);
+            setCompletingTask(t);
+          }}
+          onAssignWorker={onAssignWorker}
+          onUpdateTask={onUpdateTask}
+          onDeleteTask={onDeleteTask}
+          onStartTask={onStartTask}
+          onSkipTask={onSkipTask}
+          onCarryForward={onCarryForward}
         />
       )}
 

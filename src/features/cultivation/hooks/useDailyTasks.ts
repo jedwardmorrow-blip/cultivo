@@ -111,5 +111,35 @@ export function useDailyTasks(taskDate: string) {
     return data as DailyTaskInstance;
   }
 
-  return { tasks, loading, error, refetch: load, updateStatus, assignWorker, completeWithLog, createTask };
+  async function updateTask(
+    id: string,
+    updates: {
+      notes?: string | null;
+      task_date?: string;
+      assigned_to?: string | null;
+      task_config?: Record<string, unknown>;
+      estimated_duration?: string | null;
+    },
+  ): Promise<DailyTaskInstance> {
+    const { data, error: err } = await supabase
+      .from('daily_task_instances')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (err) throw err;
+    await load();
+    return data as DailyTaskInstance;
+  }
+
+  async function deleteTask(id: string): Promise<void> {
+    const { error: err } = await supabase
+      .from('daily_task_instances')
+      .delete()
+      .eq('id', id);
+    if (err) throw err;
+    await load();
+  }
+
+  return { tasks, loading, error, refetch: load, updateStatus, assignWorker, completeWithLog, createTask, updateTask, deleteTask };
 }

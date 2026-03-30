@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward } from 'lucide-react';
+import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward, Users } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus } from '../types';
 
@@ -25,6 +25,7 @@ export interface TaskCardData {
   progress_current?: number;
   progress_total?: number;
   estimated_cost?: number;
+  task_config?: Record<string, unknown>;
 }
 
 export interface StaffOption {
@@ -192,6 +193,14 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                 </span>
               )}
 
+              {/* Crew indicator */}
+              {task.task_config?.crew && Array.isArray(task.task_config.crew) && (task.task_config.crew as string[]).length > 0 && (
+                <span className="hidden sm:flex items-center gap-0.5 text-xs text-sky-400/80">
+                  <Users className="w-3 h-3" />
+                  <span className="font-mono text-[10px]">+{(task.task_config.crew as string[]).length}</span>
+                </span>
+              )}
+
               {isCarried && (
                 <span className="flex items-center gap-1 text-xs text-amber-400">
                   <AlertTriangle className="w-3 h-3" />
@@ -228,9 +237,9 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           )}
         </button>
 
-        {/* Quick-start + skip/carry buttons — pending tasks */}
+        {/* Quick-start + skip/carry buttons — pending tasks (inline, not absolute) */}
         {isPending && onStartTask && (
-          <div className="absolute bottom-2 right-3 z-10 flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1 px-2.5 sm:px-3 pb-2 pt-0.5">
             {onSkipTask && (
               <button
                 type="button"
@@ -238,11 +247,11 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                   e.stopPropagation();
                   onSkipTask(task.id);
                 }}
-                className="flex items-center gap-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 hover:border-zinc-600 rounded-md transition-colors min-h-[36px]"
+                className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 hover:border-zinc-600 rounded-sm transition-colors min-h-[32px]"
                 title="Skip this task"
               >
                 <SkipForward className="w-3 h-3" />
-                Skip
+                <span className="hidden sm:inline">Skip</span>
               </button>
             )}
             {onCarryForward && (
@@ -252,11 +261,11 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                   e.stopPropagation();
                   onCarryForward(task.id);
                 }}
-                className="flex items-center gap-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80 bg-amber-950/40 border border-amber-800/30 hover:bg-amber-950/70 hover:border-amber-700 rounded-md transition-colors min-h-[36px]"
+                className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80 bg-amber-950/40 border border-amber-800/30 hover:bg-amber-950/70 hover:border-amber-700 rounded-sm transition-colors min-h-[32px]"
                 title="Carry forward to next day"
               >
                 <FastForward className="w-3 h-3" />
-                Defer
+                <span className="hidden sm:inline">Defer</span>
               </button>
             )}
             <button
@@ -267,7 +276,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                 setStarting(true);
                 onStartTask(task.id);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/50 border border-sky-800/50 hover:bg-sky-950 hover:border-sky-700 active:bg-sky-900 rounded-md transition-colors disabled:opacity-50 min-h-[44px]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/50 border border-sky-800/50 hover:bg-sky-950 hover:border-sky-700 active:bg-sky-900 rounded-sm transition-colors disabled:opacity-50 min-h-[36px]"
             >
               <Play className="w-3.5 h-3.5" />
               {starting ? 'Starting...' : 'Start'}
@@ -275,23 +284,23 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           </div>
         )}
 
-        {/* Quick-assign button — only show when unassigned and staff options available */}
-        {isUnassigned && !isCompleted && staffOptions && staffOptions.length > 0 && onQuickAssign && (
-          <div ref={dropdownRef} className="absolute top-2 right-2 sm:right-20 z-10">
+        {/* Quick-assign button — only show when unassigned, no pending actions visible */}
+        {isUnassigned && !isCompleted && !isPending && staffOptions && staffOptions.length > 0 && onQuickAssign && (
+          <div ref={dropdownRef} className="relative flex justify-end px-2.5 sm:px-3 pb-2">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowAssignDropdown((v) => !v);
               }}
-              className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/50 border border-amber-800/50 hover:bg-amber-950 hover:border-amber-700 active:bg-amber-900 rounded-md transition-colors min-h-[44px]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/50 border border-amber-800/50 hover:bg-amber-950 hover:border-amber-700 active:bg-amber-900 rounded-sm transition-colors min-h-[36px]"
             >
               <UserPlus className="w-3 h-3" />
               Assign
             </button>
 
             {showAssignDropdown && (
-              <div className="absolute top-full right-0 mt-1 w-44 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-20 max-h-60 overflow-y-auto">
+              <div className="absolute top-full right-3 mt-1 w-44 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-20 max-h-60 overflow-y-auto">
                 {staffOptions.map((s) => (
                   <button
                     key={s.id}
