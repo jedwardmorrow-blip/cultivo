@@ -119,6 +119,7 @@ export function useDailyTasks(taskDate: string) {
       assigned_to?: string | null;
       task_config?: Record<string, unknown>;
       estimated_duration?: string | null;
+      status?: TaskStatus;
     },
   ): Promise<DailyTaskInstance> {
     const { data, error: err } = await supabase

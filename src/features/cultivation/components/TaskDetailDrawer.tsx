@@ -8,9 +8,7 @@ import {
   CheckCircle2,
   Play,
   SkipForward,
-  FastForward,
-  ChevronLeft,
-  ChevronRight,
+  CalendarClock,
   Users,
   StickyNote,
 } from 'lucide-react';
@@ -31,11 +29,19 @@ interface TaskDetailDrawerProps {
     task_date?: string;
     assigned_to?: string | null;
     task_config?: Record<string, unknown>;
+    status?: string;
   }) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
   onStartTask: (taskId: string) => Promise<void>;
   onSkipTask: (taskId: string) => Promise<void>;
   onCarryForward: (taskId: string) => Promise<void>;
+}
+
+/** Add N days to a YYYY-MM-DD string */
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 export function TaskDetailDrawer({
@@ -58,14 +64,18 @@ export function TaskDetailDrawer({
   const isCompleted = task.status === 'completed' || task.status === 'skipped';
 
   const [notes, setNotes] = useState(task.notes ?? '');
-  const [showReschedule, setShowReschedule] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [selectedCrew, setSelectedCrew] = useState<string[]>(crewIds);
+  const [localLeadId, setLocalLeadId] = useState<string | null>(task.assigned_to ?? null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const hasChanges = notes !== (task.notes ?? '') || selectedCrew.join(',') !== crewIds.join(',');
+  const hasChanges =
+    notes !== (task.notes ?? '') ||
+    selectedCrew.join(',') !== crewIds.join(',') ||
+    localLeadId !== (task.assigned_to ?? null);
 
   // Build crew display
   const crewMembers = useMemo(() => {
@@ -79,6 +89,7 @@ export function TaskDetailDrawer({
     try {
       await onUpdateTask(task.id, {
         notes: notes || null,
+        assigned_to: localLeadId || null,
         task_config: { crew: selectedCrew },
       });
       onClose();
@@ -87,11 +98,13 @@ export function TaskDetailDrawer({
     }
   }
 
-  async function handleReschedule() {
-    if (!rescheduleDate) return;
+  async function handleDefer(targetDate: string) {
     setSaving(true);
     try {
-      await onUpdateTask(task.id, { task_date: rescheduleDate });
+      await onUpdateTask(task.id, {
+        task_date: targetDate,
+        status: 'carry_forward',
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -108,24 +121,27 @@ export function TaskDetailDrawer({
     }
   }
 
-  async function handleStaffTap(staffId: string) {
-    const isCurrentLead = task.assigned_to === staffId;
+  function handleStaffTap(staffId: string) {
+    const isCurrentLead = localLeadId === staffId;
     const isInCrew = selectedCrew.includes(staffId);
 
     if (isCurrentLead) {
-      // Tapping the lead again — unassign them (use null, not empty string)
-      await onUpdateTask(task.id, { assigned_to: null });
+      // Tapping the lead again — unassign
+      setLocalLeadId(null);
     } else if (isInCrew) {
       // Tapping a crew member — remove from crew
       setSelectedCrew((prev) => prev.filter((id) => id !== staffId));
-    } else if (!task.assigned_to) {
+    } else if (!localLeadId) {
       // No lead yet — assign as lead
-      await onAssignWorker(task.id, staffId);
+      setLocalLeadId(staffId);
     } else {
       // Lead exists — add as crew
       setSelectedCrew((prev) => [...prev, staffId]);
     }
   }
+
+  // Compute tomorrow's date string from the task's date
+  const tomorrow = addDays(task.task_date ?? new Date().toISOString().slice(0, 10), 1);
 
   return (
     <div
@@ -167,7 +183,7 @@ export function TaskDetailDrawer({
                 : 'bg-zinc-800 text-zinc-500'
               }`}
             >
-              {task.status === 'carry_forward' ? 'Carried' : task.status.replace('_', ' ')}
+              {task.status === 'carry_forward' ? 'Deferred' : task.status.replace('_', ' ')}
             </span>
           </div>
 
@@ -195,24 +211,14 @@ export function TaskDetailDrawer({
                 </button>
               )}
               {isPending && (
-                <>
-                  <button
-                    type="button"
-                    onClick={async () => { await onSkipTask(task.id); onClose(); }}
-                    className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 rounded-sm transition-colors min-h-[44px]"
-                  >
-                    <SkipForward className="w-3 h-3" />
-                    Skip
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => { await onCarryForward(task.id); onClose(); }}
-                    className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400/80 bg-amber-950/40 border border-amber-800/30 hover:bg-amber-950/70 rounded-sm transition-colors min-h-[44px]"
-                  >
-                    <FastForward className="w-3 h-3" />
-                    Defer
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={async () => { await onSkipTask(task.id); onClose(); }}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 rounded-sm transition-colors min-h-[44px]"
+                >
+                  <SkipForward className="w-3 h-3" />
+                  Skip
+                </button>
               )}
             </div>
           )}
@@ -227,7 +233,7 @@ export function TaskDetailDrawer({
             {!isCompleted ? (
               <div className="grid grid-cols-3 gap-1.5">
                 {staffOptions.map((s) => {
-                  const isLead = task.assigned_to === s.id;
+                  const isLead = localLeadId === s.id;
                   const inCrew = selectedCrew.includes(s.id);
                   const isSelected = isLead || inCrew;
                   return (
@@ -299,25 +305,47 @@ export function TaskDetailDrawer({
             )}
           </div>
 
-          {/* ── Reschedule ───────────────────────────── */}
+          {/* ── Defer / Reschedule (combined) ──────────── */}
           {!isCompleted && (
             <div>
               <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
-                <Calendar className="w-3.5 h-3.5" />
-                Reschedule
+                <CalendarClock className="w-3.5 h-3.5" />
+                Defer Task
               </label>
-              {showReschedule ? (
+              <p className="text-[10px] text-cult-dark-gray mb-2.5">Move this task to another day. It will be tracked as deferred.</p>
+
+              <div className="flex flex-wrap gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => handleDefer(tomorrow)}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
+                >
+                  Tomorrow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400/70 bg-amber-950/20 border border-amber-800/20 hover:bg-amber-950/40 hover:text-amber-400 rounded-sm transition-colors min-h-[44px]"
+                >
+                  <Calendar className="w-3 h-3" />
+                  {showDatePicker ? 'Hide' : 'Pick Date'}
+                </button>
+              </div>
+
+              {showDatePicker && (
                 <div className="space-y-2">
                   <input
                     type="date"
                     value={rescheduleDate}
                     onChange={(e) => setRescheduleDate(e.target.value)}
+                    min={tomorrow}
                     className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-sm py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-medium-gray"
                   />
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={handleReschedule}
+                      onClick={() => handleDefer(rescheduleDate)}
                       disabled={!rescheduleDate || saving}
                       className="flex-1 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
                     >
@@ -325,21 +353,13 @@ export function TaskDetailDrawer({
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setShowReschedule(false); setRescheduleDate(''); }}
+                      onClick={() => { setShowDatePicker(false); setRescheduleDate(''); }}
                       className="px-3 py-2.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors min-h-[44px]"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowReschedule(true)}
-                  className="text-xs text-amber-400 hover:text-amber-300 font-semibold uppercase tracking-wider transition-colors"
-                >
-                  Move to different date
-                </button>
               )}
             </div>
           )}
