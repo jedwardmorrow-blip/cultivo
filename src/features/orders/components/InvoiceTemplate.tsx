@@ -151,7 +151,8 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
             <tr className="border-b border-black">
               <th className="text-left py-2 px-2 text-sm font-bold">Item</th>
               <th className="text-right py-2 px-2 text-sm font-bold">Qty</th>
-              <th className="text-right py-2 px-2 text-sm font-bold">G/C</th>
+              <th className="text-right py-2 px-2 text-sm font-bold">Unit Wt</th>
+              <th className="text-right py-2 px-2 text-sm font-bold">Total Wt</th>
               <th className="text-right py-2 px-2 text-sm font-bold">Price</th>
               <th className="text-right py-2 px-2 text-sm font-bold">Subtotal</th>
               <th className="text-right py-2 px-2 text-sm font-bold">Discount</th>
@@ -190,7 +191,12 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                   <td className="text-right py-2 px-2 text-sm align-top">
                     {item.quantity} {item.unit}
                   </td>
-                  <td className="text-right py-2 px-2 text-sm align-top"></td>
+                  <td className="text-right py-2 px-2 text-sm align-top">
+                    {item.unit_weight > 0 ? `${item.unit_weight}g` : '—'}
+                  </td>
+                  <td className="text-right py-2 px-2 text-sm align-top">
+                    {item.total_weight > 0 ? `${item.total_weight.toFixed(1)}g` : '—'}
+                  </td>
                   <td className="text-right py-2 px-2 text-sm align-top">
                     ${formatCurrency(item.unit_price)}
                   </td>

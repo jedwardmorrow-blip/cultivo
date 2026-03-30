@@ -381,34 +381,16 @@ export const cultivationService = {
   },
 
   async moveToRoom(id: string, toRoomId: string): Promise<PlantGroup> {
-    // Fetch current state for history before updating
-    const { data: current } = await supabase
-      .from('plant_groups')
-      .select('grow_room_id, room_table_id, room_section_id, plant_count')
-      .eq('id', id)
-      .single();
-
+    // UPDATE triggers handle:
+    //   fn_clear_placement_on_room_transfer → nulls room_table_id / room_section_id
+    //   fn_log_plant_group_room_history     → writes history with from/to room + table/section + count
     const { data, error } = await supabase
       .from('plant_groups')
-      .update({ grow_room_id: toRoomId, room_table_id: null, room_section_id: null })
+      .update({ grow_room_id: toRoomId })
       .eq('id', id)
       .select(PLANT_GROUP_SELECT)
       .single();
     if (error) throwError(error, 'moveToRoom');
-
-    // Write history
-    const { data: { user } } = await supabase.auth.getUser();
-    if (current) {
-      await supabase.from('plant_group_room_history').insert({
-        plant_group_id: id,
-        from_room_id: current.grow_room_id,
-        to_room_id: toRoomId,
-        from_table_id: current.room_table_id,
-        from_section_id: current.room_section_id,
-        plant_count: current.plant_count,
-        moved_by: user?.id ?? null,
-      });
-    }
 
     return data as unknown as PlantGroup;
   },

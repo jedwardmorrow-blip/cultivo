@@ -14,6 +14,8 @@ export interface InvoiceLineItem {
   quantity: number;
   unit: string;
   unit_price: number;
+  unit_weight: number;
+  total_weight: number;
   subtotal: number;
   discount: number;
   total: number;
@@ -108,7 +110,8 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
           strain,
           pricing_unit,
           product_category,
-          type
+          type,
+          net_weight
         )
       `)
       .eq('order_id', orderId),
@@ -286,6 +289,8 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
 
     const discount = item.discount_amount || 0;
     const total = item.subtotal - discount;
+    const unitWeight = product?.net_weight || 0;
+    const totalWeight = unitWeight * item.quantity;
 
     return {
       id: item.id,
@@ -295,6 +300,8 @@ export async function generateInvoiceData(orderId: string): Promise<InvoiceData>
       quantity: item.quantity,
       unit: product?.pricing_unit || 'unit',
       unit_price: item.unit_price,
+      unit_weight: unitWeight,
+      total_weight: totalWeight,
       subtotal: item.subtotal,
       discount,
       total,
@@ -416,20 +423,25 @@ export async function createInvoiceFromOrder(orderId: string, customerId: string
       .from('order_items')
       .select(`
         *,
-        products:product_id (name, type, strain)
+        products:product_id (name, type, strain, net_weight)
       `)
       .eq('order_id', orderId);
 
     if (itemsError) throw itemsError;
 
-    const lineItems = (orderItems || []).map(item => ({
-      product_name: item.products?.name || 'Unknown',
-      product_type: item.products?.type,
-      strain: item.products?.strain,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      subtotal: item.subtotal
-    }));
+    const lineItems = (orderItems || []).map(item => {
+      const unitWeight = item.products?.net_weight || 0;
+      return {
+        product_name: item.products?.name || 'Unknown',
+        product_type: item.products?.type,
+        strain: item.products?.strain,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        unit_weight: unitWeight,
+        total_weight: unitWeight * item.quantity,
+        subtotal: item.subtotal
+      };
+    });
 
     const subtotal = lineItems.reduce((sum, item) => sum + item.subtotal, 0);
     const taxRate = 0.0;

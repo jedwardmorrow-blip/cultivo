@@ -23,6 +23,7 @@ export interface ManifestLineItem {
   quantity: number;
   unit: string;
   unit_price: number;
+  unit_weight: number;
   net_weight: number;
   gross_weight: number;
   total: number;
@@ -141,6 +142,7 @@ export async function generateManifestData(
           strain,
           pricing_unit,
           product_category,
+          net_weight,
           gross_weight
         )
       `)
@@ -233,7 +235,6 @@ export async function generateManifestData(
 
     let packageId = null;
     let batchNumber = null;
-    let netWeight = 0;
 
     if (assignments.length > 0) {
       const firstAssignment = assignments[0];
@@ -241,7 +242,6 @@ export async function generateManifestData(
       if (inventory) {
         packageId = inventory.package_id;
         batchNumber = inventory.batch_number || inventory.batch;
-        netWeight = inventory.net_weight || 0;
       }
     }
 
@@ -250,6 +250,7 @@ export async function generateManifestData(
       batchNumber = batchRegistryMap.get(item.batch_id) || null;
     }
 
+    const unitWeight = product?.net_weight || 0;
     const grossWeight = product?.gross_weight || 0;
 
     return {
@@ -260,7 +261,8 @@ export async function generateManifestData(
       quantity: item.quantity,
       unit: product?.pricing_unit || 'unit',
       unit_price: item.unit_price,
-      net_weight: netWeight * item.quantity,
+      unit_weight: unitWeight,
+      net_weight: unitWeight * item.quantity,
       gross_weight: grossWeight * item.quantity,
       total: item.subtotal,
       strain: product?.strain || null

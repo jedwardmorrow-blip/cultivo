@@ -278,6 +278,7 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                 <th className="border-r border-black p-2 text-left font-bold">Item Description</th>
                 <th className="border-r border-black p-2 text-left font-bold">Batch #</th>
                 <th className="border-r border-black p-2 text-right font-bold">Qty</th>
+                <th className="border-r border-black p-2 text-right font-bold">Unit Wt</th>
                 <th className="border-r border-black p-2 text-right font-bold">Unit Price</th>
                 <th className="border-r border-black p-2 text-right font-bold">Net Wt (g)</th>
                 <th className="border-r border-black p-2 text-right font-bold">Gross Wt (g)</th>
@@ -307,6 +308,9 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                       {item.quantity} {item.unit}
                     </td>
                     <td className="border-r border-black p-2 text-right align-top">
+                      {item.unit_weight > 0 ? `${item.unit_weight}g` : '—'}
+                    </td>
+                    <td className="border-r border-black p-2 text-right align-top">
                       ${item.unit_price.toFixed(2)}
                     </td>
                     <td className="border-r border-black p-2 text-right align-top">
@@ -330,11 +334,12 @@ export const ManifestTemplate = forwardRef<HTMLDivElement, ManifestTemplateProps
                   <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="border-r border-black p-2">&nbsp;</td>
+                  <td className="border-r border-black p-2">&nbsp;</td>
                   <td className="p-2">&nbsp;</td>
                 </tr>
               ))}
               <tr className="border-t-2 border-black">
-                <td colSpan={7} className="border-r border-black p-2 text-right font-bold">Total</td>
+                <td colSpan={8} className="border-r border-black p-2 text-right font-bold">Total</td>
                 <td className="p-2 text-right font-bold">${manifestData.total_amount.toFixed(2)}</td>
               </tr>
             </tbody>
