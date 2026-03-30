@@ -6,7 +6,7 @@
   valid_batch_lifecycle_state does not include that value.
 
   This migration drops and recreates the constraint to include 'pre_harvest'
-  at the front of the list (representing the earliest lifecycle stage).
+  alongside all other valid lifecycle states.
 */
 
 ALTER TABLE batch_registry DROP CONSTRAINT IF EXISTS valid_batch_lifecycle_state;
@@ -14,6 +14,10 @@ ALTER TABLE batch_registry DROP CONSTRAINT IF EXISTS valid_batch_lifecycle_state
 ALTER TABLE batch_registry ADD CONSTRAINT valid_batch_lifecycle_state
   CHECK (lifecycle_state = ANY (ARRAY[
     'pre_harvest',
+    'clone',
+    'veg',
+    'flower',
+    'drying',
     'created',
     'bucked',
     'in_trim',
@@ -22,5 +26,8 @@ ALTER TABLE batch_registry ADD CONSTRAINT valid_batch_lifecycle_state
     'packaged',
     'partially_depleted',
     'depleted',
-    'archived'
+    'archived',
+    'fresh_frozen',
+    'lab',
+    'quarantined'
   ]));

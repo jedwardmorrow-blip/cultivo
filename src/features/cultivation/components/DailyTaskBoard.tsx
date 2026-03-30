@@ -1611,12 +1611,3 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
 }
 
 /* WorkersTab removed — use standalone /worker-tasks (Crew) route instead. */
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-cult-near-black border border-cult-dark-gray p-3">
-      <div className="text-lg font-bold text-cult-white">{value}</div>
-      <div className="text-xs text-cult-medium-gray uppercase tracking-wider mt-0.5">{label}</div>
-    </div>
-  );
-}

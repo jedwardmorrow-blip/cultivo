@@ -168,22 +168,35 @@ export function TaskDetailDrawer({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="relative ml-auto bg-cult-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
-        {/* Header */}
+        {/* Header — sticky with room context */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/20">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <span
-              className="w-3 h-3 rounded-full ring-2 ring-black/20"
+              className="w-3 h-3 rounded-full ring-2 ring-black/20 flex-shrink-0"
               style={{ backgroundColor: config.color }}
             />
-            <div>
-              <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Task Detail</span>
-              <h3 className="text-sm font-bold text-cult-white mt-0.5">{config.label}</h3>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-cult-accent">{task.room_name}</span>
+                <span className="text-cult-dark-gray">·</span>
+                <span
+                  className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${
+                    isPending ? 'bg-zinc-800 text-zinc-400'
+                    : isInProgress ? 'bg-sky-950 text-sky-400'
+                    : task.status === 'completed' ? 'bg-green-950 text-green-400'
+                    : 'bg-zinc-800 text-zinc-500'
+                  }`}
+                >
+                  {task.status === 'carry_forward' ? 'Deferred' : task.status.replace('_', ' ')}
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-cult-white mt-0.5 truncate">{config.label}</h3>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors"
+            className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors flex-shrink-0"
           >
             <X className="w-4 h-4 text-cult-medium-gray" />
           </button>
@@ -191,20 +204,6 @@ export function TaskDetailDrawer({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 scrollbar-hide">
-          {/* Room + Status */}
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-sm font-bold text-cult-white">{task.room_name}</span>
-            <span
-              className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wider rounded-sm ${
-                isPending ? 'bg-zinc-800 text-zinc-400'
-                : isInProgress ? 'bg-sky-950 text-sky-400'
-                : task.status === 'completed' ? 'bg-green-950 text-green-400'
-                : 'bg-zinc-800 text-zinc-500'
-              }`}
-            >
-              {task.status === 'carry_forward' ? 'Deferred' : task.status.replace('_', ' ')}
-            </span>
-          </div>
 
           {/* Quick Actions */}
           {!isCompleted && (

@@ -31,7 +31,6 @@ import {
   Dna,
   Target,
   Users,
-  Smartphone,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -73,13 +72,13 @@ export const sectionDefinitions: SectionDefinition[] = [
     defaultView: 'cultivation-taskboard',
     items: [
       { id: 'cultivation-taskboard', label: 'Today', icon: ClipboardList, group: 'primary' },
+      { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'primary' },
       { id: 'cultivation-schedules', label: 'Schedule', icon: CalendarDays, group: 'primary' },
       { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-digest', label: 'Reports', icon: FileText, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'secondary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'secondary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'secondary' },
-      { id: 'worker-tasks', label: 'Worker View', icon: Smartphone, group: 'secondary' },
     ],
   },
   {
