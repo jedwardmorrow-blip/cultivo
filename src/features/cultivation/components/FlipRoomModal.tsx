@@ -66,8 +66,8 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 bg-cult-near-black border border-cult-medium-gray w-full max-w-lg shadow-2xl">
         <div className="flex items-center justify-between px-6 py-4 border-b border-cult-medium-gray">
           <div className="flex items-center gap-2">
