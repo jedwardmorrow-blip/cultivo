@@ -1246,9 +1246,10 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
     <button
       type="button"
       onClick={onEdit}
-      className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-cult-medium-gray p-3.5 transition-all hover:bg-cult-charcoal/50 group"
+      className="w-full text-left bg-cult-near-black border border-cult-dark-gray/60 hover:border-cult-medium-gray p-4 transition-all hover:bg-cult-charcoal/40 group rounded-sm"
     >
-      <div className="flex items-center justify-between">
+      {/* Top row: task name + badges */}
+      <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2.5">
           <span
             className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-black/20"
@@ -1257,34 +1258,42 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
           <span className="text-xs font-bold text-cult-white uppercase tracking-wider">{config.label}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray bg-cult-charcoal rounded-sm">
+          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cult-light-gray bg-cult-charcoal/80 rounded-sm border border-cult-dark-gray/40">
             {schedule.recurrence}
           </span>
           {schedule.priority === 'high' && (
-            <span className="px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm">
+            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm border border-red-800/30">
               High
             </span>
           )}
         </div>
       </div>
+
+      {/* Day-of-week pills */}
       {schedule.day_of_week && schedule.day_of_week.length > 0 && (
-        <div className="mt-2 flex gap-1">
-          {DAY_NAMES.map((name, idx) => (
-            <span
-              key={idx}
-              className={`w-6 h-5 flex items-center justify-center text-xs font-bold uppercase rounded-sm ${
-                schedule.day_of_week!.includes(idx)
-                  ? 'text-cult-white bg-cult-charcoal'
-                  : 'text-cult-dark-gray'
-              }`}
-            >
-              {name.charAt(0)}
-            </span>
-          ))}
+        <div className="flex gap-1">
+          {DAY_NAMES.map((name, idx) => {
+            const active = schedule.day_of_week!.includes(idx);
+            return (
+              <span
+                key={idx}
+                className={`w-7 h-6 flex items-center justify-center text-[10px] font-bold uppercase rounded-sm transition-colors ${
+                  active
+                    ? 'text-white bg-cult-medium-gray/60 border border-cult-medium-gray/40'
+                    : 'text-cult-dark-gray/50 border border-transparent'
+                }`}
+                style={active ? { color: config.color } : undefined}
+              >
+                {name.charAt(0)}
+              </span>
+            );
+          })}
         </div>
       )}
+
+      {/* Notes */}
       {schedule.notes && (
-        <div className="mt-1.5 text-xs text-cult-medium-gray truncate">{schedule.notes}</div>
+        <div className="mt-2 text-xs text-cult-medium-gray truncate">{schedule.notes}</div>
       )}
     </button>
   );
