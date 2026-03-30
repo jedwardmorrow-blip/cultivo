@@ -33,3 +33,5 @@ export { useFeedProgramRecipe } from './useFeedProgramRecipe';
 export type { ResolvedRecipe, RecipeEntry, FeedProduct, WeekTargets } from './useFeedProgramRecipe';
 export { useBatchTankMixLog } from './useBatchTankMixLog';
 export type { BatchTankMixLog, CreateBatchTankMixInput, RecipeSnapshot } from './useBatchTankMixLog';
+export { useTaskTypeSettings } from './useTaskTypeSettings';
+export type { TaskTypeSetting, CreateTaskTypeInput, UpdateTaskTypeInput } from './useTaskTypeSettings';
