@@ -29,3 +29,7 @@ export { useRoomOperationalState } from './useRoomOperationalState';
 export type { RoomOperationalState } from './useRoomOperationalState';
 export { useScheduleTemplates } from './useScheduleTemplates';
 export type { ScheduleTemplate, TemplateScheduleItem, CreateTemplateInput } from './useScheduleTemplates';
+export { useFeedProgramRecipe } from './useFeedProgramRecipe';
+export type { ResolvedRecipe, RecipeEntry, FeedProduct, WeekTargets } from './useFeedProgramRecipe';
+export { useBatchTankMixLog } from './useBatchTankMixLog';
+export type { BatchTankMixLog, CreateBatchTankMixInput, RecipeSnapshot } from './useBatchTankMixLog';

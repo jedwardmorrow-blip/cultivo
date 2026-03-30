@@ -33,3 +33,4 @@ export { AnnotationInput } from './AnnotationInput';
 export { DigestSlackPreview } from './DigestSlackPreview';
 export { HarvestMetricsDashboard } from './harvest-metrics';
 export { WorkerTaskView } from './WorkerTaskView';
+export { TemplateManager } from './TemplateManager';

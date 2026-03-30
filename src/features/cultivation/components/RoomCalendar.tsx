@@ -6,6 +6,7 @@ import type { ScheduleTemplate } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput, SchedulingMode } from '../types';
 import type { RoomType } from '../types';
+import { TemplateManager } from './TemplateManager';
 
 interface RoomCalendarRoom {
   id: string;
@@ -1409,6 +1410,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
   const [isNew, setIsNew] = useState(false);
   const [showCopyPicker, setShowCopyPicker] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showTemplateManager, setShowTemplateManager] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [templateApplying, setTemplateApplying] = useState(false);
@@ -1438,6 +1440,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
     setIsNew(false);
     setShowCopyPicker(false);
     setShowTemplatePicker(false);
+    setShowTemplateManager(false);
     setCopySuccess(null);
     setSavingAsTemplate(false);
     setTemplateName('');
@@ -1578,8 +1581,16 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                 </div>
 
                 {/* Action buttons */}
-                {!isNew && editingId === null && !showCopyPicker && !showTemplatePicker && (
+                {!isNew && editingId === null && !showCopyPicker && !showTemplatePicker && !showTemplateManager && (
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowTemplateManager(true)}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Manage Templates
+                    </button>
                     <button
                       type="button"
                       onClick={() => setShowTemplatePicker(true)}
@@ -1614,7 +1625,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
             {/* Scrollable schedule content */}
             <div className="flex-1 overflow-y-auto px-6 py-5 scrollbar-hide">
               {/* Empty state for room with no schedules */}
-              {selectedSchedules.length === 0 && !isNew && !showCopyPicker && !showTemplatePicker && (
+              {selectedSchedules.length === 0 && !isNew && !showCopyPicker && !showTemplatePicker && !showTemplateManager && (
                 <div className="text-center py-12">
                   <div className="w-14 h-14 mx-auto rounded-full bg-amber-950/30 flex items-center justify-center mb-4">
                     <AlertCircle className="w-6 h-6 text-amber-500" />
@@ -1699,8 +1710,13 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                 />
               )}
 
+              {/* Template manager */}
+              {showTemplateManager && (
+                <TemplateManager onClose={() => setShowTemplateManager(false)} />
+              )}
+
               {/* Schedule cards — 2-column grid */}
-              {selectedSchedules.length > 0 && !showCopyPicker && !showTemplatePicker && (
+              {selectedSchedules.length > 0 && !showCopyPicker && !showTemplatePicker && !showTemplateManager && (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                   {selectedSchedules.map((s) => (
                     <div key={s.id}>
@@ -1741,7 +1757,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
               )}
 
               {/* Save as Template */}
-              {selectedSchedules.length > 0 && !isNew && !editingId && !showCopyPicker && !showTemplatePicker && selectedRoomId && (
+              {selectedSchedules.length > 0 && !isNew && !editingId && !showCopyPicker && !showTemplatePicker && !showTemplateManager && selectedRoomId && (
                 <div className="border-t border-cult-dark-gray/50 pt-4 mt-5">
                   {savingAsTemplate ? (
                     <div className="space-y-2 max-w-md">

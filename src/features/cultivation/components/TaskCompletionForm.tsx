@@ -4,7 +4,7 @@ import { Button } from '@/shared/components';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, RoomSection } from '../types';
 import { useRoomSections } from '../hooks';
-import { useSprayLog, useFeedingLog, useDefoliationLog, useCleaningLog, useScoutingLog, useTrainingLog, useCustomTaskLog } from '../hooks';
+import { useSprayLog, useFeedingLog, useDefoliationLog, useCleaningLog, useScoutingLog, useTrainingLog, useCustomTaskLog, useBatchTankMixLog } from '../hooks';
 import type { TaskCardData } from './TaskCard';
 import {
   IpmSprayFields, INITIAL_SPRAY_DATA,
@@ -14,6 +14,7 @@ import {
   ScoutingFields, INITIAL_SCOUTING_DATA,
   TrainingFields, INITIAL_TRAINING_DATA,
   CustomFields, INITIAL_CUSTOM_DATA,
+  BatchTankMixFields, INITIAL_BATCH_TANK_MIX_DATA,
 } from './task-forms';
 import type {
   IpmSprayFormData,
@@ -23,6 +24,7 @@ import type {
   ScoutingFormData,
   TrainingFormData,
   CustomFormData,
+  BatchTankMixFormData,
 } from './task-forms';
 
 const DURATION_OPTIONS = ['15min', '30min', '1hr', '2hr', '2hr+'] as const;
@@ -34,7 +36,8 @@ type AnyFormData =
   | CleaningFormData
   | ScoutingFormData
   | TrainingFormData
-  | CustomFormData;
+  | CustomFormData
+  | BatchTankMixFormData;
 
 interface StaffOption {
   id: string;
@@ -61,6 +64,7 @@ function getInitialData(taskType: TaskType): AnyFormData | null {
     case 'scouting': return { ...INITIAL_SCOUTING_DATA };
     case 'training': return { ...INITIAL_TRAINING_DATA };
     case 'custom': return { ...INITIAL_CUSTOM_DATA };
+    case 'batch_tank_mix': return { ...INITIAL_BATCH_TANK_MIX_DATA };
     default: return null;
   }
 }
@@ -74,6 +78,7 @@ function getRefTable(taskType: TaskType): string {
     scouting: 'scouting_log',
     training: 'training_log',
     custom: 'custom_task_log',
+    batch_tank_mix: 'batch_tank_mix_log',
   };
   return map[taskType] ?? 'custom_task_log';
 }
@@ -101,6 +106,7 @@ export function TaskCompletionForm({
   const { insertScoutingLog } = useScoutingLog();
   const { insertTrainingLog } = useTrainingLog();
   const { insertCustomTaskLog } = useCustomTaskLog();
+  const { insertBatchTankMixLog } = useBatchTankMixLog();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -149,6 +155,16 @@ export function TaskCompletionForm({
     if (task.task_type === 'custom') {
       const d = formData as CustomFormData;
       if (!d.task_name.trim()) { setError('Task name is required'); return false; }
+    }
+    if (task.task_type === 'batch_tank_mix') {
+      const d = formData as BatchTankMixFormData;
+      if (!d.gallons || parseFloat(d.gallons) <= 0) { setError('Gallons is required'); return false; }
+      if (!d.ph_value || isNaN(parseFloat(d.ph_value))) { setError('pH reading is required'); return false; }
+      if (d.reading_mode === 'ec') {
+        if (!d.ec_value || isNaN(parseFloat(d.ec_value))) { setError('EC reading is required'); return false; }
+      } else {
+        if (!d.ppm_value || isNaN(parseFloat(d.ppm_value))) { setError('PPM reading is required'); return false; }
+      }
     }
     return true;
   }
@@ -260,6 +276,40 @@ export function TaskCompletionForm({
             task_name: d.task_name,
             description: d.description || null,
             notes: notes || null,
+          });
+          refId = result.id;
+          break;
+        }
+        case 'batch_tank_mix': {
+          const d = formData as BatchTankMixFormData;
+          // Build the recipe snapshot with any overrides applied
+          const prescribedProducts = d._recipe_snapshot.map((entry) => ({
+            product_id: entry.product_id,
+            product_name: entry.product_name,
+            ml_per_gal: d.recipe_overrides[entry.product_id] ?? entry.ml_per_gal,
+            ml_per_gal_max: entry.ml_per_gal_max ?? null,
+            mixing_order: entry.mixing_order,
+          }));
+          const result = await insertBatchTankMixLog({
+            room_id: roomId,
+            task_instance_id: task.id,
+            feed_program_id: d._program_id || null,
+            program_week_id: d._program_week_id || null,
+            status: 'completed',
+            stage: d._phase || null,
+            week_number: d._week_number || null,
+            prescribed_products: prescribedProducts,
+            prescribed_ec: d._target_ec,
+            prescribed_ppm: d.ppm_scale === '700' ? d._target_ppm_700 : d._target_ppm_500,
+            prescribed_ph_min: d._target_ph_min,
+            prescribed_ph_max: d._target_ph_max,
+            actual_gallons: d.gallons ? Number(d.gallons) : null,
+            actual_ec: d.reading_mode === 'ec' && d.ec_value ? Number(d.ec_value) : null,
+            actual_ppm: d.reading_mode === 'ppm' && d.ppm_value ? Number(d.ppm_value) : null,
+            ppm_scale: d.reading_mode === 'ppm' ? d.ppm_scale : null,
+            actual_ph: d.ph_value ? Number(d.ph_value) : null,
+            completed_at: new Date().toISOString(),
+            completion_notes: notes || null,
           });
           refId = result.id;
           break;
@@ -382,6 +432,9 @@ export function TaskCompletionForm({
             )}
             {task.task_type === 'custom' && formData && (
               <CustomFields data={formData as CustomFormData} onChange={setFormData} />
+            )}
+            {task.task_type === 'batch_tank_mix' && formData && (
+              <BatchTankMixFields data={formData as BatchTankMixFormData} onChange={setFormData} roomId={roomId} />
             )}
           </div>
 

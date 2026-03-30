@@ -13,3 +13,5 @@ export { TrainingFields, INITIAL_TRAINING_DATA } from './TrainingFields';
 export type { TrainingFormData } from './TrainingFields';
 export { CustomFields, INITIAL_CUSTOM_DATA } from './CustomFields';
 export type { CustomFormData } from './CustomFields';
+export { BatchTankMixFields, INITIAL_BATCH_TANK_MIX_DATA } from './BatchTankMixFields';
+export type { BatchTankMixFormData, RecipeSnapshotEntry } from './BatchTankMixFields';
