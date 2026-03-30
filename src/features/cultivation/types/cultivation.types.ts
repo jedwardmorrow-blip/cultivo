@@ -344,6 +344,8 @@ export type TaskType =
   | 'training'
   | 'clone_cutting'
   | 'maintenance'
+  | 'batch_tank_mix'
+  | 'concentrate_mix'
   | 'custom';
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'skipped' | 'carry_forward';
@@ -369,6 +371,8 @@ export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
   training: { label: 'Training', color: '#14B8A6', icon: 'GitBranch' },
   clone_cutting: { label: 'Clone Cutting', color: '#0EA5E9', icon: 'Sprout' },
   maintenance: { label: 'Maintenance', color: '#78716C', icon: 'Wrench' },
+  batch_tank_mix: { label: 'Batch Tank Mix', color: '#3B82F6', icon: 'Beaker' },
+  concentrate_mix: { label: 'Concentrate Mix', color: '#6366F1', icon: 'FlaskConical' },
   custom: { label: 'Custom', color: '#A6A6A6', icon: 'Settings' },
 };
 
@@ -620,6 +624,132 @@ export interface PlantMortalityLog {
 
 export type CreateMortalityLogInput = Pick<PlantMortalityLog, 'plant_group_id' | 'room_id'> &
   Partial<Pick<PlantMortalityLog, 'mortality_date' | 'reported_by' | 'quantity' | 'cause' | 'cause_detail' | 'notes'>>;
+
+// ═══ Feed System ═══
+
+export interface FeedProduct {
+  id: string;
+  name: string;
+  brand: string | null;
+  product_type: 'nutrient' | 'supplement' | 'ph_adjuster' | 'cleanse' | 'other';
+  unit: string;
+  unit_cost: number | null;
+  sku: string | null;
+  mixing_order_hint: number | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FeedProgram {
+  id: string;
+  name: string;
+  description: string | null;
+  brand: string | null;
+  base_unit: string;
+  concentrate_ratio: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FeedProgramWeek {
+  id: string;
+  feed_program_id: string;
+  phase: 'clone' | 'veg' | 'flower' | 'flush';
+  week_number: number;
+  target_ec: number | null;
+  target_ppm_500: number | null;
+  target_ppm_700: number | null;
+  target_ph_min: number | null;
+  target_ph_max: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FeedProgramEntry {
+  id: string;
+  program_week_id: string;
+  feed_product_id: string;
+  amount_per_unit: number;
+  amount_max: number | null;
+  mixing_order: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ═══ Mix Log Types (2-way confirmation) ═══
+
+export type MixLogStatus = 'prescribed' | 'in_progress' | 'completed' | 'rejected';
+
+export interface PrescribedProduct {
+  feed_product_id: string;
+  product_name: string;
+  rate_per_unit: number;
+  rate_max: number | null;
+  mixing_order: number;
+  calculated_amount: number;
+  unit: string;
+}
+
+export interface ActualProduct {
+  feed_product_id: string;
+  product_name: string;
+  amount_used: number;
+  unit: string;
+  confirmed: boolean;
+}
+
+export interface BatchTankMixLog {
+  id: string;
+  task_instance_id: string | null;
+  room_id: string;
+  batch_id: string | null;
+  feed_program_id: string | null;
+  program_week_id: string | null;
+  prescribed_by: string | null;
+  prescribed_at: string | null;
+  prescribed_gallons: number | null;
+  prescribed_ec: number | null;
+  prescribed_ppm: number | null;
+  prescribed_ph_min: number | null;
+  prescribed_ph_max: number | null;
+  prescribed_products: PrescribedProduct[];
+  prescription_notes: string | null;
+  completed_by: string | null;
+  completed_at: string | null;
+  actual_gallons: number | null;
+  actual_ec: number | null;
+  actual_ph: number | null;
+  actual_products: ActualProduct[];
+  completion_notes: string | null;
+  status: MixLogStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConcentrateMixLog {
+  id: string;
+  task_instance_id: string | null;
+  feed_program_id: string | null;
+  concentrate_ratio: string | null;
+  prescribed_by: string | null;
+  prescribed_at: string | null;
+  prescribed_volume_gal: number | null;
+  prescribed_products: Record<string, unknown>[];
+  prescription_notes: string | null;
+  completed_by: string | null;
+  completed_at: string | null;
+  actual_volume_gal: number | null;
+  actual_products: Record<string, unknown>[];
+  completion_notes: string | null;
+  status: MixLogStatus;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface RoomSummaryStrain {
   name: string;
