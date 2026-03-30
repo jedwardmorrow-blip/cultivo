@@ -194,6 +194,39 @@ export const cultivationService = {
     return tables;
   },
 
+  /**
+   * Get per-section plant occupancy for a room.
+   * Returns section_id → { total_plants, strain_abbreviations } for all sections
+   * that currently hold plants. Used by the grid-based placement builder.
+   */
+  async getSectionOccupancy(roomId: string): Promise<Map<string, { total_plants: number; strain_abbreviations: string[] }>> {
+    const { data, error } = await supabase
+      .from('plant_groups')
+      .select('room_section_id, plant_count, strains:strains!inner(abbreviation)')
+      .eq('grow_room_id', roomId)
+      .not('room_section_id', 'is', null)
+      .gt('plant_count', 0);
+
+    if (error) throwError(error, 'getSectionOccupancy');
+
+    const map = new Map<string, { total_plants: number; strain_abbreviations: string[] }>();
+    for (const row of (data ?? [])) {
+      const sectionId = row.room_section_id as string;
+      const count = row.plant_count as number;
+      const abbrev = (row.strains as unknown as { abbreviation: string })?.abbreviation ?? '';
+      const existing = map.get(sectionId);
+      if (existing) {
+        existing.total_plants += count;
+        if (abbrev && !existing.strain_abbreviations.includes(abbrev)) {
+          existing.strain_abbreviations.push(abbrev);
+        }
+      } else {
+        map.set(sectionId, { total_plants: count, strain_abbreviations: abbrev ? [abbrev] : [] });
+      }
+    }
+    return map;
+  },
+
   async createRoomTable(input: CreateRoomTableInput): Promise<RoomTable> {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase

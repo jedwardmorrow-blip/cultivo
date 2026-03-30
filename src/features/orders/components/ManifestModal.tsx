@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { X, FileText, Printer } from 'lucide-react';
+import { X, FileText, Printer, Download, Loader2 } from 'lucide-react';
 import { generateManifestData, ManifestData, Driver, Vehicle } from '../services/manifestService';
 import { ManifestTemplate } from './ManifestTemplate';
 import { getAllLocations, Location } from '../../delivery/services/locations.service';
 import { notificationService } from '@/services/notification.service';
+import { generatePDFFromElement, sanitizeFilename } from '../services/pdfGenerator.service';
 
 interface ManifestModalProps {
   orderId: string;
@@ -28,6 +29,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
   const [error, setError] = useState<string | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingPrint, setLoadingPrint] = useState(false);
+  const [loadingDownload, setLoadingDownload] = useState(false);
   const manifestRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -332,6 +334,55 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
     }
   }
 
+  async function handleDownloadPDF() {
+    if (!printRef.current || !manifestData) {
+      notificationService.warning('Manifest not ready. Please try again.');
+      return;
+    }
+
+    if (!imagesLoaded) {
+      notificationService.warning('Please wait for the manifest to finish loading...');
+      return;
+    }
+
+    setLoadingDownload(true);
+
+    // html2canvas cannot render display:none elements — temporarily show off-screen
+    const hiddenContainer = printRef.current.parentElement as HTMLElement | null;
+    if (hiddenContainer) {
+      hiddenContainer.style.display = 'block';
+      hiddenContainer.style.position = 'absolute';
+      hiddenContainer.style.left = '-9999px';
+      hiddenContainer.style.top = '0';
+    }
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const sanitizedCustomer = sanitizeFilename(manifestData.destination_entity_name);
+      const sanitizedManifest = sanitizeFilename(manifestData.manifest_number);
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `Manifest_${sanitizedManifest}_${sanitizedCustomer}_${timestamp}.pdf`;
+
+      await generatePDFFromElement(printRef.current, {
+        filename,
+        scale: 2,
+        quality: 0.95
+      });
+    } catch (error) {
+      console.error('PDF download error:', error);
+      notificationService.error('Failed to download PDF. Please try again or use the Print button.');
+    } finally {
+      if (hiddenContainer) {
+        hiddenContainer.style.display = 'none';
+        hiddenContainer.style.position = '';
+        hiddenContainer.style.left = '';
+        hiddenContainer.style.top = '';
+      }
+      setLoadingDownload(false);
+    }
+  }
+
   if (loading) {
     return (
       <div
@@ -551,14 +602,33 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
           <div className="p-6">
             <div className="mb-4 flex items-center justify-between">
               <div className="text-cult-white font-semibold">Manifest Preview</div>
-              <button
-                onClick={handlePrint}
-                disabled={!imagesLoaded || loadingPrint}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 border-2 border-green-600 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Printer className="w-4 h-4" />
-                {loadingPrint ? 'Printing...' : imagesLoaded ? 'Print Manifest' : 'Loading...'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handlePrint}
+                  disabled={!imagesLoaded || loadingPrint}
+                  className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Printer className="w-4 h-4" />
+                  {loadingPrint ? 'Printing...' : imagesLoaded ? 'Print' : 'Loading...'}
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={!imagesLoaded || loadingDownload}
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-cult-white text-cult-white hover:bg-cult-white hover:text-cult-black transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingDownload ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Download
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="bg-cult-surface p-4 max-h-[70vh] overflow-y-auto">

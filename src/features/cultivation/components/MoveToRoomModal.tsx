@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { ArrowRight, AlertTriangle, MapPin, Plus, Trash2, Skull, Minus } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { ArrowRight, AlertTriangle, MapPin, Skull, Minus, Plus } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import { useMortalityLog } from '../hooks';
@@ -15,16 +15,17 @@ interface MoveToRoomModalProps {
 
 type Step = 'room' | 'placement';
 
-interface PlacementRow {
-  id: string;
+/** Per-cell state in the grid */
+interface CellState {
   tableId: string;
   sectionId: string;
+  tableNumber: number;
+  sectionLabel: string;
+  selected: boolean;
   plantCount: number;
-}
-
-let rowIdCounter = 0;
-function nextRowId() {
-  return `row-${++rowIdCounter}`;
+  /** Existing occupancy from other groups */
+  occupiedCount: number;
+  occupiedStrains: string[];
 }
 
 export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel }: MoveToRoomModalProps) {
@@ -39,50 +40,70 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
   const [killCount, setKillCount] = useState(0);
   const { insertMortalityLog } = useMortalityLog();
 
-  // Placement builder state
-  const [placements, setPlacements] = useState<PlacementRow[]>([]);
+  // Grid state — flat map keyed by "tableNumber-sectionLabel"
+  const [cells, setCells] = useState<Map<string, CellState>>(new Map());
 
   const availableRooms = rooms.filter((r) => r.is_active && r.id !== group.grow_room_id);
   const selectedRoom = rooms.find((r) => r.id === toRoomId);
   const isFlowerRoom = selectedRoom?.room_type === 'flower';
 
-  // Flatten all sections for the dropdown options
-  const allSections = useMemo(() =>
-    tables.flatMap((t) =>
-      t.sections
-        .filter((s) => s.is_active)
-        .map((s) => ({
-          id: s.id,
-          tableId: t.id,
-          tableNumber: t.table_number,
-          tableName: t.table_name,
-          sectionLabel: s.section_label,
-          displayName: `T${t.table_number} / ${s.section_label}`,
-        }))
-    ),
+  // Derive grid dimensions from tables
+  const sortedTables = useMemo(() =>
+    [...tables].filter(t => t.sections.length > 0).sort((a, b) => a.table_number - b.table_number),
     [tables]
   );
+  const sectionLabels = useMemo(() => {
+    const labels = new Set<string>();
+    sortedTables.forEach(t => t.sections.forEach(s => { if (s.is_active) labels.add(s.section_label); }));
+    return [...labels].sort();
+  }, [sortedTables]);
 
-  // Compute assigned / remaining — force integer math
+  // Computed totals
   const totalPlants = group.plant_count;
   const availablePlants = totalPlants - killCount;
-  const assignedPlants = placements.reduce((sum, p) => sum + (Number(p.plantCount) || 0), 0);
+  const selectedCells = useMemo(() =>
+    [...cells.values()].filter(c => c.selected),
+    [cells]
+  );
+  const assignedPlants = selectedCells.reduce((sum, c) => sum + c.plantCount, 0);
   const remainingPlants = availablePlants - assignedPlants;
 
-  // Sections already used in placements (prevent duplicates)
-  const usedSectionIds = new Set(placements.map((p) => p.sectionId).filter(Boolean));
-
+  // Load tables + occupancy when room changes
   useEffect(() => {
     if (!toRoomId) {
       setTables([]);
-      setPlacements([]);
+      setCells(new Map());
       return;
     }
     setLoadingTables(true);
-    cultivationService.listRoomTables(toRoomId).then((data) => {
-      setTables(data);
+    Promise.all([
+      cultivationService.listRoomTables(toRoomId),
+      cultivationService.getSectionOccupancy(toRoomId),
+    ]).then(([tableData, occupancyMap]) => {
+      setTables(tableData);
+      // Build the cell grid
+      const newCells = new Map<string, CellState>();
+      for (const table of tableData) {
+        for (const section of table.sections) {
+          if (!section.is_active) continue;
+          const key = `${table.table_number}-${section.section_label}`;
+          const occ = occupancyMap.get(section.id);
+          newCells.set(key, {
+            tableId: table.id,
+            sectionId: section.id,
+            tableNumber: table.table_number,
+            sectionLabel: section.section_label,
+            selected: false,
+            plantCount: 0,
+            occupiedCount: occ?.total_plants ?? 0,
+            occupiedStrains: occ?.strain_abbreviations ?? [],
+          });
+        }
+      }
+      setCells(newCells);
     }).catch(() => {
       setTables([]);
+      setCells(new Map());
     }).finally(() => {
       setLoadingTables(false);
     });
@@ -90,14 +111,66 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
 
   const hasSections = tables.some((t) => t.sections.length > 0);
 
+  // ─── Cell interactions ───
+
+  const toggleCell = useCallback((key: string) => {
+    setCells(prev => {
+      const next = new Map(prev);
+      const cell = next.get(key);
+      if (!cell) return prev;
+      next.set(key, { ...cell, selected: !cell.selected, plantCount: cell.selected ? 0 : cell.plantCount });
+      return next;
+    });
+  }, []);
+
+  const setCellCount = useCallback((key: string, value: number) => {
+    setCells(prev => {
+      const next = new Map(prev);
+      const cell = next.get(key);
+      if (!cell) return prev;
+      const num = Math.max(0, Math.floor(value));
+      next.set(key, { ...cell, plantCount: num, selected: true });
+      return next;
+    });
+  }, []);
+
+  const distributeEvenly = useCallback(() => {
+    setCells(prev => {
+      const next = new Map(prev);
+      const sel = [...next.values()].filter(c => c.selected);
+      if (sel.length === 0) return prev;
+      const per = Math.floor(availablePlants / sel.length);
+      const remainder = availablePlants % sel.length;
+      let idx = 0;
+      for (const [key, cell] of next) {
+        if (cell.selected) {
+          next.set(key, { ...cell, plantCount: per + (idx < remainder ? 1 : 0) });
+          idx++;
+        }
+      }
+      return next;
+    });
+  }, [availablePlants]);
+
+  const clearSelection = useCallback(() => {
+    setCells(prev => {
+      const next = new Map(prev);
+      for (const [key, cell] of next) {
+        if (cell.selected) {
+          next.set(key, { ...cell, selected: false, plantCount: 0 });
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // ─── Step transitions ───
+
   function handleRoomContinue() {
     if (!toRoomId) return;
     if (isFlowerRoom && hasSections) {
-      // Seed with one empty placement row
-      setPlacements([{ id: nextRowId(), tableId: '', sectionId: '', plantCount: 0 }]);
       setStep('placement');
     } else {
-      // Non-flower room — simple move, no placement needed
       void handleSimpleMove();
     }
   }
@@ -119,26 +192,25 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
     setSaving(true);
     setError(null);
     try {
-      const validPlacements: PlacementEntry[] = placements
-        .filter((p) => p.sectionId && p.tableId && p.plantCount > 0)
-        .map((p) => ({
-          table_id: p.tableId,
-          section_id: p.sectionId,
-          plant_count: p.plantCount,
+      const validPlacements: PlacementEntry[] = selectedCells
+        .filter((c) => c.plantCount > 0)
+        .map((c) => ({
+          table_id: c.tableId,
+          section_id: c.sectionId,
+          plant_count: c.plantCount,
         }));
 
       if (validPlacements.length === 0) {
-        setError('Add at least one placement with a section and plant count.');
+        setError('Select sections and assign plant counts first.');
         setSaving(false);
         return;
       }
 
       // Log mortality first — trigger auto-decrements source group plant_count
       if (killCount > 0) {
-        const roomId = group.grow_room_id;
         await insertMortalityLog({
           plant_group_id: group.id,
-          room_id: roomId,
+          room_id: group.grow_room_id,
           quantity: killCount,
           cause: 'cull_at_move',
           cause_detail: `Culled during move to ${selectedRoom?.room_code ?? toRoomId}`,
@@ -158,42 +230,14 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
     }
   }
 
-  function addPlacementRow() {
-    setPlacements((prev) => [...prev, { id: nextRowId(), tableId: '', sectionId: '', plantCount: 0 }]);
-  }
-
-  function removePlacementRow(rowId: string) {
-    setPlacements((prev) => prev.filter((p) => p.id !== rowId));
-  }
-
-  function updatePlacement(rowId: string, field: keyof PlacementRow, value: string | number) {
-    setPlacements((prev) =>
-      prev.map((p) => {
-        if (p.id !== rowId) return p;
-        if (field === 'sectionId') {
-          // Auto-fill tableId from section selection
-          const section = allSections.find((s) => s.id === value);
-          return { ...p, sectionId: value as string, tableId: section?.tableId ?? '' };
-        }
-        if (field === 'plantCount') {
-          // Always store as integer
-          const num = Math.max(0, Math.floor(Number(value) || 0));
-          return { ...p, plantCount: num };
-        }
-        return { ...p, [field]: value };
-      })
-    );
-  }
-
   const groupLabel = group.batch_registry?.batch_number ?? group.strains?.name ?? 'this group';
   const fromRoom = group.grow_rooms?.name ?? group.grow_room_id;
-  // Valid placements = rows with both section and count filled in
-  const filledPlacements = placements.filter((p) => p.sectionId && p.plantCount > 0);
-  const canConfirm = remainingPlants >= 0 && filledPlacements.length > 0;
+  const filledCount = selectedCells.filter(c => c.plantCount > 0).length;
+  const canConfirm = remainingPlants >= 0 && filledCount > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-md p-6">
+      <div className={`bg-cult-near-black border border-cult-medium-gray p-6 ${step === 'placement' ? 'w-full max-w-2xl' : 'w-full max-w-md'}`}>
         <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">Move Plant Group</h3>
         <p className="text-cult-light-gray text-sm mb-1">
           Moving <span className="text-cult-white font-mono font-bold">{groupLabel}</span> from{' '}
@@ -262,34 +306,29 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
           </>
         )}
 
-        {/* ─── Step 2: Placement Builder ─── */}
+        {/* ─── Step 2: Grid-based Placement Builder ─── */}
         {step === 'placement' && (
           <>
             <div className="mb-3">
-              <p className="text-xs text-cult-medium-gray mb-1">
+              <p className="text-xs text-cult-medium-gray mb-2">
                 Moving to <span className="text-cult-white font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
               </p>
-              <div className="flex items-center gap-1.5 mb-3">
-                <MapPin className="w-3.5 h-3.5 text-cult-light-gray" />
-                <label className="text-xs text-cult-light-gray uppercase tracking-wider">Section Placement</label>
-              </div>
             </div>
 
             {/* Kill plants row */}
-            <div className="flex items-center gap-3 bg-red-950/30 border border-red-900/40 px-3 py-2.5 mb-3">
-              <div className="w-7 h-7 rounded-sm flex items-center justify-center bg-red-950 flex-shrink-0">
-                <Skull className="w-3.5 h-3.5 text-red-400" />
+            <div className="flex items-center gap-3 bg-red-950/30 border border-red-900/40 px-3 py-2 mb-3">
+              <div className="w-6 h-6 rounded-sm flex items-center justify-center bg-red-950 flex-shrink-0">
+                <Skull className="w-3 h-3 text-red-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs text-red-300 font-medium uppercase tracking-wider">Kill Plants</p>
-                <p className="text-[10px] text-red-400/60">Removed before placement</p>
+                <p className="text-[10px] text-red-300 font-medium uppercase tracking-wider">Kill Plants</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setKillCount((c) => Math.max(c - 1, 0))}
                   disabled={killCount <= 0}
-                  className="w-7 h-7 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                  className="w-6 h-6 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
@@ -303,17 +342,139 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                     setKillCount(Math.min(v, totalPlants - 1));
                   }}
                   placeholder="0"
-                  className="w-14 bg-cult-black border border-red-900/50 text-red-300 px-1.5 py-1 text-xs text-center font-mono focus:outline-none focus:border-red-700"
+                  className="w-12 bg-cult-black border border-red-900/50 text-red-300 px-1 py-0.5 text-xs text-center font-mono focus:outline-none focus:border-red-700"
                 />
                 <button
                   type="button"
                   onClick={() => setKillCount((c) => Math.min(c + 1, totalPlants - 1))}
                   disabled={killCount >= totalPlants - 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                  className="w-6 h-6 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
               </div>
+            </div>
+
+            {/* Grid header with actions */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 text-cult-light-gray" />
+                <span className="text-[10px] text-cult-light-gray uppercase tracking-wider font-semibold">Tap sections to select</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={distributeEvenly}
+                  disabled={selectedCells.length === 0}
+                  className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-emerald-700 hover:text-emerald-400 disabled:opacity-30 transition-all"
+                >
+                  Distribute evenly
+                </button>
+                <button
+                  onClick={clearSelection}
+                  disabled={selectedCells.length === 0}
+                  className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white disabled:opacity-30 transition-all"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* ─── Room Grid ─── */}
+            <div
+              className="grid gap-[3px] mb-3"
+              style={{
+                gridTemplateColumns: `36px repeat(${sectionLabels.length}, 1fr)`,
+              }}
+            >
+              {/* Column headers */}
+              <div className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1" />
+              {sectionLabels.map((label) => (
+                <div key={label} className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1 tracking-wider">
+                  {label}
+                </div>
+              ))}
+
+              {/* Grid rows */}
+              {sortedTables.map((table) => (
+                <>
+                  {/* Row label */}
+                  <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono font-bold text-cult-medium-gray">
+                    T{table.table_number}
+                  </div>
+                  {/* Cells */}
+                  {sectionLabels.map((sLabel) => {
+                    const key = `${table.table_number}-${sLabel}`;
+                    const cell = cells.get(key);
+                    if (!cell) {
+                      return <div key={key} className="aspect-square min-h-[44px] bg-cult-black/30 border border-cult-dark-gray/30" />;
+                    }
+
+                    const isOccupied = cell.occupiedCount > 0;
+                    const isSelected = cell.selected;
+
+                    if (isOccupied && !isSelected) {
+                      // Occupied cell — show existing plants
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => toggleCell(key)}
+                          className="aspect-square min-h-[44px] bg-sky-950/20 border border-sky-800/20 flex flex-col items-center justify-center cursor-pointer hover:border-sky-600/40 transition-colors"
+                          title={`${cell.occupiedCount} plants (${cell.occupiedStrains.join(', ')}) — click to add more`}
+                        >
+                          <span className="font-mono text-[11px] font-medium text-sky-400/60">{cell.occupiedCount}</span>
+                          <span className="text-[7px] text-sky-500/30 uppercase tracking-wider truncate max-w-full px-1">
+                            {cell.occupiedStrains.join(',')}
+                          </span>
+                        </button>
+                      );
+                    }
+
+                    if (isSelected) {
+                      // Selected cell — show count input
+                      return (
+                        <div
+                          key={key}
+                          className={`aspect-square min-h-[44px] border flex flex-col items-center justify-center relative ${
+                            isOccupied
+                              ? 'bg-emerald-950/20 border-emerald-600/40'
+                              : 'bg-emerald-950/15 border-emerald-500/50'
+                          }`}
+                        >
+                          {/* Deselect on click of the checkmark area */}
+                          <button
+                            onClick={() => toggleCell(key)}
+                            className="absolute top-0.5 right-1 text-[8px] text-emerald-500/50 hover:text-red-400 transition-colors"
+                            title="Deselect"
+                          >
+                            ✓
+                          </button>
+                          <input
+                            type="number"
+                            min={0}
+                            value={cell.plantCount > 0 ? cell.plantCount : ''}
+                            onChange={(e) => setCellCount(key, Number(e.target.value) || 0)}
+                            onFocus={(e) => e.target.select()}
+                            placeholder="0"
+                            className="w-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          {isOccupied && (
+                            <span className="text-[7px] text-sky-400/40 font-mono">+{cell.occupiedCount}</span>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Empty cell — available for selection
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => toggleCell(key)}
+                        className="aspect-square min-h-[44px] bg-cult-black border border-cult-dark-gray hover:border-cult-medium-gray hover:bg-white/[0.02] transition-colors cursor-pointer opacity-40 hover:opacity-70"
+                      />
+                    );
+                  })}
+                </>
+              ))}
             </div>
 
             {/* Running counter */}
@@ -334,7 +495,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
               </div>
             </div>
 
-            {remainingPlants > 0 && filledPlacements.length > 0 && (
+            {remainingPlants > 0 && filledCount > 0 && (
               <p className="text-xs text-cult-medium-gray mb-3">
                 {remainingPlants} plant{remainingPlants !== 1 ? 's' : ''} will stay in {fromRoom}.
               </p>
@@ -347,64 +508,6 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
               </div>
             )}
 
-            {/* Placement rows */}
-            <div className="space-y-2 max-h-56 overflow-y-auto mb-3">
-              {placements.map((row, idx) => (
-                <div key={row.id} className="flex items-center gap-2">
-                  {/* Section select */}
-                  <select
-                    value={row.sectionId}
-                    onChange={(e) => updatePlacement(row.id, 'sectionId', e.target.value)}
-                    className="flex-1 bg-cult-black border border-cult-dark-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray"
-                  >
-                    <option value="">Section...</option>
-                    {allSections.map((s) => (
-                      <option
-                        key={s.id}
-                        value={s.id}
-                        disabled={usedSectionIds.has(s.id) && row.sectionId !== s.id}
-                      >
-                        {s.displayName}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Plant count */}
-                  <input
-                    type="number"
-                    min={0}
-                    max={totalPlants}
-                    value={row.plantCount > 0 ? row.plantCount : ''}
-                    onChange={(e) => updatePlacement(row.id, 'plantCount', e.target.value)}
-                    placeholder="qty"
-                    className="w-16 bg-cult-black border border-cult-dark-gray text-cult-white px-2 py-1.5 text-xs text-center font-mono focus:outline-none focus:border-cult-lighter-gray"
-                  />
-
-                  {/* Remove row */}
-                  {placements.length > 1 && (
-                    <button
-                      onClick={() => removePlacementRow(row.id)}
-                      className="p-1 text-cult-medium-gray hover:text-red-400 transition-colors"
-                      title="Remove placement"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Add another placement row */}
-            {remainingPlants > 0 && (
-              <button
-                onClick={addPlacementRow}
-                className="flex items-center gap-1.5 text-xs text-cult-light-gray hover:text-cult-white transition-colors mb-4"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add section ({remainingPlants} plant{remainingPlants !== 1 ? 's' : ''} remaining)
-              </button>
-            )}
-
             <div className="flex gap-3">
               <Button
                 onClick={handleSplitMove}
@@ -415,7 +518,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                 {saving ? 'Moving...' : `${killCount > 0 ? `Kill ${killCount} & ` : ''}Move ${assignedPlants} Plant${assignedPlants !== 1 ? 's' : ''}`}
               </Button>
               <button
-                onClick={() => { setStep('room'); setPlacements([]); setKillCount(0); }}
+                onClick={() => { setStep('room'); clearSelection(); setKillCount(0); }}
                 disabled={saving}
                 className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
               >

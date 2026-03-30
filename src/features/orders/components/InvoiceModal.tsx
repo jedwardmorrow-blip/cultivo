@@ -476,7 +476,19 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
 
     setLoadingDownload(true);
 
+    // html2canvas cannot render display:none elements — temporarily show off-screen
+    const hiddenContainer = printRef.current.parentElement as HTMLElement | null;
+    if (hiddenContainer) {
+      hiddenContainer.style.display = 'block';
+      hiddenContainer.style.position = 'absolute';
+      hiddenContainer.style.left = '-9999px';
+      hiddenContainer.style.top = '0';
+    }
+
     try {
+      // Allow layout to settle after making visible
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const filename = generateInvoiceFilename(
         invoiceData.invoice_number,
         invoiceData.customer_name
@@ -491,6 +503,13 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
       console.error('PDF download error:', error);
       notificationService.error('Failed to download PDF. Please try again or use the Print button.');
     } finally {
+      // Re-hide the print element
+      if (hiddenContainer) {
+        hiddenContainer.style.display = 'none';
+        hiddenContainer.style.position = '';
+        hiddenContainer.style.left = '';
+        hiddenContainer.style.top = '';
+      }
       setLoadingDownload(false);
     }
   }
