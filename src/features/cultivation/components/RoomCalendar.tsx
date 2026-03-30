@@ -1659,6 +1659,13 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                       Create Manually
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateManager(true)}
+                    className="mt-4 text-xs text-cult-medium-gray hover:text-cult-light-gray underline underline-offset-2 transition-colors"
+                  >
+                    or manage your templates
+                  </button>
                 </div>
               )}
 

@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   CircleDot,
   Circle,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
@@ -32,6 +33,7 @@ import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
+import { TemplateManager } from './TemplateManager';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
@@ -108,6 +110,7 @@ export function SchedulesPage() {
   const { rooms: dbRooms } = useGrowRooms();
   const [scheduleView, setScheduleView] = useState<'calendar' | 'setup'>('calendar');
   const [setupRoomId, setSetupRoomId] = useState<string | undefined>(undefined);
+  const [showTemplateManager, setShowTemplateManager] = useState(false);
 
   const rooms = useMemo(() => {
     return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
@@ -133,31 +136,41 @@ export function SchedulesPage() {
             {scheduleView === 'calendar' ? 'View scheduled tasks across all rooms' : 'Configure recurring task schedules per room'}
           </p>
         </div>
-        <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setScheduleView('calendar')}
-            className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
-              scheduleView === 'calendar'
-                ? 'bg-cult-charcoal text-cult-white'
-                : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
-            }`}
+            onClick={() => setShowTemplateManager(true)}
+            className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors"
           >
-            <Calendar className="w-4 h-4" />
-            Calendar
+            <Pencil className="w-3.5 h-3.5" />
+            Manage Templates
           </button>
-          <button
-            type="button"
-            onClick={() => { setSetupRoomId(undefined); setScheduleView('setup'); }}
-            className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
-              scheduleView === 'setup'
-                ? 'bg-cult-charcoal text-cult-white'
-                : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
-            }`}
-          >
-            <Wrench className="w-4 h-4" />
-            Room Setup
-          </button>
+          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setScheduleView('calendar')}
+              className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                scheduleView === 'calendar'
+                  ? 'bg-cult-charcoal text-cult-white'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              Calendar
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSetupRoomId(undefined); setScheduleView('setup'); }}
+              className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                scheduleView === 'setup'
+                  ? 'bg-cult-charcoal text-cult-white'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+              }`}
+            >
+              <Wrench className="w-4 h-4" />
+              Room Setup
+            </button>
+          </div>
         </div>
       </div>
 
@@ -166,6 +179,15 @@ export function SchedulesPage() {
         <RoomCalendar rooms={rooms} onEditRoom={handleEditRoom} onSwitchToSetup={handleSwitchToSetup} />
       ) : (
         <RoomSetupPanel rooms={rooms} initialRoomId={setupRoomId} />
+      )}
+
+      {/* Global Template Manager overlay */}
+      {showTemplateManager && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center pt-[10vh]">
+          <div className="w-full max-w-3xl max-h-[80vh] overflow-y-auto bg-cult-near-black border border-cult-dark-gray rounded-sm shadow-2xl">
+            <TemplateManager onClose={() => setShowTemplateManager(false)} />
+          </div>
+        </div>
       )}
     </div>
   );
