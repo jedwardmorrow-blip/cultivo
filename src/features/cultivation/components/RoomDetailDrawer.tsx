@@ -229,7 +229,7 @@ export function RoomDetailDrawer({
   const { tables, loading: tablesLoading, reload: reloadTables } = useRoomSections(room.id);
 
   const groups = preloadedGroups
-    ? preloadedGroups.filter((g) => g.grow_room_id === room.id && g.growth_stage !== 'harvested')
+    ? preloadedGroups.filter((g) => g.grow_room_id === room.id && g.growth_stage !== 'harvested' && g.plant_count > 0)
     : fetchedGroups;
 
   const loadGroups = useCallback(async () => {
@@ -237,7 +237,7 @@ export function RoomDetailDrawer({
     setLoadingGroups(true);
     try {
       const data = await cultivationService.listPlantGroupsByRoom(room.id);
-      setFetchedGroups(data.filter((g) => g.growth_stage !== 'harvested'));
+      setFetchedGroups(data.filter((g) => g.growth_stage !== 'harvested' && g.plant_count > 0));
     } catch {
       // silent
     } finally {

@@ -340,6 +340,8 @@ export const cultivationService = {
       .from('plant_groups')
       .select(PLANT_GROUP_LIST_SELECT)
       .eq('grow_room_id', growRoomId)
+      .gt('plant_count', 0)
+      .neq('growth_stage', 'harvested')
       .order('created_at', { ascending: false });
     if (error) throwError(error, 'listPlantGroupsByRoom');
     return data as unknown as PlantGroup[];
@@ -414,12 +416,25 @@ export const cultivationService = {
   },
 
   async moveToRoom(id: string, toRoomId: string): Promise<PlantGroup> {
+    // Fetch destination room type to set correct growth_stage
+    const { data: destRoom } = await supabase
+      .from('grow_rooms')
+      .select('room_type')
+      .eq('id', toRoomId)
+      .single();
+
+    const updateFields: Record<string, unknown> = { grow_room_id: toRoomId };
+    if (destRoom?.room_type) {
+      updateFields.growth_stage = destRoom.room_type;
+      updateFields.stage_entered_at = new Date().toISOString();
+    }
+
     // UPDATE triggers handle:
     //   fn_clear_placement_on_room_transfer → nulls room_table_id / room_section_id
     //   fn_log_plant_group_room_history     → writes history with from/to room + table/section + count
     const { data, error } = await supabase
       .from('plant_groups')
-      .update({ grow_room_id: toRoomId })
+      .update(updateFields)
       .eq('id', id)
       .select(PLANT_GROUP_SELECT)
       .single();
@@ -454,6 +469,17 @@ export const cultivationService = {
       throw new Error(`Cannot place ${totalPlacing} plants — source group only has ${source.plant_count}`);
     }
 
+    // Fetch destination room to determine correct growth_stage
+    const { data: destRoom, error: roomErr } = await supabase
+      .from('grow_rooms')
+      .select('room_type')
+      .eq('id', to_room_id)
+      .single();
+    if (roomErr || !destRoom) throwError(roomErr ?? new Error('Destination room not found'), 'splitAndMoveToRoom');
+
+    // Map room_type → growth_stage (room_type values: veg, flower, mother)
+    const destStage = destRoom.room_type as string; // 'veg' | 'flower' | 'mother'
+
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
     const newGroups: PlantGroup[] = [];
@@ -472,8 +498,8 @@ export const cultivationService = {
           source_type: source.source_type,
           is_mother: false,
           plant_count: placement.plant_count,
-          growth_stage: source.growth_stage,
-          stage_entered_at: source.stage_entered_at,
+          growth_stage: destStage,
+          stage_entered_at: destStage !== source.growth_stage ? new Date().toISOString() : source.stage_entered_at,
           planted_date: source.planted_date,
           notes: null,
           created_by: userId,
