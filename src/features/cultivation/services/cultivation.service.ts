@@ -22,6 +22,8 @@ import type {
   UpdateRoomTableInput,
   CreateRoomSectionInput,
   UpdatePlantGroupPlacementInput,
+  SplitAndMoveInput,
+  PlacementEntry,
   FlipRoomInput,
   DryRoom,
   BinningSession,
@@ -379,14 +381,127 @@ export const cultivationService = {
   },
 
   async moveToRoom(id: string, toRoomId: string): Promise<PlantGroup> {
+    // Fetch current state for history before updating
+    const { data: current } = await supabase
+      .from('plant_groups')
+      .select('grow_room_id, room_table_id, room_section_id, plant_count')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('plant_groups')
-      .update({ grow_room_id: toRoomId })
+      .update({ grow_room_id: toRoomId, room_table_id: null, room_section_id: null })
       .eq('id', id)
       .select(PLANT_GROUP_SELECT)
       .single();
     if (error) throwError(error, 'moveToRoom');
+
+    // Write history
+    const { data: { user } } = await supabase.auth.getUser();
+    if (current) {
+      await supabase.from('plant_group_room_history').insert({
+        plant_group_id: id,
+        from_room_id: current.grow_room_id,
+        to_room_id: toRoomId,
+        from_table_id: current.room_table_id,
+        from_section_id: current.room_section_id,
+        plant_count: current.plant_count,
+        moved_by: user?.id ?? null,
+      });
+    }
+
     return data as unknown as PlantGroup;
+  },
+
+  /**
+   * Split a plant group across multiple table/sections in a destination FLW room.
+   *
+   * For each placement:
+   *  1. Creates a new plant_group at the destination room/table/section with the specified count
+   *  2. Writes a plant_group_room_history entry with full from/to details
+   *
+   * After all placements, decrements or archives the source group.
+   * Returns the array of newly created groups.
+   */
+  async splitAndMoveToRoom(input: SplitAndMoveInput): Promise<PlantGroup[]> {
+    const { source_group_id, to_room_id, placements } = input;
+
+    // 1. Fetch source group
+    const { data: source, error: srcErr } = await supabase
+      .from('plant_groups')
+      .select('*')
+      .eq('id', source_group_id)
+      .single();
+    if (srcErr || !source) throwError(srcErr ?? new Error('Source group not found'), 'splitAndMoveToRoom');
+
+    const totalPlacing = placements.reduce((sum, p) => sum + p.plant_count, 0);
+    if (totalPlacing > source.plant_count) {
+      throw new Error(`Cannot place ${totalPlacing} plants — source group only has ${source.plant_count}`);
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? null;
+    const newGroups: PlantGroup[] = [];
+
+    // 2. Create a child group for each placement
+    for (const placement of placements) {
+      const { data: child, error: childErr } = await supabase
+        .from('plant_groups')
+        .insert({
+          strain_id: source.strain_id,
+          grow_room_id: to_room_id,
+          room_table_id: placement.table_id,
+          room_section_id: placement.section_id,
+          batch_registry_id: source.batch_registry_id,
+          mother_plant_group_id: source.mother_plant_group_id,
+          source_type: source.source_type,
+          is_mother: false,
+          plant_count: placement.plant_count,
+          growth_stage: source.growth_stage,
+          stage_entered_at: source.stage_entered_at,
+          planted_date: source.planted_date,
+          notes: null,
+          created_by: userId,
+        })
+        .select(PLANT_GROUP_SELECT)
+        .single();
+      if (childErr) throwError(childErr, 'splitAndMoveToRoom:createChild');
+
+      const childGroup = child as unknown as PlantGroup;
+      newGroups.push(childGroup);
+
+      // 3. Write history for each placement
+      await supabase.from('plant_group_room_history').insert({
+        plant_group_id: childGroup.id,
+        from_room_id: source.grow_room_id,
+        to_room_id,
+        from_table_id: source.room_table_id,
+        from_section_id: source.room_section_id,
+        to_table_id: placement.table_id,
+        to_section_id: placement.section_id,
+        plant_count: placement.plant_count,
+        source_group_id: source_group_id,
+        moved_by: userId,
+      });
+    }
+
+    // 4. Update source group: decrement plant_count or set to 0
+    const remaining = source.plant_count - totalPlacing;
+    if (remaining <= 0) {
+      // All plants moved — zero out the source and set growth_stage to harvested
+      await supabase
+        .from('plant_groups')
+        .update({ plant_count: 0, growth_stage: 'harvested' })
+        .eq('id', source_group_id);
+    } else {
+      // Partial move — some plants remain in the source room
+      await supabase
+        .from('plant_groups')
+        .update({ plant_count: remaining })
+        .eq('id', source_group_id);
+    }
+
+    return newGroups;
   },
 
   async updatePlantGroupPlacement(id: string, input: UpdatePlantGroupPlacementInput): Promise<PlantGroup> {

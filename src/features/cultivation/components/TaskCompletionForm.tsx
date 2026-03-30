@@ -93,7 +93,14 @@ function getRefTable(taskType: TaskType): string {
 export function TaskCompletionForm({
   task, roomId, staffOptions, onAssignWorker, onComplete, onNavigateHarvest, onNavigateClone, onClose,
 }: TaskCompletionFormProps) {
-  const [formData, setFormData] = useState<AnyFormData | null>(() => getInitialData(task.task_type));
+  const [formData, setFormData] = useState<AnyFormData | null>(() => {
+    const initial = getInitialData(task.task_type);
+    // Pre-populate recipe overrides from task_config (set in TaskDetailDrawer)
+    if (initial && task.task_type === 'batch_tank_mix' && task.task_config?.recipe_overrides) {
+      (initial as BatchTankMixFormData).recipe_overrides = task.task_config.recipe_overrides as Record<string, number>;
+    }
+    return initial;
+  });
   const [duration, setDuration] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);

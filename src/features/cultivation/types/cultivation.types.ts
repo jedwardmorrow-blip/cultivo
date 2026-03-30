@@ -218,6 +218,29 @@ export type UpdatePlantGroupPlacementInput = {
   room_section_id: string | null;
 };
 
+/** A single placement in a split-move operation */
+export type PlacementEntry = {
+  table_id: string;
+  section_id: string;
+  plant_count: number;
+};
+
+/** Input for splitting a plant group across multiple table/sections during a room move */
+export type SplitAndMoveInput = {
+  source_group_id: string;
+  to_room_id: string;
+  placements: PlacementEntry[];
+};
+
+export interface PlantGroupRoomHistoryFull extends PlantGroupRoomHistory {
+  from_table_id: string | null;
+  to_table_id: string | null;
+  from_section_id: string | null;
+  to_section_id: string | null;
+  plant_count: number | null;
+  source_group_id: string | null;
+}
+
 export type FlipRoomInput = {
   grow_room_id: string;
   flip_date: string;

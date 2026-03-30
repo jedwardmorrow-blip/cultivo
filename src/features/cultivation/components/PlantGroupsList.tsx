@@ -12,7 +12,7 @@ import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { ExpandedPlantsList } from './ExpandedPlantsList';
 import { isValidStrainAbbreviation } from '../utils';
 import { STAGE_BADGE } from '../constants/stageColors';
-import type { PlantGroup, GrowthStage } from '../types';
+import type { PlantGroup, GrowthStage, SplitAndMoveInput } from '../types';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
   clone: 'veg',
@@ -112,7 +112,7 @@ function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh,
 }
 
 export function PlantGroupsList() {
-  const { groups, loading, error, reload, createGroup, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
+  const { groups, loading, error, reload, createGroup, advanceStage, moveToRoom, splitAndMoveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { rooms } = useGrowRooms();
   const label = usePlantGroupLabel();
 
@@ -161,6 +161,11 @@ export function PlantGroupsList() {
   async function handleMoveRoom(toRoomId: string) {
     if (!pendingAction || pendingAction.type !== 'move') return;
     await moveToRoom(pendingAction.group.id, toRoomId);
+    setPendingAction(null);
+  }
+
+  async function handleSplitAndMove(input: SplitAndMoveInput) {
+    await splitAndMoveToRoom(input);
     setPendingAction(null);
   }
 
@@ -238,6 +243,7 @@ export function PlantGroupsList() {
           group={pendingAction.group}
           rooms={rooms}
           onMove={handleMoveRoom}
+          onSplitAndMove={handleSplitAndMove}
           onCancel={() => setPendingAction(null)}
         />
       )}

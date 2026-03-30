@@ -265,15 +265,140 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
 
   if (!recipe) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-amber-950/20 border border-amber-800/40 rounded-sm">
-        <Info className="w-4 h-4 text-amber-400 flex-shrink-0" />
-        <div className="text-xs text-amber-300">
-          <p className="font-semibold">No feed recipe found</p>
-          <p className="text-amber-400/70 mt-0.5">
-            {!stage ? 'This room has no active plant groups with a stage set.'
-              : !resolvedPhase ? `Stage "${stage}" does not map to a feed program phase.`
-                : `No feed program week found for ${resolvedPhase} W${resolvedWeek}.`}
-          </p>
+      <div className="space-y-4">
+        {/* Warning banner */}
+        <div className="flex items-center gap-2 p-3 bg-amber-950/20 border border-amber-800/40 rounded-sm">
+          <Info className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <div className="text-xs text-amber-300">
+            <p className="font-semibold">No feed recipe found — manual entry</p>
+            <p className="text-amber-400/70 mt-0.5">
+              {!stage ? 'This room has no active plant groups with a stage set.'
+                : !resolvedPhase ? `Stage "${stage}" does not map to a feed program phase.`
+                  : `No feed program week found for ${resolvedPhase} W${resolvedWeek}.`}
+            </p>
+          </div>
+        </div>
+
+        {/* Manual gallons input */}
+        <div>
+          <label className={labelClass}>
+            <Droplets className="w-3 h-3 inline mr-1" />
+            Water in Tank (gallons)
+          </label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            value={data.gallons}
+            onChange={(e) => set('gallons', e.target.value)}
+            placeholder="Enter gallons..."
+            className={`${inputClass} text-lg font-mono font-bold`}
+            inputMode="numeric"
+          />
+        </div>
+
+        {/* Manual readings */}
+        <div className="border-t border-cult-dark-gray/40 pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className={labelClass}>Post-Mix Readings</span>
+            <span className="text-[9px] text-red-400 uppercase tracking-wider font-semibold">Required</span>
+          </div>
+
+          {/* EC or PPM toggle */}
+          <div className="mb-3">
+            <div className="flex items-center gap-1 mb-2">
+              <button
+                type="button"
+                onClick={() => set('reading_mode', 'ec')}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
+                  data.reading_mode === 'ec'
+                    ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                    : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                }`}
+              >
+                EC
+              </button>
+              <button
+                type="button"
+                onClick={() => set('reading_mode', 'ppm')}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
+                  data.reading_mode === 'ppm'
+                    ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                    : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                }`}
+              >
+                PPM
+              </button>
+            </div>
+
+            {data.reading_mode === 'ec' ? (
+              <div>
+                <label className={labelClass}>EC Reading</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={data.ec_value}
+                  onChange={(e) => set('ec_value', e.target.value)}
+                  placeholder="e.g. 2.4"
+                  className={inputClass}
+                  inputMode="decimal"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <label className={labelClass}>PPM Reading</label>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => set('ppm_scale', '500')}
+                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
+                        data.ppm_scale === '500' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                      }`}
+                    >
+                      500
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set('ppm_scale', '700')}
+                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
+                        data.ppm_scale === '700' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                      }`}
+                    >
+                      700
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  step="10"
+                  min="0"
+                  value={data.ppm_value}
+                  onChange={(e) => set('ppm_value', e.target.value)}
+                  placeholder="e.g. 1200"
+                  className={inputClass}
+                  inputMode="numeric"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* pH */}
+          <div>
+            <label className={labelClass}>pH Reading</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="14"
+              value={data.ph_value}
+              onChange={(e) => set('ph_value', e.target.value)}
+              placeholder="e.g. 6.2"
+              className={inputClass}
+              inputMode="decimal"
+            />
+          </div>
         </div>
       </div>
     );

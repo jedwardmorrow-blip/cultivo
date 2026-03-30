@@ -14,7 +14,7 @@ const BuildingMapView = lazy(() => import('./building-map/BuildingMapView'));
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT, INNER_GLOW, STATUS_WARN_BANNER, STATUS_ERROR_BANNER } from '../constants/stageColors';
-import type { GrowRoom, PlantGroup, GrowthStage } from '../types';
+import type { GrowRoom, PlantGroup, GrowthStage, SplitAndMoveInput } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -183,7 +183,7 @@ type PendingAction =
 
 export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
-  const { groups, loading: groupsLoading, advanceStage, moveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
+  const { groups, loading: groupsLoading, advanceStage, moveToRoom, splitAndMoveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
   const { summaries, loading: summariesLoading } = useRoomSummaries();
   const { rooms: opsRooms, loading: opsLoading } = useRoomOperationalState();
@@ -234,6 +234,11 @@ export function CultivationDashboard() {
   async function handleMoveRoom(toRoomId: string) {
     if (!pendingAction || pendingAction.type !== 'move') return;
     await moveToRoom(pendingAction.group.id, toRoomId);
+    setPendingAction(null);
+  }
+
+  async function handleSplitAndMove(input: SplitAndMoveInput) {
+    await splitAndMoveToRoom(input);
     setPendingAction(null);
   }
 
@@ -389,6 +394,7 @@ export function CultivationDashboard() {
           group={pendingAction.group}
           rooms={rooms}
           onMove={handleMoveRoom}
+          onSplitAndMove={handleSplitAndMove}
           onCancel={() => setPendingAction(null)}
         />
       )}

@@ -11,8 +11,16 @@ import {
   CalendarClock,
   Users,
   StickyNote,
+  Beaker,
+  Droplets,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
+import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
+import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
+import type { RecipeEntry } from '../hooks/useFeedProgramRecipe';
 import type { TaskCardData, StaffOption } from './TaskCard';
 
 interface TaskDetailDrawerProps {
@@ -72,10 +80,17 @@ export function TaskDetailDrawer({
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Recipe overrides for batch_tank_mix tasks
+  const existingOverrides = (task.task_config?.recipe_overrides as Record<string, number>) ?? {};
+  const [recipeOverrides, setRecipeOverrides] = useState<Record<string, number>>(existingOverrides);
+
+  const overridesChanged = JSON.stringify(recipeOverrides) !== JSON.stringify(existingOverrides);
+
   const hasChanges =
     notes !== (task.notes ?? '') ||
     selectedCrew.join(',') !== crewIds.join(',') ||
-    localLeadId !== (task.assigned_to ?? null);
+    localLeadId !== (task.assigned_to ?? null) ||
+    overridesChanged;
 
   // Build crew display
   const crewMembers = useMemo(() => {
@@ -87,10 +102,14 @@ export function TaskDetailDrawer({
   async function handleSave() {
     setSaving(true);
     try {
+      const cfg: Record<string, unknown> = { crew: selectedCrew };
+      if (task.task_type === 'batch_tank_mix' && Object.keys(recipeOverrides).length > 0) {
+        cfg.recipe_overrides = recipeOverrides;
+      }
       await onUpdateTask(task.id, {
         notes: notes || null,
         assigned_to: localLeadId || null,
-        task_config: { crew: selectedCrew },
+        task_config: cfg,
       });
       onClose();
     } finally {
@@ -305,6 +324,17 @@ export function TaskDetailDrawer({
             )}
           </div>
 
+          {/* ── Recipe Preview (batch_tank_mix only) ──── */}
+          {task.task_type === 'batch_tank_mix' && !isCompleted && (
+            <RecipePreviewPanel
+              roomId={roomId}
+              overrides={recipeOverrides}
+              onOverride={(productId, value) =>
+                setRecipeOverrides((prev) => ({ ...prev, [productId]: value }))
+              }
+            />
+          )}
+
           {/* ── Defer / Reschedule (combined) ──────────── */}
           {!isCompleted && (
             <div>
@@ -416,6 +446,184 @@ export function TaskDetailDrawer({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Recipe Preview Panel (for batch_tank_mix tasks) ──── */
+function RecipePreviewPanel({
+  roomId,
+  overrides,
+  onOverride,
+}: {
+  roomId: string;
+  overrides: Record<string, number>;
+  onOverride: (productId: string, value: number) => void;
+}) {
+  const { rooms } = useRoomOperationalState();
+  const room = rooms.find((r) => r.room_id === roomId);
+  const stage = room?.dominant_stage ?? null;
+  const daysInStage = room?.days_in_stage ?? null;
+  const { recipe, loading, error } = useFeedProgramRecipe(stage, daysInStage);
+  const [expanded, setExpanded] = useState(true);
+
+  if (loading) {
+    return (
+      <div className="py-3 text-center">
+        <span className="text-xs text-cult-medium-gray animate-pulse">Loading recipe...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 p-2.5 bg-red-950/20 border border-red-800/30 rounded-sm">
+        <Info className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+        <span className="text-xs text-red-300">{error}</span>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="flex items-center gap-2 p-2.5 bg-amber-950/20 border border-amber-800/30 rounded-sm">
+        <Info className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+        <span className="text-xs text-amber-300">
+          No feed recipe for this room.
+          {!stage ? ' No active plant groups with a stage set.' : ''}
+        </span>
+      </div>
+    );
+  }
+
+  const PHASE_COLORS: Record<string, string> = {
+    clone: 'text-sky-400 bg-sky-500/20 border-sky-500/30',
+    veg: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30',
+    flower: 'text-rose-400 bg-rose-500/20 border-rose-500/30',
+  };
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider font-semibold cursor-pointer">
+          <Beaker className="w-3.5 h-3.5 text-blue-400" />
+          Feed Recipe
+        </label>
+        <div className="flex items-center gap-2">
+          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm border ${PHASE_COLORS[recipe.phase] ?? 'text-cult-medium-gray bg-cult-charcoal border-cult-dark-gray'}`}>
+            {recipe.phase} W{recipe.week_number}
+          </span>
+          {expanded ? <ChevronUp className="w-3 h-3 text-cult-dark-gray" /> : <ChevronDown className="w-3 h-3 text-cult-dark-gray" />}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="mt-3 space-y-2">
+          {/* Target ranges summary */}
+          <div className="flex flex-wrap gap-1.5">
+            {recipe.targets.target_ec != null && (
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+                EC {recipe.targets.target_ec.toFixed(1)}
+              </span>
+            )}
+            {recipe.targets.target_ppm_500 != null && (
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+                PPM {recipe.targets.target_ppm_500}
+              </span>
+            )}
+            {recipe.targets.target_ph_min != null && recipe.targets.target_ph_max != null && (
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+                pH {recipe.targets.target_ph_min.toFixed(1)}–{recipe.targets.target_ph_max.toFixed(1)}
+              </span>
+            )}
+          </div>
+
+          {/* Product list with editable rates */}
+          <div className="space-y-1">
+            {recipe.entries.map((entry) => {
+              const isPhAdjuster = entry.product.product_type === 'ph_adjuster';
+              const effectiveRate = overrides[entry.product.id] ?? entry.ml_per_gal;
+              const isOverridden = overrides[entry.product.id] != null && overrides[entry.product.id] !== entry.ml_per_gal;
+
+              return (
+                <RecipeProductRow
+                  key={entry.product.id}
+                  name={entry.product.name}
+                  rate={effectiveRate}
+                  defaultRate={entry.ml_per_gal}
+                  maxRate={entry.ml_per_gal_max}
+                  isPhAdjuster={isPhAdjuster}
+                  isOverridden={isOverridden}
+                  onChangeRate={(val) => onOverride(entry.product.id, val)}
+                />
+              );
+            })}
+          </div>
+
+          <p className="text-[10px] text-cult-dark-gray italic">
+            Tap a rate to adjust. Changes save with the task and carry into the completion form.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Single product row with inline rate editing ──────── */
+function RecipeProductRow({
+  name,
+  rate,
+  defaultRate,
+  maxRate,
+  isPhAdjuster,
+  isOverridden,
+  onChangeRate,
+}: {
+  name: string;
+  rate: number;
+  defaultRate: number;
+  maxRate: number | null;
+  isPhAdjuster: boolean;
+  isOverridden: boolean;
+  onChangeRate: (val: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <div className={`flex items-center justify-between px-3 py-2 rounded-sm border text-xs ${
+      isOverridden ? 'bg-amber-950/20 border-amber-800/30' : 'bg-cult-charcoal/20 border-cult-dark-gray/30'
+    }`}>
+      <span className="text-cult-light-gray font-medium truncate mr-2">{name}</span>
+      {isPhAdjuster ? (
+        <span className="text-amber-400/70 italic text-[10px]">as needed</span>
+      ) : editing ? (
+        <input
+          type="number"
+          step="0.5"
+          min="0"
+          value={rate}
+          onChange={(e) => onChangeRate(Number(e.target.value))}
+          onBlur={() => setEditing(false)}
+          autoFocus
+          className="w-20 bg-cult-near-black border border-cult-accent text-cult-white text-xs text-right py-1 px-2 rounded-sm focus:outline-none tabular-nums"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="tabular-nums text-cult-white hover:text-cult-accent transition-colors"
+        >
+          {rate}
+          {maxRate != null && maxRate !== defaultRate && (
+            <span className="text-cult-dark-gray ml-0.5">({defaultRate}–{maxRate})</span>
+          )}
+          <span className="text-cult-dark-gray ml-1">mL/gal</span>
+        </button>
+      )}
     </div>
   );
 }
