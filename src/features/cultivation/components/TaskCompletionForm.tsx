@@ -4,27 +4,30 @@ import { Button } from '@/shared/components';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, RoomSection } from '../types';
 import { useRoomSections } from '../hooks';
-import { useSprayLog, useFeedingLog, useDefoliationLog, useCleaningLog, useScoutingLog, useTrainingLog, useCustomTaskLog, useBatchTankMixLog } from '../hooks';
+import { useSprayLog, useDefoliationLog, useCleaningLog, useScoutingLog, useTrainingLog, useCustomTaskLog, useBatchTankMixLog } from '../hooks';
 import type { TaskCardData } from './TaskCard';
 import {
   IpmSprayFields, INITIAL_SPRAY_DATA,
   DefoliationFields, INITIAL_DEFOLIATION_DATA,
-  FeedingFields, INITIAL_FEEDING_DATA,
+
   CleaningFields, INITIAL_CLEANING_DATA,
   ScoutingFields, INITIAL_SCOUTING_DATA,
   TrainingFields, INITIAL_TRAINING_DATA,
   CustomFields, INITIAL_CUSTOM_DATA,
   BatchTankMixFields, INITIAL_BATCH_TANK_MIX_DATA,
+  SaturationCheckFields, INITIAL_SATURATION_CHECK_DATA,
+  IrrigationAuditFields, INITIAL_IRRIGATION_AUDIT_DATA,
 } from './task-forms';
 import type {
   IpmSprayFormData,
   DefoliationFormData,
-  FeedingFormData,
   CleaningFormData,
   ScoutingFormData,
   TrainingFormData,
   CustomFormData,
   BatchTankMixFormData,
+  SaturationCheckFormData,
+  IrrigationAuditFormData,
 } from './task-forms';
 
 const DURATION_OPTIONS = ['15min', '30min', '1hr', '2hr', '2hr+'] as const;
@@ -32,12 +35,13 @@ const DURATION_OPTIONS = ['15min', '30min', '1hr', '2hr', '2hr+'] as const;
 type AnyFormData =
   | IpmSprayFormData
   | DefoliationFormData
-  | FeedingFormData
   | CleaningFormData
   | ScoutingFormData
   | TrainingFormData
   | CustomFormData
-  | BatchTankMixFormData;
+  | BatchTankMixFormData
+  | SaturationCheckFormData
+  | IrrigationAuditFormData;
 
 interface StaffOption {
   id: string;
@@ -59,12 +63,14 @@ function getInitialData(taskType: TaskType): AnyFormData | null {
   switch (taskType) {
     case 'ipm_spray': return { ...INITIAL_SPRAY_DATA };
     case 'defoliation': return { ...INITIAL_DEFOLIATION_DATA };
-    case 'feeding': return { ...INITIAL_FEEDING_DATA };
+    // feeding_log still exists in DB for historical data; new tasks use batch_tank_mix
     case 'cleaning': return { ...INITIAL_CLEANING_DATA };
     case 'scouting': return { ...INITIAL_SCOUTING_DATA };
     case 'training': return { ...INITIAL_TRAINING_DATA };
     case 'custom': return { ...INITIAL_CUSTOM_DATA };
     case 'batch_tank_mix': return { ...INITIAL_BATCH_TANK_MIX_DATA };
+    case 'saturation_check': return { ...INITIAL_SATURATION_CHECK_DATA };
+    case 'irrigation_audit': return { ...INITIAL_IRRIGATION_AUDIT_DATA };
     default: return null;
   }
 }
@@ -73,7 +79,8 @@ function getRefTable(taskType: TaskType): string {
   const map: Record<string, string> = {
     ipm_spray: 'ipm_spray_log',
     defoliation: 'defoliation_log',
-    feeding: 'feeding_log',
+    saturation_check: 'saturation_check_log',
+    irrigation_audit: 'irrigation_audit_log',
     cleaning: 'cleaning_log',
     scouting: 'scouting_log',
     training: 'training_log',
@@ -100,7 +107,6 @@ export function TaskCompletionForm({
 
   const { allSections } = useRoomSections(roomId);
   const { insertSprayLog } = useSprayLog();
-  const { insertFeedingLog } = useFeedingLog();
   const { insertDefoliationLog } = useDefoliationLog();
   const { insertCleaningLog } = useCleaningLog();
   const { insertScoutingLog } = useScoutingLog();
@@ -210,17 +216,14 @@ export function TaskCompletionForm({
           refId = result.id;
           break;
         }
-        case 'feeding': {
-          const d = formData as FeedingFormData;
-          const result = await insertFeedingLog({
+        case 'saturation_check':
+        case 'irrigation_audit': {
+          // These new task types use custom_task_log until dedicated log tables are created
+          const result = await insertCustomTaskLog({
             room_id: roomId,
             task_instance_id: task.id,
-            reservoir_id: d.reservoir_id || null,
-            nutrient_mix: d.nutrient_mix || null,
-            ec_value: d.ec_value ? Number(d.ec_value) : null,
-            ph_value: d.ph_value ? Number(d.ph_value) : null,
-            volume_gallons: d.volume_gallons ? Number(d.volume_gallons) : null,
-            water_temp_f: d.water_temp_f ? Number(d.water_temp_f) : null,
+            task_name: TASK_TYPE_CONFIG[task.task_type]?.label ?? task.task_type,
+            description: notes || null,
             notes: notes || null,
           });
           refId = result.id;
@@ -418,8 +421,11 @@ export function TaskCompletionForm({
             {task.task_type === 'defoliation' && formData && (
               <DefoliationFields data={formData as DefoliationFormData} onChange={setFormData} sections={allSections} />
             )}
-            {task.task_type === 'feeding' && formData && (
-              <FeedingFields data={formData as FeedingFormData} onChange={setFormData} />
+            {task.task_type === 'saturation_check' && formData && (
+              <SaturationCheckFields data={formData as SaturationCheckFormData} onChange={setFormData} />
+            )}
+            {task.task_type === 'irrigation_audit' && formData && (
+              <IrrigationAuditFields data={formData as IrrigationAuditFormData} onChange={setFormData} />
             )}
             {task.task_type === 'cleaning' && formData && (
               <CleaningFields data={formData as CleaningFormData} onChange={setFormData} />

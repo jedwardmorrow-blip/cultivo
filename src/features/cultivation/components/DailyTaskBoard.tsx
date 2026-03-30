@@ -51,29 +51,37 @@ const TABS: { id: TabId; label: string; icon: typeof Calendar }[] = [
   { id: 'workers', label: 'Workers', icon: Users },
 ];
 
-const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
+const TASK_TYPE_DESCRIPTIONS: Partial<Record<TaskType, string>> = {
   ipm_spray: 'Apply integrated pest management sprays and treatments to prevent or control pests and diseases.',
   defoliation: 'Remove excess fan leaves to improve light penetration and airflow through the canopy.',
   transplant: 'Move plants from smaller containers to larger ones as they outgrow their current pots.',
   cleaning: 'Sanitize surfaces, floors, and equipment. Remove debris and dead plant material.',
   harvest: 'Cut, hang, and process mature plants at peak trichome development.',
-  feeding: 'Prepare and deliver nutrient solution. Record EC, pH, volume, and water temperature.',
+  batch_tank_mix: 'Mix nutrient solution in batch tanks. Record EC/PPM, pH, volume, and products used.',
+  saturation_check: 'Check runoff EC/pH and substrate moisture levels to verify nutrient uptake.',
+  irrigation_audit: 'Confirm and adjust automated watering timers, emitter flow rates, and schedules.',
   scouting: 'Inspect plants for pests, disease, nutrient deficiencies, and overall plant health.',
   training: 'Apply low-stress or high-stress training techniques to shape plant structure.',
   clone_cutting: 'Take cuttings from mother plants for propagation. Dip, place in trays, label.',
+  maintenance: 'Routine equipment maintenance, HVAC checks, and infrastructure repairs.',
+  concentrate_mix: 'Mix concentrated nutrient stock solutions for automated dosing systems.',
   custom: 'General-purpose task for activities that do not fit standard categories.',
 };
 
-const TASK_TYPE_FIELDS: Record<TaskType, string[]> = {
+const TASK_TYPE_FIELDS: Partial<Record<TaskType, string[]>> = {
   ipm_spray: ['Product', 'Method', 'Target Pest', 'Re-entry Hours'],
   defoliation: ['Type', 'Sections', 'Progress'],
   transplant: ['From Size', 'To Size', 'Count'],
   cleaning: ['Type', 'Notes'],
   harvest: ['Wet Weight', 'Plant Count', 'Waste'],
-  feeding: ['EC', 'pH', 'Volume (gal)', 'Water Temp'],
+  batch_tank_mix: ['EC/PPM', 'pH', 'Volume (gal)', 'Products'],
+  saturation_check: ['Runoff EC', 'Runoff pH', 'Moisture %', 'Sections'],
+  irrigation_audit: ['Timer Settings', 'Flow Rate', 'Adjustments'],
   scouting: ['Pests', 'Disease', 'Nutrient Issues', 'Health Rating'],
   training: ['Type', 'Plant Count', 'Sections'],
   clone_cutting: ['Mother ID', 'Cut Count', 'Tray'],
+  maintenance: ['Equipment', 'Issue', 'Resolution'],
+  concentrate_mix: ['Product', 'Concentration', 'Volume'],
   custom: ['Task Name', 'Description'],
 };
 
@@ -1077,7 +1085,7 @@ interface AddTaskModalProps {
 }
 
 function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSave }: AddTaskModalProps) {
-  const [taskType, setTaskType] = useState<TaskType>('feeding');
+  const [taskType, setTaskType] = useState<TaskType>('batch_tank_mix');
   const [roomId, setRoomId] = useState(preSelectedRoomId ?? '');
   const [assignedTo, setAssignedTo] = useState('');
   const [notes, setNotes] = useState('');

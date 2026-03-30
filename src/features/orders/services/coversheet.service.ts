@@ -54,11 +54,29 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
       color: { dark: '#000000', light: '#FFFFFF' }
     });
 
+    // Refresh items_summary and total_packages from current order items
+    const { data: itemsData } = await supabase
+      .from('order_items')
+      .select('product_id, quantity, products(name, type)')
+      .eq('order_id', orderId) as { data: OrderItemWithProduct[] | null; error: any };
+
+    const itemsSummary = (itemsData || []).map(item => ({
+      product_id: item.product_id,
+      product_name: item.products?.name || 'Unknown',
+      product_type: item.products?.type || 'Unknown',
+      quantity: item.quantity
+    }));
+
+    const customerName = orderData?.customers?.name || 'Unknown Customer';
+
     const { data, error } = await supabase
       .from('coversheets')
       .update({
         delivery_date: deliveryDate,
         qr_code_data: qrCodeDataUrl,
+        customer_name: customerName,
+        items_summary: itemsSummary,
+        total_packages: itemsSummary.reduce((sum, item) => sum + item.quantity, 0),
         ...precomputedFields,
       })
       .eq('id', existing.id)

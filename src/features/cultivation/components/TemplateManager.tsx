@@ -17,9 +17,9 @@ import type { TaskType, SchedulingMode } from '../types';
 const ROOM_TYPES = ['flower', 'veg', 'mother', 'clone', 'mixed'] as const;
 
 const TASK_TYPES: TaskType[] = [
-  'feeding', 'ipm_spray', 'defoliation', 'scouting', 'cleaning',
-  'training', 'transplant', 'harvest', 'clone_cutting', 'custom',
-  'batch_tank_mix', 'concentrate_mix',
+  'batch_tank_mix', 'saturation_check', 'irrigation_audit', 'ipm_spray',
+  'defoliation', 'scouting', 'cleaning', 'training', 'transplant',
+  'harvest', 'clone_cutting', 'concentrate_mix', 'maintenance', 'custom',
 ];
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -544,7 +544,7 @@ function NewScheduleItemForm({
   onAdd: (item: TemplateScheduleItem) => void;
   onCancel: () => void;
 }) {
-  const [taskType, setTaskType] = useState<TaskType>('feeding');
+  const [taskType, setTaskType] = useState<TaskType>('batch_tank_mix');
   const [mode, setMode] = useState<SchedulingMode>('phase_day');
   const [recurrence, setRecurrence] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('daily');
   const [dayOfWeek, setDayOfWeek] = useState<number[]>([]);

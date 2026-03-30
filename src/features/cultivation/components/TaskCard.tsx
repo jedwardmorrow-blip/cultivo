@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward, Users } from 'lucide-react';
+import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward, Users, MoreVertical } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus } from '../types';
 
@@ -26,7 +26,14 @@ export interface TaskCardData {
   progress_total?: number;
   estimated_cost?: number;
   task_config?: Record<string, unknown>;
+  priority?: 'low' | 'medium' | 'high';
 }
+
+const PRIORITY_STYLES: Record<string, { dot: string; border: string }> = {
+  high: { dot: 'bg-red-400', border: 'border-l-red-500/60' },
+  medium: { dot: 'bg-amber-400', border: '' },
+  low: { dot: 'bg-zinc-500', border: '' },
+};
 
 export interface StaffOption {
   id: string;
@@ -51,6 +58,62 @@ interface TaskCardProps {
 
 const SWIPE_THRESHOLD = 80; // px needed to trigger action
 const SWIPE_MAX = 120; // max visual offset
+
+/** Overflow menu for secondary task actions (skip, defer) */
+function TaskOverflowMenu({ taskId, onSkip, onCarryForward }: {
+  taskId: string;
+  onSkip?: (id: string) => void;
+  onCarryForward?: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-sm transition-colors min-h-[36px]"
+        title="More actions"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+      {open && (
+        <div className="absolute top-full right-0 mt-1 w-36 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-30">
+          {onSkip && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSkip(taskId); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors text-left min-h-[40px]"
+            >
+              <SkipForward className="w-3.5 h-3.5 text-zinc-400" />
+              Skip Task
+            </button>
+          )}
+          {onCarryForward && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onCarryForward(taskId); setOpen(false); }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-amber-400/80 hover:bg-amber-950/40 transition-colors text-left min-h-[40px]"
+            >
+              <FastForward className="w-3.5 h-3.5" />
+              Defer to Tomorrow
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, onQuickAssign, onStartTask, onSkipTask, onCarryForward }: TaskCardProps) {
   const config = TASK_TYPE_CONFIG[task.task_type] ?? TASK_TYPE_CONFIG.custom;
@@ -167,12 +230,16 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           type="button"
           onClick={onClick}
           className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors px-2.5 sm:px-3 py-2 group ${
-            isCarried ? 'border-l-2 border-l-amber-500 bg-amber-950/10' : ''
+            isCarried ? 'border-l-2 border-l-amber-500 bg-amber-950/10' :
+            task.priority === 'high' ? 'border-l-2 border-l-red-500/60' : ''
           }`}
         >
-          {/* Single-row compact layout: type badge | assignment | status */}
+          {/* Single-row compact layout: priority dot | type badge | assignment | status */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
+              {task.priority === 'high' && (
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_STYLES.high.dot}`} title="High priority" />
+              )}
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"
                 style={{ backgroundColor: `${config.color}20`, color: config.color }}
@@ -237,37 +304,9 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           )}
         </button>
 
-        {/* Quick-start + skip/carry buttons — pending tasks (inline, not absolute) */}
+        {/* Primary action + overflow menu — pending tasks */}
         {isPending && onStartTask && (
-          <div className="flex items-center justify-end gap-1 px-2.5 sm:px-3 pb-2 pt-0.5">
-            {onSkipTask && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSkipTask(task.id);
-                }}
-                className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 hover:border-zinc-600 rounded-sm transition-colors min-h-[32px]"
-                title="Skip this task"
-              >
-                <SkipForward className="w-3 h-3" />
-                <span className="hidden sm:inline">Skip</span>
-              </button>
-            )}
-            {onCarryForward && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCarryForward(task.id);
-                }}
-                className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400/80 bg-amber-950/40 border border-amber-800/30 hover:bg-amber-950/70 hover:border-amber-700 rounded-sm transition-colors min-h-[32px]"
-                title="Carry forward to next day"
-              >
-                <FastForward className="w-3 h-3" />
-                <span className="hidden sm:inline">Defer</span>
-              </button>
-            )}
+          <div className="flex items-center justify-end gap-1.5 px-2.5 sm:px-3 pb-2 pt-0.5">
             <button
               type="button"
               disabled={starting}
@@ -281,6 +320,13 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
               <Play className="w-3.5 h-3.5" />
               {starting ? 'Starting...' : 'Start'}
             </button>
+            {(onSkipTask || onCarryForward) && (
+              <TaskOverflowMenu
+                taskId={task.id}
+                onSkip={onSkipTask}
+                onCarryForward={onCarryForward}
+              />
+            )}
           </div>
         )}
 

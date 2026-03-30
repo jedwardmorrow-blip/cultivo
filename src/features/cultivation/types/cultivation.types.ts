@@ -339,12 +339,13 @@ export type TaskType =
   | 'transplant'
   | 'cleaning'
   | 'harvest'
-  | 'feeding'
+  | 'batch_tank_mix'
+  | 'saturation_check'
+  | 'irrigation_audit'
   | 'scouting'
   | 'training'
   | 'clone_cutting'
   | 'maintenance'
-  | 'batch_tank_mix'
   | 'concentrate_mix'
   | 'custom';
 
@@ -366,12 +367,13 @@ export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
   transplant: { label: 'Transplant', color: '#8B5CF6', icon: 'ArrowRightLeft' },
   cleaning: { label: 'Cleaning', color: '#6B7280', icon: 'Sparkles' },
   harvest: { label: 'Harvest', color: '#F43F5E', icon: 'Wheat' },
-  feeding: { label: 'Feeding', color: '#F59E0B', icon: 'Droplets' },
+  batch_tank_mix: { label: 'Batch Tank Mix', color: '#3B82F6', icon: 'Beaker' },
+  saturation_check: { label: 'Saturation Check', color: '#F59E0B', icon: 'Droplets' },
+  irrigation_audit: { label: 'Irrigation Audit', color: '#06B6D4', icon: 'Timer' },
   scouting: { label: 'Scouting', color: '#EC4899', icon: 'Search' },
   training: { label: 'Training', color: '#14B8A6', icon: 'GitBranch' },
   clone_cutting: { label: 'Clone Cutting', color: '#0EA5E9', icon: 'Sprout' },
   maintenance: { label: 'Maintenance', color: '#78716C', icon: 'Wrench' },
-  batch_tank_mix: { label: 'Batch Tank Mix', color: '#3B82F6', icon: 'Beaker' },
   concentrate_mix: { label: 'Concentrate Mix', color: '#6366F1', icon: 'FlaskConical' },
   custom: { label: 'Custom', color: '#A6A6A6', icon: 'Settings' },
 };

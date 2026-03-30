@@ -30,10 +30,14 @@ const TASK_TYPE_LABELS: Record<string, string> = {
   transplant: 'Transplant',
   cleaning: 'Cleaning',
   harvest: 'Harvest',
-  feeding: 'Feeding',
+  batch_tank_mix: 'Batch Tank Mix',
+  saturation_check: 'Saturation Check',
+  irrigation_audit: 'Irrigation Audit',
   scouting: 'Scouting',
   training: 'Training',
   clone_cutting: 'Clone Cutting',
+  maintenance: 'Maintenance',
+  concentrate_mix: 'Concentrate Mix',
   custom: 'Custom',
 };
 

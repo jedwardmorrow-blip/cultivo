@@ -1836,7 +1836,7 @@ interface ScheduleFormProps {
 }
 
 function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleFormProps) {
-  const [taskType, setTaskType] = useState<TaskType>(initial?.task_type ?? 'feeding');
+  const [taskType, setTaskType] = useState<TaskType>(initial?.task_type ?? 'batch_tank_mix');
   const [schedulingMode, setSchedulingMode] = useState<SchedulingMode>(initial?.scheduling_mode ?? 'calendar');
   const [recurrence, setRecurrence] = useState(initial?.recurrence ?? 'weekly');
   const [dayOfWeek, setDayOfWeek] = useState<number[]>(initial?.day_of_week ?? []);
