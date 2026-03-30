@@ -31,7 +31,7 @@ import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
-import { RoomCalendar } from './RoomCalendar';
+import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
 import type { RoomOperationalState } from '../hooks/useRoomOperationalState';
@@ -97,18 +97,67 @@ const CULTIVATION_ROLES = new Set(['cultivation_manager', 'cultivation_lead', 'c
 
 export function SchedulesPage() {
   const { rooms: dbRooms } = useGrowRooms();
+  const [scheduleView, setScheduleView] = useState<'calendar' | 'setup'>('calendar');
+  const [setupRoomId, setSetupRoomId] = useState<string | undefined>(undefined);
 
   const rooms = useMemo(() => {
     return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
   }, [dbRooms]);
 
+  function handleEditRoom(roomId: string, _roomCode: string) {
+    setSetupRoomId(roomId);
+    setScheduleView('setup');
+  }
+
+  function handleSwitchToSetup() {
+    setSetupRoomId(undefined);
+    setScheduleView('setup');
+  }
+
   return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
-        <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Set up recurring task schedules for each grow room</p>
+    <div className="space-y-5 pb-8">
+      {/* Header with view toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
+          <p className="text-cult-light-gray mt-1 text-sm sm:text-base">
+            {scheduleView === 'calendar' ? 'View scheduled tasks across all rooms' : 'Configure recurring task schedules per room'}
+          </p>
+        </div>
+        <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setScheduleView('calendar')}
+            className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+              scheduleView === 'calendar'
+                ? 'bg-cult-charcoal text-cult-white'
+                : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Calendar
+          </button>
+          <button
+            type="button"
+            onClick={() => { setSetupRoomId(undefined); setScheduleView('setup'); }}
+            className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+              scheduleView === 'setup'
+                ? 'bg-cult-charcoal text-cult-white'
+                : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+            }`}
+          >
+            <Wrench className="w-4 h-4" />
+            Room Setup
+          </button>
+        </div>
       </div>
-      <RoomCalendar rooms={rooms} />
+
+      {/* View content */}
+      {scheduleView === 'calendar' ? (
+        <RoomCalendar rooms={rooms} onEditRoom={handleEditRoom} onSwitchToSetup={handleSwitchToSetup} />
+      ) : (
+        <RoomSetupPanel rooms={rooms} initialRoomId={setupRoomId} />
+      )}
     </div>
   );
 }

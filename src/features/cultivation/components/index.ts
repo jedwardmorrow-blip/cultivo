@@ -21,7 +21,7 @@ export { TaskCard } from './TaskCard';
 export { TaskCompletionForm } from './TaskCompletionForm';
 export { DeadPlantForm } from './DeadPlantForm';
 export { WorkerCheckIn } from './WorkerCheckIn';
-export { RoomCalendar } from './RoomCalendar';
+export { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
 export { StrainPills } from './StrainPills';
 export { FlowerRunProgress } from './FlowerRunProgress';
 export { HarvestCountdown } from './HarvestCountdown';
