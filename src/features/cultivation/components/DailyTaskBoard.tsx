@@ -1351,12 +1351,12 @@ function TaskTypesTab() {
         })}
       </div>
 
-      {/* Edit drawer */}
+      {/* Edit modal */}
       {editingId && (() => {
         const tt = types.find((t) => t.id === editingId);
         if (!tt) return null;
         return (
-          <TaskTypeEditor
+          <TaskTypeEditorModal
             key={editingId}
             taskType={tt}
             onSave={async (updates) => {
@@ -1372,9 +1372,9 @@ function TaskTypesTab() {
         );
       })()}
 
-      {/* Add new task type */}
+      {/* Add new task type modal */}
       {showAdd && (
-        <TaskTypeEditor
+        <TaskTypeEditorModal
           taskType={null}
           onSave={async (input) => {
             const key = (input.label ?? 'custom')
@@ -1398,8 +1398,8 @@ function TaskTypesTab() {
   );
 }
 
-/* ── Task Type Editor Panel ────────────────────────────── */
-interface TaskTypeEditorProps {
+/* ── Task Type Editor Modal ─────────────────────────────── */
+interface TaskTypeEditorModalProps {
   taskType: {
     task_key: string;
     label: string;
@@ -1415,7 +1415,7 @@ interface TaskTypeEditorProps {
   onClose: () => void;
 }
 
-function TaskTypeEditor({ taskType, onSave, onDelete, onClose }: TaskTypeEditorProps) {
+function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEditorModalProps) {
   const isNew = !taskType;
   const [label, setLabel] = useState(taskType?.label ?? '');
   const [description, setDescription] = useState(taskType?.description ?? '');
@@ -1449,104 +1449,108 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onClose }: TaskTypeEditorP
   const PreviewIcon = ICON_MAP[icon] ?? Wrench;
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-sm flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
-            <PreviewIcon className="w-5 h-5" style={{ color }} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Card */}
+      <div className="relative w-full max-w-lg bg-cult-near-black border border-cult-dark-gray rounded-lg shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-sm flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
+              <PreviewIcon className="w-5 h-5" style={{ color }} />
+            </div>
+            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+              {isNew ? 'New Task Type' : `Edit — ${taskType.label}`}
+            </h3>
           </div>
-          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
-            {isNew ? 'New Task Type' : `Edit — ${taskType.label}`}
-          </h3>
-        </div>
-        <button type="button" onClick={onClose} className="p-2 hover:bg-cult-charcoal rounded transition-colors">
-          <X className="w-4 h-4 text-cult-medium-gray" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Label */}
-        <div>
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Label</label>
-          <input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none"
-            placeholder="e.g. Foliar Spray"
-          />
+          <button type="button" onClick={onClose} className="p-2 hover:bg-cult-charcoal rounded transition-colors">
+            <X className="w-4 h-4 text-cult-medium-gray" />
+          </button>
         </div>
 
-        {/* Color */}
-        <div>
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Color</label>
-          <div className="flex items-center gap-2 flex-wrap">
-            {PRESET_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded-sm border-2 transition-all ${color === c ? 'border-cult-white scale-110' : 'border-transparent'}`}
-                style={{ backgroundColor: c }}
-                title={c}
-              />
-            ))}
+        {/* Body */}
+        <div className="px-5 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Label */}
+          <div>
+            <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Label</label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none"
+              placeholder="e.g. Foliar Spray"
+            />
           </div>
-        </div>
 
-        {/* Description */}
-        <div className="md:col-span-2">
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none resize-none"
-            placeholder="What does this task type involve?"
-          />
-        </div>
-
-        {/* Icon */}
-        <div>
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Icon</label>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {AVAILABLE_ICONS.map((iconName) => {
-              const Ic = ICON_MAP[iconName] ?? Wrench;
-              return (
+          {/* Color */}
+          <div>
+            <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Color</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {PRESET_COLORS.map((c) => (
                 <button
-                  key={iconName}
+                  key={c}
                   type="button"
-                  onClick={() => setIcon(iconName)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-sm border transition-all ${
-                    icon === iconName ? 'border-cult-accent bg-cult-charcoal' : 'border-transparent hover:bg-cult-charcoal/50'
-                  }`}
-                  title={iconName}
-                >
-                  <Ic className="w-4 h-4" style={{ color: icon === iconName ? color : '#666' }} />
-                </button>
-              );
-            })}
+                  onClick={() => setColor(c)}
+                  className={`w-6 h-6 rounded-sm border-2 transition-all ${color === c ? 'border-cult-white scale-110' : 'border-transparent'}`}
+                  style={{ backgroundColor: c }}
+                  title={c}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Fields */}
-        <div>
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">
-            Completion Fields <span className="text-cult-dark-gray">(comma-separated)</span>
-          </label>
-          <input
-            type="text"
-            value={fieldsStr}
-            onChange={(e) => setFieldsStr(e.target.value)}
-            className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none"
-            placeholder="e.g. Product, Method, Duration"
-          />
-        </div>
-      </div>
+          {/* Description */}
+          <div>
+            <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none resize-none"
+              placeholder="What does this task type involve?"
+            />
+          </div>
 
-      {/* Enable/Disable + Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-cult-dark-gray/50">
-        <div className="flex items-center gap-3">
+          {/* Icon */}
+          <div>
+            <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Icon</label>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {AVAILABLE_ICONS.map((iconName) => {
+                const Ic = ICON_MAP[iconName] ?? Wrench;
+                return (
+                  <button
+                    key={iconName}
+                    type="button"
+                    onClick={() => setIcon(iconName)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-sm border transition-all ${
+                      icon === iconName ? 'border-cult-accent bg-cult-charcoal' : 'border-transparent hover:bg-cult-charcoal/50'
+                    }`}
+                    title={iconName}
+                  >
+                    <Ic className="w-4 h-4" style={{ color: icon === iconName ? color : '#666' }} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Fields */}
+          <div>
+            <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">
+              Completion Fields <span className="text-cult-dark-gray">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={fieldsStr}
+              onChange={(e) => setFieldsStr(e.target.value)}
+              className="w-full px-3 py-2 bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm rounded-sm focus:border-cult-accent focus:outline-none"
+              placeholder="e.g. Product, Method, Duration"
+            />
+          </div>
+
+          {/* Enable toggle */}
           {!isNew && (
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -1558,44 +1562,50 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onClose }: TaskTypeEditorP
               <span className="text-xs text-cult-light-gray">Enabled</span>
             </label>
           )}
-          {onDelete && !confirmDelete && (
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4 border-t border-cult-dark-gray/50 bg-cult-near-black">
+          <div>
+            {onDelete && !confirmDelete && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors"
+              >
+                Delete
+              </button>
+            )}
+            {onDelete && confirmDelete && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-red-400">Confirm?</span>
+                <button type="button" onClick={handleDelete} className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded-sm transition-colors" disabled={saving}>
+                  Yes
+                </button>
+                <button type="button" onClick={() => setConfirmDelete(false)} className="px-2 py-1 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">
+                  No
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="text-xs text-red-400 hover:text-red-300 transition-colors"
+              onClick={onClose}
+              className="px-3 py-2 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
             >
-              Delete
+              Cancel
             </button>
-          )}
-          {onDelete && confirmDelete && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-red-400">Delete this type?</span>
-              <button type="button" onClick={handleDelete} className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded-sm transition-colors" disabled={saving}>
-                Yes, Delete
-              </button>
-              <button type="button" onClick={() => setConfirmDelete(false)} className="px-2 py-1 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-2 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !label.trim()}
-            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
-          >
-            <Save className="w-3.5 h-3.5" />
-            {saving ? 'Saving...' : isNew ? 'Create' : 'Save Changes'}
-          </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !label.trim()}
+              className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {saving ? 'Saving...' : isNew ? 'Create' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
