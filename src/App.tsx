@@ -48,6 +48,7 @@ const DryRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'Dr
 const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyTaskBoard');
 const SchedulesPage = lazyRetry(() => import('./features/cultivation'), 'SchedulesPage');
 const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
+const WorkerTaskView = lazyRetry(() => import('./features/cultivation'), 'WorkerTaskView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
 const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
 const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
@@ -175,6 +176,7 @@ function AuthenticatedApp() {
               <Route path="/cultivation-schedules" element={<CultivationErrorBoundary><SchedulesPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-taskboard" element={<CultivationErrorBoundary><DailyTaskBoard /></CultivationErrorBoundary>} />
               <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
+              <Route path="/worker-tasks" element={<CultivationErrorBoundary><WorkerTaskView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/cultivation-dry-rooms" element={<CultivationErrorBoundary><DryRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/production-overview" element={<ProductionDashboard />} />

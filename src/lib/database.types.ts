@@ -2996,24 +2996,31 @@ export type Database = {
           avg_bucked_to_trim_ratio: number | null
           avg_trim_grams_per_hour: number | null
           avg_waste_percentage: number | null
+          avg_yield_per_plant_g: number | null
           bucked_to_bulk_ratio: number | null
           bulk_to_packaged_ratio: number | null
           category: string | null
           cbd_range: string | null
+          clone_days_avg: number | null
           created_at: string | null
           cultivation_notes: string | null
           description: string | null
           display_name: string
           dominance_type: string | null
+          dry_days_avg: number | null
+          feed_group: string | null
+          flowering_time_days: number | null
           genetics_description: string | null
           id: string
           is_active: boolean
           name: string
           notes: string | null
+          plant_size: string | null
           terpene_profile: Json | null
           thc_range: string | null
           typical_yield_percentage: number | null
           updated_at: string | null
+          veg_days_avg: number | null
         }
         Insert: {
           abbreviation?: string | null
@@ -3022,24 +3029,31 @@ export type Database = {
           avg_bucked_to_trim_ratio?: number | null
           avg_trim_grams_per_hour?: number | null
           avg_waste_percentage?: number | null
+          avg_yield_per_plant_g?: number | null
           bucked_to_bulk_ratio?: number | null
           bulk_to_packaged_ratio?: number | null
           category?: string | null
           cbd_range?: string | null
+          clone_days_avg?: number | null
           created_at?: string | null
           cultivation_notes?: string | null
           description?: string | null
           display_name: string
           dominance_type?: string | null
+          dry_days_avg?: number | null
+          feed_group?: string | null
+          flowering_time_days?: number | null
           genetics_description?: string | null
           id?: string
           is_active?: boolean
           name: string
           notes?: string | null
+          plant_size?: string | null
           terpene_profile?: Json | null
           thc_range?: string | null
           typical_yield_percentage?: number | null
           updated_at?: string | null
+          veg_days_avg?: number | null
         }
         Update: {
           abbreviation?: string | null
@@ -3048,24 +3062,31 @@ export type Database = {
           avg_bucked_to_trim_ratio?: number | null
           avg_trim_grams_per_hour?: number | null
           avg_waste_percentage?: number | null
+          avg_yield_per_plant_g?: number | null
           bucked_to_bulk_ratio?: number | null
           bulk_to_packaged_ratio?: number | null
           category?: string | null
           cbd_range?: string | null
+          clone_days_avg?: number | null
           created_at?: string | null
           cultivation_notes?: string | null
           description?: string | null
           display_name?: string
           dominance_type?: string | null
+          dry_days_avg?: number | null
+          feed_group?: string | null
+          flowering_time_days?: number | null
           genetics_description?: string | null
           id?: string
           is_active?: boolean
           name?: string
           notes?: string | null
+          plant_size?: string | null
           terpene_profile?: Json | null
           thc_range?: string | null
           typical_yield_percentage?: number | null
           updated_at?: string | null
+          veg_days_avg?: number | null
         }
         Relationships: []
       }

@@ -31,6 +31,7 @@ import {
   Dna,
   Target,
   Users,
+  Smartphone,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -53,13 +54,13 @@ export interface SectionDefinition {
 
 export const sectionDefinitions: SectionDefinition[] = [
   {
-    id: 'pipeline',
-    label: 'Pipeline',
+    id: 'hub',
+    label: 'Hub',
     icon: Dna,
-    defaultView: 'pipeline-planner',
+    defaultView: 'hub',
     items: [
-      { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
       { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
+      { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
       { id: 'pipeline-forecast', label: 'Forecast', icon: TrendingUp, group: 'primary' },
       { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
       { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
@@ -78,6 +79,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'secondary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'secondary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'secondary' },
+      { id: 'worker-tasks', label: 'Worker View', icon: Smartphone, group: 'secondary' },
     ],
   },
   {
@@ -154,7 +156,6 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
     ],
   },
-  // Hub section relocated to Pipeline (top of nav)
 ];
 
 export function getSectionForView(viewId: string): SectionDefinition | undefined {

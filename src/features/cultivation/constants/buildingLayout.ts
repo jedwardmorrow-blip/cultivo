@@ -5,7 +5,7 @@
  * Coordinates derived from the approved v4 prototype.
  *
  * Layout (L→R):
- *   MAIN ROW: VEG-01, WATER, FLW-01→04, [DRY stack], FLW-05, LAB, gap, VEG-02, FLW-06→11
+ *   MAIN ROW: VEG-01, WATER, FLW-01→04, [DRY stack], VEG-05, LAB, gap, VEG-02, FLW-06→11
  *   DRY STACK: DRY-03/02/01 stacked vertically at the dry position
  *   CORRIDOR: Full-width strip along south wall
  */
@@ -44,7 +44,7 @@ function buildMainRow() {
   const dryX = x;
   x += DRY_W + GAP;
 
-  add('FLW-05', 68);
+  add('VEG-05', 68);
   add('LAB', 65);
 
   // Narrow corridor gap
@@ -122,7 +122,7 @@ export const ROOM_LAYOUT: RoomLayoutEntry[] = [
   mainRoom('FLW-02', 'Flower 2', 'flower'),
   mainRoom('FLW-03', 'Flower 3', 'flower'),
   mainRoom('FLW-04', 'Flower 4', 'flower'),
-  mainRoom('FLW-05', 'Flower 5', 'flower'),
+  mainRoom('VEG-05', 'Veg Room 5', 'veg'),
   mainRoom('LAB', 'Lab / Processing', 'lab'),
   mainRoom('VEG-02', 'Veg Room 2', 'veg'),
   mainRoom('FLW-06', 'Flower 6', 'flower'),

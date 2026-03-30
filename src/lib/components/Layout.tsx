@@ -101,13 +101,13 @@ export function Layout({ children }: LayoutProps) {
                   <Home className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => navigate('/pipeline-planner')}
+                  onClick={() => navigate('/hub')}
                   className={`p-2 rounded-cult transition-colors hidden sm:block ${
-                    currentView === 'pipeline-planner' || currentView === 'hub' || currentView.startsWith('hub-') || currentView === 'pipeline-forecast' || currentView === 'strain-analytics'
+                    currentView === 'hub' || currentView.startsWith('hub-') || currentView === 'pipeline-planner' || currentView === 'pipeline-forecast' || currentView === 'strain-analytics'
                       ? 'text-cult-white bg-cult-charcoal'
                       : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
                   }`}
-                  title="Pipeline"
+                  title="Hub"
                 >
                   <TrendingUp className="w-4 h-4" />
                 </button>
