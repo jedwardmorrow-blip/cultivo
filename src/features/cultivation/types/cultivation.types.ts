@@ -343,6 +343,7 @@ export type TaskType =
   | 'scouting'
   | 'training'
   | 'clone_cutting'
+  | 'maintenance'
   | 'custom';
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'skipped' | 'carry_forward';
@@ -367,8 +368,11 @@ export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
   scouting: { label: 'Scouting', color: '#EC4899', icon: 'Search' },
   training: { label: 'Training', color: '#14B8A6', icon: 'GitBranch' },
   clone_cutting: { label: 'Clone Cutting', color: '#0EA5E9', icon: 'Sprout' },
-  custom: { label: 'Custom', color: '#A6A6A6', icon: 'Wrench' },
+  maintenance: { label: 'Maintenance', color: '#78716C', icon: 'Wrench' },
+  custom: { label: 'Custom', color: '#A6A6A6', icon: 'Settings' },
 };
+
+export type SchedulingMode = 'calendar' | 'phase_day';
 
 export interface RoomTaskSchedule {
   id: string;
@@ -378,6 +382,10 @@ export interface RoomTaskSchedule {
   day_of_week: number[] | null;
   start_date: string;
   end_date: string | null;
+  scheduling_mode: SchedulingMode;
+  interval_days: number | null;
+  phase_day_start: number | null;
+  phase_day_end: number | null;
   default_config: Record<string, unknown>;
   scope: string;
   priority: string;
@@ -392,10 +400,10 @@ export type CreateTaskScheduleInput = Pick<
   RoomTaskSchedule,
   'room_id' | 'task_type' | 'recurrence' | 'start_date'
 > &
-  Partial<Pick<RoomTaskSchedule, 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes'>>;
+  Partial<Pick<RoomTaskSchedule, 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes' | 'scheduling_mode' | 'interval_days' | 'phase_day_start' | 'phase_day_end'>>;
 
 export type UpdateTaskScheduleInput = Partial<
-  Pick<RoomTaskSchedule, 'recurrence' | 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes' | 'is_active'>
+  Pick<RoomTaskSchedule, 'recurrence' | 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes' | 'is_active' | 'scheduling_mode' | 'interval_days' | 'phase_day_start' | 'phase_day_end'>
 >;
 
 export interface DailyTaskInstance {

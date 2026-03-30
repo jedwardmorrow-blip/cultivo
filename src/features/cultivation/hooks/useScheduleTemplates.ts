@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { TaskType } from '../types';
+import type { TaskType, SchedulingMode } from '../types';
 
 export interface TemplateScheduleItem {
   task_type: TaskType;
@@ -8,6 +8,10 @@ export interface TemplateScheduleItem {
   day_of_week?: number[];
   priority: 'low' | 'medium' | 'high';
   notes?: string;
+  scheduling_mode?: SchedulingMode;
+  interval_days?: number;
+  phase_day_start?: number;
+  phase_day_end?: number;
 }
 
 export interface ScheduleTemplate {
@@ -124,6 +128,10 @@ export function useScheduleTemplates(roomType?: string) {
       notes: s.notes ?? null,
       scope: 'full_room',
       is_active: true,
+      scheduling_mode: s.scheduling_mode ?? 'calendar',
+      interval_days: s.interval_days ?? null,
+      phase_day_start: s.phase_day_start ?? null,
+      phase_day_end: s.phase_day_end ?? null,
     }));
 
     const { error: err } = await supabase
@@ -137,7 +145,7 @@ export function useScheduleTemplates(roomType?: string) {
     name: string,
     description: string | null,
     roomType: string,
-    roomSchedules: { task_type: TaskType; recurrence: string; day_of_week?: number[] | null; priority: string; notes?: string | null }[]
+    roomSchedules: { task_type: TaskType; recurrence: string; day_of_week?: number[] | null; priority: string; notes?: string | null; scheduling_mode?: SchedulingMode; interval_days?: number | null; phase_day_start?: number | null; phase_day_end?: number | null }[]
   ): Promise<ScheduleTemplate> {
     const scheduleItems: TemplateScheduleItem[] = roomSchedules.map((s) => ({
       task_type: s.task_type,
@@ -145,6 +153,10 @@ export function useScheduleTemplates(roomType?: string) {
       day_of_week: s.day_of_week ?? undefined,
       priority: (s.priority || 'medium') as TemplateScheduleItem['priority'],
       notes: s.notes ?? undefined,
+      scheduling_mode: s.scheduling_mode ?? 'calendar',
+      interval_days: s.interval_days ?? undefined,
+      phase_day_start: s.phase_day_start ?? undefined,
+      phase_day_end: s.phase_day_end ?? undefined,
     }));
 
     return createTemplate({ name, description, room_type: roomType, schedules: scheduleItems });

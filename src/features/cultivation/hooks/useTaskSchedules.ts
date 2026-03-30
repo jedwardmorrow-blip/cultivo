@@ -70,7 +70,7 @@ export function useTaskSchedules(roomId?: string) {
   async function copySchedulesFromRoom(sourceRoomId: string, targetRoomId: string): Promise<number> {
     const { data: sourceSchedules, error: fetchErr } = await supabase
       .from('room_task_schedules')
-      .select('task_type, recurrence, day_of_week, default_config, scope, priority, notes')
+      .select('task_type, recurrence, day_of_week, default_config, scope, priority, notes, scheduling_mode, interval_days, phase_day_start, phase_day_end')
       .eq('room_id', sourceRoomId)
       .eq('is_active', true);
     if (fetchErr) throw fetchErr;
@@ -88,6 +88,10 @@ export function useTaskSchedules(roomId?: string) {
       notes: s.notes,
       start_date: today,
       is_active: true,
+      scheduling_mode: s.scheduling_mode ?? 'calendar',
+      interval_days: s.interval_days ?? null,
+      phase_day_start: s.phase_day_start ?? null,
+      phase_day_end: s.phase_day_end ?? null,
     }));
 
     const { error: insertErr } = await supabase

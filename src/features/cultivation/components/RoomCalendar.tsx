@@ -4,7 +4,7 @@ import { Button } from '@/shared/components';
 import { useTaskSchedules, useScheduleTemplates } from '../hooks';
 import type { ScheduleTemplate } from '../hooks';
 import { TASK_TYPE_CONFIG } from '../types';
-import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput } from '../types';
+import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput, SchedulingMode } from '../types';
 import type { RoomType } from '../types';
 
 interface RoomCalendarRoom {
@@ -41,7 +41,7 @@ function toIsoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function doesScheduleOccur(schedule: RoomTaskSchedule, date: Date): boolean {
+function doesScheduleOccur(schedule: RoomTaskSchedule, date: Date, phaseDay?: number): boolean {
   const start = new Date(schedule.start_date + 'T00:00:00');
   if (date < start) return false;
   if (schedule.end_date) {
@@ -49,8 +49,32 @@ function doesScheduleOccur(schedule: RoomTaskSchedule, date: Date): boolean {
     if (date > end) return false;
   }
 
+  // Phase-day mode: check against the current batch's phase day
+  if (schedule.scheduling_mode === 'phase_day') {
+    if (phaseDay == null) return false; // no active batch in room, can't generate
+    if (schedule.phase_day_start != null && phaseDay < schedule.phase_day_start) return false;
+    if (schedule.phase_day_end != null && phaseDay > schedule.phase_day_end) return false;
+    // Single-day event (start === end)
+    if (schedule.phase_day_start != null && schedule.phase_day_end != null && schedule.phase_day_start === schedule.phase_day_end) {
+      return phaseDay === schedule.phase_day_start;
+    }
+    // Interval-based: every N days within the phase-day range
+    if (schedule.interval_days) {
+      const offset = phaseDay - (schedule.phase_day_start ?? 1);
+      return offset >= 0 && offset % schedule.interval_days === 0;
+    }
+    // Daily within phase-day range (no interval specified)
+    return true;
+  }
+
+  // Calendar mode (existing behavior)
   const dayOfWeek = date.getDay();
   const diffDays = Math.floor((date.getTime() - start.getTime()) / 86400000);
+
+  // Support interval_days in calendar mode too (e.g., "every 3 days")
+  if (schedule.interval_days && schedule.recurrence === 'daily') {
+    return diffDays % schedule.interval_days === 0;
+  }
 
   switch (schedule.recurrence) {
     case 'daily':
@@ -994,6 +1018,10 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
                             day_of_week: s.day_of_week,
                             priority: s.priority,
                             notes: s.notes,
+                            scheduling_mode: s.scheduling_mode,
+                            interval_days: s.interval_days,
+                            phase_day_start: s.phase_day_start,
+                            phase_day_end: s.phase_day_end,
                           }))
                         );
                         setSavingAsTemplate(false);
@@ -1240,8 +1268,37 @@ interface ScheduleRowProps {
   onEdit: () => void;
 }
 
+function formatScheduleFrequency(schedule: RoomTaskSchedule): string {
+  if (schedule.scheduling_mode === 'phase_day') {
+    const start = schedule.phase_day_start ?? 1;
+    const end = schedule.phase_day_end;
+    if (start === end) return `Day ${start} only`;
+    if (schedule.interval_days) {
+      const range = end ? `days ${start}–${end}` : `day ${start}+`;
+      return `Every ${schedule.interval_days}d, ${range}`;
+    }
+    return end ? `Daily, days ${start}–${end}` : `Daily from day ${start}`;
+  }
+  // Calendar mode
+  if (schedule.interval_days && schedule.recurrence === 'daily') {
+    return `Every ${schedule.interval_days} days`;
+  }
+  if (schedule.recurrence === 'daily') return 'Every day';
+  if (schedule.day_of_week && schedule.day_of_week.length > 0) {
+    const dayLetters = schedule.day_of_week.map((d) => DAY_NAMES[d]?.slice(0, 2)).join(', ');
+    return schedule.recurrence === 'biweekly' ? `${dayLetters} (biweekly)` : dayLetters;
+  }
+  if (schedule.recurrence === 'weekly') return 'Weekly';
+  if (schedule.recurrence === 'biweekly') return 'Biweekly';
+  if (schedule.recurrence === 'monthly') return 'Monthly';
+  return schedule.recurrence;
+}
+
 function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
   const config = TASK_TYPE_CONFIG[schedule.task_type] ?? TASK_TYPE_CONFIG.custom;
+  const isPhaseDay = schedule.scheduling_mode === 'phase_day';
+  const frequency = formatScheduleFrequency(schedule);
+
   return (
     <button
       type="button"
@@ -1249,7 +1306,7 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
       className="w-full text-left bg-cult-near-black border border-cult-dark-gray/60 hover:border-cult-medium-gray p-4 transition-all hover:bg-cult-charcoal/40 group rounded-sm"
     >
       {/* Top row: task name + badges */}
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2.5">
           <span
             className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-black/20"
@@ -1258,6 +1315,11 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
           <span className="text-xs font-bold text-cult-white uppercase tracking-wider">{config.label}</span>
         </div>
         <div className="flex items-center gap-2">
+          {isPhaseDay && (
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-400 bg-violet-950/40 rounded-sm border border-violet-800/30">
+              Phase
+            </span>
+          )}
           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cult-light-gray bg-cult-charcoal/80 rounded-sm border border-cult-dark-gray/40">
             {schedule.recurrence}
           </span>
@@ -1269,8 +1331,13 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
         </div>
       </div>
 
-      {/* Day-of-week pills */}
-      {schedule.day_of_week && schedule.day_of_week.length > 0 && (
+      {/* Frequency description */}
+      <div className="text-[11px] text-cult-medium-gray mb-2" style={{ color: `${config.color}99` }}>
+        {frequency}
+      </div>
+
+      {/* Day-of-week pills — calendar mode only */}
+      {!isPhaseDay && schedule.day_of_week && schedule.day_of_week.length > 0 && (
         <div className="flex gap-1">
           {DAY_NAMES.map((name, idx) => {
             const active = schedule.day_of_week!.includes(idx);
@@ -1291,9 +1358,16 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
         </div>
       )}
 
+      {/* End date indicator (calendar mode) */}
+      {schedule.end_date && (
+        <div className="mt-2 text-[10px] text-amber-400/70">
+          Stops {new Date(schedule.end_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </div>
+      )}
+
       {/* Notes */}
       {schedule.notes && (
-        <div className="mt-2 text-xs text-cult-medium-gray truncate">{schedule.notes}</div>
+        <div className={`${schedule.end_date ? 'mt-1' : 'mt-2'} text-xs text-cult-medium-gray truncate`}>{schedule.notes}</div>
       )}
     </button>
   );
@@ -1694,6 +1768,10 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                                 day_of_week: s.day_of_week,
                                 priority: s.priority,
                                 notes: s.notes,
+                                scheduling_mode: s.scheduling_mode,
+                                interval_days: s.interval_days,
+                                phase_day_start: s.phase_day_start,
+                                phase_day_end: s.phase_day_end,
                               }))
                             );
                             setSavingAsTemplate(false);
@@ -1743,15 +1821,21 @@ interface ScheduleFormProps {
 
 function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleFormProps) {
   const [taskType, setTaskType] = useState<TaskType>(initial?.task_type ?? 'feeding');
+  const [schedulingMode, setSchedulingMode] = useState<SchedulingMode>(initial?.scheduling_mode ?? 'calendar');
   const [recurrence, setRecurrence] = useState(initial?.recurrence ?? 'weekly');
   const [dayOfWeek, setDayOfWeek] = useState<number[]>(initial?.day_of_week ?? []);
+  const [intervalDays, setIntervalDays] = useState<string>(initial?.interval_days?.toString() ?? '');
+  const [phaseDayStart, setPhaseDayStart] = useState<string>(initial?.phase_day_start?.toString() ?? '');
+  const [phaseDayEnd, setPhaseDayEnd] = useState<string>(initial?.phase_day_end?.toString() ?? '');
   const [priority, setPriority] = useState(initial?.priority ?? 'medium');
   const [notes, setNotes] = useState(initial?.notes ?? '');
   const [startDate] = useState(initial?.start_date ?? toIsoDate(new Date()));
+  const [endDate, setEndDate] = useState(initial?.end_date ?? '');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const showDayPicker = recurrence === 'weekly' || recurrence === 'biweekly';
+  const showDayPicker = schedulingMode === 'calendar' && (recurrence === 'weekly' || recurrence === 'biweekly');
+  const isSingleDay = schedulingMode === 'phase_day' && phaseDayStart && phaseDayEnd && phaseDayStart === phaseDayEnd;
 
   const toggleDay = useCallback((d: number) => {
     setDayOfWeek((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort());
@@ -1763,9 +1847,14 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
       await onSave({
         room_id: roomId,
         task_type: taskType,
-        recurrence,
+        recurrence: schedulingMode === 'phase_day' ? 'daily' : recurrence,
         start_date: startDate,
+        end_date: schedulingMode === 'calendar' && endDate ? endDate : null,
         day_of_week: showDayPicker ? dayOfWeek : null,
+        scheduling_mode: schedulingMode,
+        interval_days: intervalDays ? parseInt(intervalDays, 10) : null,
+        phase_day_start: phaseDayStart ? parseInt(phaseDayStart, 10) : null,
+        phase_day_end: phaseDayEnd ? parseInt(phaseDayEnd, 10) : null,
         priority,
         notes: notes || null,
       });
@@ -1826,47 +1915,190 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
         </div>
       </div>
 
+      {/* Scheduling Mode Toggle */}
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
+        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Scheduling Mode</label>
         <div className="flex gap-1.5">
-          {RECURRENCE_OPTIONS.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRecurrence(r)}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
-                recurrence === r
-                  ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                  : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
-              }`}
-            >
-              {r.charAt(0).toUpperCase() + r.slice(1)}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={() => setSchedulingMode('calendar')}
+            className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+              schedulingMode === 'calendar'
+                ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
+                : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+            }`}
+          >
+            Calendar
+          </button>
+          <button
+            type="button"
+            onClick={() => setSchedulingMode('phase_day')}
+            className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+              schedulingMode === 'phase_day'
+                ? 'bg-violet-950/60 text-violet-400 border border-violet-700/50'
+                : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+            }`}
+          >
+            Phase Day
+          </button>
         </div>
+        <p className="mt-1 text-[10px] text-cult-dark-gray">
+          {schedulingMode === 'calendar'
+            ? 'Schedule by day of week or fixed interval'
+            : 'Schedule relative to batch stage entry (e.g., day 21 of flower)'}
+        </p>
       </div>
 
-      {showDayPicker && (
-        <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
-          <div className="flex gap-1">
-            {DAY_NAMES.map((name, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => toggleDay(idx)}
-                className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-sm transition-all ${
-                  dayOfWeek.includes(idx)
-                    ? 'text-white'
-                    : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
-                }`}
-                style={dayOfWeek.includes(idx) ? { backgroundColor: `${selectedConfig.color}30`, color: selectedConfig.color, borderWidth: '1px', borderColor: `${selectedConfig.color}50` } : undefined}
-              >
-                {name}
-              </button>
-            ))}
+      {/* Calendar mode fields */}
+      {schedulingMode === 'calendar' && (
+        <>
+          <div>
+            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
+            <div className="flex gap-1.5">
+              {RECURRENCE_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRecurrence(r)}
+                  className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+                    recurrence === r
+                      ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
+                      : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                  }`}
+                >
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {showDayPicker && (
+            <div>
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
+              <div className="flex gap-1">
+                {DAY_NAMES.map((name, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => toggleDay(idx)}
+                    className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-sm transition-all ${
+                      dayOfWeek.includes(idx)
+                        ? 'text-white'
+                        : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                    }`}
+                    style={dayOfWeek.includes(idx) ? { backgroundColor: `${selectedConfig.color}30`, color: selectedConfig.color, borderWidth: '1px', borderColor: `${selectedConfig.color}50` } : undefined}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {recurrence === 'daily' && (
+            <div>
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+                Repeat Every <span className="text-cult-dark-gray font-normal">(days, optional)</span>
+              </label>
+              <input
+                type="number"
+                value={intervalDays}
+                onChange={(e) => setIntervalDays(e.target.value)}
+                placeholder="Leave blank for every day"
+                min="1"
+                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-medium-gray min-h-[44px] placeholder:text-cult-dark-gray"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+              Stop After Date <span className="text-cult-dark-gray font-normal">(optional)</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                className="flex-1 bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-medium-gray min-h-[44px]"
+              />
+              {endDate && (
+                <button
+                  type="button"
+                  onClick={() => setEndDate('')}
+                  className="px-2.5 py-2.5 min-h-[44px] text-xs text-cult-medium-gray hover:text-red-400 border border-cult-dark-gray/50 hover:border-red-800/40 rounded-sm transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {endDate && (
+              <p className="mt-1 text-[10px] text-cult-dark-gray">
+                Tasks will stop generating after {new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Phase-day mode fields */}
+      {schedulingMode === 'phase_day' && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Start Day</label>
+              <input
+                type="number"
+                value={phaseDayStart}
+                onChange={(e) => setPhaseDayStart(e.target.value)}
+                placeholder="1"
+                min="1"
+                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+                End Day <span className="text-cult-dark-gray font-normal">(opt.)</span>
+              </label>
+              <input
+                type="number"
+                value={phaseDayEnd}
+                onChange={(e) => setPhaseDayEnd(e.target.value)}
+                placeholder="∞"
+                min={phaseDayStart || '1'}
+                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+              />
+            </div>
+          </div>
+
+          {!isSingleDay && (
+            <div>
+              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+                Repeat Every <span className="text-cult-dark-gray font-normal">(days)</span>
+              </label>
+              <input
+                type="number"
+                value={intervalDays}
+                onChange={(e) => setIntervalDays(e.target.value)}
+                placeholder="Leave blank for every day"
+                min="1"
+                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+              />
+            </div>
+          )}
+
+          <div className="rounded-sm bg-violet-950/20 border border-violet-800/20 p-2.5">
+            <p className="text-[11px] text-violet-300/80">
+              {isSingleDay
+                ? `One-time task on day ${phaseDayStart} of the stage`
+                : intervalDays
+                  ? `Every ${intervalDays} days${phaseDayStart ? `, starting day ${phaseDayStart}` : ''}${phaseDayEnd ? ` through day ${phaseDayEnd}` : ''}`
+                  : `Daily${phaseDayStart ? ` from day ${phaseDayStart}` : ''}${phaseDayEnd ? ` through day ${phaseDayEnd}` : ''}`
+              }
+            </p>
+          </div>
+        </>
       )}
 
       <div>
