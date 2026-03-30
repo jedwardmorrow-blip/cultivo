@@ -29,7 +29,7 @@ import { Button } from '@/shared/components';
 import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
 import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
-import { TASK_TYPE_CONFIG } from '../types';
+import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, TaskStatus, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
@@ -443,8 +443,8 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
     }
     for (const [, list] of map) {
       list.sort((a, b) => {
-        const cfg_a = TASK_TYPE_CONFIG[a.task_type];
-        const cfg_b = TASK_TYPE_CONFIG[b.task_type];
+        const cfg_a = getTaskTypeConfig(a.task_type);
+        const cfg_b = getTaskTypeConfig(b.task_type);
         const pa = PRIORITY_ORDER[(cfg_a as Record<string, unknown>)?.priority as string] ?? 1;
         const pb = PRIORITY_ORDER[(cfg_b as Record<string, unknown>)?.priority as string] ?? 1;
         if (a.status === 'carry_forward' && b.status !== 'carry_forward') return -1;
@@ -1196,7 +1196,7 @@ function AddTaskFormFields({
       <div>
         <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
         <select value={taskType} onChange={(e) => setTaskType(e.target.value as TaskType)} className={selectClass}>
-          {taskTypes.map((t) => <option key={t} value={t}>{TASK_TYPE_CONFIG[t].label}</option>)}
+          {taskTypes.map((t) => <option key={t} value={t}>{getTaskTypeConfig(t).label}</option>)}
         </select>
       </div>
       <div>

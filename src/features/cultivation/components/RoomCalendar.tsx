@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, X, Trash2, Save, Grid3X3, LayoutList, Plus, 
 import { Button } from '@/shared/components';
 import { useTaskSchedules, useScheduleTemplates } from '../hooks';
 import type { ScheduleTemplate } from '../hooks';
-import { TASK_TYPE_CONFIG } from '../types';
+import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput, SchedulingMode } from '../types';
 import type { RoomType } from '../types';
 import { TemplateManager } from './TemplateManager';
@@ -248,8 +248,8 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
           <div className="hidden lg:flex items-center gap-2.5 mr-2">
             {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
               <div key={t} className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
-                <span className="text-xs text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{TASK_TYPE_CONFIG[t].label}</span>
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getTaskTypeConfig(t).color }} />
+                <span className="text-xs text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{getTaskTypeConfig(t).label}</span>
               </div>
             ))}
           </div>
@@ -308,8 +308,8 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
       <div className="lg:hidden flex flex-wrap items-center gap-3 px-1">
         {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
           <div key={t} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }} />
-            <span className="text-xs text-cult-medium-gray">{TASK_TYPE_CONFIG[t].label}</span>
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: getTaskTypeConfig(t).color }} />
+            <span className="text-xs text-cult-medium-gray">{getTaskTypeConfig(t).label}</span>
           </div>
         ))}
       </div>
@@ -438,7 +438,7 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                             <span
                               key={t}
                               className="w-1.5 h-1.5 rounded-full"
-                              style={{ backgroundColor: TASK_TYPE_CONFIG[t]?.color ?? '#666' }}
+                              style={{ backgroundColor: getTaskTypeConfig(t).color }}
                             />
                           ))}
                           <span className="text-xs text-cult-dark-gray ml-0.5">
@@ -466,7 +466,7 @@ function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsForCell, 
                           {dots.length > 0 ? (
                             <div className="flex flex-wrap justify-center gap-[2px] px-0.5">
                               {dots.slice(0, 4).map((t) => {
-                                const cfg = TASK_TYPE_CONFIG[t];
+                                const cfg = getTaskTypeConfig(t);
                                 const initial = cfg.label.charAt(0).toUpperCase();
                                 return (
                                   <span
@@ -636,8 +636,8 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, onEditR
                           <span
                             key={t}
                             className="block w-[6px] h-[6px] rounded-full"
-                            style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
-                            title={TASK_TYPE_CONFIG[t].label}
+                            style={{ backgroundColor: getTaskTypeConfig(t).color }}
+                            title={getTaskTypeConfig(t).label}
                           />
                         ))}
                       </div>
@@ -647,14 +647,14 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, onEditR
                           <span
                             key={t}
                             className="inline-flex items-center gap-0.5 px-1.5 py-[2px] text-xs font-bold uppercase tracking-wider rounded-sm"
-                            style={{ backgroundColor: `${TASK_TYPE_CONFIG[t].color}18`, color: TASK_TYPE_CONFIG[t].color }}
-                            title={TASK_TYPE_CONFIG[t].label}
+                            style={{ backgroundColor: `${getTaskTypeConfig(t).color}18`, color: getTaskTypeConfig(t).color }}
+                            title={getTaskTypeConfig(t).label}
                           >
                             <span
                               className="w-[5px] h-[5px] rounded-full flex-shrink-0"
-                              style={{ backgroundColor: TASK_TYPE_CONFIG[t].color }}
+                              style={{ backgroundColor: getTaskTypeConfig(t).color }}
                             />
-                            {TASK_TYPE_CONFIG[t].label.slice(0, 4)}
+                            {getTaskTypeConfig(t).label.slice(0, 4)}
                           </span>
                         ))}
                       </div>
@@ -744,7 +744,7 @@ function DayDetailPanel({
               </div>
               <div className="flex flex-wrap gap-1">
                 {taskTypes.map((t) => {
-                  const cfg = TASK_TYPE_CONFIG[t];
+                  const cfg = getTaskTypeConfig(t);
                   // Find the schedule for detail
                   const sched = daySchedules.find((s) => s.task_type === t);
                   return (
@@ -1525,7 +1525,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                           <span
                             key={t}
                             className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: TASK_TYPE_CONFIG[t]?.color ?? '#666' }}
+                            style={{ backgroundColor: getTaskTypeConfig(t).color }}
                           />
                         ))}
                       </div>
@@ -1893,7 +1893,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
     }
   }
 
-  const selectedConfig = TASK_TYPE_CONFIG[taskType];
+  const selectedConfig = getTaskTypeConfig(taskType);
 
   return (
     <div className="bg-cult-charcoal/30 border border-cult-medium-gray/60 p-4 space-y-3.5">
@@ -1909,7 +1909,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
         <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
           {TASK_TYPES.map((t) => {
-            const cfg = TASK_TYPE_CONFIG[t];
+            const cfg = getTaskTypeConfig(t);
             const selected = taskType === t;
             return (
               <button

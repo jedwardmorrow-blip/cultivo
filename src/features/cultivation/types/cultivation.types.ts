@@ -378,6 +378,20 @@ export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
   custom: { label: 'Custom', color: '#A6A6A6', icon: 'Settings' },
 };
 
+/** Legacy task types that may still exist in the DB but are removed from the union.
+ *  Keeps the UI from crashing when rendering old schedules/instances. */
+const LEGACY_TASK_TYPE_CONFIG: Record<string, TaskTypeConfigEntry> = {
+  feeding: { label: 'Feeding (legacy)', color: '#3B82F6', icon: 'Droplets' },
+};
+
+/** Safe config lookup — returns config for any task type string, falling back
+ *  to legacy entries then to `custom` for truly unknown types. */
+export function getTaskTypeConfig(taskType: string): TaskTypeConfigEntry {
+  return TASK_TYPE_CONFIG[taskType as TaskType]
+    ?? LEGACY_TASK_TYPE_CONFIG[taskType]
+    ?? TASK_TYPE_CONFIG.custom;
+}
+
 export type SchedulingMode = 'calendar' | 'phase_day';
 
 export interface RoomTaskSchedule {
