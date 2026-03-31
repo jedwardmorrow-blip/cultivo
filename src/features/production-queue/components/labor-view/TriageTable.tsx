@@ -6,7 +6,7 @@ import { calcTotalEstG, getCoverage, fmtPct, getLaborTag } from './utils';
 import { UrgencyBadge, COVERAGE_COLORS } from './shared-components';
 
 // ─── Triage Table ───────────────────────────────────────────────────────────
-// Section 1: Compact one-row-per-strain scan table.
+// Section 1: One-row-per-strain scan table.
 // Goal: "Which strains need attention?" — answerable in 2 seconds.
 
 interface TriageTableProps {
@@ -48,7 +48,6 @@ function sortRows(rows: TriageRow[], sortBy: SortKey, lossPct: number): TriageRo
   });
 }
 
-
 export default function TriageTable({
   strains,
   lossPct,
@@ -67,15 +66,15 @@ export default function TriageTable({
   return (
     <div>
       {/* Summary badges */}
-      <div className="flex items-center gap-2 px-1 mb-2">
-        <span className="text-[11px] text-gray-500">{strains.length} strains</span>
+      <div className="flex items-center gap-3 px-1 mb-3">
+        <span className="text-sm text-gray-400">{strains.length} strains</span>
         {deficitCount > 0 && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/60 text-rose-400">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-red-900/60 text-rose-400">
             {deficitCount} deficit
           </span>
         )}
         {tightCount > 0 && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-400">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-amber-900/60 text-amber-400">
             {tightCount} tight
           </span>
         )}
@@ -85,19 +84,19 @@ export default function TriageTable({
       <div className="bg-cult-surface rounded-cult border border-cult-border/50 overflow-hidden">
         {/* Sortable header row */}
         <div
-          className="grid gap-3 px-4 py-2 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-cult-border/30 select-none"
-          style={{ gridTemplateColumns: '1.4fr 0.7fr 0.6fr 0.8fr 1fr' }}
+          className="grid gap-4 px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-cult-border/40 select-none"
+          style={{ gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 1.1fr' }}
         >
-          <button onClick={() => onSortChange('urgency')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'urgency' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => onSortChange('urgency')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'urgency' ? 'text-cult-text-primary' : ''}`}>
             Strain {sortBy === 'urgency' && '↓'}
           </button>
-          <button onClick={() => onSortChange('demand')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'demand' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => onSortChange('demand')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'demand' ? 'text-cult-text-primary' : ''}`}>
             Demand {sortBy === 'demand' && '↓'}
           </button>
-          <button onClick={() => onSortChange('ready')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'ready' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => onSortChange('ready')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'ready' ? 'text-cult-text-primary' : ''}`}>
             Ready {sortBy === 'ready' && '↑'}
           </button>
-          <button onClick={() => onSortChange('coverage')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'coverage' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => onSortChange('coverage')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'coverage' ? 'text-cult-text-primary' : ''}`}>
             Coverage {sortBy === 'coverage' && '↑'}
           </button>
           <div>Next Action</div>
@@ -108,10 +107,10 @@ export default function TriageTable({
           {sorted.map(row => {
             const isSelected = (row.strain.strainId ?? row.strain.strainName) === selectedStrainId;
             const coverageBorderClass = row.coverage.state === 'deficit'
-              ? 'border-l-2 border-l-rose-500/40'
+              ? 'border-l-[3px] border-l-rose-500/50'
               : row.coverage.state === 'tight'
-                ? 'border-l-2 border-l-amber-500/30'
-                : 'border-l-2 border-l-transparent';
+                ? 'border-l-[3px] border-l-amber-500/40'
+                : 'border-l-[3px] border-l-transparent';
 
             return (
               <div
@@ -119,59 +118,66 @@ export default function TriageTable({
                 onClick={() => onSelectStrain(
                   isSelected ? null : (row.strain.strainId ?? row.strain.strainName)
                 )}
-                className={`grid gap-3 px-4 py-2.5 cursor-pointer transition-colors ${coverageBorderClass} ${
+                className={`grid gap-4 px-5 py-3.5 cursor-pointer transition-colors ${coverageBorderClass} ${
                   isSelected
                     ? 'bg-cult-surface-raised'
                     : 'hover:bg-cult-surface-raised/50'
                 }`}
-                style={{ gridTemplateColumns: '1.4fr 0.7fr 0.6fr 0.8fr 1fr' }}
+                style={{ gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 1.1fr' }}
               >
                 {/* Strain name + urgency */}
-                <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-cult-text-primary text-[12px] truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-cult-text-primary text-sm truncate">
                         {row.strain.strainName}
                       </span>
                       <UrgencyBadge urgency={row.strain.urgency} />
                     </div>
-                    <div className="text-[10px] text-gray-600 truncate mt-px">
+                    <div className="text-xs text-gray-500 truncate mt-0.5">
                       {row.strain.formats.map(f => f.formatLabel).join(', ')}
                     </div>
                   </div>
                 </div>
 
                 {/* Demand */}
-                <div>
-                  <div className="text-[13px] font-bold text-cult-text-primary">
+                <div className="flex flex-col justify-center">
+                  <div className="text-sm font-bold text-cult-text-primary">
                     {formatWeight(row.strain.totalDemandG)}
                   </div>
-                  <div className="text-[10px] text-gray-600">
+                  <div className="text-xs text-gray-500">
                     {row.strain.orderCount} order{row.strain.orderCount !== 1 ? 's' : ''}
                   </div>
                 </div>
 
                 {/* Ready % */}
-                <div>
-                  <div className={`text-[14px] font-bold font-montserrat ${COVERAGE_COLORS[row.coverage.state]}`}>
+                <div className="flex flex-col justify-center">
+                  <div className={`text-base font-bold font-montserrat ${COVERAGE_COLORS[row.coverage.state]}`}>
                     {fmtPct(row.readyPct)}
                   </div>
-                  <div className="flex h-1 rounded-sm bg-cult-border overflow-hidden mt-1 w-16">
-                    <div className="bg-emerald-400 rounded-sm" style={{ width: `${Math.min(row.readyPct, 100)}%` }} />
+                  <div className="flex h-1.5 rounded-sm bg-cult-border overflow-hidden mt-1 w-20">
+                    <div
+                      className={`rounded-sm ${
+                        row.coverage.state === 'surplus' ? 'bg-emerald-400'
+                        : row.coverage.state === 'tight' ? 'bg-amber-400'
+                        : 'bg-rose-400'
+                      }`}
+                      style={{ width: `${Math.min(row.readyPct, 100)}%` }}
+                    />
                   </div>
                 </div>
 
                 {/* Coverage state badge */}
                 <div className="flex items-center">
                   {row.coverage.state === 'surplus' ? (
-                    <span className="text-[10px] font-semibold text-emerald-400">
+                    <span className="text-xs font-semibold text-emerald-400">
                       {row.coverage.label}
                     </span>
                   ) : (
-                    <span className={`inline-block text-[10px] font-bold px-1.5 py-px rounded uppercase tracking-wide ${
+                    <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide ${
                       row.coverage.state === 'tight'
-                        ? 'bg-amber-500/10 text-amber-400'
-                        : 'bg-rose-500/10 text-rose-400'
+                        ? 'bg-amber-500/15 text-amber-400'
+                        : 'bg-rose-500/15 text-rose-400'
                     }`}>
                       {row.coverage.label}
                     </span>
@@ -181,11 +187,11 @@ export default function TriageTable({
                 {/* Next action */}
                 <div className="flex items-center">
                   {row.laborTag.label ? (
-                    <span className={`text-[11px] font-semibold ${row.laborTag.color}`}>
+                    <span className={`text-sm font-semibold ${row.laborTag.color}`}>
                       {row.laborTag.label}
                     </span>
                   ) : (
-                    <span className="text-[10px] text-gray-600 italic">-</span>
+                    <span className="text-xs text-gray-600 italic">—</span>
                   )}
                 </div>
               </div>
