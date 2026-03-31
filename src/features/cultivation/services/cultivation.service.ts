@@ -38,6 +38,7 @@ import type {
   BulkImportPlantResult,
   FreshFrozenPackage,
   CreateFreshFrozenPackageInput,
+  SectionOccupancy,
 } from '../types';
 import { inventoryMovementService } from '@/services';
 import {
@@ -199,7 +200,7 @@ export const cultivationService = {
    * Returns section_id → { total_plants, strain_abbreviations } for all sections
    * that currently hold plants. Used by the grid-based placement builder.
    */
-  async getSectionOccupancy(roomId: string): Promise<Map<string, { total_plants: number; strain_abbreviations: string[] }>> {
+  async getSectionOccupancy(roomId: string): Promise<Map<string, SectionOccupancy>> {
     const { data, error } = await supabase
       .from('plant_groups')
       .select('room_section_id, plant_count, strains:strains!inner(abbreviation)')
@@ -209,7 +210,7 @@ export const cultivationService = {
 
     if (error) throwError(error, 'getSectionOccupancy');
 
-    const map = new Map<string, { total_plants: number; strain_abbreviations: string[] }>();
+    const map = new Map<string, SectionOccupancy>();
     for (const row of (data ?? [])) {
       const sectionId = row.room_section_id as string;
       const count = row.plant_count as number;
@@ -217,11 +218,18 @@ export const cultivationService = {
       const existing = map.get(sectionId);
       if (existing) {
         existing.total_plants += count;
-        if (abbrev && !existing.strain_abbreviations.includes(abbrev)) {
-          existing.strain_abbreviations.push(abbrev);
+        // Track per-strain breakdown
+        const strainEntry = existing.strain_counts.find(s => s.abbreviation === abbrev);
+        if (strainEntry) {
+          strainEntry.count += count;
+        } else if (abbrev) {
+          existing.strain_counts.push({ abbreviation: abbrev, count });
         }
       } else {
-        map.set(sectionId, { total_plants: count, strain_abbreviations: abbrev ? [abbrev] : [] });
+        map.set(sectionId, {
+          total_plants: count,
+          strain_counts: abbrev ? [{ abbreviation: abbrev, count }] : [],
+        });
       }
     }
     return map;
@@ -526,13 +534,26 @@ export const cultivationService = {
       });
     }
 
-    // 4. Update source group: decrement plant_count or set to 0
+    // 4. Update source group: decrement plant_count or archive if fully depleted
     const remaining = source.plant_count - totalPlacing;
     if (remaining <= 0) {
-      // All plants moved — zero out the source and set growth_stage to harvested
+      // All plants moved — zero out and walk through valid stage transitions to 'harvested'.
+      // The trigger enforces clone→veg→flower→harvested, so we step through each stage.
+      const stageOrder = ['clone', 'veg', 'flower', 'harvested'] as const;
+      const currentIdx = stageOrder.indexOf(source.growth_stage as typeof stageOrder[number]);
+      const harvestedIdx = stageOrder.indexOf('harvested');
+
+      // Step through each intermediate stage
+      for (let i = currentIdx + 1; i <= harvestedIdx; i++) {
+        await supabase
+          .from('plant_groups')
+          .update({ growth_stage: stageOrder[i] })
+          .eq('id', source_group_id);
+      }
+      // Now zero out the plant count
       await supabase
         .from('plant_groups')
-        .update({ plant_count: 0, growth_stage: 'harvested' })
+        .update({ plant_count: 0 })
         .eq('id', source_group_id);
     } else {
       // Partial move — some plants remain in the source room

@@ -232,11 +232,16 @@ export type SplitAndMoveInput = {
   placements: PlacementEntry[];
 };
 
+/** Per-strain count within a section */
+export interface StrainCount {
+  abbreviation: string;
+  count: number;
+}
+
 /** Per-section occupancy snapshot for grid-based placement */
 export interface SectionOccupancy {
-  section_id: string;
   total_plants: number;
-  strain_abbreviations: string[];
+  strain_counts: StrainCount[];
 }
 
 export interface PlantGroupRoomHistoryFull extends PlantGroupRoomHistory {

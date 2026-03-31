@@ -3,7 +3,7 @@ import { ArrowRight, AlertTriangle, MapPin, Skull, Minus, Plus } from 'lucide-re
 import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import { useMortalityLog } from '../hooks';
-import type { GrowRoom, PlantGroup, RoomTable, SplitAndMoveInput, PlacementEntry } from '../types';
+import type { GrowRoom, PlantGroup, RoomTable, SplitAndMoveInput, PlacementEntry, StrainCount } from '../types';
 
 interface MoveToRoomModalProps {
   group: PlantGroup;
@@ -25,7 +25,7 @@ interface CellState {
   plantCount: number;
   /** Existing occupancy from other groups */
   occupiedCount: number;
-  occupiedStrains: string[];
+  occupiedStrains: StrainCount[];
 }
 
 export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel }: MoveToRoomModalProps) {
@@ -96,7 +96,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
             selected: false,
             plantCount: 0,
             occupiedCount: occ?.total_plants ?? 0,
-            occupiedStrains: occ?.strain_abbreviations ?? [],
+            occupiedStrains: occ?.strain_counts ?? [],
           });
         }
       }
@@ -379,6 +379,22 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
               </div>
             </div>
 
+            {/* Grid legend */}
+            <div className="flex items-center gap-4 mb-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 border border-dashed border-cult-medium-gray/50 bg-cult-black" />
+                <span className="text-[9px] text-cult-medium-gray">Empty</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 border border-amber-700/60 bg-amber-950/40" />
+                <span className="text-[9px] text-cult-medium-gray">Occupied</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 border border-emerald-500/50 bg-emerald-950/30" />
+                <span className="text-[9px] text-cult-medium-gray">Placing here</span>
+              </div>
+            </div>
+
             {/* ─── Room Grid ─── */}
             <div
               className="grid gap-[3px] mb-3"
@@ -406,47 +422,26 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                     const key = `${table.table_number}-${sLabel}`;
                     const cell = cells.get(key);
                     if (!cell) {
-                      return <div key={key} className="aspect-square min-h-[44px] bg-cult-black/30 border border-cult-dark-gray/30" />;
+                      return <div key={key} className="min-h-[52px] bg-cult-black/30 border border-cult-dark-gray/30" />;
                     }
 
                     const isOccupied = cell.occupiedCount > 0;
                     const isSelected = cell.selected;
-
-                    if (isOccupied && !isSelected) {
-                      // Occupied cell — show existing plants
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => toggleCell(key)}
-                          className="aspect-square min-h-[44px] bg-sky-950/20 border border-sky-800/20 flex flex-col items-center justify-center cursor-pointer hover:border-sky-600/40 transition-colors"
-                          title={`${cell.occupiedCount} plants (${cell.occupiedStrains.join(', ')}) — click to add more`}
-                        >
-                          <span className="font-mono text-[11px] font-medium text-sky-400/60">{cell.occupiedCount}</span>
-                          <span className="text-[7px] text-sky-500/30 uppercase tracking-wider truncate max-w-full px-1">
-                            {cell.occupiedStrains.join(',')}
-                          </span>
-                        </button>
-                      );
-                    }
+                    const strainSummary = cell.occupiedStrains.map(s => `${s.count} ${s.abbreviation}`).join(', ');
 
                     if (isSelected) {
-                      // Selected cell — show count input
+                      // Selected cell — emerald border, count input, plus existing occupancy below
                       return (
                         <div
                           key={key}
-                          className={`aspect-square min-h-[44px] border flex flex-col items-center justify-center relative ${
-                            isOccupied
-                              ? 'bg-emerald-950/20 border-emerald-600/40'
-                              : 'bg-emerald-950/15 border-emerald-500/50'
-                          }`}
+                          className="min-h-[52px] border-2 border-emerald-500/60 bg-emerald-950/20 flex flex-col items-center justify-center relative"
                         >
-                          {/* Deselect on click of the checkmark area */}
                           <button
                             onClick={() => toggleCell(key)}
-                            className="absolute top-0.5 right-1 text-[8px] text-emerald-500/50 hover:text-red-400 transition-colors"
+                            className="absolute top-0.5 right-1 text-[8px] text-emerald-500/60 hover:text-red-400 transition-colors"
                             title="Deselect"
                           >
-                            ✓
+                            ✕
                           </button>
                           <input
                             type="number"
@@ -458,18 +453,45 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                             className="w-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           {isOccupied && (
-                            <span className="text-[7px] text-sky-400/40 font-mono">+{cell.occupiedCount}</span>
+                            <div className="flex flex-col items-center">
+                              {cell.occupiedStrains.map(s => (
+                                <span key={s.abbreviation} className="text-[7px] text-amber-400/60 font-mono leading-tight">
+                                  +{s.count} {s.abbreviation}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
                       );
                     }
 
-                    // Empty cell — available for selection
+                    if (isOccupied) {
+                      // Occupied cell — amber tones, per-strain breakdown, clearly filled
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => toggleCell(key)}
+                          className="min-h-[52px] bg-amber-950/30 border border-amber-700/40 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/60 hover:bg-amber-950/40 transition-colors"
+                          title={`Occupied: ${strainSummary} — click to co-place`}
+                        >
+                          <span className="font-mono text-[11px] font-bold text-amber-400/80">{cell.occupiedCount}</span>
+                          <div className="flex flex-col items-center">
+                            {cell.occupiedStrains.map(s => (
+                              <span key={s.abbreviation} className="text-[7px] text-amber-500/60 uppercase tracking-wider leading-tight">
+                                {s.count} {s.abbreviation}
+                              </span>
+                            ))}
+                          </div>
+                        </button>
+                      );
+                    }
+
+                    // Empty cell — dashed border, clearly available
                     return (
                       <button
                         key={key}
                         onClick={() => toggleCell(key)}
-                        className="aspect-square min-h-[44px] bg-cult-black border border-cult-dark-gray hover:border-cult-medium-gray hover:bg-white/[0.02] transition-colors cursor-pointer opacity-40 hover:opacity-70"
+                        className="min-h-[52px] bg-cult-black border border-dashed border-cult-medium-gray/40 hover:border-emerald-600/50 hover:bg-emerald-950/10 transition-colors cursor-pointer"
                       />
                     );
                   })}
