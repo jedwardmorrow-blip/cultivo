@@ -105,7 +105,7 @@ export interface OrderLineItem {
   assigned_package_ids: string[] | null;
 }
 
-export type ProductionQueueTab = 'triage' | 'labor' | 'by-order' | 'summary';
+export type ProductionQueueTab = 'orders' | 'batches' | 'labor';
 export type DeliveryDateFilter = 'all' | 'overdue' | 'this-week' | 'next-week';
 
 // ─── Batch Plan types (strain-level planning layer) ─────────────────────────

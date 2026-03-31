@@ -1,15 +1,16 @@
 import { useState, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Calendar, Search, Hammer } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, ChevronDown, ChevronRight, Calendar, Hammer, Layers } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
+import { useAllBatches } from '../hooks/useAllBatches';
 import { useSkuYield, type StrainAllocation, type BatchYield } from '@/shared/hooks/useSkuYield';
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
 import LaborView from './LaborView';
-import { groupByStrain, calcTotalEstG, getCoverage } from './labor-view/utils';
+import BatchesView from './BatchesView';
 import { formatDateShort, formatWeight, todayIso } from '@/shared/utils/format';
-import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
+import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency } from '../types';
 
 // ─── Shared Badges ──────────────────────────────────────────────────────────
 
@@ -37,30 +38,6 @@ function urgencyBadge(urgency: Urgency) {
         urgency === 'normal' ? 'bg-green-400' : 'bg-gray-400'
       }`} />
       {labels[urgency]}
-    </span>
-  );
-}
-
-function stockBadge(status: StockStatus) {
-  const styles: Record<StockStatus, string> = {
-    ready: 'bg-green-500/20 text-green-400',
-    needs_processing: 'bg-amber-500/20 text-amber-400',
-    no_stock: 'bg-red-500/20 text-red-400',
-    can_fill: 'bg-green-500/20 text-green-400',
-    available: 'bg-green-500/20 text-green-400',
-    partial: 'bg-amber-500/20 text-amber-400',
-  };
-  const labels: Record<StockStatus, string> = {
-    ready: 'Ready',
-    needs_processing: 'Needs Processing',
-    no_stock: 'No Stock',
-    can_fill: 'Can Fill',
-    available: 'Available',
-    partial: 'Partial',
-  };
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${styles[status]}`}>
-      {labels[status]}
     </span>
   );
 }
@@ -618,76 +595,6 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
   );
 }
 
-// ─── Summary Tab ────────────────────────────────────────────────────────────
-
-function SummaryView({ strainSummary }: { strainSummary: StrainSummary[] }) {
-  return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-cult-medium-gray text-left">
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Strain</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Demand</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Available</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Fill Rate</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Stock</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Orders</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Earliest Delivery</th>
-          </tr>
-        </thead>
-        <tbody>
-          {strainSummary.map(s => (
-            <tr
-              key={s.strain_id || s.strain_name}
-              className={`border-b border-cult-medium-gray/50 ${
-                s.stock_status === 'no_stock' ? 'bg-red-500/5' :
-                s.stock_status === 'partial' ? 'bg-amber-500/5' : ''
-              }`}
-            >
-              <td className="px-4 py-3 font-medium text-white">{s.strain_name}</td>
-              <td className="px-4 py-3 text-right text-gray-300">
-                <div>{s.total_demand_lbs} lbs</div>
-                <div className="text-xs text-gray-500">{s.total_demand_g.toLocaleString()}g</div>
-              </td>
-              <td className="px-4 py-3 text-right text-gray-300">
-                <div>{s.available_lbs} lbs</div>
-                <div className="text-xs text-gray-500">{s.available_g.toLocaleString()}g</div>
-              </td>
-              <td className="px-4 py-3 text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        s.fill_rate_pct >= 100 ? 'bg-green-500' :
-                        s.fill_rate_pct >= 50 ? 'bg-amber-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${Math.min(s.fill_rate_pct, 100)}%` }}
-                    />
-                  </div>
-                  <span className={`text-sm font-medium ${
-                    s.fill_rate_pct >= 100 ? 'text-green-400' :
-                    s.fill_rate_pct >= 50 ? 'text-amber-400' : 'text-red-400'
-                  }`}>
-                    {s.fill_rate_pct}%
-                  </span>
-                </div>
-              </td>
-              <td className="px-4 py-3">{stockBadge(s.stock_status)}</td>
-              <td className="px-4 py-3">{urgencyBadge(s.urgency)}</td>
-              <td className="px-4 py-3 text-right text-gray-300">{s.order_count}</td>
-              <td className="px-4 py-3 text-gray-300">{formatDateShort(s.earliest_delivery)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {strainSummary.length === 0 && (
-        <div className="p-8 text-center text-gray-500">No open orders in the production queue.</div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Production Queue Component ────────────────────────────────────────
 
 export function ProductionQueue() {
@@ -699,7 +606,8 @@ export function ProductionQueue() {
     loading: revenueLoading,
   } = useRevenuePipeline();
   const { byStrain: skuByStrain, summary: skuSummary } = useSkuYield();
-  const [activeTab, setActiveTab] = useState<ProductionQueueTab>('triage');
+  const { batches: allBatches, loading: batchesLoading } = useAllBatches();
+  const [activeTab, setActiveTab] = useState<ProductionQueueTab>('orders');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
   const [lossPct, setLossPct] = useState(15);
@@ -719,21 +627,6 @@ export function ProductionQueue() {
   const filteredByStrain = categoryFilter === 'All'
     ? byStrain
     : byStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
-
-  // Coverage counts for tab badges — MUST be before early returns (Rules of Hooks)
-  const coverageCounts = useMemo(() => {
-    const strainGroups = groupByStrain(filteredByStrain);
-    let deficit = 0;
-    let tight = 0;
-    for (const strain of strainGroups) {
-      const readyG = strain.pipeline.packaged.weightG;
-      const totalEstG = calcTotalEstG(strain.pipeline, lossPct);
-      const cov = getCoverage(readyG, totalEstG, strain.totalDemandG);
-      if (cov.state === 'deficit') deficit++;
-      else if (cov.state === 'tight') tight++;
-    }
-    return { deficit, tight };
-  }, [filteredByStrain, lossPct]);
 
   if (loading && revenueLoading) {
     return (
@@ -759,10 +652,9 @@ export function ProductionQueue() {
   }
 
   const tabs: { id: ProductionQueueTab; label: string; icon: typeof Package }[] = [
-    { id: 'triage', label: 'Triage', icon: Search },
+    { id: 'orders', label: 'Orders', icon: ClipboardList },
+    { id: 'batches', label: 'Batches', icon: Layers },
     { id: 'labor', label: 'Labor', icon: Hammer },
-    { id: 'by-order', label: 'Orders', icon: ClipboardList },
-    { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
 
   return (
@@ -819,23 +711,13 @@ export function ProductionQueue() {
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
-                {tab.id === 'triage' && coverageCounts.deficit > 0 && (
-                  <span className="ml-1 text-[10px] font-bold px-1.5 py-px rounded-full bg-rose-500/20 text-rose-400">
-                    {coverageCounts.deficit}
-                  </span>
-                )}
-                {tab.id === 'labor' && coverageCounts.tight > 0 && (
-                  <span className="ml-1 text-[10px] font-bold px-1.5 py-px rounded-full bg-amber-500/20 text-amber-400">
-                    {coverageCounts.tight}
-                  </span>
-                )}
               </button>
             );
           })}
         </div>
 
         <div className="flex items-center gap-3">
-          {(activeTab === 'triage' || activeTab === 'labor') && (
+          {activeTab === 'labor' && (
             <div className="flex items-center gap-1.5">
               <label className="text-[11px] text-gray-500 font-medium">Loss</label>
               <input
@@ -850,7 +732,7 @@ export function ProductionQueue() {
               <span className="text-xs font-semibold text-amber-400 min-w-[28px]">{lossPct}%</span>
             </div>
           )}
-          {(activeTab === 'triage' || activeTab === 'labor' || activeTab === 'by-order') && (
+          {(activeTab === 'orders' || activeTab === 'labor') && (
             <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
           )}
         </div>
@@ -858,17 +740,17 @@ export function ProductionQueue() {
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
       <div key={activeTab} className="animate-fade-in">
-        {(activeTab === 'triage' || activeTab === 'labor') && (
+        {activeTab === 'orders' && <ByOrderView byOrder={filteredByOrder} />}
+        {activeTab === 'batches' && <BatchesView batches={allBatches} />}
+        {activeTab === 'labor' && (
           <LaborView
             byStrain={filteredByStrain}
             byOrder={filteredByOrder}
             loading={loading}
-            mode={activeTab}
+            mode="labor"
             lossPct={lossPct}
           />
         )}
-        {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
-        {activeTab === 'summary' && <SummaryView strainSummary={strainSummary} />}
       </div>
     </div>
   );
