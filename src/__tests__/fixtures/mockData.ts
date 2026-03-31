@@ -73,7 +73,7 @@ export const createMockOrderItem = (overrides: Partial<OrderItem> = {}): OrderIt
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   ...overrides,
-});
+} as OrderItem);
 
 export const createMockOrder = (overrides: Partial<Order> = {}): Order => ({
   id: 'order-123',

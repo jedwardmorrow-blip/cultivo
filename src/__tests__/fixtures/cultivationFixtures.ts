@@ -86,7 +86,7 @@ export function makePlantGroup(overrides: Partial<PlantGroup> = {}): PlantGroup 
     strains: { name: 'Blue Pave', abbreviation: 'BP' },
     grow_rooms: { name: 'Flower Room A', room_code: 'FR-A' },
     ...overrides,
-  };
+  } as PlantGroup;
 }
 
 export function makeHarvestSession(overrides: Partial<HarvestSession> = {}): HarvestSession {
@@ -98,7 +98,7 @@ export function makeHarvestSession(overrides: Partial<HarvestSession> = {}): Har
     plant_count_harvested: 24,
     adjusted_weight_grams: null,
     adjustment_reason: null,
-    batch_registry_id: null,
+    batch_registry_id: 'br-001',
     session_status: 'active',
     completed_at: null,
     completed_by: null,
@@ -113,7 +113,7 @@ export function makeHarvestSession(overrides: Partial<HarvestSession> = {}): Har
       strains: { name: 'Blue Pave', abbreviation: 'BP' },
     },
     ...overrides,
-  };
+  } as HarvestSession;
 }
 
 export function makeBinningSession(overrides: Partial<BinningSession> = {}): BinningSession {
@@ -135,5 +135,5 @@ export function makeBinningSession(overrides: Partial<BinningSession> = {}): Bin
     dry_rooms: { name: 'Dry Room 1', room_code: 'DR-1' },
     batch_registry: { batch_number: '260219-BP' },
     ...overrides,
-  };
+  } as BinningSession;
 }

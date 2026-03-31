@@ -88,6 +88,7 @@ describe('cultivationService — error path coverage', () => {
 
   describe('createHarvestSession — plant group stage validation', () => {
     const input = {
+      batch_registry_id: 'br-test',
       plant_group_id: 'pg-clone',
       harvest_date: '2026-02-19',
       wet_weight_grams: 5000,

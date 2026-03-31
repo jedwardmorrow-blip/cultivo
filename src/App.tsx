@@ -50,7 +50,6 @@ const SchedulesPage = lazyRetry(() => import('./features/cultivation'), 'Schedul
 const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
 const WorkerTaskView = lazyRetry(() => import('./features/cultivation'), 'WorkerTaskView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
-const AccountsList = lazyRetry(() => import('./features/crm'), 'AccountsList');
 const AccountDetail = lazyRetry(() => import('./features/crm'), 'AccountDetail');
 const SalesQueue = lazyRetry(() => import('./features/crm'), 'SalesQueue');
 const VisitCalendar = lazyRetry(() => import('./features/crm'), 'VisitCalendar');

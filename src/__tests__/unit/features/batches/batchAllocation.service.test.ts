@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/supabase', () => {
-  const makeChain = (resolveWith: any) => {
+  const _makeChain = (_resolveWith: any) => {
     const chain: any = {};
     const methods = [
       'select', 'insert', 'update', 'delete',
