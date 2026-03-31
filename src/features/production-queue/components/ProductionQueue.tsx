@@ -720,6 +720,21 @@ export function ProductionQueue() {
     ? byStrain
     : byStrain.filter(r => (r.product_category || 'Flower') === categoryFilter);
 
+  // Coverage counts for tab badges — MUST be before early returns (Rules of Hooks)
+  const coverageCounts = useMemo(() => {
+    const strainGroups = groupByStrain(filteredByStrain);
+    let deficit = 0;
+    let tight = 0;
+    for (const strain of strainGroups) {
+      const readyG = strain.pipeline.packaged.weightG;
+      const totalEstG = calcTotalEstG(strain.pipeline, lossPct);
+      const cov = getCoverage(readyG, totalEstG, strain.totalDemandG);
+      if (cov.state === 'deficit') deficit++;
+      else if (cov.state === 'tight') tight++;
+    }
+    return { deficit, tight };
+  }, [filteredByStrain, lossPct]);
+
   if (loading && revenueLoading) {
     return (
       <div className="p-6 max-w-[1800px] mx-auto">
@@ -749,21 +764,6 @@ export function ProductionQueue() {
     { id: 'by-order', label: 'Orders', icon: ClipboardList },
     { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
-
-  // Coverage counts for tab badges
-  const coverageCounts = useMemo(() => {
-    const strainGroups = groupByStrain(filteredByStrain);
-    let deficit = 0;
-    let tight = 0;
-    for (const strain of strainGroups) {
-      const readyG = strain.pipeline.packaged.weightG;
-      const totalEstG = calcTotalEstG(strain.pipeline, lossPct);
-      const cov = getCoverage(readyG, totalEstG, strain.totalDemandG);
-      if (cov.state === 'deficit') deficit++;
-      else if (cov.state === 'tight') tight++;
-    }
-    return { deficit, tight };
-  }, [filteredByStrain, lossPct]);
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-5">
