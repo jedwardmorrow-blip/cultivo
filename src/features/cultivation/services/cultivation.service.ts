@@ -206,7 +206,8 @@ export const cultivationService = {
       .select('room_section_id, plant_count, strains:strains!inner(abbreviation)')
       .eq('grow_room_id', roomId)
       .not('room_section_id', 'is', null)
-      .gt('plant_count', 0);
+      .gt('plant_count', 0)
+      .neq('growth_stage', 'harvested');
 
     if (error) throwError(error, 'getSectionOccupancy');
 

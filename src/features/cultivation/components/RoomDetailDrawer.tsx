@@ -150,8 +150,42 @@ interface UnplacedGroupsDrawerProps {
   onRefresh: () => void;
 }
 
+interface BatchGroup {
+  batchNumber: string;
+  strainName: string;
+  stage: string;
+  totalPlants: number;
+  groups: PlantGroup[];
+}
+
+function groupByBatch(groups: PlantGroup[]): BatchGroup[] {
+  const map = new Map<string, BatchGroup>();
+  for (const g of groups) {
+    const batchNum = g.batch_registry?.batch_number ?? g.id;
+    const existing = map.get(batchNum);
+    if (existing) {
+      existing.totalPlants += g.plant_count;
+      existing.groups.push(g);
+    } else {
+      map.set(batchNum, {
+        batchNumber: batchNum,
+        strainName: g.strains?.name ?? g.strain_id,
+        stage: g.growth_stage,
+        totalPlants: g.plant_count,
+        groups: [g],
+      });
+    }
+  }
+  return [...map.values()].sort((a, b) => a.batchNumber.localeCompare(b.batchNumber));
+}
+
 function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGroupsDrawerProps) {
+  const [expandedBatch, setExpandedBatch] = useState<string | null>(null);
+
   if (groups.length === 0) return null;
+
+  const batches = groupByBatch(groups);
+
   return (
     <div className="mt-4">
       <p className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -159,35 +193,102 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
         {groups.length} group{groups.length !== 1 ? 's' : ''} not placed on map
       </p>
       <div className="space-y-1">
-        {groups.map((g) => (
-          <div
-            key={g.id}
-            className="flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
-          >
-            <span className="font-mono text-xs font-bold text-cult-white">
-              {g.batch_registry?.batch_number ?? '—'}
-            </span>
-            <span className="text-xs text-cult-light-gray truncate flex-1">
-              {g.strains?.name ?? g.strain_id}
-            </span>
-            <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
-            <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
-              {g.growth_stage}
-            </span>
-            <PlantGroupActionsMenu
-              group={g}
-              onDetail={() => onGroupAction(g, 'detail')}
-              onMove={() => onGroupAction(g, 'move')}
-              onAdvance={() => onGroupAction(g, 'advance')}
-              onToggleMother={() => onGroupAction(g, 'mother')}
-              onViewPlants={() => onGroupAction(g, 'plants')}
-              onPrintGroupLabel={() => onGroupAction(g, 'printGroup')}
-              onPrintPlantLabels={() => onGroupAction(g, 'printPlants')}
-              onRefresh={onRefresh}
-              compact
-            />
-          </div>
-        ))}
+        {batches.map((batch) => {
+          const isExpanded = expandedBatch === batch.batchNumber;
+          const isSingleGroup = batch.groups.length === 1;
+
+          if (isSingleGroup) {
+            // Single group in batch — render flat (no expand/collapse needed)
+            const g = batch.groups[0];
+            return (
+              <div
+                key={g.id}
+                className="flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
+              >
+                <span className="font-mono text-xs font-bold text-cult-white">
+                  {batch.batchNumber}
+                </span>
+                <span className="text-xs text-cult-light-gray truncate flex-1">
+                  {batch.strainName}
+                </span>
+                <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
+                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
+                  {g.growth_stage}
+                </span>
+                <PlantGroupActionsMenu
+                  group={g}
+                  onDetail={() => onGroupAction(g, 'detail')}
+                  onMove={() => onGroupAction(g, 'move')}
+                  onAdvance={() => onGroupAction(g, 'advance')}
+                  onToggleMother={() => onGroupAction(g, 'mother')}
+                  onViewPlants={() => onGroupAction(g, 'plants')}
+                  onPrintGroupLabel={() => onGroupAction(g, 'printGroup')}
+                  onPrintPlantLabels={() => onGroupAction(g, 'printPlants')}
+                  onRefresh={onRefresh}
+                  compact
+                />
+              </div>
+            );
+          }
+
+          // Multi-group batch — collapsible header + expandable child rows
+          return (
+            <div key={batch.batchNumber}>
+              {/* Batch header row */}
+              <button
+                onClick={() => setExpandedBatch(isExpanded ? null : batch.batchNumber)}
+                className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors text-left"
+              >
+                {isExpanded
+                  ? <ChevronDown className="w-3.5 h-3.5 text-cult-light-gray flex-shrink-0" />
+                  : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
+                }
+                <span className="font-mono text-xs font-bold text-cult-white">
+                  {batch.batchNumber}
+                </span>
+                <span className="text-xs text-cult-light-gray truncate flex-1">
+                  {batch.strainName}
+                </span>
+                <span className="text-xs text-cult-medium-gray">
+                  {batch.totalPlants}p
+                  <span className="text-cult-dark-gray ml-1">({batch.groups.length} groups)</span>
+                </span>
+                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[batch.stage] ?? STAGE_BADGE.clone}`}>
+                  {batch.stage}
+                </span>
+              </button>
+
+              {/* Expanded child rows */}
+              {isExpanded && (
+                <div className="ml-5 border-l border-cult-dark-gray">
+                  {batch.groups.map((g) => (
+                    <div
+                      key={g.id}
+                      className="flex items-center gap-3 px-3 py-1.5 min-h-[36px] border-b border-cult-dark-gray/50 bg-cult-near-black hover:bg-cult-black/80 transition-colors"
+                    >
+                      <span className="text-[10px] text-cult-medium-gray font-mono truncate flex-1">
+                        {g.room_table_id ? `T${g.room_table_id.slice(0, 4)}` : 'Unplaced'}
+                      </span>
+                      <span className="text-xs text-cult-light-gray font-mono font-bold">{g.plant_count}p</span>
+                      <PlantGroupActionsMenu
+                        group={g}
+                        onDetail={() => onGroupAction(g, 'detail')}
+                        onMove={() => onGroupAction(g, 'move')}
+                        onAdvance={() => onGroupAction(g, 'advance')}
+                        onToggleMother={() => onGroupAction(g, 'mother')}
+                        onViewPlants={() => onGroupAction(g, 'plants')}
+                        onPrintGroupLabel={() => onGroupAction(g, 'printGroup')}
+                        onPrintPlantLabels={() => onGroupAction(g, 'printPlants')}
+                        onRefresh={onRefresh}
+                        compact
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
