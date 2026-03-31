@@ -184,7 +184,7 @@ export function CoversheetLibrary() {
                       <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Delivery</span>
                     </div>
                     <p className="text-cult-white text-sm pl-6">
-                      {new Date(coversheet.delivery_date).toLocaleDateString()}
+                      {new Date(coversheet.delivery_date + 'T00:00:00').toLocaleDateString()}
                     </p>
                   </div>
                 )}

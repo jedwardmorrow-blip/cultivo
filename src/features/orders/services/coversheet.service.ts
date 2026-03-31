@@ -388,11 +388,11 @@ export async function getBatchComplianceInfo(orderId: string): Promise<BatchComp
 
     const rawHarvest = harvestMap.get(assignment.batch);
     const harvestDate = rawHarvest
-      ? new Date(rawHarvest).toLocaleDateString('en-US')
+      ? new Date(rawHarvest + 'T00:00:00').toLocaleDateString('en-US')
       : 'N/A';
 
     const dateValue = assignment.package_date
-      ? new Date(assignment.package_date).toLocaleDateString('en-US')
+      ? new Date(assignment.package_date + 'T00:00:00').toLocaleDateString('en-US')
       : 'N/A';
 
     const pdfPath = coaPdfMap.get(assignment.batch);

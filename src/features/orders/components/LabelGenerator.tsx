@@ -175,11 +175,11 @@ export function LabelGenerator() {
               {selectedLabel.product_type}
             </div>
             <div style={{ fontSize: '5pt' }}>
-              <strong>Package Date:</strong> {selectedLabel.package_date ? new Date(selectedLabel.package_date).toLocaleDateString('en-US') : 'N/A'}
+              <strong>Package Date:</strong> {selectedLabel.package_date ? new Date(selectedLabel.package_date + 'T00:00:00').toLocaleDateString('en-US') : 'N/A'}
             </div>
             {selectedLabel.harvest_date && (
               <div style={{ fontSize: '5pt' }}>
-                <strong>Harvest Date:</strong> {new Date(selectedLabel.harvest_date).toLocaleDateString('en-US')}
+                <strong>Harvest Date:</strong> {new Date(selectedLabel.harvest_date + 'T00:00:00').toLocaleDateString('en-US')}
               </div>
             )}
             <div style={{ fontSize: '5pt' }}>
