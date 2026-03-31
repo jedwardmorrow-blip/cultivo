@@ -165,7 +165,7 @@ function QueueCard({
           <div className="text-[13px] font-bold text-cult-text-primary">
             {formatWeight(queue.totalWeightG)}
           </div>
-          <div className="text-[9px] text-gray-500">{queue.timeEstimate}</div>
+          <div className="text-[10px] text-gray-500">{queue.timeEstimate}</div>
         </div>
       </div>
 
@@ -182,6 +182,12 @@ function QueueCard({
                 isSelected
                   ? 'bg-cult-surface-raised border border-cult-border'
                   : 'hover:bg-cult-surface/50 border border-transparent'
+              } ${
+                item.strain.urgency === 'overdue'
+                  ? 'border-l-2 !border-l-rose-500/60'
+                  : item.strain.urgency === 'urgent'
+                    ? 'border-l-2 !border-l-amber-500/50'
+                    : ''
               }`}
             >
               <div className="flex items-center gap-1.5 min-w-0">
@@ -190,7 +196,7 @@ function QueueCard({
                 </span>
                 <UrgencyBadge urgency={item.strain.urgency} />
                 {item.isShortfall && (
-                  <span className="text-[9px] font-bold px-1 py-px rounded bg-rose-500/15 text-rose-400">
+                  <span className="text-[10px] font-bold px-1 py-px rounded bg-rose-500/15 text-rose-400">
                     NEED
                   </span>
                 )}
@@ -218,26 +224,16 @@ export default function LaborQueue({
   const hasWork = queues.some(q => q.items.length > 0);
   if (!hasWork) {
     return (
-      <div className="px-1">
-        <h3 className="text-xs font-bold text-cult-text-primary uppercase tracking-wider mb-2">
-          Labor Queue
-        </h3>
-        <div className="text-center py-6 text-[11px] text-gray-600 bg-cult-surface rounded-cult border border-cult-border/50">
-          All strains are fully packaged or in surplus. No labor tasks queued.
-        </div>
+      <div className="text-center py-6 text-[11px] text-gray-600 bg-cult-surface rounded-cult border border-cult-border/50">
+        All strains are fully packaged or in surplus. No labor tasks queued.
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center gap-3 px-1 mb-2">
-        <h3 className="text-xs font-bold text-cult-text-primary uppercase tracking-wider">
-          Labor Queue
-        </h3>
-        <span className="text-[10px] text-gray-600">
-          Post-production tasks by stage
-        </span>
+      <div className="flex items-center gap-2 px-1 mb-2">
+        <span className="text-[11px] text-gray-500">Post-production tasks by stage</span>
       </div>
 
       <div className="flex gap-2 flex-wrap">

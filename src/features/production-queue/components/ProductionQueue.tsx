@@ -7,6 +7,7 @@ import { useSkuYield, type StrainAllocation, type BatchYield } from '@/shared/ho
 import { RevenuePipeline } from './RevenuePipeline';
 import { DeliveryLoadBalancer } from './DeliveryLoadBalancer';
 import LaborView from './LaborView';
+import { groupByStrain, calcTotalEstG, getCoverage } from './labor-view/utils';
 import { formatDateShort, formatWeight, todayIso } from '@/shared/utils/format';
 import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineItem, Urgency, StockStatus, StrainSummary } from '../types';
 
@@ -749,6 +750,21 @@ export function ProductionQueue() {
     { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
 
+  // Coverage counts for tab badges
+  const coverageCounts = useMemo(() => {
+    const strainGroups = groupByStrain(filteredByStrain);
+    let deficit = 0;
+    let tight = 0;
+    for (const strain of strainGroups) {
+      const readyG = strain.pipeline.packaged.weightG;
+      const totalEstG = calcTotalEstG(strain.pipeline, lossPct);
+      const cov = getCoverage(readyG, totalEstG, strain.totalDemandG);
+      if (cov.state === 'deficit') deficit++;
+      else if (cov.state === 'tight') tight++;
+    }
+    return { deficit, tight };
+  }, [filteredByStrain, lossPct]);
+
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-5">
       {/* ── Header ────────────────────────────────────────────────────────── */}
@@ -803,6 +819,16 @@ export function ProductionQueue() {
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
+                {tab.id === 'triage' && coverageCounts.deficit > 0 && (
+                  <span className="ml-1 text-[10px] font-bold px-1.5 py-px rounded-full bg-rose-500/20 text-rose-400">
+                    {coverageCounts.deficit}
+                  </span>
+                )}
+                {tab.id === 'labor' && coverageCounts.tight > 0 && (
+                  <span className="ml-1 text-[10px] font-bold px-1.5 py-px rounded-full bg-amber-500/20 text-amber-400">
+                    {coverageCounts.tight}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -831,16 +857,19 @@ export function ProductionQueue() {
       </div>
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
-      {(activeTab === 'triage' || activeTab === 'labor') && (
-        <LaborView
-          byStrain={filteredByStrain}
-          byOrder={filteredByOrder}
-          loading={loading}
-          mode={activeTab}
-        />
-      )}
-      {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
-      {activeTab === 'summary' && <SummaryView strainSummary={strainSummary} />}
+      <div key={activeTab} className="animate-fade-in">
+        {(activeTab === 'triage' || activeTab === 'labor') && (
+          <LaborView
+            byStrain={filteredByStrain}
+            byOrder={filteredByOrder}
+            loading={loading}
+            mode={activeTab}
+            lossPct={lossPct}
+          />
+        )}
+        {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
+        {activeTab === 'summary' && <SummaryView strainSummary={strainSummary} />}
+      </div>
     </div>
   );
 }

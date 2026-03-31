@@ -48,12 +48,6 @@ function sortRows(rows: TriageRow[], sortBy: SortKey, lossPct: number): TriageRo
   });
 }
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'urgency', label: 'Urgency' },
-  { key: 'demand', label: 'Need' },
-  { key: 'ready', label: 'Least Ready' },
-  { key: 'coverage', label: 'Coverage' },
-];
 
 export default function TriageTable({
   strains,
@@ -71,54 +65,41 @@ export default function TriageTable({
   const tightCount = rows.filter(r => r.coverage.state === 'tight').length;
 
   return (
-    <div className="space-y-2">
-      {/* Section Header + Sort controls */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-3">
-          <h3 className="text-xs font-bold text-cult-text-primary uppercase tracking-wider">
-            Strain Triage
-          </h3>
-          <span className="text-[10px] text-gray-600">{strains.length} strains</span>
-          {deficitCount > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/60 text-rose-400">
-              {deficitCount} deficit
-            </span>
-          )}
-          {tightCount > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-400">
-              {tightCount} tight
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-gray-500 font-medium mr-1">Sort</span>
-          {SORT_OPTIONS.map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => onSortChange(opt.key)}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                sortBy === opt.key
-                  ? 'bg-cult-surface-overlay text-cult-text-primary'
-                  : 'text-gray-600 hover:text-gray-400'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+    <div>
+      {/* Summary badges */}
+      <div className="flex items-center gap-2 px-1 mb-2">
+        <span className="text-[11px] text-gray-500">{strains.length} strains</span>
+        {deficitCount > 0 && (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/60 text-rose-400">
+            {deficitCount} deficit
+          </span>
+        )}
+        {tightCount > 0 && (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-400">
+            {tightCount} tight
+          </span>
+        )}
       </div>
 
       {/* Table */}
       <div className="bg-cult-surface rounded-cult border border-cult-border/50 overflow-hidden">
-        {/* Header row */}
+        {/* Sortable header row */}
         <div
-          className="grid gap-3 px-4 py-2 text-[9px] font-semibold text-gray-600 uppercase tracking-wider border-b border-cult-border/30"
+          className="grid gap-3 px-4 py-2 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-cult-border/30 select-none"
           style={{ gridTemplateColumns: '1.4fr 0.7fr 0.6fr 0.8fr 1fr' }}
         >
-          <div>Strain</div>
-          <div>Demand</div>
-          <div>Ready</div>
-          <div>Coverage</div>
+          <button onClick={() => onSortChange('urgency')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'urgency' ? 'text-cult-text-primary' : ''}`}>
+            Strain {sortBy === 'urgency' && '↓'}
+          </button>
+          <button onClick={() => onSortChange('demand')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'demand' ? 'text-cult-text-primary' : ''}`}>
+            Demand {sortBy === 'demand' && '↓'}
+          </button>
+          <button onClick={() => onSortChange('ready')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'ready' ? 'text-cult-text-primary' : ''}`}>
+            Ready {sortBy === 'ready' && '↑'}
+          </button>
+          <button onClick={() => onSortChange('coverage')} className={`text-left transition-colors hover:text-gray-400 ${sortBy === 'coverage' ? 'text-cult-text-primary' : ''}`}>
+            Coverage {sortBy === 'coverage' && '↑'}
+          </button>
           <div>Next Action</div>
         </div>
 
@@ -187,7 +168,7 @@ export default function TriageTable({
                       {row.coverage.label}
                     </span>
                   ) : (
-                    <span className={`inline-block text-[9px] font-bold px-1.5 py-px rounded uppercase tracking-wide ${
+                    <span className={`inline-block text-[10px] font-bold px-1.5 py-px rounded uppercase tracking-wide ${
                       row.coverage.state === 'tight'
                         ? 'bg-amber-500/10 text-amber-400'
                         : 'bg-rose-500/10 text-rose-400'
