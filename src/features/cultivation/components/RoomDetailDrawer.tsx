@@ -232,31 +232,49 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
           }
 
           // Multi-group batch — collapsible header + expandable child rows
+          // Use first group as representative for batch-level actions (move, advance, etc.)
+          const representative = batch.groups[0];
           return (
             <div key={batch.batchNumber}>
               {/* Batch header row */}
-              <button
-                onClick={() => setExpandedBatch(isExpanded ? null : batch.batchNumber)}
-                className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors text-left"
+              <div
+                className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
               >
-                {isExpanded
-                  ? <ChevronDown className="w-3.5 h-3.5 text-cult-light-gray flex-shrink-0" />
-                  : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
-                }
-                <span className="font-mono text-xs font-bold text-cult-white">
-                  {batch.batchNumber}
-                </span>
-                <span className="text-xs text-cult-light-gray truncate flex-1">
-                  {batch.strainName}
-                </span>
-                <span className="text-xs text-cult-medium-gray">
-                  {batch.totalPlants}p
-                  <span className="text-cult-dark-gray ml-1">({batch.groups.length} groups)</span>
-                </span>
-                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[batch.stage] ?? STAGE_BADGE.clone}`}>
-                  {batch.stage}
-                </span>
-              </button>
+                <button
+                  onClick={() => setExpandedBatch(isExpanded ? null : batch.batchNumber)}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                >
+                  {isExpanded
+                    ? <ChevronDown className="w-3.5 h-3.5 text-cult-light-gray flex-shrink-0" />
+                    : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
+                  }
+                  <span className="font-mono text-xs font-bold text-cult-white">
+                    {batch.batchNumber}
+                  </span>
+                  <span className="text-xs text-cult-light-gray truncate flex-1">
+                    {batch.strainName}
+                  </span>
+                  <span className="text-xs text-cult-medium-gray">
+                    {batch.totalPlants}p
+                    <span className="text-cult-dark-gray ml-1">({batch.groups.length} groups)</span>
+                  </span>
+                  <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[batch.stage] ?? STAGE_BADGE.clone}`}>
+                    {batch.stage}
+                  </span>
+                </button>
+                <PlantGroupActionsMenu
+                  group={representative}
+                  onDetail={() => onGroupAction(representative, 'detail')}
+                  onMove={() => onGroupAction(representative, 'move')}
+                  onAdvance={() => onGroupAction(representative, 'advance')}
+                  onToggleMother={() => onGroupAction(representative, 'mother')}
+                  onViewPlants={() => onGroupAction(representative, 'plants')}
+                  onPrintGroupLabel={() => onGroupAction(representative, 'printGroup')}
+                  onPrintPlantLabels={() => onGroupAction(representative, 'printPlants')}
+                  onRefresh={onRefresh}
+                  compact
+                />
+              </div>
 
               {/* Expanded child rows */}
               {isExpanded && (
