@@ -214,12 +214,9 @@ export function LabelGenerator() {
             </div>
           </div>
 
-          <div style={{ fontSize: selectedLabel.customer_license_name ? '3.5pt' : '4.5pt', marginBottom: '0.004in', lineHeight: '1.25' }}>
+          <div style={{ fontSize: '4.5pt', marginBottom: '0.004in', lineHeight: '1.25' }}>
             <div><strong>Additives:</strong> Nitrogen, Phosphorus, Boron, Potassium, Calcium, Magnesium, Zinc, Vitamin B</div>
             <div style={{ marginTop: '0.003in' }}><strong>License:</strong> (Kind Meds Inc.) {selectedLabel.compliance_uid}</div>
-            {selectedLabel.customer_license_name && (
-              <div style={{ marginTop: '0.003in' }}><strong>License:</strong> ({selectedLabel.customer_license_name}) {selectedLabel.customer_license_number || ''}</div>
-            )}
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '0.005in', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

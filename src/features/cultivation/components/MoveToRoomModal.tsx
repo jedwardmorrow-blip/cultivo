@@ -444,13 +444,14 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
                             ✕
                           </button>
                           <input
+                            ref={(el) => { if (el && cell.plantCount === 0) el.focus(); }}
                             type="number"
                             min={0}
                             value={cell.plantCount > 0 ? cell.plantCount : ''}
                             onChange={(e) => setCellCount(key, Number(e.target.value) || 0)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
-                            className="w-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full h-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           {isOccupied && (
                             <div className="flex flex-col items-center">
