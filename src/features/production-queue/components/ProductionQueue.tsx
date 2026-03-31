@@ -701,6 +701,7 @@ export function ProductionQueue() {
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('triage');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
+  const [lossPct, setLossPct] = useState(15);
 
   // Apply product category filter
   const categoryCounts: Record<string, { lines: number; lbs: number }> = {};
@@ -807,9 +808,26 @@ export function ProductionQueue() {
           })}
         </div>
 
-        {(activeTab === 'triage' || activeTab === 'labor' || activeTab === 'by-order') && (
-          <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
-        )}
+        <div className="flex items-center gap-3">
+          {(activeTab === 'triage' || activeTab === 'labor') && (
+            <div className="flex items-center gap-1.5">
+              <label className="text-[11px] text-gray-500 font-medium">Loss</label>
+              <input
+                type="range"
+                min={5}
+                max={35}
+                step={1}
+                value={lossPct}
+                onChange={e => setLossPct(Number(e.target.value))}
+                className="w-16 accent-amber-400"
+              />
+              <span className="text-xs font-semibold text-amber-400 min-w-[28px]">{lossPct}%</span>
+            </div>
+          )}
+          {(activeTab === 'triage' || activeTab === 'labor' || activeTab === 'by-order') && (
+            <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
+          )}
+        </div>
       </div>
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
