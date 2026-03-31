@@ -232,6 +232,14 @@ export type SplitAndMoveInput = {
   placements: PlacementEntry[];
 };
 
+/** Input for splitting MULTIPLE source groups across table/sections during a batch-level room move */
+export type SplitAndMoveMultiInput = {
+  source_group_ids: string[];
+  to_room_id: string;
+  placements: PlacementEntry[];
+  kill_count?: number;
+};
+
 /** Per-strain count within a section */
 export interface StrainCount {
   abbreviation: string;

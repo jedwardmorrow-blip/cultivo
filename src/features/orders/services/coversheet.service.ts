@@ -22,6 +22,8 @@ export async function generateCoversheet(orderId: string): Promise<Coversheet> {
     getComplianceHeaderData(),
     getBatchComplianceInfo(orderId),
     getDistributedToInfo(orderId).catch(() => ({
+      originator_name: DEFAULT_LICENSE_NAME,
+      originator_license: DEFAULT_LICENSE_NUMBER,
       customer_name: 'Unknown Customer',
       license_number: 'License Not Found',
     } as DistributedToInfo)),
@@ -443,17 +445,23 @@ export async function getBatchComplianceInfo(orderId: string): Promise<BatchComp
  * - Update DistributedToSection component to handle array rendering
  */
 export async function getDistributedToInfo(orderId: string): Promise<DistributedToInfo> {
-  const { data: orderData, error } = await supabase
-    .from('orders')
-    .select(`
-      customer_id,
-      customers!inner(
-        name,
-        license_number
-      )
-    `)
-    .eq('id', orderId)
-    .single() as { data: OrderWithCustomer | null; error: any };
+  const [{ data: orderData, error }, { data: settingsData }] = await Promise.all([
+    supabase
+      .from('orders')
+      .select(`
+        customer_id,
+        customers!inner(
+          name,
+          license_number
+        )
+      `)
+      .eq('id', orderId)
+      .single() as Promise<{ data: OrderWithCustomer | null; error: any }>,
+    supabase
+      .from('app_settings')
+      .select('setting_key, setting_value')
+      .in('setting_key', ['company_license_name', 'company_license_number']),
+  ]);
 
   if (error) {
     throw new Error(`Failed to fetch customer data: ${error.message}`);
@@ -461,7 +469,14 @@ export async function getDistributedToInfo(orderId: string): Promise<Distributed
 
   const customer = orderData?.customers;
 
+  const settings: Record<string, string> = {};
+  settingsData?.forEach(item => {
+    settings[item.setting_key] = item.setting_value || '';
+  });
+
   return {
+    originator_name: settings.company_license_name || DEFAULT_LICENSE_NAME,
+    originator_license: settings.company_license_number || DEFAULT_LICENSE_NUMBER,
     customer_name: customer?.name || 'Unknown Customer',
     license_number: customer?.license_number || 'License Not Found',
     location_name: undefined // TODO: Add when implementing multi-location support

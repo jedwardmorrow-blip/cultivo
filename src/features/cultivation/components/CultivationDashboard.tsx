@@ -14,7 +14,7 @@ const BuildingMapView = lazy(() => import('./building-map/BuildingMapView'));
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT, INNER_GLOW, STATUS_WARN_BANNER, STATUS_ERROR_BANNER } from '../constants/stageColors';
-import type { GrowRoom, PlantGroup, GrowthStage, SplitAndMoveInput } from '../types';
+import type { GrowRoom, PlantGroup, GrowthStage, SplitAndMoveInput, SplitAndMoveMultiInput } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
 const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
@@ -179,7 +179,7 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
 
 type PendingAction =
   | { type: 'detail'; group: PlantGroup }
-  | { type: 'move'; group: PlantGroup }
+  | { type: 'move'; group: PlantGroup; groups?: PlantGroup[] }
   | { type: 'advance'; group: PlantGroup }
   | { type: 'mother'; group: PlantGroup }
   | { type: 'plants'; group: PlantGroup }
@@ -190,7 +190,7 @@ type PendingAction =
 
 export function CultivationDashboard() {
   const { rooms, loading: roomsLoading } = useGrowRooms();
-  const { groups, loading: groupsLoading, advanceStage, moveToRoom, splitAndMoveToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
+  const { groups, loading: groupsLoading, advanceStage, moveToRoom, splitAndMoveToRoom, splitAndMoveMultipleToRoom, setMotherStatus } = usePlantGroups({ stage: 'active' });
   const { sessions, loading: sessionsLoading } = useHarvestSessions({ status: 'active' });
   const { summaries, loading: summariesLoading } = useRoomSummaries();
   const { rooms: opsRooms, loading: opsLoading } = useRoomOperationalState();
@@ -220,8 +220,12 @@ export function CultivationDashboard() {
     return d < min ? d : min;
   }, null);
 
-  function handleGroupAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') {
-    setPendingAction({ type: action, group } as PendingAction);
+  function handleGroupAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants', batchGroups?: PlantGroup[]) {
+    if (action === 'move' && batchGroups && batchGroups.length > 1) {
+      setPendingAction({ type: 'move', group, groups: batchGroups });
+    } else {
+      setPendingAction({ type: action, group } as PendingAction);
+    }
   }
 
   async function confirmAdvance() {
@@ -246,6 +250,11 @@ export function CultivationDashboard() {
 
   async function handleSplitAndMove(input: SplitAndMoveInput) {
     await splitAndMoveToRoom(input);
+    setPendingAction(null);
+  }
+
+  async function handleSplitAndMoveMultiple(input: SplitAndMoveMultiInput) {
+    await splitAndMoveMultipleToRoom(input);
     setPendingAction(null);
   }
 
@@ -399,9 +408,11 @@ export function CultivationDashboard() {
       {pendingAction?.type === 'move' && (
         <MoveToRoomModal
           group={pendingAction.group}
+          groups={pendingAction.groups}
           rooms={rooms}
           onMove={handleMoveRoom}
           onSplitAndMove={handleSplitAndMove}
+          onSplitAndMoveMultiple={handleSplitAndMoveMultiple}
           onCancel={() => setPendingAction(null)}
         />
       )}

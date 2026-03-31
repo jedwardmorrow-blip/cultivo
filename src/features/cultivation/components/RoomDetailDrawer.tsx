@@ -28,7 +28,7 @@ type RoomDrawerAction = 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'p
 
 interface DrawerGridCellProps {
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction, batchGroups?: PlantGroup[]) => void;
   onRefresh: () => void;
 }
 
@@ -72,7 +72,7 @@ function DrawerGridCell({ groups, onGroupAction, onRefresh }: DrawerGridCellProp
 interface DrawerGridProps {
   tables: RoomTable[];
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction, batchGroups?: PlantGroup[]) => void;
   onRefresh: () => void;
 }
 
@@ -146,7 +146,7 @@ function DrawerGrid({ tables, groups, onGroupAction, onRefresh }: DrawerGridProp
 
 interface UnplacedGroupsDrawerProps {
   groups: PlantGroup[];
-  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction, batchGroups?: PlantGroup[]) => void;
   onRefresh: () => void;
 }
 
@@ -265,7 +265,7 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
                 <PlantGroupActionsMenu
                   group={representative}
                   onDetail={() => onGroupAction(representative, 'detail')}
-                  onMove={() => onGroupAction(representative, 'move')}
+                  onMove={() => onGroupAction(representative, 'move', batch.groups)}
                   onAdvance={() => onGroupAction(representative, 'advance')}
                   onToggleMother={() => onGroupAction(representative, 'mother')}
                   onViewPlants={() => onGroupAction(representative, 'plants')}
@@ -316,7 +316,7 @@ export interface RoomDetailDrawerProps {
   room: GrowRoom;
   preloadedGroups?: PlantGroup[];
   onClose: () => void;
-  onGroupAction: (group: PlantGroup, action: RoomDrawerAction) => void;
+  onGroupAction: (group: PlantGroup, action: RoomDrawerAction, batchGroups?: PlantGroup[]) => void;
 }
 
 export function RoomDetailDrawer({
@@ -333,7 +333,7 @@ export function RoomDetailDrawer({
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const label = usePlantGroupLabel();
 
-  function handleGroupAction(group: PlantGroup, action: RoomDrawerAction) {
+  function handleGroupAction(group: PlantGroup, action: RoomDrawerAction, batchGroups?: PlantGroup[]) {
     if (action === 'printGroup') {
       void label.openGroupLabel(group);
       return;
@@ -342,7 +342,7 @@ export function RoomDetailDrawer({
       void label.openPlantLabels(group);
       return;
     }
-    onGroupAction(group, action);
+    onGroupAction(group, action, batchGroups);
   }
 
   const { tables, loading: tablesLoading, reload: reloadTables } = useRoomSections(room.id);

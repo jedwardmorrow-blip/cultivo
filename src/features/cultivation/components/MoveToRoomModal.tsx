@@ -3,13 +3,16 @@ import { ArrowRight, AlertTriangle, MapPin, Skull, Minus, Plus } from 'lucide-re
 import { Button } from '@/shared/components';
 import { cultivationService } from '../services';
 import { useMortalityLog } from '../hooks';
-import type { GrowRoom, PlantGroup, RoomTable, SplitAndMoveInput, PlacementEntry, StrainCount } from '../types';
+import type { GrowRoom, PlantGroup, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, PlacementEntry, StrainCount } from '../types';
 
 interface MoveToRoomModalProps {
   group: PlantGroup;
+  /** When moving a multi-group batch, all groups in the batch */
+  groups?: PlantGroup[];
   rooms: GrowRoom[];
   onMove: (toRoomId: string) => Promise<void>;
   onSplitAndMove?: (input: SplitAndMoveInput) => Promise<void>;
+  onSplitAndMoveMultiple?: (input: SplitAndMoveMultiInput) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -28,7 +31,8 @@ interface CellState {
   occupiedStrains: StrainCount[];
 }
 
-export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel }: MoveToRoomModalProps) {
+export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, onSplitAndMoveMultiple, onCancel }: MoveToRoomModalProps) {
+  const isMultiGroup = groups && groups.length > 1;
   const [step, setStep] = useState<Step>('room');
   const [toRoomId, setToRoomId] = useState('');
   const [tables, setTables] = useState<RoomTable[]>([]);
@@ -58,8 +62,10 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
     return [...labels].sort();
   }, [sortedTables]);
 
-  // Computed totals
-  const totalPlants = group.plant_count;
+  // Computed totals — use sum of all groups when multi-group batch
+  const totalPlants = isMultiGroup
+    ? groups.reduce((sum, g) => sum + g.plant_count, 0)
+    : group.plant_count;
   const availablePlants = totalPlants - killCount;
   const selectedCells = useMemo(() =>
     [...cells.values()].filter(c => c.selected),
@@ -188,7 +194,6 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
   }
 
   async function handleSplitMove() {
-    if (!onSplitAndMove) return;
     setSaving(true);
     setError(null);
     try {
@@ -218,11 +223,22 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
         });
       }
 
-      await onSplitAndMove({
-        source_group_id: group.id,
-        to_room_id: toRoomId,
-        placements: validPlacements,
-      });
+      if (isMultiGroup && onSplitAndMoveMultiple) {
+        // Multi-group batch move — draw from all source groups
+        await onSplitAndMoveMultiple({
+          source_group_ids: groups!.map(g => g.id),
+          to_room_id: toRoomId,
+          placements: validPlacements,
+          kill_count: killCount,
+        });
+      } else if (onSplitAndMove) {
+        // Single-group move
+        await onSplitAndMove({
+          source_group_id: group.id,
+          to_room_id: toRoomId,
+          placements: validPlacements,
+        });
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to move plant group.');
     } finally {
@@ -230,7 +246,9 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
     }
   }
 
-  const groupLabel = group.batch_registry?.batch_number ?? group.strains?.name ?? 'this group';
+  const groupLabel = isMultiGroup
+    ? `${group.batch_registry?.batch_number ?? group.strains?.name ?? 'Batch'} (${groups!.length} groups)`
+    : (group.batch_registry?.batch_number ?? group.strains?.name ?? 'this group');
   const fromRoom = group.grow_rooms?.name ?? group.grow_room_id;
   const filledCount = selectedCells.filter(c => c.plantCount > 0).length;
   const canConfirm = remainingPlants >= 0 && filledCount > 0;
@@ -238,7 +256,7 @@ export function MoveToRoomModal({ group, rooms, onMove, onSplitAndMove, onCancel
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className={`bg-cult-near-black border border-cult-medium-gray p-6 ${step === 'placement' ? 'w-full max-w-2xl' : 'w-full max-w-md'}`}>
-        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">Move Plant Group</h3>
+        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">{isMultiGroup ? 'Move Batch' : 'Move Plant Group'}</h3>
         <p className="text-cult-light-gray text-sm mb-1">
           Moving <span className="text-cult-white font-mono font-bold">{groupLabel}</span> from{' '}
           <span className="text-cult-white">{fromRoom}</span>

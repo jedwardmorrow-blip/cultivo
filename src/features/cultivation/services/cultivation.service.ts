@@ -23,6 +23,7 @@ import type {
   CreateRoomSectionInput,
   UpdatePlantGroupPlacementInput,
   SplitAndMoveInput,
+  SplitAndMoveMultiInput,
   PlacementEntry,
   FlipRoomInput,
   DryRoom,
@@ -545,6 +546,111 @@ export const cultivationService = {
         .from('plant_groups')
         .update({ plant_count: remaining })
         .eq('id', source_group_id);
+    }
+
+    return newGroups;
+  },
+
+  /**
+   * Batch-level move: distribute plants from MULTIPLE source groups across
+   * table/sections in a destination room. Draws from source groups in order,
+   * exhausting each before moving to the next.
+   */
+  async splitAndMoveMultipleToRoom(input: SplitAndMoveMultiInput): Promise<PlantGroup[]> {
+    const { source_group_ids, to_room_id, placements, kill_count = 0 } = input;
+
+    // 1. Fetch all source groups
+    const { data: sources, error: srcErr } = await supabase
+      .from('plant_groups')
+      .select('*')
+      .in('id', source_group_ids);
+    if (srcErr || !sources) throwError(srcErr ?? new Error('Source groups not found'), 'splitAndMoveMultipleToRoom');
+
+    const totalAvailable = sources.reduce((sum, g) => sum + g.plant_count, 0);
+    const totalPlacing = placements.reduce((sum, p) => sum + p.plant_count, 0);
+    if (totalPlacing + kill_count > totalAvailable) {
+      throw new Error(`Cannot place ${totalPlacing} + kill ${kill_count} plants — sources only have ${totalAvailable}`);
+    }
+
+    // 2. Fetch destination room type for growth_stage
+    const { data: destRoom, error: roomErr } = await supabase
+      .from('grow_rooms')
+      .select('room_type')
+      .eq('id', to_room_id)
+      .single();
+    if (roomErr || !destRoom) throwError(roomErr ?? new Error('Destination room not found'), 'splitAndMoveMultipleToRoom');
+    const destStage = destRoom.room_type as string;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? null;
+    const newGroups: PlantGroup[] = [];
+
+    // Use first source as representative for shared fields (strain, batch, etc.)
+    const rep = sources[0];
+
+    // 3. Create a child group for each placement
+    for (const placement of placements) {
+      const { data: child, error: childErr } = await supabase
+        .from('plant_groups')
+        .insert({
+          strain_id: rep.strain_id,
+          grow_room_id: to_room_id,
+          room_table_id: placement.table_id,
+          room_section_id: placement.section_id,
+          batch_registry_id: rep.batch_registry_id,
+          mother_plant_group_id: rep.mother_plant_group_id,
+          source_type: rep.source_type,
+          is_mother: false,
+          plant_count: placement.plant_count,
+          growth_stage: destStage,
+          stage_entered_at: destStage !== rep.growth_stage ? new Date().toISOString() : rep.stage_entered_at,
+          planted_date: rep.planted_date,
+          notes: null,
+          created_by: userId,
+        })
+        .select(PLANT_GROUP_SELECT)
+        .single();
+      if (childErr) throwError(childErr, 'splitAndMoveMultipleToRoom:createChild');
+
+      const childGroup = child as unknown as PlantGroup;
+      newGroups.push(childGroup);
+
+      // Write history
+      await supabase.from('plant_group_room_history').insert({
+        plant_group_id: childGroup.id,
+        from_room_id: rep.grow_room_id,
+        to_room_id,
+        from_table_id: null,
+        from_section_id: null,
+        to_table_id: placement.table_id,
+        to_section_id: placement.section_id,
+        plant_count: placement.plant_count,
+        source_group_id: rep.id,
+        moved_by: userId,
+      });
+    }
+
+    // 4. Decrement source groups in order — exhaust each before moving to next
+    let toDeduct = totalPlacing + kill_count;
+    // Sort sources by the order they were passed in
+    const orderedSources = source_group_ids.map(id => sources.find(s => s.id === id)!).filter(Boolean);
+
+    for (const src of orderedSources) {
+      if (toDeduct <= 0) break;
+
+      const deductFromThis = Math.min(toDeduct, src.plant_count);
+      const remaining = src.plant_count - deductFromThis;
+      toDeduct -= deductFromThis;
+
+      if (remaining <= 0) {
+        // Fully depleted — archive: flower → harvested
+        if (src.growth_stage !== 'flower') {
+          await supabase.from('plant_groups').update({ growth_stage: 'flower' }).eq('id', src.id);
+        }
+        await supabase.from('plant_groups').update({ plant_count: 0, growth_stage: 'harvested' }).eq('id', src.id);
+      } else {
+        await supabase.from('plant_groups').update({ plant_count: remaining }).eq('id', src.id);
+      }
     }
 
     return newGroups;

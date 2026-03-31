@@ -2,9 +2,9 @@ import { lazy, ComponentType } from 'react';
 
 type ModuleWithDefault = { default: ComponentType<any> };
 
-export function lazyRetry<T extends Record<string, ComponentType<any>>>(
+export function lazyRetry<T extends Record<string, any>>(
   importFn: () => Promise<T>,
-  namedExport: keyof T
+  namedExport: keyof T & string
 ) {
   return lazy(() => {
     const sessionKey = `chunk_retry_${String(namedExport)}`;

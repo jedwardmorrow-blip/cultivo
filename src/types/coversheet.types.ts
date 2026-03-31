@@ -56,6 +56,8 @@ export interface BatchComplianceInfo {
  * - Consider creating customer_locations table for proper relational structure
  */
 export interface DistributedToInfo {
+  originator_name: string;
+  originator_license: string;
   customer_name: string;
   license_number: string;
   location_name?: string;

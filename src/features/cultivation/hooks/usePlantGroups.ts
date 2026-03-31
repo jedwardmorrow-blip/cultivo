@@ -7,6 +7,7 @@ import type {
   GrowthStage,
   CreatePlantGroupInput,
   SplitAndMoveInput,
+  SplitAndMoveMultiInput,
 } from '../types';
 
 export function usePlantGroups(filter?: { stage?: GrowthStage | 'active' }) {
@@ -55,6 +56,12 @@ export function usePlantGroups(filter?: { stage?: GrowthStage | 'active' }) {
     return newGroups;
   }
 
+  async function splitAndMoveMultipleToRoom(input: SplitAndMoveMultiInput): Promise<PlantGroup[]> {
+    const newGroups = await cultivationService.splitAndMoveMultipleToRoom(input);
+    await load();
+    return newGroups;
+  }
+
   async function setMotherStatus(id: string, isMother: boolean): Promise<PlantGroup> {
     const group = await cultivationService.setMotherStatus(id, isMother);
     await load();
@@ -78,6 +85,7 @@ export function usePlantGroups(filter?: { stage?: GrowthStage | 'active' }) {
     advanceStage,
     moveToRoom,
     splitAndMoveToRoom,
+    splitAndMoveMultipleToRoom,
     setMotherStatus,
     getStageHistory,
     getRoomHistory,
