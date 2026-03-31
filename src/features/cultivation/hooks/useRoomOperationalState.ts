@@ -29,6 +29,10 @@ export interface RoomOperationalState {
   tasks_pending_today: number;
   tasks_in_progress_today: number;
   urgency_score: number;
+  earliest_flip_date: string | null;
+  days_since_flip: number | null;
+  section_projected_harvest: string | null;
+  section_days_to_harvest: number | null;
 }
 
 export function useRoomOperationalState() {

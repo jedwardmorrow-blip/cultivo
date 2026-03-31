@@ -107,8 +107,10 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
           <div className="space-y-3">
             <div className="text-xs text-cult-light-gray flex items-center justify-between">
               <span>{state.total_plants} plants &middot; {state.strain_count} strains</span>
-              {state.days_in_stage !== null && (
-                <span>Day {state.days_in_stage}</span>
+              {/* Flower rooms: use days_since_flip (from room_sections flip_date) for accuracy.
+                  Veg/clone rooms: fall back to days_in_stage (from plant_group stage_entered_at). */}
+              {(state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage) !== null && (
+                <span>Day {state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage}</span>
               )}
             </div>
             
@@ -123,16 +125,20 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
               </div>
             )}
 
-            {state.room_type === 'flower' && (
+            {state.room_type === 'flower' && (() => {
+              // Prefer section-based harvest countdown (from room_sections projected_harvest_date)
+              // over plant-group-based (from plant_groups estimated_harvest_date)
+              const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
+              return (
               <div className="bg-cult-surface-overlay border border-cult-border p-2 space-y-1.5 mt-2">
-                {state.days_to_harvest !== null && state.days_to_harvest > 0 && (
+                {harvestDays !== null && harvestDays > 0 && (
                   <div className="text-xs text-cult-light-gray flex items-center justify-between">
-                    <span>Harvest in {state.days_to_harvest} days</span>
+                    <span>Harvest in {harvestDays} days</span>
                   </div>
                 )}
-                {state.days_to_harvest !== null && state.days_to_harvest <= 0 && (
+                {harvestDays !== null && harvestDays <= 0 && (
                   <div className="text-xs font-bold text-cult-red flex items-center justify-between animate-flicker">
-                    <span>OVERDUE by {Math.abs(state.days_to_harvest)} days</span>
+                    <span>OVERDUE by {Math.abs(harvestDays)} days</span>
                   </div>
                 )}
                 {state.groups_near_harvest !== null && state.groups_near_harvest > 0 && (
@@ -141,7 +147,8 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>
