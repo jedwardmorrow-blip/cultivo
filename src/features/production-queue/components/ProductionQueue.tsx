@@ -511,86 +511,143 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
     });
   }
 
+  // Summary stats
+  const totalOrders = orderGroups.size;
+  const overdueCount = Array.from(orderGroups.values()).filter(items =>
+    items.some(i => i.urgency === 'overdue')
+  ).length;
+
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-cult-medium-gray text-left">
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 w-8"></th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Order</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Customer</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Delivery</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400">Urgency</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Line Items</th>
-            <th className="px-4 py-3 text-xs uppercase tracking-wider text-gray-400 text-right">Total Demand</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from(orderGroups.entries()).map(([orderId, items]) => {
-            const isExpanded = expandedOrders.has(orderId);
-            const first = items[0];
-            const totalDemandG = items.reduce((s, i) => s + Number(i.line_demand_g), 0);
-            const worstUrgency = items.reduce((worst, i) => {
-              const order: Urgency[] = ['overdue', 'urgent', 'soon', 'normal', 'no_date'];
-              return order.indexOf(i.urgency) < order.indexOf(worst) ? i.urgency : worst;
-            }, 'no_date' as Urgency);
+    <div>
+      {/* Summary badges */}
+      <div className="flex items-center gap-3 px-1 mb-3">
+        <span className="text-sm text-gray-400">{totalOrders} orders</span>
+        {overdueCount > 0 && (
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-red-900/60 text-rose-400">
+            {overdueCount} overdue
+          </span>
+        )}
+      </div>
 
-            return (
-              <Fragment key={orderId}>
-                <tr
-                  className="border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/50 cursor-pointer"
-                  onClick={() => toggleOrder(orderId)}
-                >
-                  <td className="px-4 py-3 text-gray-400">
-                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-white">
-                    {first.order_number}
-                    {first.is_sample && (
-                      <span className="ml-2 text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">Sample</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-300">{first.customer_name}</td>
-                  <td className="px-4 py-3 text-gray-300">{formatDateShort(first.requested_delivery_date)}</td>
-                  <td className="px-4 py-3">{urgencyBadge(worstUrgency)}</td>
-                  <td className="px-4 py-3 text-right text-gray-300">{items.length}</td>
-                  <td className="px-4 py-3 text-right text-white">{formatWeight(totalDemandG)}</td>
-                </tr>
+      <div className="bg-cult-surface rounded-cult border border-cult-border/50 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-cult-border/40 text-left">
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 w-8"></th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Order</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Customer</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Delivery</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Urgency</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Lines</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Demand</th>
+              <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Assigned</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from(orderGroups.entries()).map(([orderId, items]) => {
+              const isExpanded = expandedOrders.has(orderId);
+              const first = items[0];
+              const totalDemandG = items.reduce((s, i) => s + Number(i.line_demand_g), 0);
+              const totalAssignedUnits = items.reduce((s, i) => s + Number(i.units_assigned ?? 0), 0);
+              const totalOrderedUnits = items.reduce((s, i) => s + Number(i.quantity), 0);
+              const assignPct = totalOrderedUnits > 0 ? (totalAssignedUnits / totalOrderedUnits) * 100 : 0;
+              const worstUrgency = items.reduce((worst, i) => {
+                const order: Urgency[] = ['overdue', 'urgent', 'soon', 'normal', 'no_date'];
+                return order.indexOf(i.urgency) < order.indexOf(worst) ? i.urgency : worst;
+              }, 'no_date' as Urgency);
 
-                {isExpanded && items.map(item => (
-                  <tr key={item.order_item_id} className="border-b border-cult-medium-gray/30 bg-cult-black/30">
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2">
-                      <div className="text-gray-300">{item.strain_name}</div>
+              const urgencyBorder = worstUrgency === 'overdue'
+                ? 'border-l-[3px] border-l-rose-500/50'
+                : worstUrgency === 'urgent'
+                  ? 'border-l-[3px] border-l-amber-500/40'
+                  : 'border-l-[3px] border-l-transparent';
+
+              return (
+                <Fragment key={orderId}>
+                  <tr
+                    className={`border-b border-cult-border/20 hover:bg-cult-surface-raised/50 cursor-pointer transition-colors ${urgencyBorder} ${
+                      isExpanded ? 'bg-cult-surface-raised' : ''
+                    }`}
+                    onClick={() => toggleOrder(orderId)}
+                  >
+                    <td className="px-5 py-3.5 text-gray-400">
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </td>
-                    <td className="px-4 py-2 text-gray-400">{item.format_label}</td>
-                    <td className="px-4 py-2 text-gray-400">{item.quantity} units</td>
-                    <td className="px-4 py-2 text-center">
-                      {item.batch_number
-                        ? <span className="text-xs text-green-400">✓ {item.batch_stage_label}</span>
-                        : <span className="text-xs text-gray-600">No batch</span>}
+                    <td className="px-5 py-3.5 font-semibold text-cult-text-primary">
+                      {first.order_number}
+                      {first.is_sample && (
+                        <span className="ml-2 text-xs bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">Sample</span>
+                      )}
                     </td>
-                    <td className="px-4 py-2 text-right text-gray-300">{formatWeight(item.line_demand_g)}</td>
+                    <td className="px-5 py-3.5 text-gray-300">{first.customer_name}</td>
+                    <td className="px-5 py-3.5 text-gray-300">{formatDateShort(first.requested_delivery_date)}</td>
+                    <td className="px-5 py-3.5">{urgencyBadge(worstUrgency)}</td>
+                    <td className="px-5 py-3.5 text-right text-gray-300">{items.length}</td>
+                    <td className="px-5 py-3.5 text-right font-bold text-cult-text-primary">{formatWeight(totalDemandG)}</td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="w-14 h-1.5 bg-cult-border rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              assignPct >= 100 ? 'bg-emerald-400' : assignPct > 0 ? 'bg-amber-400' : 'bg-gray-600'
+                            }`}
+                            style={{ width: `${Math.min(assignPct, 100)}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-semibold ${
+                          assignPct >= 100 ? 'text-emerald-400' : assignPct > 0 ? 'text-amber-400' : 'text-gray-600'
+                        }`}>
+                          {Math.round(assignPct)}%
+                        </span>
+                      </div>
+                    </td>
                   </tr>
-                ))}
 
-                {isExpanded && first.delivery_notes && (
-                  <tr className="border-b border-cult-medium-gray/30 bg-cult-black/50">
-                    <td colSpan={7} className="px-8 py-2">
-                      <span className="text-xs text-gray-500">Notes: </span>
-                      <span className="text-xs text-gray-400">{first.delivery_notes}</span>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            );
-          })}
-        </tbody>
-      </table>
-      {orderGroups.size === 0 && (
-        <div className="p-8 text-center text-gray-500">No open orders in the production queue.</div>
-      )}
+                  {isExpanded && items.map(item => {
+                    const itemAssignPct = Number(item.assignment_pct ?? 0);
+                    return (
+                      <tr key={item.order_item_id} className="border-b border-cult-border/10 bg-cult-surface-raised/30">
+                        <td className="px-5 py-2.5"></td>
+                        <td className="px-5 py-2.5"></td>
+                        <td className="px-5 py-2.5">
+                          <div className="text-sm text-gray-300">{item.strain_name}</div>
+                        </td>
+                        <td className="px-5 py-2.5 text-sm text-gray-400">{item.format_label}</td>
+                        <td className="px-5 py-2.5 text-sm text-gray-400">{item.quantity} units</td>
+                        <td className="px-5 py-2.5 text-center">
+                          {item.batch_number
+                            ? <span className="text-xs text-emerald-400 font-medium">{item.batch_stage_label}</span>
+                            : <span className="text-xs text-gray-600">No batch</span>}
+                        </td>
+                        <td className="px-5 py-2.5 text-right text-sm text-gray-300">{formatWeight(item.line_demand_g)}</td>
+                        <td className="px-5 py-2.5 text-right">
+                          <span className={`text-xs font-semibold ${
+                            itemAssignPct >= 100 ? 'text-emerald-400' : itemAssignPct > 0 ? 'text-amber-400' : 'text-gray-600'
+                          }`}>
+                            {Number(item.units_assigned ?? 0)}/{item.quantity}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {isExpanded && first.delivery_notes && (
+                    <tr className="border-b border-cult-border/10 bg-cult-surface-raised/20">
+                      <td colSpan={8} className="px-10 py-2.5">
+                        <span className="text-xs text-gray-500">Notes: </span>
+                        <span className="text-xs text-gray-400">{first.delivery_notes}</span>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+        {orderGroups.size === 0 && (
+          <div className="p-8 text-center text-gray-500">No open orders in the production queue.</div>
+        )}
+      </div>
     </div>
   );
 }
