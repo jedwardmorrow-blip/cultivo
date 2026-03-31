@@ -1,0 +1,2 @@
+-- SUPERSEDED: See 20260331_sync_stage_to_room_and_relax_transitions.sql
+-- This file is intentionally empty; the consolidated migration covers both changes.

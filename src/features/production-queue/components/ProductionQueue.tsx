@@ -1,5 +1,5 @@
 import { useState, Fragment, useMemo } from 'react';
-import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, ClipboardList, BarChart3, ChevronDown, ChevronRight, Calendar, Search, Hammer } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useProductionQueue } from '../hooks/useProductionQueue';
 import { useRevenuePipeline } from '../hooks/useRevenuePipeline';
@@ -698,7 +698,7 @@ export function ProductionQueue() {
     loading: revenueLoading,
   } = useRevenuePipeline();
   const { byStrain: skuByStrain, summary: skuSummary } = useSkuYield();
-  const [activeTab, setActiveTab] = useState<ProductionQueueTab>('by-strain');
+  const [activeTab, setActiveTab] = useState<ProductionQueueTab>('triage');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
 
@@ -742,8 +742,9 @@ export function ProductionQueue() {
   }
 
   const tabs: { id: ProductionQueueTab; label: string; icon: typeof Package }[] = [
-    { id: 'by-strain', label: 'By Strain', icon: Package },
-    { id: 'by-order', label: 'By Order', icon: ClipboardList },
+    { id: 'triage', label: 'Triage', icon: Search },
+    { id: 'labor', label: 'Labor', icon: Hammer },
+    { id: 'by-order', label: 'Orders', icon: ClipboardList },
     { id: 'summary', label: 'Summary', icon: BarChart3 },
   ];
 
@@ -806,17 +807,18 @@ export function ProductionQueue() {
           })}
         </div>
 
-        {activeTab !== 'summary' && (
+        {(activeTab === 'triage' || activeTab === 'labor' || activeTab === 'by-order') && (
           <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
         )}
       </div>
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
-      {activeTab === 'by-strain' && (
+      {(activeTab === 'triage' || activeTab === 'labor') && (
         <LaborView
           byStrain={filteredByStrain}
           byOrder={filteredByOrder}
           loading={loading}
+          mode={activeTab}
         />
       )}
       {activeTab === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}

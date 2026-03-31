@@ -424,25 +424,14 @@ export const cultivationService = {
   },
 
   async moveToRoom(id: string, toRoomId: string): Promise<PlantGroup> {
-    // Fetch destination room type to set correct growth_stage
-    const { data: destRoom } = await supabase
-      .from('grow_rooms')
-      .select('room_type')
-      .eq('id', toRoomId)
-      .single();
-
-    const updateFields: Record<string, unknown> = { grow_room_id: toRoomId };
-    if (destRoom?.room_type) {
-      updateFields.growth_stage = destRoom.room_type;
-      updateFields.stage_entered_at = new Date().toISOString();
-    }
-
-    // UPDATE triggers handle:
+    // UPDATE triggers handle everything:
+    //   fn_sync_stage_to_room_type          → auto-sets growth_stage to match destination room
     //   fn_clear_placement_on_room_transfer → nulls room_table_id / room_section_id
+    //   fn_validate_plant_group_stage_transition → validates & stamps stage_entered_at
     //   fn_log_plant_group_room_history     → writes history with from/to room + table/section + count
     const { data, error } = await supabase
       .from('plant_groups')
-      .update(updateFields)
+      .update({ grow_room_id: toRoomId })
       .eq('id', id)
       .select(PLANT_GROUP_SELECT)
       .single();
@@ -537,23 +526,17 @@ export const cultivationService = {
     // 4. Update source group: decrement plant_count or archive if fully depleted
     const remaining = source.plant_count - totalPlacing;
     if (remaining <= 0) {
-      // All plants moved — zero out and walk through valid stage transitions to 'harvested'.
-      // The trigger enforces clone→veg→flower→harvested, so we step through each stage.
-      const stageOrder = ['clone', 'veg', 'flower', 'harvested'] as const;
-      const currentIdx = stageOrder.indexOf(source.growth_stage as typeof stageOrder[number]);
-      const harvestedIdx = stageOrder.indexOf('harvested');
-
-      // Step through each intermediate stage
-      for (let i = currentIdx + 1; i <= harvestedIdx; i++) {
+      // All plants moved — transition source to flower (if not already) then harvested.
+      // Trigger allows free movement between clone/veg/flower, but only flower→harvested.
+      if (source.growth_stage !== 'flower') {
         await supabase
           .from('plant_groups')
-          .update({ growth_stage: stageOrder[i] })
+          .update({ growth_stage: 'flower' })
           .eq('id', source_group_id);
       }
-      // Now zero out the plant count
       await supabase
         .from('plant_groups')
-        .update({ plant_count: 0 })
+        .update({ plant_count: 0, growth_stage: 'harvested' })
         .eq('id', source_group_id);
     } else {
       // Partial move — some plants remain in the source room

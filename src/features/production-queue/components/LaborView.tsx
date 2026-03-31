@@ -7,20 +7,23 @@ import { groupByStrain, buildOrdersByStrain, calcTotalEstG, getCoverage } from '
 import { TriageTable, LaborQueue, StrainDetailPanel } from './labor-view';
 
 // ─── LaborView (Orchestrator) ───────────────────────────────────────────────
-// Three-section layout:
-//   1. Triage Table  — compact scan, one row per strain
-//   2. Labor Queue   — task-grouped cards (Buck, Trim, Package)
-//   3. Detail Panel  — full strain breakdown (shown on click)
+// Renders one of two modes:
+//   'triage' — compact scan table + detail panel on click
+//   'labor'  — task-grouped work queues + detail panel on click
 //
-// Props unchanged from v1 — drop-in replacement.
+// Shared controls (loss slider, summary stats) render in both modes.
+// The detail panel is contextual — opens below whichever mode is active.
+
+export type LaborViewMode = 'triage' | 'labor';
 
 interface LaborViewProps {
   byStrain: StrainFormatRow[];
   byOrder: OrderLineItem[];
   loading?: boolean;
+  mode: LaborViewMode;
 }
 
-export default function LaborView({ byStrain, byOrder, loading }: LaborViewProps) {
+export default function LaborView({ byStrain, byOrder, loading, mode }: LaborViewProps) {
   // ── Shared state ──
   const [lossPct, setLossPct] = useState(15);
   const [sortBy, setSortBy] = useState<SortKey>('urgency');
@@ -43,7 +46,7 @@ export default function LaborView({ byStrain, byOrder, loading }: LaborViewProps
 
   // ── Loading / Empty states ──
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading production data\u2026</div>;
+    return <div className="text-center py-12 text-gray-500">Loading production data&hellip;</div>;
   }
 
   if (strainGroups.length === 0) {
@@ -93,25 +96,28 @@ export default function LaborView({ byStrain, byOrder, loading }: LaborViewProps
         </div>
       </div>
 
-      {/* ── Section 1: Triage Table ── */}
-      <TriageTable
-        strains={strainGroups}
-        lossPct={lossPct}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        selectedStrainId={selectedStrainId}
-        onSelectStrain={setSelectedStrainId}
-      />
+      {/* ── Mode-specific section ── */}
+      {mode === 'triage' && (
+        <TriageTable
+          strains={strainGroups}
+          lossPct={lossPct}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          selectedStrainId={selectedStrainId}
+          onSelectStrain={setSelectedStrainId}
+        />
+      )}
 
-      {/* ── Section 2: Labor Queue ── */}
-      <LaborQueue
-        strains={strainGroups}
-        lossPct={lossPct}
-        selectedStrainId={selectedStrainId}
-        onSelectStrain={setSelectedStrainId}
-      />
+      {mode === 'labor' && (
+        <LaborQueue
+          strains={strainGroups}
+          lossPct={lossPct}
+          selectedStrainId={selectedStrainId}
+          onSelectStrain={setSelectedStrainId}
+        />
+      )}
 
-      {/* ── Section 3: Strain Detail Panel ── */}
+      {/* ── Detail Panel (shared across modes) ── */}
       {selectedStrain && (
         <StrainDetailPanel
           strain={selectedStrain}
