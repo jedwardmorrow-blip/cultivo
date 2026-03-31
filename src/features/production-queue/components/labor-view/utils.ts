@@ -86,12 +86,16 @@ function fmtW(grams: number): string {
 export function groupByStrain(rows: StrainFormatRow[]): StrainAggregate[] {
   const map = new Map<string, StrainAggregate>();
 
+  // Helper: Supabase returns Postgres `numeric` columns as strings.
+  // We must coerce to number to avoid string concatenation in arithmetic.
+  const n = (v: unknown): number => Number(v) || 0;
+
   for (const row of rows) {
     const key = row.strain_id ?? row.strain_name;
     let agg = map.get(key);
 
     if (!agg) {
-      const bulkG = (row.ready_flower_g ?? 0) + (row.ready_smalls_g ?? 0);
+      const bulkG = n(row.ready_flower_g) + n(row.ready_smalls_g);
       agg = {
         strainId: row.strain_id,
         strainName: row.strain_name,
@@ -100,16 +104,16 @@ export function groupByStrain(rows: StrainFormatRow[]): StrainAggregate[] {
         totalDemandG: 0,
         totalOrderedG: 0,
         pipeline: {
-          packaged: { weightG: row.already_packaged_g ?? 0, unitCount: row.already_packaged_units ?? 0 },
+          packaged: { weightG: n(row.already_packaged_g), unitCount: n(row.already_packaged_units) },
           bulk:     { weightG: bulkG },
-          trimming: { weightG: row.ready_trim_g ?? 0 },
-          bucked:   { weightG: row.pipeline_bucked_g ?? 0 },
-          binned:   { weightG: row.pipeline_binned_g ?? 0 },
+          trimming: { weightG: n(row.ready_trim_g) },
+          bucked:   { weightG: n(row.pipeline_bucked_g) },
+          binned:   { weightG: n(row.pipeline_binned_g) },
         },
         orderCount: 0,
         earliestDelivery: row.earliest_delivery_date,
         confidence: row.confidence,
-        conversionSessions: row.conversion_sessions,
+        conversionSessions: n(row.conversion_sessions),
       };
       map.set(key, agg);
     }
@@ -123,20 +127,20 @@ export function groupByStrain(rows: StrainFormatRow[]): StrainAggregate[] {
       agg.earliestDelivery = row.earliest_delivery_date;
     }
 
-    const demandG = row.total_units_needed * row.weight_per_unit_g;
-    const orderedG = row.total_units_ordered * row.weight_per_unit_g;
+    const demandG = n(row.total_units_needed) * n(row.weight_per_unit_g);
+    const orderedG = n(row.total_units_ordered) * n(row.weight_per_unit_g);
     agg.formats.push({
       formatLabel: row.format_label,
       productCategory: row.product_category,
-      weightPerUnitG: row.weight_per_unit_g,
-      unitsOrdered: row.total_units_ordered,
-      unitsAssigned: row.total_units_assigned,
-      unitsNeeded: row.total_units_needed,
+      weightPerUnitG: n(row.weight_per_unit_g),
+      unitsOrdered: n(row.total_units_ordered),
+      unitsAssigned: n(row.total_units_assigned),
+      unitsNeeded: n(row.total_units_needed),
       demandG,
     });
     agg.totalDemandG += demandG;
     agg.totalOrderedG += orderedG;
-    agg.orderCount += row.order_count;
+    agg.orderCount += n(row.order_count);
   }
 
   return Array.from(map.values());

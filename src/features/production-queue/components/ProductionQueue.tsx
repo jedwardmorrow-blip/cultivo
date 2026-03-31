@@ -552,7 +552,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
           {Array.from(orderGroups.entries()).map(([orderId, items]) => {
             const isExpanded = expandedOrders.has(orderId);
             const first = items[0];
-            const totalDemandG = items.reduce((s, i) => s + i.line_demand_g, 0);
+            const totalDemandG = items.reduce((s, i) => s + Number(i.line_demand_g), 0);
             const worstUrgency = items.reduce((worst, i) => {
               const order: Urgency[] = ['overdue', 'urgent', 'soon', 'normal', 'no_date'];
               return order.indexOf(i.urgency) < order.indexOf(worst) ? i.urgency : worst;
