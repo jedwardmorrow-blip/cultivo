@@ -19,11 +19,6 @@ import type {
 } from '../types/rosin-lab.types';
 import { getDateFrom } from '../utils/analyticsHelpers';
 
-// Rosin lab tables (wash_runs, press_runs, freeze_dry_runs, etc.) are not yet in database.types.ts.
-// Cast to bypass strict table-union type checking until DBA creates the schema migration.
-// Remove this cast once supabase gen types is run after the migration.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as unknown as { from: (table: string) => any };
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {
@@ -112,11 +107,11 @@ export async function getActivePipelineItems(): Promise<ActivePipelineItem[]> {
 export async function getPipelineStageCounts(): Promise<Record<string, number>> {
   try {
     const [ffRes, washRes, fdRes, pressRes, cureRes] = await Promise.all([
-      db.from('fresh_frozen_packages').select('id', { count: 'exact', head: true }).eq('status', 'stored'),
-      db.from('wash_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
-      db.from('freeze_dry_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
-      db.from('press_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
-      db.from('rosin_cure_sessions').select('id', { count: 'exact', head: true }).eq('status', 'curing'),
+      supabase.from('fresh_frozen_packages').select('id', { count: 'exact', head: true }).eq('status', 'stored'),
+      supabase.from('wash_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
+      supabase.from('freeze_dry_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
+      supabase.from('press_runs').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
+      supabase.from('rosin_cure_sessions').select('id', { count: 'exact', head: true }).eq('status', 'curing'),
     ]);
 
     return {
@@ -294,7 +289,7 @@ export async function createWashRun(
     if (runError || !run) return { data: null, error: runError };
 
     const inputRows = inputs.map((i) => ({ wash_run_id: run.id, ...i }));
-    const { error: inputError } = await db.from('wash_run_inputs').insert(inputRows);
+    const { error: inputError } = await supabase.from('wash_run_inputs').insert(inputRows);
     if (inputError) return { data: run as WashRun, error: inputError };
 
     const packageIds = inputs.map((i) => i.fresh_frozen_package_id);
@@ -541,7 +536,7 @@ export async function createPressRun(
     if (runError || !run) return { data: null, error: runError };
 
     const inputRows = inputs.map((i) => ({ press_run_id: run.id, ...i }));
-    await db.from('press_run_inputs').insert(inputRows);
+    await supabase.from('press_run_inputs').insert(inputRows);
 
     for (const input of inputs) {
       const { data: pkg } = await db
