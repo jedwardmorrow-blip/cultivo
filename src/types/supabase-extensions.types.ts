@@ -99,18 +99,12 @@ export interface StrainRelation {
 // Extended Row Types (fields added after last type generation)
 // ============================================================
 
-// Database is imported above. These extended types reference tables not yet present in database.types.ts.
-// Once DBA runs `supabase gen types`, remove the @ts-expect-error suppressions below.
-type _DatabaseTables = Database['public']['Tables']; // keeps import live until regen
-
 /** Order with is_sample flag (added post-type-gen) */
-// @ts-expect-error [stale-db-types: orders table not in database.types.ts — awaiting DBA supabase gen types regen]
 export interface OrderExtended extends Database['public']['Tables']['orders']['Row'] {
   is_sample?: boolean;
 }
 
 /** Inventory item with quality_grade_id (added post-type-gen) */
-// @ts-expect-error [stale-db-types: inventory_items table not in database.types.ts — awaiting DBA supabase gen types regen]
 export interface InventoryItemExtended extends Database['public']['Tables']['inventory_items']['Row'] {
   quality_grade_id?: string | null;
 }
