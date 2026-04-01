@@ -351,7 +351,7 @@ export function CultivationDashboard() {
           </div>
         ) : (
           <div>
-            <h2 className="text-sm font-bold text-cult-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-cult-text-muted mb-3 flex items-center gap-2">
               <LayoutGrid className="w-3.5 h-3.5" />
               Rooms
             </h2>
@@ -424,7 +424,7 @@ export function CultivationDashboard() {
       {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
           <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6 space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">
+            <h3 className="text-lg font-bold text-cult-white">
               Advance Stage
             </h3>
 

@@ -15,7 +15,7 @@ const URGENCY_STYLES: Record<string, { bg: string; text: string; dot: string; la
   urgent:  { bg: 'bg-amber-500/20',  text: 'text-amber-400',  dot: 'bg-amber-400',  label: 'Urgent' },
   soon:    { bg: 'bg-sky-500/20',    text: 'text-sky-400',    dot: 'bg-sky-400',    label: 'Soon' },
   normal:  { bg: 'bg-green-500/20',  text: 'text-green-400',  dot: 'bg-green-400',  label: 'On Track' },
-  no_date: { bg: 'bg-gray-500/20',   text: 'text-gray-400',   dot: 'bg-gray-400',   label: 'No Demand' },
+  no_date: { bg: 'bg-cult-medium-gray/20', text: 'text-cult-silver', dot: 'bg-cult-silver', label: 'No Demand' },
 };
 
 const URGENCY_RANK: Record<string, number> = {
@@ -124,19 +124,19 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
       <div className="bg-cult-surface rounded-cult border border-cult-border/50 overflow-hidden">
         {/* Header */}
         <div
-          className="grid gap-4 px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-cult-border/40 select-none"
+          className="grid gap-4 px-5 py-3 text-xs font-semibold text-cult-medium-gray uppercase tracking-wider border-b border-cult-border/40 select-none"
           style={{ gridTemplateColumns: '2fr 0.8fr 0.8fr 0.8fr 1fr' }}
         >
-          <button onClick={() => setSortBy('strain')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'strain' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => setSortBy('strain')} className={`text-left transition-colors hover:text-cult-lighter-gray ${sortBy === 'strain' ? 'text-cult-text-primary' : ''}`}>
             Strain {sortBy === 'strain' && '↓'}
           </button>
-          <button onClick={() => setSortBy('weight')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'weight' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => setSortBy('weight')} className={`text-left transition-colors hover:text-cult-lighter-gray ${sortBy === 'weight' ? 'text-cult-text-primary' : ''}`}>
             Inventory {sortBy === 'weight' && '↓'}
           </button>
-          <button onClick={() => setSortBy('demand')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'demand' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => setSortBy('demand')} className={`text-left transition-colors hover:text-cult-lighter-gray ${sortBy === 'demand' ? 'text-cult-text-primary' : ''}`}>
             Demand {sortBy === 'demand' && '↓'}
           </button>
-          <button onClick={() => setSortBy('allocated')} className={`text-left transition-colors hover:text-gray-300 ${sortBy === 'allocated' ? 'text-cult-text-primary' : ''}`}>
+          <button onClick={() => setSortBy('allocated')} className={`text-left transition-colors hover:text-cult-lighter-gray ${sortBy === 'allocated' ? 'text-cult-text-primary' : ''}`}>
             Allocated {sortBy === 'allocated' && '↓'}
           </button>
           <div>Batches</div>
@@ -169,8 +169,8 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                   {/* Strain + urgency */}
                   <div className="flex items-center gap-2 min-w-0">
                     {isExpanded
-                      ? <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      : <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      ? <ChevronDown className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+                      : <ChevronRight className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
                     }
                     <span className="font-semibold text-cult-text-primary text-sm truncate">
                       {group.strainName}
@@ -200,12 +200,12 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                         <div className="text-sm font-bold text-cult-text-primary">
                           {formatWeight(group.totalDemandG)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-cult-medium-gray">
                           {group.orderCount} order{group.orderCount !== 1 ? 's' : ''}
                         </div>
                       </>
                     ) : (
-                      <span className="text-xs text-gray-600 italic">No orders</span>
+                      <span className="text-xs text-cult-medium-gray italic">No orders</span>
                     )}
                   </div>
 
@@ -220,14 +220,14 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                         None
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-600">—</span>
+                      <span className="text-xs text-cult-medium-gray">—</span>
                     )}
                   </div>
 
                   {/* Batch count */}
                   <div className="flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-gray-500" />
-                    <span className="text-sm text-gray-300">
+                    <Layers className="w-3.5 h-3.5 text-cult-medium-gray" />
+                    <span className="text-sm text-cult-lighter-gray">
                       {group.batches.length} batch{group.batches.length !== 1 ? 'es' : ''}
                     </span>
                   </div>
@@ -264,7 +264,7 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                               <div className="text-sm font-bold text-cult-text-primary">
                                 {formatWeight(batch.total_available_g)}
                               </div>
-                              <div className="text-xs text-gray-500">available</div>
+                              <div className="text-xs text-cult-medium-gray">available</div>
                             </div>
 
                             {/* Allocation */}
@@ -274,19 +274,19 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                                   <div className="text-sm font-semibold text-emerald-400">
                                     {formatWeight(batch.total_allocated_g)}
                                   </div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-xs text-cult-medium-gray">
                                     {batch.allocated_order_items} order{batch.allocated_order_items !== 1 ? 's' : ''}
                                   </div>
                                 </>
                               ) : (
-                                <span className="text-xs text-gray-600 italic">Unallocated</span>
+                                <span className="text-xs text-cult-medium-gray italic">Unallocated</span>
                               )}
                             </div>
 
                             {/* Capacity */}
                             {batch.bulk_g > 0 && (
                               <div className="w-28 text-right flex-shrink-0">
-                                <div className="text-xs text-gray-500">Est. from bulk</div>
+                                <div className="text-xs text-cult-medium-gray">Est. from bulk</div>
                                 <div className="text-sm text-sky-400 font-semibold">
                                   {batch.est_lbs_from_bulk.toFixed(1)} lbs
                                 </div>
@@ -305,7 +305,7 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
       </div>
 
       {batches.length === 0 && (
-        <div className="p-8 text-center text-gray-500">No active batches in the system.</div>
+        <div className="p-8 text-center text-cult-medium-gray">No active batches in the system.</div>
       )}
     </div>
   );

@@ -31,10 +31,10 @@ const ICON_MAP: Record<string, typeof Scissors> = {
 };
 
 const STATUS_CONFIG: Record<TaskStatus, { icon: typeof Circle; color: string; label: string }> = {
-  pending: { icon: Circle, color: 'text-zinc-400', label: 'To Do' },
+  pending: { icon: Circle, color: 'text-cult-silver', label: 'To Do' },
   in_progress: { icon: CircleDot, color: 'text-sky-400', label: 'In Progress' },
   completed: { icon: CheckCircle2, color: 'text-green-400', label: 'Done' },
-  skipped: { icon: SkipForward, color: 'text-zinc-500', label: 'Skipped' },
+  skipped: { icon: SkipForward, color: 'text-cult-medium-gray', label: 'Skipped' },
   carry_forward: { icon: AlertTriangle, color: 'text-amber-400', label: 'Carried' },
 };
 
