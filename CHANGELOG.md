@@ -4,6 +4,69 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-01 - P0 Bug Fix Pass (CUL-80, CUL-81, CUL-82, CUL-83)
+
+**Type:** Critical Bug Fix
+**Modules:** Cultivation (DailyTaskBoard), CRM (Visits, SalesQueue), Sessions (ProductionDashboard)
+**Status:** COMPLETE
+
+Four P0 production bugs blocking real users:
+
+- **CUL-80 (AddTaskModal)** — Added success toast (`notificationService.success`) and error toast (`notificationService.error`) to `AddTaskModal.handleSave()`. Andrew Mason can now confirm task saves and see failure reasons.
+- **CUL-81 (Visit Cadence 0% compliance)** — `completeVisit()` now stamps `visit_date = today` on the record. The `crm_visit_cadence` view counts compliance by `visit_date`; previously overdue visits (scheduled >30 days ago) were invisible to the 30-day window. Leo's logged visits now count.
+- **CUL-82 (SalesQueue shows only Reorder tasks)** — DB `crm_tasks.task_type` constraint uses legacy values (`callback`, `visit_reminder`, `reorder_prompt`, `sample_drop`). Frontend TypeScript enum uses new values (`visit_follow_up`, `visit_overdue`, `reorder_reminder`). Added `normalizeTaskType()` (DB→frontend) and `dbTaskType()` (frontend→DB) in `tasks.service.ts`, applied on all reads and writes. All task types now display and save correctly.
+- **CUL-83 (No pending-finalization banner)** — Added amber banner to `ProductionDashboard` counting sessions where `session_status = completed AND finalized_at IS NULL` across all three session types. Banner links to `/sessions` for quick finalization. Laura can now see and act on pending sessions.
+
+---
+
+## 2026-04-01 - Text Legibility & Readability Fix Pass (CUL-79)
+
+**Type:** Fix / Polish
+**Modules:** Orders, Cultivation, Sessions, Inventory, Production Queue, Settings, Shared Navigation
+**Status:** COMPLETE
+
+Full readability/legibility audit fix pass (12 targeted changes):
+
+- `OrderTable.tsx`: Turnaround badge `text-[10px] font-bold` → `text-xs font-semibold`
+- `WorkerTaskView.tsx`: All `text-[10px]` occurrences → `text-xs` (type badge, CARRIED label, logout button)
+- `ActiveSessionsTable.tsx`: Column header `font-medium` → `font-semibold` on all `uppercase tracking-wider` headers
+- `CompletedSessionsTable.tsx`: Added `font-semibold` to pulled-weight, flower, smalls, and trim yield cells
+- `InventoryTable.tsx`: Footer item count `text-xs text-cult-lighter-gray` → `text-sm text-cult-silver`
+- `BatchesView.tsx`: Summary stat line `text-gray-400` → `text-cult-lighter-gray`; summary badges `font-bold` → `font-semibold`
+- `ConversionLotsList.tsx`: Filter labels `text-cult-light-gray` → `text-cult-silver`
+- `StatsCard.tsx`: Subtitle `text-xs text-cult-light-gray` → `text-sm text-cult-lighter-gray`
+- `CultivationDashboard.tsx`: Room card stat subtotals `text-xs text-cult-light-gray` → `text-sm text-cult-silver`
+- `SubNavBar.tsx`: Inactive tab text `text-cult-silver` → `text-cult-lighter-gray` (active contrast preserved)
+- No `text-3xl uppercase tracking-wide` page headings found; fix #12 confirmed clean
+
+---
+
+## 2026-04-01 - Text Legibility / UX Fix Pass (CUL-74, CUL-75, CUL-76)
+
+**Type:** Fix / Polish
+**Modules:** Cultivation, Inventory, Sessions, Shared Navigation
+**Status:** COMPLETE
+
+Multi-task legibility and UX fix pass:
+
+**CUL-74 — SectionTabs mobile labels (SectionTabs.tsx):**
+- Active section tab now always shows its label on mobile; inactive tabs remain icon-only to save space
+
+**CUL-75 — Remove rosinLabService.ts db cast (rosinLabService.ts):**
+- Deleted 5-line `db` cast workaround; replaced all 7 `db.from()` calls with `supabase.from()` — schema migration (CUL-67) and type regen (CUL-66) were already complete
+
+**CUL-76 — Text legibility audit & fix pass:**
+- `WorkerTaskView.tsx`: Bumped `text-[10px]` → `text-xs` for progress counter, duration, and notes text
+- `TaskCard.tsx`: Bumped crew avatar badge and overflow count from `text-[10px]` → `text-xs`
+- `RoomCalendar.tsx`: Bumped room type label and task count from `text-[10px]` → `text-xs`
+- `TaskDetailDrawer.tsx`: Changed Skip button from `text-zinc-400 bg-zinc-900/60 border-zinc-700/40` → cult palette (`text-cult-silver`)
+- `BatchTankMixFields.tsx`: Replaced `text-gray-400/bg-gray-500` fallback badge colors with cult palette
+- `RoomDetailCard.tsx`, `StrainStatsPanel.tsx`, `ForecastSummaryPanel.tsx`: Bumped stat labels from `text-[10px] text-cult-text-muted` → `text-xs text-cult-silver`
+- `ConsolidateView.tsx`: Package IDs in table promoted from `text-xs` → `text-sm font-medium`
+- Page headers: Removed `uppercase tracking-wide` from all `<h1>` page title elements (standardized to `text-3xl font-bold text-cult-white`); fixed `text-4xl` → `text-3xl` in DeliverySchedule and OrdersErrorBoundary
+
+---
+
 ## 2026-04-01 - Production Planner Forecast Summary Panel (CUL-65)
 
 **Type:** Feature

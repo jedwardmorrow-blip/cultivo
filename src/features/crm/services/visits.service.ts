@@ -106,12 +106,16 @@ export async function completeVisit(visitId: string, outcomeNotes: string) {
 
     if (actError) throw actError;
 
+    // Set visit_date to today so the cadence view counts this visit
+    // in the 30-day compliance window (view filters on visit_date, not completed_at).
+    const today = new Date().toISOString().split('T')[0];
     const { error: updateError } = await supabase
       .from('crm_visit_schedule')
       .update({
         status: 'completed',
         outcome_notes: outcomeNotes,
         linked_activity_id: activity.id,
+        visit_date: today,
       })
       .eq('id', visitId);
 

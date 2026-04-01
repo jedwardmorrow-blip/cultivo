@@ -32,6 +32,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
+import { notificationService } from '@/services';
 import { useAttendance, useDailyTasks, useGrowRooms, useTaskTypeSettings } from '../hooks';
 import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
@@ -135,7 +136,7 @@ export function SchedulesPage() {
       {/* Header with view toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Schedule Builder</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-cult-white">Schedule Builder</h1>
           <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Create and manage recurring task schedules</p>
         </div>
         <div className="flex items-center gap-3">
@@ -271,7 +272,7 @@ export function DailyTaskBoard() {
       <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-lg sm:text-2xl font-bold text-cult-white uppercase tracking-wide">
+            <h1 className="text-lg sm:text-2xl font-bold text-cult-white">
               Today's Tasks
             </h1>
             <button
@@ -1129,8 +1130,11 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
         assigned_to: assignedTo || null,
         notes: notes || null,
       });
+      notificationService.success('Task added');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save task');
+      const message = err instanceof Error ? err.message : 'Failed to save task';
+      setError(message);
+      notificationService.error(message, 'Task Creation Failed');
     } finally {
       setSaving(false);
     }

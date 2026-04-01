@@ -1,7 +1,43 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services';
-import type { CRMTask, CRMTaskInput } from '../types';
+import type { CRMTask, CRMTaskInput, TaskType } from '../types';
 import type { CRMTaskComputedFields } from '@/types';
+
+// DB task_type values use legacy names; map to frontend enum on read.
+const DB_TO_FRONTEND_TASK_TYPE: Record<string, TaskType> = {
+  callback: 'visit_follow_up',
+  visit_reminder: 'visit_overdue',
+  sample_drop: 'visit_follow_up',
+  reorder_prompt: 'reorder_reminder',
+  general: 'general',
+  // pass-through if DB already has updated values
+  visit_follow_up: 'visit_follow_up',
+  visit_overdue: 'visit_overdue',
+  reorder_reminder: 'reorder_reminder',
+  prospect_advancement: 'prospect_advancement',
+};
+
+// Frontend enum → DB constraint values on write.
+const FRONTEND_TO_DB_TASK_TYPE: Record<string, string> = {
+  visit_follow_up: 'callback',
+  visit_overdue: 'visit_reminder',
+  reorder_reminder: 'reorder_prompt',
+  prospect_advancement: 'general',
+  general: 'general',
+  // pass-through legacy values
+  callback: 'callback',
+  visit_reminder: 'visit_reminder',
+  sample_drop: 'sample_drop',
+  reorder_prompt: 'reorder_prompt',
+};
+
+function normalizeTaskType(raw: string): TaskType {
+  return DB_TO_FRONTEND_TASK_TYPE[raw] ?? 'general';
+}
+
+function dbTaskType(frontendType: string): string {
+  return FRONTEND_TO_DB_TASK_TYPE[frontendType] ?? 'general';
+}
 
 export async function getTasks(filters?: {
   status?: string;
@@ -33,6 +69,7 @@ export async function getTasks(filters?: {
 
     const tasks: CRMTask[] = (data || []).map((row: any) => ({
       ...row,
+      task_type: normalizeTaskType(row.task_type),
       customer_name: row.customers?.name || 'Unknown',
       dispensary_code: row.customers?.dispensary_code || '',
       assigned_user_name: row.user_profiles?.full_name || null,
@@ -65,6 +102,7 @@ export async function getOpenTasks() {
 
     const tasks: CRMTask[] = (data || []).map((row: any) => ({
       ...row,
+      task_type: normalizeTaskType(row.task_type),
       customer_name: row.customers?.name || 'Unknown',
       dispensary_code: row.customers?.dispensary_code || '',
       assigned_user_name: row.user_profiles?.full_name || null,
@@ -84,7 +122,7 @@ export async function createTask(input: CRMTaskInput) {
       .insert([{
         customer_id: input.customer_id,
         assigned_user_id: input.assigned_user_id || null,
-        task_type: input.task_type,
+        task_type: dbTaskType(input.task_type),
         title: input.title,
         description: input.description || null,
         due_date: input.due_date,
@@ -95,7 +133,7 @@ export async function createTask(input: CRMTaskInput) {
       .single();
 
     if (error) throw error;
-    return { data: data as CRMTask, error: null };
+    return { data: { ...data, task_type: normalizeTaskType(data.task_type) } as CRMTask, error: null };
   } catch (error) {
     errorService.handle(error, 'Failed to create task');
     return { data: null, error };

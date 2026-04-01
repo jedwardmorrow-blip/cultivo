@@ -8,6 +8,7 @@ import {
   CheckCircle,
   ArrowRight,
   Activity,
+  AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PageSkeleton } from '@/shared/components';
@@ -128,6 +129,7 @@ function ProductionDashboardInner() {
   const [allBucking, setAllBucking] = useState<BuckingSession[]>([]);
   const [allTrim, setAllTrim] = useState<TrimSession[]>([]);
   const [allPackaging, setAllPackaging] = useState<PackagingSession[]>([]);
+  const [pendingFinalizationCount, setPendingFinalizationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [, setTick] = useState(0);
 
@@ -166,6 +168,19 @@ function ProductionDashboardInner() {
       setAllBucking(allB.data || []);
       setAllTrim(allT.data || []);
       setAllPackaging(allP.data || []);
+
+      // Count sessions completed but not yet finalized
+      const [buckingPending, trimPending, packagingPending] = await Promise.all([
+        supabase.from('bucking_sessions').select('id', { count: 'exact', head: true })
+          .eq('session_status', 'completed').is('finalized_at', null),
+        supabase.from('trim_sessions').select('id', { count: 'exact', head: true })
+          .eq('session_status', 'completed').is('finalized_at', null),
+        supabase.from('packaging_sessions').select('id', { count: 'exact', head: true })
+          .eq('session_status', 'completed').is('finalized_at', null),
+      ]);
+      setPendingFinalizationCount(
+        (buckingPending.count ?? 0) + (trimPending.count ?? 0) + (packagingPending.count ?? 0)
+      );
     } catch (err) {
       console.error('Error loading production dashboard:', err);
     } finally {
@@ -190,11 +205,32 @@ function ProductionDashboardInner() {
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">
+        <h1 className="text-3xl font-bold text-cult-white">
           Production
         </h1>
         <p className="text-cult-light-gray mt-2">Real-time floor activity across all session types</p>
       </div>
+
+      {/* Pending Finalization Banner */}
+      {pendingFinalizationCount > 0 && (
+        <button
+          onClick={() => navigate('/sessions')}
+          className="w-full text-left bg-amber-900/20 border border-amber-600/50 p-4 flex items-center gap-3 hover:bg-amber-900/30 transition-colors"
+        >
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-amber-400 font-bold uppercase tracking-wider text-sm">
+              {pendingFinalizationCount} Session{pendingFinalizationCount !== 1 ? 's' : ''} Pending Finalization
+            </p>
+            <p className="text-amber-200/70 text-xs mt-0.5">
+              Completed sessions not yet finalized — inventory is not visible until finalized
+            </p>
+          </div>
+          <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex-shrink-0">
+            Finalize Now →
+          </span>
+        </button>
+      )}
 
       {/* Aggregate Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
