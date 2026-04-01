@@ -344,7 +344,7 @@ export default function CalendarPage() {
   }, [selectedDayTodos, teamView])
 
   const PRIORITY_COLORS: Record<string, string> = {
-    critical: 'text-cult-red-bright',
+    critical: 'text-cult-danger-bright',
     high: 'text-cult-amber-bright',
     medium: 'text-cult-text',
     low: 'text-cult-text/60',

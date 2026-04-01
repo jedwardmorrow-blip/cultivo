@@ -113,7 +113,7 @@ export function BaseModal({
           <div className="flex items-center justify-between border-b border-cult-medium-gray p-6">
             <div className="flex items-center gap-3">
               {icon && <div className="text-cult-white">{icon}</div>}
-              <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wider">{title}</h2>
+              <h2 className="text-h2 font-bold text-cult-white uppercase tracking-wider">{title}</h2>
             </div>
             <button
               onClick={attemptClose}

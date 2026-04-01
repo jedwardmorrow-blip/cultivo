@@ -346,7 +346,7 @@ function AdminTodoView() {
                     </div>
                     {todo.priority && todo.priority !== 'medium' && (
                       <span className={`px-1.5 py-0.5 text-xs font-mono tracking-wider rounded-sm border flex-shrink-0 ${
-                        todo.priority === 'critical' ? 'text-cult-red-bright bg-cult-red-bright/10 border-cult-red-bright/30' :
+                        todo.priority === 'critical' ? 'text-cult-danger-bright bg-cult-danger-bright/10 border-cult-danger-bright/30' :
                         todo.priority === 'high' ? 'text-cult-amber-bright bg-cult-amber-bright/10 border-cult-amber-bright/30' :
                         'text-cult-text/60 bg-cult-dark border-cult-border/50'
                       }`}>
@@ -477,7 +477,7 @@ function TodoItem({
       {onDrop && (
         <button
           onClick={onDrop}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-cult-text hover:text-cult-red-bright"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-cult-text hover:text-cult-danger-bright"
         >
           <Trash2 size={12} />
         </button>

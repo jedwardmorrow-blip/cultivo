@@ -76,7 +76,7 @@ export function Dashboard({
             CULT <span className="text-cult-text-secondary font-light">OPS</span>
           </h1>
           <p className="text-xs sm:text-caption text-cult-text-secondary mt-1 tracking-wider">
-            Operations Command Center
+            Operations Management
           </p>
         </div>
         <div className="text-left sm:text-right text-xs sm:text-caption text-cult-text-secondary font-light">

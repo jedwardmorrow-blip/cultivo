@@ -280,18 +280,18 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cult-white">Settings</h1>
+        <h1 className="text-h1 font-bold text-cult-white uppercase tracking-wider">Settings</h1>
         <p className="text-cult-light-gray mt-2">Configure application settings and manage resources</p>
       </div>
 
       {dbStatus && !dbStatus.hasPermissions && (
-        <div className="mb-6 p-4 border border-red-700 bg-red-900/20">
+        <div className="mb-6 p-4 border border-cult-danger bg-cult-danger-muted">
           <div className="flex items-start gap-3">
-            <span className="text-red-400 text-xl">⚠️</span>
+            <span className="text-cult-danger text-xl">⚠️</span>
             <div>
-              <p className="text-red-100 font-medium">Database Permission Issue</p>
-              <p className="text-red-200 text-sm mt-1">{dbStatus.message}</p>
-              <p className="text-red-300 text-xs mt-2">
+              <p className="text-cult-white font-medium">Database Permission Issue</p>
+              <p className="text-cult-text-secondary text-sm mt-1">{dbStatus.message}</p>
+              <p className="text-cult-text-muted text-xs mt-2">
                 Please ensure database migrations have been applied and RLS policies are configured correctly.
               </p>
             </div>
@@ -334,8 +334,8 @@ export function Settings() {
             <div
               className={`mb-6 p-4 border ${
                 message.type === 'success'
-                  ? 'bg-green-900 border-green-700 text-green-100'
-                  : 'bg-red-900 border-red-700 text-red-100'
+                  ? 'bg-cult-success/10 border-cult-success text-cult-white'
+                  : 'bg-cult-danger-muted border-cult-danger text-cult-white'
               }`}
             >
               {message.text}
@@ -476,8 +476,8 @@ export function Settings() {
             <div
               className={`mb-6 p-4 border ${
                 message.type === 'success'
-                  ? 'bg-green-900 border-green-700 text-green-100'
-                  : 'bg-red-900 border-red-700 text-red-100'
+                  ? 'bg-cult-success/10 border-cult-success text-cult-white'
+                  : 'bg-cult-danger-muted border-cult-danger text-cult-white'
               }`}
             >
               {message.text}

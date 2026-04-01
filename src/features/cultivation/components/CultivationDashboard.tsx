@@ -60,8 +60,8 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
   let urgencyBadge = null;
   if (!isEmpty) {
     if (state.urgency_score === 3) {
-      pulseClass = 'animate-[pulseUrgentRed_2s_infinite] border-cult-red shadow-[0_0_15px_rgba(184,29,36,0.3)] z-10';
-      urgencyBadge = <span className="bg-cult-red/20 text-cult-red text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-red/50">Urgent</span>;
+      pulseClass = 'animate-[pulseUrgentRed_2s_infinite] border-cult-danger shadow-[0_0_15px_rgba(184,29,36,0.3)] z-10';
+      urgencyBadge = <span className="bg-cult-danger/20 text-cult-danger text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-danger/50">Urgent</span>;
     } else if (state.urgency_score === 2) {
       pulseClass = 'animate-[pulseUrgentAmber_2s_infinite] border-cult-stage-harvest shadow-[0_0_15px_rgba(245,158,11,0.3)] z-10';
       urgencyBadge = <span className="bg-cult-stage-harvest/20 text-cult-stage-harvest text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-stage-harvest/50">Attention</span>;
@@ -137,7 +137,7 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
                   </div>
                 )}
                 {harvestDays !== null && harvestDays <= 0 && (
-                  <div className="text-xs font-bold text-cult-red flex items-center justify-between animate-flicker">
+                  <div className="text-xs font-bold text-cult-danger flex items-center justify-between animate-flicker">
                     <span>OVERDUE by {Math.abs(harvestDays)} days</span>
                   </div>
                 )}

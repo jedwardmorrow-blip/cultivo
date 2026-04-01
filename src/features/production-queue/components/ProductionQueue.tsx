@@ -697,10 +697,10 @@ export function ProductionQueue() {
   if (error) {
     return (
       <div className="p-6 max-w-[1800px] mx-auto">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-cult p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-          <div className="text-red-400 font-medium">Failed to load production queue</div>
-          <div className="text-gray-400 text-sm mt-1">{error}</div>
+        <div className="bg-cult-danger-muted border border-cult-danger/30 rounded-cult p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-cult-danger mx-auto mb-2" />
+          <div className="text-cult-danger font-medium">Production queue unavailable</div>
+          <div className="text-cult-text-secondary text-sm mt-1">Try refreshing — if the issue persists, contact support.</div>
           <button onClick={refresh} className="mt-4 px-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded-cult hover:bg-cult-dark-gray text-sm text-white">
             Try Again
           </button>

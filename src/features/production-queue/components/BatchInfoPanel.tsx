@@ -28,7 +28,7 @@ export function BatchInfoPanel({ strainId, strainName }: BatchInfoPanelProps) {
       </div>
 
       {error && (
-        <div className="text-xs text-red-400 mb-2">Error loading batches: {error}</div>
+        <div className="text-xs text-cult-danger mb-2">Unable to load batches — try refreshing.</div>
       )}
 
       {!loading && batches.length === 0 && (

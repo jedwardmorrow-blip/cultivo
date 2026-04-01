@@ -224,7 +224,7 @@ export function PackagingSessionStartForm({
                   });
                 }
               }}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
               disabled={staffLoading}
             >
@@ -241,7 +241,7 @@ export function PackagingSessionStartForm({
             <select
               value={formData.strain || ''}
               onChange={(e) => setFormData({ ...formData, strain: e.target.value, package_id: '', batch_id: '' })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
             >
               <option value="">Select Strain First</option>
@@ -359,7 +359,7 @@ export function PackagingSessionStartForm({
               step="0.1"
               value={formData.package_weight}
               onChange={(e) => setFormData({ ...formData, package_weight: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               disabled
             />
           </div>
@@ -383,7 +383,7 @@ export function PackagingSessionStartForm({
               step="0.1"
               value={formData.pull_weight || ''}
               onChange={(e) => setFormData({ ...formData, pull_weight: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
               min="0.1"
               max={inventoryPackages.find(p => p.package_id === formData.package_id)?.available_qty || undefined}

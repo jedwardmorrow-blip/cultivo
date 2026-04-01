@@ -52,8 +52,8 @@ export function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-cult-red/10 border border-cult-red rounded-cult p-3 flex items-start gap-2 animate-flicker">
-              <AlertCircle className="w-5 h-5 text-cult-red flex-shrink-0 mt-0.5" />
+            <div className="bg-cult-danger-muted border border-cult-danger rounded-cult p-3 flex items-start gap-2 animate-flicker">
+              <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
               <p className="text-cult-off-white text-sm">{error}</p>
             </div>
           )}
@@ -70,7 +70,7 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-red focus:ring-2 focus:ring-cult-red/50 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/50 transition-all duration-300"
                 placeholder="you@example.com"
               />
             </div>
@@ -98,7 +98,7 @@ export function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-red focus:ring-2 focus:ring-cult-red/50 transition-all duration-300"
+                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/50 transition-all duration-300"
                 placeholder="Enter your password"
               />
             </div>

@@ -146,7 +146,7 @@ export function PackagingSessionCompleteModal({
                   step="0.1"
                   value={formData.ending_weight || ''}
                   onChange={(e) => setFormData({ ...formData, ending_weight: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                   placeholder="0"
                 />
               </div>
@@ -156,7 +156,7 @@ export function PackagingSessionCompleteModal({
                   type="number"
                   value={formData.units_3_5g || ''}
                   onChange={(e) => setFormData({ ...formData, units_3_5g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 />
               </div>
               <div>
@@ -165,7 +165,7 @@ export function PackagingSessionCompleteModal({
                   type="number"
                   value={formData.units_14g || ''}
                   onChange={(e) => setFormData({ ...formData, units_14g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 />
               </div>
               <div>
@@ -174,7 +174,7 @@ export function PackagingSessionCompleteModal({
                   type="number"
                   value={formData.units_454g || ''}
                   onChange={(e) => setFormData({ ...formData, units_454g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 />
               </div>
               <div>
@@ -184,7 +184,7 @@ export function PackagingSessionCompleteModal({
                   step="0.1"
                   value={formData.trim_grams || ''}
                   onChange={(e) => setFormData({ ...formData, trim_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 />
               </div>
               <div>
@@ -194,7 +194,7 @@ export function PackagingSessionCompleteModal({
                   step="0.1"
                   value={formData.waste_grams || ''}
                   onChange={(e) => setFormData({ ...formData, waste_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 />
               </div>
             </div>
@@ -245,7 +245,7 @@ export function PackagingSessionCompleteModal({
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
                 rows={2}
                 placeholder="Any additional notes..."
               />

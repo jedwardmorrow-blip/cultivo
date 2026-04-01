@@ -119,7 +119,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
               value={form.trimmer_name}
               onChange={(e) => handleChange('trimmer_name', e.target.value)}
               disabled={isBlocked}
-              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
             />
           </div>
 
@@ -132,7 +132,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.pulled_weight || ''}
                 onChange={(e) => handleChange('pulled_weight', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
             <div>
@@ -142,7 +142,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.minutes_trimmed || ''}
                 onChange={(e) => handleChange('minutes_trimmed', parseInt(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.big_buds_grams || ''}
                 onChange={(e) => handleChange('big_buds_grams', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
             <div>
@@ -167,7 +167,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.small_buds_grams || ''}
                 onChange={(e) => handleChange('small_buds_grams', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
             <div>
@@ -178,7 +178,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.trim_grams || ''}
                 onChange={(e) => handleChange('trim_grams', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
             <div>
@@ -189,7 +189,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.waste_grams || ''}
                 onChange={(e) => handleChange('waste_grams', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
             <div>
@@ -200,7 +200,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
                 value={form.bucked_smalls_grams || ''}
                 onChange={(e) => handleChange('bucked_smalls_grams', parseFloat(e.target.value) || 0)}
                 disabled={isBlocked}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               />
             </div>
           </div>
@@ -235,7 +235,7 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
               onChange={(e) => handleChange('notes', e.target.value)}
               disabled={isBlocked}
               rows={2}
-              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all disabled:opacity-50"
               placeholder="Admin notes..."
             />
           </div>

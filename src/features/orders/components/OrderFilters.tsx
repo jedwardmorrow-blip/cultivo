@@ -23,13 +23,13 @@ export function OrderFilters({
             placeholder="Search orders or customers..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-red focus:ring-2 focus:ring-cult-red/50 transition-all duration-300"
+            className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/50 transition-all duration-300"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="px-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:border-cult-red focus:ring-2 focus:ring-cult-red/50 transition-all duration-300"
+          className="px-4 py-3 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/50 transition-all duration-300"
         >
           <option value="all">All Status</option>
           <option value="submitted">Submitted</option>

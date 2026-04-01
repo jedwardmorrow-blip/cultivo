@@ -81,7 +81,7 @@ export function TrimSessionCancelModal({
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-red focus:border-cult-red transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger focus:border-cult-danger transition-all duration-300"
               rows={3}
               placeholder="e.g., Incorrect strain pulled, equipment malfunction, etc..."
             />

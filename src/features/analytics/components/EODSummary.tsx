@@ -103,7 +103,7 @@ export function EODSummary() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-3 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-red/50 focus:border-cult-red transition-all duration-300"
+            className="px-4 py-3 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
           />
         </div>
       </div>

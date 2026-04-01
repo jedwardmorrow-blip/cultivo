@@ -109,8 +109,8 @@ export function OrderFormDetails({
             max={getDateInputConstraints().max}
             className={`w-full px-4 py-3 bg-cult-black border rounded-cult text-cult-off-white focus:outline-none focus:ring-2 text-base transition-all duration-300 ${
               dateError
-                ? 'border-cult-red focus:ring-cult-red/50'
-                : 'border-cult-charcoal focus:ring-cult-red/50 focus:border-cult-red'
+                ? 'border-cult-danger focus:ring-cult-danger/50'
+                : 'border-cult-charcoal focus:ring-cult-danger/50 focus:border-cult-danger'
             }`}
           />
           {dateError && (

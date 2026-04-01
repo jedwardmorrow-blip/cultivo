@@ -18,11 +18,11 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary:
     'bg-cult-white text-cult-black hover:bg-cult-off-white',
   secondary:
-    'border border-cult-medium-gray text-cult-white hover:bg-cult-dark-gray hover:border-cult-green',
+    'border border-cult-medium-gray text-cult-white hover:bg-cult-dark-gray hover:border-cult-success',
   success:
-    'bg-cult-green text-cult-black hover:bg-cult-green-bright',
+    'bg-cult-success text-cult-black hover:bg-cult-success-bright',
   danger:
-    'bg-red-600 text-white hover:bg-red-700',
+    'bg-cult-danger text-white hover:bg-cult-danger/80',
   ghost:
     'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal',
 };

@@ -471,7 +471,7 @@ function RoomTooltipInner({ layout, ops }: RoomTooltipProps) {
             {daysToHarvest !== null && (
               <div className="flex justify-between text-[10px] font-mono">
                 <span className="text-cult-text-muted">Harvest</span>
-                <span className={`font-semibold ${daysToHarvest <= 0 ? 'text-cult-red' : daysToHarvest <= 7 ? 'text-cult-warning' : 'text-cult-white'}`}>
+                <span className={`font-semibold ${daysToHarvest <= 0 ? 'text-cult-danger' : daysToHarvest <= 7 ? 'text-cult-warning' : 'text-cult-white'}`}>
                   {daysToHarvest <= 0 ? `${Math.abs(daysToHarvest)}d overdue` : `${daysToHarvest}d`}
                 </span>
               </div>

@@ -11,7 +11,7 @@ const STATUS_CONFIG = {
   not_started: { label: 'Not Started', cls: 'text-cult-text', dot: 'bg-cult-muted' },
   in_progress: { label: 'In Progress', cls: 'text-cult-amber-bright', dot: 'bg-cult-amber-bright' },
   completed: { label: 'Done', cls: 'text-cult-green-bright', dot: 'bg-cult-green-bright' },
-  at_risk: { label: 'At Risk', cls: 'text-cult-red-bright', dot: 'bg-cult-red-bright' },
+  at_risk: { label: 'At Risk', cls: 'text-cult-danger-bright', dot: 'bg-cult-danger-bright' },
 }
 
 const PHASE_COLORS = {
@@ -106,7 +106,7 @@ export default function DashboardPage() {
           { label: 'Open Goals', value: goals.filter(g => g.status !== 'completed').length, icon: Target, color: 'text-cult-gold' },
           { label: 'Active Rocks', value: rocks.filter(r => r.status !== 'complete').length, icon: TrendingUp, color: 'text-blue-300' },
           { label: 'Open To-Dos', value: todos.length, icon: CheckSquare, color: 'text-cult-green-bright' },
-          { label: 'Open Issues', value: issues.length, icon: AlertCircle, color: 'text-cult-red-bright' },
+          { label: 'Open Issues', value: issues.length, icon: AlertCircle, color: 'text-cult-danger-bright' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card p-4">
             <Icon size={16} className={`${color} mb-3`} />
@@ -167,7 +167,7 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2">
               {issues.slice(0, 3).map(issue => {
-                const priorityColors: Record<string, string> = { critical: 'text-cult-red-bright', high: 'text-cult-amber-bright', medium: 'text-cult-text', low: 'text-cult-text/60' }
+                const priorityColors: Record<string, string> = { critical: 'text-cult-danger-bright', high: 'text-cult-amber-bright', medium: 'text-cult-text', low: 'text-cult-text/60' }
                 return (
                   <div key={issue.id} className="flex items-center gap-2">
                     <AlertCircle size={12} className={priorityColors[issue.priority]} />
