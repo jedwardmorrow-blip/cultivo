@@ -69,6 +69,9 @@ const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLab
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
 const StrainAnalyticsDashboard = lazyRetry(() => import('./features/strain-analytics'), 'StrainAnalyticsDashboard');
+const HubBatchPipeline = lazyRetry(() => import('./features/hub'), 'BatchPipeline');
+const HubPipelinePlanner = lazyRetry(() => import('./features/hub'), 'PipelinePlanner');
+const HubStrainYieldAnalytics = lazyRetry(() => import('./features/hub'), 'StrainYieldAnalytics');
 
 function ViewFallback() {
   return (
@@ -202,6 +205,9 @@ function AuthenticatedApp() {
               <Route path="/financial-ap" element={<VendorBillEntry />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/strain-analytics" element={<StrainAnalyticsDashboard />} />
+              <Route path="/hub" element={<HubBatchPipeline />} />
+              <Route path="/pipeline-planner" element={<HubPipelinePlanner />} />
+              <Route path="/hub-strain-analytics" element={<HubStrainYieldAnalytics />} />
               <Route path="/eod-summary" element={<EODSummary />} />
               <Route path="/crm-inventory" element={<SalesInventoryViewWrapper />} />
               <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />

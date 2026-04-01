@@ -28,6 +28,7 @@ export function COAUploadModal({
   const [confirmedMismatch, setConfirmedMismatch] = useState(false);
   const [existingCOA, setExistingCOA] = useState<COAData | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -61,10 +62,7 @@ export function COAUploadModal({
     checkExisting();
   }, [batchId]);
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
+  async function processFile(selectedFile: File) {
     if (!selectedFile.type.includes('pdf')) {
       setError('Please select a PDF file');
       return;
@@ -101,6 +99,28 @@ export function COAUploadModal({
     } finally {
       setIsParsing(false);
     }
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) processFile(selectedFile);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setIsDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) processFile(droppedFile);
   }
 
   async function handleUpload() {
@@ -259,13 +279,16 @@ export function COAUploadModal({
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
                   disabled={isParsing}
-                  className="w-full p-8 border-2 border-dashed border-cult-medium-gray hover:border-cult-white transition-all flex flex-col items-center gap-4 disabled:opacity-50"
+                  className={`w-full p-8 border-2 border-dashed transition-all flex flex-col items-center gap-4 disabled:opacity-50 ${isDragOver ? 'border-cult-white bg-cult-white/5' : 'border-cult-medium-gray hover:border-cult-white'}`}
                 >
                   <Upload className="w-12 h-12 text-cult-light-gray" />
                   <div className="text-center">
                     <p className="text-cult-white font-medium uppercase tracking-wider mb-2">
-                      {isParsing ? 'Parsing PDF...' : 'Click to Select COA PDF'}
+                      {isParsing ? 'Parsing PDF...' : isDragOver ? 'Drop PDF Here' : 'Click or Drop COA PDF'}
                     </p>
                     <p className="text-sm text-cult-light-gray">
                       PDF file will be automatically scanned for cannabinoid data

@@ -59,11 +59,11 @@ export function BuckingSessionsRefactored() {
             <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="text-sm font-semibold text-red-300 mb-1">
-                {staleSessions.length} Ghost Session{staleSessions.length > 1 ? 's' : ''} Blocking Tote Re-use
+                {staleSessions.length} Stuck Session{staleSessions.length > 1 ? 's' : ''} Blocking Tote Re-use
               </h3>
               <p className="text-xs text-red-400/80 mb-2">
                 The following tote{staleSessions.length > 1 ? 's are' : ' is'} locked by sessions that have been active for more than 24 hours.
-                These ghost sessions prevent inventory from being re-allocated. Use <strong>Force Close</strong> in the table below to release them.
+                These stuck sessions prevent inventory from being re-allocated. Use <strong>Force Close</strong> in the table below to release them.
               </p>
               <div className="flex flex-wrap gap-2">
                 {staleSessions.map(s => (

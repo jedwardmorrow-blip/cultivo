@@ -588,6 +588,20 @@ export function RoomDetailDrawer({
                                 )}
                               </div>
                             </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <PlantGroupActionsMenu
+                                group={first}
+                                onDetail={() => handleGroupAction(first, 'detail')}
+                                onMove={() => handleGroupAction(first, 'move', batchGroups)}
+                                onAdvance={() => handleGroupAction(first, 'advance')}
+                                onToggleMother={() => handleGroupAction(first, 'mother')}
+                                onViewPlants={() => handleGroupAction(first, 'plants')}
+                                onPrintGroupLabel={() => handleGroupAction(first, 'printGroup')}
+                                onPrintPlantLabels={() => handleGroupAction(first, 'printPlants')}
+                                onRefresh={handleRefresh}
+                                compact
+                              />
+                            </div>
                           </div>
 
                           {/* ── Expanded: group rows within this batch ── */}

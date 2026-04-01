@@ -770,7 +770,11 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            const hasDirtyForm = !!selectedCustomerId || cartItems.length > 0;
+            if (hasDirtyForm && !window.confirm('Close order form? Unsaved changes will be lost.')) return;
+            onClose();
+          }}
           disabled={loading}
           className="p-2.5 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-overlay rounded-cult transition-colors disabled:opacity-50"
         >

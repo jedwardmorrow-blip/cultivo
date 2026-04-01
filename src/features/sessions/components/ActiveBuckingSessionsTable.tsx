@@ -88,7 +88,7 @@ export function ActiveBuckingSessionsTable({
                           <span className="text-red-400 font-bold">
                             {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
                           </span>
-                          <span className="text-xs text-red-500 uppercase tracking-wide">Ghost Session</span>
+                          <span className="text-xs text-red-500 uppercase tracking-wide">Stuck Session</span>
                         </div>
                       ) : (
                         <span className="text-cult-green">

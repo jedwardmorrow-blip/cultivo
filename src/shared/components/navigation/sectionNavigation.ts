@@ -60,8 +60,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     items: [
       { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
-      { id: 'pipeline-forecast', label: 'Forecast', icon: TrendingUp, group: 'primary' },
-      { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
+{ id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
       { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
     ],
   },
@@ -82,7 +81,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-taskboard', label: 'Today', icon: ClipboardList, group: 'primary' },
       { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'primary' },
       { id: 'cultivation-schedules', label: 'Schedule', icon: CalendarDays, group: 'primary' },
-      { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-digest', label: 'Reports', icon: FileText, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'secondary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'secondary' },
@@ -137,7 +136,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'primary' },
       { id: 'batches', label: 'Batches', icon: Layers, group: 'primary' },
       { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'primary' },
-      { id: 'inventory-conversion-history', label: 'History', icon: History, group: 'secondary' },
+      { id: 'inventory-conversion-history', label: 'Conversion History', icon: History, group: 'secondary' },
       { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
       { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }
     ],

@@ -4,6 +4,53 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-01 - Production Planner Forecast Summary Panel (CUL-65)
+
+**Type:** Feature
+**Module:** Production Planner
+**Status:** COMPLETE
+
+Adds collapsible `ForecastSummaryPanel` to planning mode — a bottom panel showing 6-month forward forecast.
+
+- **types.ts:** Added `ForecastSummaryRow` type mirroring `v_forecast_summary` view columns
+- **ForecastSummaryPanel.tsx:** New component — queries `v_forecast_summary`, renders month-by-month table with Projected (violet) and Committed (emerald) series; default collapsed, expandable via toggle
+- **ProductionPlannerView.tsx:** Mounts `ForecastSummaryPanel` below the Gantt area when in planning mode
+
+---
+
+## 2026-04-01 - Production Planner Planning Mode MVP (CUL-63)
+
+**Type:** Feature
+**Module:** Production Planner
+**Status:** COMPLETE
+
+Adds 6-month forward planning to the Production Planner Gantt view.
+
+- **types.ts:** Added `ViewMode`, `PlannedCycleStatus`, `PlannedCycle`, `PlannedCycleTimelineRow`, `CalendarPlannedEntry`, `CreatePlannedCycleInput`, `UpdatePlannedCycleInput`; extended `CalendarRoom` with `plannedCycles?: CalendarPlannedEntry[]`
+- **plannedCyclesService.ts:** New service — `getTimeline()`, `create()`, `update()`, `delete()` on `planned_cycles` table / `v_planned_cycles_timeline` view
+- **useProductionPlanner.ts:** Added `viewMode` state (`'current' | 'planning'`), lazy-loads `v_planned_cycles_timeline` on mode switch, merges planned entries into `CalendarRoom.plannedCycles`, extends timeline to 26 weeks in planning mode; silently ignores missing table (CUL-62 not yet applied)
+- **PlannedCycleBar.tsx:** Ghost Gantt bar — dashed violet border, 40% opacity, status-aware; uses earliest scheduled date (clone cut → veg → flower) as bar start
+- **PlannedCycleForm.tsx:** Modal form — strain picker (from `v_strain_cultivation_stats`), plant count, flower start date; auto-computes clone cut / veg start / est harvest from strain timing; edit + delete support
+- **ProductionPlannerView.tsx:** View mode toggle in header (`Current State | Planning Mode`), planning-mode info banner, `+` button per room row, renders `PlannedCycleBar` per planned entry, click-to-edit flow
+- **Build:** Passes with 0 errors
+
+## 2026-04-01 - UX Audit Fixes: Routing, Labels, Exit Guard, COA DnD (CUL-58)
+
+**Type:** Enhancement
+**Module:** Hub, Inventory, Sessions, Orders, Batches
+**Status:** COMPLETE
+
+UI-only fixes from CUL-51 UX audit.
+
+- **App.tsx:** Added lazy routes for `/hub` (BatchPipeline), `/pipeline-planner` (PipelinePlanner), `/hub-strain-analytics` (StrainYieldAnalytics) — these were missing and redirecting to dashboard
+- **sectionNavigation.ts:** Removed ghost `pipeline-forecast` SubNav item (no component); renamed cultivation-dashboard label `Rooms` → `Overview`; renamed `inventory-conversion-history` label `History` → `Conversion History`
+- **BuckingSessionsRefactored.tsx + ActiveBuckingSessionsTable.tsx:** Renamed "Ghost Session" → "Stuck Session" throughout UI labels
+- **NewOrderForm.tsx:** X button now prompts `window.confirm` before closing if customer selected or cart has items
+- **COAUploadModal.tsx:** Upload area now accepts file drops (HTML5 native DnD, PDF only, no new libraries); visual highlight on drag-over; click-to-upload preserved
+- **Build:** Passes with 0 errors
+
+---
+
 ## 2026-03-31 - Cultivation Nav IA + Page Headers (CUL-50)
 
 **Type:** Enhancement
