@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Eye, ShieldAlert, Workflow, Zap, Database, Activity } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function LandingPage() {
   const navigate = useNavigate();

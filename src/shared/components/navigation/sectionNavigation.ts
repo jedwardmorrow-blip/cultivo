@@ -4,7 +4,6 @@ import {
   Scissors,
   Archive,
   Leaf,
-  Box,
   RefreshCw,
   History,
   FileCheck,

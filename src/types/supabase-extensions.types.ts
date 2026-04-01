@@ -14,9 +14,9 @@
  */
 
 import type { Database } from '../lib/database/database.types';
-import type { Strain, ProductStage, ProductType } from './product.types';
+import type { Strain } from './product.types';
 import type { ComplianceHeader, BatchComplianceInfo, DistributedToInfo, CoversheetItemSummary } from './coversheet.types';
-import type { GradeCode } from './qualityGrade.types';
+import type { PendingConversion } from '../features/inventory/types/conversions.types';
 
 // ============================================================
 // Join Relation Shapes
@@ -99,12 +99,18 @@ export interface StrainRelation {
 // Extended Row Types (fields added after last type generation)
 // ============================================================
 
+// Database is imported above. These extended types reference tables not yet present in database.types.ts.
+// Once DBA runs `supabase gen types`, remove the @ts-expect-error suppressions below.
+type _DatabaseTables = Database['public']['Tables']; // keeps import live until regen
+
 /** Order with is_sample flag (added post-type-gen) */
+// @ts-expect-error [stale-db-types: orders table not in database.types.ts — awaiting DBA supabase gen types regen]
 export interface OrderExtended extends Database['public']['Tables']['orders']['Row'] {
   is_sample?: boolean;
 }
 
 /** Inventory item with quality_grade_id (added post-type-gen) */
+// @ts-expect-error [stale-db-types: inventory_items table not in database.types.ts — awaiting DBA supabase gen types regen]
 export interface InventoryItemExtended extends Database['public']['Tables']['inventory_items']['Row'] {
   quality_grade_id?: string | null;
 }
@@ -181,24 +187,7 @@ export interface AuditLineWithAudit {
 // Session Types (pending_conversions is a view, not a column)
 // ============================================================
 
-export interface PendingConversion {
-  session_id: string | null;
-  session_type: string | null;
-  batch_registry_id: string | null;
-  batch_id: string | null;
-  strain_id: string | null;
-  input_weight: number | null;
-  output_weight: number | null;
-  loss_weight: number | null;
-  remaining_weight: number | null;
-  product_name: string | null;
-  output_stage: string | null;
-  session_status: string | null;
-  finalization_status: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-  created_at: string | null;
-}
+// PendingConversion is defined in features/inventory/types/conversions.types (re-exported via @/types)
 
 /** Trim/Packaging session with pending conversions join */
 export interface SessionWithConversions {

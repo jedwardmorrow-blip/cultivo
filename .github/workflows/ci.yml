@@ -32,6 +32,8 @@ jobs:
       - name: Type check (advisory)
         run: npx tsc -p tsconfig.app.json --noEmit
         continue-on-error: true
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Notify Justin on failure
         if: failure()

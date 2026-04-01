@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ErrorBoundary, Layout } from './lib/components';
@@ -88,15 +88,6 @@ function RosinLabRoute() {
   const navigate = useNavigate();
   const cleanView = location.pathname.replace(/^\//, '') || 'rosin-lab';
   return <RosinLabModule currentView={cleanView} setCurrentView={(v: string) => navigate(`/${v}`)} />;
-}
-
-/** Redirects sales-only users away from internal routes they shouldn't access. */
-function SalesRedirect({ children }: { children: React.ReactNode }) {
-  const { isSales, isAdmin, isManager } = useAuth();
-  if (isSales && !isAdmin && !isManager) {
-    return <Navigate to="/crm-inventory" replace />;
-  }
-  return <>{children}</>;
 }
 
 function AuthenticatedApp() {

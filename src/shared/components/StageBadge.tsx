@@ -1,5 +1,3 @@
-import React from 'react';
-
 export type CultivationStage = 'clone' | 'veg' | 'flower' | 'harvest' | 'cure' | 'package';
 
 const stageConfig: Record<CultivationStage, { label: string; color: string; bg: string }> = {
