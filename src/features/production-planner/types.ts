@@ -68,6 +68,7 @@ export interface CalendarRoom {
   strain_count: number;
   capacity_utilization_pct: number | null;
   strains: CalendarRoomStrain[];
+  plannedCycles?: CalendarPlannedEntry[];
 }
 
 export interface CalendarRoomStrain {
@@ -80,6 +81,105 @@ export interface CalendarRoomStrain {
   stage_entered_at: string | null;
   days_in_stage: number | null;
   is_mother: boolean;
+}
+
+/** View mode for the production planner */
+export type ViewMode = 'current' | 'planning';
+
+/** Planned cycle status values (mirrors DB CHECK constraint) */
+export type PlannedCycleStatus = 'draft' | 'committed' | 'active' | 'cancelled' | 'completed';
+
+/** A row from the planned_cycles table */
+export interface PlannedCycle {
+  id: string;
+  strain_id: string;
+  target_room_id: string;
+  planned_plant_count: number;
+  clone_cut_date: string | null;
+  veg_start_date: string | null;
+  flower_start_date: string;
+  estimated_harvest_date: string;
+  status: PlannedCycleStatus;
+  linked_plant_group_id: string | null;
+  forecast_yield_grams: number | null;
+  forecast_price_per_gram: number | null;
+  mom_plant_group_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A row from v_planned_cycles_timeline */
+export interface PlannedCycleTimelineRow {
+  cycle_id: string;
+  strain_id: string;
+  strain_name: string;
+  room_id: string;
+  room_name: string;
+  room_type: string;
+  capacity_plants: number | null;
+  planned_plant_count: number;
+  status: PlannedCycleStatus;
+  clone_cut_date: string | null;
+  veg_start_date: string | null;
+  flower_start_date: string;
+  estimated_harvest_date: string;
+  forecast_yield_grams: number | null;
+  forecast_price_per_gram: number | null;
+  forecast_revenue: number | null;
+  labor_hours_per_week_room: number | null;
+}
+
+/** A planned cycle entry merged into a CalendarRoom */
+export interface CalendarPlannedEntry {
+  id: string;
+  strain_id: string;
+  strain_name: string;
+  planned_plant_count: number;
+  clone_cut_date: string | null;
+  veg_start_date: string | null;
+  flower_start_date: string;
+  estimated_harvest_date: string;
+  status: PlannedCycleStatus;
+  forecast_yield_grams: number | null;
+  forecast_price_per_gram: number | null;
+}
+
+export type CreatePlannedCycleInput = {
+  strain_id: string;
+  target_room_id: string;
+  planned_plant_count: number;
+  flower_start_date: string;
+  estimated_harvest_date: string;
+  clone_cut_date?: string | null;
+  veg_start_date?: string | null;
+  forecast_yield_grams?: number | null;
+  forecast_price_per_gram?: number | null;
+  notes?: string | null;
+};
+
+export type UpdatePlannedCycleInput = Partial<{
+  planned_plant_count: number;
+  flower_start_date: string;
+  estimated_harvest_date: string;
+  clone_cut_date: string | null;
+  veg_start_date: string | null;
+  forecast_yield_grams: number | null;
+  forecast_price_per_gram: number | null;
+  notes: string | null;
+  status: PlannedCycleStatus;
+}>;
+
+/** A row from the v_forecast_summary view */
+export interface ForecastSummaryRow {
+  month: string; // ISO date, first day of month
+  projected_yield_grams: number;
+  projected_revenue: number;
+  projected_labor_hours: number;
+  committed_yield_grams: number;
+  committed_revenue: number;
+  committed_labor_hours: number;
 }
 
 /** Room type sort order matching RoomCalendar.tsx */

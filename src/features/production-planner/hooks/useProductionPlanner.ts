@@ -5,8 +5,14 @@ import type {
   StrainCultivationStats,
   CalendarRoom,
   CalendarRoomStrain,
+  CalendarPlannedEntry,
+  PlannedCycleTimelineRow,
+  ViewMode,
 } from '../types';
 import { ROOM_TYPE_ORDER } from '../types';
+
+export const WEEKS_AFTER_CURRENT = 16;
+export const WEEKS_AFTER_PLANNING = 26;
 
 function deriveRoomCode(name: string): string {
   if (name.startsWith('Flower Room')) return `FLW-${name.replace('Flower Room ', '').padStart(2, '0')}`;
@@ -18,8 +24,10 @@ function deriveRoomCode(name: string): string {
 export function useProductionPlanner() {
   const [occupancy, setOccupancy] = useState<RoomOccupancy[]>([]);
   const [strainStats, setStrainStats] = useState<StrainCultivationStats[]>([]);
+  const [plannedTimeline, setPlannedTimeline] = useState<PlannedCycleTimelineRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('current');
 
   const load = useCallback(async () => {
     try {
@@ -43,7 +51,27 @@ export function useProductionPlanner() {
     }
   }, []);
 
+  const loadPlanned = useCallback(async () => {
+    try {
+      const { data, error: planErr } = await supabase
+        .from('v_planned_cycles_timeline')
+        .select('*');
+      // Table may not exist yet (CUL-62 in progress) — fail silently
+      if (!planErr) {
+        setPlannedTimeline((data ?? []) as PlannedCycleTimelineRow[]);
+      }
+    } catch {
+      // Silently ignore — DBA migration may not be applied yet
+    }
+  }, []);
+
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (viewMode === 'planning') {
+      loadPlanned();
+    }
+  }, [viewMode, loadPlanned]);
 
   /** Aggregate occupancy rows into CalendarRoom objects, sorted by room type */
   const rooms = useMemo<CalendarRoom[]>(() => {
@@ -62,6 +90,7 @@ export function useProductionPlanner() {
           strain_count: row.strain_count,
           capacity_utilization_pct: row.capacity_utilization_pct,
           strains: [],
+          plannedCycles: [],
         });
       }
 
@@ -81,10 +110,46 @@ export function useProductionPlanner() {
       }
     }
 
+    // Merge planned cycles when in planning mode
+    if (viewMode === 'planning') {
+      for (const plan of plannedTimeline) {
+        if (!roomMap.has(plan.room_id)) {
+          // Room exists only in planned data (e.g. not yet occupied) — create shell
+          roomMap.set(plan.room_id, {
+            room_id: plan.room_id,
+            room_name: plan.room_name,
+            room_code: deriveRoomCode(plan.room_name),
+            room_type: plan.room_type,
+            capacity_plants: plan.capacity_plants,
+            square_footage: null,
+            total_plants: 0,
+            strain_count: 0,
+            capacity_utilization_pct: null,
+            strains: [],
+            plannedCycles: [],
+          });
+        }
+        const entry: CalendarPlannedEntry = {
+          id: plan.cycle_id,
+          strain_id: plan.strain_id,
+          strain_name: plan.strain_name,
+          planned_plant_count: plan.planned_plant_count,
+          clone_cut_date: plan.clone_cut_date,
+          veg_start_date: plan.veg_start_date,
+          flower_start_date: plan.flower_start_date,
+          estimated_harvest_date: plan.estimated_harvest_date,
+          status: plan.status,
+          forecast_yield_grams: plan.forecast_yield_grams,
+          forecast_price_per_gram: plan.forecast_price_per_gram,
+        };
+        roomMap.get(plan.room_id)!.plannedCycles!.push(entry);
+      }
+    }
+
     return Array.from(roomMap.values()).sort(
       (a, b) => (ROOM_TYPE_ORDER[a.room_type] ?? 9) - (ROOM_TYPE_ORDER[b.room_type] ?? 9)
     );
-  }, [occupancy]);
+  }, [occupancy, plannedTimeline, viewMode]);
 
   /** Strain stats lookup by ID */
   const strainStatsById = useMemo(() => {
@@ -127,5 +192,8 @@ export function useProductionPlanner() {
     loading,
     error,
     reload: load,
+    reloadPlanned: loadPlanned,
+    viewMode,
+    setViewMode,
   };
 }

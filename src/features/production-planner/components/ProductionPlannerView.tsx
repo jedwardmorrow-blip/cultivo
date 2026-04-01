@@ -1,15 +1,16 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
-import { useProductionPlanner } from '../hooks/useProductionPlanner';
+import { AlertTriangle, Calendar, Plus } from 'lucide-react';
+import { useProductionPlanner, WEEKS_AFTER_CURRENT, WEEKS_AFTER_PLANNING } from '../hooks/useProductionPlanner';
 import { RoomDetailCard } from './RoomDetailCard';
 import { StrainStatsPanel } from './StrainStatsPanel';
+import { PlannedCycleBar } from './PlannedCycleBar';
+import { PlannedCycleForm } from './PlannedCycleForm';
+import { ForecastSummaryPanel } from './ForecastSummaryPanel';
 import { STAGE_HEX, ROOM_TYPE_ORDER } from '../types';
-import type { CalendarRoom, StrainCultivationStats } from '../types';
+import type { CalendarRoom, StrainCultivationStats, CalendarPlannedEntry } from '../types';
 import {
   ROOM_TYPE_DOT,
   ROOM_TYPE_LEFT_BORDER,
-  STAGE_BADGE,
-  CHIP_STAGE_COLORS,
 } from '@/features/cultivation/constants/stageColors';
 
 const DAY_WIDTH = 8;
@@ -17,7 +18,6 @@ const ROW_HEIGHT = 48;
 const LABEL_WIDTH = 120;
 const HEADER_HEIGHT = 52;
 const WEEKS_BEFORE = 4;
-const WEEKS_AFTER = 16;
 
 function getMonday(d: Date): Date {
   const day = d.getDay();
@@ -41,11 +41,26 @@ interface WeekMarker {
 }
 
 export function ProductionPlannerView() {
-  const { rooms, strainStatsById, harvestAlerts, loading, error, reload } = useProductionPlanner();
+  const {
+    rooms,
+    strainStats,
+    strainStatsById,
+    harvestAlerts,
+    loading,
+    error,
+    reload,
+    reloadPlanned,
+    viewMode,
+    setViewMode,
+  } = useProductionPlanner();
+
   const [selectedRoom, setSelectedRoom] = useState<CalendarRoom | null>(null);
   const [selectedStrain, setSelectedStrain] = useState<StrainCultivationStats | null>(null);
+  const [planFormRoom, setPlanFormRoom] = useState<CalendarRoom | null>(null);
+  const [editingCycle, setEditingCycle] = useState<CalendarPlannedEntry | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const todayRef = useRef<HTMLDivElement>(null);
+
+  const weeksAfter = viewMode === 'planning' ? WEEKS_AFTER_PLANNING : WEEKS_AFTER_CURRENT;
 
   const today = useMemo(() => new Date(), []);
   const startDate = useMemo(() => {
@@ -53,14 +68,14 @@ export function ProductionPlannerView() {
     d.setDate(d.getDate() - WEEKS_BEFORE * 7);
     return d;
   }, [today]);
-  const totalDays = (WEEKS_BEFORE + WEEKS_AFTER) * 7;
+  const totalDays = (WEEKS_BEFORE + weeksAfter) * 7;
   const totalWidth = totalDays * DAY_WIDTH;
 
   const todayX = daysBetween(startDate, today) * DAY_WIDTH;
 
   const weeks = useMemo<WeekMarker[]>(() => {
     const result: WeekMarker[] = [];
-    for (let w = 0; w < WEEKS_BEFORE + WEEKS_AFTER; w++) {
+    for (let w = 0; w < WEEKS_BEFORE + weeksAfter; w++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + w * 7);
       result.push({
@@ -71,7 +86,7 @@ export function ProductionPlannerView() {
       });
     }
     return result;
-  }, [startDate]);
+  }, [startDate, weeksAfter]);
 
   // Auto-scroll to today on mount
   useEffect(() => {
@@ -97,6 +112,29 @@ export function ProductionPlannerView() {
     } else {
       setSelectedRoom(null);
     }
+  }
+
+  function handleAddPlan(room: CalendarRoom, e: React.MouseEvent) {
+    e.stopPropagation();
+    setEditingCycle(null);
+    setPlanFormRoom(room);
+  }
+
+  function handleBarClick(entry: CalendarPlannedEntry) {
+    // Find the room that owns this entry to pass into the form
+    const ownerRoom = rooms.find((r) =>
+      r.plannedCycles?.some((p) => p.id === entry.id)
+    );
+    if (ownerRoom) {
+      setEditingCycle(entry);
+      setPlanFormRoom(ownerRoom);
+    }
+  }
+
+  function handleFormSave() {
+    setPlanFormRoom(null);
+    setEditingCycle(null);
+    reloadPlanned();
   }
 
   if (loading) {
@@ -136,7 +174,41 @@ export function ProductionPlannerView() {
             {rooms.length} rooms &middot; {rooms.reduce((s, r) => s + r.total_plants, 0)} plants
           </span>
         </div>
+
+        {/* View mode toggle */}
+        <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('current')}
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              viewMode === 'current'
+                ? 'bg-cult-accent text-cult-bg'
+                : 'text-cult-text-muted hover:text-cult-white'
+            }`}
+          >
+            Current State
+          </button>
+          <button
+            onClick={() => setViewMode('planning')}
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              viewMode === 'planning'
+                ? 'bg-violet-600 text-white'
+                : 'text-cult-text-muted hover:text-cult-white'
+            }`}
+          >
+            Planning Mode
+          </button>
+        </div>
       </div>
+
+      {/* Planning mode banner */}
+      {viewMode === 'planning' && (
+        <div className="flex items-center gap-2 px-6 py-2 bg-violet-900/20 border-b border-violet-700/30 text-xs text-violet-300">
+          <div className="w-3 h-3 rounded-sm border border-dashed border-violet-400 bg-violet-600/40 flex-shrink-0" />
+          <span>
+            Planning Mode — 26-week horizon. Click <strong>+</strong> on any room row to add a planned cycle. Click a planned bar to edit or delete.
+          </span>
+        </div>
+      )}
 
       {/* Harvest Alerts */}
       {harvestAlerts.length > 0 && (
@@ -197,29 +269,42 @@ export function ProductionPlannerView() {
                     onClick={() => handleRoomClick(room)}
                   >
                     {/* Room label */}
-                    <div className={`flex-shrink-0 flex items-center gap-2 px-3 border-r border-cult-border/50 border-l-4 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''}`} style={{ width: LABEL_WIDTH }}>
+                    <div
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 border-r border-cult-border/50 border-l-4 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''}`}
+                      style={{ width: LABEL_WIDTH }}
+                    >
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-xs font-bold text-cult-white truncate">{room.room_code}</div>
                         <div className="text-[10px] text-cult-text-muted">{room.total_plants}p &middot; {room.strain_count}s</div>
                       </div>
+                      {/* + button (planning mode only) */}
+                      {viewMode === 'planning' && (
+                        <button
+                          onClick={(e) => handleAddPlan(room, e)}
+                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded bg-violet-700/60 hover:bg-violet-600 text-violet-200 hover:text-white transition-colors"
+                          title={`Add planned cycle to ${room.room_name}`}
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
 
                     {/* Timeline area */}
                     <div className="relative flex-1" style={{ width: totalWidth }}>
-                      {/* Strain cycle bars */}
+                      {/* Actual strain cycle bars */}
                       {room.strains.map((strain, sIdx) => {
                         if (!strain.earliest_planted_date) return null;
                         const planted = new Date(strain.earliest_planted_date);
                         const barStart = daysBetween(startDate, planted) * DAY_WIDTH;
                         const estEnd = strain.estimated_harvest_date
                           ? new Date(strain.estimated_harvest_date)
-                          : new Date(planted.getTime() + 88 * 86400000); // default 88 day cycle
+                          : new Date(planted.getTime() + 88 * 86400000);
                         const barWidth = Math.max(daysBetween(planted, estEnd) * DAY_WIDTH, 14);
                         const barY = 4 + sIdx * 10;
                         const color = STAGE_HEX[strain.growth_stage] ?? '#6B7280';
 
-                        if (barY + 8 > ROW_HEIGHT) return null; // overflow protection
+                        if (barY + 8 > ROW_HEIGHT) return null;
 
                         return (
                           <div
@@ -236,6 +321,23 @@ export function ProductionPlannerView() {
                           />
                         );
                       })}
+
+                      {/* Planned cycle ghost bars (planning mode only) */}
+                      {viewMode === 'planning' &&
+                        (room.plannedCycles ?? []).map((plan, pIdx) => {
+                          const barY = 4 + (room.strains.length + pIdx) * 10;
+                          if (barY + 8 > ROW_HEIGHT) return null;
+                          return (
+                            <PlannedCycleBar
+                              key={plan.id}
+                              entry={plan}
+                              startDate={startDate}
+                              dayWidth={DAY_WIDTH}
+                              top={barY}
+                              onClick={handleBarClick}
+                            />
+                          );
+                        })}
 
                       {/* Today line */}
                       <div className="absolute top-0 bottom-0 w-0.5 bg-cult-accent/60 z-10" style={{ left: todayX }} />
@@ -254,6 +356,20 @@ export function ProductionPlannerView() {
           </div>
         )}
       </div>
+
+      {/* Forecast summary bottom panel (planning mode only) */}
+      {viewMode === 'planning' && <ForecastSummaryPanel />}
+
+      {/* Planned cycle form modal */}
+      {planFormRoom && (
+        <PlannedCycleForm
+          room={planFormRoom}
+          strainStats={strainStats}
+          editing={editingCycle}
+          onSave={handleFormSave}
+          onClose={() => { setPlanFormRoom(null); setEditingCycle(null); }}
+        />
+      )}
     </div>
   );
 }
