@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import { ErrorBoundary, Layout } from './lib/components';
@@ -90,8 +90,17 @@ function RosinLabRoute() {
   return <RosinLabModule currentView={cleanView} setCurrentView={(v: string) => navigate(`/${v}`)} />;
 }
 
+/** Redirects sales-only users away from internal routes they shouldn't access. */
+function SalesRedirect({ children }: { children: React.ReactNode }) {
+  const { isSales, isAdmin, isManager } = useAuth();
+  if (isSales && !isAdmin && !isManager) {
+    return <Navigate to="/crm-inventory" replace />;
+  }
+  return <>{children}</>;
+}
+
 function AuthenticatedApp() {
-  const { user, loading } = useAuth();
+  const { user, loading, isSales, isAdmin, isManager } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
@@ -166,8 +175,8 @@ function AuthenticatedApp() {
         <ErrorBoundary resetKeys={[location.pathname]}>
           <Suspense fallback={<ViewFallback />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard onSelectOrder={handleSelectOrder} />} />
+              <Route path="/" element={<Navigate to={isSales && !isAdmin && !isManager ? '/crm-inventory' : '/dashboard'} replace />} />
+              <Route path="/dashboard" element={isSales && !isAdmin && !isManager ? <Navigate to="/crm-inventory" replace /> : <Dashboard onSelectOrder={handleSelectOrder} />} />
               <Route path="/orders" element={<OrdersContainer key={ordersRefreshKey} onCreateOrder={handleCreateOrder} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />} />
               <Route path="/cultivation-dashboard" element={<CultivationErrorBoundary><CultivationDashboard /></CultivationErrorBoundary>} />
               <Route path="/cultivation-plants" element={<CultivationErrorBoundary><PlantGroupsList /></CultivationErrorBoundary>} />

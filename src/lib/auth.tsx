@@ -15,6 +15,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<void>;
   isAdmin: boolean;
   isManager: boolean;
+  isSales: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -210,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updatePassword,
     isAdmin: profile?.role === 'admin',
     isManager: profile?.role === 'manager' || profile?.role === 'admin',
+    isSales: profile?.role === 'sales',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

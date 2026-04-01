@@ -665,6 +665,7 @@ export function ProductionQueue() {
   const { byStrain: skuByStrain, summary: skuSummary } = useSkuYield();
   const { batches: allBatches, loading: batchesLoading } = useAllBatches();
   const [activeTab, setActiveTab] = useState<ProductionQueueTab>('orders');
+  const [orderViewMode, setOrderViewMode] = useState<'by-order' | 'by-strain'>('by-strain');
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory>('All');
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string | null>(null);
   const [lossPct, setLossPct] = useState(15);
@@ -789,6 +790,26 @@ export function ProductionQueue() {
               <span className="text-xs font-semibold text-amber-400 min-w-[28px]">{lossPct}%</span>
             </div>
           )}
+          {activeTab === 'orders' && (
+            <div className="flex items-center gap-0.5 rounded-cult border border-cult-medium-gray/40 bg-cult-dark-gray/40 p-0.5">
+              <button
+                onClick={() => setOrderViewMode('by-strain')}
+                className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                  orderViewMode === 'by-strain' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                By Strain
+              </button>
+              <button
+                onClick={() => setOrderViewMode('by-order')}
+                className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                  orderViewMode === 'by-order' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                By Order
+              </button>
+            </div>
+          )}
           {(activeTab === 'orders' || activeTab === 'labor') && (
             <ProductCategoryStrip value={categoryFilter} onChange={setCategoryFilter} counts={categoryCounts} />
           )}
@@ -796,8 +817,16 @@ export function ProductionQueue() {
       </div>
 
       {/* ── Tab Content ───────────────────────────────────────────────────── */}
-      <div key={activeTab} className="animate-fade-in">
-        {activeTab === 'orders' && <ByOrderView byOrder={filteredByOrder} />}
+      <div key={`${activeTab}-${orderViewMode}`} className="animate-fade-in">
+        {activeTab === 'orders' && orderViewMode === 'by-strain' && (
+          <SimplifiedByStrainView
+            byStrain={filteredByStrain}
+            byOrder={filteredByOrder}
+            selectedDeliveryDate={selectedDeliveryDate}
+            skuByStrain={skuByStrain}
+          />
+        )}
+        {activeTab === 'orders' && orderViewMode === 'by-order' && <ByOrderView byOrder={filteredByOrder} />}
         {activeTab === 'batches' && <BatchesView batches={allBatches} />}
         {activeTab === 'labor' && (
           <LaborView

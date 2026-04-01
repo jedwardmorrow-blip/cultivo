@@ -14,7 +14,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isAdmin, isSales } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { getLogoUrl } = useLogos();
   const location = useLocation();
@@ -84,6 +84,7 @@ export function Layout({ children }: LayoutProps) {
               <SectionTabs
                 currentView={currentView}
                 onSectionChange={handleSectionChange}
+                allowedSectionIds={isSales && !isAdmin ? ['crm'] : undefined}
               />
             </div>
 

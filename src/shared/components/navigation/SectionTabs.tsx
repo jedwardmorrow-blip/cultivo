@@ -4,14 +4,19 @@ import type { SectionDefinition } from './sectionNavigation';
 interface SectionTabsProps {
   currentView: string;
   onSectionChange: (sectionId: string, defaultView: string) => void;
+  allowedSectionIds?: string[];
 }
 
-export function SectionTabs({ currentView, onSectionChange }: SectionTabsProps) {
+export function SectionTabs({ currentView, onSectionChange, allowedSectionIds }: SectionTabsProps) {
   const activeSectionId = getActiveSectionId(currentView);
+
+  const visibleSections = allowedSectionIds
+    ? sectionDefinitions.filter((s) => allowedSectionIds.includes(s.id))
+    : sectionDefinitions;
 
   return (
     <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
-      {sectionDefinitions.map((section: SectionDefinition) => {
+      {visibleSections.map((section: SectionDefinition) => {
         const isActive = section.id === activeSectionId;
         const Icon = section.icon;
 
