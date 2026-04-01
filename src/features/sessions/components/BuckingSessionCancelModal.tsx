@@ -7,14 +7,16 @@ interface BuckingSessionCancelModalProps {
   session: BuckingSession;
   onSuccess: () => void;
   onCancel: () => void;
+  initialReason?: string;
 }
 
 export function BuckingSessionCancelModal({
   session,
   onSuccess,
-  onCancel
+  onCancel,
+  initialReason = '',
 }: BuckingSessionCancelModalProps) {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState(initialReason);
   const [submitting, setSubmitting] = useState(false);
 
   const handleConfirm = async () => {

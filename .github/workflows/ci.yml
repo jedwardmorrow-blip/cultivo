@@ -29,6 +29,10 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
+      - name: Type check (advisory)
+        run: npx tsc -p tsconfig.app.json --noEmit
+        continue-on-error: true
+
       - name: Notify Justin on failure
         if: failure()
         uses: slackapi/slack-github-action@v2.0.0

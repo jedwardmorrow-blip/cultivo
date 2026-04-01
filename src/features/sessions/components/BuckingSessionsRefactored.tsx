@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle } from 'lucide-react';
 import { Button, PageSkeleton } from '@/shared/components';
 import { useBuckingSessions } from '../hooks/useBuckingSessions';
 import { useBuckingData } from '../hooks/useBuckingData';
+import { isStaleSession } from '../utils';
 import { undoCompletedSession } from '../services/sessions.service';
 import { SessionStats } from './SessionStats';
 import { BuckingSessionStartForm } from './BuckingSessionStartForm';
@@ -19,6 +20,7 @@ export function BuckingSessionsRefactored() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [completingSession, setCompletingSession] = useState<BuckingSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<BuckingSession | null>(null);
+  const [cancelInitialReason, setCancelInitialReason] = useState('');
 
   const handleSessionStarted = () => {
     setShowStartForm(false);
@@ -43,12 +45,37 @@ export function BuckingSessionsRefactored() {
     }
   };
 
+  const staleSessions = activeSessions.filter(s => isStaleSession(s.started_at));
+
   if (loading) {
     return <div className="p-6 max-w-[1800px] mx-auto"><PageSkeleton variant="table" /></div>;
   }
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto">
+      {staleSessions.length > 0 && (
+        <div className="mb-6 bg-red-950/40 border border-red-600/60 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-red-300 mb-1">
+                {staleSessions.length} Ghost Session{staleSessions.length > 1 ? 's' : ''} Blocking Tote Re-use
+              </h3>
+              <p className="text-xs text-red-400/80 mb-2">
+                The following tote{staleSessions.length > 1 ? 's are' : ' is'} locked by sessions that have been active for more than 24 hours.
+                These ghost sessions prevent inventory from being re-allocated. Use <strong>Force Close</strong> in the table below to release them.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {staleSessions.map(s => (
+                  <span key={s.id} className="text-xs font-mono bg-red-900/50 text-red-300 border border-red-700/50 rounded px-2 py-0.5">
+                    {s.binned_package_id}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-cult-white">Bucking Sessions</h1>
@@ -77,7 +104,8 @@ export function BuckingSessionsRefactored() {
         <BuckingSessionCancelModal
           session={cancellingSession}
           onSuccess={handleSessionCancelled}
-          onCancel={() => setCancellingSession(null)}
+          onCancel={() => { setCancellingSession(null); setCancelInitialReason(''); }}
+          initialReason={cancelInitialReason}
         />
       )}
 
@@ -92,7 +120,14 @@ export function BuckingSessionsRefactored() {
       <ActiveBuckingSessionsTable
         sessions={activeSessions}
         onComplete={(session) => setCompletingSession(session)}
-        onCancel={(session) => setCancellingSession(session)}
+        onCancel={(session) => {
+          setCancelInitialReason(
+            isStaleSession(session.started_at)
+              ? 'Ghost session — no output recorded after 24+ hours. Releasing tote for re-use.'
+              : ''
+          );
+          setCancellingSession(session);
+        }}
       />
 
       <CompletedBuckingSessionsTable sessions={sessions} onUndo={handleUndo} />

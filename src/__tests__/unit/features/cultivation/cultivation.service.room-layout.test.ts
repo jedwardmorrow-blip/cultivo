@@ -309,7 +309,9 @@ describe('cultivationService — room layout', () => {
   describe('listPlantGroupsByRoom', () => {
     it('queries plant_groups scoped to the given room', async () => {
       const mockOrder = vi.fn().mockResolvedValue(mockSupabaseSuccess([]));
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockNeq = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockGt = vi.fn().mockReturnValue({ neq: mockNeq });
+      const mockEq = vi.fn().mockReturnValue({ gt: mockGt });
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 
@@ -321,7 +323,9 @@ describe('cultivationService — room layout', () => {
 
     it('throws on database error', async () => {
       const mockOrder = vi.fn().mockResolvedValue(mockSupabaseError('DB error'));
-      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockNeq = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockGt = vi.fn().mockReturnValue({ neq: mockNeq });
+      const mockEq = vi.fn().mockReturnValue({ gt: mockGt });
       const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 

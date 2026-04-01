@@ -15,6 +15,7 @@ import { ConversionsView } from './ConversionsView';
 import { ConversionHistoryView } from './ConversionHistoryView';
 import { AuditManagement } from './AuditManagement';
 import { ConsolidateView } from './ConsolidateView';
+import { SalesInventoryView } from './SalesInventoryView';
 import type { BulkSubTab } from '../types';
 
 /* ── Shared layout shell ──────────────────────────────────────── */
@@ -239,4 +240,8 @@ export function ConsolidateViewWrapper() {
       <ConsolidateView items={allItems} onDataRefresh={onDataRefresh} />
     </ViewShell>
   );
+}
+
+export function SalesInventoryViewWrapper() {
+  return <SalesInventoryView />;
 }

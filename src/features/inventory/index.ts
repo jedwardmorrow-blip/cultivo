@@ -13,4 +13,5 @@ export {
   ConversionHistoryViewWrapper,
   AuditsViewWrapper,
   ConsolidateViewWrapper,
+  SalesInventoryViewWrapper,
 } from './components/InventoryViewsSimplified';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Pause, Play } from 'lucide-react';
+import { Pause, Play, AlertTriangle } from 'lucide-react';
 import { Button } from '@/shared/components';
-import { formatElapsedTime } from '../utils';
+import { formatElapsedTime, isStaleSession } from '../utils';
 import { pauseSession, resumeSession } from '../services/sessions.service';
 import type { BuckingSession } from '../types';
 
@@ -57,16 +57,25 @@ export function ActiveBuckingSessionsTable({
                   </td>
                 </tr>
               ) : (
-                sessions.map((session) => (
-                  <tr key={session.id} className="hover:bg-cult-dark-gray/50 transition-colors">
+                sessions.map((session) => {
+                  const stale = isStaleSession(session.started_at);
+                  return (
+                  <tr key={session.id} className={`hover:bg-cult-dark-gray/50 transition-colors ${stale ? 'bg-red-950/20' : ''}`}>
                     <td className="px-4 py-3 text-sm text-cult-white font-medium">
                       {session.bucker_name}
                     </td>
                     <td className="px-4 py-3 text-sm text-cult-white">
                       {session.strain}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-silver font-mono">
-                      {session.binned_package_id}
+                    <td className="px-4 py-3 text-sm font-mono">
+                      <span className={stale ? 'text-red-400' : 'text-cult-silver'}>
+                        {session.binned_package_id}
+                      </span>
+                      {stale && (
+                        <span className="ml-2 text-xs bg-red-600/30 text-red-400 border border-red-600/50 rounded px-1.5 py-0.5 font-bold uppercase tracking-wide">
+                          Blocking Tote
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-cult-white">
                       {(session.binned_weight_grams / 1000).toFixed(2)}
@@ -74,6 +83,13 @@ export function ActiveBuckingSessionsTable({
                     <td className="px-4 py-3 text-sm text-center font-medium">
                       {session.is_paused ? (
                         <span className="text-yellow-400">PAUSED</span>
+                      ) : stale ? (
+                        <div className="flex flex-col items-center">
+                          <span className="text-red-400 font-bold">
+                            {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
+                          </span>
+                          <span className="text-xs text-red-500 uppercase tracking-wide">Ghost Session</span>
+                        </div>
                       ) : (
                         <span className="text-cult-green">
                           {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
@@ -102,14 +118,23 @@ export function ActiveBuckingSessionsTable({
                         </Button>
                         <button
                           onClick={() => onCancel(session)}
-                          className="bg-red-600 text-white px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-red-700 transition text-sm"
+                          className={`px-4 py-1.5 font-bold uppercase tracking-wider transition text-sm text-white ${
+                            stale ? 'bg-red-700 hover:bg-red-800 ring-1 ring-red-400' : 'bg-red-600 hover:bg-red-700'
+                          }`}
+                          title={stale ? 'Ghost session — cancel to unblock this tote' : 'Cancel session'}
                         >
-                          Cancel
+                          {stale ? (
+                            <span className="flex items-center gap-1">
+                              <AlertTriangle size={14} />
+                              Force Close
+                            </span>
+                          ) : 'Cancel'}
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

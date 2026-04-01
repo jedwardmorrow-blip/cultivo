@@ -35,6 +35,7 @@ const ConversionsViewWrapper = lazyRetry(() => import('./features/inventory'), '
 const ConversionHistoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConversionHistoryViewWrapper');
 const AuditsViewWrapper = lazyRetry(() => import('./features/inventory'), 'AuditsViewWrapper');
 const ConsolidateViewWrapper = lazyRetry(() => import('./features/inventory'), 'ConsolidateViewWrapper');
+const SalesInventoryViewWrapper = lazyRetry(() => import('./features/inventory'), 'SalesInventoryViewWrapper');
 const Settings = lazyRetry(() => import('./features/settings'), 'Settings');
 const AnalyticsDashboard = lazyRetry(() => import('./features/analytics'), 'AnalyticsDashboard');
 const EODSummary = lazyRetry(() => import('./features/analytics'), 'EODSummary');
@@ -202,6 +203,7 @@ function AuthenticatedApp() {
               <Route path="/analytics" element={<AnalyticsDashboard />} />
               <Route path="/strain-analytics" element={<StrainAnalyticsDashboard />} />
               <Route path="/eod-summary" element={<EODSummary />} />
+              <Route path="/crm-inventory" element={<SalesInventoryViewWrapper />} />
               <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />
               <Route path="/crm-queue" element={<SalesQueue />} />
               <Route path="/crm-visit-calendar" element={<VisitCalendar onSelectOrder={handleSelectOrder} />} />

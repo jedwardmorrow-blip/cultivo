@@ -55,6 +55,7 @@ export function BulkBagCreationModal({
   const [error, setError] = useState<string | null>(null);
   const [varianceReason, setVarianceReason] = useState<VarianceReason | ''>('');
   const [varianceNote, setVarianceNote] = useState('');
+  const [highVarianceConfirmed, setHighVarianceConfirmed] = useState(false);
 
   const availableWeight = adjustedAvailableWeight ?? (session.output_weight || 0);
   const [remainingWeight, setRemainingWeight] = useState<number>(availableWeight);
@@ -76,6 +77,7 @@ export function BulkBagCreationModal({
       setError(null);
       setVarianceReason('');
       setVarianceNote('');
+      setHighVarianceConfirmed(false);
     }
   }, [isOpen, session.aggregation_id]);
 
@@ -124,14 +126,6 @@ export function BulkBagCreationModal({
       return;
     }
 
-    // Allow upward variance (actual > recorded) with reason/notes,
-    // but hard-block if over by more than 50% (likely data entry error)
-    const overagePercent = availableWeight > 0 ? ((totalWeight - availableWeight) / availableWeight) * 100 : 0;
-    if (totalWeight > availableWeight && overagePercent > 50) {
-      setError(`Total weight (${totalWeight}g) exceeds available weight (${availableWeight}g) by more than 50%. Please verify your entries.`);
-      return;
-    }
-
     const invalidBags = bags.filter(bag => bag.weight <= 0);
     if (invalidBags.length > 0) {
       setError('All bags must have a weight greater than 0');
@@ -152,6 +146,12 @@ export function BulkBagCreationModal({
 
     if (hasVariance && varianceReason === 'other' && varianceNote.trim().length < 20) {
       setError('For "Other" reason, please provide detailed notes (minimum 20 characters)');
+      return;
+    }
+
+    const overagePercent = availableWeight > 0 ? ((totalWeight - availableWeight) / availableWeight) * 100 : 0;
+    if (totalWeight > availableWeight && overagePercent > 50 && !highVarianceConfirmed) {
+      setError('This variance exceeds 50%. Please check the confirmation box below to proceed.');
       return;
     }
 
@@ -190,6 +190,7 @@ export function BulkBagCreationModal({
     setError(null);
     setVarianceReason('');
     setVarianceNote('');
+    setHighVarianceConfirmed(false);
     onClose();
   };
 
@@ -199,6 +200,8 @@ export function BulkBagCreationModal({
   const isOverAllocated = totalAllocated > availableWeight;
   const isUnderAllocated = totalAllocated < availableWeight && bags.length > 0;
   const hasVarianceAtThreshold = bags.length > 0 && Math.abs(availableWeight - totalAllocated) > VARIANCE_THRESHOLD_GRAMS;
+  const overagePercent = availableWeight > 0 ? ((totalAllocated - availableWeight) / availableWeight) * 100 : 0;
+  const isHighVariance = isOverAllocated && overagePercent > 50;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -478,7 +481,29 @@ export function BulkBagCreationModal({
                   />
                 </div>
 
-                {availableWeight > 0 && (Math.abs(remainingWeight) / availableWeight * 100) >= 5 && (
+                {isHighVariance ? (
+                  <div className="p-4 rounded-lg bg-red-50 border-2 border-red-400">
+                    <div className="flex items-start gap-2.5 mb-3">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-900">
+                        <p className="font-semibold mb-1">Variance Exceeds 50% — Confirmation Required</p>
+                        <p>Total weight ({totalAllocated}g) exceeds available weight ({availableWeight}g) by <strong>{overagePercent.toFixed(1)}%</strong>. This is unusually high. Please verify your entries before proceeding.</p>
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={highVarianceConfirmed}
+                        onChange={(e) => setHighVarianceConfirmed(e.target.checked)}
+                        className="w-4 h-4 rounded border-red-400 text-red-600 focus:ring-red-500"
+                        disabled={isSubmitting}
+                      />
+                      <span className="text-sm font-medium text-red-900">
+                        I have verified the quantities and confirm this variance is correct
+                      </span>
+                    </label>
+                  </div>
+                ) : availableWeight > 0 && (Math.abs(remainingWeight) / availableWeight * 100) >= 5 && (
                   <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
@@ -513,7 +538,8 @@ export function BulkBagCreationModal({
                 isSubmitting ||
                 bags.length === 0 ||
                 isLoadingIds ||
-                (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
+                (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10)) ||
+                (isHighVariance && !highVarianceConfirmed)
               }
             >
               {isSubmitting ? (
