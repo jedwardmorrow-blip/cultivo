@@ -35,7 +35,7 @@ export function SectionTabs({ currentView, onSectionChange, allowedSectionIds }:
             `}
           >
             <Icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{section.label}</span>
+            <span className={isActive ? "inline sm:inline" : "hidden sm:inline"}>{section.label}</span>
           </button>
         );
       })}
