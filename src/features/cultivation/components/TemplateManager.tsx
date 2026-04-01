@@ -235,7 +235,7 @@ function ScheduleItemRow({ item }: { item: TemplateScheduleItem }) {
         <span className="text-[9px] text-violet-400 bg-violet-950/40 px-1 rounded font-semibold">Phase</span>
       )}
       <span className={`text-[9px] ml-auto uppercase font-semibold ${
-        item.priority === 'high' ? 'text-red-400' : item.priority === 'low' ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
+        item.priority === 'high' ? 'text-amber-400' : item.priority === 'low' ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
       }`}>
         {item.priority}
       </span>

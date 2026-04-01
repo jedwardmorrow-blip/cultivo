@@ -453,14 +453,12 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             label="Progress"
             value={`${stats.pct}%`}
             detail={`${stats.completed} of ${stats.total} done`}
-            accent={stats.pct === 100 ? 'text-green-400' : stats.pct >= 50 ? 'text-cult-accent' : 'text-cult-white'}
+            accent={stats.pct === 100 ? 'text-cult-success' : stats.pct >= 50 ? 'text-cult-accent' : 'text-cult-white'}
           >
             {stats.total > 0 && (
               <div className="w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden mt-2">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    stats.pct === 100 ? 'bg-green-500' : 'bg-green-600'
-                  }`}
+                  className="h-full rounded-full transition-all duration-500 bg-cult-success"
                   style={{ width: `${stats.pct}%` }}
                 />
               </div>
@@ -645,7 +643,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                             </span>
                           )}
                           {(ops.urgency_score ?? 0) >= 70 && (
-                            <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider animate-pulse">
+                            <span className="text-[10px] font-mono font-bold text-cult-danger uppercase tracking-wider animate-pulse">
                               URGENT
                             </span>
                           )}
@@ -658,7 +656,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     {/* Completion indicator */}
                     <div className="flex items-center gap-2">
                       {allDone ? (
-                        <span className="flex items-center gap-1 text-xs font-medium text-green-400">
+                        <span className="flex items-center gap-1 text-xs font-medium text-cult-success">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Done
                         </span>
@@ -669,7 +667,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                           </span>
                           <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
                             <div
-                              className="h-full rounded-full transition-all duration-300 bg-green-600"
+                              className="h-full rounded-full transition-all duration-300 bg-cult-success"
                               style={{ width: `${roomPct}%` }}
                             />
                           </div>
@@ -975,7 +973,7 @@ function CompletedTasksCollapse({ tasks, onTaskClick }: { tasks: TaskCardData[];
         className="w-full flex items-center justify-between px-4 py-2 hover:bg-cult-charcoal/20 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5 text-green-500/60" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-cult-success/60" />
           <span className="text-xs text-cult-medium-gray font-medium">
             {tasks.length} completed
           </span>

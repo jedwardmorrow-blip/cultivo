@@ -6,6 +6,7 @@ import type { ScheduleTemplate } from '../hooks';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, RoomTaskSchedule, CreateTaskScheduleInput, SchedulingMode } from '../types';
 import type { RoomType } from '../types';
+import { ROOM_TYPE_META, ROOM_TYPE_HEX, PRIORITY_COLOR } from '../constants/taskColors';
 interface RoomCalendarRoom {
   id: string;
   room_code: string;
@@ -19,13 +20,6 @@ interface RoomCalendarProps {
 }
 
 const ROOM_TYPE_ORDER: Record<string, number> = { mother: 0, clone: 1, veg: 2, flower: 3, mixed: 4 };
-const ROOM_TYPE_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  mother: { label: 'Mother', color: '#D97706', bg: 'bg-amber-950/40', border: 'border-amber-700/40' },
-  clone: { label: 'Clone', color: '#0EA5E9', bg: 'bg-sky-950/40', border: 'border-sky-700/40' },
-  veg: { label: 'Vegetation', color: '#10B981', bg: 'bg-emerald-950/40', border: 'border-emerald-700/40' },
-  flower: { label: 'Flower', color: '#F43F5E', bg: 'bg-rose-950/40', border: 'border-rose-700/40' },
-  mixed: { label: 'Mixed', color: '#6B7280', bg: 'bg-gray-900/40', border: 'border-gray-600/40' },
-};
 
 const TASK_TYPES = Object.keys(TASK_TYPE_CONFIG) as TaskType[];
 const RECURRENCE_OPTIONS = ['daily', 'weekly', 'biweekly', 'monthly'] as const;
@@ -693,9 +687,6 @@ function DayDetailPanel({
   onEditRoom?: (roomId: string, roomCode: string) => void;
 }) {
   const dateLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  const ROOM_TYPE_COLORS: Record<string, string> = {
-    mother: '#D97706', clone: '#0EA5E9', veg: '#10B981', flower: '#F43F5E', mixed: '#6B7280',
-  };
 
   return (
     <div className="bg-cult-charcoal/40 border-b border-cult-dark-gray/50 px-3 sm:px-5 py-3 animate-fade-in">
@@ -723,7 +714,7 @@ function DayDetailPanel({
             <div
               key={room.id}
               className="bg-cult-near-black border border-cult-dark-gray/50 border-l-2 p-2.5 group/card"
-              style={{ borderLeftColor: ROOM_TYPE_COLORS[room.room_type] ?? '#6B7280' }}
+              style={{ borderLeftColor: ROOM_TYPE_HEX[room.room_type] ?? '#6B7280' }}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
@@ -755,7 +746,7 @@ function DayDetailPanel({
                       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
                       {cfg.label}
                       {sched?.priority === 'high' && (
-                        <span className="text-[9px] font-bold text-red-400 ml-0.5">!</span>
+                        <span className="text-[9px] font-bold text-amber-400 ml-0.5">!</span>
                       )}
                     </div>
                   );
@@ -1324,7 +1315,7 @@ function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
             {schedule.recurrence}
           </span>
           {schedule.priority === 'high' && (
-            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-400 bg-red-950/40 rounded-sm border border-red-800/30">
+            <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${PRIORITY_COLOR.high.badge}`}>
               High
             </span>
           )}
@@ -2128,11 +2119,7 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
               onClick={() => setPriority(p)}
               className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase rounded-sm transition-colors ${
                 priority === p
-                  ? p === 'high'
-                    ? 'bg-red-950/60 text-red-400 border border-red-700/50'
-                    : p === 'low'
-                      ? 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray'
-                      : 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
+                  ? PRIORITY_COLOR[p]?.active ?? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
                   : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
               }`}
             >
