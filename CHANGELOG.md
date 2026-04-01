@@ -4,6 +4,51 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-31 - Rosin Lab Module Complete (CUL-8)
+
+**Type:** Feature
+**Module:** Rosin Lab
+**Status:** COMPLETE
+
+Full workflow UIs built across all Rosin Lab screens. Module is production-ready.
+
+- **Wash & Dry Hub:** New wash form (FF batch selection, input weight, water temp, wash count), active wash runs with complete/cancel actions + freeze dryer transfer, freeze dryer panel (load/complete with output weight), completed wash run log
+- **Press & Cure Hub:** New press form (hash selection, temp/pressure/time settings), package rosin panel (assign output to rosin packages), active cure sessions table, history with press-run/cure-session sub-tabs and search
+- **Materials Hub:** Three-tab inventory view (Fresh Frozen, Hash, Rosin) with per-item cards, available weight tracking, status badges, and allocate/navigate actions
+- **Analytics:** KPI cards with period-over-period comparison, yield trend chart, rosin throughput chart, consistency breakdown by rosin type, strain performance leaderboard
+- **Service layer:** Full CRUD/query coverage for all rosin lab tables in `rosinLabService.ts` (1,167 lines); uses `as unknown as` cast to bypass DB types until DBA runs `supabase gen types`
+- **Build:** Passes with 0 errors
+
+---
+
+## 2026-03-31 - Ghost Detection + CUL-2 + CUL-6 + CUL-26
+
+**Type:** Feature / Bug Fix
+**Module:** Sessions / Inventory / CI
+**Status:** COMPLETE
+
+Multi-ticket session covering variance dialog, ghost session detection, sales inventory view, and CI advisory type check.
+
+**CUL-2 — Variance Confirmation Dialog:**
+- Removed hard block (>50% overage) from `BulkBagCreationModal.tsx`; replaced with red confirmation checkbox
+- `useConversionWorkflow.ts`: soft `highVarianceWarning` flag at >50% instead of push-to-errors
+
+**CUL-5 — Ghost Session Detection:**
+- `isStaleSession()` utility added to `src/features/sessions/utils/index.ts` (24h threshold)
+- `ActiveBuckingSessionsTable.tsx`: stale rows highlighted red, "Ghost Session" label, "Force Close" button with AlertTriangle icon
+- `BuckingSessionsRefactored.tsx`: red stale-session banner listing blocked totes; cancel modal pre-fills reason for ghost sessions
+- `BuckingSessionCancelModal.tsx`: accepts `initialReason` prop
+
+**CUL-6 — Sales Inventory View:**
+- New `SalesInventoryView` component (read-only, bulk + packaged stages, grouped by strain, search, expandable package breakdown)
+- Routed as `/crm-inventory`; added to CRM section nav as "Available Inventory"
+
+**CUL-26 — TypeScript + CI:**
+- Advisory `npx tsc` step added to CI (`continue-on-error: true`)
+- 0 TS errors confirmed at time of merge
+
+---
+
 ## 2026-03-07 - Rosin Lab Module Shell
 
 **Type:** Feature

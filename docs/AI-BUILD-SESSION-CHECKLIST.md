@@ -14,49 +14,36 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-07
-**Session:** Rosin Lab Module Shell + Navigation
+**Date:** 2026-03-31
+**Session:** Rosin Lab Complete + Ghost Detection + Variance Dialog + Sales Inventory + CI (CUL-2, CUL-5, CUL-6, CUL-8, CUL-26)
 **Status:** COMPLETE
 
 **What was done:**
 
-Created the Rosin Lab module shell — a new top-level section in the app with a left-sidebar subnav, pipeline visualization, stats cards, and active work table on the dashboard. All other screens show "Coming Soon" placeholders. No database schema exists yet for rosin lab tables; service queries gracefully return empty data.
+Multiple Paperclip tasks completed. Rosin Lab module fully built. Ghost detection for stale bucking sessions. Variance confirmation dialog replaces hard block. Sales inventory view for CRM. Advisory CI type check step.
 
-**Key changes:**
-- New `rosin-lab` section in `sectionNavigation.ts` with 8 sub-items (Dashboard, Fresh Frozen, Hash, Rosin, New Wash, Press, Press & Cure Log, Analytics)
-- `RosinLabModule` renders a 220px left sidebar + content area, derives active screen from `currentView` prop (no internal useState needed)
-- Left sidebar nav (`RosinLabNav`) shows active accent border, inactive secondary text, and colored dot indicators for Wash/Press/Cure when `activeCounts > 0`
-- Pipeline cards (`PipelineStages`) are clickable, show live counts, stage-color top borders, and arrows between stages
-- Dashboard stats row (4 stat cards) and active work table with stage-colored row left borders
-- 6 new Tailwind color tokens: `cult-stage-ff`, `cult-stage-wash`, `cult-stage-fd`, `cult-stage-hash`, `cult-stage-press`, `cult-stage-rosin`
-- App.tsx: `RosinLabModule` lazy-loaded; handled in `default` branch via `currentView.startsWith('rosin-lab')`
+**CUL-8 (Rosin Lab Module):** Full workflow UIs across all screens — Wash & Dry Hub (new form, active runs, freeze dryer, completed log), Press & Cure Hub (new press form, package panel, active cures, history), Materials Hub (Fresh Frozen/Hash/Rosin tabs), Analytics (KPI cards, yield trend, throughput, consistency, strain leaderboard). Service layer 1,167 lines. `PressCureLog.tsx` screen exists but is unused dead code (log functionality covered by PressHub History tab).
 
-**Files created:**
-- `src/features/rosin-lab/RosinLabModule.tsx`
-- `src/features/rosin-lab/components/PipelineStages.tsx`
-- `src/features/rosin-lab/components/RosinLabNav.tsx`
-- `src/features/rosin-lab/screens/RosinDashboard.tsx`
-- `src/features/rosin-lab/services/rosinLabService.ts`
-- `src/features/rosin-lab/types/rosin-lab.types.ts`
-- `src/features/rosin-lab/index.ts`
+**CUL-5 (Ghost Detection):** `isStaleSession()` in sessions utils. Stale active bucking sessions get red highlight, "Ghost Session" label, "Force Close" button. Banner in BuckingSessionsRefactored lists blocked totes. Cancel modal accepts `initialReason` prop; ghost sessions pre-fill cancel reason.
 
-**Files modified:**
-- `App.tsx` — lazy import + rosin-lab default case
-- `tailwind.config.js` — 6 new stage color tokens
-- `src/shared/components/navigation/sectionNavigation.ts` — new section + 6 new icon imports
-- `CHANGELOG.md` — session entry added
+**CUL-2 (Variance Dialog):** BulkBagCreationModal >50% overage no longer hard-blocks; shows red confirmation checkbox instead. useConversionWorkflow uses `highVarianceWarning` soft flag.
 
-**Build status:** PASSES (✓ clean, 0 errors)
-**Known issues (carry-forward, unchanged):**
-- Pre-existing tsc errors -- not blocking (baseline ~501 as of 2026-02-18)
-- `customer_price_lists` RLS uses `USING (true)` -- pre-existing, not changed this session
-- Rosin lab DB tables (`wash_runs`, `press_runs`, `fresh_frozen_packages`, etc.) do not exist yet; service uses `as any` cast and returns empty defaults
+**CUL-6 (Sales Inventory View):** `SalesInventoryView` component — read-only, bulk+packaged stages, by strain, expandable package breakdown. Route: `/crm-inventory`. Nav: CRM section "Available Inventory".
+
+**CUL-26 (TS + CI):** Advisory `npx tsc` CI step with `continue-on-error: true`. 0 TS errors at time of merge.
+
+**Build status:** PASSES (✓ 0 errors)
+**Branch:** `main`, 3 commits ahead of origin (not yet pushed)
+**Known issues (carry-forward):**
+- Rosin lab DB tables exist via migrations but types not yet generated (`as unknown as` cast in service)
+- `PressCureLog.tsx` screen is dead code (never imported); harmless but could be removed
+- Uncommitted migration `20260331_cul24_batch_id_propagation_on_package_assignment.sql` — DBA scope, do not touch
+
+**Paperclip status:** API was unreachable (empty `PAPERCLIP_API_KEY`) during this session — CUL-6, CUL-8, CUL-26 ticket status not updated to `done`. CUL-7 (Production Queue Data Cleanup) not yet worked — task description unavailable without API.
 
 **Next steps:**
-- Prompt #2: Fresh Frozen intake form + storage table
-- Prompt #3: Wash run form (select FF batch, log input/output/yield)
-- Prompt #4: Press run form + cure session creation
-- Database migration needed: create rosin lab schema (wash_runs, press_runs, fresh_frozen_packages, rosin_cure_sessions, v_rosin_pipeline_status view)
+- CUL-7: Production Queue — Data Cleanup and Feature Build (unknown scope — needs Paperclip task description)
+- Push commits to origin when ready
 
 ---
 
