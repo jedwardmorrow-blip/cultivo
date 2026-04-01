@@ -631,6 +631,23 @@ function NewScheduleItemForm({
           {(recurrence === 'weekly' || recurrence === 'biweekly') && (
             <div>
               <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Days</label>
+              <div className="flex gap-0.5 mt-1 mb-1 flex-wrap">
+                {([
+                  { label: 'Weekdays', days: [1, 2, 3, 4, 5] },
+                  { label: 'Weekends', days: [0, 6] },
+                  { label: 'Daily', days: [0, 1, 2, 3, 4, 5, 6] },
+                  { label: 'MWF', days: [1, 3, 5] },
+                ] as const).map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setDayOfWeek([...preset.days])}
+                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-charcoal/50 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-white transition-colors rounded-sm"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
               <div className="flex gap-0.5 mt-1">
                 {DAY_NAMES.map((d, di) => (
                   <button

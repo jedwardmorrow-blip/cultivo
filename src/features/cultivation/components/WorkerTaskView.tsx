@@ -194,24 +194,33 @@ function TaskRow({ task, roomName, onTap, onStart, onComplete }: TaskRowProps) {
 function RoomGroup({
   roomCode,
   tasks,
+  workerId,
   onTapTask,
   onStartTask,
   onCompleteTask,
 }: {
   roomCode: string;
   tasks: TaskCardData[];
+  workerId: string | null;
   onTapTask: (task: TaskCardData) => void;
   onStartTask: (taskId: string) => void;
   onCompleteTask: (task: TaskCardData) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const storageKey = `cult-room-collapsed-${workerId ?? 'anon'}-${roomCode}`;
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return sessionStorage.getItem(storageKey) === '1'; } catch { return false; }
+  });
   const doneCount = tasks.filter((t) => t.status === 'completed').length;
   const allDone = doneCount === tasks.length;
 
   return (
     <div className="mb-2">
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => {
+          const next = !collapsed;
+          setCollapsed(next);
+          try { sessionStorage.setItem(storageKey, next ? '1' : '0'); } catch { /* noop */ }
+        }}
         className="w-full flex items-center justify-between px-5 py-3 active:bg-cult-charcoal/20 transition-colors min-h-[48px]"
       >
         <div className="flex items-center gap-2">
@@ -433,6 +442,7 @@ export function WorkerTaskView() {
               key={roomCode}
               roomCode={roomCode}
               tasks={tasks}
+              workerId={workerId}
               onTapTask={handleTapTask}
               onStartTask={handleStart}
               onCompleteTask={handleOpenComplete}

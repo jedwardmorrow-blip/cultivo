@@ -26,6 +26,7 @@ import {
   CircleDot,
   Circle,
   Pencil,
+  Lock,
   Save,
   Beaker,
   Settings,
@@ -1336,7 +1337,10 @@ function TaskTypesOverlay({ onClose }: { onClose: () => void }) {
                         <span className="text-xs font-semibold text-cult-white uppercase tracking-wider block truncate">{tt.label}</span>
                         {!tt.is_enabled && <span className="text-[10px] text-amber-400 uppercase">Disabled</span>}
                       </div>
-                      <Pencil className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+                      {tt.is_builtin
+                        ? <Lock className="w-3 h-3 text-cult-dark-gray flex-shrink-0" title="Built-in type — cannot be deleted" />
+                        : <Pencil className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+                      }
                     </div>
                     <p className="text-xs text-cult-light-gray leading-relaxed line-clamp-2">
                       {tt.description}
@@ -1480,6 +1484,12 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
 
         {/* Body */}
         <div className="px-5 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Built-in banner */}
+          {taskType?.is_builtin && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/30 border border-amber-700/40 text-xs text-amber-400">
+              <Lock className="w-3 h-3" /> Built-in type — cannot be deleted
+            </div>
+          )}
           {/* Label */}
           <div>
             <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Label</label>

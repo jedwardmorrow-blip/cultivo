@@ -630,15 +630,16 @@ function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, onEditR
                   </div>
                   {taskTypes.length > 0 && (
                     <>
-                      {/* Mobile: dots only */}
+                      {/* Mobile: labeled pill badges */}
                       <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
                         {taskTypes.slice(0, 4).map((t) => (
                           <span
                             key={t}
-                            className="block w-[6px] h-[6px] rounded-full"
-                            style={{ backgroundColor: getTaskTypeConfig(t).color }}
-                            title={getTaskTypeConfig(t).label}
-                          />
+                            className="inline-flex items-center gap-0.5 px-1 py-[1px] text-[9px] font-bold rounded-sm"
+                            style={{ backgroundColor: `${getTaskTypeConfig(t).color}18`, color: getTaskTypeConfig(t).color }}
+                          >
+                            {getTaskTypeConfig(t).label.charAt(0)}
+                          </span>
                         ))}
                       </div>
                       {/* Desktop: labeled chips */}
@@ -1500,7 +1501,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                 key={room.id}
                 type="button"
                 onClick={() => selectRoom(room.id)}
-                className={`w-full text-left p-3 rounded-sm transition-all border ${
+                className={`w-full text-left p-3 min-h-[44px] rounded-sm transition-all border ${
                   isSelected
                     ? 'bg-green-950/30 border-green-600/50'
                     : !hasSchedules
@@ -1998,6 +1999,23 @@ function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: ScheduleF
           {showDayPicker && (
             <div>
               <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
+              <div className="flex gap-1 mb-2">
+                {([
+                  { label: 'Weekdays', days: [1, 2, 3, 4, 5] },
+                  { label: 'Weekends', days: [0, 6] },
+                  { label: 'Daily', days: [0, 1, 2, 3, 4, 5, 6] },
+                  { label: 'MWF', days: [1, 3, 5] },
+                ] as const).map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setDayOfWeek([...preset.days])}
+                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-charcoal/50 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-white transition-colors rounded-sm"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
               <div className="flex gap-1">
                 {DAY_NAMES.map((name, idx) => (
                   <button
