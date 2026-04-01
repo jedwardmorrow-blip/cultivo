@@ -4,6 +4,19 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-01 - Remove 50% Variance Hard Block (CUL-99, CUL-96)
+
+**Type:** Bug Fix
+**Modules:** Inventory (BulkBagCreationModal, useConversionWorkflow)
+**Status:** COMPLETE
+
+Removed the 50% variance confirmation checkbox that blocked Laura Gonzalez from finalizing sessions with legitimate large variances. Decision from Session 1 (2026-03-16) — only the >5% variance reason-required field should remain.
+
+- **BulkBagCreationModal.tsx** — Removed `highVarianceConfirmed` state, the 50% guard block in `handleConfirm`, the `isHighVariance` JSX confirmation box, and the `isHighVariance && !highVarianceConfirmed` disabled clause. Amber warning at ≥5% variance is retained as a visual signal only.
+- **useConversionWorkflow.ts** — Removed `highVarianceWarning`, `varianceAcknowledged`, and `acknowledgeVariance` from state, interface, validation, and return object. The >5% variance reason-required validation remains intact.
+
+---
+
 ## 2026-04-01 - P0 Bug Fix Pass (CUL-80, CUL-81, CUL-82, CUL-83)
 
 **Type:** Critical Bug Fix

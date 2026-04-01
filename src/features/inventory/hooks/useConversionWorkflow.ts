@@ -60,13 +60,10 @@ interface UseConversionWorkflowReturn {
   hasVariance: boolean;
   varianceAmount: number;
   variancePercentage: number;
-  highVarianceWarning: boolean;
   varianceReason: VarianceReason | null;
   varianceNote: string;
-  varianceAcknowledged: boolean;
   setVarianceReason: (reason: VarianceReason | null) => void;
   setVarianceNote: (note: string) => void;
-  acknowledgeVariance: () => void;
 
   // Submission
   canSubmit: boolean;
@@ -113,7 +110,6 @@ export function useConversionWorkflow({
   // Variance state
   const [varianceReason, setVarianceReason] = useState<VarianceReason | null>(null);
   const [varianceNote, setVarianceNote] = useState('');
-  const [varianceAcknowledged, setVarianceAcknowledged] = useState(false);
 
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
@@ -141,16 +137,10 @@ export function useConversionWorkflow({
     expectedQuantity === 0 ? 0 : (varianceAmount / expectedQuantity) * 100;
   const hasVariance = Math.abs(varianceAmount) > 0.1;
 
-  // High variance warning (>50%) — requires explicit acknowledgment
-  const highVarianceWarning = expectedQuantity > 0 && Math.abs(variancePercentage) > 50;
-
   // Validation
   const errors: string[] = [];
   if (packages.length === 0 && !consolidateMode) {
     errors.push('At least one package is required');
-  }
-  if (highVarianceWarning && !varianceAcknowledged) {
-    errors.push('Variance exceeds 50% — please verify quantities and check the confirmation box');
   }
   if (hasVariance && Math.abs(variancePercentage) > 5 && !varianceReason) {
     errors.push('Variance reason is required for differences over 5%');
@@ -200,11 +190,6 @@ export function useConversionWorkflow({
           : pkg
       )
     );
-  }, []);
-
-  // Acknowledge variance
-  const acknowledgeVariance = useCallback(() => {
-    setVarianceAcknowledged(true);
   }, []);
 
   // Submit conversion (individual packages)
@@ -375,13 +360,10 @@ export function useConversionWorkflow({
     hasVariance,
     varianceAmount,
     variancePercentage,
-    highVarianceWarning,
     varianceReason,
     varianceNote,
-    varianceAcknowledged,
     setVarianceReason,
     setVarianceNote,
-    acknowledgeVariance,
 
     // Submission
     canSubmit,
