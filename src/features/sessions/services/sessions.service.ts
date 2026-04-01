@@ -215,6 +215,7 @@ export async function completeBuckingSession(sessionId: string, completionData: 
       .from('bucking_sessions')
       .update({
         ...completionData,
+        session_status: 'completed',
         completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

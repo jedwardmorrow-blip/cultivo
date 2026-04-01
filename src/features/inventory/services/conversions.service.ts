@@ -120,8 +120,8 @@ export function getCategoryFromProductName(productName: string): string {
   let type = 'flower'; // default
   if (lower.includes('smalls')) {
     type = 'smalls';
-  } else if (lower.endsWith('- trim') || lower.startsWith('bulk trim') || lower.includes(' - trim')) {
-    // Match "Bulk - Strain - Trim" (Convention A) and legacy "Bulk Trim (Strain)" (Convention B)
+  } else if (lower.endsWith('- trim') || lower.startsWith('bulk trim') || lower.includes(' - trim') || lower.startsWith('trim - ')) {
+    // Match "Bulk - Strain - Trim" (Convention A), legacy "Bulk Trim (Strain)" (Convention B), and "Trim - Strain" (Convention C)
     type = 'trim';
   }
 
