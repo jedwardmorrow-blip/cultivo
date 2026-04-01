@@ -4,6 +4,26 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-03-31 - Cultivation Nav IA + Page Headers (CUL-50)
+
+**Type:** Enhancement
+**Module:** Cultivation
+**Status:** COMPLETE
+
+Navigation and page header improvements for the cultivation module.
+
+- **sectionNavigation.ts:** Added `cultivation-rooms` (Room Config) and `cultivation-dry-rooms` (Dry Room Config) as secondary nav items; added IA documentation comment above cultivation section
+- **DailyTaskBoard.tsx:** Renamed header to "Today's Tasks" with "Daily assignments by room" subtitle; added "Manage Schedules" contextual link button (CalendarDays icon → `/cultivation-schedules`)
+- **SchedulesPage:** Updated header to "Schedule Builder" / "Create and manage recurring task schedules"
+- **CultivationDashboard.tsx:** Updated header to "Room Overview" / "Live operational status"
+- **GrowRoomsManagement.tsx:** Updated header to "Room Configuration" / "Add, edit, and archive grow rooms"
+- **DryRoomsManagement.tsx:** Promoted h2 to h1 "Dry Room Configuration" / "Add, edit, and archive dry rooms"
+- **WorkerTaskView.tsx:** Updated selector header to "Crew View" / "Task assignments for floor workers"
+- **DailyDigestView.tsx:** Added page header "Reports" / "Daily cultivation digest"
+- **Build:** Passes with 0 errors
+
+---
+
 ## 2026-03-31 - Rosin Lab Module Complete (CUL-8)
 
 **Type:** Feature

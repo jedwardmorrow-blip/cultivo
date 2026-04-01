@@ -287,8 +287,8 @@ export function CultivationDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Cultivation</h1>
-        <p className="text-cult-light-gray mt-2">Grow room management, plant tracking, and harvest sessions</p>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Overview</h1>
+        <p className="text-cult-light-gray mt-2">Live operational status</p>
       </div>
 
       {strainsWithoutAbbrev.length > 0 && (

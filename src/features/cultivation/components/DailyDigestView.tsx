@@ -376,6 +376,10 @@ export function DailyDigestView() {
 
   return (
     <div className="space-y-5 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Reports</h1>
+        <p className="text-cult-light-gray mt-2">Daily cultivation digest</p>
+      </div>
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <button onClick={() => setDate(shiftDate(date, -1))} className="p-1.5 rounded-cult hover:bg-cult-surface-overlay text-cult-text-muted hover:text-cult-text-primary transition-colors">

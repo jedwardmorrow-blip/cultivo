@@ -30,6 +30,7 @@ import {
   Dna,
   Target,
   Users,
+  Settings,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -64,6 +65,14 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
     ],
   },
+  /**
+   * Cultivation IA:
+   * Primary: Today (task board) | Crew (worker view) | Schedule (builder) | Rooms (live dashboard) | Reports
+   * Secondary: Plant Groups | Harvests | Drying | Room Config (admin) | Dry Room Config (admin)
+   *
+   * cultivation-rooms and cultivation-dry-rooms are admin/config pages — secondary group intentional.
+   * worker-tasks is a shared route used by floor workers via direct link (not a sub-feature).
+   */
   {
     id: 'cultivation',
     label: 'Cultivation',
@@ -78,6 +87,8 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'secondary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'secondary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'secondary' },
+      { id: 'cultivation-rooms', label: 'Room Config', icon: Settings, group: 'secondary' },
+      { id: 'cultivation-dry-rooms', label: 'Dry Room Config', icon: Settings, group: 'secondary' },
     ],
   },
   {

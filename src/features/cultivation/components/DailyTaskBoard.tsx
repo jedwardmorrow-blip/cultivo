@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
+  CalendarDays,
   ClipboardList,
   Users,
   Plus,
@@ -132,10 +134,8 @@ export function SchedulesPage() {
       {/* Header with view toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Room Schedule</h1>
-          <p className="text-cult-light-gray mt-1 text-sm sm:text-base">
-            {scheduleView === 'calendar' ? 'View scheduled tasks across all rooms' : 'Configure recurring task schedules per room'}
-          </p>
+          <h1 className="text-xl sm:text-3xl font-bold text-cult-white uppercase tracking-wide">Schedule Builder</h1>
+          <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Create and manage recurring task schedules</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -195,6 +195,7 @@ export function SchedulesPage() {
 }
 
 export function DailyTaskBoard() {
+  const navigate = useNavigate();
   const [showTaskTypes, setShowTaskTypes] = useState(false);
   const [selectedDate, setSelectedDate] = useState(todayIso);
 
@@ -270,7 +271,7 @@ export function DailyTaskBoard() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-lg sm:text-2xl font-bold text-cult-white uppercase tracking-wide">
-              Task Board
+              Today's Tasks
             </h1>
             <button
               type="button"
@@ -281,6 +282,7 @@ export function DailyTaskBoard() {
               <Settings className="w-4 h-4" />
             </button>
           </div>
+          <p className="text-cult-medium-gray text-sm mt-0.5">Daily assignments by room</p>
           <div className="flex items-center gap-3 mt-1.5">
             <button
               type="button"
@@ -328,6 +330,14 @@ export function DailyTaskBoard() {
             )}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => navigate('/cultivation-schedules')}
+          className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors flex-shrink-0"
+        >
+          <CalendarDays className="w-3.5 h-3.5" />
+          Manage Schedules
+        </button>
       </div>
 
       {/* ── Board (single view — no tabs) ─────────────────── */}

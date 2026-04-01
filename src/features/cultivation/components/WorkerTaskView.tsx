@@ -48,8 +48,8 @@ function WorkerSelector({ staff, onSelect }: { staff: WorkerIdentity[]; onSelect
   return (
     <div className="min-h-screen bg-cult-near-black flex flex-col">
       <div className="px-6 pt-12 pb-6">
-        <h1 className="text-2xl font-bold text-cult-white">Who's working?</h1>
-        <p className="text-sm text-cult-medium-gray mt-1">Tap your name to see today's tasks</p>
+        <h1 className="text-2xl font-bold text-cult-white">Crew View</h1>
+        <p className="text-sm text-cult-medium-gray mt-1">Task assignments for floor workers</p>
       </div>
       <div className="flex-1 px-4 pb-8">
         <div className="grid grid-cols-2 gap-3">
