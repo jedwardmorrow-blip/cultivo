@@ -138,7 +138,7 @@ export function FinancialDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Financial Intelligence</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Financial Intelligence</h1>
         <p className="text-cult-light-gray mt-2">Revenue pulse, receivables, payables, cost intelligence, and 280E</p>
       </div>
 

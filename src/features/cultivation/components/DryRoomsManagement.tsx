@@ -224,7 +224,7 @@ export function DryRoomsManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Dry Room Configuration</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Dry Room Configuration</h1>
           <p className="text-cult-light-gray mt-2">Add, edit, and archive dry rooms</p>
         </div>
         <div className="flex items-center gap-3">

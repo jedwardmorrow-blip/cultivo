@@ -232,7 +232,7 @@ export function TaskDetailDrawer({
                 <button
                   type="button"
                   onClick={async () => { await onSkipTask(task.id); onClose(); }}
-                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-900/60 border border-zinc-700/40 hover:bg-zinc-800 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-silver bg-cult-charcoal/60 border border-cult-dark-gray/60 hover:bg-cult-charcoal rounded-sm transition-colors min-h-[44px]"
                 >
                   <SkipForward className="w-3 h-3" />
                   Skip

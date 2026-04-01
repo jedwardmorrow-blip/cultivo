@@ -95,7 +95,7 @@ export function UnifiedOrders({
     return (
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
+          <h1 className="text-3xl font-bold text-cult-white">DISTRIBUTION</h1>
         </div>
         <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-cult p-8 text-center">
           <p className="text-cult-danger text-sm mb-4">{error.message}</p>
@@ -114,7 +114,7 @@ export function UnifiedOrders({
     <div className="max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">DISTRIBUTION</h1>
+          <h1 className="text-3xl font-bold text-cult-white">DISTRIBUTION</h1>
           <p className="text-cult-text-secondary text-sm mt-2">
             {orders.length} total orders
           </p>

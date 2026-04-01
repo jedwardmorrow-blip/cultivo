@@ -271,7 +271,7 @@ export function OrderTable({
                         <span className="text-xs text-cult-lighter-gray">No date</span>
                       )}
                       {turnaroundDays !== null && (
-                        <span className={`inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                        <span className={`inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-xs font-semibold border ${
                           turnaroundDays < 7
                             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                             : turnaroundDays <= 10

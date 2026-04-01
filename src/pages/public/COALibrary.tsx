@@ -132,7 +132,7 @@ export function COALibrary() {
             <div key={monthYear} className="mb-12">
               <div className="flex items-center gap-3 mb-6">
                 <Calendar className="w-6 h-6 text-cult-white" />
-                <h2 className="text-3xl font-bold text-cult-white uppercase tracking-wider">
+                <h2 className="text-3xl font-bold text-cult-whiter">
                   {monthYear}
                 </h2>
               </div>

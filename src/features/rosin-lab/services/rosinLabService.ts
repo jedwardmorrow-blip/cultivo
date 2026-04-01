@@ -19,6 +19,8 @@ import type {
 } from '../types/rosin-lab.types';
 import { getDateFrom } from '../utils/analyticsHelpers';
 
+// Alias for consistency — file was originally written with `db`, some calls use `supabase` directly
+const db = supabase;
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {

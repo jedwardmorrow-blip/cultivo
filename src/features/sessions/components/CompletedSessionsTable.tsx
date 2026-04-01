@@ -105,10 +105,10 @@ export function CompletedSessionsTable({
                     <span className="text-xs text-cult-light-gray">-</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pulled_weight.toFixed(1)}</td>
-                <td className="px-4 py-3 text-sm text-right font-medium text-green-500">{session.big_buds_grams != null ? session.big_buds_grams.toFixed(1) : '-'}</td>
-                <td className="px-4 py-3 text-sm text-right text-yellow-500">{session.small_buds_grams != null ? session.small_buds_grams.toFixed(1) : '-'}</td>
-                <td className="px-4 py-3 text-sm text-right text-cult-light-gray">{session.trim_grams != null ? session.trim_grams.toFixed(1) : '-'}</td>
+                <td className="px-4 py-3 text-sm text-right font-semibold text-cult-white">{session.pulled_weight.toFixed(1)}</td>
+                <td className="px-4 py-3 text-sm text-right font-semibold text-green-500">{session.big_buds_grams != null ? session.big_buds_grams.toFixed(1) : '-'}</td>
+                <td className="px-4 py-3 text-sm text-right font-semibold text-yellow-500">{session.small_buds_grams != null ? session.small_buds_grams.toFixed(1) : '-'}</td>
+                <td className="px-4 py-3 text-sm text-right font-semibold text-cult-light-gray">{session.trim_grams != null ? session.trim_grams.toFixed(1) : '-'}</td>
                 <td className="px-4 py-3 text-sm text-right text-cult-white">{session.minutes_trimmed != null ? session.minutes_trimmed.toFixed(0) : '-'}</td>
                 <td className="px-4 py-3 text-sm text-right font-medium text-cult-white">{session.grams_per_hour != null ? session.grams_per_hour.toFixed(1) : '-'}</td>
                 {isAdmin && (

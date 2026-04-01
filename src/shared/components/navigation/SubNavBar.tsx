@@ -86,7 +86,7 @@ function SubNavButton({ item, isActive, onClick, badgeInfo }: SubNavButtonProps)
         ${
           isActive
             ? 'bg-cult-charcoal text-cult-off-white shadow-sm'
-            : 'text-cult-silver hover:text-cult-off-white hover:bg-cult-charcoal/40'
+            : 'text-cult-lighter-gray hover:text-cult-off-white hover:bg-cult-charcoal/40'
         }
       `}
     >

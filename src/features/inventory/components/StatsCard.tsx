@@ -28,7 +28,7 @@ export function StatsCard({
             <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-2">{label}</p>
             <p className="text-2xl font-bold text-cult-white tracking-tight">{value}</p>
             {subtitle && (
-              <p className="text-xs text-cult-light-gray mt-1.5">{subtitle}</p>
+              <p className="text-sm text-cult-lighter-gray mt-1.5">{subtitle}</p>
             )}
             {trend && trendValue && (
               <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${

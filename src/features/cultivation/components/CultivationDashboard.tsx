@@ -105,7 +105,7 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
 
         {!isEmpty && (
           <div className="space-y-3">
-            <div className="text-xs text-cult-light-gray flex items-center justify-between">
+            <div className="text-sm text-cult-silver flex items-center justify-between">
               <span>{state.total_plants} plants &middot; {state.strain_count} strains</span>
               {/* Flower rooms: use days_since_flip (from room_sections flip_date) for accuracy.
                   Veg/clone rooms: fall back to days_in_stage (from plant_group stage_entered_at). */}
@@ -287,7 +287,7 @@ export function CultivationDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Room Overview</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Room Overview</h1>
         <p className="text-cult-light-gray mt-2">Live operational status</p>
       </div>
 

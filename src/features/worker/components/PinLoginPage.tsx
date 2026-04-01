@@ -71,7 +71,7 @@ export function PinLoginPage() {
     return (
       <div className="min-h-screen bg-cult-black flex flex-col items-center justify-center px-6">
         <div className="text-center">
-          <div className="text-3xl font-bold text-cult-white uppercase tracking-wider mb-2">
+          <div className="text-3xl font-bold text-cult-whiter mb-2">
             Welcome, {staffName}
           </div>
           <p className="text-cult-light-gray text-sm">Loading your tasks...</p>

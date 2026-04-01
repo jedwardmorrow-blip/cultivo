@@ -497,7 +497,7 @@ export function SalesQueue() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">My Queue</h1>
+          <h1 className="text-3xl font-bold text-cult-white">My Queue</h1>
           <p className="text-cult-light-gray mt-2">Tasks and visits requiring your attention</p>
         </div>
         <div className="flex items-center gap-2">

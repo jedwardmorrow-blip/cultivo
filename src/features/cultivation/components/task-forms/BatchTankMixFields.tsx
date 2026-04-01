@@ -84,7 +84,7 @@ function PhaseLabel({ phase, week }: { phase: string; week: number }) {
   const labels: Record<string, string> = { clone: 'Clone', veg: 'Veg', flower: 'Flower' };
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-sm border ${colors[phase] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-sm border ${colors[phase] ?? 'bg-cult-charcoal/40 text-cult-silver border-cult-dark-gray/50'}`}>
       {labels[phase] ?? phase} W{week}
     </span>
   );

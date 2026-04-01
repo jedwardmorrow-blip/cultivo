@@ -429,7 +429,7 @@ export function HarvestSessionsList() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Harvests</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Harvests</h1>
           <p className="text-cult-light-gray mt-2">Record harvests by room and create batches</p>
         </div>
         <div className="flex items-center gap-3">

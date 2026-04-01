@@ -62,17 +62,17 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
       <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-cult-border">
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
           <div className="text-lg font-bold text-cult-white">{room.total_plants}</div>
-          <div className="text-[10px] text-cult-text-muted uppercase tracking-wide">Plants</div>
+          <div className="text-xs text-cult-silver uppercase tracking-wide">Plants</div>
         </div>
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
           <div className="text-lg font-bold text-cult-white">{room.strain_count}</div>
-          <div className="text-[10px] text-cult-text-muted uppercase tracking-wide">Strains</div>
+          <div className="text-xs text-cult-silver uppercase tracking-wide">Strains</div>
         </div>
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
           <div className="text-lg font-bold text-cult-white">
             {room.square_footage ? `${room.square_footage}` : '—'}
           </div>
-          <div className="text-[10px] text-cult-text-muted uppercase tracking-wide">Sq Ft</div>
+          <div className="text-xs text-cult-silver uppercase tracking-wide">Sq Ft</div>
         </div>
       </div>
 

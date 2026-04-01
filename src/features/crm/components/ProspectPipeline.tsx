@@ -76,7 +76,7 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
     <div className="space-y-6 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Prospect Pipeline</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Prospect Pipeline</h1>
           <p className="text-cult-light-gray mt-2">
             {prospects.length} prospects across {STAGES.filter((s) => grouped[s.key].length > 0).length} stages
           </p>

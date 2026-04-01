@@ -1334,7 +1334,7 @@ export function VendorBillEntry() {
       }}
     >
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Accounts Payable</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Accounts Payable</h1>
         <p className="text-cult-light-gray mt-2">Manage vendor bills, track payment status, and monitor aging</p>
       </div>
 

@@ -107,14 +107,14 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
     <div>
       {/* Summary badges */}
       <div className="flex items-center gap-3 px-1 mb-3">
-        <span className="text-sm text-gray-400">{totalBatches} batches across {groups.length} strains</span>
+        <span className="text-sm text-cult-lighter-gray">{totalBatches} batches across {groups.length} strains</span>
         {withDemand > 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-sky-900/60 text-sky-400">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded bg-sky-900/60 text-sky-400">
             {withDemand} with demand
           </span>
         )}
         {unallocated > 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-amber-900/60 text-amber-400">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded bg-amber-900/60 text-amber-400">
             {unallocated} unallocated
           </span>
         )}

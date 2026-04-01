@@ -371,7 +371,7 @@ export function InventoryTable({
 
       {sortedItems.length > 0 && (
         <div className="px-4 py-2.5 border-t border-cult-medium-gray/50 flex items-center justify-between">
-          <span className="text-xs text-cult-lighter-gray">
+          <span className="text-sm text-cult-silver">
             {sortedItems.length} item{sortedItems.length !== 1 ? 's' : ''}
             {selectable && selectedIds.size > 0 && (
               <span className="ml-2 text-emerald-400">({selectedIds.size} selected)</span>

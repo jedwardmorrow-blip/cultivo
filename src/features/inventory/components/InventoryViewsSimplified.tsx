@@ -24,7 +24,7 @@ function ViewShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">{title}</h1>
+        <h1 className="text-3xl font-bold text-cult-white">{title}</h1>
         <p className="text-cult-light-gray text-sm mt-2">{subtitle}</p>
       </div>
       {children}
@@ -76,7 +76,7 @@ export function UnifiedInventoryViewWrapper() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Inventory</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Inventory</h1>
         <p className="text-cult-light-gray text-sm mt-2">
           {activeStage === 'all' && 'View all inventory across all stages'}
           {activeStage === 'binned' && 'Fresh flower directly from harvest, ready for processing'}

@@ -52,7 +52,7 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
             <ArrowLeft className="w-4 h-4" />
             Back to Harvests
           </button>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Harvest Metrics</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Harvest Metrics</h1>
           <p className="text-cult-light-gray mt-2">
             Yield analysis across {totals.harvest_count} completed harvest{totals.harvest_count !== 1 ? 's' : ''}
             {strainAggregates.length > 0 && ` covering ${strainAggregates.length} strain${strainAggregates.length !== 1 ? 's' : ''}`}

@@ -107,7 +107,7 @@ export function SalesInventoryView() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Available Inventory</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Available Inventory</h1>
           <p className="text-cult-light-gray text-sm mt-2">
             Bulk and packaged inventory ready to sell — by strain
           </p>

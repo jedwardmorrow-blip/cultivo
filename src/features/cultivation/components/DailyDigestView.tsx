@@ -377,7 +377,7 @@ export function DailyDigestView() {
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Reports</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Reports</h1>
         <p className="text-cult-light-gray mt-2">Daily cultivation digest</p>
       </div>
       <div className="flex items-center justify-between gap-4 flex-wrap">

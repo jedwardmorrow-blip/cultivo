@@ -135,6 +135,11 @@ describe('conversions.service', () => {
     it('standalone binned without type suffix maps to binned', () => {
       expect(getCategoryFromProductName('Animal Tsunami - Binned')).toBe('binned');
     });
+
+    // Convention C: "Trim - [Strain]" format (startsWith 'trim - ')
+    it('"Trim - OG Kush" (Convention C) maps to trim_bulk', () => {
+      expect(getCategoryFromProductName('Trim - OG Kush')).toBe('trim_bulk');
+    });
   });
 
   // =====================================================

@@ -124,7 +124,7 @@ export function ForecastSummaryPanel() {
                   })}
                 </tbody>
               </table>
-              <div className="flex items-center gap-4 pt-2 text-[10px] text-cult-text-muted">
+              <div className="flex items-center gap-4 pt-2 text-xs text-cult-silver">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-500 inline-block" /> Projected — from planned cycles</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" /> Committed — active plant groups</span>
               </div>

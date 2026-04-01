@@ -249,7 +249,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
 
               {task.assigned_to_name ? (
                 <span className="flex items-center gap-1 text-xs text-cult-light-gray min-w-0">
-                  <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-[10px] font-bold text-cult-white flex-shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
                     {task.assigned_to_name.charAt(0)}
                   </span>
                   <span className="truncate">{task.assigned_to_name}</span>
@@ -264,7 +264,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
               {task.task_config?.crew && Array.isArray(task.task_config.crew) && (task.task_config.crew as string[]).length > 0 && (
                 <span className="hidden sm:flex items-center gap-0.5 text-xs text-sky-400/80">
                   <Users className="w-3 h-3" />
-                  <span className="font-mono text-[10px]">+{(task.task_config.crew as string[]).length}</span>
+                  <span className="font-mono text-xs">+{(task.task_config.crew as string[]).length}</span>
                 </span>
               )}
 

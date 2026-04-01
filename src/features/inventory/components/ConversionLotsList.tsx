@@ -87,7 +87,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   onChange={() => toggleStatus('active')}
                   className="rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-green-500"
                 />
-                <span className="text-sm text-cult-light-gray">Active</span>
+                <span className="text-sm text-cult-silver">Active</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -96,7 +96,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   onChange={() => toggleStatus('completed_today')}
                   className="rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-green-500"
                 />
-                <span className="text-sm text-cult-light-gray">Completed Today</span>
+                <span className="text-sm text-cult-silver">Completed Today</span>
               </label>
             </div>
           </div>

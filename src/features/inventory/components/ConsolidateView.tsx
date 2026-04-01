@@ -511,7 +511,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                                   className="rounded border-cult-border text-blue-600 focus:ring-blue-500 focus:ring-offset-0 bg-cult-surface cursor-pointer"
                                 />
                               </td>
-                              <td className="px-3 py-1.5 font-mono text-xs">{pkg.packageId}</td>
+                              <td className="px-3 py-1.5 font-mono text-sm font-medium">{pkg.packageId}</td>
                               <td className="px-3 py-1.5 text-right font-medium">{formatQty(pkg.qty, pkg.unit)}</td>
                               <td className="px-3 py-1.5 text-right text-xs text-cult-text-muted">
                                 {pkg.createdAt ? new Date(pkg.createdAt).toLocaleDateString() : '—'}

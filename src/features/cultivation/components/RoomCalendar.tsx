@@ -730,7 +730,7 @@ function DayDetailPanel({
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-cult-white">{room.room_code}</span>
-                  <span className="text-[10px] text-cult-medium-gray uppercase">{room.room_type}</span>
+                  <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>
                 </div>
                 {onEditRoom && (
                   <button
@@ -1530,7 +1530,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                           />
                         ))}
                       </div>
-                      <span className="text-[10px] text-cult-medium-gray font-mono">{roomSchedules.length} tasks</span>
+                      <span className="text-xs text-cult-medium-gray font-mono">{roomSchedules.length} tasks</span>
                     </>
                   ) : (
                     <span className="text-[10px] text-amber-500 font-semibold uppercase tracking-wider">Needs Setup</span>

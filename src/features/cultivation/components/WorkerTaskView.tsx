@@ -89,7 +89,7 @@ function ProgressHeader({ completed, total, workerName }: { completed: number; t
         </div>
         <div className="text-right">
           <span className={`text-2xl font-bold ${allDone ? 'text-green-400' : 'text-cult-white'}`}>{pct}%</span>
-          <p className="text-[10px] text-cult-medium-gray">{completed}/{total} done</p>
+          <p className="text-xs text-cult-medium-gray">{completed}/{total} done</p>
         </div>
       </div>
       <div className="w-full h-2 bg-cult-charcoal rounded-full overflow-hidden">
@@ -136,26 +136,26 @@ function TaskRow({ task, roomName, onTap, onStart, onComplete }: TaskRowProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded"
               style={{ backgroundColor: `${config.color}20`, color: config.color }}
             >
               <TaskIcon className="w-3 h-3" />
               {config.label}
             </span>
             {task.status === 'carry_forward' && (
-              <span className="text-[10px] text-amber-400 font-semibold">CARRIED</span>
+              <span className="text-xs text-amber-400 font-semibold">CARRIED</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs text-cult-light-gray font-mono">{roomName}</span>
             {task.estimated_duration && (
-              <span className="flex items-center gap-0.5 text-[10px] text-cult-medium-gray">
+              <span className="flex items-center gap-0.5 text-xs text-cult-medium-gray">
                 <Clock className="w-3 h-3" />
                 {task.estimated_duration}
               </span>
             )}
             {task.notes && (
-              <span className="text-[10px] text-cult-dark-gray truncate max-w-[120px]">{task.notes}</span>
+              <span className="text-xs text-cult-medium-gray truncate max-w-[120px]">{task.notes}</span>
             )}
           </div>
         </div>
@@ -408,7 +408,7 @@ export function WorkerTaskView() {
           {/* Change worker — small link */}
           <button
             onClick={() => setWorkerId(null)}
-            className="ml-auto flex items-center gap-1 px-2 py-2 text-[10px] text-cult-dark-gray active:text-cult-medium-gray transition-colors min-h-[40px]"
+            className="ml-auto flex items-center gap-1 px-2 py-2 text-xs text-cult-dark-gray active:text-cult-medium-gray transition-colors min-h-[40px]"
           >
             <User className="w-3 h-3" />
             Switch

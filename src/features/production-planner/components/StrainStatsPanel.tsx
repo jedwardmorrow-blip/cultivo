@@ -20,7 +20,7 @@ function MetricCard({ label, value, unit, source, icon: Icon }: {
     <div className="bg-cult-surface rounded-lg p-3">
       <div className="flex items-center gap-1.5 mb-1">
         {Icon && <Icon className="w-3.5 h-3.5 text-cult-text-muted" />}
-        <span className="text-[10px] text-cult-text-muted uppercase tracking-wide">{label}</span>
+        <span className="text-xs text-cult-silver uppercase tracking-wide">{label}</span>
       </div>
       <div className={`text-lg font-bold ${hasValue ? 'text-cult-white' : 'text-cult-text-muted'}`}>
         {hasValue ? `${value}${unit ?? ''}` : '—'}
@@ -76,7 +76,7 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
           <h2 className="text-base font-bold text-cult-white font-montserrat truncate">{strain.strain_name}</h2>
           <div className="flex items-center gap-2 mt-0.5">
             {strain.dominance_type && (
-              <span className="text-[10px] text-cult-text-muted">{strain.dominance_type}</span>
+              <span className="text-xs text-cult-silver">{strain.dominance_type}</span>
             )}
             {strain.feed_group && feedBadge && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${feedBadge}`}>
@@ -144,11 +144,11 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-cult-surface rounded-lg p-3">
                 <div className="text-lg font-bold text-cult-white">{strain.demand_unassigned_units ?? 0}</div>
-                <div className="text-[10px] text-cult-text-muted">Unassigned units</div>
+                <div className="text-xs text-cult-silver">Unassigned units</div>
               </div>
               <div className="bg-cult-surface rounded-lg p-3">
                 <div className="text-lg font-bold text-cult-white">{strain.order_count ?? 0}</div>
-                <div className="text-[10px] text-cult-text-muted">Open orders</div>
+                <div className="text-xs text-cult-silver">Open orders</div>
               </div>
             </div>
           </div>
@@ -193,12 +193,12 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-1 text-[10px] text-cult-text-muted">
+          <div className="flex justify-between mt-1 text-xs text-cult-silver">
             <span>Veg</span>
             <span>Flower</span>
             <span>Dry</span>
           </div>
-          <div className="text-center text-[10px] text-cult-text-muted mt-1">
+          <div className="text-center text-xs text-cult-silver mt-1">
             Total cycle: {totalCycle} days
           </div>
         </div>

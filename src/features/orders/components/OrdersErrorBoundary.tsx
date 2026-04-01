@@ -28,7 +28,7 @@ export class OrdersErrorBoundary extends Component<Props, State> {
       return (
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-cult-white uppercase tracking-wide">Orders & Fulfillment</h1>
+            <h1 className="text-3xl font-bold text-cult-white">Orders & Fulfillment</h1>
             <p className="text-cult-light-gray mt-2">Manage orders, allocate inventory, and track fulfillment</p>
           </div>
           <div className="bg-red-900/20 border-2 border-red-500 p-8 text-center">

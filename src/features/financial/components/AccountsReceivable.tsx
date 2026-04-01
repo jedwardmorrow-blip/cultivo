@@ -519,7 +519,7 @@ export function AccountsReceivable() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Accounts Receivable</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Accounts Receivable</h1>
         <p className="text-cult-light-gray mt-2">Track invoices, record payments, and manage collections</p>
       </div>
 

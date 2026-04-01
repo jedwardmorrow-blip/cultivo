@@ -36,12 +36,12 @@ export function ActiveSessionsTable({ sessions, onComplete, onCancel }: ActiveSe
         <table className="w-full">
           <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Trimmer</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Strain</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Package ID</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Pulled (g)</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Elapsed</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Action</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-cult-silver uppercase tracking-wider">Trimmer</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-cult-silver uppercase tracking-wider">Strain</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-cult-silver uppercase tracking-wider">Package ID</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-cult-silver uppercase tracking-wider">Pulled (g)</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-cult-silver uppercase tracking-wider">Elapsed</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-cult-silver uppercase tracking-wider">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-cult-medium-gray">

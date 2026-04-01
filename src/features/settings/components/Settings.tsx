@@ -280,7 +280,7 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Settings</h1>
+        <h1 className="text-3xl font-bold text-cult-white">Settings</h1>
         <p className="text-cult-light-gray mt-2">Configure application settings and manage resources</p>
       </div>
 

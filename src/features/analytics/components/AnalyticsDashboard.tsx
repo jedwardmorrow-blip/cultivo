@@ -69,7 +69,7 @@ export function AnalyticsDashboard() {
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white uppercase tracking-wide">Analytics</h1>
+          <h1 className="text-3xl font-bold text-cult-white">Analytics</h1>
           <p className="text-cult-light-gray mt-2">Production throughput and conversion metrics</p>
         </div>
         <div className="flex gap-4">
