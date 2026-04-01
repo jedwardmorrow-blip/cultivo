@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CultOps Hooks Implementation Proposal</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--purple); }
+  p { margin-bottom: 1rem; }
+  .subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem; }
+  .problem-box {
+    background: #1c1208;
+    border-left: 3px solid var(--orange);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .solution-box {
+    background: #0d1f0d;
+    border-left: 3px solid var(--green);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .hook-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+  }
+  .hook-card .hook-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 0.25rem;
+  }
+  .hook-card .hook-event {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0.75rem 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.85rem;
+  }
+  .inline-code {
+    background: var(--surface);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  .tier-label {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+  .tier-now { background: #1a3a1a; color: var(--green); }
+  .tier-next { background: #1a2a3a; color: var(--accent); }
+  .tier-later { background: #2a1a3a; color: var(--purple); }
+  .impact { color: var(--orange); font-weight: 600; font-size: 0.9rem; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+  .status-tag {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .tag-blocks { background: #3a1a1a; color: var(--red); }
+  .tag-injects { background: #1a2a1a; color: var(--green); }
+  .tag-logs { background: #1a1a2a; color: var(--accent); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+
+<h1>CultOps Hooks Implementation Proposal</h1>
+<p class="subtitle">March 31, 2026 &mdash; Addressing production data safety, session discipline, and automated quality gates</p>
+
+<h2>Problems &rarr; Hooks</h2>
+
+<div class="problem-box">
+  <strong>Problem 1: AI sessions mutate production data without approval.</strong><br>
+  March 27 — two sessions made conflicting harvest_date fixes 37 min apart. $50k estimated impact. No gate prevented either write.
+</div>
+
+<div class="problem-box">
+  <strong>Problem 2: AI takes lazy shortcuts without full context.</strong><br>
+  Sessions skip reading system rules, prior session logs, or relevant business context before jumping into implementation. This leads to fixes that contradict prior decisions.
+</div>
+
+<div class="problem-box">
+  <strong>Problem 3: No automated catch for simple mistakes.</strong><br>
+  Timezone bugs, naming convention violations, and build failures get shipped because there's no automated check between "Claude wrote code" and "code hits production."
+</div>
+
+<hr>
+
+<h2>Hook 1: Production DB Mutation Gate</h2>
+<span class="tier-label tier-now">Implement Now</span>
+<p class="impact">Prevents the #1 most expensive failure mode</p>
+
+<div class="hook-card">
+  <div class="hook-name">gate-production-mutations.sh</div>
+  <div class="hook-event">PreToolUse &rarr; execute_sql on production DB</div>
+  <p>Intercepts every SQL call to the production Supabase (<code class="inline-code">fonreynkfeqywshijqpi</code>). READ operations pass through. Any INSERT, UPDATE, DELETE, TRUNCATE, DROP, or ALTER is <strong>blocked</strong> and escalated to you for approval.</p>
+
+  <pre><code>#!/bin/bash
+# .claude/hooks/gate-production-mutations.sh
+#
+# Blocks destructive SQL on production DB.
+# Context DB (uayyhluztelnfxfvdhyt) and staging (cbxwippkzeszvxewhebd) pass through.
+
+INPUT=$(cat)
+
+# Extract project_id and query from the MCP tool input
+PROJECT_ID=$(echo "$INPUT" | jq -r '.tool_input.project_id // empty')
+QUERY=$(echo "$INPUT" | jq -r '.tool_input.query // empty')
+
+# Only gate the production database
+PRODUCTION_DB="fonreynkfeqywshijqpi"
+if [ "$PROJECT_ID" != "$PRODUCTION_DB" ]; then
+  exit 0  # Not production — allow
+fi
+
+# Normalize query to uppercase for matching
+QUERY_UPPER=$(echo "$QUERY" | tr '[:lower:]' '[:upper:]')
+
+# Allow pure reads
+if echo "$QUERY_UPPER" | grep -qE '^\s*(SELECT|WITH|EXPLAIN)\b'; then
+  # But block SELECT ... INTO and SELECT ... FOR UPDATE
+  if echo "$QUERY_UPPER" | grep -qE '\bINTO\b|\bFOR\s+UPDATE\b'; then
+    echo "BLOCKED: SELECT INTO / FOR UPDATE on production requires approval." >&2
+    echo "Query: $QUERY" >&2
+    exit 2
+  fi
+  exit 0  # Pure read — allow
+fi
+
+# Block everything else
+echo "BLOCKED: Destructive SQL on production DB ($PRODUCTION_DB)." >&2
+echo "Query: $(echo "$QUERY" | head -c 200)" >&2
+echo "" >&2
+echo "To proceed: re-run with explicit approval or execute manually." >&2
+exit 2</code></pre>
+
+  <h3>Settings config</h3>
+  <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__775d8087-127d-4963-bd11-38f8c3427741__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/gate-production-mutations.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+  <p><strong>What happens:</strong> Claude tries to run an UPDATE on production &rarr; hook fires &rarr; script detects it's destructive &rarr; exits with code 2 &rarr; Claude sees the block message and tells you what it wanted to do &rarr; you decide whether to approve or not.</p>
+</div>
+
+
+<h2>Hook 2: Session Context Enforcer</h2>
+<span class="tier-label tier-now">Implement Now</span>
+<p class="impact">Prevents lazy implementations without context</p>
+
+<div class="hook-card">
+  <div class="hook-name">enforce-context-load.sh</div>
+  <div class="hook-event">SessionStart &rarr; startup | resume</div>
+  <p>On every session start or resume, injects a mandatory context reminder into Claude's prompt. This isn't a suggestion the AI can skip — it's injected as system context via stdout.</p>
+
+  <pre><code>#!/bin/bash
+# .claude/hooks/enforce-context-load.sh
+#
+# Injects mandatory context loading instructions on session start.
+# Output goes to stdout = injected into Claude's context.
+
+cat &lt;&lt;'CONTEXT'
+=== MANDATORY SESSION PROTOCOL ===
+
+Before taking ANY action in this session, you MUST:
+
+1. Run: SELECT prepare_session_context('&lt;your focus&gt;')
+   on project_id: uayyhluztelnfxfvdhyt (context DB)
+
+2. READ the full result before writing any code or SQL.
+
+3. If touching production DB (fonreynkfeqywshijqpi):
+   - State what you plan to change and why
+   - Wait for explicit user approval before any mutation
+   - Production writes are gated by PreToolUse hook
+
+4. If touching code:
+   - Read the relevant files FIRST
+   - Run npm run build after changes
+   - Do NOT create new files without checking if existing ones can be extended
+
+Skipping these steps has caused $50k+ in data corruption.
+This is not optional.
+
+=== END PROTOCOL ===
+CONTEXT
+
+exit 0</code></pre>
+
+  <h3>Settings config</h3>
+  <pre><code>{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-context-load.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+</div>
+
+
+<h2>Hook 3: Post-Edit Build Check</h2>
+<span class="tier-label tier-next">Implement Next</span>
+<p class="impact">Catches broken builds before they get committed</p>
+
+<div class="hook-card">
+  <div class="hook-name">Agent-based build verifier</div>
+  <div class="hook-event">Stop &rarr; (fires when Claude finishes responding)</div>
+  <p>Uses an <strong>agent-based hook</strong> — spawns a subagent that can actually run commands. After Claude finishes a coding task, the agent runs <code class="inline-code">npm run build</code> and checks for TypeScript errors. If the build fails, Claude is told to keep working.</p>
+
+  <pre><code>{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if any TypeScript or React source files were modified in this session. If so, run 'npm run build' in the project root and verify it passes. If the build fails, respond with {\"ok\": false, \"reason\": \"Build failed: [first error message]\"}. If no source files were changed or the build passes, respond with {\"ok\": true}.",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+  <p><strong>What happens:</strong> Claude finishes writing code &rarr; agent hook spawns &rarr; runs the build &rarr; if it fails, Claude automatically continues fixing. You don't have to catch build failures manually.</p>
+</div>
+
+
+<h2>Hook 4: Context Reinject on Compaction</h2>
+<span class="tier-label tier-next">Implement Next</span>
+<p class="impact">Prevents context loss in long sessions</p>
+
+<div class="hook-card">
+  <div class="hook-name">reinject-on-compact.sh</div>
+  <div class="hook-event">SessionStart &rarr; compact</div>
+  <p>When Claude's context gets compacted (summarized to free space), critical rules get lost. This hook re-injects the essentials after every compaction.</p>
+
+  <pre><code>#!/bin/bash
+# .claude/hooks/reinject-on-compact.sh
+#
+# Re-injects critical context after compaction.
+
+cat &lt;&lt;'CONTEXT'
+=== POST-COMPACTION CONTEXT RELOAD ===
+
+Critical rules that survive compaction:
+
+DATABASES:
+- Production: fonreynkfeqywshijqpi (cultops.io, main branch)
+- Staging: cbxwippkzeszvxewhebd (staging.cultops.io, dev branch)
+- Context DB: uayyhluztelnfxfvdhyt (session memory only)
+- NEVER mix these. ALL changes go to BOTH prod and staging.
+
+INVENTORY:
+- Never directly update quantities. Use inventoryMovementService.
+- batch_id is never null.
+- Finalization = Creation. Movement records are audit-only.
+
+DEPLOYMENT:
+- Cherry-pick between main and dev. Never merge branches.
+- Push to dev triggers staging deploy. Push to main triggers prod.
+
+PRODUCTION DB WRITES ARE GATED:
+- The PreToolUse hook blocks all mutations on fonreynkfeqywshijqpi
+- State what you want to change, wait for user approval
+
+=== END RELOAD ===
+CONTEXT
+
+exit 0</code></pre>
+
+  <h3>Settings config</h3>
+  <pre><code>{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/reinject-on-compact.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+</div>
+
+
+<h2>Hook 5: Session Activity Logger</h2>
+<span class="tier-label tier-later">Nice to Have</span>
+
+<div class="hook-card">
+  <div class="hook-name">log-tool-use.sh</div>
+  <div class="hook-event">PostToolUse &rarr; all tools</div>
+  <p>Logs every tool call to a local file. Useful for post-session review and debugging conflicting changes across parallel sessions.</p>
+
+  <pre><code>#!/bin/bash
+# .claude/hooks/log-tool-use.sh
+INPUT=$(cat)
+TOOL=$(echo "$INPUT" | jq -r '.tool_name')
+SESSION=$(echo "$INPUT" | jq -r '.session_id')
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# For SQL tools, capture the query
+QUERY=$(echo "$INPUT" | jq -r '.tool_input.query // .tool_input.command // "n/a"' | head -c 200)
+
+echo "$TIMESTAMP | $SESSION | $TOOL | $QUERY" >> ~/.claude/cultops-audit.log
+exit 0</code></pre>
+</div>
+
+
+<hr>
+
+<h2>Combined Settings File</h2>
+<p>All hooks merged into a single <code class="inline-code">.claude/settings.json</code>:</p>
+
+<pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__775d8087-127d-4963-bd11-38f8c3427741__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/gate-production-mutations.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-context-load.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/reinject-on-compact.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if any TypeScript or React source files were modified in this session. If so, run 'npm run build' in the project root and verify it passes. If the build fails, respond with {\"ok\": false, \"reason\": \"Build failed: [first error message]\"}. If no source files were changed or the build passes, respond with {\"ok\": true}.",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-tool-use.sh"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+
+<hr>
+
+<h2>What This Does and Doesn't Solve</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Problem</th>
+      <th>Solved?</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>AI mutates production data unsupervised</td>
+      <td><span class="status-tag tag-blocks">Blocked</span></td>
+      <td>Hook 1 gates all production writes. You approve or deny.</td>
+    </tr>
+    <tr>
+      <td>AI skips context loading</td>
+      <td><span class="status-tag tag-injects">Injected</span></td>
+      <td>Hook 2 injects protocol on every session start. Can't be skipped.</td>
+    </tr>
+    <tr>
+      <td>Broken builds get committed</td>
+      <td><span class="status-tag tag-blocks">Blocked</span></td>
+      <td>Hook 3 auto-runs build check and forces Claude to fix failures.</td>
+    </tr>
+    <tr>
+      <td>Context lost during compaction</td>
+      <td><span class="status-tag tag-injects">Injected</span></td>
+      <td>Hook 4 re-injects critical rules after every compaction.</td>
+    </tr>
+    <tr>
+      <td>Parallel sessions conflicting</td>
+      <td style="color: var(--text-muted);">Partially</td>
+      <td>Audit log (Hook 5) helps diagnose. Full prevention needs Paperclip-style coordination.</td>
+    </tr>
+    <tr>
+      <td>Staging forgotten after prod change</td>
+      <td style="color: var(--text-muted);">No</td>
+      <td>Could add a Stop hook that checks "did you apply to both DBs?" — future enhancement.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>Scope &amp; Applicability</h2>
+
+<p><strong>Claude Code &amp; Cowork:</strong> These hooks apply directly. Both run on the Claude Code runtime, so <code class="inline-code">.claude/settings.json</code> governs behavior.</p>
+
+<p><strong>AntiGravity:</strong> Separate tool, separate context. These hooks won't apply there unless AntiGravity supports Claude Code hooks (needs verification). For AntiGravity sessions, the production DB gate would need to be implemented at the <strong>database level</strong> instead — e.g., a Postgres function that checks a session lock table before allowing writes.</p>
+
+<p><strong>Paperclip (future):</strong> If you adopt Paperclip later, these hooks become the safety layer underneath it. Paperclip handles coordination and delegation; hooks handle the hard blocks that no orchestrator should be able to override.</p>
+
+</body>
+</html>
