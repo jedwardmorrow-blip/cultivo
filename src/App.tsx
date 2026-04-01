@@ -48,6 +48,7 @@ const GrowRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'G
 const DryRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'DryRoomsManagement');
 const DailyTaskBoard = lazyRetry(() => import('./features/cultivation'), 'DailyTaskBoard');
 const SchedulesPage = lazyRetry(() => import('./features/cultivation'), 'SchedulesPage');
+const TaskSettingsPage = lazyRetry(() => import('./features/cultivation'), 'TaskSettingsPage');
 const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'DailyDigestView');
 const WorkerTaskView = lazyRetry(() => import('./features/cultivation'), 'WorkerTaskView');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
@@ -177,6 +178,7 @@ function AuthenticatedApp() {
               <Route path="/cultivation-harvest" element={<CultivationErrorBoundary><HarvestSessionsList /></CultivationErrorBoundary>} />
               <Route path="/cultivation-binning" element={<CultivationErrorBoundary><BinningSessionsView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-schedules" element={<CultivationErrorBoundary><SchedulesPage /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-task-settings" element={<CultivationErrorBoundary><TaskSettingsPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-taskboard" element={<CultivationErrorBoundary><DailyTaskBoard /></CultivationErrorBoundary>} />
               <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
               <Route path="/worker-tasks" element={<CultivationErrorBoundary><WorkerTaskView /></CultivationErrorBoundary>} />

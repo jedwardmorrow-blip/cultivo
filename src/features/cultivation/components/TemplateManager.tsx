@@ -26,9 +26,11 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 interface TemplateManagerProps {
   onClose: () => void;
+  /** When true, renders inline — hides the X close button */
+  inline?: boolean;
 }
 
-export function TemplateManager({ onClose }: TemplateManagerProps) {
+export function TemplateManager({ onClose, inline = false }: TemplateManagerProps) {
   const { templates, loading, updateTemplate, deleteTemplate, createTemplate, refetch } = useScheduleTemplates();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
@@ -65,12 +67,14 @@ export function TemplateManager({ onClose }: TemplateManagerProps) {
           >
             <Plus className="w-3 h-3" /> New Template
           </button>
-          <button
-            onClick={onClose}
-            className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {!inline && (
+            <button
+              onClick={onClose}
+              className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

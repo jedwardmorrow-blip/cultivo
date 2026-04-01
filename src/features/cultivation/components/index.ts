@@ -17,6 +17,8 @@ export { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 export { ExpandedPlantsList } from './ExpandedPlantsList';
 export { HarvestWorkflow } from './harvest';
 export { DailyTaskBoard, SchedulesPage } from './DailyTaskBoard';
+export { TaskSettingsPage } from './TaskSettingsPage';
+export { TaskTypesOverlay } from './TaskTypesOverlay';
 export { TaskCard } from './TaskCard';
 export { TaskDetailDrawer } from './TaskDetailDrawer';
 export { TaskCompletionForm } from './TaskCompletionForm';

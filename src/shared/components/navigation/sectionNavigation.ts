@@ -80,6 +80,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     items: [
       { id: 'cultivation-taskboard', label: 'Today', icon: ClipboardList, group: 'primary' },
       { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'primary' },
+      { id: 'cultivation-task-settings', label: 'Settings', icon: Settings, group: 'primary' },
       { id: 'cultivation-schedules', label: 'Schedule', icon: CalendarDays, group: 'primary' },
       { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-digest', label: 'Reports', icon: FileText, group: 'primary' },
