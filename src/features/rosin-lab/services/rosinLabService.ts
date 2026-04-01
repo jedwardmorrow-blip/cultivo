@@ -22,7 +22,8 @@ import { getDateFrom } from '../utils/analyticsHelpers';
 // Rosin lab tables (wash_runs, press_runs, freeze_dry_runs, etc.) are not yet in database.types.ts.
 // Cast to bypass strict table-union type checking until DBA creates the schema migration.
 // Remove this cast once supabase gen types is run after the migration.
-const db = supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as unknown as { from: (table: string) => any };
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {

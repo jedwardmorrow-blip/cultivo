@@ -1,3 +1,4 @@
+import type React from 'react';
 import { Snowflake, Waves, Wind, Circle, ArrowDownToLine, FlaskConical, ChevronRight } from 'lucide-react';
 import type { RosinLabScreen } from '../types/rosin-lab.types';
 
@@ -6,7 +7,7 @@ interface StageConfig {
   label: string;
   color: string;
   navKey: RosinLabScreen;
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 }
 
 const STAGES: StageConfig[] = [

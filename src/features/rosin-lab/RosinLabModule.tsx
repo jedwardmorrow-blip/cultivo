@@ -1,4 +1,3 @@
-import { FlaskConical } from 'lucide-react';
 import { RosinLabNav } from './components/RosinLabNav';
 import { RosinDashboard } from './screens/RosinDashboard';
 import { MaterialsHub } from './screens/MaterialsHub';
@@ -20,19 +19,6 @@ function screenToView(screen: RosinLabScreen): string {
   return `rosin-lab-${screen}`;
 }
 
-interface ComingSoonProps {
-  label: string;
-}
-
-function ComingSoon({ label }: ComingSoonProps) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <FlaskConical className="w-12 h-12 text-cult-border-strong" />
-      <p className="text-[15px] font-semibold text-cult-text-secondary">{label}</p>
-      <p className="text-[13px] text-cult-text-muted">This screen is coming soon.</p>
-    </div>
-  );
-}
 
 interface RosinLabModuleProps {
   setCurrentView: (view: string) => void;
