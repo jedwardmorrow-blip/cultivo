@@ -4,6 +4,30 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-01 - Rosin Lab Service Bug Fix + Test Coverage (CUL-108, CUL-85)
+
+**Type:** Bug Fix + Tests
+**Modules:** Rosin Lab (`rosinLabService.ts`)
+**Status:** COMPLETE
+
+Fixed a critical `ReferenceError` that made the entire Rosin Lab module non-functional in production. The service used `db` as the Supabase client reference throughout, but `db` was never declared — only `supabase` was imported. Added `const db = supabase;` after imports as a minimal, zero-risk fix. Some functions already used `supabase` directly; this makes the whole file consistent without risky mass-renames.
+
+Added 38 unit tests covering all key service functions:
+- `getDashboardStats` — yield calc math, needsAttention aggregation, error fallback
+- `getActivePipelineItems`, `getPipelineStageCounts` — query + error paths
+- `getHashPackages`, `getFreshFrozenPackages` — with/without status filters
+- `createWashRun` — multi-table mutation (run + inputs + package allocation)
+- `completeWashRun`, `createFreezeDryRun`, `completeFreezeDryRun` — updates
+- `createPressRun` — depleted vs. partial hash package logic tested
+- `createCureSession`, `completeCureSession` — cure lifecycle
+- `getPressRunStats`, `getCureSessionStats` — yield average calculations
+- `getAnalyticsKpis` — date-range aggregation + active strain deduplication
+- `getStrainLeaderboard` — view path ("all") + time-range aggregation path
+
+Also added `@lib` path alias to `vitest.config.ts` (was missing; caused test resolution failures for the rosinLabService import).
+
+---
+
 ## 2026-04-01 - Remove 50% Variance Hard Block (CUL-99, CUL-96)
 
 **Type:** Bug Fix
