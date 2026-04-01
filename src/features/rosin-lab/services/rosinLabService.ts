@@ -19,10 +19,10 @@ import type {
 } from '../types/rosin-lab.types';
 import { getDateFrom } from '../utils/analyticsHelpers';
 
-// Rosin lab tables do not exist in the DB schema yet.
-// Using @ts-expect-error so TypeScript compiles while the schema is being built.
-// @ts-expect-error Rosin lab tables (wash_runs, press_runs, etc.) not yet in database schema
-const db = supabase;
+// Rosin lab tables (wash_runs, press_runs, freeze_dry_runs, etc.) are not yet in database.types.ts.
+// Cast to bypass strict table-union type checking until DBA creates the schema migration.
+// Remove this cast once supabase gen types is run after the migration.
+const db = supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> };
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {
