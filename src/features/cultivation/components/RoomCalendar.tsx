@@ -828,17 +828,23 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
           </button>
         </div>
 
-        {/* Breadcrumb step indicator — visible in Steps 2 and 3 */}
-        {step > 1 && (
-          <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center gap-1.5 flex-shrink-0 bg-cult-charcoal/10">
-            <button
-              type="button"
-              onClick={goStep1}
-              className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
-            >
-              <span className="w-4 h-4 rounded-full border border-cult-medium-gray flex items-center justify-center text-[9px] font-bold leading-none">1</span>
-              <span>Schedules</span>
-            </button>
+        {/* Breadcrumb step indicator — always visible */}
+        <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center gap-1.5 flex-shrink-0 bg-cult-charcoal/10">
+            {step === 1 ? (
+              <div className="flex items-center gap-1.5 text-xs text-cult-white">
+                <span className="w-4 h-4 rounded-full border border-cult-accent bg-cult-accent/20 text-cult-accent flex items-center justify-center text-[9px] font-bold leading-none">1</span>
+                <span>Schedules</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={goStep1}
+                className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+              >
+                <span className="w-4 h-4 rounded-full border border-cult-medium-gray flex items-center justify-center text-[9px] font-bold leading-none">1</span>
+                <span>Schedules</span>
+              </button>
+            )}
             <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
             <div className={`flex items-center gap-1.5 text-xs ${step === 2 ? 'text-cult-white' : 'text-cult-medium-gray'}`}>
               <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 2 ? 'border-cult-accent bg-cult-accent/20 text-cult-accent' : 'border-cult-medium-gray'}`}>2</span>
@@ -853,8 +859,7 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
                 </div>
               </>
             )}
-          </div>
-        )}
+        </div>
 
         {/* Schedule count + action buttons — Step 1 only */}
         {step === 1 && (

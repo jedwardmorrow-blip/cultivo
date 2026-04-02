@@ -30,7 +30,7 @@ export interface TaskCardData {
 }
 
 const PRIORITY_STYLES: Record<string, { dot: string; border: string }> = {
-  high: { dot: 'bg-red-400', border: 'border-l-red-500/60' },
+  high: { dot: 'bg-amber-400', border: 'border-l-amber-500/60' },
   medium: { dot: 'bg-amber-400', border: '' },
   low: { dot: 'bg-zinc-500', border: '' },
 };
