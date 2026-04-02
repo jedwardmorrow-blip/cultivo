@@ -433,7 +433,7 @@ export async function getDistributedToInfo(orderId: string): Promise<Distributed
     originator_license: settings.company_license_number || DEFAULT_LICENSE_NUMBER,
     customer_name: customer?.name || 'Unknown Customer',
     license_number: customer?.license_number || 'License Not Found',
-    location_name: undefined // TODO: Add when implementing multi-location support
+    location_name: undefined
   };
 }
 

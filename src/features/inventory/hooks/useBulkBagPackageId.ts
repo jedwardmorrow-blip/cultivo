@@ -72,11 +72,11 @@ export function useBulkBagPackageId(
 
         if (fetchError) throw fetchError;
 
-        setStrainAbbreviation(data.abbreviation || 'XXX');
+        setStrainAbbreviation(data.abbreviation || 'UNK');
       } catch (err) {
         console.error('Error fetching strain abbreviation:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch strain');
-        setStrainAbbreviation('XXX'); // Fallback
+        setStrainAbbreviation('UNK');
       } finally {
         setIsLoading(false);
       }

@@ -4,6 +4,105 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-02 - CUL-309: Staff capacity view for daily task board
+
+**Type:** Feature
+**Modules:** `src/features/cultivation/components/StaffCapacityPanel.tsx`, `DailyTaskBoard.tsx`
+**Status:** COMPLETE
+
+Added a `StaffCapacityPanel` component to the cultivation task board. Accessed via the new **Capacity** toggle button on the daily task board header.
+
+Features:
+- Groups all tasks for the selected date by assigned staff member
+- Shows task count, completion progress, and total estimated hours per person
+- Visual utilization bar (green → amber → red) relative to a configurable daily capacity threshold (default 8h)
+- `OVER` badge on any staff member exceeding their capacity
+- Expandable rows reveal individual tasks with quick-reassign dropdowns
+- Unassigned tasks surfaced at the bottom of the list
+
+---
+
+## 2026-04-02 - CUL-336: Decompose cultivation.service.ts into focused sub-services
+
+**Type:** Refactor / Debt Remediation
+**Modules:** `src/features/cultivation/services/`
+**Status:** COMPLETE
+
+Decomposed the 1,451-line `cultivation.service.ts` monolith into 6 focused sub-services. The barrel file is preserved for backward compatibility — all existing imports of `cultivationService` continue to work unchanged.
+
+Sub-services created:
+- `growRooms.service.ts` — grow room CRUD + flipRoom
+- `roomLayout.service.ts` — room tables, sections, occupancy
+- `plantGroups.service.ts` — plant group lifecycle, movement, cut sessions, individual plants
+- `harvestSessions.service.ts` — harvest session lifecycle, weight entries, fresh frozen packages
+- `dryRooms.service.ts` — dry room CRUD
+- `binningSessions.service.ts` — binning session lifecycle, bin entries, inventory creation
+
+`cultivation.service.ts` is now a barrel re-export (`{ ...growRoomsService, ...roomLayoutService, ... }`).
+All 675 tests pass. Zero signature changes. Zero breaking changes.
+
+---
+
+## 2026-04-02 - CUL-335: P1 Debt — XXX strain fallback, coversheet stub, package assignment audit trail
+
+**Type:** Debt Remediation
+**Modules:** Inventory hooks, Orders coversheet, Package assignment service
+**Status:** COMPLETE
+
+Three targeted fixes:
+- Replaced hardcoded `'XXX'` fallback with `'UNK'` (industry-standard unknown strain abbreviation) in `useCombineWorkflow.ts` and `useBulkBagPackageId.ts`.
+- Removed misleading `// TODO: Add when implementing multi-location support` comment from `coversheet.service.ts:436` — `location_name: undefined` is correct and intentional.
+- Added `FULFILLMENT` movement record via `inventoryMovementService.recordMovement()` in `packageAssignment.service.ts` after each package assignment commit, establishing a proper inventory movement audit trail for order fulfillment.
+
+---
+
+## 2026-04-02 - CUL-307: Inventory projection panel — expected packaged yield from current pipeline
+
+**Type:** Feature
+**Modules:** Inventory Hub (`InventoryHub.tsx`, new `InventoryProjectionPanel.tsx`)
+**Status:** COMPLETE
+
+Added an Inventory Projection panel to the Inventory Hub that gives Laura (Distribution Manager) a per-strain view of what the current processing pipeline will produce vs what open orders demand.
+
+Key additions:
+- `src/features/inventory/components/InventoryProjectionPanel.tsx` — new component that queries `v_strain_runway` (existing DB view). Shows per-strain pipeline quantity, projected yield (with conversion %), open order demand, gap/surplus, projection confidence badge, and next harvest date.
+- Summary KPIs at panel top: total pipeline, total projected yield, total demand, and number of strains where demand exceeds projected supply (red alert).
+- "Active only" toggle filters to strains with pipeline or open orders.
+- Color-coded gap column: green (surplus >500g), amber (within 200g), red (shortage).
+- No new DB schema required — built on existing `v_strain_runway` view and `conversion_rates` table.
+
+---
+
+## 2026-04-02 - CUL-303: Recurring task generation from room schedules
+
+**Type:** Feature
+**Modules:** Cultivation Tasks (`DailyTaskBoard.tsx`, new `useGenerateTasksFromSchedules`, new `scheduleResolution.ts`)
+**Status:** COMPLETE
+
+Added on-demand task generation from active `room_task_schedules` to `daily_task_instances`. Previously the empty-state copy said tasks were "auto-generated at midnight" but no such mechanism existed.
+
+Key additions:
+- `src/features/cultivation/utils/scheduleResolution.ts` — pure `doesScheduleFireOnDate()` function supporting `daily`, `weekly` (with day_of_week), `biweekly`, `monthly` calendar modes and `phase_day` mode (phase day computed from earliest room flip date).
+- `src/features/cultivation/hooks/useGenerateTasksFromSchedules.ts` — idempotent hook that loads all active schedules, resolves phase_day flip dates via room_tables → room_sections join, and batch-inserts missing `daily_task_instances` rows (keyed by schedule_id + task_date to prevent duplicates).
+- `DailyTaskBoard.tsx` — "Generate Tasks" button added to the header (alongside Manage Schedules) and to the empty state. Button is disabled while generating and shows inline loading text. Success/skip/error notifications via `notificationService`.
+
+---
+
+## 2026-04-02 - Metrc M2: Edge Function scaffold + read parity (CUL-272)
+
+**Type:** Feature
+**Modules:** Metrc Integration (`supabase/functions/metrc-sync/`), Settings (`MetrcCredentialsSettings.tsx`)
+**Status:** COMPLETE
+
+Scaffolded the `metrc-sync` Supabase Edge Function with `MetrcClient` (supporting `get()`, `post()`, `verifyCredentials()`, `fetchActiveItems()`) and `MetrcApiError`. Two operations supported:
+
+- `verify_credentials` — calls Metrc `/facilities/v1`, returns facility name and license. Wired to the Test Connection button in Settings → Metrc API Credentials.
+- `sync_item_categories` — calls Metrc `/items/v1/active`, writes one `metrc_sync_log` row (entity_type=`item_category`, direction=`pull`).
+
+Function authenticates callers via user JWT and uses the service role key internally to bypass RLS on `metrc_credentials`. Test Connection button now shows the facility name on success or a structured error message on failure. Deployed to staging (project `cbxwippkzeszvxewhebd`). End-to-end test blocked pending Metrc developer account approval (sandbox API key outstanding).
+
+---
+
 ## 2026-04-01 - Rosin Lab Service Bug Fix + Test Coverage (CUL-108, CUL-85)
 
 **Type:** Bug Fix + Tests

@@ -158,7 +158,7 @@ export function useCombineWorkflow({
     const dd = today.getDate().toString().padStart(2, '0');
 
     // Extract strain code (first 3 chars or abbreviation)
-    const strain = validation.summary.strain || 'XXX';
+    const strain = validation.summary.strain || 'UNK';
     const strainCode = strain.substring(0, 3).toUpperCase();
 
     const suggested = `${yy}${mm}${dd}-${strainCode}-COMBINED-001`;

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { errorService } from '@/services/error.service';
+import { inventoryMovementService } from '@/services/inventoryMovement.service';
 
 export interface AvailablePackage {
   id: string;
@@ -263,6 +264,25 @@ export const packageAssignmentService = {
       errorService.debug('[packageAssignmentService] Successfully created assignment', {
         assignmentId: data.id
       });
+
+      // Record FULFILLMENT movement for audit trail
+      const { data: invItem } = await supabase
+        .from('inventory_items')
+        .select('id, unit')
+        .eq('package_id', packageId)
+        .single();
+
+      if (invItem) {
+        await inventoryMovementService.recordMovement({
+          movement_kind: 'FULFILLMENT',
+          source_item_id: invItem.id,
+          qty: quantityAssigned,
+          unit: invItem.unit,
+          reference_id: orderId,
+          reference_type: 'order_assignment',
+          reason_code: null,
+        });
+      }
 
       return data as PackageAssignment;
     } catch (error) {
