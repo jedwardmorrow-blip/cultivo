@@ -130,33 +130,6 @@ export async function handleWorkTicketIntake(
       created_by_session: `widget_bug_report_${new Date().toISOString().slice(0,10)}`,
     });
   } catch { /* non-blocking — ticket is already created */ }
-  // v40: Paperclip issue creation for user-reported bugs
-  try {
-    const paperclipUrl = Deno.env.get("PAPERCLIP_API_URL");
-    const paperclipKey = Deno.env.get("PAPERCLIP_API_KEY");
-    const paperclipCompany = Deno.env.get("PAPERCLIP_COMPANY_ID");
-    if (paperclipUrl && paperclipKey && paperclipCompany) {
-      const severityToPriority: Record<string, string> = { critical: "critical", high: "high", medium: "medium", low: "low" };
-      const ppRes = await fetch(`${paperclipUrl}/api/companies/${paperclipCompany}/issues`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${paperclipKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: classification.title,
-          description: `**User-reported via CULT AI widget**\n\nReported by: ${reporterName || "Unknown"}\nInternal ticket ID: ${ticket.id}\nSeverity: ${classification.severity}\nArea: ${classification.affected_area}\n\n---\n\n${message.slice(0, 1000)}\n\n*AI summary: ${classification.summary}*`,
-          priority: severityToPriority[classification.severity] || "medium",
-          status: "todo",
-          assigneeAgentId: "986a2eb5-9889-4d77-a840-e740a13e70a2",
-          labelIds: ["5243a09d-d272-42a1-9b31-dbe33362b653"],
-        }),
-      });
-      if (ppRes.ok) {
-        const ppIssue = await ppRes.json();
-        await prodClient.from("tickets").update({ paperclip_issue_id: ppIssue.identifier, paperclip_sync_status: "synced", paperclip_synced_at: new Date().toISOString() }).eq("id", ticket.id);
-      } else {
-        await prodClient.from("tickets").update({ paperclip_sync_status: "failed" }).eq("id", ticket.id);
-      }
-    }
-  } catch { /* non-blocking — ticket already created */ }
   // v38: Slack notification for new tickets
   try {
     const slackWebhook = Deno.env.get("SLACK_KNOWLEDGE_WEBHOOK_URL") || Deno.env.get("SLACK_WEBHOOK_URL");
