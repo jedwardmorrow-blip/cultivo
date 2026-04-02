@@ -29,6 +29,14 @@ async function getRoutingSettings() {
   return settings;
 }
 
+async function invokeGeocode(text: string): Promise<any> {
+  const { data, error } = await supabase.functions.invoke('ors-proxy', {
+    body: { operation: 'geocode', text },
+  });
+  if (error) throw new Error(`Geocoding proxy error: ${error.message}`);
+  return data;
+}
+
 /**
  * Geocodes a physical address to latitude/longitude coordinates
  *
@@ -38,30 +46,13 @@ async function getRoutingSettings() {
  * @description Uses OpenRouteService API, validates AZ coordinates
  */
 export async function geocodeAddress(address: Address): Promise<GeocodingResult> {
-  const settings = await getRoutingSettings();
-  const apiKey = settings.routing_api_key;
-
-  if (!apiKey) {
-    throw new Error('Routing API key not configured. Please add it in Settings.');
-  }
-
   if (!address.street || address.street.trim() === '') {
     throw new Error('Street address is required for accurate geocoding. Cannot geocode with only city/state.');
   }
 
   const fullAddress = `${address.street}, ${address.city}, ${address.state} ${address.postalCode}`;
-  const encodedAddress = encodeURIComponent(fullAddress);
 
-  const url = `https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodedAddress}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Geocoding API error: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
+  const data = await invokeGeocode(fullAddress);
 
   if (!data.features || data.features.length === 0) {
     throw new Error('Address could not be geocoded. Please verify the address is correct.');
@@ -271,22 +262,7 @@ export function formatAddressForGeocoding(
  * Used by RouteTestingTool for simple geocoding
  */
 export async function geocodeCustomerByAddress(customerId: string, addressString: string): Promise<{ latitude: number; longitude: number }> {
-  const settings = await getRoutingSettings();
-  const apiKey = settings.routing_api_key;
-
-  if (!apiKey) {
-    throw new Error('Routing API key not configured. Please add it in Settings > Routing tab.');
-  }
-
-  const response = await fetch(
-    `https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${encodeURIComponent(addressString)}`
-  );
-
-  if (!response.ok) {
-    throw new Error('Geocoding failed');
-  }
-
-  const data = await response.json();
+  const data = await invokeGeocode(addressString);
 
   if (!data.features || data.features.length === 0) {
     throw new Error('Address not found');

@@ -57,52 +57,26 @@ export async function calculateRouteFromAPI(
   origin: Coordinate,
   destination: Coordinate
 ): Promise<RouteResult> {
-  const settings = await getRoutingSettings();
-  const apiKey = settings.routing_api_key;
-
-  if (!apiKey) {
-    throw new Error('Routing API key not configured. Please add it in Settings.');
-  }
-
-  const url = 'https://api.openrouteservice.org/v2/directions/driving-car';
-
-  const requestBody = {
-    coordinates: [
-      [origin.longitude, origin.latitude],
-      [destination.longitude, destination.latitude]
-    ],
-    instructions: true,
-    instructions_format: 'text',
-    language: 'en',
-    geometry: true,
-    elevation: false,
-    preference: 'recommended',
-    attributes: ['avgspeed', 'detourfactor']
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': apiKey,
-      'Content-Type': 'application/json'
+  const { data, error } = await supabase.functions.invoke('ors-proxy', {
+    body: {
+      operation: 'route',
+      coordinates: [
+        [origin.longitude, origin.latitude],
+        [destination.longitude, destination.latitude]
+      ],
+      instructions: true,
+      instructions_format: 'text',
+      language: 'en',
+      geometry: true,
+      elevation: false,
+      preference: 'recommended',
+      attributes: ['avgspeed', 'detourfactor'],
     },
-    body: JSON.stringify(requestBody)
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[Routing Service] API request failed:', {
-      status: response.status,
-      statusText: response.statusText,
-      errorBody: errorText,
-      requestUrl: url,
-      origin,
-      destination
-    });
-    throw new Error(`Routing API error: ${response.status} - ${errorText}`);
+  if (error) {
+    throw new Error(`Routing proxy error: ${error.message}`);
   }
-
-  const data = await response.json();
 
   if (!data.routes || data.routes.length === 0) {
     throw new Error('No route found between these locations');

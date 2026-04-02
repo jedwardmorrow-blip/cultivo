@@ -225,25 +225,6 @@ export async function getCustomersWithLocation() {
   }
 }
 
-/**
- * Gets routing API key from settings
- */
-export async function getRoutingApiKey() {
-  try {
-    const { data, error } = await supabase
-      .from('app_settings')
-      .select('setting_value')
-      .eq('category', 'routing')
-      .eq('setting_key', 'routing_api_key')
-      .maybeSingle();
-
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    errorService.handle(error, 'Failed to load routing API key');
-    return { data: null, error };
-  }
-}
 
 export interface CalendarOrder {
   id: string;
