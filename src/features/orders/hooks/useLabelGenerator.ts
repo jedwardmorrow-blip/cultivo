@@ -1,5 +1,6 @@
 import { useReducer, useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { ordersDataService } from '@/features/orders/services/ordersService';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 import { logoService } from '@/features/settings/services';
@@ -385,8 +386,7 @@ export function useLabelGenerator() {
         });
       }
 
-      const { error } = await supabase.from('labels').insert(labelsToCreate);
-      if (error) throw error;
+      await ordersDataService.createLabels(labelsToCreate);
 
       dispatchForm({ type: 'RESET_FORM' });
       await loadLabels();
@@ -398,8 +398,7 @@ export function useLabelGenerator() {
 
   const markAsPrinted = async (labelId: string) => {
     try {
-      const { error } = await supabase.from('labels').update({ printed_at: new Date().toISOString() }).eq('id', labelId);
-      if (error) throw error;
+      await ordersDataService.markLabelPrinted(labelId, new Date().toISOString());
       await loadLabels();
     } catch (err) {
       console.error(err);

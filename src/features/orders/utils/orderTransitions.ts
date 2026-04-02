@@ -1,4 +1,4 @@
-export type OrderStatus = 'submitted' | 'accepted' | 'processing' | 'ready_for_delivery' | 'completed' | 'cancelled';
+import type { OrderStatus } from '@/types/order.types';
 
 const FORWARD_TRANSITIONS: Record<OrderStatus, OrderStatus | null> = {
   submitted: 'accepted',
@@ -6,6 +6,7 @@ const FORWARD_TRANSITIONS: Record<OrderStatus, OrderStatus | null> = {
   processing: 'ready_for_delivery',
   ready_for_delivery: 'completed',
   completed: null,
+  delivered: null,
   cancelled: null,
 };
 
@@ -15,6 +16,7 @@ const BACKWARD_TRANSITIONS: Record<OrderStatus, OrderStatus | null> = {
   processing: 'accepted',
   ready_for_delivery: 'processing',
   completed: 'ready_for_delivery',
+  delivered: null,
   cancelled: null,
 };
 
@@ -38,6 +40,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   processing: 'Processing',
   ready_for_delivery: 'Ready for Delivery',
   completed: 'Completed',
+  delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
 

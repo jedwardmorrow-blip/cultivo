@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
+import { updateTicket } from '@/features/admin/services/ticket.service';
 
 interface TriageTicket {
   id: string;
@@ -66,17 +67,17 @@ export function TicketTriage() {
     if (newStatus === 'resolved') updates.resolved_at = new Date().toISOString();
     const notes = editingNotes[ticketId];
     if (notes !== undefined) updates.resolution_notes = notes;
-    await supabase.from('tickets').update(updates).eq('id', ticketId);
+    await updateTicket(ticketId, updates);
     setSaving(null);
     fetchTickets();
   };
 
   const saveNotes = async (ticketId: string) => {
     setSaving(ticketId);
-    await supabase.from('tickets').update({
+    await updateTicket(ticketId, {
       resolution_notes: editingNotes[ticketId] || '',
       updated_at: new Date().toISOString(),
-    }).eq('id', ticketId);
+    });
     setSaving(null);
     fetchTickets();
   };

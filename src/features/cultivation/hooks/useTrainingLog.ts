@@ -26,7 +26,7 @@ export function useTrainingLog(filter?: TrainingLogFilter) {
       if (filter?.dateFrom) query = query.gte('trained_at', filter.dateFrom);
       if (filter?.dateTo) query = query.lte('trained_at', filter.dateTo);
 
-      const { data, error: err } = await query;
+      const { data, error: err } = await query.limit(100);
       if (err) throw err;
       setLogs((data ?? []) as TrainingLog[]);
     } catch {

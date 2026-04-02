@@ -18,6 +18,65 @@
  *      the sole human-readable identifier throughout the UI.
  */
 
+export type PlanStatus = 'draft' | 'scheduled' | 'active' | 'completed' | 'cancelled';
+
+export interface CultivationPlan {
+  id: string;
+  room_id: string;
+  strain_id: string | null;
+  batch_id: string | null;
+  feed_program_id: string | null;
+  plan_name: string | null;
+  plan_status: PlanStatus;
+  planned_plant_count: number | null;
+  planned_clone_count: number | null;
+  clone_date: string | null;
+  veg_start_date: string | null;
+  flower_date: string | null;
+  harvest_date: string | null;
+  dry_date: string | null;
+  clone_days: number | null;
+  veg_days: number | null;
+  flower_days: number | null;
+  dry_days: number | null;
+  turnaround_days: number | null;
+  actual_clone_date: string | null;
+  actual_veg_start_date: string | null;
+  actual_flower_date: string | null;
+  actual_harvest_date: string | null;
+  actual_dry_date: string | null;
+  mother_plant_group_id: string | null;
+  projected_wet_weight_g: number | null;
+  projected_dry_weight_g: number | null;
+  projected_packaged_weight_g: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CultivationPlanInput = Pick<CultivationPlan, 'room_id'> &
+  Partial<Pick<CultivationPlan,
+    | 'strain_id'
+    | 'feed_program_id'
+    | 'plan_name'
+    | 'plan_status'
+    | 'planned_plant_count'
+    | 'planned_clone_count'
+    | 'clone_date'
+    | 'veg_start_date'
+    | 'flower_date'
+    | 'harvest_date'
+    | 'dry_date'
+    | 'clone_days'
+    | 'veg_days'
+    | 'flower_days'
+    | 'dry_days'
+    | 'turnaround_days'
+    | 'projected_wet_weight_g'
+    | 'projected_dry_weight_g'
+    | 'notes'
+  >>;
+
 export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
 export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
 export type PlantSourceType = 'clone' | 'seed';

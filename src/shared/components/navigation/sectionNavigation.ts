@@ -32,6 +32,7 @@ import {
   Users,
   Settings,
   Crown,
+  Map,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -85,7 +86,8 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'primary' },
       { id: 'cultivation-task-settings', label: 'Settings', icon: Settings, group: 'primary' },
       { id: 'cultivation-schedules', label: 'Schedule', icon: CalendarDays, group: 'primary' },
-      { id: 'cultivation-dashboard', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
+      { id: 'cultivation-map', label: 'Map', icon: Map, group: 'primary' },
       { id: 'cultivation-digest', label: 'Reports', icon: FileText, group: 'primary' },
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'secondary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'secondary' },

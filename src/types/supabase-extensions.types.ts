@@ -269,6 +269,137 @@ declare global {
 }
 
 // ============================================================
+// Financial View Row Types
+// Views: v_ci_financial_pulse, v_ar_aging, v_ap_aging,
+//        v_ar_summary_by_customer, v_ar_overview,
+//        v_ar_customer_behavior, v_ar_payment_history,
+//        v_280e_summary, v_strain_cost_of_production
+// Defined here to replace `as any` casts in financial components.
+// ============================================================
+
+/** v_ci_financial_pulse — single-row revenue/cash KPI view */
+export interface FinancialPulse {
+  revenue_mtd: number;
+  orders_mtd: number;
+  revenue_last_30d: number;
+  open_pipeline_value: number;
+  burn_rate_monthly: number;
+  monthly_surplus_deficit: number;
+}
+
+/** v_ar_aging — one row per open invoice with aging metadata */
+export interface ARAgingRow {
+  id: string;
+  invoice_number: string;
+  order_id: string;
+  order_number: string;
+  customer_name: string;
+  customer_id: string;
+  invoice_status: string;
+  issue_date: string;
+  due_date: string;
+  total_amount: number;
+  paid_amount: number;
+  amount_due: number;
+  ar_status: string;
+  days_outstanding: number;
+  age_bucket: string;
+  payment_count: number;
+  payment_terms: string;
+  notes: string | null;
+}
+
+/** v_ap_aging — one row per open vendor bill with aging metadata */
+export interface APAgingRow {
+  id: string;
+  vendor_name: string;
+  vendor_category: string;
+  total_amount: number;
+  amount_outstanding: number;
+  is_cogs: boolean;
+  days_overdue: number;
+  age_bucket: string;
+  due_date: string;
+}
+
+/** v_strain_cost_of_production — per-strain labor/revenue margin */
+export interface StrainCostRow {
+  strain: string;
+  labor_cost_per_gram: number;
+  avg_revenue_per_gram: number;
+  labor_margin_per_gram: number;
+}
+
+/** v_280e_summary — IRS 280E cannabis tax snapshot per period */
+export interface Summary280ERow {
+  period: string;
+  total_revenue: number;
+  total_cogs: number;
+  total_operating_expense: number;
+  cogs_pct: number;
+  taxable_income_estimate: number;
+  vs_standard_accounting: number;
+  penalty_280e: number;
+}
+
+/** v_ar_summary_by_customer — rolled-up AR totals per customer */
+export interface ARSummaryByCustomer {
+  customer_id: string;
+  customer_name: string;
+  open_invoice_count: number;
+  total_invoiced: number;
+  total_paid: number;
+  total_outstanding: number;
+  oldest_days_outstanding: number;
+  overdue_count: number;
+  overdue_amount: number;
+  current_amount: number;
+  bucket_1_30: number;
+  bucket_31_60: number;
+  bucket_61_90: number;
+  bucket_90_plus: number;
+}
+
+/** v_ar_overview — single-row AR portfolio summary */
+export interface AROverview {
+  total_open_invoices: number;
+  total_outstanding: number;
+  total_overdue: number;
+  current_amount: number;
+  bucket_1_30: number;
+  bucket_31_60: number;
+  bucket_61_90: number;
+  bucket_90_plus: number;
+  draft_count: number;
+  draft_value: number;
+}
+
+/** v_ar_customer_behavior — payment behavior analytics per customer */
+export interface ARCustomerBehavior {
+  customer_id: string;
+  customer_name: string;
+  total_invoices: number;
+  paid_invoices: number;
+  lifetime_invoiced: number;
+  lifetime_paid: number;
+  avg_days_to_pay: number;
+  last_payment_date: string | null;
+  open_invoices: number;
+  current_outstanding: number;
+}
+
+/** v_ar_payment_history — individual payment records for AR invoices */
+export interface ARPaymentHistoryRow {
+  id: string;
+  payment_date: string;
+  amount: number;
+  payment_method: string;
+  reference_number: string | null;
+  notes: string | null;
+  recorded_by_name: string | null;
+}
+
+// ============================================================
 // Utility Types
 // ============================================================
 

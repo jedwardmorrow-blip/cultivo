@@ -1,5 +1,27 @@
 import type { Database } from '@/lib/database/database.types';
 
+export type StaffMember = Database['public']['Tables']['staff']['Row'];
+
+export interface StaffInput {
+  id?: string;
+  first_name: string;
+  last_name: string | null;
+  position_title: string | null;
+  department: string | null;
+  role: string | null;
+  email: string | null;
+  phone: string | null;
+  hourly_rate: number | null;
+  pin_code: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  reports_to: string | null;
+  slack_id: string | null;
+  notes: string | null;
+  is_active: boolean;
+  updated_at?: string;
+}
+
 export type AppSetting = Database['public']['Tables']['app_settings']['Row'];
 export type AppSettingInsert = Database['public']['Tables']['app_settings']['Insert'];
 export type AppSettingUpdate = Database['public']['Tables']['app_settings']['Update'];
@@ -34,7 +56,6 @@ export interface OperationalSettings {
 }
 
 export interface RoutingSettings {
-  routing_api_key: string;
   routing_api_provider: string;
   route_cache_days: number;
 }
@@ -60,6 +81,16 @@ export interface UseSettingsReturn {
   updateSetting: (key: string, value: string) => Promise<void>;
   updateSettings: (updates: Record<string, string>) => Promise<void>;
   reload: () => Promise<void>;
+}
+
+export interface MetrcCredential {
+  id: string;
+  state_code: string;
+  api_base_url: string;
+  api_key_encrypted: string;
+  facility_license: string;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface UseLogosReturn {

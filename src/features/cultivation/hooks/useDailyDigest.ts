@@ -21,29 +21,35 @@ export function useDailyDigest(date: string) {
             .from('daily_task_instances')
             .select('*')
             .eq('task_date', date)
-            .eq('status', 'completed'),
+            .eq('status', 'completed')
+            .limit(100),
           supabase
             .from('daily_attendance')
             .select('*')
-            .eq('attendance_date', date),
+            .eq('attendance_date', date)
+            .limit(100),
           supabase
             .from('daily_log_annotations')
             .select('*')
-            .eq('annotation_date', date),
+            .eq('annotation_date', date)
+            .limit(100),
           supabase
             .from('ipm_spray_log')
             .select('*')
             .gte('applied_at', dayStart)
-            .lte('applied_at', dayEnd),
+            .lte('applied_at', dayEnd)
+            .limit(100),
           supabase
             .from('feeding_log')
             .select('*')
             .gte('fed_at', dayStart)
-            .lte('fed_at', dayEnd),
+            .lte('fed_at', dayEnd)
+            .limit(100),
           supabase
             .from('plant_mortality_log')
             .select('*')
-            .eq('mortality_date', date),
+            .eq('mortality_date', date)
+            .limit(100),
         ]);
 
       const firstError =

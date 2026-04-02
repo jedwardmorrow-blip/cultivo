@@ -276,8 +276,16 @@ function assessConfidence(result: ParsedInvoiceData): 'high' | 'medium' | 'low' 
  * @returns ParsedInvoiceData with extracted fields and confidence score
  */
 export async function parseInvoicePDF(file: File): Promise<ParsedInvoiceData> {
+  if (file.type !== 'application/pdf') {
+    throw new Error('Only PDF files are accepted. Please upload a valid PDF invoice.');
+  }
   const pdfjsLib = await getPdfjsLib();
   const arrayBuffer = await file.arrayBuffer();
+  // Magic bytes: PDF files start with %PDF (0x25 0x50 0x44 0x46)
+  const magic = new Uint8Array(arrayBuffer.slice(0, 4));
+  if (magic[0] !== 0x25 || magic[1] !== 0x50 || magic[2] !== 0x44 || magic[3] !== 0x46) {
+    throw new Error('File does not appear to be a valid PDF. Please upload a valid PDF invoice.');
+  }
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
   let fullText = '';
@@ -329,6 +337,9 @@ export async function uploadInvoicePDF(file: File, vendorBillId: string): Promis
 
   if (!file || file.size === 0) throw new Error('File is empty or missing');
   if (file.size > 15 * 1024 * 1024) throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 15MB)`);
+  if (file.type !== 'application/pdf') {
+    throw new Error('Only PDF files are accepted. Please upload a valid PDF invoice.');
+  }
 
   const fileName = `${vendorBillId}/${Date.now()}-${file.name}`;
 

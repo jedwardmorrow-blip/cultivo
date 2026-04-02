@@ -48,8 +48,15 @@ export function Layout({ children }: LayoutProps) {
     navigate('/dashboard');
   };
 
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
   return (
     <div className="min-h-screen bg-cult-black">
+      {isDemoMode && (
+        <div className="sticky top-0 z-50 bg-amber-500 text-black text-center text-xs font-semibold py-1 tracking-wider uppercase">
+          Demo Environment — Data shown is fictional and for demonstration purposes only
+        </div>
+      )}
       <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between py-2.5">

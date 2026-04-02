@@ -63,7 +63,18 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
     );
   }, [formData, account]);
 
-  const isValid = formData.name.trim() !== '';
+  const emailError = useMemo(() => {
+    const raw = (formData.email || '').trim();
+    if (!raw) return undefined;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const addresses = raw.split(',').map((a) => a.trim()).filter(Boolean);
+    const invalid = addresses.filter((a) => !emailRegex.test(a));
+    return invalid.length > 0
+      ? `Invalid email address${invalid.length > 1 ? 'es' : ''}: ${invalid.join(', ')}`
+      : undefined;
+  }, [formData.email]);
+
+  const isValid = formData.name.trim() !== '' && !emailError;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -129,7 +140,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <FormField label="Email" helpText="Separate multiple emails with commas">
+            <FormField label="Email" helpText="Separate multiple emails with commas" error={emailError}>
               <FormInput
                 type="text"
                 value={formData.email || ''}

@@ -35,6 +35,15 @@ export interface FulfillmentChecklist {
   updated_at: string;
 }
 
+export type OrderStatus =
+  | 'submitted'
+  | 'accepted'
+  | 'processing'
+  | 'ready_for_delivery'
+  | 'completed'
+  | 'delivered'
+  | 'cancelled';
+
 export type PackageAssignmentStatus = 'reserved' | 'fulfilled' | 'released';
 
 export interface WorkflowSummary {

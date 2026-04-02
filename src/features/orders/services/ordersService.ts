@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import type { Order, OrderItem, Product, WorkflowSummary } from '../types';
 import type { ProductWithStrainRelation } from '@/types';
+import type { Database } from '@/types/database.types';
+
+type LabelInsert = Database['public']['Tables']['labels']['Insert'];
 
 class OrdersDataService {
   async fetchOrders(includeArchived: boolean = false): Promise<Order[]> {
@@ -250,6 +253,16 @@ class OrdersDataService {
       .update({ archived: true })
       .eq('id', orderId);
 
+    if (error) throw error;
+  }
+
+  async createLabels(labels: LabelInsert[]): Promise<void> {
+    const { error } = await supabase.from('labels').insert(labels);
+    if (error) throw error;
+  }
+
+  async markLabelPrinted(id: string, printedAt: string): Promise<void> {
+    const { error } = await supabase.from('labels').update({ printed_at: printedAt }).eq('id', id);
     if (error) throw error;
   }
 }

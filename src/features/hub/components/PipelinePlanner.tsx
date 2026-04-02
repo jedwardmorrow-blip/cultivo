@@ -6,48 +6,19 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { STAGE_HEX } from '@/features/production-planner/types';
+import type { CultivationPlan } from '@/types';
+import {
+  createCultivationPlan,
+  createPlanSnapshot,
+  updateCultivationPlan,
+  cancelCultivationPlan,
+} from '@/features/hub/services';
 
 // ═══════════════════════════════════════════════════════════════
 // Pipeline Planner — cultivation cycle planning hub
 // Plan clone/flip/harvest dates across all rooms, see labor
 // collisions, mother room demand, and inventory projections.
 // ═══════════════════════════════════════════════════════════════
-
-type PlanStatus = 'draft' | 'scheduled' | 'active' | 'completed' | 'cancelled';
-
-interface CultivationPlan {
-  id: string;
-  room_id: string;
-  strain_id: string | null;
-  batch_id: string | null;
-  feed_program_id: string | null;
-  plan_name: string | null;
-  plan_status: PlanStatus;
-  planned_plant_count: number | null;
-  planned_clone_count: number | null;
-  clone_date: string | null;
-  veg_start_date: string | null;
-  flower_date: string | null;
-  harvest_date: string | null;
-  dry_date: string | null;
-  clone_days: number | null;
-  veg_days: number | null;
-  flower_days: number | null;
-  dry_days: number | null;
-  turnaround_days: number | null;
-  actual_clone_date: string | null;
-  actual_veg_start_date: string | null;
-  actual_flower_date: string | null;
-  actual_harvest_date: string | null;
-  actual_dry_date: string | null;
-  mother_plant_group_id: string | null;
-  projected_wet_weight_g: number | null;
-  projected_dry_weight_g: number | null;
-  projected_packaged_weight_g: number | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
 interface RoomInfo {
   id: string;
@@ -778,63 +749,16 @@ export function PipelinePlanner() {
     setSaving(true);
     try {
       if (panelMode === 'create') {
-        const { data, error } = await supabase.from('cultivation_plans').insert({
-          room_id: editingPlan.room_id,
-          strain_id: editingPlan.strain_id ?? null,
-          feed_program_id: editingPlan.feed_program_id ?? null,
-          plan_name: editingPlan.plan_name ?? null,
-          plan_status: editingPlan.plan_status ?? 'draft',
-          planned_plant_count: editingPlan.planned_plant_count ?? null,
-          planned_clone_count: editingPlan.planned_clone_count ?? null,
-          clone_date: editingPlan.clone_date ?? null,
-          veg_start_date: editingPlan.veg_start_date ?? null,
-          flower_date: editingPlan.flower_date ?? null,
-          harvest_date: editingPlan.harvest_date ?? null,
-          dry_date: editingPlan.dry_date ?? null,
-          clone_days: editingPlan.clone_days ?? null,
-          veg_days: editingPlan.veg_days ?? null,
-          flower_days: editingPlan.flower_days ?? null,
-          dry_days: editingPlan.dry_days ?? null,
-          turnaround_days: editingPlan.turnaround_days ?? null,
-          projected_wet_weight_g: editingPlan.projected_wet_weight_g ?? null,
-          projected_dry_weight_g: editingPlan.projected_dry_weight_g ?? null,
-          notes: editingPlan.notes ?? null,
-        }).select().single();
-        if (error) throw error;
-        if (data) setPlans((prev) => [...prev, data as CultivationPlan]);
+        const created = await createCultivationPlan(editingPlan);
+        setPlans((prev) => [...prev, created]);
       } else if (panelMode === 'edit' && selectedPlanId) {
         // Snapshot before updating
         const original = plans.find((p) => p.id === selectedPlanId);
         if (original) {
-          await supabase.from('cultivation_plan_snapshots').insert({
-            plan_id: selectedPlanId,
-            snapshot_data: original as any,
-            snapshot_reason: 'edit',
-          });
+          await createPlanSnapshot(selectedPlanId, original);
         }
-        const { data, error } = await supabase.from('cultivation_plans').update({
-          strain_id: editingPlan.strain_id ?? null,
-          feed_program_id: editingPlan.feed_program_id ?? null,
-          plan_name: editingPlan.plan_name ?? null,
-          plan_status: editingPlan.plan_status ?? 'draft',
-          planned_plant_count: editingPlan.planned_plant_count ?? null,
-          planned_clone_count: editingPlan.planned_clone_count ?? null,
-          clone_date: editingPlan.clone_date ?? null,
-          veg_start_date: editingPlan.veg_start_date ?? null,
-          flower_date: editingPlan.flower_date ?? null,
-          harvest_date: editingPlan.harvest_date ?? null,
-          dry_date: editingPlan.dry_date ?? null,
-          clone_days: editingPlan.clone_days ?? null,
-          veg_days: editingPlan.veg_days ?? null,
-          flower_days: editingPlan.flower_days ?? null,
-          dry_days: editingPlan.dry_days ?? null,
-          turnaround_days: editingPlan.turnaround_days ?? null,
-          projected_wet_weight_g: editingPlan.projected_wet_weight_g ?? null,
-          projected_dry_weight_g: editingPlan.projected_dry_weight_g ?? null,
-          notes: editingPlan.notes ?? null,
-        }).eq('id', selectedPlanId).select().single();
-        if (error) throw error;
-        if (data) setPlans((prev) => prev.map((p) => p.id === selectedPlanId ? data as CultivationPlan : p));
+        const updated = await updateCultivationPlan(selectedPlanId, editingPlan);
+        setPlans((prev) => prev.map((p) => p.id === selectedPlanId ? updated : p));
       }
       handleClosePanel();
     } catch (err) {
@@ -848,8 +772,7 @@ export function PipelinePlanner() {
     if (!selectedPlanId) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from('cultivation_plans').update({ plan_status: 'cancelled' }).eq('id', selectedPlanId);
-      if (error) throw error;
+      await cancelCultivationPlan(selectedPlanId);
       setPlans((prev) => prev.filter((p) => p.id !== selectedPlanId));
       handleClosePanel();
     } finally {

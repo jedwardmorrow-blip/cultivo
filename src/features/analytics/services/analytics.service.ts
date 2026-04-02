@@ -168,7 +168,8 @@ export async function getCompletedTrimSessions(date: string) {
       .select('*')
       .eq('session_date', date)
       .eq('session_status', 'completed')
-      .order('completed_at', { ascending: true });
+      .order('completed_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     return { data, error: null };
@@ -192,7 +193,8 @@ export async function getCompletedPackagingSessions(date: string) {
       .select('*')
       .eq('session_date', date)
       .eq('session_status', 'completed')
-      .order('completed_at', { ascending: true });
+      .order('completed_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     return { data, error: null };

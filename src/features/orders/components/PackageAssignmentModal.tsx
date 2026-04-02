@@ -18,6 +18,7 @@ interface PackageAssignmentModalProps {
   productName: string;
   orderItemQuantity: number;
   unit: string;
+  batchId?: string | null;
 }
 
 interface SelectedPackage extends AvailablePackage {
@@ -33,13 +34,15 @@ export function PackageAssignmentModal({
   productName,
   orderItemQuantity,
   unit,
+  batchId,
 }: PackageAssignmentModalProps) {
   const [selectedPackages, setSelectedPackages] = useState<Map<string, SelectedPackage>>(new Map());
   const [notes, setNotes] = useState('');
 
   const { packages, loading: loadingPackages, error: packagesError, refetch } = useAvailablePackages(
     productName,
-    orderItemQuantity
+    orderItemQuantity,
+    batchId
   );
   const { totalAssigned, loading: loadingTotal } = useTotalAssignedQuantity(orderItemId);
   const { assignPackage, assigning } = useAssignPackage();
@@ -126,6 +129,12 @@ export function PackageAssignmentModal({
       maxWidth="5xl"
     >
       <div className="space-y-6">
+        {!batchId && (
+          <div className="flex items-center gap-2 p-3 bg-yellow-900/20 border border-yellow-600 text-yellow-400 text-sm">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>No batch assigned to this order item. Assign a batch first to restrict packages to the correct batch.</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-cult-dark-gray border border-cult-medium-gray">
           <div>
             <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Order Item Quantity</p>

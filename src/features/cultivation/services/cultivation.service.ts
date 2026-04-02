@@ -138,7 +138,8 @@ export const cultivationService = {
     const { data, error } = await supabase
       .from('grow_rooms')
       .select('*')
-      .order('room_code');
+      .order('room_code')
+      .limit(100);
     if (error) throwError(error, 'listGrowRooms');
     return data as GrowRoom[];
   },

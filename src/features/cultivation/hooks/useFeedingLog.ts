@@ -26,7 +26,7 @@ export function useFeedingLog(filter?: FeedingLogFilter) {
       if (filter?.dateFrom) query = query.gte('fed_at', filter.dateFrom);
       if (filter?.dateTo) query = query.lte('fed_at', filter.dateTo);
 
-      const { data, error: err } = await query;
+      const { data, error: err } = await query.limit(100);
       if (err) throw err;
       setLogs((data ?? []) as FeedingLog[]);
     } catch {

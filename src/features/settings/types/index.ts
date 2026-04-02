@@ -12,5 +12,7 @@ export type {
   SettingsFormData,
   UseSettingsReturn,
   UseLogosReturn,
-  MetrcCredential
+  MetrcCredential,
+  StaffMember,
+  StaffInput
 } from './settings.types';

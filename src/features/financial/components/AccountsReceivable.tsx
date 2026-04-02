@@ -18,45 +18,18 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
+import { recordPayment } from '@/features/financial/services/payments.service';
 import { InvoiceModal } from '@/features/orders/components/InvoiceModal';
+import type {
+  ARSummaryByCustomer,
+  ARAgingRow,
+  AROverview,
+  ARCustomerBehavior,
+  ARPaymentHistoryRow,
+} from '@/types';
 
-interface CustomerSummary {
-  customer_id: string;
-  customer_name: string;
-  open_invoice_count: number;
-  total_invoiced: number;
-  total_paid: number;
-  total_outstanding: number;
-  oldest_days_outstanding: number;
-  overdue_count: number;
-  overdue_amount: number;
-  current_amount: number;
-  bucket_1_30: number;
-  bucket_31_60: number;
-  bucket_61_90: number;
-  bucket_90_plus: number;
-}
-
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  order_id: string;
-  order_number: string;
-  customer_name: string;
-  customer_id: string;
-  invoice_status: string;
-  issue_date: string;
-  due_date: string;
-  total_amount: number;
-  paid_amount: number;
-  amount_due: number;
-  ar_status: string;
-  days_outstanding: number;
-  age_bucket: string;
-  payment_count: number;
-  payment_terms: string;
-  notes: string | null;
-}
+// Local alias — ARAgingRow is the v_ar_aging view shape used as Invoice in this component
+type Invoice = ARAgingRow;
 
 interface LineItem {
   product_name: string;
@@ -69,42 +42,6 @@ interface LineItem {
 
 interface InvoiceDetails extends Invoice {
   line_items?: LineItem[];
-}
-
-interface PaymentRecord {
-  id: string;
-  payment_date: string;
-  amount: number;
-  payment_method: string;
-  reference_number: string | null;
-  notes: string | null;
-  recorded_by_name: string | null;
-}
-
-interface AROverview {
-  total_open_invoices: number;
-  total_outstanding: number;
-  total_overdue: number;
-  current_amount: number;
-  bucket_1_30: number;
-  bucket_31_60: number;
-  bucket_61_90: number;
-  bucket_90_plus: number;
-  draft_count: number;
-  draft_value: number;
-}
-
-interface CustomerBehavior {
-  customer_id: string;
-  customer_name: string;
-  total_invoices: number;
-  paid_invoices: number;
-  lifetime_invoiced: number;
-  lifetime_paid: number;
-  avg_days_to_pay: number;
-  last_payment_date: string | null;
-  open_invoices: number;
-  current_outstanding: number;
 }
 
 type StatusFilter = 'all' | 'overdue' | 'open' | 'partial' | 'paid' | 'draft';
@@ -155,7 +92,7 @@ function formatDate(dateStr: string | null): string {
 
 export function AccountsReceivable() {
   const { user } = useAuth();
-  const [customers, setCustomers] = useState<CustomerSummary[]>([]);
+  const [customers, setCustomers] = useState<ARSummaryByCustomer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [overview, setOverview] = useState<AROverview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,7 +102,7 @@ export function AccountsReceivable() {
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [customerInvoices, setCustomerInvoices] = useState<Invoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
-  const [customerBehavior, setCustomerBehavior] = useState<Record<string, CustomerBehavior>>({});
+  const [customerBehavior, setCustomerBehavior] = useState<Record<string, ARCustomerBehavior>>({});
 
   // Date range filter
   const [issueDateFrom, setIssueDateFrom] = useState('');
@@ -174,7 +111,7 @@ export function AccountsReceivable() {
   // Invoice detail drawer
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetails | null>(null);
   const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDetails | null>(null);
-  const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<ARPaymentHistoryRow[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [notesEdit, setNotesEdit] = useState('');
   const [notesEditing, setNotesEditing] = useState(false);
@@ -215,12 +152,13 @@ export function AccountsReceivable() {
         supabase.from('v_ar_customer_behavior').select('*'),
       ]);
 
-      if (custRes.data) setCustomers(custRes.data as any);
-      if (overviewRes.data) setOverview(overviewRes.data as any);
-      if (invRes.data) setInvoices(invRes.data as any);
+      if (custRes.data) setCustomers(custRes.data as unknown as ARSummaryByCustomer[]);
+      if (overviewRes.data) setOverview(overviewRes.data as unknown as AROverview);
+      if (invRes.data) setInvoices(invRes.data as unknown as Invoice[]);
       if (behaviorRes.data) {
-        const behaviorMap = (behaviorRes.data as any).reduce(
-          (acc: Record<string, CustomerBehavior>, b: CustomerBehavior) => {
+        const behaviors = behaviorRes.data as unknown as ARCustomerBehavior[];
+        const behaviorMap = behaviors.reduce<Record<string, ARCustomerBehavior>>(
+          (acc, b) => {
             acc[b.customer_id] = b;
             return acc;
           },
@@ -249,7 +187,7 @@ export function AccountsReceivable() {
         .select('*')
         .eq('customer_id', customerId)
         .order('days_outstanding', { ascending: false });
-      setCustomerInvoices((data || []) as any);
+      setCustomerInvoices((data || []) as unknown as Invoice[]);
     } catch (err) {
       console.error('Failed to load invoices:', err);
     } finally {
@@ -266,11 +204,11 @@ export function AccountsReceivable() {
       ]);
 
       if (detailRes.data) {
-        const detail = detailRes.data as any;
+        const detail = detailRes.data as unknown as InvoiceDetails;
         setInvoiceDetails(detail);
         setNotesEdit(detail.notes || '');
       }
-      if (paymentsRes.data) setPaymentHistory(paymentsRes.data as any);
+      if (paymentsRes.data) setPaymentHistory(paymentsRes.data as unknown as ARPaymentHistoryRow[]);
     } catch (err) {
       console.error('Failed to load invoice details:', err);
     } finally {
@@ -336,7 +274,7 @@ export function AccountsReceivable() {
 
     try {
       setPaymentSaving(true);
-      const { error } = await supabase.from('payments').insert({
+      await recordPayment({
         invoice_id: paymentModal.id,
         payment_date: paymentForm.payment_date,
         amount,
@@ -344,7 +282,6 @@ export function AccountsReceivable() {
         reference_number: paymentForm.reference_number.trim() || null,
         recorded_by: user?.id || null,
       });
-      if (error) throw error;
       setPaymentSuccess(true);
       setTimeout(() => {
         setPaymentModal(null);

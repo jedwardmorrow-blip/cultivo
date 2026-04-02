@@ -1,54 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, BarChart3, Scale } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-
-interface FinancialPulse {
-  revenue_mtd: number;
-  orders_mtd: number;
-  revenue_last_30d: number;
-  open_pipeline_value: number;
-  burn_rate_monthly: number;
-  monthly_surplus_deficit: number;
-}
-
-interface ARRecord {
-  id: string;
-  invoice_number: string;
-  customer_name: string;
-  amount_due: number;
-  days_outstanding: number;
-  age_bucket: string;
-}
-
-interface APRecord {
-  id: string;
-  vendor_name: string;
-  vendor_category: string;
-  total_amount: number;
-  amount_outstanding: number;
-  is_cogs: boolean;
-  days_overdue: number;
-  age_bucket: string;
-  due_date: string;
-}
-
-interface StrainCost {
-  strain: string;
-  labor_cost_per_gram: number;
-  avg_revenue_per_gram: number;
-  labor_margin_per_gram: number;
-}
-
-interface Summary280E {
-  period: string;
-  total_revenue: number;
-  total_cogs: number;
-  total_operating_expense: number;
-  cogs_pct: number;
-  taxable_income_estimate: number;
-  vs_standard_accounting: number;
-  penalty_280e: number;
-}
+import type { FinancialPulse, ARAgingRow, APAgingRow, StrainCostRow, Summary280ERow } from '@/types';
 
 function fmt(val: number | null | undefined) {
   if (val == null) return '—';
@@ -75,10 +28,10 @@ const BUCKET_COLORS: Record<string, string> = {
 
 export function FinancialDashboard() {
   const [pulse, setPulse] = useState<FinancialPulse | null>(null);
-  const [ar, setAR] = useState<ARRecord[]>([]);
-  const [ap, setAP] = useState<APRecord[]>([]);
-  const [strains, setStrains] = useState<StrainCost[]>([]);
-  const [summary280e, setSummary280e] = useState<Summary280E[]>([]);
+  const [ar, setAR] = useState<ARAgingRow[]>([]);
+  const [ap, setAP] = useState<APAgingRow[]>([]);
+  const [strains, setStrains] = useState<StrainCostRow[]>([]);
+  const [summary280e, setSummary280e] = useState<Summary280ERow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -96,11 +49,11 @@ export function FinancialDashboard() {
         supabase.from('v_280e_summary').select('*').order('period', { ascending: false }).limit(6),
       ]);
 
-      if (pulseRes.data) setPulse(pulseRes.data as any);
-      if (arRes.data) setAR(arRes.data as any);
-      if (apRes.data) setAP(apRes.data as any);
-      if (strainsRes.data) setStrains(strainsRes.data as any);
-      if (s280eRes.data) setSummary280e(s280eRes.data as any);
+      if (pulseRes.data) setPulse(pulseRes.data as unknown as FinancialPulse);
+      if (arRes.data) setAR(arRes.data as unknown as ARAgingRow[]);
+      if (apRes.data) setAP(apRes.data as unknown as APAgingRow[]);
+      if (strainsRes.data) setStrains(strainsRes.data as unknown as StrainCostRow[]);
+      if (s280eRes.data) setSummary280e(s280eRes.data as unknown as Summary280ERow[]);
     } catch (err) {
       console.error('Failed to load financial data:', err);
     } finally {

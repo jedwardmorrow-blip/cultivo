@@ -246,52 +246,6 @@ export async function getCoversheetPackageAssignments(orderId: string) {
   return data || [];
 }
 
-export async function getCoversheetBatchInfo(orderId: string) {
-  const { data: assignments } = await supabase
-    .from('package_assignments_details')
-    .select('batch, strain')
-    .eq('order_id', orderId);
-
-  if (!assignments || assignments.length === 0) {
-    return [];
-  }
-
-  const uniqueBatches = Array.from(new Set(
-    assignments.map(a => a.batch).filter(b => b !== null)
-  ));
-
-  const batchInfoPromises = uniqueBatches.map(async (batch) => {
-    const { data: coaData } = await supabase
-      .from('certificates_of_analysis')
-      .select(`
-        id,
-        batch_number,
-        thc_percentage,
-        cbd_percentage,
-        total_cannabinoids_percentage,
-        harvest_date,
-        sample_date,
-        lab_name,
-        terpene_1_name,
-        terpene_1_value,
-        terpene_2_name,
-        terpene_2_value,
-        terpene_3_name,
-        terpene_3_value
-      `)
-      .eq('batch_number', batch)
-      .maybeSingle();
-
-    return {
-      batch,
-      coa: coaData,
-      strain: assignments.find(a => a.batch === batch)?.strain || null
-    };
-  });
-
-  const batchInfo = await Promise.all(batchInfoPromises);
-  return batchInfo;
-}
 
 // ============================================================================
 // COMPLIANCE DATA FUNCTIONS
@@ -535,12 +489,13 @@ export async function markCoversheetOutdated(orderId: string): Promise<void> {
  *       initial creation and updates intelligently
  */
 export async function regenerateCoversheet(orderId: string): Promise<Coversheet> {
-  // First mark as not outdated, then regenerate
+  // Generate first — only mark as not outdated after successful generation
+  const result = await generateCoversheet(orderId);
+
   await supabase
     .from('coversheets')
     .update({ is_outdated: false })
     .eq('order_id', orderId);
 
-  // Use existing generation logic which handles updates
-  return await generateCoversheet(orderId);
+  return result;
 }

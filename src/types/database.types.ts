@@ -3157,6 +3157,13 @@ export type Database = {
             foreignKeyName: "coversheets_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coversheets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -3804,6 +3811,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "customer_activity_log_linked_order_id_fkey"
+            columns: ["linked_order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "customer_activity_log_linked_order_id_fkey"
@@ -5139,6 +5153,13 @@ export type Database = {
             foreignKeyName: "delivery_schedule_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_schedule_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -5444,6 +5465,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "email_send_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "email_send_log_order_id_fkey"
@@ -6024,6 +6052,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean
+          labor_hours_per_week: number | null
           name: string
           room_code: string
           room_type: string
@@ -6035,6 +6064,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          labor_hours_per_week?: number | null
           name: string
           room_code: string
           room_type?: string
@@ -6046,6 +6076,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          labor_hours_per_week?: number | null
           name?: string
           room_code?: string
           room_type?: string
@@ -8028,6 +8059,13 @@ export type Database = {
             foreignKeyName: "invoices_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -8541,6 +8579,109 @@ export type Database = {
         }
         Relationships: []
       }
+      order_audit_log: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string | null
+          changed_fields: string[] | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          order_id: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_fields?: string[] | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          order_id: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_fields?: string[] | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          order_id?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "crm_revenue_pipeline"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_age_metrics"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_material_requirements"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_by_delivery_month"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "pending_invoices"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_audit_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["order_id"]
+          },
+        ]
+      }
       order_forecasts: {
         Row: {
           created_at: string | null
@@ -8674,6 +8815,13 @@ export type Database = {
             foreignKeyName: "order_fulfillment_checklist_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_fulfillment_checklist_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -8798,6 +8946,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_fulfillment_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "order_fulfillment_items_order_id_fkey"
@@ -9041,6 +9196,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "order_items_order_id_fkey"
@@ -9441,6 +9603,13 @@ export type Database = {
             foreignKeyName: "package_assignments_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -9562,6 +9731,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "packaging_schedule_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "packaging_schedule_order_id_fkey"
@@ -10066,6 +10242,165 @@ export type Database = {
           },
         ]
       }
+      planned_cycles: {
+        Row: {
+          clone_cut_date: string | null
+          created_at: string
+          created_by: string | null
+          estimated_harvest_date: string
+          flower_start_date: string
+          forecast_price_per_gram: number | null
+          forecast_yield_grams: number | null
+          id: string
+          linked_plant_group_id: string | null
+          mom_plant_group_id: string | null
+          notes: string | null
+          planned_plant_count: number
+          status: string
+          strain_id: string
+          target_room_id: string
+          updated_at: string
+          veg_start_date: string | null
+        }
+        Insert: {
+          clone_cut_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_harvest_date: string
+          flower_start_date: string
+          forecast_price_per_gram?: number | null
+          forecast_yield_grams?: number | null
+          id?: string
+          linked_plant_group_id?: string | null
+          mom_plant_group_id?: string | null
+          notes?: string | null
+          planned_plant_count: number
+          status?: string
+          strain_id: string
+          target_room_id: string
+          updated_at?: string
+          veg_start_date?: string | null
+        }
+        Update: {
+          clone_cut_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_harvest_date?: string
+          flower_start_date?: string
+          forecast_price_per_gram?: number | null
+          forecast_yield_grams?: number | null
+          id?: string
+          linked_plant_group_id?: string | null
+          mom_plant_group_id?: string | null
+          notes?: string | null
+          planned_plant_count?: number
+          status?: string
+          strain_id?: string
+          target_room_id?: string
+          updated_at?: string
+          veg_start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planned_cycles_linked_plant_group_id_fkey"
+            columns: ["linked_plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_mom_plant_group_id_fkey"
+            columns: ["mom_plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "projected_inventory_requirements"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strain_metadata_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_rosin_strain_yields"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_analytics_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_basics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["target_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["target_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["grow_room_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["target_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_occupancy"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["target_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_operational_state"
+            referencedColumns: ["room_id"]
+          },
+        ]
+      }
       plant_group_cut_sessions: {
         Row: {
           created_at: string
@@ -10117,30 +10452,48 @@ export type Database = {
       plant_group_room_history: {
         Row: {
           from_room_id: string
+          from_section_id: string | null
+          from_table_id: string | null
           id: string
           moved_at: string
           moved_by: string | null
           notes: string | null
+          plant_count: number | null
           plant_group_id: string
+          source_group_id: string | null
           to_room_id: string
+          to_section_id: string | null
+          to_table_id: string | null
         }
         Insert: {
           from_room_id: string
+          from_section_id?: string | null
+          from_table_id?: string | null
           id?: string
           moved_at?: string
           moved_by?: string | null
           notes?: string | null
+          plant_count?: number | null
           plant_group_id: string
+          source_group_id?: string | null
           to_room_id: string
+          to_section_id?: string | null
+          to_table_id?: string | null
         }
         Update: {
           from_room_id?: string
+          from_section_id?: string | null
+          from_table_id?: string | null
           id?: string
           moved_at?: string
           moved_by?: string | null
           notes?: string | null
+          plant_count?: number | null
           plant_group_id?: string
+          source_group_id?: string | null
           to_room_id?: string
+          to_section_id?: string | null
+          to_table_id?: string | null
         }
         Relationships: [
           {
@@ -10172,8 +10525,29 @@ export type Database = {
             referencedColumns: ["room_id"]
           },
           {
+            foreignKeyName: "plant_group_room_history_from_section_id_fkey"
+            columns: ["from_section_id"]
+            isOneToOne: false
+            referencedRelation: "room_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_from_table_id_fkey"
+            columns: ["from_table_id"]
+            isOneToOne: false
+            referencedRelation: "room_tables"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "plant_group_room_history_plant_group_id_fkey"
             columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_source_group_id_fkey"
+            columns: ["source_group_id"]
             isOneToOne: false
             referencedRelation: "plant_groups"
             referencedColumns: ["id"]
@@ -10205,6 +10579,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_room_operational_state"
             referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_to_section_id_fkey"
+            columns: ["to_section_id"]
+            isOneToOne: false
+            referencedRelation: "room_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_group_room_history_to_table_id_fkey"
+            columns: ["to_table_id"]
+            isOneToOne: false
+            referencedRelation: "room_tables"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -12246,6 +12634,13 @@ export type Database = {
             foreignKeyName: "slack_notifications_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slack_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -12691,6 +13086,7 @@ export type Database = {
           avg_bucked_to_trim_ratio: number | null
           avg_trim_grams_per_hour: number | null
           avg_waste_percentage: number | null
+          avg_wet_weight_per_plant_g: number | null
           bucked_to_bulk_ratio: number | null
           bulk_to_packaged_ratio: number | null
           category: string | null
@@ -12703,6 +13099,7 @@ export type Database = {
           feed_group: string | null
           flowering_time_class: string | null
           flowering_time_days: number | null
+          forecast_price_per_gram: number | null
           genetics_description: string | null
           id: string
           is_active: boolean
@@ -12721,6 +13118,7 @@ export type Database = {
           avg_bucked_to_trim_ratio?: number | null
           avg_trim_grams_per_hour?: number | null
           avg_waste_percentage?: number | null
+          avg_wet_weight_per_plant_g?: number | null
           bucked_to_bulk_ratio?: number | null
           bulk_to_packaged_ratio?: number | null
           category?: string | null
@@ -12733,6 +13131,7 @@ export type Database = {
           feed_group?: string | null
           flowering_time_class?: string | null
           flowering_time_days?: number | null
+          forecast_price_per_gram?: number | null
           genetics_description?: string | null
           id?: string
           is_active?: boolean
@@ -12751,6 +13150,7 @@ export type Database = {
           avg_bucked_to_trim_ratio?: number | null
           avg_trim_grams_per_hour?: number | null
           avg_waste_percentage?: number | null
+          avg_wet_weight_per_plant_g?: number | null
           bucked_to_bulk_ratio?: number | null
           bulk_to_packaged_ratio?: number | null
           category?: string | null
@@ -12763,6 +13163,7 @@ export type Database = {
           feed_group?: string | null
           flowering_time_class?: string | null
           flowering_time_days?: number | null
+          forecast_price_per_gram?: number | null
           genetics_description?: string | null
           id?: string
           is_active?: boolean
@@ -12794,6 +13195,51 @@ export type Database = {
           key?: string
           updated_at?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      task_type_settings: {
+        Row: {
+          color: string
+          created_at: string
+          description: string
+          fields: string[]
+          icon: string
+          id: string
+          is_builtin: boolean
+          is_enabled: boolean
+          label: string
+          sort_order: number
+          task_key: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string
+          fields?: string[]
+          icon?: string
+          id?: string
+          is_builtin?: boolean
+          is_enabled?: boolean
+          label: string
+          sort_order?: number
+          task_key: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string
+          fields?: string[]
+          icon?: string
+          id?: string
+          is_builtin?: boolean
+          is_enabled?: boolean
+          label?: string
+          sort_order?: number
+          task_key?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -12899,6 +13345,9 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
+          paperclip_issue_id: string | null
+          paperclip_sync_status: string | null
+          paperclip_synced_at: string | null
           priority: string | null
           reported_by: string | null
           request_type: string | null
@@ -12922,6 +13371,9 @@ export type Database = {
           created_at?: string | null
           description: string
           id?: string
+          paperclip_issue_id?: string | null
+          paperclip_sync_status?: string | null
+          paperclip_synced_at?: string | null
           priority?: string | null
           reported_by?: string | null
           request_type?: string | null
@@ -12945,6 +13397,9 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          paperclip_issue_id?: string | null
+          paperclip_sync_status?: string | null
+          paperclip_synced_at?: string | null
           priority?: string | null
           reported_by?: string | null
           request_type?: string | null
@@ -13158,6 +13613,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "trim_schedule_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trim_schedule_order_id_fkey"
@@ -17127,6 +17589,13 @@ export type Database = {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -17678,6 +18147,13 @@ export type Database = {
             foreignKeyName: "package_assignments_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -17906,6 +18382,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pending_invoices"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "package_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "package_assignments_order_id_fkey"
@@ -18609,6 +19092,13 @@ export type Database = {
             foreignKeyName: "invoices_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "v_order_revenue_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "v_production_queue_by_order"
             referencedColumns: ["order_id"]
           },
@@ -19000,6 +19490,17 @@ export type Database = {
         }
         Relationships: []
       }
+      v_batch_margins: {
+        Row: {
+          batch_id: string | null
+          cost_estimate: number | null
+          harvest_month: string | null
+          margin_pct: number | null
+          revenue_estimate: number | null
+          strain_name: string | null
+        }
+        Relationships: []
+      }
       v_batch_overhead_allocation: {
         Row: {
           allocated_overhead: number | null
@@ -19327,6 +19828,18 @@ export type Database = {
           movement_date: string | null
           movement_kind: string | null
           total_qty: number | null
+        }
+        Relationships: []
+      }
+      v_forecast_summary: {
+        Row: {
+          committed_labor_hours: number | null
+          committed_revenue: number | null
+          committed_yield_grams: number | null
+          month: string | null
+          projected_labor_hours: number | null
+          projected_revenue: number | null
+          projected_yield_grams: number | null
         }
         Relationships: []
       }
@@ -19875,6 +20388,356 @@ export type Database = {
           unassigned_demand: number | null
         }
         Relationships: []
+      }
+      v_order_revenue_base: {
+        Row: {
+          account_status: string | null
+          account_type: string | null
+          az_month_end: string | null
+          az_month_start: string | null
+          canonical_delivery_date: string | null
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          dispensary_code: string | null
+          has_delivery_date: boolean | null
+          id: string | null
+          is_current_month: boolean | null
+          is_open_pipeline: boolean | null
+          is_projected_current_month: boolean | null
+          is_realized: boolean | null
+          item_count: number | null
+          order_date: string | null
+          order_number: string | null
+          parent_customer_id: string | null
+          priority: string | null
+          requested_delivery_date: string | null
+          revenue_month: string | null
+          revenue_week: string | null
+          scheduled_delivery_date: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_account_health_dashboard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_account_scores"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_chain_location_performance"
+            referencedColumns: ["child_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_monthly_revenue_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_product_mix_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_prospect_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_revenue_pipeline"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_store_scorecard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_visit_cadence"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "pending_invoices"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_ar_customer_behavior"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_ar_summary_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customers_parent_customer_id_fkey"
+            columns: ["parent_customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_account_health_dashboard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_account_scores"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_chain_location_performance"
+            referencedColumns: ["child_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_monthly_revenue_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_product_mix_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_prospect_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_revenue_pipeline"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_store_scorecard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "crm_visit_cadence"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "pending_invoices"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_ar_customer_behavior"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_ar_summary_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["customer_id"]
+          },
+        ]
+      }
+      v_planned_cycles_timeline: {
+        Row: {
+          capacity_plants: number | null
+          clone_cut_date: string | null
+          cycle_id: string | null
+          estimated_harvest_date: string | null
+          flower_start_date: string | null
+          forecast_price_per_gram: number | null
+          forecast_revenue: number | null
+          forecast_yield_grams: number | null
+          labor_hours_per_week_room: number | null
+          planned_plant_count: number | null
+          room_id: string | null
+          room_name: string | null
+          room_type: string | null
+          status: string | null
+          strain_id: string | null
+          strain_name: string | null
+          veg_start_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "projected_inventory_requirements"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strain_metadata_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_rosin_strain_yields"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_analytics_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_basics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["grow_room_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_occupancy"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "planned_cycles_target_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_operational_state"
+            referencedColumns: ["room_id"]
+          },
+        ]
       }
       v_plant_groups_by_batch: {
         Row: {
@@ -20442,6 +21305,7 @@ export type Database = {
           days_in_stage: number | null
           days_to_harvest: number | null
           dominant_stage: string | null
+          earliest_flip_date: string | null
           earliest_harvest_date: string | null
           groups_near_harvest: number | null
           is_active: boolean | null
@@ -20457,6 +21321,7 @@ export type Database = {
           room_code: string | null
           room_id: string | null
           room_type: string | null
+          section_projected_harvest: string | null
           strain_count: number | null
           strain_names: string[] | null
           tasks_completed_today: number | null
@@ -21025,6 +21890,43 @@ export type Database = {
           title: string | null
           type: string | null
           updated_at: string | null
+        }
+        Relationships: []
+      }
+      v_worker_stats: {
+        Row: {
+          avg_hand_g_per_hr: number | null
+          avg_kg_per_hr: number | null
+          avg_small_format_lbs_per_session: number | null
+          best_session_lbs: number | null
+          buck_active_days: number | null
+          buck_flower_lbs: number | null
+          buck_last_session_date: string | null
+          buck_sessions: number | null
+          buck_smalls_lbs: number | null
+          hand_trim_lbs: number | null
+          last_active_date: string | null
+          machine_trim_lbs: number | null
+          pkg_active_days: number | null
+          pkg_days_with_data: number | null
+          pkg_first_session_date: string | null
+          pkg_floor_10th_pct: number | null
+          pkg_floor_25th_pct: number | null
+          pkg_last_session_date: string | null
+          pkg_sessions: number | null
+          total_bucked_lbs: number | null
+          total_bulk_lbs: number | null
+          total_sessions: number | null
+          total_small_format_lbs: number | null
+          total_trimmed_lbs: number | null
+          total_units_14g: number | null
+          total_units_3_5g: number | null
+          total_units_454g: number | null
+          total_units_small_format: number | null
+          trim_active_days: number | null
+          trim_last_session_date: string | null
+          trim_sessions: number | null
+          worker: string | null
         }
         Relationships: []
       }
@@ -22163,6 +23065,19 @@ export type Database = {
           strain_name: string
           total_units: number
           total_weight: number
+        }[]
+      }
+      get_cost_per_gram_summary: {
+        Args: never
+        Returns: {
+          batch_id: string
+          cost_per_gram_usd: number
+          estimated_cost_usd: number
+          harvest_date: string
+          room_name: string
+          strain_name: string
+          total_dry_weight_g: number
+          total_wet_weight_g: number
         }[]
       }
       get_coversheet_customer_info: {

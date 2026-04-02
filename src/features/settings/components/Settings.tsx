@@ -10,6 +10,7 @@ import { DriversManagement } from './DriversManagement';
 import { StaffManagement } from './StaffManagement';
 import { VehiclesManagement } from './VehiclesManagement';
 import { RouteTestingTool } from './RouteTestingTool';
+import { MetrcCredentialsSettings } from './MetrcCredentialsSettings';
 import { BatchManagement } from '../../batches';
 import { GrowRoomsManagement, DryRoomsManagement } from '../../cultivation';
 import type { AppSetting, SettingsFormData } from '../types';
@@ -22,7 +23,6 @@ export function Settings() {
     packaging_lead_time_days: 1,
     default_overage_percentage: 10,
     notification_threshold_days: 7,
-    routing_api_key: '',
     routing_api_provider: 'openrouteservice',
     route_cache_days: 30,
     facility_address: '3303 South 40th Street',
@@ -122,7 +122,6 @@ export function Settings() {
           packaging_lead_time_days: Number(settingsMap.packaging_lead_time_days || 1),
           default_overage_percentage: Number(settingsMap.default_overage_percentage || 10),
           notification_threshold_days: Number(settingsMap.notification_threshold_days || 7),
-          routing_api_key: settingsMap.routing_api_key || '',
           routing_api_provider: settingsMap.routing_api_provider || 'openrouteservice',
           route_cache_days: Number(settingsMap.route_cache_days || 30),
           facility_address: settingsMap.facility_address || '3303 South 40th Street',
@@ -151,7 +150,6 @@ export function Settings() {
         { key: 'packaging_lead_time_days', value: settings.packaging_lead_time_days.toString() },
         { key: 'default_overage_percentage', value: settings.default_overage_percentage.toString() },
         { key: 'notification_threshold_days', value: settings.notification_threshold_days.toString() },
-        { key: 'routing_api_key', value: settings.routing_api_key },
         { key: 'routing_api_provider', value: settings.routing_api_provider },
         { key: 'route_cache_days', value: settings.route_cache_days.toString() },
         { key: 'facility_address', value: settings.facility_address },
@@ -231,7 +229,6 @@ export function Settings() {
       packaging_lead_time_days: 1,
       default_overage_percentage: 10,
       notification_threshold_days: 7,
-      routing_api_key: '',
       routing_api_provider: 'openrouteservice',
       route_cache_days: 30,
       facility_address: '3303 South 40th Street',
@@ -274,6 +271,7 @@ export function Settings() {
     { id: 'dry-rooms', label: 'Dry Rooms', icon: Wind },
     { id: 'products', label: 'Products', icon: Package },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'metrc', label: 'Metrc', icon: Shield },
     ...(isAdmin ? [{ id: 'admin', label: 'Admin Controls', icon: Shield }] : []),
   ];
 
@@ -494,19 +492,10 @@ export function Settings() {
               </div>
 
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
-                    OpenRouteService API Key *
-                  </label>
-                  <input
-                    type="password"
-                    value={settings.routing_api_key}
-                    onChange={(e) => setSettings({ ...settings, routing_api_key: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
-                    placeholder="Enter your API key"
-                  />
-                  <p className="mt-2 text-xs text-cult-lighter-gray">
-                    Get a free API key at <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">openrouteservice.org</a> (2,000 requests/day free)
+                <div className="p-4 bg-cult-black border border-cult-medium-gray">
+                  <p className="text-sm text-cult-white font-medium uppercase tracking-wider mb-1">API Key</p>
+                  <p className="text-sm text-cult-light-gray">
+                    The OpenRouteService API key is managed as a Supabase Edge Function secret and is not exposed to the browser. To rotate the key, update the <code className="text-cult-white">ORS_API_KEY</code> secret in the Supabase dashboard.
                   </p>
                 </div>
 
@@ -713,6 +702,8 @@ export function Settings() {
       {activeTab === 'products' && <ProductsManagement />}
 
       {activeTab === 'users' && <UserManagement />}
+
+      {activeTab === 'metrc' && <MetrcCredentialsSettings />}
 
       {activeTab === 'admin' && isAdmin && <AdminTrimSessionManagement />}
     </div>

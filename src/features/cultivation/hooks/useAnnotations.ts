@@ -19,7 +19,7 @@ export function useAnnotations(annotationDate: string, roomId?: string) {
 
       if (roomId) query = query.eq('room_id', roomId);
 
-      const { data, error: err } = await query;
+      const { data, error: err } = await query.limit(100);
       if (err) throw err;
       setAnnotations((data ?? []) as DailyLogAnnotation[]);
     } catch {

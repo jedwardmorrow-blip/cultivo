@@ -16,7 +16,8 @@ export function useAttendance(date: string) {
         .from('daily_attendance')
         .select('*')
         .eq('attendance_date', date)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(100);
       if (err) throw err;
       setRecords((data ?? []) as DailyAttendance[]);
     } catch {

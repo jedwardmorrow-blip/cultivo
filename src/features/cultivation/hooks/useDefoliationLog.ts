@@ -26,7 +26,7 @@ export function useDefoliationLog(filter?: DefoliationLogFilter) {
       if (filter?.dateFrom) query = query.gte('performed_at', filter.dateFrom);
       if (filter?.dateTo) query = query.lte('performed_at', filter.dateTo);
 
-      const { data, error: err } = await query;
+      const { data, error: err } = await query.limit(100);
       if (err) throw err;
       setLogs((data ?? []) as DefoliationLog[]);
     } catch {

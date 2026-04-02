@@ -42,6 +42,29 @@ export async function getInventoryItems(options?: { includeEmpty?: boolean }) {
 }
 
 /**
+ * Fetches all inventory items without a row cap — for audit/export paths only
+ */
+export async function getInventoryItemsForExport(options?: { includeEmpty?: boolean }) {
+  try {
+    let query = supabase
+      .from('inventory_items')
+      .select('*');
+
+    if (!options?.includeEmpty) {
+      query = query.gt('on_hand_qty', 0);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    errorService.handle(error, 'Failed to export inventory items');
+    return { data: null, error };
+  }
+}
+
+/**
  * Fetches the most recent inventory snapshot from CSV import
  *
  * @returns Promise<{ data: InventorySnapshot | null; error: any }>

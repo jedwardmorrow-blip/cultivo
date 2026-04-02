@@ -11,7 +11,7 @@ import { notificationService } from '@/services/notification.service';
 /**
  * Hook to fetch available packages for a product
  */
-export function useAvailablePackages(productName: string, requiredQty: number) {
+export function useAvailablePackages(productName: string, requiredQty: number, batchId?: string | null) {
   const [packages, setPackages] = useState<AvailablePackage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -26,7 +26,8 @@ export function useAvailablePackages(productName: string, requiredQty: number) {
     try {
       const data = await packageAssignmentService.getAvailablePackagesForProduct(
         productName,
-        requiredQty
+        requiredQty,
+        batchId
       );
 
       if (isMountedRef.current) {
@@ -43,7 +44,7 @@ export function useAvailablePackages(productName: string, requiredQty: number) {
         setLoading(false);
       }
     }
-  }, [productName, requiredQty]);
+  }, [productName, requiredQty, batchId]);
 
   useEffect(() => {
     isMountedRef.current = true;

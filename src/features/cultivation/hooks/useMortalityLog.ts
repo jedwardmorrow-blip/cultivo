@@ -26,7 +26,7 @@ export function useMortalityLog(filter?: MortalityLogFilter) {
       if (filter?.dateFrom) query = query.gte('mortality_date', filter.dateFrom);
       if (filter?.dateTo) query = query.lte('mortality_date', filter.dateTo);
 
-      const { data, error: err } = await query;
+      const { data, error: err } = await query.limit(100);
       if (err) throw err;
       setLogs((data ?? []) as PlantMortalityLog[]);
     } catch {

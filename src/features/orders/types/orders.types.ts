@@ -1,5 +1,5 @@
 // Re-export Order types from canonical location (Phase 1: Type Consolidation)
-export type { Order, OrderInsert, OrderUpdate, OrderItem, WorkflowSummary, StatusGroup, MonthGroup, PackageAssignmentStatus } from '@/types/order.types';
+export type { Order, OrderInsert, OrderUpdate, OrderItem, WorkflowSummary, StatusGroup, MonthGroup, PackageAssignmentStatus, OrderStatus } from '@/types/order.types';
 
 // Feature-specific OrderItem extension for orders feature
 // Extends canonical OrderItem with additional display fields
@@ -39,14 +39,6 @@ export interface OrderDetailsCache {
   workflowSummary: WorkflowSummary | null;
   loadedAt: number;
 }
-
-export type OrderStatus =
-  | 'submitted'
-  | 'accepted'
-  | 'processing'
-  | 'ready_for_delivery'
-  | 'delivered'
-  | 'cancelled';
 
 export type OrderItemStatus =
   | 'trimming'

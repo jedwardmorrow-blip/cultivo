@@ -37,3 +37,4 @@ export { HarvestMetricsDashboard } from './harvest-metrics';
 export { WorkerTaskView } from './WorkerTaskView';
 export { TemplateManager } from './TemplateManager';
 export { CultivationHub } from './CultivationHub';
+export { CultivationMapPage } from './CultivationMapPage';

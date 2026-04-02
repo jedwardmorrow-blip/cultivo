@@ -7,6 +7,7 @@ export interface AvailablePackage {
   product_name: string;
   strain: string | null;
   batch: string | null;
+  batch_id: string | null;
   batch_number: string | null;
   available_qty: number;
   unit: string;
@@ -66,26 +67,34 @@ class PackageAssignmentServiceError extends Error {
 
 export const packageAssignmentService = {
   /**
-   * Get available packages for a specific product name
-   * Filters by product_name and excludes packages with insufficient quantity
+   * Get available packages for a specific product name and batch.
+   * Always filters by product_name; when batchId is provided, also filters by batch_id
+   * to enforce batch-level chain of custody.
    */
   async getAvailablePackagesForProduct(
     productName: string,
-    requiredQty: number
+    requiredQty: number,
+    batchId?: string | null
   ): Promise<AvailablePackage[]> {
     errorService.debug('[packageAssignmentService] Fetching available packages', {
       productName,
-      requiredQty
+      requiredQty,
+      batchId,
     });
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('inventory_items')
-        .select('id, package_id, product_name, strain, batch, batch_number, available_qty, unit, status, room, package_date, thc_percentage, cbd_percentage')
+        .select('id, package_id, product_name, strain, batch, batch_id, batch_number, available_qty, unit, status, room, package_date, thc_percentage, cbd_percentage')
         .eq('product_name', productName)
         .gt('available_qty', 0)
-        .in('status', ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged'])
-        .order('package_date', { ascending: false });
+        .in('status', ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged']);
+
+      if (batchId) {
+        query = query.eq('batch_id', batchId);
+      }
+
+      const { data, error } = await query.order('package_date', { ascending: false });
 
       if (error) {
         throw new PackageAssignmentServiceError(

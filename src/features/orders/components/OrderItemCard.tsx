@@ -500,6 +500,7 @@ export function OrderItemCard({
         productName={item.product_name}
         orderItemQuantity={item.quantity}
         unit={item.pricing_unit || 'units'}
+        batchId={item.batch_id}
       />
 
       <OrderItemLabelPrintModal

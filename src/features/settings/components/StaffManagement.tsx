@@ -1,28 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, Check, X, Search, Filter } from 'lucide-react';
 import { Button } from '@/shared/components';
-import { supabase } from '@/lib/supabase';
-
-interface StaffMember {
-  id: string;
-  first_name: string;
-  last_name: string | null;
-  position_title: string | null;
-  department: string | null;
-  role: string | null;
-  email: string | null;
-  phone: string | null;
-  hourly_rate: number | null;
-  is_active: boolean;
-  start_date: string | null;
-  end_date: string | null;
-  slack_id: string | null;
-  pin_code: string | null;
-  reports_to: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import type { StaffMember } from '@/types';
+import { upsertStaff, deleteStaff, toggleStaffActive, loadStaffList } from '../services/staff.service';
 
 interface StaffFormData {
   first_name: string;
@@ -98,14 +78,7 @@ export function StaffManagement() {
     try {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('staff')
-        .select('*')
-        .order('department')
-        .order('first_name');
-
-      if (fetchError) throw fetchError;
-      setStaff(data || []);
+      setStaff(await loadStaffList());
     } catch (err: any) {
       setError(err.message || 'Failed to load staff');
     } finally {
@@ -117,7 +90,8 @@ export function StaffManagement() {
     e.preventDefault();
     try {
       setError(null);
-      const staffData = {
+      await upsertStaff({
+        id: editingStaff?.id,
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim() || null,
         position_title: formData.position_title.trim() || null,
@@ -133,18 +107,7 @@ export function StaffManagement() {
         slack_id: formData.slack_id.trim() || null,
         notes: formData.notes.trim() || null,
         is_active: formData.is_active,
-        updated_at: new Date().toISOString(),
-      };
-      if (editingStaff) {
-        const { error: updateError } = await supabase.from('staff').update(staffData).eq('id', editingStaff.id);
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase.from('staff').insert(staffData);
-        if (insertError) {
-          if (insertError.code === '23505') throw new Error('A staff member with this information already exists');
-          throw insertError;
-        }
-      }
+      });
       setShowModal(false);
       setEditingStaff(null);
       setFormData(emptyFormData);
@@ -180,8 +143,7 @@ export function StaffManagement() {
     if (!window.confirm('Are you sure you want to delete ' + member.first_name + ' ' + (member.last_name || '') + '? This action cannot be undone.')) return;
     try {
       setError(null);
-      const { error: deleteError } = await supabase.from('staff').delete().eq('id', member.id);
-      if (deleteError) throw deleteError;
+      await deleteStaff(member.id);
       await loadStaff();
     } catch (err: any) {
       setError(err.message || 'Failed to delete staff member');
@@ -191,8 +153,7 @@ export function StaffManagement() {
   const toggleActive = async (member: StaffMember) => {
     try {
       setError(null);
-      const { error: updateError } = await supabase.from('staff').update({ is_active: !member.is_active, updated_at: new Date().toISOString() }).eq('id', member.id);
-      if (updateError) throw updateError;
+      await toggleStaffActive(member.id, !member.is_active);
       await loadStaff();
     } catch (err: any) {
       setError(err.message || 'Failed to update staff status');
