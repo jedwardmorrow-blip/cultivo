@@ -844,11 +844,15 @@ function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onCreate, 
               <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 2 ? 'border-cult-accent bg-cult-accent/20 text-cult-accent' : 'border-cult-medium-gray'}`}>2</span>
               <span>{modeLabel}</span>
             </div>
-            <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
-            <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-green-400' : 'text-cult-dark-gray'}`}>
-              <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-green-600 bg-green-950/40 text-green-400' : 'border-cult-dark-gray'}`}>3</span>
-              <span>Done</span>
-            </div>
+            {mode !== 'manual' && mode !== 'edit' && (
+              <>
+                <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+                <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-green-400' : 'text-cult-dark-gray'}`}>
+                  <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-green-600 bg-green-950/40 text-green-400' : 'border-cult-dark-gray'}`}>3</span>
+                  <span>Done</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1119,17 +1123,6 @@ function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, schedulesB
   const roomsWithSchedules = allRooms.filter(
     (r) => r.id !== targetRoomId && (schedulesByRoom.get(r.id) ?? []).length > 0
   );
-
-  if (copySuccess) {
-    return (
-      <div className="text-center py-8">
-        <div className="w-12 h-12 mx-auto rounded-full bg-green-950/60 flex items-center justify-center mb-3">
-          <Check className="w-6 h-6 text-green-400" />
-        </div>
-        <p className="text-sm font-semibold text-green-400">{copySuccess}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3">

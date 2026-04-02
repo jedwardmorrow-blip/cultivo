@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   Calendar,
   CalendarDays,
   ClipboardList,
@@ -13,8 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  CircleDot,
-  Circle,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { notificationService } from '@/services';
@@ -33,7 +32,7 @@ import type { TaskCardData, StaffOption } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { DeadPlantForm } from './DeadPlantForm';
 import { todayIso } from '../utils/dateUtils';
-import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_DOT } from '../constants/stageColors';
+import { ROOM_TYPE_LEFT_BORDER } from '../constants/stageColors';
 
 /* Workers tab removed in favour of standalone /worker-tasks route.
    Task Types and Templates moved to /cultivation-task-settings. */
@@ -320,9 +319,11 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
   const [detailTask, setDetailTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
   const [showDeadPlantForm, setShowDeadPlantForm] = useState(false);
   const [deadPlantRoomId, setDeadPlantRoomId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
+  const [alertDismissed, setAlertDismissed] = useState(false);
+  const [toggledRooms, setToggledRooms] = useState<Set<string>>(new Set());
+  const [roomFilters, setRoomFilters] = useState<Map<string, 'all' | 'pending' | 'in_progress' | 'completed'>>(new Map());
 
-  // ── Ops data lookup (for room context + urgency sorting) ──
+  // ── Ops data lookup ───────────────────────────────────
   const opsMap = useMemo(() => {
     const map = new Map<string, RoomOperationalState>();
     for (const ops of opsRooms) map.set(ops.room_code, ops);
@@ -342,7 +343,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
     return { total, completed, inProgress, pending, carried, skipped, unassigned, pct };
   }, [tasks]);
 
-  // Staff options for quick-assign — all cultivation staff, present ones first with indicator
+  // Staff options for quick-assign — present ones first
   const quickAssignStaff: StaffOption[] = useMemo(() => {
     const presentIds = new Set(attendance.filter((a) => a.is_present).map((a) => a.staff_id));
     return staff
@@ -350,14 +351,10 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
       .sort((a, b) => (a.is_present === b.is_present ? 0 : a.is_present ? -1 : 1));
   }, [staff, attendance]);
 
-  const filteredTasks = useMemo(() => {
-    if (statusFilter === 'all') return tasks;
-    return tasks.filter((t) => t.status === statusFilter);
-  }, [tasks, statusFilter]);
-
+  // tasksByRoom: all tasks grouped by room (no global filter — filtering is per-room)
   const tasksByRoom = useMemo(() => {
     const map = new Map<string, TaskCardData[]>();
-    for (const t of filteredTasks) {
+    for (const t of tasks) {
       const roomMatch = rooms.find((r) => r.room_code === t.room_name);
       const key = roomMatch?.id ?? t.room_name;
       const list = map.get(key) ?? [];
@@ -376,116 +373,122 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
       });
     }
     return map;
-  }, [filteredTasks, rooms]);
+  }, [tasks, rooms]);
 
   const sortedRoomEntries = useMemo(() => {
     const entries: { room: typeof rooms[0]; tasks: TaskCardData[]; completedCount: number; totalCount: number }[] = [];
-    // Get all-tasks-by-room for progress calculation (not filtered)
-    const allByRoom = new Map<string, TaskCardData[]>();
-    for (const t of tasks) {
-      const roomMatch = rooms.find((r) => r.room_code === t.room_name);
-      const key = roomMatch?.id ?? t.room_name;
-      const list = allByRoom.get(key) ?? [];
-      list.push(t);
-      allByRoom.set(key, list);
-    }
-
     for (const room of rooms) {
-      const roomTasks = tasksByRoom.get(room.id);
-      const allRoomTasks = allByRoom.get(room.id) ?? [];
-      if (allRoomTasks.length > 0) {
+      const roomTasks = tasksByRoom.get(room.id) ?? [];
+      if (roomTasks.length > 0) {
         entries.push({
           room,
-          tasks: roomTasks ?? [],
-          completedCount: allRoomTasks.filter((t) => t.status === 'completed').length,
-          totalCount: allRoomTasks.length,
+          tasks: roomTasks,
+          completedCount: roomTasks.filter((t) => t.status === 'completed').length,
+          totalCount: roomTasks.length,
         });
       }
     }
-    // Sort by room type group first, then urgency_score (highest first) within each group
     entries.sort((a, b) => {
       const typeA = ROOM_TYPE_ORDER[a.room.room_type] ?? 9;
       const typeB = ROOM_TYPE_ORDER[b.room.room_type] ?? 9;
       if (typeA !== typeB) return typeA - typeB;
       const urgA = opsMap.get(a.room.room_code)?.urgency_score ?? 0;
       const urgB = opsMap.get(b.room.room_code)?.urgency_score ?? 0;
-      return urgB - urgA; // higher urgency first
+      return urgB - urgA;
     });
     return entries;
-  }, [rooms, tasksByRoom, tasks, opsMap]);
+  }, [rooms, tasksByRoom, opsMap]);
 
-  // Staff present count (cultivation only)
+  // ── Alert bar items ───────────────────────────────────
+  const alerts = useMemo(() => {
+    const items: string[] = [];
+    for (const { room, tasks: roomTasks } of sortedRoomEntries) {
+      const ops = opsMap.get(room.room_code);
+      if (ops?.days_to_harvest != null && ops.days_to_harvest > 0 && ops.days_to_harvest <= 7) {
+        items.push(`${room.room_code} harvest in ${ops.days_to_harvest}d`);
+      }
+      const unassigned = roomTasks.filter((t) => !t.assigned_to && t.status !== 'completed' && t.status !== 'skipped').length;
+      if (unassigned > 0) {
+        items.push(`${unassigned} unassigned task${unassigned !== 1 ? 's' : ''} in ${room.room_code}`);
+      }
+    }
+    return items;
+  }, [sortedRoomEntries, opsMap]);
+
+  // ── Per-room helpers ──────────────────────────────────
+  function getRoomFilter(roomId: string) {
+    return roomFilters.get(roomId) ?? 'all';
+  }
+
+  function updateRoomFilter(roomId: string, filter: 'all' | 'pending' | 'in_progress' | 'completed') {
+    setRoomFilters((prev) => { const next = new Map(prev); next.set(roomId, filter); return next; });
+  }
+
+  function isRoomCollapsed(roomId: string, allDone: boolean) {
+    // User toggle flips the default; done rooms default-collapsed, others default-expanded
+    return toggledRooms.has(roomId) ? !allDone : allDone;
+  }
+
+  function toggleRoom(roomId: string) {
+    setToggledRooms((prev) => { const next = new Set(prev); if (next.has(roomId)) next.delete(roomId); else next.add(roomId); return next; });
+  }
+
   const staffPresent = useMemo(() => {
     const cultIds = new Set(staff.map((s) => s.id));
     return attendance.filter((a) => a.is_present && cultIds.has(a.staff_id)).length;
   }, [staff, attendance]);
 
-  function openAddTask(roomId?: string) {
-    setAddTaskRoomId(roomId ?? null);
-    setShowAddTask(true);
-  }
-
-  function openDeadPlantForm(roomId?: string) {
-    setDeadPlantRoomId(roomId ?? null);
-    setShowDeadPlantForm(true);
-  }
-
+  function openAddTask(roomId?: string) { setAddTaskRoomId(roomId ?? null); setShowAddTask(true); }
+  function openDeadPlantForm(roomId?: string) { setDeadPlantRoomId(roomId ?? null); setShowDeadPlantForm(true); }
   function openCompletionForm(task: TaskCardData) {
     const roomMatch = rooms.find((r) => r.room_code === task.room_name);
     setCompletingTask({ task, roomId: roomMatch?.id ?? '' });
   }
-
   function openDetailDrawer(task: TaskCardData) {
     const roomMatch = rooms.find((r) => r.room_code === task.room_name);
     setDetailTask({ task, roomId: roomMatch?.id ?? '' });
   }
+  function crewInitials(name: string) {
+    const parts = name.trim().split(/\s+/);
+    return parts.length > 1 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
+  }
 
-  const roomsWithTasks = sortedRoomEntries.length;
   const hasNoTasks = tasks.length === 0;
 
   return (
     <div className="space-y-5 relative">
-      {/* ── Command Center: Stats + Actions ─────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-        {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard
-            label="Progress"
-            value={`${stats.pct}%`}
-            detail={`${stats.completed} of ${stats.total} done`}
-            accent={stats.pct === 100 ? 'text-cult-success' : stats.pct >= 50 ? 'text-cult-accent' : 'text-cult-white'}
-          >
-            {stats.total > 0 && (
-              <div className="w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden mt-2">
-                <div
-                  className="h-full rounded-full transition-all duration-500 bg-cult-success"
-                  style={{ width: `${stats.pct}%` }}
-                />
-              </div>
-            )}
-          </StatCard>
-          <StatCard
-            label="Pending"
-            value={String(stats.pending + stats.carried)}
-            detail={stats.unassigned > 0 ? `${stats.unassigned} unassigned` : stats.carried > 0 ? `${stats.carried} carried over` : 'awaiting action'}
-            accent={stats.unassigned > 0 ? 'text-amber-400' : stats.carried > 0 ? 'text-amber-400' : 'text-cult-white'}
-          />
-          <StatCard
-            label="In Progress"
-            value={String(stats.inProgress)}
-            detail="being worked on"
-            accent="text-sky-400"
-          />
-          <StatCard
-            label="Crew On Duty"
-            value={`${staffPresent} / ${staff.length}`}
-            detail={`${roomsWithTasks} rooms active`}
-            accent="text-cult-white"
-          />
+      {/* ── Progress Bar + Actions ────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 items-center">
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-sm font-semibold text-cult-white">
+              {stats.pct}% complete
+              <span className="text-cult-medium-gray font-normal ml-2 text-xs">
+                {stats.completed}/{stats.total} tasks
+              </span>
+            </span>
+            <div className="flex items-center gap-3 text-xs">
+              {stats.inProgress > 0 && (
+                <span className="text-sky-400">{stats.inProgress} active</span>
+              )}
+              <span className="text-cult-medium-gray font-mono">{staffPresent}/{staff.length} crew</span>
+            </div>
+          </div>
+          <div className="w-full h-2 bg-cult-charcoal rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                stats.pct === 100 ? 'bg-cult-success' : 'bg-cult-accent'
+              }`}
+              style={{ width: `${Math.max(stats.pct, stats.total > 0 ? 2 : 0)}%` }}
+            />
+          </div>
+          {stats.unassigned > 0 && (
+            <p className="text-xs text-amber-400/80 mt-1">
+              {stats.unassigned} task{stats.unassigned !== 1 ? 's' : ''} unassigned
+            </p>
+          )}
         </div>
-
-        {/* Actions */}
-        <div className="flex items-start gap-2 lg:flex-col">
+        <div className="flex items-center gap-2 lg:flex-col lg:items-stretch">
           <button
             type="button"
             onClick={() => openAddTask()}
@@ -505,37 +508,21 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
         </div>
       </div>
 
-      {/* ── Status Filter Chips ──────────────────────────── */}
-      {stats.total > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <span className="text-xs text-cult-medium-gray uppercase tracking-wider mr-1 flex-shrink-0">Show:</span>
-          {([
-            { key: 'all' as const, label: 'All Tasks', count: stats.total, icon: ClipboardList },
-            { key: 'pending' as const, label: 'Pending', count: stats.pending + stats.carried, icon: Circle },
-            { key: 'in_progress' as const, label: 'In Progress', count: stats.inProgress, icon: CircleDot },
-            { key: 'completed' as const, label: 'Completed', count: stats.completed, icon: CheckCircle2 },
-          ] as const).map((chip) => {
-            const isActive = statusFilter === chip.key;
-            const Icon = chip.icon;
-            return (
-              <button
-                key={chip.key}
-                type="button"
-                onClick={() => setStatusFilter(chip.key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-medium rounded-sm transition-colors flex-shrink-0 min-h-[44px] ${
-                  isActive
-                    ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                    : 'text-cult-medium-gray hover:text-cult-light-gray border border-transparent hover:border-cult-dark-gray'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {chip.label}
-                <span className={`ml-0.5 text-xs ${isActive ? 'text-cult-light-gray' : 'text-cult-medium-gray'}`}>
-                  {chip.count}
-                </span>
-              </button>
-            );
-          })}
+      {/* ── Alert Bar (conditional) ───────────────────────── */}
+      {alerts.length > 0 && !alertDismissed && (
+        <div className="flex items-start justify-between gap-3 px-4 py-3 bg-amber-950/40 border border-amber-500/30">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-300 leading-relaxed">{alerts.join(' · ')}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAlertDismissed(true)}
+            className="p-1 -m-1 text-amber-500/60 hover:text-amber-400 transition-colors flex-shrink-0"
+            aria-label="Dismiss alerts"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
@@ -547,7 +534,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
         onUpsertAttendance={onUpsertAttendance}
       />
 
-      {/* ── Empty State — Coaching-style ─────────────────── */}
+      {/* ── Empty State ───────────────────────────────────── */}
       {hasNoTasks && (
         <div className="border border-dashed border-cult-dark-gray py-12 px-6 flex flex-col items-center gap-5">
           <div className="w-14 h-14 rounded-full bg-cult-charcoal flex items-center justify-center">
@@ -576,131 +563,158 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
         </div>
       )}
 
-      {/* ── Room Task Groups (grouped by room type) ────── */}
-      {(() => {
-        const ROOM_TYPE_LABELS: Record<string, string> = {
-          mother: 'Mother Rooms',
-          veg: 'Vegetative Rooms',
-          flower: 'Flower Rooms',
-          clone: 'Clone Rooms',
-          mixed: 'Mixed Rooms',
-        };
+      {/* ── Flat Room List (single-level, no room-type group headers) ── */}
+      {sortedRoomEntries.map(({ room, tasks: roomTasks, completedCount, totalCount }, cardIndex) => {
+        const allDone = completedCount === totalCount && totalCount > 0;
+        const collapsed = isRoomCollapsed(room.id, allDone);
+        const roomFilter = getRoomFilter(room.id);
+        const ops = opsMap.get(room.room_code);
 
-        // Group sorted entries by room_type for section headers
-        let lastType = '';
-        let cardIndex = 0;
+        // Apply per-room filter
+        const visibleTasks = roomFilter === 'all' ? roomTasks : roomTasks.filter((t) => {
+          if (roomFilter === 'pending') return t.status === 'pending' || t.status === 'carry_forward';
+          if (roomFilter === 'in_progress') return t.status === 'in_progress';
+          if (roomFilter === 'completed') return t.status === 'completed' || t.status === 'skipped';
+          return true;
+        });
+        const activeTasks = visibleTasks.filter((t) => t.status !== 'completed' && t.status !== 'skipped');
+        const completedTasks = visibleTasks.filter((t) => t.status === 'completed' || t.status === 'skipped');
 
-        return sortedRoomEntries.map(({ room, tasks: roomTasks, completedCount, totalCount }) => {
-          const roomPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-          const allDone = roomPct === 100;
-          const showSectionHeader = room.room_type !== lastType;
-          lastType = room.room_type;
-          const currentIndex = cardIndex++;
+        // Per-room filter counts
+        const pendingCount = roomTasks.filter((t) => t.status === 'pending' || t.status === 'carry_forward').length;
+        const activeCount = roomTasks.filter((t) => t.status === 'in_progress').length;
+        const doneCount = roomTasks.filter((t) => t.status === 'completed' || t.status === 'skipped').length;
 
-          // Separate active vs completed tasks within room
-          const activeTasks = roomTasks.filter((t) => t.status !== 'completed' && t.status !== 'skipped');
-          const completedTasks = roomTasks.filter((t) => t.status === 'completed' || t.status === 'skipped');
+        // Crew assigned to tasks in this room
+        const crewIds = [...new Set(roomTasks.filter((t) => t.assigned_to).map((t) => t.assigned_to as string))];
+        const roomCrew = allStaff.filter((s) => crewIds.includes(s.id));
 
-          return (
-            <div key={room.id}>
-              {/* Section header for room type */}
-              {showSectionHeader && (
-                <div className="flex items-center gap-3 mt-6 mb-2 first:mt-0">
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
-                  <span className="text-xs font-bold text-cult-light-gray uppercase tracking-widest">
-                    {ROOM_TYPE_LABELS[room.room_type] ?? room.room_type}
-                  </span>
-                  <div className="flex-1 h-px bg-cult-dark-gray" />
-                </div>
-              )}
-
-              <div
-                className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''} ${
-                  allDone ? 'opacity-50' : ''
-                } animate-fade-in`}
-                style={{ animationDelay: `${currentIndex * 50}ms`, animationFillMode: 'both' }}
-              >
-                {/* Room Header — with operational context */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-mono text-sm font-bold text-cult-white">{room.room_code}</span>
-                    {(() => {
-                      const ops = opsMap.get(room.room_code);
-                      if (!ops) return <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>;
-                      return (
-                        <>
-                          <span className="text-[11px] text-cult-medium-gray font-mono">{ops.total_plants}p</span>
-                          {ops.dominant_stage && ops.days_in_stage != null && (
-                            <span className="text-[11px] text-cult-medium-gray font-mono">
-                              Day {ops.days_in_stage}
-                            </span>
-                          )}
-                          {ops.days_to_harvest != null && ops.days_to_harvest > 0 && (
-                            <span className={`text-[11px] font-mono font-semibold ${
-                              ops.days_to_harvest <= 7 ? 'text-amber-400' : 'text-cult-medium-gray'
-                            }`}>
-                              Harvest {ops.days_to_harvest}d
-                            </span>
-                          )}
-                          {(ops.urgency_score ?? 0) >= 70 && (
-                            <span className="text-[10px] font-mono font-bold text-cult-danger uppercase tracking-wider animate-pulse">
-                              URGENT
-                            </span>
-                          )}
-                        </>
-                      );
-                    })()}
+        return (
+          <div
+            key={room.id}
+            className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''} animate-fade-in`}
+            style={{ animationDelay: `${cardIndex * 50}ms`, animationFillMode: 'both' }}
+          >
+            {/* Room Header — clickable to collapse/expand */}
+            <button
+              type="button"
+              onClick={() => toggleRoom(room.id)}
+              className="w-full flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50 hover:bg-cult-charcoal/20 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 flex-wrap min-w-0">
+                <span className="font-mono text-sm font-bold text-cult-white flex-shrink-0">{room.room_code}</span>
+                {ops ? (
+                  <>
+                    {ops.total_plants > 0 && (
+                      <span className="text-[11px] text-cult-medium-gray font-mono">{ops.total_plants}p</span>
+                    )}
+                    {ops.dominant_stage && ops.days_in_stage != null && (
+                      <span className="text-[11px] text-cult-medium-gray font-mono">Day {ops.days_in_stage}</span>
+                    )}
+                    {ops.days_to_harvest != null && ops.days_to_harvest > 0 && (
+                      <span className={`text-[11px] font-mono font-semibold flex-shrink-0 ${
+                        ops.days_to_harvest <= 7 ? 'text-amber-400' : 'text-cult-medium-gray'
+                      }`}>
+                        Harvest {ops.days_to_harvest}d
+                      </span>
+                    )}
+                    {(ops.urgency_score ?? 0) >= 70 && (
+                      <span className="text-[10px] font-mono font-bold text-cult-danger uppercase tracking-wider animate-pulse flex-shrink-0">
+                        URGENT
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>
+                )}
+                {/* Crew avatars inline */}
+                {roomCrew.length > 0 && (
+                  <div className="flex items-center -space-x-1.5 flex-shrink-0">
+                    {roomCrew.slice(0, 3).map((s) => (
+                      <span
+                        key={s.id}
+                        className="w-5 h-5 rounded-full bg-green-900/50 text-green-300 ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold"
+                        title={s.first_name}
+                      >
+                        {crewInitials(s.first_name)}
+                      </span>
+                    ))}
+                    {roomCrew.length > 3 && (
+                      <span className="w-5 h-5 rounded-full bg-cult-charcoal text-cult-medium-gray ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold">
+                        +{roomCrew.length - 3}
+                      </span>
+                    )}
                   </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {allDone ? (
+                  <span className="flex items-center gap-1 text-xs font-medium text-cult-success">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Done
+                  </span>
+                ) : (
+                  <span className="text-xs font-mono text-cult-medium-gray">{completedCount}/{totalCount}</span>
+                )}
+                <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+              </div>
+            </button>
 
-                  <div className="flex items-center gap-3">
-                    {/* Completion indicator */}
-                    <div className="flex items-center gap-2">
-                      {allDone ? (
-                        <span className="flex items-center gap-1 text-xs font-medium text-cult-success">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Done
-                        </span>
-                      ) : (
-                        <>
-                          <span className="text-xs font-medium text-cult-light-gray">
-                            {completedCount}/{totalCount}
-                          </span>
-                          <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-300 bg-cult-success"
-                              style={{ width: `${roomPct}%` }}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {/* Batch assign — only show when there are unassigned active tasks */}
-                      {activeTasks.filter((t) => !t.assigned_to).length > 0 && (
-                        <BatchAssignButton
-                          unassignedTasks={activeTasks.filter((t) => !t.assigned_to)}
-                          staffOptions={quickAssignStaff}
-                          onAssign={onAssignWorker}
-                        />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => openDeadPlantForm(room.id)}
-                        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-red-400 active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                        title="Log dead plant"
-                      >
-                        <Skull className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openAddTask(room.id)}
-                        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-accent active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                        title="Add task to this room"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
+            {/* Expanded content */}
+            {!collapsed && (
+              <>
+                {/* Per-room action bar: filter chips + room actions */}
+                <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-cult-dark-gray/30 bg-cult-near-black/50">
+                  <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+                    {([
+                      { key: 'all' as const, label: 'All', count: totalCount },
+                      { key: 'pending' as const, label: 'Pending', count: pendingCount },
+                      { key: 'in_progress' as const, label: 'Active', count: activeCount },
+                      { key: 'completed' as const, label: 'Done', count: doneCount },
+                    ]).map(({ key, label, count }) => {
+                      if (key !== 'all' && count === 0) return null;
+                      const isActive = roomFilter === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => updateRoomFilter(room.id, key)}
+                          className={`px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-colors flex-shrink-0 ${
+                            isActive
+                              ? 'bg-cult-charcoal text-cult-white'
+                              : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+                          }`}
+                        >
+                          {label}
+                          {key !== 'all' && <span className="ml-1 opacity-70">{count}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {activeTasks.filter((t) => !t.assigned_to).length > 0 && (
+                      <BatchAssignButton
+                        unassignedTasks={activeTasks.filter((t) => !t.assigned_to)}
+                        staffOptions={quickAssignStaff}
+                        onAssign={onAssignWorker}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => openDeadPlantForm(room.id)}
+                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      title="Log dead plant"
+                    >
+                      <Skull className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openAddTask(room.id)}
+                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-accent min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      title="Add task to this room"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -722,25 +736,29 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                   </div>
                 )}
 
-                {/* Completed tasks — collapsed summary */}
-                {completedTasks.length > 0 && (
-                  <CompletedTasksCollapse
-                    tasks={completedTasks}
-                    onTaskClick={openCompletionForm}
-                  />
+                {/* Completed tasks */}
+                {completedTasks.length > 0 && roomFilter !== 'completed' && (
+                  <CompletedTasksCollapse tasks={completedTasks} onTaskClick={openCompletionForm} />
+                )}
+                {completedTasks.length > 0 && roomFilter === 'completed' && (
+                  <div className="divide-y divide-cult-dark-gray/30">
+                    {completedTasks.map((t) => (
+                      <TaskCard key={t.id} task={t} onClick={() => openCompletionForm(t)} />
+                    ))}
+                  </div>
                 )}
 
                 {/* Filtered empty state */}
-                {roomTasks.length === 0 && statusFilter !== 'all' && (
+                {visibleTasks.length === 0 && roomFilter !== 'all' && (
                   <div className="px-4 py-3 text-xs text-cult-medium-gray italic">
-                    No {statusFilter.replace('_', ' ')} tasks in this room
+                    No {roomFilter === 'in_progress' ? 'active' : roomFilter.replace('_', ' ')} tasks in this room
                   </div>
                 )}
-              </div>
-            </div>
-          );
-        });
-      })()}
+              </>
+            )}
+          </div>
+        );
+      })}
 
       {/* ── Modals ────────────────────────────────────────── */}
       {showAddTask && (

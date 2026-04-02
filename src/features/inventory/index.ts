@@ -1,3 +1,4 @@
+export { InventoryHub } from './components/InventoryHub';
 export { InventoryOversightDashboard } from './components/InventoryOversightDashboard';
 export { useInventoryOversight } from './hooks/useInventoryOversight';
 export * from './types';

@@ -1,3 +1,4 @@
+export { SalesHub } from './SalesHub';
 export { CRMDashboard } from './CRMDashboard';
 export { AccountsList } from './AccountsList';
 export { AccountDetail } from './AccountDetail';

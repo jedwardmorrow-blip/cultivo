@@ -1,1 +1,1 @@
-export { CRMDashboard, AccountsList, AccountDetail, SalesQueue, VisitCalendar, SalesPipeline, ProspectPipeline, AccountHealthDashboard, VisitCadenceDashboard, RevenueTrackingDashboard, AutomatedTaskEngine, StorePerformanceScorecard, AccountsHub } from './components';
+export { SalesHub, CRMDashboard, AccountsList, AccountDetail, SalesQueue, VisitCalendar, SalesPipeline, ProspectPipeline, AccountHealthDashboard, VisitCadenceDashboard, RevenueTrackingDashboard, AutomatedTaskEngine, StorePerformanceScorecard, AccountsHub } from './components';

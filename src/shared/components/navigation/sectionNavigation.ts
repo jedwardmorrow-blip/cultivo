@@ -31,6 +31,7 @@ import {
   Target,
   Users,
   Settings,
+  Crown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -56,8 +57,9 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'hub',
     label: 'Hub',
     icon: Dna,
-    defaultView: 'hub',
+    defaultView: 'post-production-hub',
     items: [
+      { id: 'post-production-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
 { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
@@ -76,8 +78,9 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'cultivation',
     label: 'Cultivation',
     icon: Sprout,
-    defaultView: 'cultivation-taskboard',
+    defaultView: 'cultivation-hub',
     items: [
+      { id: 'cultivation-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-taskboard', label: 'Today', icon: ClipboardList, group: 'primary' },
       { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'primary' },
       { id: 'cultivation-task-settings', label: 'Settings', icon: Settings, group: 'primary' },
@@ -121,8 +124,9 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'sales',
     label: 'Distribution',
     icon: Truck,
-    defaultView: 'orders',
+    defaultView: 'sales-hub',
     items: [
+      { id: 'sales-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'orders', label: 'Orders', icon: Package, group: 'primary' },
       { id: 'delivery', label: 'Delivery Calendar', icon: Calendar, group: 'primary' },
       { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' }
@@ -132,8 +136,9 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'inventory',
     label: 'Inventory',
     icon: Archive,
-    defaultView: 'inventory-all',
+    defaultView: 'inventory-hub',
     items: [
+      { id: 'inventory-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'primary' },
       { id: 'batches', label: 'Batches', icon: Layers, group: 'primary' },
       { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'primary' },
@@ -159,11 +164,21 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'financial',
     label: 'Financial',
     icon: Wallet,
-    defaultView: 'financial',
+    defaultView: 'operations-hub',
     items: [
+      { id: 'operations-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
       { id: 'financial-ar', label: 'Accounts Receivable', icon: DollarSign, group: 'primary' },
       { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
+    ],
+  },
+  {
+    id: 'executive',
+    label: 'Executive',
+    icon: Crown,
+    defaultView: 'executive-hub',
+    items: [
+      { id: 'executive-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
     ],
   },
 ];

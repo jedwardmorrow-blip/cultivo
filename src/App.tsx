@@ -73,6 +73,12 @@ const StrainAnalyticsDashboard = lazyRetry(() => import('./features/strain-analy
 const HubBatchPipeline = lazyRetry(() => import('./features/hub'), 'BatchPipeline');
 const HubPipelinePlanner = lazyRetry(() => import('./features/hub'), 'PipelinePlanner');
 const HubStrainYieldAnalytics = lazyRetry(() => import('./features/hub'), 'StrainYieldAnalytics');
+const CultivationHub = lazyRetry(() => import('./features/cultivation'), 'CultivationHub');
+const PostProductionHub = lazyRetry(() => import('./features/hub'), 'PostProductionHub');
+const InventoryHub = lazyRetry(() => import('./features/inventory'), 'InventoryHub');
+const SalesHub = lazyRetry(() => import('./features/crm'), 'SalesHub');
+const OperationsHub = lazyRetry(() => import('./features/financial'), 'OperationsHub');
+const ExecutiveHub = lazyRetry(() => import('./features/executive'), 'ExecutiveHub');
 
 function ViewFallback() {
   return (
@@ -210,6 +216,12 @@ function AuthenticatedApp() {
               <Route path="/hub" element={<HubBatchPipeline />} />
               <Route path="/pipeline-planner" element={<HubPipelinePlanner />} />
               <Route path="/hub-strain-analytics" element={<HubStrainYieldAnalytics />} />
+              <Route path="/cultivation-hub" element={<CultivationErrorBoundary><CultivationHub /></CultivationErrorBoundary>} />
+              <Route path="/post-production-hub" element={<PostProductionHub />} />
+              <Route path="/inventory-hub" element={<InventoryHub />} />
+              <Route path="/sales-hub" element={<SalesHub />} />
+              <Route path="/operations-hub" element={<OperationsHub />} />
+              <Route path="/executive-hub" element={<ExecutiveHub />} />
               <Route path="/eod-summary" element={<EODSummary />} />
               <Route path="/crm-inventory" element={<SalesInventoryViewWrapper />} />
               <Route path="/crm-dashboard" element={<CRMDashboard onCreateOrder={(customerId: string | null) => customerId ? handleCreateOrderForCustomer(customerId) : setShowNewOrderForm(true)} />} />

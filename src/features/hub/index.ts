@@ -1,3 +1,5 @@
+export { HubShell } from './components/HubShell';
+export { PostProductionHub } from './components/PostProductionHub';
 export { PipelinePlanner } from './components/PipelinePlanner';
 export { BatchPipeline } from './components/BatchPipeline';
 export { BatchKanbanCard } from './components/BatchKanbanCard';
