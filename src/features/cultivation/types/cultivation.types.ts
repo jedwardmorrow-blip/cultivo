@@ -24,7 +24,7 @@ export interface CultivationPlan {
   id: string;
   room_id: string;
   strain_id: string | null;
-  batch_id: string | null;
+  batch_id: string;
   feed_program_id: string | null;
   plan_name: string | null;
   plan_status: PlanStatus;
@@ -825,7 +825,7 @@ export interface BatchTankMixLog {
   id: string;
   task_instance_id: string | null;
   room_id: string;
-  batch_id: string | null;
+  batch_id: string;
   feed_program_id: string | null;
   program_week_id: string | null;
   prescribed_by: string | null;

@@ -59,7 +59,7 @@ export interface COAData {
   id?: string;
   strain_name: string;
   batch_number: string;
-  batch_id?: string | null;
+  batch_id?: string;
   harvest_date: string | null;
   manufacture_date: string | null;
   sample_date: string | null;
@@ -308,7 +308,7 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
   const dbInsert = {
     strain_name: data.strain_name,
     batch_number: data.batch_number,
-    batch_id: data.batch_id || null,
+    batch_id: data.batch_id ?? null,
     harvest_date: data.harvest_date,
     manufacture_date: data.manufacture_date,
     sample_date: data.sample_date,

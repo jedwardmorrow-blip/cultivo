@@ -30,7 +30,7 @@ interface CartItem {
   notes?: string;
   is_sample: boolean;
   price_locked: boolean;
-  batch_id?: string | null;
+  batch_id?: string;
   batch_number?: string | null;
   strain?: string | null;
   grade_code?: string | null;
@@ -552,7 +552,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     ? `${selectedCustomer.dispensary_code}${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`
     : null;
 
-  const canSubmit = !!selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading;
+  const canSubmit = !!selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading && cartItems.every(item => !!item.batch_id);
 
   // ─── Cart Actions ────────────────────────────────────────────────────────
 
@@ -583,7 +583,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         unit_price: isSample ? 0 : (customPrice ?? product.price_per_unit ?? 0),
         is_sample: isSample,
         price_locked: false,
-        batch_id: batch?.batch_id || null,
+        batch_id: batch?.batch_id,
         batch_number: batch?.batch_number || null,
         strain: batch?.strain || product.strain?.name || null,
         grade_code: batch?.grade_code || null,
@@ -702,7 +702,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
         unit_price: item.is_sample ? 0 : item.unit_price,
         notes: item.notes || null,
         status: 'trimming' as const,
-        batch_id: item.batch_id || null,
+        batch_id: item.batch_id ?? null,
         strain: item.strain || null,
       }));
 

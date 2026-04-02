@@ -82,7 +82,7 @@ class OrdersDataService {
         status: item.status || 'trimming',
         pricing_unit: product?.pricing_unit,
         product_category: product?.product_category,
-        batch_id: item.batch_id || null,
+        batch_id: item.batch_id,
         is_sample: item.is_sample ?? false,
       };
     });

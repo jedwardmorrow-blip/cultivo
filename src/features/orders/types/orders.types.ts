@@ -17,7 +17,7 @@ export interface OrderItemExtended {
   status: string;
   pricing_unit?: string;
   product_category?: string;
-  batch_id?: string | null;
+  batch_id: string;
   is_sample?: boolean;
 }
 

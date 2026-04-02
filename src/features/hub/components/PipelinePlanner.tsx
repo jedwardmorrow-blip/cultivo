@@ -169,7 +169,6 @@ function emptyPlan(roomId: string): Partial<CultivationPlan> {
   return {
     room_id: roomId,
     strain_id: null,
-    batch_id: null,
     feed_program_id: null,
     plan_name: null,
     plan_status: 'draft',
