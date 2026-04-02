@@ -3,6 +3,7 @@ import { useSwipeable } from 'react-swipeable';
 import { Clock, ArrowRight, UserPlus, ChevronDown, AlertTriangle, Play, CheckCircle2, SkipForward, FastForward, Users, MoreVertical } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, TaskStatus } from '../types';
+import { PRIORITY_COLOR } from '../constants/taskColors';
 
 const STATUS_STYLES: Record<TaskStatus, { bg: string; text: string; label: string }> = {
   pending: { bg: 'bg-zinc-800', text: 'text-zinc-400', label: 'Pending' },
@@ -29,11 +30,6 @@ export interface TaskCardData {
   priority?: 'low' | 'medium' | 'high';
 }
 
-const PRIORITY_STYLES: Record<string, { dot: string; border: string }> = {
-  high: { dot: 'bg-amber-400', border: 'border-l-amber-500/60' },
-  medium: { dot: 'bg-amber-400', border: '' },
-  low: { dot: 'bg-zinc-500', border: '' },
-};
 
 export interface StaffOption {
   id: string;
@@ -231,14 +227,14 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           onClick={onClick}
           className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors px-2.5 sm:px-3 py-2 group ${
             isCarried ? 'border-l-2 border-l-amber-500 bg-amber-950/10' :
-            task.priority === 'high' ? 'border-l-2 border-l-red-500/60' : ''
+            task.priority === 'high' ? `border-l-2 ${PRIORITY_COLOR.high.border}` : ''
           }`}
         >
           {/* Single-row compact layout: priority dot | type badge | assignment | status */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {task.priority === 'high' && (
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_STYLES.high.dot}`} title="High priority" />
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_COLOR.high.dot}`} title="High priority" />
               )}
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm flex-shrink-0"

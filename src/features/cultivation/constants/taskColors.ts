@@ -40,20 +40,28 @@ export const PRIORITY_COLOR: Record<string, {
   text: string;
   active: string;   // selected button state
   badge: string;    // read-only badge
+  dot: string;      // small indicator dot (bg class)
+  border: string;   // left-border accent (border-l-* class)
 }> = {
   high: {
     text:   'text-amber-400',
     active: 'bg-amber-950/60 text-amber-400 border border-amber-700/50',
     badge:  'text-amber-400 bg-amber-950/40 rounded-sm border border-amber-800/30',
+    dot:    'bg-amber-400',
+    border: 'border-l-amber-500/60',
   },
   medium: {
     text:   'text-cult-medium-gray',
     active: 'bg-cult-charcoal text-cult-white border border-cult-medium-gray',
     badge:  'text-cult-medium-gray bg-cult-charcoal/50 rounded-sm border border-cult-dark-gray/40',
+    dot:    'bg-amber-400',
+    border: '',
   },
   low: {
     text:   'text-cult-dark-gray',
     active: 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray',
     badge:  'text-cult-dark-gray bg-cult-charcoal/30 rounded-sm border border-cult-dark-gray/30',
+    dot:    'bg-zinc-500',
+    border: '',
   },
 };
