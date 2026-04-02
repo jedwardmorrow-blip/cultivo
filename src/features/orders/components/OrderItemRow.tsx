@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { CreditCard as Edit2, Trash2, Package, CheckCircle, AlertCircle, Circle, Printer, Gift } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -52,7 +52,7 @@ interface OrderItemRowProps {
   onDelete: (itemId: string, orderId: string) => void;
 }
 
-export function OrderItemRow({
+export const OrderItemRow = memo(function OrderItemRow({
   item,
   orderId,
   onQuantityUpdate,
@@ -439,4 +439,4 @@ export function OrderItemRow({
       />
     </>
   );
-}
+});

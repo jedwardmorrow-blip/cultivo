@@ -1,4 +1,4 @@
-import { ReactNode, useState, useRef, useEffect } from 'react';
+import { memo, ReactNode, useState, useRef, useEffect } from 'react';
 import { MoreVertical } from 'lucide-react';
 
 export interface RowAction {
@@ -13,7 +13,7 @@ interface RowActionMenuProps {
   actions: RowAction[];
 }
 
-export function RowActionMenu({ actions }: RowActionMenuProps) {
+export const RowActionMenu = memo(function RowActionMenu({ actions }: RowActionMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -75,4 +75,4 @@ export function RowActionMenu({ actions }: RowActionMenuProps) {
       )}
     </div>
   );
-}
+});

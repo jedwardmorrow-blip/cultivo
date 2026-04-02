@@ -1,4 +1,4 @@
-import { ReactNode, useState, useMemo, useCallback } from 'react';
+import { memo, ReactNode, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Package, Filter } from 'lucide-react';
 import { useQualityGrades } from '@/hooks/useQualityGrades';
 import { useShiftSelect } from '@/shared/hooks';
@@ -37,7 +37,7 @@ function getRawValue(item: InventoryItem, accessor: Column['accessor']): any {
   return item[accessor];
 }
 
-export function InventoryTable({
+export const InventoryTable = memo(function InventoryTable({
   items,
   columns,
   emptyIcon,
@@ -381,4 +381,4 @@ export function InventoryTable({
       )}
     </div>
   );
-}
+});
