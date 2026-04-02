@@ -11,10 +11,11 @@ const ORDER_STATUS_COLORS: Record<string, OrderStatusStyle> = {
   processing: { bg: 'bg-yellow-900/30', text: 'text-yellow-400', border: 'border-yellow-600', label: 'Processing' },
   ready_for_delivery: { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-600', label: 'Ready' },
   completed: { bg: 'bg-emerald-900/30', text: 'text-emerald-400', border: 'border-emerald-600', label: 'Completed' },
+  delivered: { bg: 'bg-teal-900/30', text: 'text-teal-400', border: 'border-teal-600', label: 'Delivered' },
   cancelled: { bg: 'bg-red-900/30', text: 'text-red-400', border: 'border-red-600', label: 'Cancelled' },
 };
 
-const READY_STATUSES = new Set(['ready_for_delivery', 'completed']);
+const READY_STATUSES = new Set(['ready_for_delivery', 'completed', 'delivered']);
 
 export function getOrderStatusStyle(status: string): OrderStatusStyle {
   return ORDER_STATUS_COLORS[status] || { bg: 'bg-cult-dark-gray/30', text: 'text-cult-silver', border: 'border-cult-medium-gray', label: status.replace(/_/g, ' ') };

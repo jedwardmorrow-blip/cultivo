@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, AlertTriangle, Copy, Calendar, Package, ArrowRight, Gift, CalendarCheck } from 'lucide-react';
 import { formatCurrency, parseDeliveryDate } from '@/lib/utils';
 import { useShiftSelect } from '@/shared/hooks';
@@ -27,6 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
   processing: 'Processing',
   ready_for_delivery: 'Ready',
   completed: 'Completed',
+  delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
 
@@ -52,7 +53,7 @@ function SortIcon({ field, currentField, direction }: { field: SortField; curren
     : <ChevronDown className="w-3 h-3 text-cult-white" />;
 }
 
-export function OrderTable({
+export const OrderTable = memo(function OrderTable({
   orders,
   selectedOrderId,
   selectedIds,
@@ -85,7 +86,7 @@ export function OrderTable({
           comparison = (a.customer_name || '').localeCompare(b.customer_name || '');
           break;
         case 'status': {
-          const statusOrder = ['submitted', 'accepted', 'processing', 'ready_for_delivery', 'completed', 'cancelled'];
+          const statusOrder = ['submitted', 'accepted', 'processing', 'ready_for_delivery', 'completed', 'delivered', 'cancelled'];
           comparison = statusOrder.indexOf(a.status || '') - statusOrder.indexOf(b.status || '');
           break;
         }
@@ -331,4 +332,4 @@ export function OrderTable({
       )}
     </div>
   );
-}
+});

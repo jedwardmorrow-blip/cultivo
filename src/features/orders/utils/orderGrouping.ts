@@ -1,6 +1,6 @@
 import type { Order, MonthGroup, StatusGroup } from '../types';
 
-const STATUS_ORDER = ['submitted', 'accepted', 'processing', 'ready_for_delivery', 'completed', 'cancelled'];
+const STATUS_ORDER = ['submitted', 'accepted', 'processing', 'ready_for_delivery', 'completed', 'delivered', 'cancelled'];
 
 const STATUS_NAMES: Record<string, string> = {
   submitted: 'Submitted',
@@ -8,6 +8,7 @@ const STATUS_NAMES: Record<string, string> = {
   processing: 'Processing',
   ready_for_delivery: 'Ready for Delivery',
   completed: 'Completed',
+  delivered: 'Delivered',
   cancelled: 'Cancelled'
 };
 
@@ -83,6 +84,7 @@ export function getStatusColor(status: string): string {
     processing: 'bg-yellow-900/30 text-yellow-400 border-yellow-600',
     ready_for_delivery: 'bg-green-900/30 text-green-400 border-green-600',
     completed: 'bg-emerald-900/30 text-emerald-400 border-emerald-600',
+    delivered: 'bg-teal-900/30 text-teal-400 border-teal-600',
     cancelled: 'bg-red-900/30 text-red-400 border-red-600',
   };
   return colors[status] || colors.submitted;
@@ -102,6 +104,7 @@ export function getStatusColorMap(status: string): string {
     processing: 'border-yellow-600 bg-yellow-900/10',
     ready_for_delivery: 'border-green-600 bg-green-900/10',
     completed: 'border-emerald-600 bg-emerald-900/10',
+    delivered: 'border-teal-600 bg-teal-900/10',
     cancelled: 'border-red-600 bg-red-900/10'
   };
   return statusColorMap[status] || 'border-cult-medium-gray bg-cult-dark-gray';
