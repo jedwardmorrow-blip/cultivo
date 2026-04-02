@@ -11,5 +11,6 @@ export type {
   FacilitySettings,
   SettingsFormData,
   UseSettingsReturn,
-  UseLogosReturn
+  UseLogosReturn,
+  MetrcCredential
 } from './settings.types';
