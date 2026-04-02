@@ -27,7 +27,8 @@ export async function getTrimSessions() {
     const { data, error } = await supabase
       .from('trim_sessions')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     return { data, error: null };
@@ -148,7 +149,8 @@ export async function getBuckingSessions() {
     const { data, error } = await supabase
       .from('bucking_sessions')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     return { data, error: null };
@@ -268,7 +270,8 @@ export async function getPackagingSessions() {
     const { data, error } = await supabase
       .from('packaging_sessions')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (error) throw error;
     return { data, error: null };
