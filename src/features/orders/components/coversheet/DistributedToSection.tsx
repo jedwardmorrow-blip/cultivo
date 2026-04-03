@@ -1,10 +1,16 @@
 import type { DistributedToInfo } from '@/types';
 
+interface DistributedToEntry {
+  location?: string;
+  entity_name?: string;
+  license_number?: string;
+}
+
 interface DistributedToSectionProps {
   customerName?: string;
   licenseNumber?: string;
   locationName?: string;
-  data?: DistributedToInfo;
+  data?: DistributedToInfo | DistributedToEntry[];
 }
 
 export function DistributedToSection({
@@ -13,11 +19,40 @@ export function DistributedToSection({
   locationName,
   data
 }: DistributedToSectionProps) {
-  const displayName = data?.customer_name || customerName || 'Unknown Customer';
-  const displayLicense = data?.license_number || licenseNumber || 'License Not Available';
-  const displayLocation = data?.location_name || locationName;
-  const originatorName = data?.originator_name;
-  const originatorLicense = data?.originator_license;
+  // Handle array format (multi-location customers like Sol Flower)
+  if (Array.isArray(data)) {
+    return (
+      <div className="border-2 border-black bg-white p-6 compliance-section">
+        <h3 className="text-lg font-bold uppercase mb-4">
+          Chain of Distribution
+        </h3>
+        <div className="space-y-1">
+          <p className="text-base leading-relaxed mb-2">
+            <span className="font-semibold">To: </span>
+            <span className="font-medium">{customerName || 'Sol Flower'}</span>
+          </p>
+          {data.map((entry, index) => (
+            <p key={index} className="text-sm leading-relaxed pl-4">
+              <span className="font-medium">{entry.entity_name}</span>
+              {entry.location && (
+                <span className="text-gray-600"> ({entry.location})</span>
+              )}
+              {' — '}
+              <span className="font-mono text-xs">{entry.license_number}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Handle legacy single-object format
+  const singleData = data as DistributedToInfo | undefined;
+  const displayName = singleData?.customer_name || customerName || 'Unknown Customer';
+  const displayLicense = singleData?.license_number || licenseNumber || 'License Not Available';
+  const displayLocation = singleData?.location_name || locationName;
+  const originatorName = singleData?.originator_name;
+  const originatorLicense = singleData?.originator_license;
 
   return (
     <div className="border-2 border-black bg-white p-6 compliance-section">
