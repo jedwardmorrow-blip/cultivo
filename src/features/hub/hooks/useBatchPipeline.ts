@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { BatchLifecycleState } from '@/types/batch.types';
+import type { BatchLifecycleState, BatchCOAStatus } from '@/types/batch.types';
 import { CULTIVATION_STAGES, FLOWER_PATH_STAGES, FF_LAB_STAGES } from '@/types/batch.types';
 
 export interface PipelineBatch {
@@ -31,7 +31,7 @@ export interface PipelineBatch {
   fresh_frozen_at: string | null;
   lab_started_at: string | null;
   // Joined data
-  coa_status: 'active' | 'inactive' | 'none';
+  coa_status: BatchCOAStatus;
   plant_group_count: number;
 }
 
@@ -92,7 +92,7 @@ export function useBatchPipeline() {
       setLoading(true);
       setError(null);
 
-      // Fetch active batches with COA status via a left join
+      // Fetch active batches with coa_status directly from batch_registry
       const { data: batchData, error: batchErr } = await supabase
         .from('batch_registry')
         .select(`
@@ -100,24 +100,16 @@ export function useBatchPipeline() {
           status, harvest_date, clone_date, initial_weight_grams, fresh_frozen_weight_grams,
           quality_grade_id, is_quarantined, room, notes, created_at, updated_at,
           veg_started_at, flower_started_at, drying_started_at, bucking_started_at,
-          trimming_started_at, packaging_started_at, fresh_frozen_at, lab_started_at
+          trimming_started_at, packaging_started_at, fresh_frozen_at, lab_started_at,
+          coa_status
         `)
         .eq('status', 'active')
         .order('batch_number');
 
       if (batchErr) throw batchErr;
 
-      // Get COA status for each batch
-      const batchIds = (batchData || []).map(b => b.id);
-      const { data: coaData } = await supabase
-        .from('certificates_of_analysis')
-        .select('batch_id, is_active')
-        .in('batch_id', batchIds)
-        .eq('is_active', true);
-
-      const coaSet = new Set((coaData || []).map(c => c.batch_id));
-
       // Get plant group counts per batch
+      const batchIds = (batchData || []).map(b => b.id);
       const { data: pgData } = await supabase
         .from('plant_groups')
         .select('batch_registry_id')
@@ -133,7 +125,7 @@ export function useBatchPipeline() {
         ...b,
         lifecycle_state: b.lifecycle_state as BatchLifecycleState,
         production_path: b.production_path as 'flower' | 'fresh_frozen' | null,
-        coa_status: coaSet.has(b.id) ? 'active' as const : 'none' as const,
+        coa_status: (b.coa_status as BatchCOAStatus) ?? 'curing',
         plant_group_count: pgCounts.get(b.id) || 0,
       }));
 

@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { AlertTriangle, CheckCircle, Leaf, Clock, FlaskConical, TrendingUp, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Leaf, Clock, FlaskConical, TrendingUp, TrendingDown } from 'lucide-react';
 import type { PipelineBatch } from '../hooks/useBatchPipeline';
 import { getDaysInStage } from '../hooks/useBatchPipeline';
 import type { BatchPrediction } from '../hooks/useBatchPredictions';
+import { BatchCOAStatusBadge } from '@/features/batches/components/BatchCOAStatusBadge';
 
 interface BatchKanbanCardProps {
   batch: PipelineBatch;
@@ -92,8 +93,8 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
           {batch.is_quarantined && (
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
           )}
-          {batch.coa_status === 'active' && (
-            <CheckCircle className="w-3 h-3 text-emerald-500" />
+          {batch.coa_status && batch.coa_status !== 'curing' && (
+            <BatchCOAStatusBadge status={batch.coa_status} size="xs" />
           )}
           {isFF && (
             <FlaskConical className="w-3 h-3 text-sky-400" />

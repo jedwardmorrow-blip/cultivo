@@ -6,6 +6,7 @@ import { useNavigationMenu } from '../../hooks/useNavigationMenu';
 import { useBadgeCounts } from '../../hooks/useBadgeCounts';
 import { NavigationDrawer, menuStructure, SectionTabs, SubNavBar } from '../../shared/components/navigation';
 import { getActiveSectionId } from '../../shared/components/navigation/sectionNavigation';
+import { useBatchCOAAvailabilityAlert } from '../../features/batches/hooks/useBatchCOAAvailabilityAlert';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -28,6 +29,9 @@ export function Layout({ children }: LayoutProps) {
 
   const { isOpen, expandedSections, toggleSection, toggleDrawer } = useNavigationMenu(currentView);
   const { badgeMap } = useBadgeCounts(true);
+
+  // Leo availability alert: notifies when a batch COA is received
+  useBatchCOAAvailabilityAlert();
 
   const activeSectionId = getActiveSectionId(currentView);
   const showSubNav = activeSectionId !== null;

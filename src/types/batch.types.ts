@@ -76,13 +76,22 @@ export interface BatchAllocationSummary {
   stages: BatchStageTrackingExtended[];
 }
 
+// COA compliance state machine — mirrors batch_coa_status enum in DB
+export type BatchCOAStatus =
+  | 'curing'
+  | 'pending_sampling'
+  | 'testing_in_progress'
+  | 'coa_received'
+  | 'coa_failed'
+  | 'available';
+
 // Batch with COA status
 export interface BatchWithCOAStatus extends BatchRegistry {
   batch_id: string;
   batch_status: string;
   lifecycle_state: string;
   quality_grade_id: string | null;
-  coa_status: 'active' | 'inactive' | 'pending' | 'none';
+  coa_status: BatchCOAStatus;
   coa_active: boolean;
   coa_url?: string;
   coa_upload_date?: string;

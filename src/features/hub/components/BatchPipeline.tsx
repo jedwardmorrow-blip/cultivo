@@ -6,6 +6,7 @@ import {
   RefreshCw, AlertTriangle, ChevronLeft, ChevronRight,
   TrendingUp, TrendingDown, Target
 } from 'lucide-react';
+import { BatchCOAStatusBadge } from '@/features/batches/components/BatchCOAStatusBadge';
 import type { LucideIcon } from 'lucide-react';
 import { useBatchPipeline, type PipelineColumn, type PipelineBatch } from '../hooks/useBatchPipeline';
 import { useStrainMetrics } from '../hooks/useStrainMetrics';
@@ -408,7 +409,12 @@ export function BatchPipeline() {
                   ? formatGrams(selectedBatch.initial_weight_grams)
                   : '—'
               } />
-              <DetailRow label="COA" value={selectedBatch.coa_status} />
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-[10px] text-cult-lighter-gray uppercase tracking-widest font-montserrat flex-shrink-0">
+                  COA Status
+                </span>
+                <BatchCOAStatusBadge status={selectedBatch.coa_status} size="xs" />
+              </div>
               <DetailRow label="Plant Groups" value={String(selectedBatch.plant_group_count)} />
             </div>
 

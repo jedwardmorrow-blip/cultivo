@@ -5,6 +5,7 @@ import { useBatchesForStrain } from '../hooks/useBatchPlanning';
 import type { BatchAssignContext, BatchPlanData, OrderLineItem, Urgency } from '../types';
 import type { AvailablePackage } from '@/features/orders/services';
 import { formatDateShort, formatWeight } from '@/shared/utils/format';
+import { BatchCOAStatusBadge } from '@/features/batches/components/BatchCOAStatusBadge';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -565,23 +566,34 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
   const [allocWeights, setAllocWeights] = useState<Record<string, number>>({});
 
   const bestStage = detectBestStage(batch);
+  const coaBlocked = batch.coa_status !== null && batch.coa_status !== 'available';
 
   return (
-    <div className={`rounded border ${fullyDrafted ? 'border-green-500/20 bg-green-500/5' : 'border-indigo-500/10 bg-indigo-500/5'}`}>
+    <div className={`rounded border ${
+      fullyDrafted
+        ? 'border-green-500/20 bg-green-500/5'
+        : coaBlocked
+        ? 'border-amber-500/20 bg-amber-500/5'
+        : 'border-indigo-500/10 bg-indigo-500/5'
+    }`}>
       {/* Batch header */}
       <div
         className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-indigo-500/10"
-        onClick={() => !fullyDrafted && setExpanded(!expanded)}
+        onClick={() => !fullyDrafted && !coaBlocked && setExpanded(!expanded)}
       >
-        {!fullyDrafted && (
+        {!fullyDrafted && !coaBlocked && (
           <ChevronRight className={`w-3 h-3 text-gray-500 transition-transform ${expanded ? 'rotate-90' : ''}`} />
         )}
         {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
+        {coaBlocked && !fullyDrafted && <AlertTriangle className="w-3 h-3 text-amber-400" />}
         <span className="font-mono text-xs text-gray-300">{batch.batch_number}</span>
         <span className="text-xs text-gray-500">{batchStageLabel(batch)}</span>
+        {batch.coa_status && <BatchCOAStatusBadge status={batch.coa_status} size="xs" />}
         <span className="ml-auto text-xs">
           {fullyDrafted ? (
             <span className="text-green-400">Fully drafted</span>
+          ) : coaBlocked ? (
+            <span className="text-amber-400">COA required</span>
           ) : (
             <span className="text-gray-300">{formatWeight(remainingG)} avail</span>
           )}

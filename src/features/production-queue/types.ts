@@ -1,6 +1,7 @@
 // Production Queue View types
 // Maps to the 3 Supabase views: v_production_queue_strain_summary,
 // v_production_queue_by_strain, v_production_queue_by_order
+import type { BatchCOAStatus } from '@/types/batch.types';
 
 export type Urgency = 'overdue' | 'urgent' | 'soon' | 'normal' | 'no_date';
 // v3 stock_status values from by_strain view: 'no_stock' | 'needs_processing' | 'ready'
@@ -137,6 +138,8 @@ export interface BatchPlanData {
   strain_demand_g: number;
   strain_order_count: number;
   strain_urgency: Urgency | 'no_date';
+  // COA compliance status — enriched from batch_registry, null if not yet fetched
+  coa_status: BatchCOAStatus | null;
 }
 
 /** A single batch_allocations row (for display within a batch card) */
