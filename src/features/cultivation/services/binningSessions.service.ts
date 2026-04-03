@@ -169,6 +169,7 @@ export const binningSessionsService = {
 
     const session = data as unknown as BinningSession;
     const batchId = session.batch_registry_id;
+    if (!batchId) throw new Error('completeBinningSession: batch_registry_id is null — batch_id is required for inventory operations');
 
     const { data: batchData, error: batchError } = await supabase
       .from('batch_registry')

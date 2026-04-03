@@ -78,7 +78,7 @@ export default async function handler(
               .trim(),
             priority: SEVERITY_TO_PRIORITY[ticket.severity] ?? "medium",
             status: "todo",
-            assigneeAgentId: "789da741-a2fa-49e1-a229-da5b1ed81644",
+            assigneeAgentId: process.env.PAPERCLIP_AGENT_ID,
           }),
         }
       );
