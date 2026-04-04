@@ -310,6 +310,47 @@ describe('Conversion Finalization — integration flow', () => {
         .filter(([table]) => table === 'inventory_items');
       expect(calls.length).toBeGreaterThanOrEqual(2);
     });
+
+    it('records PRODUCE movements for each created inventory_item (Step 4)', async () => {
+      const { inventoryMovementService } = await import('@/services');
+      const recordMovementMock = inventoryMovementService.recordMovement as ReturnType<typeof vi.fn>;
+
+      mockByTable(buildFullRoutes());
+
+      await finalizeConversion(BASE_PARAMS);
+
+      // recordMovement should be called once for each package
+      expect(recordMovementMock).toHaveBeenCalledTimes(MOCK_CREATED_PACKAGES.length);
+
+      // Verify each call has movement_kind='PRODUCE' and reason_code='session_finalization'
+      recordMovementMock.mock.calls.forEach((call) => {
+        const [params] = call as [Record<string, unknown>];
+        expect(params.movement_kind).toBe('PRODUCE');
+        expect(params.reason_code).toBe('session_finalization');
+        expect(params.qty).toBeDefined();
+        expect(params.unit).toBeDefined();
+        expect(params.dest_item_id).toBeDefined();
+      });
+    });
+
+    it('continues finalization even if movement recording fails (non-blocking error handling)', async () => {
+      const { inventoryMovementService } = await import('@/services');
+      const recordMovementMock = inventoryMovementService.recordMovement as ReturnType<typeof vi.fn>;
+
+      // Mock recordMovement to fail
+      recordMovementMock.mockResolvedValueOnce({ success: false, error: 'Movement service unavailable' });
+      recordMovementMock.mockResolvedValueOnce({ success: true, movement_id: 'mov-002' });
+      recordMovementMock.mockResolvedValueOnce({ success: true, movement_id: 'mov-003' });
+
+      mockByTable(buildFullRoutes());
+
+      // Finalization should still succeed even though first movement failed
+      const result = await finalizeConversion(BASE_PARAMS);
+
+      expect(result).toEqual(MOCK_CREATED_PACKAGES);
+      // recordMovement attempts should still be made for all packages
+      expect(recordMovementMock).toHaveBeenCalledTimes(MOCK_CREATED_PACKAGES.length);
+    });
   });
 
   // =====================================================
