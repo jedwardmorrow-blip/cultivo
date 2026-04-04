@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { validateDate, getDateInputConstraints } from '@/lib/utils';
 import { useOrderableProducts } from '@/hooks';
+import { useProductReservations } from '@/hooks/useProductReservations';
 import {
   X, Plus, Minus, Gift, ShoppingCart, Trash2,
   AlertCircle, ChevronDown, Package, Calendar,
@@ -454,6 +455,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
   // Data state
   const [customers, setCustomers] = useState<Customer[]>([]);
   const { products, loading: productsLoading } = useOrderableProducts();
+  const { reservations: productReservations } = useProductReservations(products);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -813,6 +815,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
             customerName={selectedCustomer?.name || null}
             cartItems={cartItems}
             customerPrices={customerPrices}
+            productReservations={productReservations}
             onAddToCart={addToCart}
           />
         </div>
@@ -870,6 +873,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
               customerName={selectedCustomer?.name || null}
               cartItems={cartItems}
               customerPrices={customerPrices}
+              productReservations={productReservations}
               onAddToCart={addToCart}
             />
           )}

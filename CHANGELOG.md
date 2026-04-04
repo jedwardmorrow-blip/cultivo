@@ -4,6 +4,53 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-04 - CUL-375, CUL-372: CFO Arroya Partnership Financial Planning (Complete)
+
+**Type:** Financial Planning — Business Development
+**Status:** ✅ COMPLETE — Board-ready documents ready for review/approval
+
+Comprehensive financial planning for Arroya substrate sensor partnership: revenue modeling, cash flow projections, contract terms, and payment scheduling for Series A pitch and CRO negotiation.
+
+**Deliverables:**
+- `docs/FINANCIAL-MODEL-ARROYA-PITCH.md` (584 lines): SaaS pricing (3-tier model), revenue projections (Year 1 $386K → Year 3 $4.1M, 227% CAGR), unit economics (71:1 LTV/CAC, 3.3-mo payback), AI agent budget framework ($80K/yr cap, quarterly review gates), partnership economics ($565K–$1.2M over 3 years), capital structure ($2.5M raise @ $10M post-money valuation), go-to-market strategy, risk mitigation (5 key risks with mitigations). **References:** [CUL-375](/CUL/issues/CUL-375)
+- `docs/ARROYA-CASH-FLOW-MODEL.md` (550+ lines): Monthly cash flow detail (Year 1–3), three scenario analysis (conservative $14K, base $29.5K, aggressive $46K Y1 net impact), runway bridge (baseline 13.9 mo → 20–30 mo with Arroya), payment timing sensitivity (30/60/90-day delays), customer acquisition ramp scenarios, cost overrun analysis, decision gates (Q2/Q3/Q4 2026 with escalation), investor communication template. **Key finding:** Base case $668.5K cumulative revenue extends Series A runway 6–10 months. **References:** [CUL-375](/CUL/issues/CUL-375)
+- `docs/ARROYA-CONTRACT-TERMS-SCHEDULE.md` (480+ lines): Revenue share mechanics (three options: tiered 15→12→10%, fixed 12%, performance 10%+2% bonus; recommended: tiered), payment schedule (monthly Net 30, escalation for delays), MDF allocation ($20K Y1, quarterly disbursement, capped $5K/quarter, scales Year 2+ based on revenue), year-end true-up (Jan 15 summary, Feb 15 settlement), termination/wind-down (90-day notice, no clawback), four legal schedules (ASC 606 methodology, MDF guidelines, data/reporting specs, customer segment definitions), implementation roadmap (board approval checklist, CRO negotiation timeline: kickoff April 9–12, target execution April 30), risk registry (Year 1 assumptions, churn/delay/ROI risks). **References:** [CUL-372](/CUL/issues/CUL-372)
+
+**CFO Priorities Addressed:**
+- ✅ AI Agent Budget Controls Framework (critical risk per CTO)
+- ✅ SaaS Pricing Model ready for Arroya pitch
+- ✅ Development Costs integrated into financial projections
+- ✅ Cash Flow Modeling with Arroya integration for investor narrative
+- ✅ Contract Terms & Payment Schedule for CRO negotiation
+
+**Board Dependencies (Deadline April 8):**
+- CEO review + approval of revenue share tier (Options A/B/C)
+- Board approval of partnership financial structure ($2.5M ask, revenue share tiers, MDF allocation, quarterly review gates)
+- Finance to implement QB + billing setup by April 12 for monthly reconciliation automation
+
+**CRO Dependencies (Deadline April 30):**
+- CRO to negotiate final terms with Arroya legal (April 9–12 kickoff)
+- Target contract execution April 30, 2026 (pre-Series A pitch)
+
+**Follow-up Work (In Backlog):**
+- [CUL-373](/CUL/issues/CUL-373): Revenue Recognition Policy (ASC 606) for audit readiness
+- [CUL-374](/CUL/issues/CUL-374): P&L Structure & Monthly Reporting for partnership governance (post-execution)
+
+---
+
+## 2026-04-04 - CUL-386: Convert conversions.service + audit.service to movement-based inventory updates
+
+**Type:** Compliance — Inventory Integrity
+**Status:** ✅ COMPLETE — Build passing
+
+Audit confirmed zero direct `on_hand_qty` UPDATE calls in application code. One gap found and fixed: `finalizeConversionPackages()` was creating inventory items without PRODUCE movement records.
+
+**Changes:**
+- `src/features/inventory/services/conversions.service.ts`: Added `inventoryMovementService.recordMovement({ movement_kind: 'PRODUCE', ... })` call after each inventory item INSERT in `finalizeConversionPackages()`. Non-blocking — movement failure logs error but does not fail the operation. Return value updated: `movements: createdInventoryItems` (was `movements: []`).
+- `src/features/inventory/services/audit.service.ts`: No changes required — `completeAudit()` already delegates to RPC `fn_apply_audit_adjustments` (DB-level), with no direct `on_hand_qty` updates in application code.
+
+---
+
 ## 2026-04-03 - CUL-389: Inventory Liquidation Priority view — ship oldest batch first
 
 **Type:** Feature — Inventory

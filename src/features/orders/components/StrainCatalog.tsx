@@ -22,6 +22,7 @@ import type {
 import { useSkuYield, type StrainAllocation } from '@/shared/hooks/useSkuYield';
 import { formatWeight as sharedFormatWeight } from '@/shared/utils/format';
 import type { OrderableProduct } from '@/types';
+import type { ProductReservation } from '@/hooks/useProductReservations';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ interface StrainCatalogProps {
   customerName: string | null;
   cartItems: { product_id: string; quantity: number }[];
   customerPrices: Map<string, number> | null;
+  productReservations?: Map<string, ProductReservation>;
   onAddToCart: (product: OrderableProduct, batch?: BatchSelection, quantity?: number) => void;
 }
 
@@ -333,6 +335,7 @@ function StrainDetailPanel({
   demandPressure,
   cartItems,
   customerPrices,
+  productReservations,
   onAddToCart,
   onBack,
 }: {
@@ -345,6 +348,7 @@ function StrainDetailPanel({
   demandPressure: StrainDemandPressure | undefined;
   cartItems: { product_id: string; quantity: number }[];
   customerPrices: Map<string, number> | null;
+  productReservations?: Map<string, ProductReservation>;
   onAddToCart: (product: OrderableProduct, batch?: BatchSelection, quantity?: number) => void;
   onBack: () => void;
 }) {
@@ -535,6 +539,11 @@ function StrainDetailPanel({
                 const qtyVal = pendingQty[qtyKey] ?? '';
                 const parsedQty = parseInt(qtyVal) || 1;
                 const pricingUnit = product.pricing_unit || 'unit';
+                const reservation = productReservations?.get(product.id);
+                const reservedQty = reservation?.reserved_qty ?? 0;
+                const netAvailable = reservation?.net_available ?? (product.available_quantity ?? 0);
+                const isOverReserved = parsedQty > netAvailable && netAvailable >= 0;
+                const isFullyReserved = netAvailable === 0 && reservedQty > 0;
 
                 return (
                   <div key={product.id}>
@@ -542,6 +551,8 @@ function StrainDetailPanel({
                       className={`px-3 py-2.5 rounded-cult border transition-all ${
                         inCart
                           ? 'bg-cult-accent/5 border-cult-accent/20'
+                          : isFullyReserved
+                          ? 'bg-cult-danger/[0.03] border-cult-danger/20'
                           : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
                       }`}
                     >
@@ -589,6 +600,25 @@ function StrainDetailPanel({
                         </div>
                       </div>
 
+                      {/* Reservation availability row */}
+                      {(reservedQty > 0 || reservation) && (
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px]">
+                          <span className="text-cult-text-faint">
+                            reserved: <span className="text-cult-warning font-semibold tabular-nums">{reservedQty}</span>
+                          </span>
+                          <span className="text-cult-text-faint">·</span>
+                          <span className={`font-semibold tabular-nums ${netAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
+                            {netAvailable} net available
+                          </span>
+                          {isFullyReserved && (
+                            <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
+                              <AlertCircle className="w-3 h-3" />
+                              fully reserved
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {/* Inline qty + add row */}
                       <div className="flex items-center gap-2 mt-2 pl-0">
                         <input
@@ -623,6 +653,12 @@ function StrainDetailPanel({
                         >
                           Add
                         </button>
+                        {isOverReserved && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
+                            <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                            exceeds net available ({netAvailable})
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -764,6 +800,11 @@ function StrainDetailPanel({
                 const qtyVal = pendingQty[qtyKey] ?? '';
                 const parsedQty = parseInt(qtyVal) || 1;
                 const pipelineGrams = getPipelineGrams(product);
+                const prerollReservation = productReservations?.get(product.id);
+                const prerollReservedQty = prerollReservation?.reserved_qty ?? 0;
+                const prerollNetAvailable = prerollReservation?.net_available ?? (product.available_quantity ?? 0);
+                const prerollIsOverReserved = parsedQty > prerollNetAvailable && prerollNetAvailable >= 0;
+                const prerollFullyReserved = prerollNetAvailable === 0 && prerollReservedQty > 0;
 
                 return (
                   <div key={product.id}>
@@ -771,6 +812,8 @@ function StrainDetailPanel({
                       className={`px-3 py-2.5 rounded-cult border transition-all ${
                         inCart
                           ? 'bg-cult-accent/5 border-cult-accent/20'
+                          : prerollFullyReserved
+                          ? 'bg-cult-danger/[0.03] border-cult-danger/20'
                           : 'bg-cult-surface-raised border-cult-border hover:border-cult-border-strong'
                       }`}
                     >
@@ -813,6 +856,26 @@ function StrainDetailPanel({
                           {pipelineGrams > 0 ? `${formatWeight(pipelineGrams)} in pipeline` : '0g'}
                         </div>
                       </div>
+
+                      {/* Reservation availability row */}
+                      {(prerollReservedQty > 0 || prerollReservation) && (
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px]">
+                          <span className="text-cult-text-faint">
+                            reserved: <span className="text-cult-warning font-semibold tabular-nums">{prerollReservedQty}</span>
+                          </span>
+                          <span className="text-cult-text-faint">·</span>
+                          <span className={`font-semibold tabular-nums ${prerollNetAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
+                            {prerollNetAvailable} net available
+                          </span>
+                          {prerollFullyReserved && (
+                            <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
+                              <AlertCircle className="w-3 h-3" />
+                              fully reserved
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-2 mt-2">
                         <input
                           type="number"
@@ -846,6 +909,12 @@ function StrainDetailPanel({
                         >
                           Add
                         </button>
+                        {prerollIsOverReserved && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
+                            <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                            exceeds net available ({prerollNetAvailable})
+                          </span>
+                        )}
                       </div>
                     </div>
                     {/* Batch selection — structured cards */}
@@ -1201,6 +1270,7 @@ export function StrainCatalog({
   customerName,
   cartItems,
   customerPrices,
+  productReservations,
   onAddToCart,
 }: StrainCatalogProps) {
   const { strains, loading: strainsLoading, error: strainsError } = useStrainInventorySummary();
@@ -1290,6 +1360,7 @@ export function StrainCatalog({
         demandPressure={demandMap.get(selectedStrain)}
         cartItems={cartItems}
         customerPrices={customerPrices}
+        productReservations={productReservations}
         onAddToCart={onAddToCart}
         onBack={() => setSelectedStrain(null)}
       />

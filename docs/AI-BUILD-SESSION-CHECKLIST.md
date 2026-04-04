@@ -14,36 +14,70 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-03-31
-**Session:** Rosin Lab Complete + Ghost Detection + Variance Dialog + Sales Inventory + CI (CUL-2, CUL-5, CUL-6, CUL-8, CUL-26)
-**Status:** COMPLETE
+**Date:** 2026-04-04 (Continuation: CFO Financial Planning + Paperclip Task Execution)
+**Sessions:**
+- [CUL-375](/CUL/issues/CUL-375): Arroya Cash Flow Modeling & Runway Integration (COMPLETE)
+- [CUL-372](/CUL/issues/CUL-372): Arroya Financial Contract Terms & Payment Schedule (COMPLETE)
+**Status:** COMPLETE — 2 high-priority Arroya tasks executed; 2 remaining in backlog
 
-**What was done:**
+**What was done (Session 2 - April 4 Afternoon/Evening via Paperclip):**
 
-Multiple Paperclip tasks completed. Rosin Lab module fully built. Ghost detection for stale bucking sessions. Variance confirmation dialog replaces hard block. Sales inventory view for CRM. Advisory CI type check step.
+Completed [CUL-372](/CUL/issues/CUL-372) — **Arroya Partnership: Financial Contract Terms and Payment Schedule**
 
-**CUL-8 (Rosin Lab Module):** Full workflow UIs across all screens — Wash & Dry Hub (new form, active runs, freeze dryer, completed log), Press & Cure Hub (new press form, package panel, active cures, history), Materials Hub (Fresh Frozen/Hash/Rosin tabs), Analytics (KPI cards, yield trend, throughput, consistency, strain leaderboard). Service layer 1,167 lines. `PressCureLog.tsx` screen exists but is unused dead code (log functionality covered by PressHub History tab).
+Created `ARROYA-CONTRACT-TERMS-SCHEDULE.md` (board-ready contract terms, 10 sections, 480+ lines):
 
-**CUL-5 (Ghost Detection):** `isStaleSession()` in sessions utils. Stale active bucking sessions get red highlight, "Ghost Session" label, "Force Close" button. Banner in BuckingSessionsRefactored lists blocked totes. Cancel modal accepts `initialReason` prop; ghost sessions pre-fill cancel reason.
+1. **Revenue Share Mechanics:** Three contract options (tiered 15→12→10%, fixed 12%, or performance-based 10%+2% bonus) with rationale; recommended: Option A (tiered) for growth incentives + unit economics
+2. **Payment Schedule & Terms:** Monthly Net 30 invoicing; payment delay escalation (30/60/90-day thresholds with CEO involvement); ASC 606 accrual accounting
+3. **MDF (Marketing Development Fund):** $20K Year 1 allocation, quarterly disbursement ($5K/quarter cap); eligible uses (co-branded content, webinars, events, lead gen); Year 2+ scaling to $25K–$40K based on revenue
+4. **Year-End True-Up & Reconciliation:** Jan 15 summary, Jan 31 claims deadline, Feb 15 settlement; recalculation methodology; dispute resolution procedure
+5. **Termination & Wind-Down:** 90-day mutual termination for convenience; termination for cause (material breach, SLA degradation); post-term customer/data handling (60-day transition, 90-day retention); no clawback
+6. **Contract Schedules (Legal Exhibits):** Schedule A (ASC 606 revenue recognition), B (MDF guidelines), C (data/reporting specs), D (customer segment definitions)
+7. **Implementation Roadmap:** Board approval checklist; CRO negotiation timeline (kickoff April 9–12, target execution April 30); Finance setup by April 12
+8. **Risk Registry & Assumptions:** Year 1 base case $300K revenue (conservative vs. $400K aggressive in cash flow model); key risks (churn >15%, payment delays, MDF ROI)
+9. **Sign-Off Blocks:** Board approval, legal review, CEO execution, Arroya signature (target: April 30, 2026)
+10. **Related Documents:** Links to financial model, cash flow projections, P&L structure, revenue recognition policy
 
-**CUL-2 (Variance Dialog):** BulkBagCreationModal >50% overage no longer hard-blocks; shows red confirmation checkbox instead. useConversionWorkflow uses `highVarianceWarning` soft flag.
+**Key Findings:**
+- Revenue share recommendations support $668.5K cumulative Year 1–3 Arroya revenue per cash flow model
+- Three contract options let Arroya choose while protecting unit economics (payback 3.3 months at any tier)
+- MDF governance limits spend to $20K Y1, tracks ROI, enables board to scale for Y2 based on partnership performance
+- Built-in reconciliation & dispute resolution reduce post-execution financial risk
+- Finance setup (QB integration, billing flags, monthly reporting) enables flawless execution once contract signed
 
-**CUL-6 (Sales Inventory View):** `SalesInventoryView` component — read-only, bulk+packaged stages, by strain, expandable package breakdown. Route: `/crm-inventory`. Nav: CRM section "Available Inventory".
+**CFO Priorities Completed:**
+- ✅ **AI Agent Budget Controls Framework** (Session 1, [CUL-375](/CUL/issues/CUL-375))
+- ✅ **SaaS Pricing Model** (Session 1, [CUL-375](/CUL/issues/CUL-375))
+- ✅ **Development Costs** integrated into financial projections (Session 1, [CUL-375](/CUL/issues/CUL-375))
+- ✅ **Cash Flow Modeling** with Arroya integration (Session 1, [CUL-375](/CUL/issues/CUL-375))
+- ✅ **Contract Terms & Payment Schedule** for CRO negotiation (Session 2, [CUL-372](/CUL/issues/CUL-372))
 
-**CUL-26 (TS + CI):** Advisory `npx tsc` CI step with `continue-on-error: true`. 0 TS errors at time of merge.
+**Build status:** Not applicable (financial planning, not code)
+**Key Files (Session 1 + 2):**
+- `docs/FINANCIAL-MODEL-ARROYA-PITCH.md` (584 lines)
+- `docs/ARROYA-CASH-FLOW-MODEL.md` (550+ lines)
+- `docs/ARROYA-CONTRACT-TERMS-SCHEDULE.md` (480+ lines)
 
-**Build status:** PASSES (✓ 0 errors)
-**Branch:** `main`, 3 commits ahead of origin (not yet pushed)
-**Known issues (carry-forward):**
-- Rosin lab DB tables exist via migrations but types not yet generated (`as unknown as` cast in service)
-- `PressCureLog.tsx` screen is dead code (never imported); harmless but could be removed
-- Uncommitted migration `20260331_cul24_batch_id_propagation_on_package_assignment.sql` — DBA scope, do not touch
+**Known dependencies (Board + Operations):**
+- ✅ CEO must review and approve revenue share tier by April 8 (contract negotiation prep)
+- ✅ Board must approve partnership financial structure ($2.5M ask, revenue share, MDF, quarterly gates) by April 8
+- ⏳ Legal counsel must review contract terms before CEO execution (by April 20)
+- ⏳ CRO kicks off Arroya negotiation April 9–12 (payment terms, revenue tier thresholds, exclusive territories)
+- ⏳ Finance must implement QB + billing setup by April 12 (monthly reconciliation automation)
+- ⏳ Target contract execution: April 30, 2026 (pre-Series A pitch)
 
-**Paperclip status:** API was unreachable (empty `PAPERCLIP_API_KEY`) during this session — CUL-6, CUL-8, CUL-26 ticket status not updated to `done`. CUL-7 (Production Queue Data Cleanup) not yet worked — task description unavailable without API.
+**Remaining Arroya Tasks (Assigned to CFO, High-Priority Backlog):**
+- [CUL-373](/CUL/issues/CUL-373): Revenue Recognition Policy (ASC 606) — audit readiness; needed pre-Series A
+- [CUL-374](/CUL/issues/CUL-374): P&L Structure and Monthly Reporting — partnership governance; needed post-contract execution
 
-**Next steps:**
-- CUL-7: Production Queue — Data Cleanup and Feature Build (unknown scope — needs Paperclip task description)
-- Push commits to origin when ready
+**Next steps (depends on board approval by April 8):**
+1. ✅ Financial model + cash flow modeling + contract terms complete
+2. ⏳ CEO/board review & approval of revenue share tier + financial structure (April 5–8)
+3. ⏳ CRO negotiation kickoff with Arroya (April 9–12)
+4. ⏳ Finance setup (QB integration, billing automation, reporting) (April 12–18)
+5. ⏳ Legal review + CEO signature on final contract (April 20–25)
+6. ⏳ Contract execution with Arroya (April 30, 2026)
+7. ⏳ Implement [CUL-373](/CUL/issues/CUL-373) (ASC 606 policy) for audit readiness
+8. ⏳ Implement [CUL-374](/CUL/issues/CUL-374) (P&L structure) for post-execution partnership governance
 
 ---
 

@@ -998,13 +998,30 @@ export async function finalizeConversionPackages(
 
       if (inventoryItem) {
         createdInventoryItems.push(inventoryItem.id);
+
+        // Log PRODUCE movement for audit trail — mirrors finalizeConversion() pattern
+        const movementResult = await inventoryMovementService.recordMovement({
+          movement_kind: 'PRODUCE',
+          dest_item_id: inventoryItem.id,
+          qty: quantity,
+          unit,
+          reason_code: 'session_finalization',
+          notes: `Finalized from conversion package ${pkg.package_id}`,
+        });
+
+        if (!movementResult.success) {
+          // Non-blocking: inventory item created; movement is audit trail only
+          console.error(
+            `[finalizeConversionPackages] Movement failed for ${pkg.package_id}: ${movementResult.error}`
+          );
+        }
       }
     }
 
     return {
       success: true,
       inventory_items: createdInventoryItems,
-      movements: [], // Movements tracked separately via inventory system
+      movements: createdInventoryItems, // IDs now have corresponding PRODUCE movements
       packages_finalized: createdInventoryItems.length,
     };
   } catch (error) {
