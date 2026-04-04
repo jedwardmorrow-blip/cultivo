@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { BatchPlanData } from '../types';
+import type { BatchCOAStatus } from '@/types/batch.types';
 
 // ─── useBatchesForStrain ────────────────────────────────────────────────────
 // Queries v_production_queue_batch_planning for all batches matching a strain.
@@ -51,7 +52,22 @@ export function useBatchesForStrain(strainId: string | null) {
         strain_demand_g: Number(row.strain_demand_g) || 0,
         strain_order_count: Number(row.strain_order_count) || 0,
         strain_urgency: (row.strain_urgency as BatchPlanData['strain_urgency']) || 'no_date',
+        coa_status: null,
       }));
+
+      // Enrich with coa_status from batch_registry
+      const batchIds = parsed.map(b => b.batch_id).filter(Boolean);
+      if (batchIds.length > 0) {
+        const { data: coaRows } = await supabase
+          .from('batch_registry')
+          .select('id, coa_status')
+          .in('id', batchIds);
+
+        if (coaRows) {
+          const coaMap = new Map(coaRows.map(r => [r.id, r.coa_status as BatchCOAStatus]));
+          parsed.forEach(b => { b.coa_status = coaMap.get(b.batch_id) ?? null; });
+        }
+      }
 
       setBatches(parsed);
     } catch (err) {

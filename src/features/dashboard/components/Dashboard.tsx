@@ -1,4 +1,4 @@
-import { Component, ReactNode } from 'react';
+import { Component, ReactNode, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { RevenueGoalBanner } from './RevenueGoalBanner';
@@ -33,13 +33,34 @@ class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { 
   }
 }
 
+const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
+function useElapsed(since: Date | null): string {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!since) return;
+    const id = setInterval(() => setTick(t => t + 1), 15_000);
+    return () => clearInterval(id);
+  }, [since]);
+
+  if (!since) return '';
+  const diffSec = Math.floor((Date.now() - since.getTime()) / 1000);
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  return `${Math.floor(diffMin / 60)}h ago`;
+}
+
 export function Dashboard({
   onSelectOrder,
 }: {
   onSelectOrder: (orderId: string) => void;
 }) {
   const navigate = useNavigate();
-  const { data, loading, error } = useDashboardData();
+  const { data, loading, error, lastUpdated, refresh } = useDashboardData();
+  const elapsed = useElapsed(lastUpdated);
+  const isStale = lastUpdated ? Date.now() - lastUpdated.getTime() > STALE_THRESHOLD_MS : false;
 
   if (loading) {
     return (
@@ -81,10 +102,26 @@ export function Dashboard({
         </div>
         <div className="text-left sm:text-right text-xs sm:text-caption text-cult-text-secondary font-light">
           <div className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 bg-cult-success rounded-full animate-pulse" />
-            Live Data
+            <span className={`inline-block w-2 h-2 rounded-full animate-pulse ${isStale ? 'bg-yellow-500' : 'bg-cult-success'}`} />
+            {isStale ? (
+              <span className="text-yellow-500">Stale Data</span>
+            ) : (
+              'Live Data'
+            )}
           </div>
           <div className="text-cult-text-muted mt-1 hidden sm:block">{dateStr} · Production DB</div>
+          {elapsed && (
+            <div className="flex items-center justify-end gap-2 mt-1">
+              <span className="text-cult-text-faint text-xs">Updated {elapsed}</span>
+              <button
+                onClick={refresh}
+                className="text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors underline underline-offset-2"
+                title="Refresh dashboard data"
+              >
+                Refresh
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -33,6 +33,15 @@ const mockDryRoom = {
   created_by: 'user-123',
 };
 
+// For queries that chain .select().order().limit()
+function mockSelectOrderLimitChain(resolvedValue: unknown) {
+  const mockLimit = vi.fn().mockResolvedValue(resolvedValue);
+  const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
+  const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
+  return { mockSelect, mockOrder, mockLimit };
+}
+
+// For queries that chain .select().order() (no limit)
 function mockSelectChain(resolvedValue: unknown) {
   const mockOrder = vi.fn().mockResolvedValue(resolvedValue);
   const mockSelect = vi.fn().mockReturnValue({ order: mockOrder });
@@ -65,7 +74,7 @@ describe('cultivationService — grow rooms', () => {
 
   describe('listGrowRooms', () => {
     it('queries the grow_rooms table ordered by room_code', async () => {
-      const { mockSelect, mockOrder } = mockSelectChain(mockSupabaseSuccess([mockGrowRoom]));
+      const { mockSelect, mockOrder } = mockSelectOrderLimitChain(mockSupabaseSuccess([mockGrowRoom]));
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 
       await cultivationService.listGrowRooms();
@@ -75,7 +84,7 @@ describe('cultivationService — grow rooms', () => {
     });
 
     it('returns an array of grow rooms on success', async () => {
-      const { mockSelect } = mockSelectChain(mockSupabaseSuccess([mockGrowRoom]));
+      const { mockSelect } = mockSelectOrderLimitChain(mockSupabaseSuccess([mockGrowRoom]));
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 
       const result = await cultivationService.listGrowRooms();
@@ -84,7 +93,7 @@ describe('cultivationService — grow rooms', () => {
     });
 
     it('throws when the database returns an error', async () => {
-      const { mockSelect } = mockSelectChain(mockSupabaseError('Database unavailable'));
+      const { mockSelect } = mockSelectOrderLimitChain(mockSupabaseError('Database unavailable'));
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({ select: mockSelect });
 
       await expect(cultivationService.listGrowRooms()).rejects.toThrow('Database unavailable');

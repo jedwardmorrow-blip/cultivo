@@ -265,6 +265,43 @@ class OrdersDataService {
     const { error } = await supabase.from('labels').update({ printed_at: printedAt }).eq('id', id);
     if (error) throw error;
   }
+
+  /**
+   * AZDHS R9-18-311 gate: returns batch identifiers missing a valid active COA.
+   * Call before completing an order. Empty array = all batches have valid COAs.
+   */
+  async validateOrderCOAStatus(orderId: string): Promise<string[]> {
+    const { data: items, error: itemsError } = await supabase
+      .from('order_items')
+      .select('batch_id')
+      .eq('order_id', orderId)
+      .not('batch_id', 'is', null);
+
+    if (itemsError) throw itemsError;
+
+    const batchIds = [...new Set(
+      (items ?? []).map(i => i.batch_id).filter((id): id is string => Boolean(id))
+    )];
+
+    if (batchIds.length === 0) return [];
+
+    const { data: batches, error: batchError } = await supabase
+      .from('batch_with_coa_status')
+      .select('batch_id, batch_number, strain, coa_id, coa_is_active')
+      .in('batch_id', batchIds);
+
+    if (batchError) throw batchError;
+
+    const missing: string[] = [];
+    for (const batchId of batchIds) {
+      const info = (batches ?? []).find(b => b.batch_id === batchId);
+      if (!info?.coa_id || !info?.coa_is_active) {
+        missing.push(info?.batch_number ?? batchId);
+      }
+    }
+
+    return missing;
+  }
 }
 
 export const ordersDataService = new OrdersDataService();

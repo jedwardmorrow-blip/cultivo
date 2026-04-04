@@ -20,7 +20,7 @@ const STATUS_HINTS: Record<string, string> = {
   'submitted->accepted': 'Confirms the order and begins fulfillment planning.',
   'accepted->processing': 'Indicates batch allocation and processing have started.',
   'processing->ready_for_delivery': 'All items prepared. Ready for manifest and delivery.',
-  'ready_for_delivery->completed': 'Inventory will be permanently deducted for all assigned packages.',
+  'ready_for_delivery->completed': 'Inventory will be permanently deducted. All batches must have a valid COA (AZDHS R9-18-311).',
 };
 
 export function StatusActionPanel({

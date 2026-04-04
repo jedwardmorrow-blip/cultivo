@@ -67,3 +67,29 @@ export type {
   StaticMapOptions,
   MapBounds
 } from './staticMap.service';
+
+export {
+  getDispatchQueue,
+  sendDocument,
+  computeDocStatus,
+  hasOverdueDocs,
+  getCustomerContacts,
+  DEFAULT_LEAD_TIME_HOURS,
+} from './dispatch.service';
+
+export type {
+  DispatchOrderRow,
+  SendRecord,
+  DocStatusPill,
+  DocumentType,
+} from './dispatch.service';
+
+export {
+  getActiveDrivers,
+  getActiveVehicles,
+  getTripPlans,
+  getTripPlanById,
+  createTripPlan,
+  dispatchTripPlan,
+  completeTripPlan,
+} from './tripPlan.service';

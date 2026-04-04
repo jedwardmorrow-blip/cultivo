@@ -7,6 +7,7 @@ import { useRevenuePipeline } from '@/features/production-queue/hooks/useRevenue
 import { RevenuePipeline } from '@/features/production-queue/components/RevenuePipeline';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import { getActiveBuckingSessions, getActiveTrimSessions, getActivePackagingSessions } from '@/features/sessions/services/sessions.service';
+import { AuditOverdueBadge } from '@/features/compliance';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -170,6 +171,9 @@ export function PostProductionHub() {
   return (
     <HubShell section="Post Production" icon={Scissors} kpis={kpis}>
       <div className="space-y-6">
+        <div className="flex items-center justify-end">
+          <AuditOverdueBadge />
+        </div>
         <AgingAlertBanner batches={batches} />
 
         {/* Batch Pipeline Preview */}

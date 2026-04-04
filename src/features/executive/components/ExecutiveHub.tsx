@@ -3,6 +3,7 @@ import { Crown, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-re
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
 import { formatCurrencyShort } from '@/shared/utils/format';
+import { AuditOverdueBadge } from '@/features/compliance';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -408,9 +409,12 @@ export function ExecutiveHub() {
 
         {/* Department Health */}
         <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
-            Department Health
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider">
+              Department Health
+            </h2>
+            <AuditOverdueBadge />
+          </div>
           <DeptHealthChips
             depts={deptHealth}
             loading={healthLoading || revLoading || sessionLoading}

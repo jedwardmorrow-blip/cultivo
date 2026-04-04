@@ -568,6 +568,7 @@ export function useDashboardData() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -628,6 +629,7 @@ export function useDashboardData() {
         monthlyRevenue: revenueResult.monthlyRevenue,
         weeklyRevenue: revenueResult.weeklyRevenue,
       });
+      setLastUpdated(new Date());
       setError(null);
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
@@ -652,5 +654,5 @@ export function useDashboardData() {
     };
   }, [loadData]);
 
-  return { data, loading, error, refresh: loadData };
+  return { data, loading, error, lastUpdated, refresh: loadData };
 }

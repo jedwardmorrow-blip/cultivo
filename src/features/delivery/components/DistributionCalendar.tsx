@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2, Weight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2, Weight, Send } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getEnrichedCalendarOrders, updateOrderDeliveryDate as updateDeliveryDate, type CalendarOrder } from '../services/delivery.service';
 import { formatDuration } from '../services/routing.service';
@@ -9,6 +9,11 @@ import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
 import { DayDetailModal } from './DayDetailModal';
 import { OrderItemsExpander } from './OrderItemsExpander';
 import { formatWeight } from '@/shared/utils/format';
+import { DocumentDispatchQueue } from './DocumentDispatchQueue';
+import { getDispatchQueue } from '../services/dispatch.service';
+import { TripPlanListView } from './TripPlanListView';
+
+type DistributionTab = 'calendar' | 'documents' | 'trip-plans';
 
 
 function formatDateToLocal(date: Date): string {
@@ -27,6 +32,7 @@ interface DistributionCalendarProps {
 }
 
 export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProps) {
+  const [activeTab, setActiveTab] = useState<DistributionTab>('calendar');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [allOrders, setAllOrders] = useState<CalendarOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,12 +41,33 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showPlanPanel, setShowPlanPanel] = useState(false);
+  const [overdueDocOrderIds, setOverdueDocOrderIds] = useState<Set<string>>(new Set());
 
   const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await getEnrichedCalendarOrders(false);
+      const [{ data }, { data: dispatchRows }] = await Promise.all([
+        getEnrichedCalendarOrders(false),
+        getDispatchQueue(),
+      ]);
       setAllOrders(data);
+      // Build overdue set for "Docs" badge rendering in calendar rows
+      const overdue = new Set<string>();
+      (dispatchRows || []).forEach(row => {
+        const checks = [
+          { leadTime: row.invoice_lead_time_hours, send: row.invoice_send },
+          { leadTime: 24, send: row.coa_send },
+          { leadTime: 24, send: row.manifest_send },
+        ];
+        if (!row.delivery_date) return;
+        const isOverdue = checks.some(({ leadTime, send }) => {
+          if (send) return false;
+          const deadlineMs = new Date(row.delivery_date! + 'T00:00:00').getTime() - leadTime * 60 * 60 * 1000;
+          return deadlineMs < Date.now();
+        });
+        if (isOverdue) overdue.add(row.order_id);
+      });
+      setOverdueDocOrderIds(overdue);
     } catch (error) {
       console.error('Error loading orders:', error);
     } finally {
@@ -183,9 +210,61 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
 
   return (
     <div onDragEnd={handleDragEnd}>
+      <div className="mb-4">
+        <h1 className="text-3xl font-bold text-cult-white">Distribution</h1>
+      </div>
+
+      {/* Tab bar */}
+      <div className="flex items-center gap-1 mb-6 border-b border-cult-medium-gray">
+        <button
+          onClick={() => setActiveTab('calendar')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+            activeTab === 'calendar'
+              ? 'border-cult-white text-cult-white'
+              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          Calendar
+        </button>
+        <button
+          onClick={() => setActiveTab('documents')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+            activeTab === 'documents'
+              ? 'border-cult-white text-cult-white'
+              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+          }`}
+        >
+          <Send className="w-4 h-4" />
+          Documents
+        </button>
+        <button
+          onClick={() => setActiveTab('trip-plans')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
+            activeTab === 'trip-plans'
+              ? 'border-cult-white text-cult-white'
+              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+          }`}
+        >
+          <Package className="w-4 h-4" />
+          Trip Plans
+        </button>
+      </div>
+
+      {/* Documents tab */}
+      {activeTab === 'documents' && (
+        <DocumentDispatchQueue />
+      )}
+
+      {/* Trip Plans tab */}
+      {activeTab === 'trip-plans' && (
+        <TripPlanListView />
+      )}
+
+      {/* Calendar tab (wrapped so calendar state is preserved) */}
+      <div className={activeTab === 'calendar' ? '' : 'hidden'}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-cult-white">Distribution Calendar</h1>
-        <p className="text-cult-light-gray mt-2">Plan and manage delivery schedules -- drag orders to reschedule</p>
+        <p className="text-cult-light-gray">Plan and manage delivery schedules — drag orders to reschedule</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -306,6 +385,8 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         orders={scheduledOrders}
         onDragStart={handleDragStart}
         onSelectOrder={onSelectOrder}
+        overdueDocOrderIds={overdueDocOrderIds}
+        onShowDocuments={() => setActiveTab('documents')}
       />
 
       {showPlanPanel && (
@@ -325,6 +406,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           onSelectOrder={onSelectOrder}
         />
       )}
+      </div>{/* end calendar tab wrapper */}
     </div>
   );
 }
@@ -469,10 +551,14 @@ function UpcomingDeliveriesTable({
   orders,
   onDragStart,
   onSelectOrder,
+  overdueDocOrderIds,
+  onShowDocuments,
 }: {
   orders: CalendarOrder[];
   onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
   onSelectOrder?: (orderId: string) => void;
+  overdueDocOrderIds: Set<string>;
+  onShowDocuments: () => void;
 }) {
   const sorted = useMemo(() =>
     [...orders].sort((a, b) => {
@@ -509,7 +595,7 @@ function UpcomingDeliveriesTable({
                       <Package className={`w-5 h-5 ${sc.text}`} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <span className="font-medium text-cult-white">{order.order_number}</span>
                         <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${sc.bg} ${sc.text} border ${sc.border}`}>
                           {sc.label}
@@ -518,6 +604,16 @@ function UpcomingDeliveriesTable({
                           <div className={`w-2 h-2 rounded-full ${zone.dotColor}`} />
                           <span className={`text-xs ${zone.color}`}>{zone.label}</span>
                         </div>
+                        {overdueDocOrderIds.has(order.id) && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onShowDocuments(); }}
+                            className="flex items-center gap-0.5 px-1.5 py-0.5 bg-red-900/40 border border-red-500/40 rounded text-[10px] font-bold text-red-400 uppercase tracking-wider hover:bg-red-900/60 transition-colors"
+                            title="Documents overdue — click to open Dispatch Queue"
+                          >
+                            <AlertTriangle className="w-2.5 h-2.5" />
+                            Docs
+                          </button>
+                        )}
                       </div>
                       <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
                     </div>

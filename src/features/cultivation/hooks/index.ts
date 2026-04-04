@@ -35,3 +35,5 @@ export { useBatchTankMixLog } from './useBatchTankMixLog';
 export type { BatchTankMixLog, CreateBatchTankMixInput, RecipeSnapshot } from './useBatchTankMixLog';
 export { useTaskTypeSettings } from './useTaskTypeSettings';
 export type { TaskTypeSetting, CreateTaskTypeInput, UpdateTaskTypeInput } from './useTaskTypeSettings';
+export { useGenerateTasksFromSchedules } from './useGenerateTasksFromSchedules';
+export type { GenerateTasksResult, ProjectedTaskEntry } from './useGenerateTasksFromSchedules';

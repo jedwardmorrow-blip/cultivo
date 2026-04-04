@@ -14,10 +14,11 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { notificationService } from '@/services';
-import { useAttendance, useDailyTasks, useGrowRooms } from '../hooks';
+import { useAttendance, useDailyTasks, useGrowRooms, useGenerateTasksFromSchedules } from '../hooks';
 import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
@@ -31,6 +32,8 @@ import { TaskCard } from './TaskCard';
 import type { TaskCardData, StaffOption } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { DeadPlantForm } from './DeadPlantForm';
+import { StaffCapacityPanel } from './StaffCapacityPanel';
+import { WeekTaskGrid } from './WeekTaskGrid';
 import { todayIso } from '../utils/dateUtils';
 import { ROOM_TYPE_LEFT_BORDER } from '../constants/stageColors';
 
@@ -114,9 +117,12 @@ export function SchedulesPage() {
 export function DailyTaskBoard() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(todayIso);
+  const [showCapacity, setShowCapacity] = useState(false);
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
 
   const { rooms: dbRooms } = useGrowRooms();
   const { tasks: dbTasks, completeWithLog, assignWorker, updateStatus, refetch: refetchTasks, createTask, updateTask, deleteTask } = useDailyTasks(selectedDate);
+  const { generate: generateTasks, generating } = useGenerateTasksFromSchedules();
   const { records: attendance, upsertAttendance } = useAttendance(selectedDate);
   const { staff: activeStaff } = useActiveStaff();
   const { rooms: opsRooms } = useRoomOperationalState();
@@ -180,6 +186,24 @@ export function DailyTaskBoard() {
     day: 'numeric',
   });
 
+  const handleGenerateTasks = async () => {
+    try {
+      const result = await generateTasks(selectedDate);
+      if (result.created > 0) {
+        notificationService.success(
+          `Generated ${result.created} task${result.created !== 1 ? 's' : ''}${result.skipped > 0 ? ` (${result.skipped} already existed)` : ''}`,
+        );
+        await refetchTasks();
+      } else if (result.skipped > 0) {
+        notificationService.success('All scheduled tasks already exist for this day');
+      } else {
+        notificationService.success('No schedules fire on this date');
+      }
+    } catch {
+      notificationService.error('Could not generate tasks from schedules', 'Generate Failed');
+    }
+  };
+
   return (
     <div className="space-y-0 pb-8">
       {/* ── Header: Date Nav + Title ────────────────────────── */}
@@ -238,52 +262,127 @@ export function DailyTaskBoard() {
             )}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate('/cultivation-schedules')}
-          className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors flex-shrink-0"
-        >
-          <CalendarDays className="w-3.5 h-3.5" />
-          Manage Schedules
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Day / Week toggle */}
+          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode('day')}
+              className={`px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+                viewMode === 'day'
+                  ? 'bg-cult-charcoal text-cult-white'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+              }`}
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              Day
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('week')}
+              className={`px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+                viewMode === 'week'
+                  ? 'bg-cult-charcoal text-cult-white'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              4-Week
+            </button>
+          </div>
+          {viewMode === 'day' && (
+            <button
+              type="button"
+              onClick={handleGenerateTasks}
+              disabled={generating}
+              className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-violet-400 hover:text-violet-300 bg-violet-950/40 border border-violet-800/40 hover:border-violet-700/60 disabled:opacity-50 disabled:cursor-not-allowed rounded-sm transition-colors"
+              title="Generate task instances from active room schedules for this date"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              {generating ? 'Generating…' : 'Generate Tasks'}
+            </button>
+          )}
+          {viewMode === 'day' && (
+            <button
+              type="button"
+              onClick={() => setShowCapacity((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
+                showCapacity
+                  ? 'text-cult-accent bg-cult-accent/10 border border-cult-accent/40'
+                  : 'text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Capacity
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => navigate('/cultivation-schedules')}
+            className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors"
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            Manage Schedules
+          </button>
+        </div>
       </div>
 
-      {/* ── Board (single view — no tabs) ─────────────────── */}
-      <DailyBoardTab
-        rooms={rooms}
-        opsRooms={opsRooms}
-        staff={cultivationStaff}
-        allStaff={allStaff}
-        tasks={taskCards}
-        attendance={attendance}
-        date={selectedDate}
-        onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
-        onCompleteWithLog={async (taskId, refTable, refId, dur) => {
-          await completeWithLog(taskId, refTable, refId, dur ?? undefined);
-          await refetchTasks();
-        }}
-        onCreateTask={async (input) => {
-          await createTask(input);
-        }}
-        onAssignWorker={async (taskId, staffId) => {
-          await assignWorker(taskId, staffId);
-        }}
-        onStartTask={async (taskId) => {
-          await updateStatus(taskId, 'in_progress');
-        }}
-        onSkipTask={async (taskId) => {
-          await updateStatus(taskId, 'skipped');
-        }}
-        onCarryForward={async (taskId) => {
-          await updateStatus(taskId, 'carry_forward');
-        }}
-        onUpdateTask={async (taskId, updates) => {
-          await updateTask(taskId, updates);
-        }}
-        onDeleteTask={async (taskId) => {
-          await deleteTask(taskId);
-        }}
-      />
+      {/* ── Staff Capacity Panel (collapsible, day view only) ── */}
+      {viewMode === 'day' && showCapacity && (
+        <div className="mb-5 p-4 bg-cult-graphite border border-cult-dark-gray rounded-sm">
+          <StaffCapacityPanel
+            tasks={taskCards}
+            allStaff={allStaff}
+            onAssignWorker={async (taskId, staffId) => { await assignWorker(taskId, staffId); }}
+          />
+        </div>
+      )}
+
+      {/* ── Week Grid view ─────────────────────────────────── */}
+      {viewMode === 'week' && (
+        <WeekTaskGrid weekCount={4} />
+      )}
+
+      {/* ── Day Board view ─────────────────────────────────── */}
+      {viewMode === 'day' && (
+        <DailyBoardTab
+          rooms={rooms}
+          opsRooms={opsRooms}
+          staff={cultivationStaff}
+          allStaff={allStaff}
+          tasks={taskCards}
+          attendance={attendance}
+          date={selectedDate}
+          onUpsertAttendance={async (input) => { await upsertAttendance(input); }}
+          onCompleteWithLog={async (taskId, refTable, refId, dur) => {
+            await completeWithLog(taskId, refTable, refId, dur ?? undefined);
+            await refetchTasks();
+          }}
+          onCreateTask={async (input) => {
+            await createTask(input);
+          }}
+          onAssignWorker={async (taskId, staffId) => {
+            await assignWorker(taskId, staffId);
+          }}
+          onStartTask={async (taskId) => {
+            await updateStatus(taskId, 'in_progress');
+          }}
+          onSkipTask={async (taskId) => {
+            await updateStatus(taskId, 'skipped');
+          }}
+          onCarryForward={async (taskId) => {
+            await updateStatus(taskId, 'carry_forward');
+          }}
+          onUpdateTask={async (taskId, updates) => {
+            await updateTask(taskId, updates);
+          }}
+          onDeleteTask={async (taskId) => {
+            await deleteTask(taskId);
+          }}
+          onGenerateTasks={handleGenerateTasks}
+          generatingTasks={generating}
+        />
+      )}
 
     </div>
   );
@@ -308,11 +407,13 @@ interface DailyBoardTabProps {
   onStartTask: (taskId: string) => Promise<void>;
   onSkipTask: (taskId: string) => Promise<void>;
   onCarryForward: (taskId: string) => Promise<void>;
-  onUpdateTask: (taskId: string, updates: { notes?: string | null; task_date?: string; assigned_to?: string | null; task_config?: Record<string, unknown> }) => Promise<void>;
+  onUpdateTask: (taskId: string, updates: { notes?: string | null; task_date?: string; assigned_to?: string | null; task_config?: Record<string, unknown>; estimated_duration?: string | null; status?: string }) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
+  onGenerateTasks?: () => Promise<void>;
+  generatingTasks?: boolean;
 }
 
-function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask, onSkipTask, onCarryForward, onUpdateTask, onDeleteTask }: DailyBoardTabProps) {
+function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, date, onUpsertAttendance, onCompleteWithLog, onCreateTask, onAssignWorker, onStartTask, onSkipTask, onCarryForward, onUpdateTask, onDeleteTask, onGenerateTasks, generatingTasks }: DailyBoardTabProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [addTaskRoomId, setAddTaskRoomId] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState<{ task: TaskCardData; roomId: string } | null>(null);
@@ -543,11 +644,21 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
           <div className="text-center max-w-md">
             <p className="text-sm text-cult-light-gray font-medium">No tasks scheduled for this day</p>
             <p className="text-xs text-cult-medium-gray mt-2 leading-relaxed">
-              Tasks are auto-generated daily at midnight from room schedules.
-              Set up recurring schedules in the Schedule tab, or add a one-off task below.
+              Generate tasks from your room schedules, or add a one-off task manually.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3">
+            {onGenerateTasks && (
+              <button
+                type="button"
+                onClick={onGenerateTasks}
+                disabled={generatingTasks}
+                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold uppercase tracking-wider transition-colors min-w-[180px] justify-center"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                {generatingTasks ? 'Generating…' : 'Generate Tasks'}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => openAddTask()}

@@ -147,6 +147,18 @@ export function OrdersProvider({ children, includeArchived = false }: OrdersProv
     }
 
     try {
+      // AZDHS R9-18-311: block completion when any batch is missing a valid active COA
+      if (newStatus === 'completed') {
+        const missingCOA = await ordersDataService.validateOrderCOAStatus(orderId);
+        if (missingCOA.length > 0) {
+          throw new Error(
+            `Cannot complete order — the following batch${missingCOA.length > 1 ? 'es are' : ' is'} missing a valid COA: ` +
+            `${missingCOA.join(', ')}. ` +
+            `AZDHS R9-18-311 requires a valid COA before transfer or sale.`
+          );
+        }
+      }
+
       await ordersDataService.updateOrderStatus(orderId, newStatus);
       ordersCacheService.invalidate(orderId);
 

@@ -3,7 +3,8 @@ export {
   DistributionCalendar,
   DayDetailModal,
   UnscheduledOrdersPanel,
-  LeafletRouteMap
+  LeafletRouteMap,
+  DocumentDispatchQueue
 } from './components';
 
 export {

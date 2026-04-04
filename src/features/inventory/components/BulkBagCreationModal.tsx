@@ -20,6 +20,7 @@ import { VarianceReason, VarianceReasonLabels } from '../types/conversions.types
 import { useBulkBagPackageId } from '../hooks/useBulkBagPackageId';
 
 const VARIANCE_THRESHOLD_GRAMS = 1;
+const VARIANCE_HIGH_THRESHOLD_PCT = 50;
 
 interface BulkBag {
   id: string;
@@ -55,6 +56,7 @@ export function BulkBagCreationModal({
   const [error, setError] = useState<string | null>(null);
   const [varianceReason, setVarianceReason] = useState<VarianceReason | ''>('');
   const [varianceNote, setVarianceNote] = useState('');
+  const [highVarianceConfirmed, setHighVarianceConfirmed] = useState(false);
 
   const availableWeight = adjustedAvailableWeight ?? (session.output_weight || 0);
   const [remainingWeight, setRemainingWeight] = useState<number>(availableWeight);
@@ -76,6 +78,7 @@ export function BulkBagCreationModal({
       setError(null);
       setVarianceReason('');
       setVarianceNote('');
+      setHighVarianceConfirmed(false);
     }
   }, [isOpen, session.aggregation_id]);
 
@@ -182,6 +185,7 @@ export function BulkBagCreationModal({
     setError(null);
     setVarianceReason('');
     setVarianceNote('');
+    setHighVarianceConfirmed(false);
     onClose();
   };
 
@@ -191,6 +195,8 @@ export function BulkBagCreationModal({
   const isOverAllocated = totalAllocated > availableWeight;
   const isUnderAllocated = totalAllocated < availableWeight && bags.length > 0;
   const hasVarianceAtThreshold = bags.length > 0 && Math.abs(availableWeight - totalAllocated) > VARIANCE_THRESHOLD_GRAMS;
+  const variancePct = availableWeight > 0 ? (Math.abs(remainingWeight) / availableWeight) * 100 : 0;
+  const isHighVariance = bags.length > 0 && variancePct > VARIANCE_HIGH_THRESHOLD_PCT;
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
@@ -469,15 +475,39 @@ export function BulkBagCreationModal({
                   />
                 </div>
 
-                {availableWeight > 0 && (Math.abs(remainingWeight) / availableWeight * 100) >= 5 && (
+                {availableWeight > 0 && variancePct >= 5 && !isHighVariance && (
                   <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div className="text-xs text-amber-800">
                         <p className="font-medium mb-0.5">High Variance Warning</p>
-                        <p>This adjustment represents a variance of {(Math.abs(remainingWeight) / availableWeight * 100).toFixed(1)}%, which exceeds the critical threshold.</p>
+                        <p>This adjustment represents a variance of {variancePct.toFixed(1)}%, which exceeds the 5% threshold.</p>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {isHighVariance && (
+                  <div className="p-4 rounded-lg bg-red-50 border-2 border-red-400">
+                    <div className="flex items-start gap-3 mb-3">
+                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-900">
+                        <p className="font-semibold mb-1">Unusually High Variance — {variancePct.toFixed(1)}%</p>
+                        <p className="text-xs">This variance exceeds 50% of the available weight. All high-variance finalizations are logged for compliance and AI analysis. You must acknowledge before proceeding.</p>
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={highVarianceConfirmed}
+                        onChange={(e) => setHighVarianceConfirmed(e.target.checked)}
+                        disabled={isSubmitting}
+                        className="w-4 h-4 text-red-600 border-red-400 rounded focus:ring-red-500"
+                      />
+                      <span className="text-xs font-medium text-red-900">
+                        I confirm this variance is correct and understand it will be logged to the variance record.
+                      </span>
+                    </label>
                   </div>
                 )}
               </div>
@@ -504,7 +534,8 @@ export function BulkBagCreationModal({
                 isSubmitting ||
                 bags.length === 0 ||
                 isLoadingIds ||
-                (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10))
+                (Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && bags.length > 0 && (!varianceReason || varianceNote.trim().length < 10)) ||
+                (isHighVariance && !highVarianceConfirmed)
               }
             >
               {isSubmitting ? (

@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Flower2, Settings, MapPin } from 'lucide-rea
 import { cultivationService } from '../services';
 import { useRoomSections } from '../hooks/useRoomSections';
 import { FlipRoomModal } from './FlipRoomModal';
+import { RoomCapacityBar } from './RoomCapacityBar';
 import { todayIso, daysBetween } from '../utils/dateUtils';
 import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, INNER_GLOW, harvestCountdownColor } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
@@ -366,7 +367,16 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
 
             <div className="flex items-center gap-3 flex-shrink-0">
               {totalPlants > 0 && (
-                <span className="text-2xl font-bold font-mono text-cult-white leading-none">{totalPlants}</span>
+                <div className="text-right">
+                  <span className="text-2xl font-bold font-mono text-cult-white leading-none">{totalPlants}</span>
+                  {room.capacity_plants && (
+                    <RoomCapacityBar
+                      currentCount={totalPlants}
+                      capacity={room.capacity_plants}
+                      className="mt-1 min-w-[80px]"
+                    />
+                  )}
+                </div>
               )}
               {expanded ? (
                 <ChevronDown className="w-4 h-4 text-cult-medium-gray" />

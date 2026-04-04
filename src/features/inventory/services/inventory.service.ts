@@ -31,7 +31,7 @@ export async function getInventoryItems(options?: { includeEmpty?: boolean }) {
       query = query.gt('on_hand_qty', 0);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(100);
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
     return { data, error: null };

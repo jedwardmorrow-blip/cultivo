@@ -16,6 +16,7 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from 'lucide-react';
 import { TASK_TYPE_CONFIG } from '../types';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
@@ -38,6 +39,7 @@ interface TaskDetailDrawerProps {
     assigned_to?: string | null;
     task_config?: Record<string, unknown>;
     status?: string;
+    estimated_duration?: string | null;
   }) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
   onStartTask: (taskId: string) => Promise<void>;
@@ -72,6 +74,7 @@ export function TaskDetailDrawer({
   const isCompleted = task.status === 'completed' || task.status === 'skipped';
 
   const [notes, setNotes] = useState(task.notes ?? '');
+  const [estimatedDuration, setEstimatedDuration] = useState(task.estimated_duration ?? '');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [selectedCrew, setSelectedCrew] = useState<string[]>(crewIds);
@@ -88,6 +91,7 @@ export function TaskDetailDrawer({
 
   const hasChanges =
     notes !== (task.notes ?? '') ||
+    estimatedDuration !== (task.estimated_duration ?? '') ||
     selectedCrew.join(',') !== crewIds.join(',') ||
     localLeadId !== (task.assigned_to ?? null) ||
     overridesChanged;
@@ -110,6 +114,7 @@ export function TaskDetailDrawer({
         notes: notes || null,
         assigned_to: localLeadId || null,
         task_config: cfg,
+        estimated_duration: estimatedDuration.trim() || null,
       });
       onClose();
     } finally {
@@ -301,6 +306,43 @@ export function TaskDetailDrawer({
                   </div>
                 )}
               </div>
+            )}
+          </div>
+
+          {/* ── Estimated Duration ───────────────────── */}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
+              <Clock className="w-3.5 h-3.5" />
+              Est. Duration
+            </label>
+            {!isCompleted ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={estimatedDuration}
+                  onChange={(e) => setEstimatedDuration(e.target.value)}
+                  placeholder="e.g. 30m, 1.5h, 2h"
+                  className="flex-1 bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-sm py-2 px-3 rounded-sm focus:outline-none focus:border-cult-medium-gray placeholder:text-cult-dark-gray"
+                />
+                <div className="flex flex-wrap gap-1">
+                  {['30m', '1h', '2h', '4h'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setEstimatedDuration(preset)}
+                      className={`px-2 py-1.5 text-[10px] font-semibold uppercase rounded-sm transition-colors ${
+                        estimatedDuration === preset
+                          ? 'bg-cult-accent/20 text-cult-accent border border-cult-accent/40'
+                          : 'bg-cult-charcoal border border-cult-dark-gray text-cult-medium-gray hover:text-cult-light-gray'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-cult-medium-gray">{task.estimated_duration || '—'}</p>
             )}
           </div>
 

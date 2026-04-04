@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ArrowRight, Scissors, Sprout } from 'lucide-react';
+import { X, ArrowRight, Scissors, Sprout, Home, TrendingUp } from 'lucide-react';
 import { cultivationService } from '../services';
 import { IndividualPlantsTab } from './IndividualPlantsTab';
 import { formatDate } from '../utils/dateUtils';
@@ -11,6 +11,8 @@ interface PlantGroupDetailPanelProps {
   group: PlantGroup;
   onClose: () => void;
   initialTab?: Tab;
+  onMove?: () => void;
+  onAdvanceStage?: () => void;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -22,7 +24,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }: PlantGroupDetailPanelProps) {
+export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', onMove, onAdvanceStage }: PlantGroupDetailPanelProps) {
   const [stageHistory, setStageHistory] = useState<PlantGroupStageHistory[]>([]);
   const [roomHistory, setRoomHistory] = useState<PlantGroupRoomHistory[]>([]);
   const [cutSessions, setCutSessions] = useState<PlantGroupCutSession[]>([]);
@@ -54,26 +56,51 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history' }
   );
 
   const batchNumber = group.batch_registry?.batch_number ?? null;
+  const canAdvance = group.growth_stage !== 'harvested' && group.growth_stage !== 'flower';
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
       <div className="bg-cult-near-black border-l border-cult-medium-gray w-full max-w-sm h-full overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-cult-medium-gray">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold text-cult-white">{batchNumber ?? '—'}</span>
-              {group.is_mother && (
-                <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
+        <div className="p-5 border-b border-cult-medium-gray">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm font-bold text-cult-white">{batchNumber ?? '—'}</span>
+                {group.is_mother && (
+                  <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
+                )}
+              </div>
+              <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {(onMove || (onAdvanceStage && canAdvance)) && (
+            <div className="flex gap-2">
+              {onMove && (
+                <button
+                  onClick={() => { onClose(); onMove(); }}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  Move
+                </button>
+              )}
+              {onAdvanceStage && canAdvance && (
+                <button
+                  onClick={() => { onClose(); onAdvanceStage(); }}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider border border-emerald-800 text-emerald-400 hover:border-emerald-600 hover:text-emerald-300 transition-all"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  Advance Stage
+                </button>
               )}
             </div>
-            <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          )}
         </div>
 
         <div className="p-5 space-y-5">

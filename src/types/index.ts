@@ -41,3 +41,5 @@ export * from '../features/settings/types';
 export * from '../features/inventory/types/conversions.types';
 export * from '../features/cultivation/types';
 export * from './supabase-extensions.types';
+export * from './compliance.types';
+export * from './trip-plan.types';

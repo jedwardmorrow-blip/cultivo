@@ -663,6 +663,7 @@ export async function logVariance(data: {
   actual_weight?: number;
   variance_reason: VarianceReason;
   variance_note?: string;
+  movement_id?: string;
 }): Promise<void> {
   const userId = (await supabase.auth.getUser()).data.user?.id;
   if (!userId) {
@@ -691,6 +692,7 @@ export async function logVariance(data: {
       batch: data.batch_name,
       product_name: data.product_name,
       user_id: userId,
+      movement_id: data.movement_id || null,
     });
 
   if (error) {

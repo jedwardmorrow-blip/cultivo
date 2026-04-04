@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, AlertTriangle, Sprout, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/components';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { NewPlantGroupModal } from './NewPlantGroupModal';
-import { MoveToRoomModal } from './MoveToRoomModal';
+import { PlantMoveSheet } from './PlantMoveSheet';
 import { PlantGroupDetailPanel } from './PlantGroupDetailPanel';
 import { PlantGroupActionsMenu } from './PlantGroupActionsMenu';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
@@ -120,6 +120,16 @@ export function PlantGroupsList() {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+
+  const roomPlantCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const g of groups) {
+      if (g.growth_stage !== 'harvested') {
+        map.set(g.grow_room_id, (map.get(g.grow_room_id) ?? 0) + g.plant_count);
+      }
+    }
+    return map;
+  }, [groups]);
 
   function handleAction(group: PlantGroup, action: 'detail' | 'move' | 'advance' | 'mother' | 'plants' | 'printGroup' | 'printPlants') {
     setActionError(null);
@@ -239,9 +249,10 @@ export function PlantGroupsList() {
       )}
 
       {pendingAction?.type === 'move' && (
-        <MoveToRoomModal
+        <PlantMoveSheet
           group={pendingAction.group}
           rooms={rooms}
+          roomPlantCounts={roomPlantCounts}
           onMove={handleMoveRoom}
           onSplitAndMove={handleSplitAndMove}
           onCancel={() => setPendingAction(null)}
@@ -252,6 +263,8 @@ export function PlantGroupsList() {
         <PlantGroupDetailPanel
           group={pendingAction.group}
           onClose={() => setPendingAction(null)}
+          onMove={() => setPendingAction({ type: 'move', group: pendingAction.group })}
+          onAdvanceStage={() => setPendingAction({ type: 'advance', group: pendingAction.group })}
         />
       )}
 
@@ -260,6 +273,8 @@ export function PlantGroupsList() {
           group={pendingAction.group}
           onClose={() => setPendingAction(null)}
           initialTab="plants"
+          onMove={() => setPendingAction({ type: 'move', group: pendingAction.group })}
+          onAdvanceStage={() => setPendingAction({ type: 'advance', group: pendingAction.group })}
         />
       )}
 

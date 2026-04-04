@@ -23,12 +23,20 @@ const DEFAULT_FORM: FormState = {
   facility_license: '',
 };
 
+interface TestResult {
+  success: boolean;
+  facilityName?: string;
+  error?: string;
+}
+
 export function MetrcCredentialsSettings() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [existingId, setExistingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
 
   useEffect(() => {
     loadCredential();
@@ -129,10 +137,28 @@ export function MetrcCredentialsSettings() {
     }
   }
 
-  function handleTestConnection() {
-    notificationService.info(
-      'Connection test will be available in Metrc M2 once the Edge Function is deployed.'
-    );
+  async function handleTestConnection() {
+    if (!existingId) {
+      notificationService.error('Save credentials before testing the connection.');
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('metrc-sync', {
+        body: { operation: 'verify_credentials' },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        setTestResult({ success: true, facilityName: data.facility?.facilityName });
+      } else {
+        setTestResult({ success: false, error: data?.error ?? 'Connection failed' });
+      }
+    } catch (err: any) {
+      setTestResult({ success: false, error: err?.message ?? 'Unknown error' });
+    } finally {
+      setTesting(false);
+    }
   }
 
   if (loading) {
@@ -229,13 +255,31 @@ export function MetrcCredentialsSettings() {
         </div>
       </div>
 
-      <div className="border-t border-cult-medium-gray mt-8 pt-6 flex items-center justify-between gap-4">
+      <div className="border-t border-cult-medium-gray mt-8 pt-6 space-y-4">
+        {testResult && (
+          <div className={`p-3 border flex items-start gap-2 ${
+            testResult.success
+              ? 'border-green-700 bg-green-900/20'
+              : 'border-red-700 bg-red-900/20'
+          }`}>
+            <span className={testResult.success ? 'text-green-400' : 'text-red-400'}>
+              {testResult.success ? '✓' : '✗'}
+            </span>
+            <p className={`text-sm ${testResult.success ? 'text-green-100' : 'text-red-100'}`}>
+              {testResult.success
+                ? `Connected — ${testResult.facilityName ?? 'facility name unavailable'}`
+                : testResult.error}
+            </p>
+          </div>
+        )}
+        <div className="flex items-center justify-between gap-4">
         <button
           onClick={handleTestConnection}
-          className="flex items-center gap-2 px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+          disabled={testing}
+          className="flex items-center gap-2 px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Wifi className="w-4 h-4" />
-          Test Connection
+          {testing ? 'Testing...' : 'Test Connection'}
         </button>
 
         <button
@@ -246,6 +290,7 @@ export function MetrcCredentialsSettings() {
           <Save className="w-4 h-4" />
           {saving ? 'Saving...' : 'Save Credentials'}
         </button>
+        </div>
       </div>
     </div>
   );

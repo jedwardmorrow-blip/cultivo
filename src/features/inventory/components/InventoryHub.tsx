@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
 import { StatCard } from '@/shared/components/StatCard';
 import { formatWeight, formatWeightShort } from '@/shared/utils/format';
+import { InventoryProjectionPanel } from './InventoryProjectionPanel';
+import { BatchLiquidationQueue } from './BatchLiquidationQueue';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -299,6 +301,12 @@ export function InventoryHub() {
           </h2>
           <FlagReviewQueue items={flaggedItems} loading={loading} />
         </div>
+
+        {/* Liquidation Queue */}
+        <BatchLiquidationQueue />
+
+        {/* Inventory Projection */}
+        <InventoryProjectionPanel />
 
         {/* Logs row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

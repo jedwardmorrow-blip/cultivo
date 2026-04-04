@@ -4,6 +4,186 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-03 - CUL-389: Inventory Liquidation Priority view — ship oldest batch first
+
+**Type:** Feature — Inventory
+**Status:** ✅ COMPLETE — Build passing
+
+New `BatchLiquidationQueue` component surfaces holding-cost risk by ranking batches oldest-first.
+
+**Changes:**
+- `BatchLiquidationQueue.tsx` (new): Read-only table showing all harvested batches ordered by `harvested_at ASC`. Displays strain, batch number, harvest date, age badge (green <14d / amber 14–30d / red >30d), available ATP grams from `inventory_items`, committed grams from active `order_items`, and a "Ship First" badge on the oldest batch with ATP > 0.
+- `InventoryHub.tsx`: Added `BatchLiquidationQueue` panel above `InventoryProjectionPanel`.
+
+---
+
+## 2026-04-03 - CUL-390: UX Quick Wins — PlantMoveSheet, RoomCapacityBar, PlantGroupDetailPanel actions
+
+**Type:** Feature — Cultivation UX
+**Status:** ✅ COMPLETE — Build passing
+
+4 high-value UX improvements to the cultivation module, no DB schema changes.
+
+**Changes:**
+- `RoomCapacityBar.tsx` (new): Inline fill % + plant count bar (green <70%, amber 70–90%, red >90%) — reusable across move sheet and room overview
+- `PlantMoveSheet.tsx` (new): 3-step bottom sheet replacing the modal for plant moves — (1) room selection with capacity bars, (2) mortality input, (3) section placement for flower rooms
+- `RoomMapCard.tsx`: Added `RoomCapacityBar` to room header when `capacity_plants` is set
+- `PlantGroupDetailPanel.tsx`: Added optional `onMove` and `onAdvanceStage` prop callbacks with action buttons in panel header
+- `PlantGroupsList.tsx`: Switched from `MoveToRoomModal` to `PlantMoveSheet`; wired `PlantGroupDetailPanel` action buttons; computes `roomPlantCounts` map for capacity bars
+- Day/Week toggle in `DailyTaskBoard` confirmed already implemented (no change needed)
+
+---
+
+## 2026-04-03 - Marketing: Complete Arroya Pitch + Sales Enablement Materials
+
+**Type:** Marketing / Business Development
+**Status:** ✅ COMPLETE — Ready for CEO review & sales team deployment
+
+Delivered comprehensive brand positioning, Arroya pitch deck framework, and full sales enablement kit (35K+ words of strategic marketing materials).
+
+**Deliverables:**
+1. **Brand Positioning Framework** (6.8K words)
+   - `/docs/MARKETING-POSITIONING.md`
+   - Competitive landscape, messaging pillars, value propositions, go-to-market strategy
+   - Core positioning: "Operational Intelligence for Cannabis Cultivators"
+
+2. **Arroya Pitch Deck Framework** (8.2K words)
+   - `/docs/ARROYA-PITCH-DECK.md`
+   - 8-slide structure with speaker notes (Slide 8 pending CEO customization)
+   - Includes problem/impact, solution, workflows, competitive positioning, partnership opportunity, traction, financials
+
+3. **Sales Enablement Kit** (11.3K words)
+   - `/docs/SALES-ENABLEMENT.md`
+   - Competitive battlecards (BioTrackTHC, LeafLogix, Metrc-native tools)
+   - Discovery questionnaire (screener + 21-question deep-dive)
+   - 30–45 min demo script (5-act walkthrough)
+   - Objection handling guide (5 common objections)
+   - Reference customer prep framework
+   - ROI calculator template + pricing model
+   - Deployment checklist for sales team training
+
+4. **Session Documentation** (5.3K words)
+   - `/docs/CMO-SESSION-LOG-2026-04-03.md` — Work performed, decisions, next actions
+   - `/docs/CMO-READY-FOR-REVIEW.md` — Executive summary, CEO decision framework, timeline
+
+**Key Positioning:**
+- Brand: "Operational Intelligence for Cannabis Cultivators" (not compliance-focused)
+- Differentiators: Modern UX, real-time visibility, unified system, cost-per-unit analytics
+- Arroya Partnership: Complementary (CultOps operations + Arroya distribution = "Seed-to-Shelf Visibility")
+
+**CEO Action Items:**
+- Review positioning framework and approve brand voice
+- Customize Slide 8: financial projections, raise amount, partnership terms
+- Add customer testimonial (if available)
+- Assign formal Paperclip tasks for: sales training, pitch design, reference customer prep
+
+**Sales Team Launch (Pending CEO Approval):**
+- Sales training workshop on discovery + demo
+- Reference customer panel scheduling
+- Prospect outreach using battlecards + discovery questionnaire
+
+---
+
+## 2026-04-03 - CUL-357: Trip Plan UI (R9-18-312 compliance)
+
+**Type:** Feature — Compliance / Distribution
+**Status:** COMPLETE — build passing, QA pending
+
+Built the full trip plan UI for distribution compliance (R9-18-312). Integrated as a new "Trip Plans" tab in the Distribution module.
+
+**New Files:**
+- `src/types/trip-plan.types.ts` — `TripPlan`, `TripPlanStop`, `TripPlanDeviation`, `DeliveryDriver`, `DeliveryVehicle`, `TripPlanWithDetails`, `TripPlanCreateInput`, `TripPlanCompleteInput`
+- `src/features/delivery/services/tripPlan.service.ts` — Supabase queries for all trip plan operations
+- `src/features/delivery/components/TripPlanListView.tsx` — Table with status filter, new/refresh actions, view/print/dispatch/complete row actions
+- `src/features/delivery/components/TripPlanGeneratorModal.tsx` — Create form: driver, vehicle, departure time, stops (add/remove), anticipated route, notes
+- `src/features/delivery/components/TripPlanSignoffModal.tsx` — Pre-dispatch sign-off with full print preview and "Confirm & Dispatch" button
+- `src/features/delivery/components/TripPlanCompleteForm.tsx` — Trip completion form: actual return time + route deviation recording
+- `src/features/delivery/components/TripPlanPrintView.tsx` — Print-ready compliance document layout with signature blocks
+
+**Modified:**
+- `src/features/delivery/components/DistributionCalendar.tsx` — Added "Trip Plans" tab
+- `src/features/delivery/components/index.ts` — Added new component exports
+- `src/features/delivery/services/index.ts` — Added trip plan service exports
+- `src/types/index.ts` — Added `trip-plan.types.ts` to central exports
+
+---
+
+## 2026-04-03 - Marketing: Arroya Pitch Deck & Brand Positioning
+
+**Type:** Marketing / Business Development
+**Status:** COMPLETE (ready for CEO review)
+
+Completed comprehensive brand positioning framework and 8-slide Arroya pitch deck to support April 2026 investment/partnership discussion.
+
+**Deliverables:**
+- `/docs/MARKETING-POSITIONING.md` — Full brand positioning, competitive analysis, value propositions, go-to-market messaging, sales enablement roadmap
+- `/docs/ARROYA-PITCH-DECK.md` — 8-slide framework: Problem, Impact, Solution, Workflows, Competitive Positioning, Partnership Opportunity, Traction/Timeline, Financials & Ask
+
+**Key Positioning:**
+- Brand: "Operational Intelligence for Cannabis Cultivators"
+- Differentiation: Modern UX + Real-time visibility + Unified system (vs. legacy BioTrackTHC, retail-focused LeafLogix, fragmented point solutions)
+- Arroya Partnership: Complementary (Arroya distribution + CultOps operations) = "Seed-to-shelf visibility"
+
+**Next Phase:**
+CEO to customize Slide 8 (financial terms), add customer testimonials, and approve for Arroya presentation. Sales enablement materials (competitive battlecards, discovery scripts, demo scripts) ready per positioning document.
+
+---
+
+## 2026-04-03 - CUL-362: Document dispatch queue UI — invoices, COAs, manifests
+
+**Type:** Feature
+**Modules:** `src/features/delivery/components/DocumentDispatchQueue.tsx`, `src/features/delivery/services/dispatch.service.ts`, `src/features/delivery/components/DistributionCalendar.tsx`
+**Status:** COMPLETE (awaits CUL-361 DBA schema deployment for document_type column, customer_communication_preferences, and customer_contacts.role)
+
+Added the document dispatch queue to the Distribution module as a new "Documents" tab alongside the existing Calendar view.
+
+**New files:**
+- `src/features/delivery/services/dispatch.service.ts` — Service layer: queries active orders, reads `email_send_log` for per-document send status (with graceful pre-CUL-361 fallback using subject keyword inference), reads `customer_communication_preferences` for per-customer invoice lead times (defaults to 24h), provides `sendDocument()` to log sends to `email_send_log`.
+- `src/features/delivery/components/DocumentDispatchQueue.tsx` — Main queue component: per-order rows with Invoice/COA/Manifest status pills (Green=sent, Yellow=due_soon, Red=overdue), deadline countdown label, expand-on-click action buttons (Send Invoice / Send COA / Send Manifest), search + filter toolbar (All / Overdue / Unsent), stats header (active orders, docs overdue count, all sent count).
+
+**Modified files:**
+- `DistributionCalendar.tsx` — Added `DistributionTab` state + tab bar (Calendar | Documents). Calendar content is wrapped in a `hidden`-toggled `<div>` so state is preserved on tab switch. `loadOrders` now co-fetches dispatch queue data to populate `overdueDocOrderIds: Set<string>`.
+- `UpcomingDeliveriesTable` (internal) — Added red "Docs" badge (with `AlertTriangle` icon) on any order with overdue documents; clicking badge switches to Documents tab.
+- `src/features/delivery/components/index.ts`, `src/features/delivery/services/index.ts`, `src/features/delivery/index.ts` — Updated barrel exports.
+
+**Compliance:** COA per R9-18-310(B)(5), Manifest per R9-18-312. View enforces Laura's compliance responsibilities without full automation.
+
+**Waiting on:** CUL-361 (DBA) to deploy `email_send_log.document_type`, `customer_communication_preferences`, `customer_contacts.role`. Service degrades gracefully until then.
+
+---
+
+## 2026-04-02 - CUL-360: Inventory audit workflow UI (R9-18-314 compliance)
+
+**Type:** Feature
+**Modules:** `src/features/compliance/InventoryAudit/`
+**Status:** COMPLETE (awaits CUL-359 DBA schema deployment for live data)
+
+Built the full inventory audit workflow UI and per-batch chemical additive tracking per R9-18-314.
+
+New feature location: `src/features/compliance/InventoryAudit/`
+
+**Types added** (`src/types/compliance.types.ts`):
+- `InventoryAudit`, `InventoryAuditInsert`, `InventoryAuditStatus`, `AuditPeriodSummary`, `InventoryAuditStatusView`
+- `BatchChemicalAdditive`, `BatchChemicalAdditiveInsert`, `BatchChemicalAdditiveUpdate`, `ChemicalAdditiveType`
+
+**Hooks:**
+- `useAuditPeriodSummary(startDate, endDate)` — calls `get_audit_period_summary` RPC
+- `useInventoryAuditStatus()` — reads `inventory_audit_status` view for badge
+- `useAuditHistory(filters)` — paginated read of `inventory_audits` with filter/sort
+- `useBatchChemicalAdditives(batchId)` — CRUD for `batch_chemical_additives`
+
+**Components:**
+- `AuditWorkflowModal` — 5-step compliance audit modal: period selection → auto-calculated balances (RPC) → physical count entry → variance review (explanation + corrective action required when variance ≠ 0) → confirm & submit; flags audit if variance exists
+- `AuditHistoryTable` — paginated table with status/date filters, role-gated to admin/manager, CSV export for 5-year record retention
+- `AuditOverdueBadge` — reusable chip with three states: current (gray, < 28d), warning (amber, 28-30d), overdue (red, > 30d); placed in Post Production HUB header and Executive HUB Department Health section
+- `BatchChemicalAdditiveForm` — inline collapsible CRUD form on batch detail page; handles pesticide/herbicide/fertilizer/other types; links to IPM log entries; fields include EPA reg #, PHI days, applicator, rate, method
+
+**HUB integrations:**
+- `PostProductionHub.tsx` — `AuditOverdueBadge` in page header
+- `ExecutiveHub.tsx` — `AuditOverdueBadge` next to Department Health heading
+
+---
+
 ## 2026-04-02 - CUL-309: Staff capacity view for daily task board
 
 **Type:** Feature

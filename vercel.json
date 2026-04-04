@@ -2,11 +2,5 @@
   "installCommand": "npm install",
   "rewrites": [
     { "source": "/((?!api/)(?!assets/).*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/api/paperclip-sync",
-      "schedule": "*/5 * * * *"
-    }
   ]
 }
