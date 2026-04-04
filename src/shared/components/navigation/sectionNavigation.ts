@@ -57,13 +57,13 @@ export const sectionDefinitions: SectionDefinition[] = [
   {
     id: 'hub',
     label: 'Hub',
-    icon: Dna,
-    defaultView: 'post-production-hub',
+    icon: Crown,
+    defaultView: 'executive-hub',
     items: [
-      { id: 'post-production-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
+      { id: 'executive-hub', label: 'Executive Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
-{ id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
+      { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
       { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
     ],
   },
@@ -172,15 +172,6 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'financial', label: 'Dashboard', icon: LayoutDashboard, group: 'primary' },
       { id: 'financial-ar', label: 'Accounts Receivable', icon: DollarSign, group: 'primary' },
       { id: 'financial-ap', label: 'Accounts Payable', icon: CreditCard, group: 'primary' },
-    ],
-  },
-  {
-    id: 'executive',
-    label: 'Executive',
-    icon: Crown,
-    defaultView: 'executive-hub',
-    items: [
-      { id: 'executive-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
     ],
   },
 ];
