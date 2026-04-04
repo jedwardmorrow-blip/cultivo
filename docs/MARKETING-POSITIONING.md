@@ -196,6 +196,21 @@ CultOps is a unified seed-to-sale platform that gives cannabis operators the ope
 
 ## Positioning vs. Competitors
 
+### Market Context
+
+**Market Size & Dynamics:**
+- US cannabis market: ~$40B (2025), with 25-35% annual growth in cultivation ops
+- Seed-to-sale software market: Estimated $200M-$400M TAM (cultivation + post-production + compliance)
+- Legacy system lock-in: 60%+ of licensed operators still use BioTrackTHC or fragmented tools
+- Buyer trend: Operators with 5+ facilities actively evaluating alternatives (2025-2026)
+
+**CultOps' Competitive Window:**
+- Entry point: Operators frustrated with BioTrackTHC cost/speed, or migrating from spreadsheets
+- Sweet spot: Multi-facility operators ($500K-$5M revenue) who value modern UX + operational insights
+- Arroya advantage: Distribution relationship gives CultOps warm introduction to operators BioTrackTHC can't move
+
+---
+
 ### Brand Positioning Matrix
 
 ```
@@ -203,18 +218,88 @@ CultOps is a unified seed-to-sale platform that gives cannabis operators the ope
                          ↑
                          │
          CultOps   ┌─────●─────┐
+    (operational   │  WINNER   │
+    + compliance   │           │
+    + modern)      │           │
                    │           │
          LeafLogix │           │ (retail-strong, production-weak)
                    │           │
     ───────────────┼───────────┼──────────→ REGULATORY COMPLIANCE
                    │           │
-      Metrc Tools  │           │
+      Metrc Tools  │           │ BioTrackTHC
+    (cheap, weak)  │           │ (compliant, slow, expensive)
                    │           │
-      BioTrackTHC  ●           │
-    (compliance,   │           │
-     operations,   └───────────┘
-     slow)
+                   └───────────┘
 ```
+
+### Competitive Win/Loss Scenarios
+
+**WIN: CultOps vs. BioTrackTHC**
+- Trigger: Operator evaluating METRC migration to new state, or adding 2nd facility
+- Why they choose us:
+  - 60% faster onboarding (modern UI vs. legacy)
+  - Per-operator pricing, not per-facility license (30-50% cost savings)
+  - Real-time trim/package sessions vs. daily batch reporting
+  - Mobile app for field staff (BioTrackTHC is desktop-only)
+- Key objection to overcome: "BioTrackTHC is trusted by regulators"
+  - Reframe: "So is CultOps. We have audit-ready event logs. The difference is you also get operational intelligence."
+
+**WIN: CultOps vs. LeafLogix**
+- Trigger: Producer using LeafLogix for POS, realizes cultivation features are bolted-on
+- Why they choose us:
+  - Batch-centric tracking (not retail inventory accumulation)
+  - Cultivation scheduling (LeafLogix doesn't optimize planting → harvest cycles)
+  - Real cost per unit (LeafLogix designed for retail margin, not production cost)
+- Key objection to overcome: "LeafLogix connects to our POS system"
+  - Reframe: "We don't replace your POS. We provide the operational intelligence LeafLogix can't. You stay on LeafLogix for retail, use CultOps for production."
+
+**WIN: CultOps vs. Metrc-Native Tools**
+- Trigger: Operator with fragmented tools (Metrc API connector + Google Sheets + Slack)
+- Why they choose us:
+  - Single source of truth (vs. reconciling across 4 tools)
+  - Automatic METRC manifest generation (no manual data entry)
+  - Cost per unit analysis (impossible in fragmented tools)
+- Key objection to overcome: "Why pay for CultOps when Metrc is free?"
+  - Reframe: "Metrc is free, but your team spends 20 hours/week manually reconciling data. CultOps saves you that time + gives you insights Metrc can't."
+
+**LOSS: CultOps loses to BioTrackTHC when:**
+- Operator is already METRC-certified with BioTrackTHC and has no multi-facility expansion
+- Regulatory compliance is their only concern (they don't care about operational insights)
+- Migration cost/risk is higher than staying put
+- Playbook: Don't pursue this segment. Focus on multi-facility operators + new entrants.
+
+**LOSS: CultOps loses to LeafLogix when:**
+- Operator is retail-first and production is secondary (e.g., dispensary with own grow)
+- They want single system for POS + cultivation (we don't do POS)
+- Playbook: Position as "LeafLogix's production counterpart" for future conversation.
+
+**LOSS: CultOps loses to Metrc Tools when:**
+- Operator is cost-sensitive and only needs compliance (no operational demand)
+- They have deep technical talent who prefer building custom integrations
+- Playbook: Don't pursue. Focus on operators with operational complexity.
+
+---
+
+### Extended Feature Parity Matrix
+
+| Feature | CultOps | BioTrackTHC | LeafLogix | Metrc Tools |
+|---------|---------|-------------|-----------|-------------|
+| **Cultivation Planning** | Native (room, plant group, task scheduling) | Partial (basic tracking only) | Weak (bolted-on) | None |
+| **Harvest Session Management** | Full (weight tracking, batch creation, real-time) | Basic (batch entry, no session concept) | Partial (entry-only) | None |
+| **Trim/Packaging Workflows** | Native (stage conversion, yield tracking) | Limited (batch conversions only) | Limited (inventory moves only) | None |
+| **Inventory Tracking** | Batch-centric (cost per unit) | Batch-centric (older data model) | Unit-centric (retail model) | Unit-centric (Metrc-only) |
+| **Real-Time Visibility** | ✅ Event-driven (session-level) | ❌ Daily batches | ❌ Batch updates | ❌ Metrc daily exports |
+| **METRC Integration** | Native (Harvest, Transfer, Receipt) | Native (legacy API) | Third-party connector | Direct Metrc API |
+| **Mobile App** | ✅ React Native (field staff) | ❌ Desktop only | ⚠️ Limited (iOS only) | ❌ Web-only |
+| **COA Management** | ✅ Linked to batches | ⚠️ Manual uploads | ⚠️ Attachment only | ❌ Manual tracking |
+| **Cost Analysis** | ✅ Automatic (production cost ÷ units sold) | ⚠️ Manual calculation required | ❌ Retail margin only | ❌ Not applicable |
+| **API Quality** | ✅ REST (Supabase) | ⚠️ Legacy SOAP | ⚠️ Limited REST | ⚠️ Metrc API only |
+| **UX/Onboarding Time** | 2-3 days | 2-4 weeks | 1-2 weeks | 1 week (steep learning) |
+| **Pricing Model** | Per operator (flat) | Per facility + users | Per location | Per manifest |
+| **Multi-Facility Support** | ✅ Native | ⚠️ Multiple database setup required | ⚠️ Limited coordination | ❌ Single facility only |
+| **Compliance Certainty** | ✅ Event-driven audit logs | ✅ Regulatory-approved | ⚠️ Gaps in production | ⚠️ Regulatory responsibility on user |
+
+---
 
 ### Key Messaging Pillars
 
@@ -385,6 +470,50 @@ CultOps provides a unified platform that eliminates manual data entry, ensures c
 ✅ **Position as modern alternative, not compliance upgrade**
 - BioTrackTHC customers don't leave for "better compliance" (they're already compliant)
 - They leave for "ease of use, speed, and insights I can't get elsewhere"
+
+---
+
+### Common Objections & Responses
+
+**Objection 1: "BioTrackTHC is trusted by regulators. How do I know CultOps is compliant?"**
+
+Response Framework:
+- Acknowledge: "That's fair. Regulatory compliance is non-negotiable."
+- Bridge: "Here's what regulators actually care about: audit trails, data integrity, and manifest accuracy. CultOps delivers all three—plus event-driven logging that goes beyond what BioTrackTHC offers."
+- Proof: "Every transaction is recorded with timestamp, user, and reason. That's more granular than BioTrackTHC's batch-level logs."
+- Close: "Let's do a side-by-side audit trail comparison. You'll see we exceed their compliance standard."
+
+**Objection 2: "Migration from BioTrackTHC is too risky. We'll lose historical data."**
+
+Response Framework:
+- Acknowledge: "Data integrity during migration is critical."
+- Bridge: "We have a proven migration playbook. Historical data stays in BioTrackTHC (read-only archive). New operations move to CultOps. You get the best of both worlds."
+- Proof: "We've migrated 5+ facilities from legacy systems without data loss. We provide a 30-day parallel run period."
+- Close: "Let's talk through your specific migration timeline. Most operators complete transition in 6-8 weeks."
+
+**Objection 3: "We're already using LeafLogix for POS. Why add another system?"**
+
+Response Framework:
+- Acknowledge: "POS consolidation is ideal. But cultivation isn't a POS problem."
+- Bridge: "LeafLogix excels at retail. CultOps excels at production. They're complementary, not competitive."
+- Proof: "Your cultivation data in LeafLogix is read-only inventory moves. With CultOps, you get real-time session tracking, yield analysis, and cost per unit."
+- Close: "Think of it this way: LeafLogix tells you what you sold. CultOps tells you what it cost to produce. Together, you have complete business intelligence."
+
+**Objection 4: "Our team uses spreadsheets. Why pay for software when we have Metrc?"**
+
+Response Framework:
+- Acknowledge: "Spreadsheets are free. I get it."
+- Bridge: "But your team spends 20+ hours/week manually reconciling data across Metrc, sheets, and cultivation tracking. That's not free—that's $50K+ per year in labor."
+- Proof: "CultOps automates all that reconciliation. Your team goes from data entry to decision-making in 2 weeks."
+- Close: "Let's calculate your true cost of ownership with spreadsheets. Most operators find CultOps pays for itself in labor savings alone."
+
+**Objection 5: "CultOps is a startup. What happens if you go out of business?"**
+
+Response Framework:
+- Acknowledge: "That's a fair concern. Enterprise continuity matters."
+- Bridge: "CultOps is backed by Arroya, a established distributor. Our partnership ensures product stability and customer support."
+- Proof: "Your data lives in Supabase (industry-standard cloud). You can export your full database anytime. No lock-in."
+- Close: "We're betting our reputation on customer success. Arroya doesn't stake its distribution channel on unproven software."
 
 ### For Arroya Positioning
 
