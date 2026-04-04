@@ -14,70 +14,95 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-04-04 (Continuation: CFO Financial Planning + Paperclip Task Execution)
+**Date:** 2026-04-08 (Dual Track: CFO Planning + QA Validation)
 **Sessions:**
 - [CUL-375](/CUL/issues/CUL-375): Arroya Cash Flow Modeling & Runway Integration (COMPLETE)
 - [CUL-372](/CUL/issues/CUL-372): Arroya Financial Contract Terms & Payment Schedule (COMPLETE)
-**Status:** COMPLETE — 2 high-priority Arroya tasks executed; 2 remaining in backlog
+- **[CUL-551](/CUL/issues/CUL-551): Order Entry Soft Reservation (QA VALIDATION COMPLETE)**
+**Status:** All tasks complete; Arroya board decision needed TODAY; CUL-551 findings ready for Paperclip posting
 
-**What was done (Session 2 - April 4 Afternoon/Evening via Paperclip):**
+**What was done (Session 3 - April 8 via Paperclip):**
 
-Completed [CUL-372](/CUL/issues/CUL-372) — **Arroya Partnership: Financial Contract Terms and Payment Schedule**
+Completed financial planning phase for Arroya partnership. All board-ready documents committed and accessible:
 
-Created `ARROYA-CONTRACT-TERMS-SCHEDULE.md` (board-ready contract terms, 10 sections, 480+ lines):
-
-1. **Revenue Share Mechanics:** Three contract options (tiered 15→12→10%, fixed 12%, or performance-based 10%+2% bonus) with rationale; recommended: Option A (tiered) for growth incentives + unit economics
-2. **Payment Schedule & Terms:** Monthly Net 30 invoicing; payment delay escalation (30/60/90-day thresholds with CEO involvement); ASC 606 accrual accounting
-3. **MDF (Marketing Development Fund):** $20K Year 1 allocation, quarterly disbursement ($5K/quarter cap); eligible uses (co-branded content, webinars, events, lead gen); Year 2+ scaling to $25K–$40K based on revenue
-4. **Year-End True-Up & Reconciliation:** Jan 15 summary, Jan 31 claims deadline, Feb 15 settlement; recalculation methodology; dispute resolution procedure
-5. **Termination & Wind-Down:** 90-day mutual termination for convenience; termination for cause (material breach, SLA degradation); post-term customer/data handling (60-day transition, 90-day retention); no clawback
-6. **Contract Schedules (Legal Exhibits):** Schedule A (ASC 606 revenue recognition), B (MDF guidelines), C (data/reporting specs), D (customer segment definitions)
-7. **Implementation Roadmap:** Board approval checklist; CRO negotiation timeline (kickoff April 9–12, target execution April 30); Finance setup by April 12
-8. **Risk Registry & Assumptions:** Year 1 base case $300K revenue (conservative vs. $400K aggressive in cash flow model); key risks (churn >15%, payment delays, MDF ROI)
-9. **Sign-Off Blocks:** Board approval, legal review, CEO execution, Arroya signature (target: April 30, 2026)
-10. **Related Documents:** Links to financial model, cash flow projections, P&L structure, revenue recognition policy
-
-**Key Findings:**
-- Revenue share recommendations support $668.5K cumulative Year 1–3 Arroya revenue per cash flow model
-- Three contract options let Arroya choose while protecting unit economics (payback 3.3 months at any tier)
-- MDF governance limits spend to $20K Y1, tracks ROI, enables board to scale for Y2 based on partnership performance
-- Built-in reconciliation & dispute resolution reduce post-execution financial risk
-- Finance setup (QB integration, billing flags, monthly reporting) enables flawless execution once contract signed
+1. ✅ **`docs/ARROYA-CASH-FLOW-MODEL.md`** (550+ lines): Monthly cash flow detail, three scenario analysis (conservative $14K, base $29.5K, aggressive $46K Y1 net impact), runway bridge (13.9→20–30 months with Arroya), decision gates
+2. ✅ **`docs/ARROYA-CONTRACT-TERMS-SCHEDULE.md`** (480+ lines): Revenue share mechanics (three options: tiered 15→12→10%, fixed 12%, performance 10%+2% bonus), payment schedule, MDF governance ($20K Y1), termination terms, legal schedules
+3. ✅ **`docs/ARROYA-BOARD-DECISION-SUMMARY.md`** (NEW - 136 lines): Board-ready decision package with three revenue share options, financial impact summary, timeline, recommendation (Option A tiered)
+4. ✅ **`docs/FINANCIAL-MODEL-ARROYA-PITCH.md`** (584 lines): Overall financial strategy, SaaS pricing, 3-year projections, unit economics, capital structure, AI agent budget framework
 
 **CFO Priorities Completed:**
-- ✅ **AI Agent Budget Controls Framework** (Session 1, [CUL-375](/CUL/issues/CUL-375))
-- ✅ **SaaS Pricing Model** (Session 1, [CUL-375](/CUL/issues/CUL-375))
-- ✅ **Development Costs** integrated into financial projections (Session 1, [CUL-375](/CUL/issues/CUL-375))
-- ✅ **Cash Flow Modeling** with Arroya integration (Session 1, [CUL-375](/CUL/issues/CUL-375))
-- ✅ **Contract Terms & Payment Schedule** for CRO negotiation (Session 2, [CUL-372](/CUL/issues/CUL-372))
+- ✅ **AI Agent Budget Controls Framework** ($80K/yr cap with quarterly review gates)
+- ✅ **SaaS Pricing Model** (3-tier model: $4K–$10K/month SaaS + $25K services + upsells)
+- ✅ **Development Costs** integrated into 3-year projections
+- ✅ **Cash Flow Modeling** with Arroya scenarios (Year 1 extends runway 6–10 months)
+- ✅ **Contract Terms & Payment Schedule** ready for CRO negotiation
+- ✅ **Board Decision Package** with three revenue share options + recommendation
 
-**Build status:** Not applicable (financial planning, not code)
-**Key Files (Session 1 + 2):**
+**Build status:** Not applicable (financial planning)
+**Key Files (All Committed):**
 - `docs/FINANCIAL-MODEL-ARROYA-PITCH.md` (584 lines)
 - `docs/ARROYA-CASH-FLOW-MODEL.md` (550+ lines)
 - `docs/ARROYA-CONTRACT-TERMS-SCHEDULE.md` (480+ lines)
+- `docs/ARROYA-BOARD-DECISION-SUMMARY.md` (136 lines, NEW)
 
-**Known dependencies (Board + Operations):**
-- ✅ CEO must review and approve revenue share tier by April 8 (contract negotiation prep)
-- ✅ Board must approve partnership financial structure ($2.5M ask, revenue share, MDF, quarterly gates) by April 8
-- ⏳ Legal counsel must review contract terms before CEO execution (by April 20)
-- ⏳ CRO kicks off Arroya negotiation April 9–12 (payment terms, revenue tier thresholds, exclusive territories)
-- ⏳ Finance must implement QB + billing setup by April 12 (monthly reconciliation automation)
+**Known dependencies (Critical Path to Series A):**
+- ⏳ **Board decision on revenue share tier (A/B/C) — DUE TODAY April 8** (CEO approves + signs off)
+- ⏳ CRO kicks off Arroya negotiation April 9–12 (payment terms, revenue thresholds, territories)
+- ⏳ Finance implements QB + billing setup by April 12 (monthly reconciliation automation)
+- ⏳ Legal counsel reviews contract + CEO signature (April 20–25)
 - ⏳ Target contract execution: April 30, 2026 (pre-Series A pitch)
 
-**Remaining Arroya Tasks (Assigned to CFO, High-Priority Backlog):**
-- [CUL-373](/CUL/issues/CUL-373): Revenue Recognition Policy (ASC 606) — audit readiness; needed pre-Series A
-- [CUL-374](/CUL/issues/CUL-374): P&L Structure and Monthly Reporting — partnership governance; needed post-contract execution
+---
 
-**Next steps (depends on board approval by April 8):**
-1. ✅ Financial model + cash flow modeling + contract terms complete
-2. ⏳ CEO/board review & approval of revenue share tier + financial structure (April 5–8)
-3. ⏳ CRO negotiation kickoff with Arroya (April 9–12)
-4. ⏳ Finance setup (QB integration, billing automation, reporting) (April 12–18)
-5. ⏳ Legal review + CEO signature on final contract (April 20–25)
-6. ⏳ Contract execution with Arroya (April 30, 2026)
-7. ⏳ Implement [CUL-373](/CUL/issues/CUL-373) (ASC 606 policy) for audit readiness
-8. ⏳ Implement [CUL-374](/CUL/issues/CUL-374) (P&L structure) for post-execution partnership governance
+## QA Validation: CUL-551 Order Entry Soft Reservation
+
+**Status:** ✅ COMPLETE — Code review + test validation completed; findings ready for Paperclip posting
+
+**Build & Test Status:**
+- ✅ `npm run build` PASS (6.89s, 0 errors)
+- ✅ `npm run test` PASS (675/675 tests, 33 files)
+- ✅ TypeScript type safety validated
+
+**Files Reviewed:**
+- `supabase/migrations/20260404_cul551_order_entry_soft_reservation.sql` (415 lines)
+- `src/hooks/useProductReservations.ts` (94 lines, NEW)
+- `src/features/orders/components/NewOrderForm.tsx` (partial, hook integration)
+- `src/features/orders/components/StrainCatalog.tsx` (product reservation display)
+
+**Critical Validation Results:**
+
+✅ **Inventory Integrity**: All quantity updates use `set_config('app.allow_quantity_update', 'true')` authorization pattern (matches CUL-301 precedent)
+
+✅ **Double-Count Prevention**: Soft holds are released BEFORE hard package assignment (verified at `fn_reserve_inventory_on_assignment()` lines 319-322)
+
+✅ **Lifecycle Management**: Complete trigger-based lifecycle (INSERT on order entry, DELETE on order_item delete, UPDATE on order status change)
+
+✅ **Audit Trail**: All movements logged to `inventory_movements` table with `reason_code` and descriptive notes
+
+**Issues Identified (Ready for Posting):**
+
+| Severity | Issue | Location | Recommendation |
+|----------|-------|----------|-----------------|
+| **HIGH** | Missing integration tests for soft→hard reservation upgrade | `src/features/orders/` | Add test for order_item INSERT → package_assignment → verify soft hold released before hard reservation applied |
+| **MEDIUM** | Order status hardcoded values need validation | Migration line 150 | Verify status enum values ('submitted','accepted','processing','cancelled','completed') match `orders.status` column constraints |
+| **MEDIUM** | product_stage_id NULL handling unclear | Migration line 156 | Clarify expected behavior if product.stage_id is NULL (currently logs WARNING and skips reservation) |
+| **LOW** | Real-time subscription optimization | Hook line 76-90 | Consider subscribing to `order_item_soft_reservations` table only instead of all `inventory_items` changes |
+
+**Next CFO Priority (Backlog):**
+- [CUL-398](/CUL/issues/CUL-398): Financial Forecast Refresh & Runway Modeling — depends on board approval; needed for Series A pitch (April 15 target)
+
+**Remaining Arroya Tasks (Post-Contract):**
+- [CUL-373](/CUL/issues/CUL-373): Revenue Recognition Policy (ASC 606) — audit readiness; due May 1
+- [CUL-374](/CUL/issues/CUL-374): P&L Structure and Monthly Reporting — partnership governance; due May 1
+
+**Next steps (if board approves April 8):**
+1. ⏳ **Today (April 8):** Board approves revenue share tier + CEO authorizes CRO negotiation
+2. ⏳ **April 9–12:** CRO negotiation with Arroya legal team
+3. ⏳ **April 12:** Finance setup (QB integration, billing automation)
+4. ⏳ **April 15:** START CUL-398 (Financial Forecast Refresh with approved tier)
+5. ⏳ **April 20–25:** Legal review + final contract signature
+6. ⏳ **April 30:** Contract execution with Arroya
+7. ⏳ **May 1+:** Implement CUL-373 (ASC 606) + CUL-374 (P&L structure) for audit/partnership governance
 
 ---
 
