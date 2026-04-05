@@ -65,6 +65,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
 { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },
       { id: 'strain-analytics', label: 'Strain Analytics', icon: Dna, group: 'secondary' },
+      { id: 'coa-timeline', label: 'COA Timeline', icon: FlaskConical, group: 'secondary' },
     ],
   },
   /**

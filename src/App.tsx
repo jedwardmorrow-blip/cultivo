@@ -74,6 +74,7 @@ const StrainAnalyticsDashboard = lazyRetry(() => import('./features/strain-analy
 const HubBatchPipeline = lazyRetry(() => import('./features/hub'), 'BatchPipeline');
 const HubPipelinePlanner = lazyRetry(() => import('./features/hub'), 'PipelinePlanner');
 const HubStrainYieldAnalytics = lazyRetry(() => import('./features/hub'), 'StrainYieldAnalytics');
+const COATimelineView = lazyRetry(() => import('./features/hub'), 'COATimelineView');
 const CultivationHub = lazyRetry(() => import('./features/cultivation'), 'CultivationHub');
 const PostProductionHub = lazyRetry(() => import('./features/hub'), 'PostProductionHub');
 const InventoryHub = lazyRetry(() => import('./features/inventory'), 'InventoryHub');
@@ -218,6 +219,7 @@ function AuthenticatedApp() {
               <Route path="/hub" element={<HubBatchPipeline />} />
               <Route path="/pipeline-planner" element={<HubPipelinePlanner />} />
               <Route path="/hub-strain-analytics" element={<HubStrainYieldAnalytics />} />
+              <Route path="/coa-timeline" element={<COATimelineView />} />
               <Route path="/cultivation-hub" element={<CultivationErrorBoundary><CultivationHub /></CultivationErrorBoundary>} />
               <Route path="/post-production-hub" element={<PostProductionHub />} />
               <Route path="/inventory-hub" element={<InventoryHub />} />
