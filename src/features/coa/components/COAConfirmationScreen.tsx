@@ -123,8 +123,17 @@ export function COAConfirmationScreen({
                           </div>
                         )}
                         {item.parsedData.thc_percentage !== null && (
-                          <div className="flex items-center gap-2 text-cult-lighter-gray">
+                          <div className="flex items-center gap-2 text-cult-lighter-gray flex-wrap">
                             <span>THC: {item.parsedData.thc_percentage.toFixed(2)}%</span>
+                            {item.parsedData.thca_percentage != null && (
+                              <span>• THCa: {item.parsedData.thca_percentage.toFixed(2)}%</span>
+                            )}
+                            {item.parsedData.delta8_thc_percentage != null && item.parsedData.delta8_thc_percentage > 0 && (
+                              <span>• Δ8: {item.parsedData.delta8_thc_percentage.toFixed(2)}%</span>
+                            )}
+                            {item.parsedData.delta10_thc_percentage != null && item.parsedData.delta10_thc_percentage > 0 && (
+                              <span>• Δ10: {item.parsedData.delta10_thc_percentage.toFixed(2)}%</span>
+                            )}
                             {item.parsedData.cbd_percentage !== null && item.parsedData.cbd_percentage > 0 && (
                               <span>• CBD: {item.parsedData.cbd_percentage.toFixed(2)}%</span>
                             )}

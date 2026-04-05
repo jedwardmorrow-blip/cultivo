@@ -36,6 +36,9 @@ function mapDatabaseCOAToApp(
     manufacture_date: manufactureDate || dbRow.manufacture_date,
     sample_date: dbRow.sample_date,
     thc_percentage: dbRow.thc_percentage,
+    thca_percentage: dbRow.thca_percentage ?? null,
+    delta8_thc_percentage: dbRow.delta8_thc_percentage ?? null,
+    delta10_thc_percentage: dbRow.delta10_thc_percentage ?? null,
     cbd_percentage: dbRow.cbd_percentage,
     total_cannabinoids_percentage: dbRow.total_cannabinoids_percentage,
     total_terpenes_mg_g: dbRow.total_terpenes_mg_g,
@@ -64,6 +67,9 @@ export interface COAData {
   manufacture_date: string | null;
   sample_date: string | null;
   thc_percentage: number | null;
+  thca_percentage: number | null;
+  delta8_thc_percentage: number | null;
+  delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;
@@ -89,10 +95,35 @@ export interface ParsedCOAData {
   manufacture_date: string | null;
   sample_date: string | null;
   thc_percentage: number | null;
+  thca_percentage: number | null;
+  delta8_thc_percentage: number | null;
+  delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;
   terpenes: Array<{ name: string; value: number; percentage: number }>;
+}
+
+/**
+ * AZDHS Total THC formula: Δ9-THC + (0.877 × THCa) + Δ8-THC + Δ10-THC
+ * Returns null if no cannabinoid components are available.
+ */
+export function calculateTotalTHC(data: {
+  thc_percentage: number | null;
+  thca_percentage: number | null;
+  delta8_thc_percentage: number | null;
+  delta10_thc_percentage: number | null;
+}): number | null {
+  const { thc_percentage, thca_percentage, delta8_thc_percentage, delta10_thc_percentage } = data;
+  const hasComponents = thca_percentage != null || delta8_thc_percentage != null || delta10_thc_percentage != null;
+  if (!hasComponents) return thc_percentage;
+
+  const d9 = thc_percentage ?? 0;
+  const thca = thca_percentage ?? 0;
+  const d8 = delta8_thc_percentage ?? 0;
+  const d10 = delta10_thc_percentage ?? 0;
+
+  return Math.round((d9 + (0.877 * thca) + d8 + d10) * 100) / 100;
 }
 
 /**
@@ -191,6 +222,9 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
     manufacture_date: null,
     sample_date: null,
     thc_percentage: null,
+    thca_percentage: null,
+    delta8_thc_percentage: null,
+    delta10_thc_percentage: null,
     cbd_percentage: null,
     total_cannabinoids_percentage: null,
     total_terpenes_mg_g: null,
@@ -231,6 +265,32 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
   }
   if (thcMatch) {
     parsed.thc_percentage = parseFloat(thcMatch[1]);
+  }
+
+  // Parse individual cannabinoid components for AZDHS Total THC formula
+  const thcaMatch = fullText.match(/THCa\s+(\d+\.?\d*)\s*%/i)
+    || fullText.match(/(\d+\.?\d*)\s*%\s+THCa/i)
+    || fullText.match(/THCA\s+(\d+\.?\d*)/i);
+  if (thcaMatch) {
+    parsed.thca_percentage = parseFloat(thcaMatch[1]);
+  }
+
+  const delta8Match = fullText.match(/[Δδ]8[- ]?THC\s+(\d+\.?\d*)\s*%/i)
+    || fullText.match(/(\d+\.?\d*)\s*%\s+[Δδ]8[- ]?THC/i)
+    || fullText.match(/Delta[- ]?8[- ]?THC\s+(\d+\.?\d*)/i);
+  if (delta8Match) {
+    parsed.delta8_thc_percentage = parseFloat(delta8Match[1]);
+  } else if (fullText.match(/[Δδ]8[- ]?THC\s+ND/i) || fullText.match(/Delta[- ]?8[- ]?THC\s+ND/i)) {
+    parsed.delta8_thc_percentage = 0;
+  }
+
+  const delta10Match = fullText.match(/[Δδ]10[- ]?THC\s+(\d+\.?\d*)\s*%/i)
+    || fullText.match(/(\d+\.?\d*)\s*%\s+[Δδ]10[- ]?THC/i)
+    || fullText.match(/Delta[- ]?10[- ]?THC\s+(\d+\.?\d*)/i);
+  if (delta10Match) {
+    parsed.delta10_thc_percentage = parseFloat(delta10Match[1]);
+  } else if (fullText.match(/[Δδ]10[- ]?THC\s+ND/i) || fullText.match(/Delta[- ]?10[- ]?THC\s+ND/i)) {
+    parsed.delta10_thc_percentage = 0;
   }
 
   if (fullText.match(/ND\s+Total CBD/i)) {
@@ -313,6 +373,9 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
     manufacture_date: data.manufacture_date,
     sample_date: data.sample_date,
     thc_percentage: data.thc_percentage,
+    thca_percentage: data.thca_percentage,
+    delta8_thc_percentage: data.delta8_thc_percentage,
+    delta10_thc_percentage: data.delta10_thc_percentage,
     cbd_percentage: data.cbd_percentage,
     total_cannabinoids_percentage: data.total_cannabinoids_percentage,
     total_terpenes_mg_g: data.total_terpenes_mg_g,
@@ -367,6 +430,9 @@ export async function updateCOA(id: string, data: Partial<COAData>): Promise<COA
   if (data.manufacture_date !== undefined) dbUpdate.manufacture_date = data.manufacture_date;
   if (data.sample_date !== undefined) dbUpdate.sample_date = data.sample_date;
   if (data.thc_percentage !== undefined) dbUpdate.thc_percentage = data.thc_percentage;
+  if (data.thca_percentage !== undefined) dbUpdate.thca_percentage = data.thca_percentage;
+  if (data.delta8_thc_percentage !== undefined) dbUpdate.delta8_thc_percentage = data.delta8_thc_percentage;
+  if (data.delta10_thc_percentage !== undefined) dbUpdate.delta10_thc_percentage = data.delta10_thc_percentage;
   if (data.cbd_percentage !== undefined) dbUpdate.cbd_percentage = data.cbd_percentage;
   if (data.total_cannabinoids_percentage !== undefined) dbUpdate.total_cannabinoids_percentage = data.total_cannabinoids_percentage;
   if (data.total_terpenes_mg_g !== undefined) dbUpdate.total_terpenes_mg_g = data.total_terpenes_mg_g;
@@ -547,6 +613,9 @@ export async function bulkUploadCOAs(
         manufacture_date: item.parsedData.manufacture_date,
         sample_date: item.parsedData.sample_date,
         thc_percentage: item.parsedData.thc_percentage,
+        thca_percentage: item.parsedData.thca_percentage,
+        delta8_thc_percentage: item.parsedData.delta8_thc_percentage,
+        delta10_thc_percentage: item.parsedData.delta10_thc_percentage,
         cbd_percentage: item.parsedData.cbd_percentage ?? 0,
         total_cannabinoids_percentage: item.parsedData.total_cannabinoids_percentage,
         total_terpenes_mg_g: item.parsedData.total_terpenes_mg_g,

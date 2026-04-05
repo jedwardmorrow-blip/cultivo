@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Search, Calendar, Beaker, Leaf, ArrowLeft } from 'lucide-react';
-import { getActiveCOAs, getCOAPDFUrl, type COAData } from '../../features/coa/services/coa.service';
+import { getActiveCOAs, getCOAPDFUrl, calculateTotalTHC, type COAData } from '../../features/coa/services/coa.service';
 import { getCoversheetPublicUrl } from '../../features/orders/services/coversheet.service';
 
 export function COALibrary() {
@@ -160,9 +160,9 @@ export function COALibrary() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div className="bg-cult-black p-3 border border-cult-medium-gray">
-                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">THC</div>
+                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">Total THC</div>
                           <div className="text-2xl font-bold text-cult-white">
-                            {coa.thc_percentage !== null && coa.thc_percentage !== undefined ? coa.thc_percentage.toFixed(2) : 'N/A'}%
+                            {coa.thc_percentage !== null && coa.thc_percentage !== undefined ? (calculateTotalTHC(coa)?.toFixed(2) ?? coa.thc_percentage.toFixed(2)) : 'N/A'}%
                           </div>
                         </div>
                         <div className="bg-cult-black p-3 border border-cult-medium-gray">
@@ -284,10 +284,17 @@ export function COALibrary() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
-                    <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">THC</div>
+                    <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Total THC</div>
                     <div className="text-4xl font-bold text-cult-white">
-                      {selectedCoa.thc_percentage !== null && selectedCoa.thc_percentage !== undefined ? selectedCoa.thc_percentage.toFixed(2) : 'N/A'}%
+                      {selectedCoa.thc_percentage !== null && selectedCoa.thc_percentage !== undefined ? (calculateTotalTHC(selectedCoa)?.toFixed(2) ?? selectedCoa.thc_percentage.toFixed(2)) : 'N/A'}%
                     </div>
+                    {selectedCoa.thca_percentage != null && (
+                      <div className="text-xs text-cult-light-gray mt-2">
+                        Δ9: {selectedCoa.thc_percentage?.toFixed(2)}% · THCa: {selectedCoa.thca_percentage.toFixed(2)}%
+                        {selectedCoa.delta8_thc_percentage ? ` · Δ8: ${selectedCoa.delta8_thc_percentage.toFixed(2)}%` : ''}
+                        {selectedCoa.delta10_thc_percentage ? ` · Δ10: ${selectedCoa.delta10_thc_percentage.toFixed(2)}%` : ''}
+                      </div>
+                    )}
                   </div>
                   <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
                     <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">CBD</div>

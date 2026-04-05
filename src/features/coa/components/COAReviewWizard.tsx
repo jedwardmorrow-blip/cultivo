@@ -178,6 +178,45 @@ export function COAReviewWizard({
 
               <div>
                 <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  THCa %
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={parsedData.thca_percentage || ''}
+                  onChange={(e) => setParsedData({ ...parsedData, thca_percentage: parseFloat(e.target.value) || null })}
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  Δ8-THC %
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={parsedData.delta8_thc_percentage || ''}
+                  onChange={(e) => setParsedData({ ...parsedData, delta8_thc_percentage: parseFloat(e.target.value) || null })}
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  Δ10-THC %
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={parsedData.delta10_thc_percentage || ''}
+                  onChange={(e) => setParsedData({ ...parsedData, delta10_thc_percentage: parseFloat(e.target.value) || null })}
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
                   CBD %
                 </label>
                 <input
