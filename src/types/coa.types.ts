@@ -12,6 +12,9 @@ export interface BatchCOAData {
   manufacture_date: string | null;
   sample_date: string | null;
   thc_percentage: number | null;
+  thca_percentage: number | null;
+  delta8_thc_percentage: number | null;
+  delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;

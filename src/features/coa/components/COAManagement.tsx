@@ -7,6 +7,7 @@ import {
   getAllCOAs,
   getCOAPDFUrl,
   bulkUploadCOAs,
+  calculateTotalTHC,
   type COAData,
   type COAUploadQueueItem,
   type COABulkUploadState
@@ -462,7 +463,18 @@ export function COAManagement() {
                     <td className="py-3 px-4 text-cult-lighter-gray text-sm">
                       {coa.harvest_date ? new Date(coa.harvest_date).toLocaleDateString() : '-'}
                     </td>
-                    <td className="py-3 px-4 text-cult-white font-medium">{coa.thc_percentage != null ? `${coa.thc_percentage.toFixed(2)}%` : '-'}</td>
+                    <td className="py-3 px-4 text-cult-white font-medium">
+                      {coa.thc_percentage != null ? (
+                        <span title={
+                          coa.thca_percentage != null || coa.delta8_thc_percentage != null || coa.delta10_thc_percentage != null
+                            ? `Δ9: ${coa.thc_percentage}%${coa.thca_percentage != null ? ` · THCa: ${coa.thca_percentage}%` : ''}${coa.delta8_thc_percentage ? ` · Δ8: ${coa.delta8_thc_percentage}%` : ''}${coa.delta10_thc_percentage ? ` · Δ10: ${coa.delta10_thc_percentage}%` : ''}`
+                            : undefined
+                        }>
+                          {calculateTotalTHC(coa)?.toFixed(2) ?? coa.thc_percentage.toFixed(2)}%
+                          {coa.thca_percentage != null && <span className="text-cult-light-gray text-xs ml-1">(AZDHS)</span>}
+                        </span>
+                      ) : '-'}
+                    </td>
                     <td className="py-3 px-4 text-cult-white font-medium">{coa.cbd_percentage != null ? `${coa.cbd_percentage.toFixed(2)}%` : '-'}</td>
                     <td className="py-3 px-4">
                       <button
