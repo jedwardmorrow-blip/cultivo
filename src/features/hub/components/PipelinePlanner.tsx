@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { STAGE_HEX } from '@/features/production-planner/types';
-import type { CultivationPlan } from '@/types';
+import type { CultivationPlan, PlanStatus } from '@/types';
 import {
   createCultivationPlan,
   createPlanSnapshot,
