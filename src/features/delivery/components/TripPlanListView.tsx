@@ -151,9 +151,7 @@ export function TripPlanListView() {
                   <td className="px-4 py-3 text-gray-300">{fmt(plan.departure_time ?? plan.created_at)}</td>
                   <td className="px-4 py-3 text-white font-medium">
                     {plan.driver.first_name} {plan.driver.last_name}
-                    {plan.driver.fa_number && (
-                      <span className="ml-1.5 text-gray-500 text-xs">FA# {plan.driver.fa_number}</span>
-                    )}
+                    <span className="ml-1.5 text-gray-500 text-xs">FA# {plan.driver.fa_number}</span>
                   </td>
                   <td className="px-4 py-3 text-gray-300">
                     {[plan.vehicle.year, plan.vehicle.make, plan.vehicle.model]

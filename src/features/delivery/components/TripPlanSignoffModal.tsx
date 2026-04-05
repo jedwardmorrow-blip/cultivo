@@ -54,9 +54,7 @@ export function TripPlanSignoffModal({ plan, onClose, onDispatched }: TripPlanSi
           <div>
             <p className="text-gray-500 text-xs uppercase tracking-wide">Driver</p>
             <p className="text-white font-medium">{driverName}</p>
-            {plan.driver.fa_number && (
-              <p className="text-gray-400 text-xs">FA# {plan.driver.fa_number}</p>
-            )}
+            <p className="text-gray-400 text-xs">FA# {plan.driver.fa_number}</p>
           </div>
           <div>
             <p className="text-gray-500 text-xs uppercase tracking-wide">Vehicle</p>
