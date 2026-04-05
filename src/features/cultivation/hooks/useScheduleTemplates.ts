@@ -115,29 +115,46 @@ export function useScheduleTemplates(roomType?: string) {
 
   /** Apply a template to a room — creates schedule entries from the template */
   async function applyTemplate(templateId: string, roomId: string, startDate: string): Promise<void> {
+    await applyTemplateToRooms(templateId, [roomId], startDate);
+  }
+
+  /**
+   * Bulk apply: insert schedules from a single template across multiple rooms.
+   * One template → one task per schedule per room. CUL-344 (R-3).
+   */
+  async function applyTemplateToRooms(
+    templateId: string,
+    roomIds: string[],
+    startDate: string,
+  ): Promise<{ appliedRoomCount: number; scheduleCount: number }> {
     const template = templates.find((t) => t.id === templateId);
     if (!template) throw new Error('Template not found');
+    if (roomIds.length === 0) return { appliedRoomCount: 0, scheduleCount: 0 };
 
-    const inserts = template.schedules.map((s) => ({
-      room_id: roomId,
-      task_type: s.task_type,
-      recurrence: s.recurrence,
-      day_of_week: s.day_of_week ?? null,
-      start_date: startDate,
-      priority: s.priority,
-      notes: s.notes ?? null,
-      scope: 'full_room',
-      is_active: true,
-      scheduling_mode: s.scheduling_mode ?? 'calendar',
-      interval_days: s.interval_days ?? null,
-      phase_day_start: s.phase_day_start ?? null,
-      phase_day_end: s.phase_day_end ?? null,
-    }));
+    const inserts = roomIds.flatMap((roomId) =>
+      template.schedules.map((s) => ({
+        room_id: roomId,
+        task_type: s.task_type,
+        recurrence: s.recurrence,
+        day_of_week: s.day_of_week ?? null,
+        start_date: startDate,
+        priority: s.priority,
+        notes: s.notes ?? null,
+        scope: 'full_room',
+        is_active: true,
+        scheduling_mode: s.scheduling_mode ?? 'calendar',
+        interval_days: s.interval_days ?? null,
+        phase_day_start: s.phase_day_start ?? null,
+        phase_day_end: s.phase_day_end ?? null,
+      })),
+    );
 
     const { error: err } = await supabase
       .from('room_task_schedules')
       .insert(inserts);
     if (err) throw err;
+
+    return { appliedRoomCount: roomIds.length, scheduleCount: inserts.length };
   }
 
   /** Save current room schedules as a new template */
@@ -171,6 +188,7 @@ export function useScheduleTemplates(roomType?: string) {
     updateTemplate,
     deleteTemplate,
     applyTemplate,
+    applyTemplateToRooms,
     saveAsTemplate,
   };
 }

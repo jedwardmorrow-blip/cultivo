@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import {
   X, Plus, Trash2, Save, Edit3, ChevronDown, ChevronRight, Copy, Check,
   Clock, Wrench, Scissors, SprayCan, Droplets, Search, Sparkles, Wheat,
-  Sprout, GitBranch, ArrowRightLeft, Beaker,
+  Sprout, GitBranch, ArrowRightLeft, Beaker, Layers,
 } from 'lucide-react';
 import { useScheduleTemplates } from '../hooks/useScheduleTemplates';
 import type { ScheduleTemplate, TemplateScheduleItem, CreateTemplateInput } from '../hooks/useScheduleTemplates';
+import { useGrowRooms } from '../hooks/useGrowRooms';
 import { TASK_TYPE_CONFIG } from '../types';
 import type { TaskType, SchedulingMode } from '../types';
+import { BulkTemplateApplyModal } from './schedule-editor/BulkTemplateApplyModal';
 
 // ═══════════════════════════════════════════════════════════════
 // Template Manager — view, edit, create, and delete room schedule
@@ -31,10 +33,12 @@ interface TemplateManagerProps {
 }
 
 export function TemplateManager({ onClose, inline = false }: TemplateManagerProps) {
-  const { templates, loading, updateTemplate, deleteTemplate, createTemplate, refetch } = useScheduleTemplates();
+  const { templates, loading, updateTemplate, deleteTemplate, createTemplate, applyTemplateToRooms, refetch } = useScheduleTemplates();
+  const { rooms } = useGrowRooms();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
+  const [showBulkApply, setShowBulkApply] = useState(false);
 
   const templatesByType = useMemo(() => {
     const map = new Map<string, ScheduleTemplate[]>();
@@ -61,6 +65,15 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
           <p className="text-xs text-cult-medium-gray mt-0.5">{templates.length} template{templates.length !== 1 ? 's' : ''} saved</p>
         </div>
         <div className="flex items-center gap-2">
+          {templates.length > 0 && (
+            <button
+              onClick={() => setShowBulkApply(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+              title="Apply a template to multiple rooms at once"
+            >
+              <Layers className="w-3 h-3" /> Bulk Apply
+            </button>
+          )}
           <button
             onClick={() => { setCreatingNew(true); setEditingTemplateId(null); setExpandedId(null); }}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
@@ -192,6 +205,19 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
               </div>
             ))}
         </div>
+      )}
+
+      {showBulkApply && (
+        <BulkTemplateApplyModal
+          templates={templates}
+          rooms={rooms}
+          onApply={async (templateId, roomIds, startDate) => {
+            const result = await applyTemplateToRooms(templateId, roomIds, startDate);
+            await refetch();
+            return result;
+          }}
+          onClose={() => setShowBulkApply(false)}
+        />
       )}
     </div>
   );
