@@ -21,6 +21,8 @@ import { PinLoginPage, WorkerLayout, MyTasksView } from './features/worker/compo
 const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
 const DistributionCalendar = lazyRetry(() => import('./features/delivery'), 'DistributionCalendar');
+const ProductionDispatchView = lazyRetry(() => import('./features/delivery'), 'ProductionDispatchView');
+const DispatchExecutionQueue = lazyRetry(() => import('./features/delivery'), 'DispatchExecutionQueue');
 const ProductionDashboard = lazyRetry(() => import('./features/sessions'), 'ProductionDashboard');
 const SessionsHub = lazyRetry(() => import('./features/sessions'), 'SessionsHub');
 // Legacy individual session views — routes now redirect to sessions hub
@@ -210,6 +212,8 @@ function AuthenticatedApp() {
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
               <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
+              <Route path="/production-dispatch" element={<ProductionDispatchView />} />
+              <Route path="/dispatch-queue" element={<DispatchExecutionQueue />} />
               <Route path="/financial" element={<FinancialDashboard />} />
               <Route path="/financial-ar" element={<AccountsReceivable />} />
               <Route path="/financial-ap" element={<VendorBillEntry />} />
