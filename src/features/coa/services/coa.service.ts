@@ -40,6 +40,7 @@ function mapDatabaseCOAToApp(
     delta8_thc_percentage: dbRow.delta8_thc_percentage ?? null,
     delta10_thc_percentage: dbRow.delta10_thc_percentage ?? null,
     cbd_percentage: dbRow.cbd_percentage,
+    cbda_percentage: dbRow.cbda_percentage ?? null,
     total_cannabinoids_percentage: dbRow.total_cannabinoids_percentage,
     total_terpenes_mg_g: dbRow.total_terpenes_mg_g,
     terpene_1_name: dbRow.terpene_1_name,
@@ -51,6 +52,10 @@ function mapDatabaseCOAToApp(
     terpene_3_name: dbRow.terpene_3_name,
     terpene_3_value: dbRow.terpene_3_value,
     terpene_3_percentage: dbRow.terpene_3_percentage,
+    pesticides_pass: dbRow.pesticides_pass ?? null,
+    heavy_metals_pass: dbRow.heavy_metals_pass ?? null,
+    microbials_pass: dbRow.microbials_pass ?? null,
+    residual_solvents_pass: dbRow.residual_solvents_pass ?? null,
     pdf_file_path: dbRow.pdf_file_path,
     is_active: dbRow.is_active,
     created_at: dbRow.created_at,
@@ -71,6 +76,7 @@ export interface COAData {
   delta8_thc_percentage: number | null;
   delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
+  cbda_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;
   terpene_1_name: string | null;
@@ -82,6 +88,10 @@ export interface COAData {
   terpene_3_name: string | null;
   terpene_3_value: number | null;
   terpene_3_percentage: number | null;
+  pesticides_pass: boolean | null;
+  heavy_metals_pass: boolean | null;
+  microbials_pass: boolean | null;
+  residual_solvents_pass: boolean | null;
   pdf_file_path: string | null;
   is_active: boolean;
   created_at?: string;
@@ -99,9 +109,14 @@ export interface ParsedCOAData {
   delta8_thc_percentage: number | null;
   delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
+  cbda_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;
   terpenes: Array<{ name: string; value: number; percentage: number }>;
+  pesticides_pass: boolean | null;
+  heavy_metals_pass: boolean | null;
+  microbials_pass: boolean | null;
+  residual_solvents_pass: boolean | null;
 }
 
 /**
@@ -226,9 +241,14 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
     delta8_thc_percentage: null,
     delta10_thc_percentage: null,
     cbd_percentage: null,
+    cbda_percentage: null,
     total_cannabinoids_percentage: null,
     total_terpenes_mg_g: null,
-    terpenes: []
+    terpenes: [],
+    pesticides_pass: null,
+    heavy_metals_pass: null,
+    microbials_pass: null,
+    residual_solvents_pass: null
   };
 
   const strainMatch = fullText.match(/Strain:\s*([^\n;]+?)(?:\s*Batch|;|$)/i);
@@ -305,6 +325,44 @@ export async function parseCOAPDF(file: File): Promise<ParsedCOAData> {
     }
   }
 
+  // Parse CBDa (AZDHS Table 3.1 potency analyte)
+  const cbdaMatch = fullText.match(/CBDa\s+(\d+\.?\d*)\s*%/i)
+    || fullText.match(/(\d+\.?\d*)\s*%\s+CBDa/i)
+    || fullText.match(/CBDA\s+(\d+\.?\d*)/i);
+  if (cbdaMatch) {
+    parsed.cbda_percentage = parseFloat(cbdaMatch[1]);
+  } else if (fullText.match(/CBDa\s+ND/i) || fullText.match(/CBDA\s+ND/i)) {
+    parsed.cbda_percentage = 0;
+  }
+
+  // Parse AZDHS Table 3.1 pass/fail statuses
+  const passPattern = (category: string) => new RegExp(category + '[^]*?(?:pass|passed)', 'i');
+  const failPattern = (category: string) => new RegExp(category + '[^]*?(?:fail|failed|not detected)', 'i');
+
+  if (passPattern('pesticide').test(fullText)) {
+    parsed.pesticides_pass = true;
+  } else if (failPattern('pesticide').test(fullText)) {
+    parsed.pesticides_pass = false;
+  }
+
+  if (passPattern('heavy metal').test(fullText)) {
+    parsed.heavy_metals_pass = true;
+  } else if (failPattern('heavy metal').test(fullText)) {
+    parsed.heavy_metals_pass = false;
+  }
+
+  if (passPattern('microbial').test(fullText) || passPattern('microbiolog').test(fullText)) {
+    parsed.microbials_pass = true;
+  } else if (failPattern('microbial').test(fullText) || failPattern('microbiolog').test(fullText)) {
+    parsed.microbials_pass = false;
+  }
+
+  if (passPattern('residual solvent').test(fullText) || passPattern('solvent').test(fullText)) {
+    parsed.residual_solvents_pass = true;
+  } else if (failPattern('residual solvent').test(fullText) || failPattern('solvent').test(fullText)) {
+    parsed.residual_solvents_pass = false;
+  }
+
   let totalCannMatch = fullText.match(/(\d+\.?\d*)\s*%\s+Total\s+Cannabinoids/i);
   if (!totalCannMatch) {
     totalCannMatch = fullText.match(/Total Cannabinoids[^\d]*(\d+\.?\d*)\s*%/i);
@@ -377,6 +435,7 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
     delta8_thc_percentage: data.delta8_thc_percentage,
     delta10_thc_percentage: data.delta10_thc_percentage,
     cbd_percentage: data.cbd_percentage,
+    cbda_percentage: data.cbda_percentage,
     total_cannabinoids_percentage: data.total_cannabinoids_percentage,
     total_terpenes_mg_g: data.total_terpenes_mg_g,
     terpene_1_name: data.terpene_1_name,
@@ -388,6 +447,10 @@ export async function createCOA(data: Omit<COAData, 'id' | 'created_at' | 'updat
     terpene_3_name: data.terpene_3_name,
     terpene_3_value: data.terpene_3_value,
     terpene_3_percentage: data.terpene_3_percentage,
+    pesticides_pass: data.pesticides_pass,
+    heavy_metals_pass: data.heavy_metals_pass,
+    microbials_pass: data.microbials_pass,
+    residual_solvents_pass: data.residual_solvents_pass,
     pdf_file_path: data.pdf_file_path,
     is_active: data.is_active
   };
@@ -436,6 +499,11 @@ export async function updateCOA(id: string, data: Partial<COAData>): Promise<COA
   if (data.cbd_percentage !== undefined) dbUpdate.cbd_percentage = data.cbd_percentage;
   if (data.total_cannabinoids_percentage !== undefined) dbUpdate.total_cannabinoids_percentage = data.total_cannabinoids_percentage;
   if (data.total_terpenes_mg_g !== undefined) dbUpdate.total_terpenes_mg_g = data.total_terpenes_mg_g;
+  if (data.cbda_percentage !== undefined) dbUpdate.cbda_percentage = data.cbda_percentage;
+  if (data.pesticides_pass !== undefined) dbUpdate.pesticides_pass = data.pesticides_pass;
+  if (data.heavy_metals_pass !== undefined) dbUpdate.heavy_metals_pass = data.heavy_metals_pass;
+  if (data.microbials_pass !== undefined) dbUpdate.microbials_pass = data.microbials_pass;
+  if (data.residual_solvents_pass !== undefined) dbUpdate.residual_solvents_pass = data.residual_solvents_pass;
   if (data.pdf_file_path !== undefined) dbUpdate.pdf_file_path = data.pdf_file_path;
   if (data.is_active !== undefined) dbUpdate.is_active = data.is_active;
   if (data.batch_id !== undefined) dbUpdate.batch_id = data.batch_id;
@@ -617,6 +685,7 @@ export async function bulkUploadCOAs(
         delta8_thc_percentage: item.parsedData.delta8_thc_percentage,
         delta10_thc_percentage: item.parsedData.delta10_thc_percentage,
         cbd_percentage: item.parsedData.cbd_percentage ?? 0,
+        cbda_percentage: item.parsedData.cbda_percentage,
         total_cannabinoids_percentage: item.parsedData.total_cannabinoids_percentage,
         total_terpenes_mg_g: item.parsedData.total_terpenes_mg_g,
         terpene_1_name: item.parsedData.terpenes[0]?.name || null,
@@ -628,6 +697,10 @@ export async function bulkUploadCOAs(
         terpene_3_name: item.parsedData.terpenes[2]?.name || null,
         terpene_3_value: item.parsedData.terpenes[2]?.value || null,
         terpene_3_percentage: item.parsedData.terpenes[2]?.percentage || null,
+        pesticides_pass: item.parsedData.pesticides_pass,
+        heavy_metals_pass: item.parsedData.heavy_metals_pass,
+        microbials_pass: item.parsedData.microbials_pass,
+        residual_solvents_pass: item.parsedData.residual_solvents_pass,
         pdf_file_path: filePath,
         is_active: true
       };

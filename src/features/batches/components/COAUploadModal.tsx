@@ -164,6 +164,7 @@ export function COAUploadModal({
         delta8_thc_percentage: parsedData?.delta8_thc_percentage ?? null,
         delta10_thc_percentage: parsedData?.delta10_thc_percentage ?? null,
         cbd_percentage: formData.cbd_percentage ? parseFloat(formData.cbd_percentage) : null,
+        cbda_percentage: parsedData?.cbda_percentage ?? null,
         total_cannabinoids_percentage: formData.total_cannabinoids_percentage ? parseFloat(formData.total_cannabinoids_percentage) : null,
         total_terpenes_mg_g: formData.total_terpenes_mg_g ? parseFloat(formData.total_terpenes_mg_g) : null,
         terpene_1_name: terpene1?.name || null,
@@ -175,6 +176,10 @@ export function COAUploadModal({
         terpene_3_name: terpene3?.name || null,
         terpene_3_value: terpene3?.value || null,
         terpene_3_percentage: terpene3?.percentage || null,
+        pesticides_pass: parsedData?.pesticides_pass ?? null,
+        heavy_metals_pass: parsedData?.heavy_metals_pass ?? null,
+        microbials_pass: parsedData?.microbials_pass ?? null,
+        residual_solvents_pass: parsedData?.residual_solvents_pass ?? null,
         pdf_file_path: pdfFilePath,
         is_active: true
       };

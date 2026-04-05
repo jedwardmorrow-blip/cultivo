@@ -1909,12 +1909,17 @@ export type Database = {
           batch_id: string | null
           batch_number: string
           cbd_percentage: number | null
+          cbda_percentage: number | null
           created_at: string | null
           harvest_date: string | null
+          heavy_metals_pass: boolean | null
           id: string
           is_active: boolean | null
           manufacture_date: string | null
+          microbials_pass: boolean | null
           pdf_file_path: string | null
+          pesticides_pass: boolean | null
+          residual_solvents_pass: boolean | null
           sample_date: string | null
           strain_name: string
           terpene_1_name: string | null
@@ -1935,12 +1940,17 @@ export type Database = {
           batch_id?: string | null
           batch_number: string
           cbd_percentage?: number | null
+          cbda_percentage?: number | null
           created_at?: string | null
           harvest_date?: string | null
+          heavy_metals_pass?: boolean | null
           id?: string
           is_active?: boolean | null
           manufacture_date?: string | null
+          microbials_pass?: boolean | null
           pdf_file_path?: string | null
+          pesticides_pass?: boolean | null
+          residual_solvents_pass?: boolean | null
           sample_date?: string | null
           strain_name: string
           terpene_1_name?: string | null
@@ -1961,12 +1971,17 @@ export type Database = {
           batch_id?: string | null
           batch_number?: string
           cbd_percentage?: number | null
+          cbda_percentage?: number | null
           created_at?: string | null
           harvest_date?: string | null
+          heavy_metals_pass?: boolean | null
           id?: string
           is_active?: boolean | null
           manufacture_date?: string | null
+          microbials_pass?: boolean | null
           pdf_file_path?: string | null
+          pesticides_pass?: boolean | null
+          residual_solvents_pass?: boolean | null
           sample_date?: string | null
           strain_name?: string
           terpene_1_name?: string | null

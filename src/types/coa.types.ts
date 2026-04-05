@@ -16,6 +16,7 @@ export interface BatchCOAData {
   delta8_thc_percentage: number | null;
   delta10_thc_percentage: number | null;
   cbd_percentage: number | null;
+  cbda_percentage: number | null;
   total_cannabinoids_percentage: number | null;
   total_terpenes_mg_g: number | null;
   terpene_1_name: string | null;
@@ -27,6 +28,10 @@ export interface BatchCOAData {
   terpene_3_name: string | null;
   terpene_3_value: number | null;
   terpene_3_percentage: number | null;
+  pesticides_pass: boolean | null;
+  heavy_metals_pass: boolean | null;
+  microbials_pass: boolean | null;
+  residual_solvents_pass: boolean | null;
   pdf_file_path: string | null;
   is_active: boolean;
 }
