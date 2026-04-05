@@ -1,14 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, CheckCircle2, Weight, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, CalendarPlus, AlertTriangle, Weight, Send } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getEnrichedCalendarOrders, updateOrderDeliveryDate as updateDeliveryDate, type CalendarOrder } from '../services/delivery.service';
 import { formatDuration } from '../services/routing.service';
 import { getRouteZone, getRouteZoneId, getOrderStatusStyle, isOrderReadyStatus } from '../utils';
 import { supabase } from '@/lib/supabase';
 import { UnscheduledOrdersPanel } from './UnscheduledOrdersPanel';
-import { DayDetailModal } from './DayDetailModal';
+import { RouteManifestPanel } from './RouteManifestPanel';
 import { OrderItemsExpander } from './OrderItemsExpander';
-import { formatWeight } from '@/shared/utils/format';
+import { formatWeight, formatCurrencyShort } from '@/shared/utils/format';
 import { DocumentDispatchQueue } from './DocumentDispatchQueue';
 import { getDispatchQueue } from '../services/dispatch.service';
 import { TripPlanListView } from './TripPlanListView';
@@ -39,7 +39,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   const [draggedOrder, setDraggedOrder] = useState<CalendarOrder | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
   const [showPlanPanel, setShowPlanPanel] = useState(false);
   const [overdueDocOrderIds, setOverdueDocOrderIds] = useState<Set<string>>(new Set());
 
@@ -366,11 +366,10 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onDragStart={handleDragStart}
                     onClick={() => {
                       if (dayOrders.length > 0) {
                         setSelectedDate(date);
-                        setShowModal(true);
+                        setShowPanel(true);
                       }
                     }}
                   />
@@ -398,11 +397,11 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         />
       )}
 
-      {showModal && selectedDate && (
-        <DayDetailModal
+      {showPanel && selectedDate && (
+        <RouteManifestPanel
           date={selectedDate}
           orders={ordersByDate.get(formatDateToLocal(selectedDate)) || []}
-          onClose={() => setShowModal(false)}
+          onClose={() => { setShowPanel(false); setSelectedDate(null); }}
           onSelectOrder={onSelectOrder}
         />
       )}
@@ -433,7 +432,7 @@ function StatCard({
 
 function DayCell({
   date, orders, isToday: isTodayDate, isDragOver, isSuggested,
-  onDragOver, onDragLeave, onDrop, onDragStart, onClick,
+  onDragOver, onDragLeave, onDrop, onClick,
 }: {
   date: Date;
   orders: CalendarOrder[];
@@ -443,9 +442,9 @@ function DayCell({
   onDragOver: (e: React.DragEvent, date: Date) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, date: Date) => void;
-  onDragStart: (e: React.DragEvent, order: CalendarOrder) => void;
   onClick: () => void;
 }) {
+  // Route count = distinct zones with orders on this day (CUL-331 spec §4.2)
   const zoneDotsMap = useMemo(() => {
     const zoneSet = new Map<string, string>();
     for (const o of orders) {
@@ -455,11 +454,19 @@ function DayCell({
     return zoneSet;
   }, [orders]);
 
+  const routeCount = zoneDotsMap.size;
+  const totalRevenue = useMemo(() => orders.reduce((sum, o) => sum + (o.total_amount || 0), 0), [orders]);
+  const totalDuration = useMemo(() => orders.reduce((sum, o) => sum + (o.cached_duration_seconds || 0), 0), [orders]);
+
   const allReady = orders.length > 0 && orders.every(o => isOrderReadyStatus(o.status));
   const someNotReady = orders.length > 0 && orders.some(o => !isOrderReadyStatus(o.status));
 
-  const totalDuration = orders.reduce((sum, o) => sum + (o.cached_duration_seconds || 0), 0);
-  const dayWeight = orders.reduce((sum, o) => sum + (o.demand_g || 0), 0);
+  // Load indicator color semantics per spec §5
+  const loadDotClass =
+    routeCount === 0 ? '' :
+    routeCount === 1 ? 'bg-emerald-400' :
+    routeCount === 2 ? 'bg-amber-400' :
+    'bg-red-400';
 
   return (
     <div
@@ -479,68 +486,62 @@ function DayCell({
           : 'border-cult-medium-gray hover:border-cult-light-gray bg-cult-black'
       }`}
     >
-      <div className="flex items-center justify-between mb-0.5">
+      {/* Header row: date + readiness indicator */}
+      <div className="flex items-center justify-between mb-1">
         <span className={`text-sm font-medium ${
           isTodayDate ? 'text-yellow-500 font-bold' : 'text-cult-white'
         }`}>
           {date.getDate()}
         </span>
-        {orders.length > 0 && (
-          <div className="flex items-center gap-0.5">
-            {allReady && <CheckCircle2 className="w-3 h-3 text-green-500" />}
-            {someNotReady && !allReady && <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />}
-          </div>
+        {orders.length > 0 && someNotReady && !allReady && (
+          <AlertTriangle className="w-3 h-3 text-amber-400" title="Needs prep" />
         )}
       </div>
 
+      {/* Load summary block per spec §4.2 */}
       {orders.length > 0 && (
-        <div className="flex-1 min-h-0 space-y-0.5 overflow-hidden">
-          {orders.slice(0, 2).map(order => {
-            const sc = getOrderStatusStyle(order.status);
-            return (
-              <div
-                key={order.id}
-                draggable
-                onDragStart={(e) => { handleStopProp(e); onDragStart(e, order); }}
-                onDragEnd={handleStopProp}
-                onClick={handleStopPropClick}
-                className={`${sc.bg} ${sc.text} border ${sc.border} text-xs px-1 py-0.5 truncate cursor-move hover:opacity-80 transition-opacity`}
-                title={`${order.order_number} - ${order.customer_name} - ${sc.label}`}
-              >
-                <div className="flex items-center gap-0.5">
-                  <Truck className="w-2.5 h-2.5 flex-shrink-0" />
-                  <span className="truncate font-medium">{order.customer_name}</span>
-                </div>
-              </div>
-            );
-          })}
-          {orders.length > 2 && (
-            <div className="text-xs text-cult-lighter-gray px-1 cursor-pointer hover:text-cult-white">
-              +{orders.length - 2} more
+        <div className="flex-1 min-h-0 flex flex-col justify-center">
+          {/* Route count + load dots */}
+          <div className="flex items-center gap-1 mb-0.5">
+            <div className="flex items-center gap-0.5">
+              {[...zoneDotsMap.values()].slice(0, 4).map((dotColor, i) => (
+                <div key={i} className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+              ))}
+              {zoneDotsMap.size > 4 && (
+                <span className="text-[9px] text-cult-lighter-gray ml-0.5">+{zoneDotsMap.size - 4}</span>
+              )}
             </div>
-          )}
+            <span className="text-[10px] text-cult-lighter-gray truncate">
+              {routeCount} route{routeCount !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* Revenue — most decision-relevant number */}
+          <div className="text-[13px] text-cult-white font-semibold leading-tight tabular-nums">
+            {formatCurrencyShort(totalRevenue)}
+          </div>
+
+          {/* Order count */}
+          <div className="text-[10px] text-cult-lighter-gray">
+            {orders.length} order{orders.length !== 1 ? 's' : ''}
+          </div>
         </div>
       )}
 
+      {/* Footer: drive time + load label */}
       {orders.length > 0 && (
-        <div className="flex items-center justify-between mt-auto pt-0.5">
-          <div className="flex items-center gap-0.5">
-            {[...zoneDotsMap.values()].map((dotColor, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5">
-            {dayWeight > 0 && (
-              <span className="text-xs text-purple-400 font-semibold leading-none">
-                {formatWeight(dayWeight)}
-              </span>
-            )}
-            {totalDuration > 0 && (
-              <span className="text-xs text-cult-lighter-gray leading-none">
-                ~{formatDuration(totalDuration)}
-              </span>
-            )}
-          </div>
+        <div className="flex items-center justify-between mt-auto pt-0.5 gap-1">
+          {loadDotClass && (
+            <div className={`w-1.5 h-1.5 rounded-full ${loadDotClass}`} title={
+              routeCount === 1 ? 'Light load' :
+              routeCount === 2 ? 'Moderate load' : 'Heavy load'
+            } />
+          )}
+          {totalDuration > 0 && (
+            <span className="text-[10px] text-cult-lighter-gray leading-none truncate">
+              ~{formatDuration(totalDuration)}
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -669,10 +670,3 @@ function isToday(date: Date): boolean {
          date.getFullYear() === today.getFullYear();
 }
 
-function handleStopProp(e: React.DragEvent) {
-  e.stopPropagation();
-}
-
-function handleStopPropClick(e: React.MouseEvent) {
-  e.stopPropagation();
-}
