@@ -142,10 +142,34 @@ export async function dispatchTripPlan(
   id: string
 ): Promise<{ error: any }> {
   try {
+    // R9-18-312: Validate driver, vehicle, stops, and manifest before dispatch
+    const { data: plan, error: fetchError } = await supabase
+      .from('trip_plans')
+      .select(`
+        *,
+        driver:delivery_drivers(*),
+        vehicle:delivery_vehicles(*),
+        stops:trip_plan_stops(id)
+      `)
+      .eq('id', id)
+      .single();
+    if (fetchError) throw fetchError;
+
+    const errors: string[] = [];
+    if (!plan.driver || !plan.driver.is_active) errors.push('Active driver is required');
+    if (!plan.vehicle || !plan.vehicle.is_active) errors.push('Active vehicle is required');
+    if (!plan.stops || plan.stops.length === 0) errors.push('At least one stop is required');
+    if (!plan.product_manifest || plan.product_manifest.length === 0) errors.push('Product manifest cannot be empty');
+
+    if (errors.length > 0) {
+      throw new Error(`Cannot dispatch: ${errors.join('; ')}`);
+    }
+
     const { error } = await supabase
       .from('trip_plans')
       .update({ status: 'active', departure_time: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('status', 'draft');
     if (error) throw error;
     return { error: null };
   } catch (error) {
@@ -159,11 +183,16 @@ export async function completeTripPlan(
   input: TripPlanCompleteInput
 ): Promise<{ error: any }> {
   try {
-    const { error: planError } = await supabase
+    // R9-18-312: Only active trip plans can transition to completed
+    const { data: updated, error: planError } = await supabase
       .from('trip_plans')
       .update({ status: 'completed', end_time: input.end_time })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('status', 'active')
+      .select('id')
+      .maybeSingle();
     if (planError) throw planError;
+    if (!updated) throw new Error('Trip plan must be active before completing');
 
     if (input.deviations && input.deviations.length > 0) {
       const { error: devError } = await supabase

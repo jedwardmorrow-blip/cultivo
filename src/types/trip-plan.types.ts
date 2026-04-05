@@ -2,7 +2,7 @@ export interface DeliveryDriver {
   id: string;
   first_name: string;
   last_name: string;
-  fa_number: string | null;
+  fa_number: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

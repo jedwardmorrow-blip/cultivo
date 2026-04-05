@@ -43,9 +43,7 @@ export function TripPlanPrintView({ plan }: TripPlanPrintViewProps) {
           <div>
             <span className="font-semibold uppercase tracking-wide text-gray-500">Driver: </span>
             {driverName}
-            {plan.driver.fa_number && (
-              <span className="ml-2 text-gray-500">FA# {plan.driver.fa_number}</span>
-            )}
+            <span className="ml-2 text-gray-500">FA# {plan.driver.fa_number}</span>
           </div>
           <div>
             <span className="font-semibold uppercase tracking-wide text-gray-500">Vehicle: </span>
