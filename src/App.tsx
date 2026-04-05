@@ -71,6 +71,7 @@ const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorB
 const AccountsReceivable = lazyRetry(() => import('./features/financial'), 'AccountsReceivable');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
+const ProductionPipelineBoard = lazyRetry(() => import('./features/production-queue'), 'ProductionPipelineBoard');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
 const StrainAnalyticsDashboard = lazyRetry(() => import('./features/strain-analytics'), 'StrainAnalyticsDashboard');
 const HubBatchPipeline = lazyRetry(() => import('./features/hub'), 'BatchPipeline');
@@ -202,6 +203,7 @@ function AuthenticatedApp() {
               <Route path="/trim-sessions" element={<Navigate to="/production-sessions" replace />} />
               <Route path="/packaging-sessions" element={<Navigate to="/production-sessions" replace />} />
               <Route path="/production-queue" element={<ProductionQueue />} />
+              <Route path="/production-pipeline" element={<ProductionPipelineBoard />} />
               <Route path="/batches" element={<BatchManagement />} />
               <Route path="/inventory-all" element={<InventoryDataProvider><UnifiedInventoryViewWrapper /></InventoryDataProvider>} />
               <Route path="/inventory-binned" element={<Navigate to="/inventory-all" replace />} />
