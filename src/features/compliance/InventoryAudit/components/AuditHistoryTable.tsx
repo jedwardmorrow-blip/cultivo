@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Download, ChevronLeft, ChevronRight, Filter, ClipboardCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, ChevronLeft, ChevronRight, ChevronDown, Filter, ClipboardCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useAuditHistory } from '../hooks/useAuditHistory';
 import { AuditWorkflowModal } from './AuditWorkflowModal';
+import { AuditReconciliationTable } from './AuditReconciliationTable';
 import { useInventoryAuditStatus } from '../hooks/useInventoryAuditStatus';
 import type { InventoryAudit } from '@/types';
 
@@ -80,6 +81,7 @@ export function AuditHistoryTable() {
   const { status: auditStatus } = useInventoryAuditStatus();
 
   const [showModal, setShowModal] = useState(false);
+  const [expandedAuditId, setExpandedAuditId] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -209,38 +211,70 @@ export function AuditHistoryTable() {
                     : Math.abs(varianceG) < 0.001
                     ? 'text-emerald-400'
                     : 'text-red-400';
+                  const isExpanded = expandedAuditId === audit.id;
 
                   return (
-                    <tr
-                      key={audit.id}
-                      className="border-b border-cult-charcoal/40 hover:bg-cult-charcoal/20 transition-colors"
-                    >
-                      <td className="px-3 py-3 text-cult-white">
-                        <div>{formatDate(audit.period_start)}</div>
-                        <div className="text-[11px] text-cult-text-muted">
-                          → {formatDate(audit.period_end)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-cult-lighter-gray">
-                        {audit.auditor_name ?? '—'}
-                      </td>
-                      <td className="px-3 py-3 text-cult-text-primary tabular-nums">
-                        {formatG(audit.calculated_ending_balance_g)}
-                      </td>
-                      <td className="px-3 py-3 text-cult-text-primary tabular-nums">
-                        {formatG(audit.physical_ending_inventory_g)}
-                      </td>
-                      <td className={`px-3 py-3 tabular-nums font-medium ${varClass}`}>
-                        {varianceG != null && varianceG >= 0 ? '+' : ''}
-                        {formatG(varianceG)}
-                      </td>
-                      <td className="px-3 py-3">
-                        <StatusBadge status={audit.status} />
-                      </td>
-                      <td className="px-3 py-3 text-cult-text-muted">
-                        {formatDate(audit.completed_at)}
-                      </td>
-                    </tr>
+                    <React.Fragment key={audit.id}>
+                      <tr
+                        className="border-b border-cult-charcoal/40 hover:bg-cult-charcoal/20 transition-colors cursor-pointer"
+                        onClick={() => setExpandedAuditId(isExpanded ? null : audit.id)}
+                      >
+                        <td className="px-3 py-3 text-cult-white">
+                          <div className="flex items-center gap-1.5">
+                            {isExpanded
+                              ? <ChevronDown className="w-3.5 h-3.5 text-cult-accent flex-shrink-0" />
+                              : <ChevronRight className="w-3.5 h-3.5 text-cult-text-muted flex-shrink-0" />}
+                            <div>
+                              <div>{formatDate(audit.period_start)}</div>
+                              <div className="text-[11px] text-cult-text-muted">
+                                → {formatDate(audit.period_end)}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-cult-lighter-gray">
+                          {audit.auditor_name ?? '—'}
+                        </td>
+                        <td className="px-3 py-3 text-cult-text-primary tabular-nums">
+                          {formatG(audit.calculated_ending_balance_g)}
+                        </td>
+                        <td className="px-3 py-3 text-cult-text-primary tabular-nums">
+                          {formatG(audit.physical_ending_inventory_g)}
+                        </td>
+                        <td className={`px-3 py-3 tabular-nums font-medium ${varClass}`}>
+                          {varianceG != null && varianceG >= 0 ? '+' : ''}
+                          {formatG(varianceG)}
+                        </td>
+                        <td className="px-3 py-3">
+                          <StatusBadge status={audit.status} />
+                        </td>
+                        <td className="px-3 py-3 text-cult-text-muted">
+                          {formatDate(audit.completed_at)}
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-4 bg-cult-near-black/50 border-b border-cult-charcoal/40">
+                            <div className="text-[11px] text-cult-text-muted uppercase tracking-wider font-medium mb-3">
+                              Per-Batch Reconciliation
+                            </div>
+                            <AuditReconciliationTable auditId={audit.id} />
+                            {audit.variance_explanation && (
+                              <div className="mt-3 p-3 bg-cult-charcoal/30 rounded space-y-1.5">
+                                <div className="text-[10px] text-cult-text-muted uppercase tracking-wider">Overall Variance Explanation</div>
+                                <div className="text-[12px] text-cult-lighter-gray">{audit.variance_explanation}</div>
+                                {audit.corrective_action && (
+                                  <>
+                                    <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mt-2">Corrective Action</div>
+                                    <div className="text-[12px] text-cult-lighter-gray">{audit.corrective_action}</div>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}

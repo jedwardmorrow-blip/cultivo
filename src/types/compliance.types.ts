@@ -81,6 +81,50 @@ export interface InventoryAuditStatusView {
   audit_clock_status: AuditClockStatus;
 }
 
+// ─── Audit Line Items (per-batch reconciliation — CUL-384) ──────────────────
+
+export type AuditVarianceStatus =
+  | 'within_scale_tolerance'
+  | 'requires_explanation'
+  | 'flagged'
+  | 'resolved';
+
+export interface AuditLineItem {
+  id: string;
+  audit_id: string;
+  batch_id: string | null;
+  product_name: string;
+  expected_qty: number;
+  actual_qty: number;
+  variance_g: number;             // GENERATED STORED: actual_qty - expected_qty
+  variance_status: AuditVarianceStatus;
+  explanation: string | null;
+  corrective_action: string | null;
+  criminal_activity_flag: boolean;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AuditLineItemInsert {
+  audit_id: string;
+  batch_id?: string | null;
+  product_name: string;
+  expected_qty: number;
+  actual_qty: number;
+}
+
+export interface AuditLineItemUpdate {
+  actual_qty?: number;
+  explanation?: string | null;
+  corrective_action?: string | null;
+  criminal_activity_flag?: boolean;
+  resolved_by?: string | null;
+  resolved_at?: string | null;
+  variance_status?: AuditVarianceStatus;
+}
+
 // ─── Batch Chemical Additives ────────────────────────────────────────────────
 
 export type ChemicalAdditiveType = 'pesticide' | 'herbicide' | 'fertilizer' | 'other';
