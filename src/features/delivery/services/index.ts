@@ -93,3 +93,8 @@ export {
   dispatchTripPlan,
   completeTripPlan,
 } from './tripPlan.service';
+
+export {
+  generateTripPlanPDF,
+  saveTripPlanPDF,
+} from './tripPlanPDF.service';

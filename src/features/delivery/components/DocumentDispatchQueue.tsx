@@ -17,7 +17,6 @@ import {
   RefreshCw, ChevronDown,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { getCompanySettings } from '@/lib/constants';
 import {
   getDispatchQueue, sendDocument, computeDocStatus,
   type DispatchOrderRow, type DocStatusPill, type DocumentType,
@@ -132,11 +131,10 @@ function SendButton({ docType: _docType, label, sent, sending, onSend }: SendBut
 
 interface OrderRowProps {
   row: DispatchOrderRow;
-  emailFrom: string;
   onSent: () => void;
 }
 
-function OrderRow({ row, emailFrom, onSent }: OrderRowProps) {
+function OrderRow({ row, onSent }: OrderRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [sending, setSending] = useState<Record<DocumentType, boolean>>({
     invoice: false, coa: false, manifest: false,
@@ -156,19 +154,14 @@ function OrderRow({ row, emailFrom, onSent }: OrderRowProps) {
     setSendError(null);
     setSending(prev => ({ ...prev, [docType]: true }));
 
-    // Use primary contact email, or a placeholder until CUL-361 adds role-based routing
-    const emailTo = 'ap@customer.example'; // TODO: resolve from customer_contacts after CUL-361
-
-    const { error } = await sendDocument(
+    const { success, error } = await sendDocument(
       row.order_id,
       row.order_number,
       docType,
-      emailTo,
-      emailFrom,
     );
 
     setSending(prev => ({ ...prev, [docType]: false }));
-    if (error) {
+    if (!success || error) {
       setSendError(`Failed to send ${docType}. Try again.`);
     } else {
       onSent();
@@ -283,17 +276,12 @@ export function DocumentDispatchQueue() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
-  const [emailFrom, setEmailFrom] = useState('noreply@cultcannabis.com');
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [{ data }, settings] = await Promise.all([
-        getDispatchQueue(),
-        getCompanySettings(),
-      ]);
+      const { data } = await getDispatchQueue();
       setRows(data);
-      if (settings.company_email) setEmailFrom(settings.company_email);
     } finally {
       setLoading(false);
     }
@@ -457,7 +445,6 @@ export function DocumentDispatchQueue() {
               <OrderRow
                 key={row.order_id}
                 row={row}
-                emailFrom={emailFrom}
                 onSent={load}
               />
             ))}

@@ -247,43 +247,31 @@ export async function getDispatchQueue(): Promise<{ data: DispatchOrderRow[]; er
 }
 
 /**
- * Log a document send to email_send_log.
+ * Send a document for an order via the `send-document` Edge Function.
  *
- * NOTE: This records the send event only. Actual email delivery requires
- * a `send-document` Supabase Edge Function (to be deployed as part of CUL-351).
- * Until that function is live, this call inserts directly into email_send_log
- * with status='sent' and acts as the source of truth for the dispatch queue.
+ * Handles recipient routing, PDF/attachment generation, Gmail SMTP delivery,
+ * and email_send_log write — all inside the Edge Function.
  */
 export async function sendDocument(
   orderId: string,
-  orderNumber: string,
+  _orderNumber: string,
   documentType: DocumentType,
-  emailTo: string,
-  emailFrom: string,
-): Promise<{ error: any }> {
+): Promise<{ success: boolean; stub?: boolean; error: any }> {
   try {
-    const subjectMap: Record<DocumentType, string> = {
-      invoice: `Invoice for Order ${orderNumber}`,
-      coa: `Certificate of Analysis for Order ${orderNumber}`,
-      manifest: `Manifest for Order ${orderNumber}`,
-    };
-
-    const { error } = await supabase.from('email_send_log').insert({
-      order_id: orderId,
-      order_number: orderNumber,
-      email_from: emailFrom,
-      email_to: emailTo,
-      subject: subjectMap[documentType],
-      status: 'sent',
-      // document_type column added by CUL-361 — cast to any until types regenerated
-      ...({ document_type: documentType } as any),
+    const { data, error } = await supabase.functions.invoke('send-document', {
+      body: { order_id: orderId, document_type: documentType },
     });
 
     if (error) throw error;
-    return { error: null };
+
+    return {
+      success: true,
+      stub: (data as any)?.stub === true,
+      error: null,
+    };
   } catch (error) {
-    errorService.handle(error, `Failed to send ${documentType} for ${orderNumber}`);
-    return { error };
+    errorService.handle(error, `Failed to send ${documentType} for order ${orderId}`);
+    return { success: false, error };
   }
 }
 

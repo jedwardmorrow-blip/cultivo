@@ -143,13 +143,65 @@ Deno.serve(async (req: Request) => {
     const { operation } = body as { operation: string };
 
     // -----------------------------------------------------------------------
+    // operation: save_credential
+    // Upserts a metrc_credentials row and stores the api_key in Vault.
+    // Called by MetrcCredentialsSettings when saving a new or updated key.
+    // -----------------------------------------------------------------------
+    if (operation === "save_credential") {
+      const { state_code, api_base_url, facility_license, api_key } = body as {
+        state_code: string;
+        api_base_url: string;
+        facility_license?: string;
+        api_key?: string;
+      };
+
+      if (!state_code || !api_base_url) {
+        return jsonResponse({ error: "state_code and api_base_url are required" }, 400);
+      }
+
+      // Upsert the credential row (no api_key_encrypted — Vault owns the secret)
+      const { data: saved, error: upsertErr } = await db
+        .from("metrc_credentials")
+        .upsert(
+          {
+            state_code,
+            api_base_url,
+            ...(facility_license ? { facility_license } : {}),
+            is_active: true,
+          },
+          { onConflict: "state_code" }
+        )
+        .select("id")
+        .single();
+
+      if (upsertErr || !saved) {
+        return jsonResponse({ error: upsertErr?.message ?? "Failed to save credential" }, 500);
+      }
+
+      // If an api_key was provided, store/rotate it in Vault
+      if (api_key) {
+        const { error: vaultErr } = await db.rpc("store_metrc_api_key", {
+          p_credential_id: saved.id,
+          p_state_code: state_code,
+          p_api_key: api_key,
+        });
+
+        if (vaultErr) {
+          return jsonResponse({ error: `Vault store failed: ${vaultErr.message}` }, 500);
+        }
+      }
+
+      return jsonResponse({ success: true, id: saved.id });
+    }
+
+    // -----------------------------------------------------------------------
     // operation: verify_credentials
     // Calls /facilities/v1 and returns facility name / structured error.
     // -----------------------------------------------------------------------
     if (operation === "verify_credentials") {
       const { data: cred, error: credErr } = await db
         .from("metrc_credentials")
-        .select("state_code, api_base_url, api_key_encrypted")
+        .select("state_code, api_base_url")
         .eq("is_active", true)
         .maybeSingle();
 
@@ -157,10 +209,18 @@ Deno.serve(async (req: Request) => {
         return jsonResponse({ error: "No active Metrc credentials found" }, 404);
       }
 
+      const { data: apiKey, error: keyErr } = await db.rpc("get_metrc_api_key", {
+        p_state_code: cred.state_code,
+      });
+
+      if (keyErr || !apiKey) {
+        return jsonResponse({ error: "Failed to retrieve API key from Vault" }, 500);
+      }
+
       const client = new MetrcClient(
         cred.state_code,
         cred.api_base_url,
-        cred.api_key_encrypted
+        apiKey as string
       );
 
       try {
@@ -183,7 +243,7 @@ Deno.serve(async (req: Request) => {
     if (operation === "sync_item_categories") {
       const { data: cred, error: credErr } = await db
         .from("metrc_credentials")
-        .select("state_code, api_base_url, api_key_encrypted")
+        .select("state_code, api_base_url")
         .eq("is_active", true)
         .maybeSingle();
 
@@ -191,10 +251,18 @@ Deno.serve(async (req: Request) => {
         return jsonResponse({ error: "No active Metrc credentials found" }, 404);
       }
 
+      const { data: apiKey, error: keyErr } = await db.rpc("get_metrc_api_key", {
+        p_state_code: cred.state_code,
+      });
+
+      if (keyErr || !apiKey) {
+        return jsonResponse({ error: "Failed to retrieve API key from Vault" }, 500);
+      }
+
       const client = new MetrcClient(
         cred.state_code,
         cred.api_base_url,
-        cred.api_key_encrypted
+        apiKey as string
       );
 
       let items: unknown[] = [];
