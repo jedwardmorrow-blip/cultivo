@@ -10,3 +10,5 @@ export { TripPlanGeneratorModal } from './TripPlanGeneratorModal';
 export { TripPlanSignoffModal } from './TripPlanSignoffModal';
 export { TripPlanCompleteForm } from './TripPlanCompleteForm';
 export { TripPlanPrintView } from './TripPlanPrintView';
+export { ProductionDispatchView } from './ProductionDispatchView';
+export { DispatchExecutionQueue } from './DispatchExecutionQueue';

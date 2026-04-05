@@ -4,7 +4,9 @@ export {
   DayDetailModal,
   UnscheduledOrdersPanel,
   LeafletRouteMap,
-  DocumentDispatchQueue
+  DocumentDispatchQueue,
+  ProductionDispatchView,
+  DispatchExecutionQueue,
 } from './components';
 
 export {

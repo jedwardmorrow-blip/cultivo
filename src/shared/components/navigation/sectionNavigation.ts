@@ -132,7 +132,9 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'sales-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
       { id: 'orders', label: 'Orders', icon: Package, group: 'primary' },
       { id: 'delivery', label: 'Delivery Calendar', icon: Calendar, group: 'primary' },
-      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' }
+      { id: 'eod-summary', label: 'EOD Summary', icon: FileText, group: 'primary' },
+      { id: 'production-dispatch', label: 'Dispatch', icon: Scissors, group: 'secondary' },
+      { id: 'dispatch-queue', label: 'Execution Queue', icon: ClipboardList, group: 'secondary' },
     ],
   },
   {
