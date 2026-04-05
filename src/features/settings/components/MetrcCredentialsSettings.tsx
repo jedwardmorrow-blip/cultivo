@@ -90,43 +90,25 @@ export function MetrcCredentialsSettings() {
 
     setSaving(true);
     try {
-      // Deactivate any existing active credential
-      const { error: deactivateError } = await supabase
-        .from('metrc_credentials')
-        .update({ is_active: false })
-        .eq('is_active', true);
-
-      if (deactivateError) throw deactivateError;
-
-      const payload: Record<string, unknown> = {
+      const requestBody: Record<string, string> = {
+        operation: 'save_credential',
         state_code: form.state_code,
         api_base_url: form.api_base_url,
         facility_license: form.facility_license,
-        is_active: true,
       };
 
       if (form.api_key) {
-        payload.api_key_encrypted = form.api_key;
+        requestBody.api_key = form.api_key;
       }
 
-      if (existingId) {
-        // Update existing row; api_key_encrypted only included in payload if a new key was entered
-        const { error } = await supabase
-          .from('metrc_credentials')
-          .update({ ...payload, is_active: true })
-          .eq('id', existingId);
-        if (error) throw error;
-      } else {
-        // Insert new row (api_key required — validated above)
-        const { data, error } = await supabase
-          .from('metrc_credentials')
-          .insert(payload)
-          .select('id')
-          .single();
-        if (error) throw error;
-        setExistingId((data as { id: string }).id);
-      }
+      const { data, error } = await supabase.functions.invoke('metrc-sync', {
+        body: requestBody,
+      });
 
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error ?? 'Save failed');
+
+      setExistingId(data.id);
       setForm(prev => ({ ...prev, api_key: '' }));
       notificationService.success('Metrc credentials saved.');
     } catch (err: any) {
