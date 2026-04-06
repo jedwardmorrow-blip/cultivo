@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   Truck, AlertTriangle, RefreshCw, CheckCircle2, ChevronRight,
-  ClipboardList, Layers, Zap, Package, Search, X,
+  ClipboardList, Layers, Zap, Package, Search, X, PackageCheck,
 } from 'lucide-react';
 import { HubShell } from '@/features/hub/components/HubShell';
 import { useProductionDispatch } from '../hooks/useProductionDispatch';
@@ -11,6 +11,7 @@ import type {
 import {
   PROCESSING_STAGE_LABELS, TREATMENT_TYPE_LABELS, STAGE_TREATMENTS,
 } from '../hooks/useProductionDispatch';
+import { PackageAssignmentModal } from '@/features/orders/components/PackageAssignmentModal';
 
 // ─── Urgency badge ───────────────────────────────────────────────────────────
 
@@ -177,6 +178,59 @@ function DemandRow({
   );
 }
 
+// ─── Assign Packages Shortcut ────────────────────────────────────────────────
+// Surfaces the PackageAssignmentModal directly in the dispatch view so Laura
+// can assign packages to orders without leaving the dispatch context.
+
+function AssignPackagesShortcut({
+  demandLine,
+  batchId,
+  onComplete,
+}: {
+  demandLine: DemandLine;
+  batchId: string;
+  onComplete: () => void;
+}) {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      <div className="p-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+        <div className="flex items-center gap-2 mb-1.5">
+          <PackageCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="text-xs font-medium text-emerald-300">Packages ready?</span>
+        </div>
+        <p className="text-[11px] text-cult-text-muted mb-2">
+          If packaged inventory is available, assign it directly to this order.
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowModal(true)}
+          className="w-full py-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2"
+        >
+          <Package className="w-3.5 h-3.5" />
+          Assign Packages to Order
+        </button>
+      </div>
+
+      <PackageAssignmentModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAssignmentComplete={async () => {
+          setShowModal(false);
+          onComplete();
+        }}
+        orderId={demandLine.order_id}
+        orderItemId={demandLine.order_item_id}
+        productName={`${demandLine.strain_name} ${demandLine.format_label}`}
+        orderItemQuantity={demandLine.quantity}
+        unit="units"
+        batchId={batchId}
+      />
+    </>
+  );
+}
+
 // ─── Action Panel ────────────────────────────────────────────────────────────
 
 // Priority presets — human-readable, not a raw 0-100 input
@@ -227,12 +281,14 @@ function ActionPanel({
   onDispatch,
   submitting,
   onClear,
+  onReload,
 }: {
   selectedTote: SupplyTote | null;
   selectedDemand: DemandLine | null;
   onDispatch: (payload: CreateDispatchPayload) => void;
   submitting: boolean;
   onClear: () => void;
+  onReload: () => void;
 }) {
   const [form, setForm] = useState<ActionPanelState>({
     stage: null,
@@ -437,6 +493,15 @@ function ActionPanel({
             className="w-full px-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/30 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent"
           />
         </div>
+      )}
+
+      {/* Assign Packages — shortcut when packages are ready for a specific order */}
+      {selectedDemand && selectedTote && selectedTote.bulk_available_g > 0 && (
+        <AssignPackagesShortcut
+          demandLine={selectedDemand}
+          batchId={selectedTote.batch_id}
+          onComplete={() => { onClear(); onReload(); }}
+        />
       )}
 
       {/* Submit */}
@@ -670,6 +735,7 @@ export function ProductionDispatchView() {
             onDispatch={handleDispatch}
             submitting={submitting}
             onClear={handleClear}
+            onReload={reload}
           />
         </div>
       </div>
