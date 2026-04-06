@@ -145,7 +145,7 @@ export function useProductionDispatch() {
           .from('batch_registry')
           .select(`
             id, batch_number, strain, lifecycle_state, room, is_quarantined, coa_status,
-            inventory_items!batch_registry_id(quantity_grams, stage)
+            inventory_items!batch_id(on_hand_qty, category)
           `)
           .eq('status', 'active')
           .in('lifecycle_state', ['drying', 'bucked', 'in_trim', 'bulk_available', 'in_packaging'])
@@ -194,17 +194,16 @@ export function useProductionDispatch() {
       }));
       setDispatched(items);
 
-      // Shape supply totes — aggregate inventory_items by stage per batch
+      // Shape supply totes — aggregate inventory_items by category per batch
       const totes: SupplyTote[] = (batchRes.data || []).map((b: any) => {
-        const inv: { quantity_grams: number; stage: string }[] = b.inventory_items || [];
-        const sum = (stage: string) =>
-          inv.filter((i) => i.stage === stage).reduce((acc, i) => acc + (i.quantity_grams || 0), 0);
+        const inv: { on_hand_qty: number; category: string }[] = b.inventory_items || [];
+        const sumCat = (...prefixes: string[]) =>
+          inv.filter((i) => prefixes.some((p) => i.category?.startsWith(p))).reduce((acc, i) => acc + (Number(i.on_hand_qty) || 0), 0);
 
-        const binned_g = sum('binned');
-        const bucked_g = sum('bucked');
-        const bulk_available_g = sum('bulk');
-        // packaged_units: count from packaged stage, using a rough 3.5g/unit approximation
-        const packaged_g = sum('packaged');
+        const binned_g = sumCat('flower_binned');
+        const bucked_g = sumCat('flower_bucked', 'smalls_bucked');
+        const bulk_available_g = sumCat('flower_bulk', 'smalls_bulk', 'trim_bulk');
+        const packaged_g = sumCat('flower_packaged');
 
         return {
           batch_id: b.id,
