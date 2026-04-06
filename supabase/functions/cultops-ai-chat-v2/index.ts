@@ -150,6 +150,7 @@ Deno.serve(async (req: Request) => {
     const message = body.message || "";
     const sessionId = body.session_id || null;
     const history = body.history || [];
+    const currentPage = body.current_page || "/";
 
     // Build system context for Rick
     const systemMessage = [
@@ -175,6 +176,10 @@ Deno.serve(async (req: Request) => {
       user.tier === "lead" ? "LEAD: Department-relevant data only. No financials, margins, or private context. Motivate and guide." :
       "TEAM: Basic operational data relevant to their role only. Encourage and direct.",
       "",
+      "## Current Page Context",
+      `${pageContext}`,
+      "Tailor your response to what the user is looking at. If they ask a vague question, interpret it in the context of the page they are on.",
+      "",
       "## Live Data Access",
       "You have tools to query live databases. When users ask about inventory, orders, batches, or operational data, use the exec tool to curl the Supabase REST API.",
       "Production DB URL: https://fonreynkfeqywshijqpi.supabase.co/rest/v1",
@@ -189,6 +194,21 @@ Deno.serve(async (req: Request) => {
       "REAL DATA ONLY. Never fabricate numbers. Format currency with $ and commas. Percentages to one decimal.",
       "When data is incomplete: state what you CAN confirm, state what you CANNOT see, never infer.",
     ].filter(Boolean).join("\n");
+
+    // Map current page to contextual guidance
+    const PAGE_CONTEXT: Record<string, string> = {
+      "/": "User is on the Dashboard — overview of business health, key metrics, alerts.",
+      "/inventory": "User is on the Inventory page — package tracking, ATP, batch stages, grading.",
+      "/orders": "User is on the Orders page — order pipeline, fulfillment status, delivery scheduling.",
+      "/cultivation": "User is on the Cultivation page — grow rooms, plant groups, task board, harvests.",
+      "/post-production": "User is on Post-Production — trim, bucking, packaging sessions, conversion queue.",
+      "/production-queue": "User is on the Production Queue — what needs to be processed, strain priorities.",
+      "/sales": "User is on the Sales/CRM page — customer accounts, revenue tracking, pipeline.",
+      "/settings": "User is on Settings — system configuration, user management.",
+      "/staff": "User is on Staff Management — attendance, assignments, labor tracking.",
+    };
+    const pageHint = Object.entries(PAGE_CONTEXT).find(([path]) => currentPage.startsWith(path) && path !== "/");
+    const pageContext = pageHint ? pageHint[1] : currentPage !== "/" ? `User is viewing: ${currentPage}` : PAGE_CONTEXT["/"];
 
     // Build messages array for OpenAI-compatible API
     const messages = [

@@ -178,7 +178,7 @@ export default function AIChatWidget() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ greeting: true }),
+          body: JSON.stringify({ greeting: true, current_page: window.location.pathname }),
         });
 
         if (!response.ok) return;
@@ -289,6 +289,7 @@ export default function AIChatWidget() {
           body: JSON.stringify({
             message: text,
             session_id: sessionId,
+            current_page: window.location.pathname,
             history: messages.slice(-10).map((m) => ({
               role: m.role,
               content: m.content,
