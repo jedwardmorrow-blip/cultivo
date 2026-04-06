@@ -13,15 +13,15 @@ import { supabase } from '@/lib/supabase';
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    queued: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    pending: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     in_progress: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    complete: 'bg-green-500/20 text-green-400 border-green-500/30',
+    completed: 'bg-green-500/20 text-green-400 border-green-500/30',
     cancelled: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
   };
   const labels: Record<string, string> = {
-    queued: 'Queued',
+    pending: 'Queued',
     in_progress: 'In Progress',
-    complete: 'Complete',
+    completed: 'Complete',
     cancelled: 'Cancelled',
   };
   return (
@@ -54,7 +54,7 @@ function DispatchCard({
   onComplete: (id: string) => void;
   starting: boolean;
 }) {
-  const isQueued = item.status === 'queued';
+  const isQueued = item.status === 'pending';
   const isInProgress = item.status === 'in_progress';
 
   return (
@@ -186,7 +186,7 @@ export function DispatchExecutionQueue() {
   async function handleComplete(id: string) {
     await supabase
       .from('production_dispatch_items')
-      .update({ status: 'complete', updated_at: new Date().toISOString() })
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
       .eq('id', id);
     await reload();
   }
@@ -207,7 +207,7 @@ export function DispatchExecutionQueue() {
 
   // In-progress always floated to top
   const inProgress = sorted.filter((d) => d.status === 'in_progress');
-  const queued = sorted.filter((d) => d.status === 'queued');
+  const queued = sorted.filter((d) => d.status === 'pending');
   const ordered = [...inProgress, ...queued];
 
   const kpis = [

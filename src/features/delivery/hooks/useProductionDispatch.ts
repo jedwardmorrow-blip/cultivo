@@ -14,7 +14,7 @@ export type TreatmentType =
   | 'mylar_pack'
   | 'bulk_wholesale';
 
-export type DispatchStatus = 'queued' | 'in_progress' | 'complete' | 'cancelled';
+export type DispatchStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface DispatchItem {
   id: string;
@@ -137,7 +137,7 @@ export function useProductionDispatch() {
             created_by_user_id, created_at, updated_at,
             batch_registry!inner(batch_number, strain, lifecycle_state, room)
           `)
-          .in('status', ['queued', 'in_progress'])
+          .in('status', ['pending', 'in_progress'])
           .order('priority', { ascending: true }),
 
         // Active batches with inventory breakdown for supply panel
@@ -268,7 +268,7 @@ export function useProductionDispatch() {
         quantity_g: payload.quantity_g ?? null,
         quantity_units_target: payload.quantity_units_target ?? null,
         priority: payload.priority,
-        status: 'queued',
+        status: 'pending',
         ready_by: payload.ready_by ?? null,
       });
       if (error) return { error: error.message };
@@ -282,7 +282,7 @@ export function useProductionDispatch() {
   }, [fetchAll]);
 
   const stats = {
-    queued: dispatched.filter((d) => d.status === 'queued').length,
+    queued: dispatched.filter((d) => d.status === 'pending').length,
     inProgress: dispatched.filter((d) => d.status === 'in_progress').length,
     totalDemandLines: demand.length,
     supplyBatches: supply.length,
