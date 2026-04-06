@@ -35,16 +35,31 @@ async function getUserProfile(authHeader: string): Promise<{ userId: string; ema
     // Look up user profile for persona/tier info
     const { data: profile } = await supabase
       .from("user_profiles")
-      .select("full_name, role, ai_access_tier")
+      .select("full_name, role")
       .eq("email", user.email)
       .single();
+
+    // Map role + email to access tier
+    // Owner: justin@cultcannabis.co (CEO)
+    // Admin: admin role users
+    // Team: everyone else
+    const OWNER_EMAILS = ["justin@cultcannabis.co"];
+    const role = profile?.role || "user";
+    let tier = "team";
+    if (OWNER_EMAILS.includes(user.email || "")) {
+      tier = "owner";
+    } else if (role === "admin") {
+      tier = "admin";
+    } else if (role === "manager") {
+      tier = "lead";
+    }
 
     return {
       userId: user.id,
       email: user.email || "",
       fullName: profile?.full_name || user.email || "Unknown",
-      role: profile?.role || "team",
-      tier: profile?.ai_access_tier || "team",
+      role,
+      tier,
     };
   } catch {
     return null;
