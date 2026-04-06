@@ -50,10 +50,12 @@ function ToteCard({
   tote,
   selected,
   onSelect,
+  strainMatch,
 }: {
   tote: SupplyTote;
   selected: boolean;
   onSelect: () => void;
+  strainMatch?: boolean;
 }) {
   const hasStock = tote.total_available_g > 0;
   return (
@@ -64,6 +66,8 @@ function ToteCard({
       className={`w-full text-left p-3 rounded-lg border transition-all ${
         selected
           ? 'border-cult-accent bg-cult-accent/10'
+          : strainMatch
+          ? 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60 hover:bg-emerald-500/10 cursor-pointer'
           : tote.is_quarantined
           ? 'border-red-500/30 bg-red-500/5 opacity-60 cursor-not-allowed'
           : !hasStock
@@ -75,6 +79,11 @@ function ToteCard({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold text-cult-text-primary truncate">{tote.strain}</span>
+            {strainMatch && !selected && (
+              <span className="shrink-0 px-1 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
+                Match
+              </span>
+            )}
             {tote.is_quarantined && (
               <span className="shrink-0 px-1 py-0.5 rounded text-xs bg-red-500/20 text-red-400 border border-red-500/30">
                 QTN
@@ -170,12 +179,45 @@ function DemandRow({
 
 // ─── Action Panel ────────────────────────────────────────────────────────────
 
+// Priority presets — human-readable, not a raw 0-100 input
+const PRIORITY_PRESETS = [
+  { label: 'Urgent', value: 10, style: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  { label: 'High', value: 30, style: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
+  { label: 'Normal', value: 50, style: 'text-green-400 border-green-500/30 bg-green-500/10' },
+  { label: 'Low', value: 70, style: 'text-cult-text-muted border-cult-dark-gray bg-cult-mid-gray/10' },
+] as const;
+
+// Determine which processing stages are valid for a tote based on its lifecycle_state
+function getValidStages(tote: SupplyTote | null): ProcessingStage[] {
+  if (!tote) return ['buck', 'trim_to_stock', 'package_to_order'];
+  const stages: ProcessingStage[] = [];
+  if (tote.binned_g > 0) stages.push('buck');
+  if (tote.bucked_g > 0 || tote.binned_g > 0) stages.push('trim_to_stock');
+  if (tote.bulk_available_g > 0) stages.push('package_to_order');
+  return stages.length > 0 ? stages : ['buck', 'trim_to_stock', 'package_to_order'];
+}
+
+// Smart default quantity based on stage + tote + demand
+function getDefaultQuantity(
+  stage: ProcessingStage | null,
+  tote: SupplyTote | null,
+  demand: DemandLine | null,
+): { grams: string; units: string } {
+  if (!stage || !tote) return { grams: '', units: '' };
+  if (stage === 'package_to_order' && demand) {
+    return { grams: '', units: String(demand.units_remaining) };
+  }
+  if (stage === 'buck') return { grams: String(Math.round(tote.binned_g)), units: '' };
+  if (stage === 'trim_to_stock') return { grams: String(Math.round(tote.bucked_g || tote.binned_g)), units: '' };
+  return { grams: '', units: '' };
+}
+
 interface ActionPanelState {
   stage: ProcessingStage | null;
   treatment: TreatmentType | null;
   quantity_g: string;
   quantity_units: string;
-  priority: string;
+  priority: number;
   ready_by: string;
 }
 
@@ -197,15 +239,17 @@ function ActionPanel({
     treatment: null,
     quantity_g: '',
     quantity_units: '',
-    priority: '50',
+    priority: 50,
     ready_by: '',
   });
   const [confirmSuccess, setConfirmSuccess] = useState(false);
 
   const availableTreatments = form.stage ? STAGE_TREATMENTS[form.stage] : [];
+  const validStages = getValidStages(selectedTote);
 
   function handleStageChange(stage: ProcessingStage) {
-    setForm((f) => ({ ...f, stage, treatment: null }));
+    const defaults = getDefaultQuantity(stage, selectedTote, selectedDemand);
+    setForm((f) => ({ ...f, stage, treatment: null, quantity_g: defaults.grams, quantity_units: defaults.units }));
   }
 
   async function handleSubmit() {
@@ -218,7 +262,7 @@ function ActionPanel({
       treatment_type: form.treatment,
       quantity_g: form.quantity_g ? parseFloat(form.quantity_g) : undefined,
       quantity_units_target: form.quantity_units ? parseInt(form.quantity_units, 10) : undefined,
-      priority: parseInt(form.priority, 10) || 50,
+      priority: form.priority,
       ready_by: form.ready_by || undefined,
     };
 
@@ -226,7 +270,7 @@ function ActionPanel({
     setConfirmSuccess(true);
     setTimeout(() => {
       setConfirmSuccess(false);
-      setForm({ stage: null, treatment: null, quantity_g: '', quantity_units: '', priority: '50', ready_by: '' });
+      setForm({ stage: null, treatment: null, quantity_g: '', quantity_units: '', priority: 50, ready_by: '' });
       onClear();
     }, 1500);
   }
@@ -271,13 +315,17 @@ function ActionPanel({
         </div>
       </div>
 
-      {/* Processing Stage */}
+      {/* Processing Stage — constrained by tote lifecycle_state */}
       <div>
-        <label className="block text-xs font-medium text-cult-text-muted mb-1.5">Processing Stage</label>
+        <label className="block text-xs font-medium text-cult-text-muted mb-1.5">
+          Processing Stage
+          {selectedTote && <span className="text-cult-text-faint ml-1">(based on inventory)</span>}
+        </label>
         <div className="grid grid-cols-1 gap-1.5">
           {(['buck', 'trim_to_stock', 'package_to_order'] as ProcessingStage[]).map((stage) => {
             const requiresOrder = stage === 'package_to_order';
-            const disabled = requiresOrder && !selectedDemand;
+            const notValidForTote = selectedTote && !validStages.includes(stage);
+            const disabled = (requiresOrder && !selectedDemand) || !!notValidForTote;
             return (
               <button
                 key={stage}
@@ -295,6 +343,9 @@ function ActionPanel({
                 {PROCESSING_STAGE_LABELS[stage]}
                 {requiresOrder && !selectedDemand && (
                   <span className="ml-1 text-xs text-cult-text-muted">(select order first)</span>
+                )}
+                {notValidForTote && !requiresOrder && (
+                  <span className="ml-1 text-xs text-cult-text-muted">(no inventory at this stage)</span>
                 )}
               </button>
             );
@@ -354,15 +405,23 @@ function ActionPanel({
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-cult-text-muted mb-1">Priority (0–100)</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={form.priority}
-              onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
-              className="w-full px-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/30 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent"
-            />
+            <label className="block text-xs font-medium text-cult-text-muted mb-1">Priority</label>
+            <div className="grid grid-cols-2 gap-1">
+              {PRIORITY_PRESETS.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, priority: p.value }))}
+                  className={`px-2 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                    form.priority === p.value
+                      ? `${p.style} ring-1 ring-cult-accent`
+                      : 'border-cult-dark-gray text-cult-text-muted hover:border-cult-accent/40'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -437,13 +496,26 @@ export function ProductionDispatchView() {
   const selectedTote = supply.find((t) => t.batch_id === selectedToteId) ?? null;
   const selectedDemand = demand.find((d) => d.order_item_id === selectedDemandId) ?? null;
 
+  // Auto-filter supply: when a demand line is selected, prioritize matching strain at top
   const filteredSupply = useMemo(() => {
-    if (!supplySearch) return supply;
-    const q = supplySearch.toLowerCase();
-    return supply.filter(
-      (t) => t.strain.toLowerCase().includes(q) || t.batch_number.toLowerCase().includes(q)
-    );
-  }, [supply, supplySearch]);
+    let filtered = supply;
+    if (supplySearch) {
+      const q = supplySearch.toLowerCase();
+      filtered = filtered.filter(
+        (t) => t.strain.toLowerCase().includes(q) || t.batch_number.toLowerCase().includes(q)
+      );
+    }
+    // When demand is selected, sort matching strains to top
+    if (selectedDemand) {
+      const demandStrain = selectedDemand.strain_name.toLowerCase();
+      filtered = [...filtered].sort((a, b) => {
+        const aMatch = a.strain.toLowerCase() === demandStrain ? 0 : 1;
+        const bMatch = b.strain.toLowerCase() === demandStrain ? 0 : 1;
+        return aMatch - bMatch;
+      });
+    }
+    return filtered;
+  }, [supply, supplySearch, selectedDemand]);
 
   const filteredDemand = useMemo(() => {
     if (!demandSearch) return demand;
@@ -567,6 +639,7 @@ export function ProductionDispatchView() {
                   key={tote.batch_id}
                   tote={tote}
                   selected={selectedToteId === tote.batch_id}
+                  strainMatch={!!selectedDemand && tote.strain.toLowerCase() === selectedDemand.strain_name.toLowerCase()}
                   onSelect={() =>
                     setSelectedToteId((prev) => (prev === tote.batch_id ? null : tote.batch_id))
                   }
