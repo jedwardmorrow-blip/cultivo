@@ -11,4 +11,5 @@ export { TripPlanSignoffModal } from './TripPlanSignoffModal';
 export { TripPlanCompleteForm } from './TripPlanCompleteForm';
 export { TripPlanPrintView } from './TripPlanPrintView';
 export { ProductionDispatchView } from './ProductionDispatchView';
+export { OrderFulfillmentView } from './OrderFulfillmentView';
 export { DispatchExecutionQueue } from './DispatchExecutionQueue';

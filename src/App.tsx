@@ -22,6 +22,7 @@ const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
 const DistributionCalendar = lazyRetry(() => import('./features/delivery'), 'DistributionCalendar');
 const ProductionDispatchView = lazyRetry(() => import('./features/delivery'), 'ProductionDispatchView');
+const OrderFulfillmentView = lazyRetry(() => import('./features/delivery'), 'OrderFulfillmentView');
 const DispatchExecutionQueue = lazyRetry(() => import('./features/delivery'), 'DispatchExecutionQueue');
 const ProductionDashboard = lazyRetry(() => import('./features/sessions'), 'ProductionDashboard');
 const SessionsHub = lazyRetry(() => import('./features/sessions'), 'SessionsHub');
@@ -216,7 +217,8 @@ function AuthenticatedApp() {
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
               <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
-              <Route path="/production-dispatch" element={<ProductionDispatchView />} />
+              <Route path="/production-dispatch" element={<OrderFulfillmentView />} />
+              <Route path="/production-dispatch-legacy" element={<ProductionDispatchView />} />
               <Route path="/dispatch-queue" element={<DispatchExecutionQueue />} />
               <Route path="/financial" element={<FinancialDashboard />} />
               <Route path="/financial-ar" element={<AccountsReceivable />} />

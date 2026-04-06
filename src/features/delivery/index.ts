@@ -6,6 +6,7 @@ export {
   LeafletRouteMap,
   DocumentDispatchQueue,
   ProductionDispatchView,
+  OrderFulfillmentView,
   DispatchExecutionQueue,
 } from './components';
 
