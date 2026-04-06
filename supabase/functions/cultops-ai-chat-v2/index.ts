@@ -12,6 +12,8 @@ const RICK_API_TOKEN = Deno.env.get("RICK_API_TOKEN") || "";
 const HMAC_SECRET = Deno.env.get("RICK_HMAC_SECRET") || "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const CONTEXT_DB_URL = "https://uayyhluztelnfxfvdhyt.supabase.co";
+const CONTEXT_DB_KEY = Deno.env.get("CONTEXT_DB_SERVICE_KEY") || "";
 
 // ─── HMAC SIGNING ───
 async function signPayload(payload: string): Promise<string> {
@@ -25,41 +27,71 @@ async function signPayload(payload: string): Promise<string> {
 }
 
 // ─── USER IDENTITY ───
-async function getUserProfile(authHeader: string): Promise<{ userId: string; email: string; fullName: string; role: string; tier: string } | null> {
+interface UserProfile {
+  userId: string;
+  email: string;
+  fullName: string;
+  preferredName: string;
+  role: string;
+  tier: string;
+  department: string;
+  communicationStyle: string;
+  responseLength: string;
+  jargonComfort: string;
+  dataDomains: string[];
+  commonIntents: string[];
+  personaNotes: string;
+}
+
+async function getUserProfile(authHeader: string): Promise<UserProfile | null> {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) return null;
 
-    // Look up user profile for persona/tier info
-    const { data: profile } = await supabase
+    // Look up rich persona from context DB (has communication style, data domains, persona notes)
+    const contextDb = createClient(CONTEXT_DB_URL, CONTEXT_DB_KEY);
+    const { data: persona } = await contextDb
       .from("user_profiles")
-      .select("full_name, role")
+      .select("full_name, preferred_name, role, department, ai_access_tier, communication_style, preferred_response_length, jargon_comfort, data_domains, common_intents, persona_notes")
       .eq("email", user.email)
       .single();
 
-    // Map role + email to access tier
-    // Owner: justin@cultcannabis.co (CEO)
-    // Admin: admin role users
-    // Team: everyone else
+    // Fallback to production DB if context DB has no profile
+    let fullName = persona?.full_name;
+    let role = persona?.role || "team";
+    if (!persona) {
+      const { data: prodProfile } = await supabase
+        .from("user_profiles")
+        .select("full_name, role")
+        .eq("email", user.email)
+        .single();
+      fullName = prodProfile?.full_name;
+      role = prodProfile?.role || "user";
+    }
+
+    // Access tier from context DB, or map from role
     const OWNER_EMAILS = ["justin@cultcannabis.co"];
-    const role = profile?.role || "user";
-    let tier = "team";
+    let tier = persona?.ai_access_tier || "team";
     if (OWNER_EMAILS.includes(user.email || "")) {
       tier = "owner";
-    } else if (role === "admin") {
-      tier = "admin";
-    } else if (role === "manager") {
-      tier = "lead";
     }
 
     return {
       userId: user.id,
       email: user.email || "",
-      fullName: profile?.full_name || user.email || "Unknown",
+      fullName: fullName || user.email || "Unknown",
+      preferredName: persona?.preferred_name || fullName || "there",
       role,
       tier,
+      department: persona?.department || "",
+      communicationStyle: persona?.communication_style || "adaptive",
+      responseLength: persona?.preferred_response_length || "adaptive",
+      jargonComfort: persona?.jargon_comfort || "medium",
+      dataDomains: persona?.data_domains || [],
+      commonIntents: persona?.common_intents || [],
+      personaNotes: persona?.persona_notes || "",
     };
   } catch {
     return null;
@@ -121,15 +153,23 @@ Deno.serve(async (req: Request) => {
 
     // Build system context for Rick
     const systemMessage = [
-      `User: ${user.fullName} (${user.email})`,
-      `Role: ${user.role}`,
+      `User: ${user.preferredName} (${user.fullName}, ${user.email})`,
+      `Role: ${user.role} | Department: ${user.department}`,
       `Access Tier: ${user.tier}`,
+      `Communication Style: ${user.communicationStyle} | Response Length: ${user.responseLength} | Jargon: ${user.jargonComfort}`,
+      `Data Domains: ${user.dataDomains.join(", ") || "general"}`,
       `Session: ${sessionId || "new"}`,
       "",
-      "You are the AI assistant embedded in CULT Ops. Respond based on the user's role and access tier.",
-      "Do not share financial details, strategic plans, or private context with non-owner users.",
-      "Be concise and helpful. Use data from the production and context databases when relevant.",
-    ].join("\n");
+      user.personaNotes ? `PERSONA CONTEXT:\n${user.personaNotes}` : "",
+      "",
+      "You are the AI assistant embedded in CULT Ops. Adapt your communication style to the user above.",
+      user.tier === "owner" ? "Full access — financials, strategy, all data." :
+      user.tier === "admin" ? "Admin access — operational and financial data. No strategic_log or private plans." :
+      user.tier === "lead" ? "Lead access — department-relevant data only. No financials or private context." :
+      "Team access — basic operational data relevant to your role only.",
+      "",
+      "Be helpful and use data from the production and context databases when relevant.",
+    ].filter(Boolean).join("\n");
 
     // Build messages array for OpenAI-compatible API
     const messages = [
