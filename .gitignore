@@ -24,3 +24,4 @@ dist-ssr
 
 # Vite build timestamp artifacts (contain sandbox paths)
 vite.config.ts.timestamp-*
+.vercel

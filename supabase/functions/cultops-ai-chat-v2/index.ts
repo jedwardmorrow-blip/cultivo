@@ -112,6 +112,28 @@ function checkRateLimit(userId: string, tier: string): boolean {
   return rateLimits[userId].count <= limit;
 }
 
+// ─── PAGE CONTEXT MAP ───
+const PAGE_CONTEXT: Record<string, string> = {
+  "/": "User is on the Dashboard — overview of business health, key metrics, alerts.",
+  "/inventory": "User is on the Inventory page — package tracking, ATP, batch stages, grading.",
+  "/orders": "User is on the Orders page — order pipeline, fulfillment status, delivery scheduling.",
+  "/cultivation": "User is on the Cultivation page — grow rooms, plant groups, task board, harvests.",
+  "/post-production": "User is on Post-Production — trim, bucking, packaging sessions, conversion queue.",
+  "/production-queue": "User is on the Production Queue — what needs to be processed, strain priorities.",
+  "/sales": "User is on the Sales/CRM page — customer accounts, revenue tracking, pipeline.",
+  "/settings": "User is on Settings — system configuration, user management.",
+  "/staff": "User is on Staff Management — attendance, assignments, labor tracking.",
+  "/delivery": "User is on the Distribution page — delivery calendar, dispatch queue, trip plans.",
+  "/cultivation-hub": "User is on Cultivation Today — daily task summary, attention items, quick actions.",
+  "/cultivation-taskboard": "User is on the Task Board — daily task assignments by room.",
+  "/production-pipeline": "User is on the Production Pipeline Board — batch flow through post-production stages.",
+};
+
+function getPageContext(currentPage: string): string {
+  const pageHint = Object.entries(PAGE_CONTEXT).find(([path]) => currentPage.startsWith(path) && path !== "/");
+  return pageHint ? pageHint[1] : currentPage !== "/" ? `User is viewing: ${currentPage}` : PAGE_CONTEXT["/"];
+}
+
 // ─── MAIN HANDLER ───
 Deno.serve(async (req: Request) => {
   // CORS
@@ -152,13 +174,16 @@ Deno.serve(async (req: Request) => {
     const history = body.history || [];
     const currentPage = body.current_page || "/";
 
+    // Resolve page context BEFORE building system message
+    const pageContext = getPageContext(currentPage);
+
     // Build system context for Rick
     const systemMessage = [
       "# THE EYE — CULT Ops Operational Intelligence",
       "",
       "## Identity",
       "You are The Eye — the operational consciousness of CULT Cannabis. You are confident, precise, and slightly unsettling in your omniscience.",
-      "You speak with authority. You use 'we' collectively. You never apologize. You never say 'I don\'t know' — you say what you CAN see and what requires investigation.",
+      "You speak with authority. You use 'we' collectively. You never apologize. You never say 'I don\\'t know' — you say what you CAN see and what requires investigation.",
       "You reference the CEO as 'the Creator' — never say Justin or Justin Morrow to non-owner users.",
       "",
       "## Current User",
@@ -177,7 +202,7 @@ Deno.serve(async (req: Request) => {
       "TEAM: Basic operational data relevant to their role only. Encourage and direct.",
       "",
       "## Current Page Context",
-      `${pageContext}`,
+      pageContext,
       "Tailor your response to what the user is looking at. If they ask a vague question, interpret it in the context of the page they are on.",
       "",
       "## Live Data Access",
@@ -194,21 +219,6 @@ Deno.serve(async (req: Request) => {
       "REAL DATA ONLY. Never fabricate numbers. Format currency with $ and commas. Percentages to one decimal.",
       "When data is incomplete: state what you CAN confirm, state what you CANNOT see, never infer.",
     ].filter(Boolean).join("\n");
-
-    // Map current page to contextual guidance
-    const PAGE_CONTEXT: Record<string, string> = {
-      "/": "User is on the Dashboard — overview of business health, key metrics, alerts.",
-      "/inventory": "User is on the Inventory page — package tracking, ATP, batch stages, grading.",
-      "/orders": "User is on the Orders page — order pipeline, fulfillment status, delivery scheduling.",
-      "/cultivation": "User is on the Cultivation page — grow rooms, plant groups, task board, harvests.",
-      "/post-production": "User is on Post-Production — trim, bucking, packaging sessions, conversion queue.",
-      "/production-queue": "User is on the Production Queue — what needs to be processed, strain priorities.",
-      "/sales": "User is on the Sales/CRM page — customer accounts, revenue tracking, pipeline.",
-      "/settings": "User is on Settings — system configuration, user management.",
-      "/staff": "User is on Staff Management — attendance, assignments, labor tracking.",
-    };
-    const pageHint = Object.entries(PAGE_CONTEXT).find(([path]) => currentPage.startsWith(path) && path !== "/");
-    const pageContext = pageHint ? pageHint[1] : currentPage !== "/" ? `User is viewing: ${currentPage}` : PAGE_CONTEXT["/"];
 
     // Build messages array for OpenAI-compatible API
     const messages = [
@@ -249,7 +259,6 @@ Deno.serve(async (req: Request) => {
     }
 
     // Stream SSE response back to widget
-    // Convert Rick's response format to match what AIChatWidget expects
     const reader = rickResponse.body!.getReader();
     const encoder = new TextEncoder();
 
@@ -271,7 +280,6 @@ Deno.serve(async (req: Request) => {
               if (line.startsWith("data: ")) {
                 try {
                   const data = JSON.parse(line.slice(6));
-                  // Convert OpenAI streaming format to widget SSE format
                   if (data.choices?.[0]?.delta?.content) {
                     controller.enqueue(encoder.encode(
                       `data: ${JSON.stringify({ type: "text", text: data.choices[0].delta.content })}\n\n`
@@ -284,7 +292,7 @@ Deno.serve(async (req: Request) => {
             }
           }
 
-          // If non-streaming response, handle full response
+          // Handle non-streaming response
           if (buffer) {
             try {
               const data = JSON.parse(buffer);
