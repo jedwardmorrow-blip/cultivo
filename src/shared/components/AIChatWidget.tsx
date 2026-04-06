@@ -8,7 +8,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── CONFIGURATION ───
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/cultops-ai-chat`;
+const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/cultops-ai-chat-v2`;
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
   "image/png", "image/jpeg", "image/gif", "image/webp",
