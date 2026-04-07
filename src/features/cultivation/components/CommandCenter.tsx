@@ -330,6 +330,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   const [completingTask, setCompletingTask] = useState<DailyTaskInstance | null>(null);
   const [movingGroup, setMovingGroup] = useState<PlantGroup | null>(null);
   const [movingBatchGroups, setMovingBatchGroups] = useState<PlantGroup[] | undefined>(undefined);
+  const [focusedCard, setFocusedCard] = useState<string | null>(null);
   const { staff: activeStaff } = useActiveStaff();
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
@@ -393,91 +394,89 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         </div>
       </div>
 
-      {/* Bento content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Task checklist — takes 3/5 */}
-        <div className={`lg:col-span-3 ${GLASS} p-5`}>
-          <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
-          <TaskChecklist
-            tasks={roomTasks}
-            onUpdateStatus={onUpdateTaskStatus}
-            onOpenCompletion={(task) => setCompletingTask(task)}
-          />
-        </div>
+      {/* Bento content grid — with expandable cards */}
+      <AnimatePresence mode="wait">
+        {focusedCard ? (
+          /* ── Focused card takes full width ── */
+          <motion.div
+            key={`focused-${focusedCard}`}
+            layoutId={focusedCard}
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className={`${GLASS_ELEVATED} p-5`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
+                {focusedCard === 'room-layout' && 'Room Layout'}
+                {focusedCard === 'plant-groups' && `Plant Groups (${roomGroups.length})`}
+                {focusedCard === 'feed-recipe' && 'Feed Recipe'}
+                {focusedCard === 'room-info' && 'Room Info'}
+                {focusedCard === 'strains' && 'Strains'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setFocusedCard(null)}
+                className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+              >
+                <ChevronLeft className="w-3 h-3" /> Back
+              </button>
+            </div>
 
-        {/* Right column — 2/5 */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Strains */}
-          {state.strain_names && state.strain_names.length > 0 && (
-            <div className={`${GLASS} p-4`}>
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Strains</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {state.strain_names.map(s => (
-                  <span key={s} className="text-xs text-white/60 px-2.5 py-1 rounded-full bg-white/5 border border-white/5">{s}</span>
+            {focusedCard === 'room-layout' && <RoomGrid roomId={state.room_id} inline />}
+            {focusedCard === 'feed-recipe' && <FeedCardContent state={state} />}
+            {focusedCard === 'room-info' && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Plants', value: state.total_plants },
+                  { label: 'Groups', value: state.plant_group_count },
+                  { label: 'Day', value: dayCount ?? '—' },
+                  { label: 'Strains', value: state.strain_count },
+                  ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
+                  ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
+                ].map(({ label, value }) => (
+                  <div key={label} className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]">
+                    <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
+                    <div className="text-lg font-semibold text-white/90 mt-1">{value}</div>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Room stats */}
-          <div className={`${GLASS} p-4`}>
-            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Info</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Plants', value: state.total_plants },
-                { label: 'Groups', value: state.plant_group_count },
-                { label: 'Day', value: dayCount ?? '—' },
-                { label: 'Strains', value: state.strain_count },
-                ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
-                ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
-              ].map(({ label, value }) => (
-                <div key={label} className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.04]">
-                  <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
-                  <div className="text-sm font-semibold text-white/90 mt-0.5">{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Room layout grid */}
-          <RoomGrid roomId={state.room_id} />
-
-          {/* Feed recipe */}
-          <FeedCard state={state} />
-
-          {/* Plant Groups in this room */}
-          {roomGroups.length > 0 && (
-            <div className={`${GLASS} p-4`}>
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">
-                Plant Groups <span className="text-white/15">({roomGroups.length})</span>
-              </h3>
-              <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
+            )}
+            {focusedCard === 'strains' && state.strain_names && (
+              <div className="flex flex-wrap gap-2">
+                {state.strain_names.map(s => (
+                  <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
+                ))}
+              </div>
+            )}
+            {focusedCard === 'plant-groups' && (
+              <div className="space-y-2">
                 {roomGroups.map(g => {
                   const batchNum = g.batch_registry?.batch_number;
                   const strainName = g.strains?.name ?? 'Unknown';
                   return (
-                    <div key={g.id} className="flex items-center justify-between py-2 px-2.5 rounded-xl bg-white/[0.03] group">
+                    <div key={g.id} className="flex items-center justify-between py-3 px-3 rounded-xl bg-white/[0.03] group">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          {batchNum && <span className="text-xs font-mono text-white/70">{batchNum}</span>}
-                          <span className="text-[10px] text-white/30 uppercase">{g.growth_stage}</span>
+                          {batchNum && <span className="text-sm font-mono text-white/70">{batchNum}</span>}
+                          <span className="text-xs text-white/30 uppercase">{g.growth_stage}</span>
                         </div>
-                        <div className="text-[10px] text-white/40 mt-0.5">
+                        <div className="text-xs text-white/40 mt-0.5">
                           {strainName} · {g.plant_count} plants
+                          {g.room_tables && <span> · T{g.room_tables.table_number}</span>}
+                          {g.room_sections && <span> {g.room_sections.section_label}</span>}
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
-                          // Find all groups in the same batch for batch-level moves
                           const batchId = g.batch_registry_id;
-                          const batchGroups = batchId
-                            ? roomGroups.filter(rg => rg.batch_registry_id === batchId)
-                            : undefined;
+                          const batchGroups = batchId ? roomGroups.filter(rg => rg.batch_registry_id === batchId) : undefined;
                           setMovingGroup(g);
                           setMovingBatchGroups(batchGroups && batchGroups.length > 1 ? batchGroups : undefined);
                         }}
-                        className="text-[10px] text-white/20 hover:text-white/50 px-2 py-1 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
+                        className="text-xs text-white/25 hover:text-white/50 px-3 py-1.5 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
                       >
                         Move
                       </button>
@@ -485,10 +484,109 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                   );
                 })}
               </div>
+            )}
+          </motion.div>
+        ) : (
+          /* ── Default two-column layout ── */
+          <motion.div
+            key="grid-default"
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+          >
+            {/* Task checklist — takes 3/5 */}
+            <div className={`lg:col-span-3 ${GLASS} p-5`}>
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
+              <TaskChecklist
+                tasks={roomTasks}
+                onUpdateStatus={onUpdateTaskStatus}
+                onOpenCompletion={(task) => setCompletingTask(task)}
+              />
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Right column — 2/5, tappable cards */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Room Layout */}
+              <motion.button
+                layoutId="room-layout"
+                type="button"
+                onClick={() => setFocusedCard('room-layout')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
+                <RoomGrid roomId={state.room_id} compact />
+              </motion.button>
+
+              {/* Plant Groups */}
+              {roomGroups.length > 0 && (
+                <motion.button
+                  layoutId="plant-groups"
+                  type="button"
+                  onClick={() => setFocusedCard('plant-groups')}
+                  className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+                >
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
+                    Plant Groups <span className="text-white/15">({roomGroups.length})</span>
+                  </h3>
+                  <div className="space-y-1 max-h-[100px] overflow-hidden">
+                    {roomGroups.slice(0, 3).map(g => (
+                      <div key={g.id} className="text-[10px] text-white/40">
+                        {g.batch_registry?.batch_number ?? g.strains?.name} · {g.plant_count}p
+                      </div>
+                    ))}
+                    {roomGroups.length > 3 && <div className="text-[10px] text-white/20">+{roomGroups.length - 3} more</div>}
+                  </div>
+                </motion.button>
+              )}
+
+              {/* Feed Recipe */}
+              <motion.button
+                layoutId="feed-recipe"
+                type="button"
+                onClick={() => setFocusedCard('feed-recipe')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+              >
+                <FeedCard state={state} />
+              </motion.button>
+
+              {/* Room Info */}
+              <motion.button
+                layoutId="room-info"
+                type="button"
+                onClick={() => setFocusedCard('room-info')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
+                <div className="flex gap-4 text-xs text-white/40">
+                  <span>{state.total_plants}p</span>
+                  <span>{state.plant_group_count}g</span>
+                  <span>Day {dayCount ?? '—'}</span>
+                </div>
+              </motion.button>
+
+              {/* Strains */}
+              {state.strain_names && state.strain_names.length > 0 && (
+                <motion.button
+                  layoutId="strains"
+                  type="button"
+                  onClick={() => setFocusedCard('strains')}
+                  className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+                >
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {state.strain_names.slice(0, 4).map(s => (
+                      <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
+                    ))}
+                    {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
+                  </div>
+                </motion.button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Task Completion Form modal */}
       {completingTask && (
@@ -719,7 +817,7 @@ function InlineTankMixRecipe() {
 // Room Grid — table/section layout with occupancy
 // ═══════════════════════════════════════════════════════════════
 
-function RoomGrid({ roomId }: { roomId: string }) {
+function RoomGrid({ roomId, compact, inline }: { roomId: string; compact?: boolean; inline?: boolean }) {
   const [tables, setTables] = useState<RoomTable[]>([]);
   const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -745,12 +843,12 @@ function RoomGrid({ roomId }: { roomId: string }) {
     return [...labels].sort();
   }, [sortedTables]);
 
-  if (loading) return <div className={`${GLASS} p-4 h-32 animate-pulse`} />;
-  if (sortedTables.length === 0) return null;
+  if (loading) return compact ? <div className="h-12 rounded-lg bg-white/[0.02] animate-pulse" /> : <div className={`${inline ? '' : GLASS + ' p-4'} h-32 animate-pulse`} />;
+  if (sortedTables.length === 0) return compact ? <div className="text-[10px] text-white/20">No tables configured</div> : null;
 
   return (
-    <div className={`${GLASS} p-4`}>
-      <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Layout</h3>
+    <div className={inline ? '' : ''}>
+      {!compact && !inline && <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Layout</h3>}
       <div
         className="grid gap-1"
         style={{ gridTemplateColumns: `32px repeat(${sectionLabels.length}, 1fr)` }}
@@ -778,7 +876,7 @@ function RoomGrid({ roomId }: { roomId: string }) {
               return (
                 <div
                   key={`${table.table_number}-${sLabel}`}
-                  className={`min-h-[36px] rounded-lg flex flex-col items-center justify-center ${
+                  className={`${compact ? 'min-h-[24px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center ${
                     hasPlants
                       ? 'bg-emerald-500/8 border border-emerald-500/15'
                       : 'bg-white/[0.02] border border-white/[0.04]'
@@ -805,16 +903,16 @@ function RoomGrid({ roomId }: { roomId: string }) {
   );
 }
 
-function FeedCard({ state }: { state: RoomOperationalState }) {
+function FeedCardContent({ state }: { state: RoomOperationalState }) {
   const stage = state.dominant_stage ?? state.room_type;
   const days = state.days_since_flip ?? state.days_in_stage ?? 0;
   const { recipe, loading } = useFeedProgramRecipe(stage, days);
 
-  if (loading) return <div className={`${GLASS} p-4 h-32 animate-pulse`} />;
-  if (!recipe) return null;
+  if (loading) return <div className="h-16 rounded-lg bg-white/[0.02] animate-pulse" />;
+  if (!recipe) return <p className="text-[10px] text-white/20">No feed program configured.</p>;
 
   return (
-    <div className={`${GLASS} p-4`}>
+    <>
       <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Feed Recipe</h3>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-white/60">{recipe.program_name}</span>
@@ -844,8 +942,12 @@ function FeedCard({ state }: { state: RoomOperationalState }) {
           {recipe.targets.target_ppm_500 && <span>PPM {recipe.targets.target_ppm_500}</span>}
         </div>
       )}
-    </div>
+    </>
   );
+}
+
+function FeedCard({ state }: { state: RoomOperationalState }) {
+  return <FeedCardContent state={state} />;
 }
 
 // ═══════════════════════════════════════════════════════════════
