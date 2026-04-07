@@ -45,6 +45,13 @@ export interface ResolvedRecipe {
   entries: RecipeEntry[];
 }
 
+export interface RoomFeedOverride {
+  target_ec: number | null;
+  target_ph_min: number | null;
+  target_ph_max: number | null;
+  product_overrides: Record<string, number>; // product_id → ml_per_gal
+}
+
 interface FeedProgramRow {
   id: string;
   name: string;
@@ -81,14 +88,18 @@ interface FeedProgramEntryRow {
 /**
  * Resolve the feed recipe for a given room stage and day-in-stage.
  * Returns the matched program week with all product entries sorted by mixing order.
+ * If roomId is provided, loads any room-level overrides from room_feed_overrides.
  */
 export function useFeedProgramRecipe(
   roomStage: string | null,
   daysInStage: number | null,
+  roomId?: string | null,
 ) {
   const [recipe, setRecipe] = useState<ResolvedRecipe | null>(null);
   const [allPrograms, setAllPrograms] = useState<FeedProgramRow[]>([]);
+  const [roomOverride, setRoomOverride] = useState<RoomFeedOverride | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Map room stages to feed chart phases
@@ -185,17 +196,63 @@ export function useFeedProgramRecipe(
         },
         entries: recipeEntries,
       });
+
+      // 4. Load room override if roomId provided
+      if (roomId) {
+        const { data: override } = await supabase
+          .from('room_feed_overrides')
+          .select('target_ec, target_ph_min, target_ph_max, product_overrides')
+          .eq('grow_room_id', roomId)
+          .eq('program_week_id', matchedWeek.id)
+          .maybeSingle();
+
+        setRoomOverride(override ? {
+          target_ec: override.target_ec,
+          target_ph_min: override.target_ph_min,
+          target_ph_max: override.target_ph_max,
+          product_overrides: (override.product_overrides ?? {}) as Record<string, number>,
+        } : null);
+      } else {
+        setRoomOverride(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load feed recipe');
       setRecipe(null);
     } finally {
       setLoading(false);
     }
-  }, [phase, weekNumber]);
+  }, [phase, weekNumber, roomId]);
+
+  // Save room override — upsert to room_feed_overrides
+  const saveRoomOverride = useCallback(async (override: RoomFeedOverride) => {
+    if (!roomId || !recipe) return;
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: upsertErr } = await supabase
+        .from('room_feed_overrides')
+        .upsert({
+          grow_room_id: roomId,
+          program_week_id: recipe.program_week_id,
+          target_ec: override.target_ec,
+          target_ph_min: override.target_ph_min,
+          target_ph_max: override.target_ph_max,
+          product_overrides: override.product_overrides,
+          updated_by: user?.id ?? null,
+        }, { onConflict: 'grow_room_id,program_week_id' });
+
+      if (upsertErr) throw upsertErr;
+      setRoomOverride(override);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save override');
+    } finally {
+      setSaving(false);
+    }
+  }, [roomId, recipe]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { recipe, allPrograms, loading, error, refetch: load, resolvedPhase: phase, resolvedWeek: weekNumber };
+  return { recipe, roomOverride, allPrograms, loading, saving, error, refetch: load, saveRoomOverride, resolvedPhase: phase, resolvedWeek: weekNumber };
 }

@@ -180,7 +180,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
   const stage = room?.dominant_stage ?? null;
   const daysInStage = room?.days_in_stage ?? null;
 
-  const { recipe, loading, error, resolvedPhase, resolvedWeek } = useFeedProgramRecipe(stage, daysInStage);
+  const { recipe, roomOverride, loading, error, resolvedPhase, resolvedWeek } = useFeedProgramRecipe(stage, daysInStage, roomId);
 
   const [showTargets, setShowTargets] = useState(true);
 
@@ -195,28 +195,35 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
   }
 
   // Sync recipe metadata into form data whenever recipe resolves/changes
+  // Merges room overrides into the snapshot so prescribed data reflects Andrew's adjustments
   if (recipe && (data._program_id !== recipe.program_id || data._week_number !== recipe.week_number)) {
+    const prodOverrides = roomOverride?.product_overrides ?? {};
     const snapshot: RecipeSnapshotEntry[] = recipe.entries
       .filter((e) => e.product.product_type !== 'ph_adjuster')
       .map((e) => ({
         product_id: e.product.id,
         product_name: e.product.name,
-        ml_per_gal: data.recipe_overrides[e.product.id] ?? e.ml_per_gal,
+        ml_per_gal: data.recipe_overrides[e.product.id] ?? prodOverrides[e.product.id] ?? e.ml_per_gal,
         ml_per_gal_max: e.ml_per_gal_max,
         mixing_order: e.mixing_order,
       }));
+
+    // Pre-populate recipe_overrides from room override if worker hasn't manually adjusted
+    const mergedOverrides = { ...prodOverrides, ...data.recipe_overrides };
+
     onChange({
       ...data,
+      recipe_overrides: mergedOverrides,
       _program_id: recipe.program_id,
       _program_week_id: recipe.program_week_id,
       _phase: recipe.phase,
       _week_number: recipe.week_number,
       _recipe_snapshot: snapshot,
-      _target_ec: recipe.targets.target_ec,
+      _target_ec: roomOverride?.target_ec ?? recipe.targets.target_ec,
       _target_ppm_500: recipe.targets.target_ppm_500,
       _target_ppm_700: recipe.targets.target_ppm_700,
-      _target_ph_min: recipe.targets.target_ph_min,
-      _target_ph_max: recipe.targets.target_ph_max,
+      _target_ph_min: roomOverride?.target_ph_min ?? recipe.targets.target_ph_min,
+      _target_ph_max: roomOverride?.target_ph_max ?? recipe.targets.target_ph_max,
     });
   }
 

@@ -7,10 +7,11 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
-  CheckCircle2, Clock, ChevronLeft, X, Wheat,
+  CheckCircle2, Clock, ChevronLeft, ChevronRight, ChevronDown, X, Wheat,
+  ArrowRightLeft, Skull, Printer,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
@@ -20,12 +21,15 @@ import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { cultivationService } from '../services';
 import { getTaskTypeConfig } from '../types';
-import type { DailyTaskInstance, PlantGroup, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, StrainCount } from '../types';
+import type { DailyTaskInstance, PlantGroup, IndividualPlant, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, StrainCount } from '../types';
 import type { SectionOccupancy } from '../types';
 import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain';
+import { DeadPlantForm } from './DeadPlantForm';
+import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
+import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { HarvestWorkflow } from './harvest';
 import { todayIso } from '../utils/dateUtils';
 
@@ -337,6 +341,15 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   const [showHarvestConfirm, setShowHarvestConfirm] = useState(false);
   const [showHarvestWorkflow, setShowHarvestWorkflow] = useState(false);
   const [showInlineAdd, setShowInlineAdd] = useState(false);
+  // Section-level actions from grid cell popover
+  const [sectionActionGroups, setSectionActionGroups] = useState<PlantGroup[] | null>(null);
+  const [showSectionKill, setShowSectionKill] = useState(false);
+  const [showSectionPrint, setShowSectionPrint] = useState(false);
+  const {
+    isOpen: sectionLabelIsOpen, isLoading: sectionLabelIsLoading, isPrinting: sectionLabelIsPrinting,
+    labelData: sectionLabelData, logoDataUrl: sectionLogoDataUrl, error: sectionLabelError,
+    openGroupLabel: sectionOpenGroupLabel, printLabels: sectionPrintLabels, closeLabel: sectionCloseLabel,
+  } = usePlantGroupLabel();
   const { staff: activeStaff } = useActiveStaff();
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
@@ -412,85 +425,107 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         </div>
       </div>
 
-      {/* Bento content grid — cards swap into main panel on tap */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* ── Left column (3/5) — main content area ── */}
-        <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
-          <AnimatePresence mode="wait">
+      {/* Bento content grid — layoutId card swap pattern */}
+      <LayoutGroup>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* ── Left column (3/5) — main content area ── */}
+          <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
             {focusedCard ? (
               <motion.div
-                key={`main-${focusedCard}`}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                layoutId={`card-${focusedCard}`}
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                 className={`${GLASS} p-5 h-full flex flex-col`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
-                    {focusedCard === 'room-layout' && 'Room Layout'}
-                    {focusedCard === 'plant-groups' && `Plants (${state.total_plants})`}
-                    {focusedCard === 'feed-recipe' && 'Feed Recipe'}
-                    {focusedCard === 'room-info' && 'Room Info'}
-                    {focusedCard === 'strains' && 'Strains'}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setFocusedCard(null)}
-                    className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
-                  >
-                    <ChevronLeft className="w-3 h-3" /> Tasks
-                  </button>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.2 }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
+                      {focusedCard === 'room-layout' && 'Room Layout'}
+                      {focusedCard === 'plant-groups' && `Plants (${state.total_plants})`}
+                      {focusedCard === 'feed-recipe' && 'Feed Recipe'}
+                      {focusedCard === 'room-info' && 'Room Info'}
+                      {focusedCard === 'strains' && 'Strains'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setFocusedCard(null)}
+                      className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+                    >
+                      <ChevronLeft className="w-3 h-3" /> Tasks
+                    </button>
+                  </div>
 
-                {focusedCard === 'room-layout' && (
-                  <div className="flex-1 flex flex-col">
-                    <RoomGrid roomId={state.room_id} inline expanded />
-                  </div>
-                )}
-                {focusedCard === 'feed-recipe' && <FeedCardContent state={state} />}
-                {focusedCard === 'room-info' && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {[
-                      { label: 'Plants', value: state.total_plants },
-                      { label: 'Groups', value: state.plant_group_count },
-                      { label: 'Day', value: dayCount ?? '—' },
-                      { label: 'Strains', value: state.strain_count },
-                      ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
-                      ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
-                    ].map(({ label, value }) => (
-                      <div key={label} className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]">
-                        <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
-                        <div className="text-lg font-semibold text-white/90 mt-1">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {focusedCard === 'strains' && state.strain_names && (
-                  <div className="flex flex-wrap gap-2">
-                    {state.strain_names.map(s => (
-                      <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
-                    ))}
-                  </div>
-                )}
-                {focusedCard === 'plant-groups' && (
-                  <PlantsByStrainExpanded
-                    groups={roomGroups}
-                    roomId={state.room_id}
-                    rooms={rooms as any}
-                    onMoveToRoom={onMoveToRoom}
-                    onSplitAndMove={onSplitAndMove}
-                    onSplitAndMoveMultiple={onSplitAndMoveMultiple}
-                  />
-                )}
+                  {focusedCard === 'room-layout' && (
+                    <div className="flex-1 flex flex-col">
+                      <RoomGrid
+                        roomId={state.room_id}
+                        inline
+                        expanded
+                        groups={roomGroups}
+                        onMoveGroups={(grps) => {
+                          setSectionActionGroups(grps);
+                          setMovingGroup(grps[0]);
+                          setMovingBatchGroups(grps.length > 1 ? grps : undefined);
+                        }}
+                        onKillGroups={(grps) => {
+                          setSectionActionGroups(grps);
+                          setShowSectionKill(true);
+                        }}
+                        onPrintGroups={async (grps) => {
+                          if (grps.length > 0) {
+                            await sectionOpenGroupLabel(grps[0]);
+                            setShowSectionPrint(true);
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                  {focusedCard === 'feed-recipe' && <InteractiveFeedCard state={state} />}
+                  {focusedCard === 'room-info' && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {[
+                        { label: 'Plants', value: state.total_plants },
+                        { label: 'Groups', value: state.plant_group_count },
+                        { label: 'Day', value: dayCount ?? '—' },
+                        { label: 'Strains', value: state.strain_count },
+                        ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
+                        ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
+                      ].map(({ label, value }) => (
+                        <div key={label} className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]">
+                          <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
+                          <div className="text-lg font-semibold text-white/90 mt-1">{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {focusedCard === 'strains' && state.strain_names && (
+                    <div className="flex flex-wrap gap-2">
+                      {state.strain_names.map(s => (
+                        <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
+                      ))}
+                    </div>
+                  )}
+                  {focusedCard === 'plant-groups' && (
+                    <PlantsByStrainExpanded
+                      groups={roomGroups}
+                      roomId={state.room_id}
+                      rooms={rooms as any}
+                      onMoveToRoom={onMoveToRoom}
+                      onSplitAndMove={onSplitAndMove}
+                      onSplitAndMoveMultiple={onSplitAndMoveMultiple}
+                    />
+                  )}
+                </motion.div>
               </motion.div>
             ) : (
               <motion.div
-                key="main-tasks"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                layoutId="card-tasks"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                 className={`${GLASS} p-5 h-full`}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -543,109 +578,117 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 />
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
+          </div>
 
-        {/* ── Right column (2/5) — info cards, always visible ── */}
-        <div className="lg:col-span-2 space-y-3">
-          {/* Tasks card (shows when a card is focused, lets you get back) */}
-          {focusedCard && (
-            <button
-              type="button"
-              onClick={() => setFocusedCard(null)}
-              className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-            >
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Today's Tasks</h3>
-              <div className="flex items-center gap-2 text-xs text-white/40">
-                <span>{roomTasks.filter(t => t.status === 'completed').length}/{roomTasks.length} done</span>
-                {roomTasks.filter(t => t.status === 'in_progress').length > 0 && (
-                  <span className="text-amber-400">{roomTasks.filter(t => t.status === 'in_progress').length} active</span>
-                )}
-              </div>
-            </button>
-          )}
+          {/* ── Right column (2/5) — info cards, always visible ── */}
+          <div className="lg:col-span-2 space-y-3">
+            {/* Tasks card — shows in sidebar when another card is focused */}
+            {focusedCard && (
+              <motion.button
+                layoutId="card-tasks"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard(null)}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Today's Tasks</h3>
+                <div className="flex items-center gap-2 text-xs text-white/40">
+                  <span>{roomTasks.filter(t => t.status === 'completed').length}/{roomTasks.length} done</span>
+                  {roomTasks.filter(t => t.status === 'in_progress').length > 0 && (
+                    <span className="text-amber-400">{roomTasks.filter(t => t.status === 'in_progress').length} active</span>
+                  )}
+                </div>
+              </motion.button>
+            )}
 
-          {/* Room Layout */}
-          <button
-            type="button"
-            onClick={() => setFocusedCard(focusedCard === 'room-layout' ? null : 'room-layout')}
-            className={`${focusedCard === 'room-layout' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-          >
-            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
-            {focusedCard !== 'room-layout' && <RoomGrid roomId={state.room_id} compact />}
-            {focusedCard === 'room-layout' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
-          </button>
+            {/* Room Layout — hidden when focused in main panel */}
+            {focusedCard !== 'room-layout' && (
+              <motion.button
+                layoutId="card-room-layout"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard('room-layout')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
+                <RoomGrid roomId={state.room_id} compact />
+              </motion.button>
+            )}
 
-          {/* Plants by Strain */}
-          {roomGroups.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setFocusedCard(focusedCard === 'plant-groups' ? null : 'plant-groups')}
-              className={`${focusedCard === 'plant-groups' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-            >
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
-                Plants <span className="text-white/15">({state.total_plants})</span>
-              </h3>
-              {focusedCard !== 'plant-groups' && (
+            {/* Plants by Strain — hidden when focused */}
+            {roomGroups.length > 0 && focusedCard !== 'plant-groups' && (
+              <motion.button
+                layoutId="card-plant-groups"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard('plant-groups')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
+                  Plants <span className="text-white/15">({state.total_plants})</span>
+                </h3>
                 <PlantsByStrainCompact groups={roomGroups} />
-              )}
-              {focusedCard === 'plant-groups' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
-            </button>
-          )}
-
-          {/* Feed Recipe */}
-          <button
-            type="button"
-            onClick={() => setFocusedCard(focusedCard === 'feed-recipe' ? null : 'feed-recipe')}
-            className={`${focusedCard === 'feed-recipe' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-          >
-            {focusedCard !== 'feed-recipe' && <FeedCard state={state} />}
-            {focusedCard === 'feed-recipe' && (
-              <>
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Feed Recipe</h3>
-                <div className="text-[10px] text-white/20">Viewing in main panel</div>
-              </>
+              </motion.button>
             )}
-          </button>
 
-          {/* Room Info */}
-          <button
-            type="button"
-            onClick={() => setFocusedCard(focusedCard === 'room-info' ? null : 'room-info')}
-            className={`${focusedCard === 'room-info' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-          >
-            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
+            {/* Feed Recipe — hidden when focused */}
+            {focusedCard !== 'feed-recipe' && (
+              <motion.button
+                layoutId="card-feed-recipe"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard('feed-recipe')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <FeedCard state={state} />
+              </motion.button>
+            )}
+
+            {/* Room Info — hidden when focused */}
             {focusedCard !== 'room-info' && (
-              <div className="flex gap-4 text-xs text-white/40">
-                <span>{state.total_plants}p</span>
-                <span>{state.plant_group_count}g</span>
-                <span>Day {dayCount ?? '—'}</span>
-              </div>
+              <motion.button
+                layoutId="card-room-info"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard('room-info')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
+                <div className="flex gap-4 text-xs text-white/40">
+                  <span>{state.total_plants}p</span>
+                  <span>{state.plant_group_count}g</span>
+                  <span>Day {dayCount ?? '—'}</span>
+                </div>
+              </motion.button>
             )}
-            {focusedCard === 'room-info' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
-          </button>
 
-          {/* Strains */}
-          {state.strain_names && state.strain_names.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setFocusedCard(focusedCard === 'strains' ? null : 'strains')}
-              className={`${focusedCard === 'strains' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-            >
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
-              {focusedCard !== 'strains' && (
+            {/* Strains — hidden when focused */}
+            {state.strain_names && state.strain_names.length > 0 && focusedCard !== 'strains' && (
+              <motion.button
+                layoutId="card-strains"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                type="button"
+                onClick={() => setFocusedCard('strains')}
+                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
                 <div className="flex flex-wrap gap-1">
                   {state.strain_names.slice(0, 4).map(s => (
                     <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
                   ))}
                   {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
                 </div>
-              )}
-              {focusedCard === 'strains' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
-            </button>
-          )}
+              </motion.button>
+            )}
+          </div>
         </div>
-      </div>
+      </LayoutGroup>
 
       {/* Task Completion Form modal */}
       {completingTask && (
@@ -754,6 +797,35 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
           </div>
         </div>
       )}
+
+      {/* Section-level Kill modal */}
+      {showSectionKill && (
+        <DeadPlantForm
+          prefilledRoomId={state.room_id}
+          onComplete={() => {
+            setShowSectionKill(false);
+            setSectionActionGroups(null);
+          }}
+          onClose={() => {
+            setShowSectionKill(false);
+            setSectionActionGroups(null);
+          }}
+        />
+      )}
+
+      {/* Section-level Print modal */}
+      {showSectionPrint && sectionLabelData && (
+        <PlantGroupLabelPrintModal
+          isOpen={showSectionPrint}
+          isLoading={sectionLabelIsLoading}
+          isPrinting={sectionLabelIsPrinting}
+          labelData={sectionLabelData}
+          logoDataUrl={sectionLogoDataUrl}
+          error={sectionLabelError}
+          onClose={() => { setShowSectionPrint(false); sectionCloseLabel(); setSectionActionGroups(null); }}
+          onPrint={sectionPrintLabels}
+        />
+      )}
     </motion.div>
   );
 }
@@ -781,7 +853,7 @@ function InlineAddTask({ roomId, onAdd, onCancel }: {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
       {INLINE_TASK_TYPES.map(type => {
         const config = getTaskTypeConfig(type);
         return (
@@ -790,10 +862,10 @@ function InlineAddTask({ roomId, onAdd, onCancel }: {
             type="button"
             onClick={() => handleAdd(type)}
             disabled={saving}
-            className="flex items-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all active:scale-95 disabled:opacity-30"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all active:scale-95 disabled:opacity-30 whitespace-nowrap flex-shrink-0"
           >
             <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }} />
-            <span className="text-[10px] text-white/50 truncate">{config.label}</span>
+            <span className="text-[10px] text-white/50">{config.label}</span>
           </button>
         );
       })}
@@ -982,25 +1054,13 @@ function InlineTankMixRecipe() {
 // Room Grid — table/section layout with occupancy
 // ═══════════════════════════════════════════════════════════════
 
-// Cell hover popover — glass tooltip showing strains + plant IDs
-function CellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel }: {
-  sectionId: string;
+// Cell hover popover — compact glass tooltip (strain counts only)
+function CellHoverPopover({ strainCounts, totalPlants, tableNum, sectionLabel }: {
   strainCounts: Array<{ abbreviation: string; count: number }>;
   totalPlants: number;
   tableNum: number;
   sectionLabel: string;
 }) {
-  const [plants, setPlants] = useState<Array<{ state_plant_id: string }>>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    // Load plant IDs for this section on mount
-    cultivationService.getSectionOccupancy('').catch(() => {}); // placeholder
-    // We can't easily get individual plants by section from existing API,
-    // so we'll show what we have from strain_counts
-    setLoaded(true);
-  }, [sectionId]);
-
   return (
     <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
       <div className="rounded-xl border border-white/[0.12] bg-black/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3 min-w-[140px]">
@@ -1015,16 +1075,180 @@ function CellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLa
           ))}
         </div>
       </div>
-      {/* Arrow */}
       <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-black/80 border-r border-b border-white/[0.12]" />
     </div>
   );
 }
 
-function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compact?: boolean; inline?: boolean; expanded?: boolean }) {
+// Pinned cell popover — click-to-pin with plant IDs accordion + actions
+function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel, groups, onMove, onKill, onPrint, onClose }: {
+  sectionId: string;
+  strainCounts: Array<{ abbreviation: string; count: number }>;
+  totalPlants: number;
+  tableNum: number;
+  sectionLabel: string;
+  groups: PlantGroup[];
+  onMove: (groups: PlantGroup[]) => void;
+  onKill: (groups: PlantGroup[]) => void;
+  onPrint: (groups: PlantGroup[]) => void;
+  onClose: () => void;
+}) {
+  const [expandedStrain, setExpandedStrain] = useState<string | null>(null);
+  const [plantsByGroup, setPlantsByGroup] = useState<Map<string, IndividualPlant[]>>(new Map());
+  const [loadingPlants, setLoadingPlants] = useState(true);
+
+  // Load all individual plants for groups in this section
+  useEffect(() => {
+    async function load() {
+      setLoadingPlants(true);
+      const map = new Map<string, IndividualPlant[]>();
+      for (const g of groups) {
+        const plants = await cultivationService.listIndividualPlants(g.id);
+        map.set(g.id, plants.filter(p => p.is_active));
+      }
+      setPlantsByGroup(map);
+      setLoadingPlants(false);
+    }
+    load();
+  }, [groups]);
+
+  // Group plants by strain abbreviation for accordion display
+  const strainPlants = useMemo(() => {
+    const result = new Map<string, IndividualPlant[]>();
+    for (const g of groups) {
+      const abbr = g.strains?.abbreviation ?? g.strains?.name ?? 'Unknown';
+      const existing = result.get(abbr) ?? [];
+      const gPlants = plantsByGroup.get(g.id) ?? [];
+      result.set(abbr, [...existing, ...gPlants]);
+    }
+    return result;
+  }, [groups, plantsByGroup]);
+
+  return (
+    <div className="absolute z-40 bottom-full left-1/2 -translate-x-1/2 mb-2" onClick={(e) => e.stopPropagation()}>
+      <motion.div
+        initial={{ opacity: 0, y: 4, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 4, scale: 0.97 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="rounded-2xl border border-white/[0.12] bg-black/85 backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.7)] p-4 min-w-[200px] max-w-[280px]"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-[10px] text-white/50 font-mono">T{tableNum} · {sectionLabel}</div>
+            <div className="text-sm font-bold text-white">{totalPlants} plants</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg hover:bg-white/10 transition-colors active:scale-95"
+          >
+            <X className="w-3.5 h-3.5 text-white/30" />
+          </button>
+        </div>
+
+        {/* Strain accordion rows */}
+        <div className="space-y-0.5 mb-3">
+          {strainCounts.map(s => {
+            const isExpanded = expandedStrain === s.abbreviation;
+            const plants = strainPlants.get(s.abbreviation) ?? [];
+
+            return (
+              <div key={s.abbreviation}>
+                <button
+                  type="button"
+                  onClick={() => setExpandedStrain(isExpanded ? null : s.abbreviation)}
+                  className="w-full flex items-center justify-between text-[11px] py-1.5 px-2 rounded-lg hover:bg-white/[0.05] transition-colors active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-1.5">
+                    {isExpanded
+                      ? <ChevronDown className="w-3 h-3 text-white/20" />
+                      : <ChevronRight className="w-3 h-3 text-white/20" />
+                    }
+                    <span className="text-white/50">{s.abbreviation}</span>
+                  </div>
+                  <span className="text-emerald-400/70 font-mono">{s.count}</span>
+                </button>
+
+                {/* Plant IDs dropdown */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="ml-5 py-1 space-y-0.5 max-h-[120px] overflow-y-auto">
+                        {loadingPlants ? (
+                          <div className="text-[10px] text-white/15 animate-pulse py-1">Loading...</div>
+                        ) : plants.length > 0 ? (
+                          plants.map(plant => (
+                            <div key={plant.id} className="text-[10px] font-mono text-white/35 py-0.5 px-2">
+                              {plant.state_plant_id}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-[10px] text-white/15 py-0.5 px-2">No IDs recorded</div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Action bar */}
+        {groups.length > 0 && (
+          <div className="flex items-center gap-1.5 pt-3 border-t border-white/[0.06]">
+            <button
+              type="button"
+              onClick={() => onMove(groups)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/[0.05] text-white/50 text-[10px] font-medium hover:bg-white/[0.08] transition-all active:scale-95"
+            >
+              <ArrowRightLeft className="w-3 h-3" /> Move
+            </button>
+            <button
+              type="button"
+              onClick={() => onKill(groups)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-red-500/10 text-red-400 text-[10px] font-medium hover:bg-red-500/20 transition-all active:scale-95"
+            >
+              <Skull className="w-3 h-3" /> Kill
+            </button>
+            <button
+              type="button"
+              onClick={() => onPrint(groups)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/[0.05] text-white/50 text-[10px] font-medium hover:bg-white/[0.08] transition-all active:scale-95"
+            >
+              <Printer className="w-3 h-3" /> Print
+            </button>
+          </div>
+        )}
+      </motion.div>
+      {/* Arrow */}
+      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-black/85 border-r border-b border-white/[0.12]" />
+    </div>
+  );
+}
+
+function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onKillGroups, onPrintGroups }: {
+  roomId: string;
+  compact?: boolean;
+  inline?: boolean;
+  expanded?: boolean;
+  groups?: PlantGroup[];
+  onMoveGroups?: (groups: PlantGroup[]) => void;
+  onKillGroups?: (groups: PlantGroup[]) => void;
+  onPrintGroups?: (groups: PlantGroup[]) => void;
+}) {
   const [tables, setTables] = useState<RoomTable[]>([]);
   const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [pinnedSectionId, setPinnedSectionId] = useState<string | null>(null);
 
   useState(() => {
     Promise.all([
@@ -1046,6 +1270,28 @@ function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compa
     sortedTables.forEach(t => t.sections.forEach(s => labels.add(s.section_label)));
     return [...labels].sort();
   }, [sortedTables]);
+
+  // Get plant groups for the pinned section
+  const pinnedSectionGroups = useMemo(() => {
+    if (!pinnedSectionId || !groups) return [];
+    return groups.filter(g => g.room_section_id === pinnedSectionId);
+  }, [pinnedSectionId, groups]);
+
+  const isInteractive = !compact && groups && onMoveGroups && onKillGroups && onPrintGroups;
+
+  // Click outside to dismiss pinned popover
+  useEffect(() => {
+    if (!pinnedSectionId) return;
+    function handleClick() { setPinnedSectionId(null); }
+    // Delay listener to avoid immediate dismissal from the click that pinned it
+    const timeout = setTimeout(() => {
+      document.addEventListener('click', handleClick);
+    }, 10);
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener('click', handleClick);
+    };
+  }, [pinnedSectionId]);
 
   if (loading) return compact ? <div className="h-12 rounded-lg bg-white/[0.02] animate-pulse" /> : <div className={`${inline ? '' : GLASS + ' p-4'} h-32 animate-pulse`} />;
   if (sortedTables.length === 0) return compact ? <div className="text-[10px] text-white/20">No tables configured</div> : null;
@@ -1075,25 +1321,32 @@ function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compa
             {sectionLabels.map(sLabel => {
               const section = table.sections.find(s => s.section_label === sLabel);
               if (!section) {
-                // No section exists for this table — render invisible spacer (not a ghost cell)
                 return <div key={`${table.table_number}-${sLabel}`} />;
               }
               const occ = occupancy.get(section.id);
               const hasPlants = occ && occ.total_plants > 0;
+              const isPinned = pinnedSectionId === section.id;
+              const isClickable = isInteractive && hasPlants;
+
               return (
                 <div
                   key={`${table.table_number}-${sLabel}`}
-                  className={`relative group/cell ${compact ? 'min-h-[24px]' : expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center cursor-default transition-all duration-150 ${
-                    hasPlants
-                      ? 'bg-emerald-500/8 border border-emerald-500/15 hover:bg-emerald-500/15 hover:border-emerald-500/25'
-                      : 'bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04]'
-                  }`}
+                  className={`relative group/cell ${compact ? 'min-h-[24px]' : expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center transition-all duration-150 ${
+                    isPinned
+                      ? 'bg-emerald-500/20 border-2 border-emerald-400/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                      : hasPlants
+                        ? `bg-emerald-500/8 border border-emerald-500/15 ${isClickable ? 'hover:bg-emerald-500/15 hover:border-emerald-500/25' : ''}`
+                        : 'bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04]'
+                  } ${isClickable ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
+                  onClick={isClickable ? (e) => {
+                    e.stopPropagation();
+                    setPinnedSectionId(isPinned ? null : section.id);
+                  } : undefined}
                 >
-                  {/* Glass popover on hover — non-compact only */}
-                  {!compact && hasPlants && (
+                  {/* Hover popover — only when not pinned, non-compact */}
+                  {!compact && hasPlants && !isPinned && !pinnedSectionId && (
                     <div className="hidden group-hover/cell:block">
-                      <CellPopover
-                        sectionId={section.id}
+                      <CellHoverPopover
                         strainCounts={occ.strain_counts}
                         totalPlants={occ.total_plants}
                         tableNum={table.table_number}
@@ -1101,11 +1354,30 @@ function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compa
                       />
                     </div>
                   )}
+
+                  {/* Pinned popover with plant IDs + actions */}
+                  <AnimatePresence>
+                    {isPinned && isInteractive && (
+                      <PinnedCellPopover
+                        sectionId={section.id}
+                        strainCounts={occ!.strain_counts}
+                        totalPlants={occ!.total_plants}
+                        tableNum={table.table_number}
+                        sectionLabel={sLabel}
+                        groups={pinnedSectionGroups}
+                        onMove={onMoveGroups}
+                        onKill={onKillGroups}
+                        onPrint={onPrintGroups}
+                        onClose={() => setPinnedSectionId(null)}
+                      />
+                    )}
+                  </AnimatePresence>
+
                   {hasPlants && (
                     <>
-                      <span className="text-[10px] font-mono text-emerald-400/70 font-bold">{occ.total_plants}</span>
+                      <span className={`text-[10px] font-mono font-bold ${isPinned ? 'text-emerald-300' : 'text-emerald-400/70'}`}>{occ.total_plants}</span>
                       {occ.strain_counts.slice(0, 2).map(s => (
-                        <span key={s.abbreviation} className="text-[7px] text-white/25 leading-tight">{s.abbreviation}</span>
+                        <span key={s.abbreviation} className={`text-[7px] leading-tight ${isPinned ? 'text-white/40' : 'text-white/25'}`}>{s.abbreviation}</span>
                       ))}
                       {occ.strain_counts.length > 2 && (
                         <span className="text-[7px] text-white/15">+{occ.strain_counts.length - 2}</span>
@@ -1122,13 +1394,249 @@ function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compa
   );
 }
 
-function FeedCardContent({ state }: { state: RoomOperationalState }) {
+// Non-scalable product types — these don't change when EC is adjusted
+const NON_SCALABLE_TYPES = new Set(['cleanse', 'ph_adjuster', 'supplement']);
+
+function InteractiveFeedCard({ state }: { state: RoomOperationalState }) {
   const stage = state.dominant_stage ?? state.room_type;
   const days = state.days_since_flip ?? state.days_in_stage ?? 0;
-  const { recipe, loading } = useFeedProgramRecipe(stage, days);
+  const { recipe, roomOverride, loading, saving, saveRoomOverride } = useFeedProgramRecipe(stage, days, state.room_id);
+
+  // Local editing state — initialized from override or recipe defaults
+  const [editEc, setEditEc] = useState<string>('');
+  const [editPhMin, setEditPhMin] = useState<string>('');
+  const [editPhMax, setEditPhMax] = useState<string>('');
+  const [editAmounts, setEditAmounts] = useState<Record<string, string>>({});
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Initialize edit state when recipe/override loads
+  useEffect(() => {
+    if (!recipe) return;
+    const ec = roomOverride?.target_ec ?? recipe.targets.target_ec;
+    const phMin = roomOverride?.target_ph_min ?? recipe.targets.target_ph_min;
+    const phMax = roomOverride?.target_ph_max ?? recipe.targets.target_ph_max;
+    setEditEc(ec != null ? String(ec) : '');
+    setEditPhMin(phMin != null ? String(phMin) : '');
+    setEditPhMax(phMax != null ? String(phMax) : '');
+
+    const amounts: Record<string, string> = {};
+    for (const entry of recipe.entries) {
+      const overrideAmt = roomOverride?.product_overrides?.[entry.product.id];
+      amounts[entry.product.id] = String(overrideAmt ?? entry.ml_per_gal);
+    }
+    setEditAmounts(amounts);
+    setIsDirty(false);
+  }, [recipe, roomOverride]);
+
+  // EC scaling — when EC changes, scale all nutrient products proportionally
+  function handleEcChange(newEcStr: string) {
+    setEditEc(newEcStr);
+    setIsDirty(true);
+    if (!recipe) return;
+
+    const newEc = parseFloat(newEcStr);
+    const baseEc = recipe.targets.target_ec;
+    if (!baseEc || isNaN(newEc) || newEc <= 0) return;
+
+    const scaleFactor = newEc / Number(baseEc);
+    const newAmounts = { ...editAmounts };
+    for (const entry of recipe.entries) {
+      if (NON_SCALABLE_TYPES.has(entry.product.product_type)) continue;
+      const baseAmount = entry.ml_per_gal;
+      newAmounts[entry.product.id] = String(Math.round(baseAmount * scaleFactor * 10) / 10);
+    }
+    setEditAmounts(newAmounts);
+  }
+
+  function handleAmountChange(productId: string, value: string) {
+    setEditAmounts(prev => ({ ...prev, [productId]: value }));
+    setIsDirty(true);
+  }
+
+  function handlePhChange(field: 'min' | 'max', value: string) {
+    if (field === 'min') setEditPhMin(value);
+    else setEditPhMax(value);
+    setIsDirty(true);
+  }
+
+  async function handleSave() {
+    if (!recipe) return;
+    const productOverrides: Record<string, number> = {};
+    for (const entry of recipe.entries) {
+      const val = parseFloat(editAmounts[entry.product.id] ?? '');
+      if (!isNaN(val) && val !== entry.ml_per_gal) {
+        productOverrides[entry.product.id] = val;
+      }
+    }
+    await saveRoomOverride({
+      target_ec: editEc ? parseFloat(editEc) : null,
+      target_ph_min: editPhMin ? parseFloat(editPhMin) : null,
+      target_ph_max: editPhMax ? parseFloat(editPhMax) : null,
+      product_overrides: productOverrides,
+    });
+    setIsDirty(false);
+  }
+
+  function handleReset() {
+    if (!recipe) return;
+    setEditEc(recipe.targets.target_ec != null ? String(recipe.targets.target_ec) : '');
+    setEditPhMin(recipe.targets.target_ph_min != null ? String(recipe.targets.target_ph_min) : '');
+    setEditPhMax(recipe.targets.target_ph_max != null ? String(recipe.targets.target_ph_max) : '');
+    const amounts: Record<string, string> = {};
+    for (const entry of recipe.entries) {
+      amounts[entry.product.id] = String(entry.ml_per_gal);
+    }
+    setEditAmounts(amounts);
+    setIsDirty(true);
+  }
 
   if (loading) return <div className="h-16 rounded-lg bg-white/[0.02] animate-pulse" />;
   if (!recipe) return <p className="text-[10px] text-white/20">No feed program configured.</p>;
+
+  const hasOverride = roomOverride != null;
+
+  return (
+    <>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <span className="text-xs text-white/60">{recipe.program_name}</span>
+          <span className="text-[10px] text-white/25 ml-2">{recipe.phase} · W{recipe.week_number}</span>
+        </div>
+        {hasOverride && !isDirty && (
+          <span className="text-[9px] text-amber-400/60 uppercase tracking-wider">Room Override</span>
+        )}
+      </div>
+
+      {/* EC — large editable input */}
+      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+        <div className="flex-1">
+          <div className="text-[9px] text-white/25 uppercase tracking-wider mb-1">Target EC</div>
+          <input
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={editEc}
+            onChange={(e) => handleEcChange(e.target.value)}
+            className="bg-transparent text-2xl font-bold font-mono text-emerald-400 w-20 outline-none focus:text-emerald-300 transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          {recipe.targets.target_ec && editEc !== String(recipe.targets.target_ec) && (
+            <span className="text-[9px] text-white/15 font-mono ml-2">base: {recipe.targets.target_ec}</span>
+          )}
+        </div>
+        {recipe.targets.target_ppm_500 && (
+          <div>
+            <div className="text-[9px] text-white/25 uppercase tracking-wider mb-1">PPM</div>
+            <span className="text-sm font-mono text-white/40">{recipe.targets.target_ppm_500}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Product rows — editable amounts */}
+      <div className="space-y-1 mb-4">
+        {recipe.entries.map((entry) => {
+          const currentVal = editAmounts[entry.product.id] ?? String(entry.ml_per_gal);
+          const isScalable = !NON_SCALABLE_TYPES.has(entry.product.product_type);
+          const isOverridden = currentVal !== String(entry.ml_per_gal);
+
+          return (
+            <div key={entry.product.id} className="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.04]">
+              <div className="flex items-center gap-2.5">
+                <span className="text-[10px] text-white/15 font-mono w-3">{entry.mixing_order}</span>
+                <span className={`text-xs ${isScalable ? 'text-white/60' : 'text-white/35'}`}>{entry.product.name}</span>
+                {!isScalable && (
+                  <span className="text-[8px] text-white/15 uppercase">fixed</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {isOverridden && (
+                  <span className="text-[9px] text-white/15 font-mono">{entry.ml_per_gal}</span>
+                )}
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={currentVal}
+                  onChange={(e) => handleAmountChange(entry.product.id, e.target.value)}
+                  className={`bg-transparent text-sm font-mono text-right w-14 outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                    isOverridden ? 'text-amber-300' : 'text-white/80'
+                  } focus:text-white`}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* pH — large editable */}
+      <div className="flex items-center gap-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] mb-4">
+        <div className="text-[9px] text-white/25 uppercase tracking-wider">pH</div>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max="14"
+            value={editPhMin}
+            onChange={(e) => handlePhChange('min', e.target.value)}
+            className="bg-transparent text-lg font-bold font-mono text-white/70 w-12 outline-none focus:text-white transition-colors text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span className="text-white/20">–</span>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max="14"
+            value={editPhMax}
+            onChange={(e) => handlePhChange('max', e.target.value)}
+            className="bg-transparent text-lg font-bold font-mono text-white/70 w-12 outline-none focus:text-white transition-colors text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+        </div>
+        {recipe.targets.target_ph_min && (editPhMin !== String(recipe.targets.target_ph_min) || editPhMax !== String(recipe.targets.target_ph_max)) && (
+          <span className="text-[9px] text-white/15 font-mono">base: {recipe.targets.target_ph_min}–{recipe.targets.target_ph_max}</span>
+        )}
+      </div>
+
+      {/* Save / Reset bar */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!isDirty || saving}
+          className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all active:scale-[0.98] ${
+            isDirty
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/25 hover:bg-emerald-500/30'
+              : 'bg-white/[0.03] text-white/20 border border-white/[0.04] cursor-default'
+          }`}
+        >
+          {saving ? 'Saving...' : isDirty ? 'Save to Room' : 'Saved'}
+        </button>
+        {(isDirty || hasOverride) && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="px-3 py-2 rounded-xl text-[10px] text-white/30 border border-white/[0.06] hover:text-white/50 hover:border-white/[0.1] transition-all active:scale-95"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Compact read-only feed card for sidebar
+function FeedCardContent({ state }: { state: RoomOperationalState }) {
+  const stage = state.dominant_stage ?? state.room_type;
+  const days = state.days_since_flip ?? state.days_in_stage ?? 0;
+  const { recipe, roomOverride, loading } = useFeedProgramRecipe(stage, days, state.room_id);
+
+  if (loading) return <div className="h-16 rounded-lg bg-white/[0.02] animate-pulse" />;
+  if (!recipe) return <p className="text-[10px] text-white/20">No feed program configured.</p>;
+
+  const ec = roomOverride?.target_ec ?? recipe.targets.target_ec;
+  const phMin = roomOverride?.target_ph_min ?? recipe.targets.target_ph_min;
+  const phMax = roomOverride?.target_ph_max ?? recipe.targets.target_ph_max;
 
   return (
     <>
@@ -1137,28 +1645,31 @@ function FeedCardContent({ state }: { state: RoomOperationalState }) {
         <span className="text-xs text-white/60">{recipe.program_name}</span>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-white/30">{recipe.phase} · W{recipe.week_number}</span>
-          {recipe.targets.target_ec && (
+          {ec && (
             <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              EC {recipe.targets.target_ec}
+              EC {ec}
             </span>
           )}
         </div>
       </div>
       <div className="space-y-1">
-        {recipe.entries.map((entry, i) => (
-          <div key={i} className="flex justify-between items-center py-1.5 px-2.5 rounded-lg bg-white/[0.03]">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white/20 font-mono w-3">{entry.mixing_order}</span>
-              <span className="text-xs text-white/60">{entry.product.name}</span>
+        {recipe.entries.map((entry) => {
+          const amt = roomOverride?.product_overrides?.[entry.product.id] ?? entry.ml_per_gal;
+          return (
+            <div key={entry.product.id} className="flex justify-between items-center py-1.5 px-2.5 rounded-lg bg-white/[0.03]">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-white/20 font-mono w-3">{entry.mixing_order}</span>
+                <span className="text-xs text-white/60">{entry.product.name}</span>
+              </div>
+              <span className="text-xs font-mono text-white/80">{amt}</span>
             </div>
-            <span className="text-xs font-mono text-white/80">{entry.ml_per_gal}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {recipe.targets.target_ph_min && recipe.targets.target_ph_max && (
-        <div className="flex gap-4 mt-3 text-[10px] text-white/25">
-          <span>pH {recipe.targets.target_ph_min}–{recipe.targets.target_ph_max}</span>
-          {recipe.targets.target_ppm_500 && <span>PPM {recipe.targets.target_ppm_500}</span>}
+      {phMin && phMax && (
+        <div className="flex gap-4 mt-3">
+          <span className="text-sm font-mono text-white/40">pH {phMin}–{phMax}</span>
+          {recipe.targets.target_ppm_500 && <span className="text-[10px] text-white/25 self-center">PPM {recipe.targets.target_ppm_500}</span>}
         </div>
       )}
     </>
