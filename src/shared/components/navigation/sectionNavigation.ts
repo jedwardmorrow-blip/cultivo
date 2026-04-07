@@ -82,6 +82,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     icon: Sprout,
     defaultView: 'cultivation-hub',
     items: [
+      { id: 'cultivation-command-center', label: 'Command Center', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-hub', label: 'Today', icon: ClipboardList, group: 'primary' },
       { id: 'cultivation-taskboard', label: 'Task Board', icon: LayoutDashboard, group: 'primary' },
       { id: 'cultivation-dashboard', label: 'Rooms', icon: LayoutDashboard, group: 'primary' },
