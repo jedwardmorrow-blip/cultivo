@@ -425,23 +425,22 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         </div>
       </div>
 
-      {/* Bento content grid — layoutId card swap pattern */}
+      {/* Bento content grid — spring reflow + fast crossfade */}
       <LayoutGroup>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* ── Left column (3/5) — main content area ── */}
           <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
+            <AnimatePresence mode="wait">
             {focusedCard ? (
               <motion.div
-                layoutId={`card-${focusedCard}`}
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                key={`main-${focusedCard}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className={`${GLASS} p-5 h-full flex flex-col`}
               >
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                >
+                <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
                       {focusedCard === 'room-layout' && 'Room Layout'}
@@ -519,13 +518,15 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                       onSplitAndMoveMultiple={onSplitAndMoveMultiple}
                     />
                   )}
-                </motion.div>
+                </div>
               </motion.div>
             ) : (
               <motion.div
-                layoutId="card-tasks"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                key="main-tasks"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className={`${GLASS} p-5 h-full`}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -578,6 +579,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 />
               </motion.div>
             )}
+            </AnimatePresence>
           </div>
 
           {/* ── Right column (2/5) — info cards, always visible ── */}
@@ -585,9 +587,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Tasks card — shows in sidebar when another card is focused */}
             {focusedCard && (
               <motion.button
-                layoutId="card-tasks"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard(null)}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -605,9 +606,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Room Layout — hidden when focused in main panel */}
             {focusedCard !== 'room-layout' && (
               <motion.button
-                layoutId="card-room-layout"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard('room-layout')}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -620,9 +620,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Plants by Strain — hidden when focused */}
             {roomGroups.length > 0 && focusedCard !== 'plant-groups' && (
               <motion.button
-                layoutId="card-plant-groups"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard('plant-groups')}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -637,9 +636,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Feed Recipe — hidden when focused */}
             {focusedCard !== 'feed-recipe' && (
               <motion.button
-                layoutId="card-feed-recipe"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard('feed-recipe')}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -651,9 +649,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Room Info — hidden when focused */}
             {focusedCard !== 'room-info' && (
               <motion.button
-                layoutId="card-room-info"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard('room-info')}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -670,9 +667,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Strains — hidden when focused */}
             {state.strain_names && state.strain_names.length > 0 && focusedCard !== 'strains' && (
               <motion.button
-                layoutId="card-strains"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                layout
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 type="button"
                 onClick={() => setFocusedCard('strains')}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
