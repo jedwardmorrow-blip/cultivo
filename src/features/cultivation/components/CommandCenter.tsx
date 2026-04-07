@@ -15,8 +15,11 @@ import {
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
+import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { getTaskTypeConfig } from '../types';
 import type { DailyTaskInstance } from '../types';
+import type { TaskCardData } from './TaskCard';
+import { TaskCompletionForm } from './TaskCompletionForm';
 import { todayIso } from '../utils/dateUtils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -301,13 +304,17 @@ function AttentionStrip({ opsRooms, onRoomClick }: {
 // SCREEN 2: Expanded Room View
 // ═══════════════════════════════════════════════════════════════
 
-function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onBack }: {
+function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onBack }: {
   state: RoomOperationalState;
   tasks: DailyTaskInstance[];
   onUpdateTaskStatus: (id: string, status: string) => void;
+  onCompleteWithLog: (taskId: string, refTable: string, refId: string, duration: string | null) => void;
+  onAssignWorker: (taskId: string, staffId: string) => Promise<void>;
   onBack: () => void;
 }) {
   const roomTasks = useMemo(() => tasks.filter(t => t.room_id === state.room_id), [tasks, state.room_id]);
+  const [completingTask, setCompletingTask] = useState<DailyTaskInstance | null>(null);
+  const { staff: activeStaff } = useActiveStaff();
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
   const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
@@ -375,7 +382,11 @@ function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onBack }: {
         {/* Task checklist — takes 3/5 */}
         <div className={`lg:col-span-3 ${GLASS} p-5`}>
           <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
-          <TaskChecklist tasks={roomTasks} onUpdateStatus={onUpdateTaskStatus} />
+          <TaskChecklist
+            tasks={roomTasks}
+            onUpdateStatus={onUpdateTaskStatus}
+            onOpenCompletion={(task) => setCompletingTask(task)}
+          />
         </div>
 
         {/* Right column — 2/5 */}
@@ -416,6 +427,23 @@ function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onBack }: {
           <FeedCard state={state} />
         </div>
       </div>
+
+      {/* Task Completion Form modal */}
+      {completingTask && (
+        <TaskCompletionForm
+          task={completingTask as unknown as TaskCardData}
+          roomId={state.room_id}
+          staffOptions={activeStaff?.map(s => ({ id: s.id, first_name: s.first_name })) ?? []}
+          onAssignWorker={async (taskId, staffId) => { await onAssignWorker(taskId, staffId); }}
+          onComplete={(refTable, refId, duration) => {
+            onCompleteWithLog(completingTask.id, refTable, refId, duration);
+            setCompletingTask(null);
+          }}
+          onNavigateHarvest={() => { /* TODO: inline harvest flow */ }}
+          onNavigateClone={() => { /* TODO: inline clone flow */ }}
+          onClose={() => setCompletingTask(null)}
+        />
+      )}
     </motion.div>
   );
 }
@@ -424,9 +452,10 @@ function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onBack }: {
 // Task Checklist
 // ═══════════════════════════════════════════════════════════════
 
-function TaskChecklist({ tasks, onUpdateStatus }: {
+function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
   tasks: DailyTaskInstance[];
   onUpdateStatus: (id: string, status: string) => void;
+  onOpenCompletion: (task: DailyTaskInstance) => void;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -508,7 +537,7 @@ function TaskChecklist({ tasks, onUpdateStatus }: {
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <TaskExpandedDetail task={task} onUpdateStatus={onUpdateStatus} />
+                  <TaskExpandedDetail task={task} onUpdateStatus={onUpdateStatus} onOpenCompletion={onOpenCompletion} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -519,10 +548,13 @@ function TaskChecklist({ tasks, onUpdateStatus }: {
   );
 }
 
-function TaskExpandedDetail({ task, onUpdateStatus }: {
+function TaskExpandedDetail({ task, onUpdateStatus, onOpenCompletion }: {
   task: DailyTaskInstance;
   onUpdateStatus: (id: string, status: string) => void;
+  onOpenCompletion: (task: DailyTaskInstance) => void;
 }) {
+  const hasForm = ['ipm_spray', 'batch_tank_mix', 'defoliation', 'cleaning', 'scouting', 'training', 'custom', 'saturation_check', 'irrigation_audit'].includes(task.task_type);
+
   return (
     <div className="ml-11 mb-2 p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
       <div className="flex items-center justify-between">
@@ -537,7 +569,16 @@ function TaskExpandedDetail({ task, onUpdateStatus }: {
               Start
             </button>
           )}
-          {(task.status === 'pending' || task.status === 'in_progress') && (
+          {(task.status === 'pending' || task.status === 'in_progress') && hasForm && (
+            <button
+              type="button"
+              onClick={() => onOpenCompletion(task)}
+              className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors active:scale-95"
+            >
+              Complete with Log
+            </button>
+          )}
+          {(task.status === 'pending' || task.status === 'in_progress') && !hasForm && (
             <button
               type="button"
               onClick={() => onUpdateStatus(task.id, 'completed')}
@@ -648,14 +689,119 @@ function GlassSkeleton() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Quick Add Task Modal — 3 taps: type → person → done
+// ═══════════════════════════════════════════════════════════════
+
+const QUICK_ADD_TYPES = ['batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning', 'training', 'maintenance', 'custom'] as const;
+
+function QuickAddTask({ roomId, roomCode, staff, onAdd, onClose }: {
+  roomId: string;
+  roomCode: string;
+  staff: Array<{ id: string; first_name: string }>;
+  onAdd: (input: { room_id: string; task_type: string; task_date: string; assigned_to?: string | null }) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<'type' | 'assign'>('type');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleAssign(staffId: string | null) {
+    if (!selectedType) return;
+    setSaving(true);
+    try {
+      await onAdd({
+        room_id: roomId,
+        task_type: selectedType,
+        task_date: todayIso(),
+        assigned_to: staffId,
+      });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className={`relative w-full max-w-sm ${GLASS_ELEVATED} p-5 space-y-4`}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-white">
+            {step === 'type' ? `Add task to ${roomCode}` : 'Assign to'}
+          </h3>
+          <button type="button" onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-white/40" />
+          </button>
+        </div>
+
+        {step === 'type' && (
+          <div className="grid grid-cols-2 gap-2">
+            {QUICK_ADD_TYPES.map(type => {
+              const config = getTaskTypeConfig(type);
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => { setSelectedType(type); setStep('assign'); }}
+                  className="flex items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all active:scale-95 text-left"
+                >
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }} />
+                  <span className="text-xs text-white/70">{config.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 'assign' && (
+          <div className="space-y-2">
+            {/* Skip assignment option */}
+            <button
+              type="button"
+              onClick={() => handleAssign(null)}
+              disabled={saving}
+              className="w-full p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all active:scale-95 text-left"
+            >
+              <span className="text-xs text-white/40">Skip — leave unassigned</span>
+            </button>
+            {/* Staff list */}
+            {staff.map(s => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => handleAssign(s.id)}
+                disabled={saving}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all active:scale-95 text-left"
+              >
+                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs font-semibold text-white/60">
+                  {s.first_name[0]}
+                </div>
+                <span className="text-sm text-white/70">{s.first_name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Main Command Center
 // ═══════════════════════════════════════════════════════════════
 
 export function CommandCenter() {
   const { rooms: opsRooms, loading } = useRoomOperationalState();
   const today = todayIso();
-  const { tasks, updateStatus } = useDailyTasks(today);
+  const { tasks, updateStatus, completeWithLog, assignWorker, createTask } = useDailyTasks(today);
+  const { staff: allStaff } = useActiveStaff();
   const [selectedRoomCode, setSelectedRoomCode] = useState<string | null>(null);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const selectedRoom = useMemo(
     () => selectedRoomCode ? opsRooms.find(r => r.room_code === selectedRoomCode) ?? null : null,
@@ -715,6 +861,8 @@ export function CommandCenter() {
             state={selectedRoom}
             tasks={tasks}
             onUpdateTaskStatus={handleUpdateTaskStatus}
+            onCompleteWithLog={(taskId, refTable, refId, duration) => completeWithLog(taskId, refTable, refId, duration)}
+            onAssignWorker={async (taskId, staffId) => { await assignWorker(taskId, staffId); }}
             onBack={() => setSelectedRoomCode(null)}
           />
         ) : (
@@ -734,6 +882,32 @@ export function CommandCenter() {
               />
             ))}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating add button — visible when a room is selected */}
+      {selectedRoom && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          type="button"
+          onClick={() => setShowQuickAdd(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 shadow-[0_4px_20px_rgba(16,185,129,0.4)] flex items-center justify-center transition-colors active:scale-90 z-40"
+        >
+          <Plus className="w-6 h-6 text-white" />
+        </motion.button>
+      )}
+
+      {/* Quick Add modal */}
+      <AnimatePresence>
+        {showQuickAdd && selectedRoom && (
+          <QuickAddTask
+            roomId={selectedRoom.room_id}
+            roomCode={selectedRoom.room_code}
+            staff={allStaff?.map(s => ({ id: s.id, first_name: s.first_name })) ?? []}
+            onAdd={async (input) => { await createTask(input); }}
+            onClose={() => setShowQuickAdd(false)}
+          />
         )}
       </AnimatePresence>
     </div>
