@@ -5,21 +5,25 @@ export default {
     extend: {
       colors: {
         cult: {
-          // ── Raw palette (legacy compat — prefer semantic tokens below) ──
-          black: '#0A0A0A',
+          // ── Raw palette (aliased to semantic values — glass system) ──
+          black: 'rgba(10, 10, 10, 0.95)',
           white: '#FFFFFF',
           'off-white': '#F8F8F8',
-          'near-black': '#111111',
-          graphite: '#1C1C1C',
-          charcoal: '#2E2E2E',
+          'near-black': 'rgba(255, 255, 255, 0.04)',
+          graphite: 'rgba(255, 255, 255, 0.06)',
+          charcoal: 'rgba(255, 255, 255, 0.10)',
           'medium-gray': '#404040',
           'light-gray': '#999999',
           'lighter-gray': '#666666',
-          'dark-gray': '#1A1A1A',
+          'dark-gray': 'rgba(255, 255, 255, 0.06)',
           silver: '#A6A6A6',
           red: '#DC4545',
           green: '#10B981',
           'green-bright': '#34D399',
+          // ── Opaque palette (for modals, drawers, print, overlays that MUST block content behind) ──
+          'opaque-black': '#0A0A0A',
+          'opaque-near-black': '#111111',
+          'opaque-graphite': '#1C1C1C',
 
           // ── Semantic Surface Tokens (translucent — glass system) ──
           'surface': 'rgba(10, 10, 10, 0.95)',

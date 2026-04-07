@@ -110,7 +110,7 @@ function CustomerCard({ customer }: { customer: CustomerInfo }) {
   ].filter(Boolean).join(', ') || customer.address || 'No address';
 
   return (
-    <div className="bg-cult-near-black border border-cult-charcoal rounded-cult p-4">
+    <div className="bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-4">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-cult-silver" />
@@ -256,9 +256,9 @@ export function OrderDrawer({
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-black border-l border-cult-charcoal z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-opaque-black border-l border-cult-charcoal z-50 flex flex-col animate-slide-in-right shadow-2xl">
 
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-charcoal bg-cult-near-black">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-charcoal bg-cult-opaque-near-black">
           <div className="flex items-center gap-3 min-w-0">
             <h2 className="text-lg font-bold text-cult-off-white tracking-wide truncate">
               {order.order_number}
@@ -378,7 +378,7 @@ export function OrderDrawer({
                 {order.delivery_notes && (
                   <div>
                     <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Delivery Notes</h4>
-                    <p className="text-xs text-cult-silver bg-cult-near-black border border-cult-charcoal rounded-cult p-3">
+                    <p className="text-xs text-cult-silver bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-3">
                       {order.delivery_notes}
                     </p>
                   </div>
@@ -386,7 +386,7 @@ export function OrderDrawer({
                 {order.internal_notes && (
                   <div>
                     <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Internal Notes</h4>
-                    <p className="text-xs text-cult-silver bg-cult-near-black border border-cult-charcoal rounded-cult p-3">
+                    <p className="text-xs text-cult-silver bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-3">
                       {order.internal_notes}
                     </p>
                   </div>
@@ -397,7 +397,7 @@ export function OrderDrawer({
           </div>
         </div>
 
-        <div className="px-5 py-3 border-t border-cult-charcoal bg-cult-near-black flex items-center gap-2">
+        <div className="px-5 py-3 border-t border-cult-charcoal bg-cult-opaque-near-black flex items-center gap-2">
           <button
             onClick={() => onCloneOrder(order)}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cult-silver hover:text-cult-white bg-cult-charcoal hover:bg-cult-medium-gray rounded transition-all uppercase tracking-wider"

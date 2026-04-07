@@ -495,7 +495,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
         className="bg-cult-dark-gray border-2 border-cult-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b-2 border-cult-medium-gray bg-cult-near-black">
+        <div className="flex items-center justify-between p-6 border-b-2 border-cult-medium-gray bg-cult-opaque-near-black">
           <div>
             <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
               Invoice Preview
@@ -549,7 +549,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-6 bg-cult-black">
+        <div className="flex-1 overflow-auto p-6 bg-cult-opaque-black">
           {loading && (
             <div className="flex items-center justify-center h-64">
               <div className="flex flex-col items-center gap-3">

@@ -58,7 +58,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
       className="fixed inset-0 z-50 flex items-stretch bg-black/70"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="relative ml-auto bg-cult-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
+      <div className="relative ml-auto bg-cult-opaque-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/20">
           <div>

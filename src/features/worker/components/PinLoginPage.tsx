@@ -69,7 +69,7 @@ export function PinLoginPage() {
 
   if (staffName && confirming) {
     return (
-      <div className="min-h-screen bg-cult-black flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-cult-opaque-black flex flex-col items-center justify-center px-6">
         <div className="text-center">
           <div className="text-3xl font-bold text-cult-whiter mb-2">
             Welcome, {staffName}
@@ -81,7 +81,7 @@ export function PinLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cult-black flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-cult-opaque-black flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-xs">
         {/* Logo / title */}
         <div className="text-center mb-8">
@@ -136,7 +136,7 @@ export function PinLoginPage() {
                 key={i}
                 onClick={() => handleDigitWithAutoSubmit(d)}
                 disabled={confirming}
-                className="h-16 bg-cult-near-black border border-cult-medium-gray text-cult-white text-2xl font-bold rounded-lg hover:bg-cult-dark-gray hover:border-cult-lighter-gray active:bg-cult-medium-gray transition-all disabled:opacity-40"
+                className="h-16 bg-cult-opaque-near-black border border-cult-medium-gray text-cult-white text-2xl font-bold rounded-lg hover:bg-cult-dark-gray hover:border-cult-lighter-gray active:bg-cult-medium-gray transition-all disabled:opacity-40"
               >
                 {d}
               </button>

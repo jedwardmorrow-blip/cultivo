@@ -365,7 +365,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
       >
         <div
-          className="bg-cult-near-black border-2 border-cult-medium-gray p-8"
+          className="bg-cult-opaque-near-black border-2 border-cult-medium-gray p-8"
         >
           <div className="text-cult-white">Loading...</div>
         </div>
@@ -379,7 +379,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
       >
         <div
-          className="bg-cult-near-black border-2 border-cult-medium-gray max-w-md w-full p-6"
+          className="bg-cult-opaque-near-black border-2 border-cult-medium-gray max-w-md w-full p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
@@ -419,7 +419,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
       className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 overflow-y-auto"
     >
       <div
-        className="bg-cult-near-black border-2 border-cult-medium-gray max-w-6xl w-full my-8"
+        className="bg-cult-opaque-near-black border-2 border-cult-medium-gray max-w-6xl w-full my-8"
       >
         <div className="p-6 border-b border-cult-medium-gray flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -438,7 +438,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
 
         {!manifestData ? (
           <div className="p-6">
-            <div className="mb-4 p-4 bg-cult-black border border-cult-medium-gray">
+            <div className="mb-4 p-4 bg-cult-opaque-black border border-cult-medium-gray">
               <div className="text-cult-white font-semibold mb-1">Order: {orderNumber}</div>
               <div className="text-cult-light-gray text-sm">
                 Configure route details and select a driver and vehicle for the delivery manifest
@@ -460,7 +460,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                   <select
                     value={selectedOriginId}
                     onChange={(e) => setSelectedOriginId(e.target.value)}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                     required
                   >
                     {locations.map((location) => (
@@ -481,7 +481,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                     type="text"
                     value={stopNumber}
                     onChange={(e) => setStopNumber(e.target.value)}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                     placeholder="1"
                     required
                   />
@@ -498,7 +498,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                 <select
                   value={selectedDriverId}
                   onChange={(e) => setSelectedDriverId(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                   required
                 >
                   {drivers.map((driver) => (
@@ -516,7 +516,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                 <select
                   value={selectedVehicleId}
                   onChange={(e) => setSelectedVehicleId(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                   required
                 >
                   {vehicles.map((vehicle) => (
@@ -537,7 +537,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                 <textarea
                   value={routeDescription}
                   onChange={(e) => setRouteDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                   rows={3}
                   placeholder="Auto-generated from cached route (or enter manually to override)..."
                 />
@@ -550,7 +550,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
                   rows={2}
                   placeholder="Any special notes or circumstances..."
                 />

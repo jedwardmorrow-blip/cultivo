@@ -17,9 +17,9 @@ export function WorkerLayout({ children }: WorkerLayoutProps) {
     : staff.first_name;
 
   return (
-    <div className="min-h-screen bg-cult-black flex flex-col">
+    <div className="min-h-screen bg-cult-opaque-black flex flex-col">
       {/* Header */}
-      <header className="bg-cult-near-black border-b border-cult-dark-gray px-4 py-3 flex items-center justify-between flex-shrink-0 safe-top">
+      <header className="bg-cult-opaque-near-black border-b border-cult-dark-gray px-4 py-3 flex items-center justify-between flex-shrink-0 safe-top">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-cult-medium-gray rounded-full flex items-center justify-center text-cult-white text-sm font-bold uppercase">
             {staff.first_name.charAt(0)}

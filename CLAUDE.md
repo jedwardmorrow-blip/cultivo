@@ -14,6 +14,7 @@ Cultivation module: documentation complete (Session C-1), migrations and UI pend
 3. **batch_id is never null** in inventory operations. Format: `YYMMDD-STRAIN`.
 4. **Import types from `@/types`.** Never duplicate domain type definitions.
 5. **Search before creating.** Extend existing services/components instead of creating new files.
+6. **Use semantic color tokens, not raw palette.** Use `bg-cult-surface`, `bg-cult-surface-raised`, `border-cult-border`, `text-cult-accent` — never `bg-[#0A0A0A]` or hardcoded hex. The raw tokens (`cult-black`, `cult-near-black`, `cult-charcoal`) are aliased to translucent glass values. If a component genuinely needs an opaque background (modals, drawers, print views), use `bg-cult-opaque-black` or `bg-cult-opaque-near-black`. Read `cultops_design_system_reference` in Context DB for the full design system.
 
 ## Before You Code
 

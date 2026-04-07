@@ -68,7 +68,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 bg-cult-near-black border border-cult-medium-gray w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
+      <div className="relative z-10 bg-cult-opaque-near-black border border-cult-medium-gray w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
         {/* Fixed header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-cult-medium-gray flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
               value={flipDate}
               onChange={(e) => setFlipDate(e.target.value)}
               disabled={saving}
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
+              className="w-full bg-cult-opaque-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
             />
             {flipDate && (
               <p className="text-xs text-cult-medium-gray mt-1">
@@ -119,7 +119,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
                 setHarvestManuallySet(true);
               }}
               disabled={saving}
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
+              className="w-full bg-cult-opaque-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
             />
             {harvestDate && (
               <div className="flex items-center justify-between mt-1">
@@ -154,7 +154,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
           />
 
           {eligibleGroups.length === 0 && (
-            <div className="bg-cult-black border border-cult-dark-gray px-3 py-3 text-xs text-cult-medium-gray">
+            <div className="bg-cult-opaque-black border border-cult-dark-gray px-3 py-3 text-xs text-cult-medium-gray">
               No groups eligible for stage advancement in this room. The flip date will still be updated on all active sections.
             </div>
           )}

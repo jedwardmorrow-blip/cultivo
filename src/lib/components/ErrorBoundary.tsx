@@ -118,8 +118,8 @@ export class ErrorBoundary extends Component<Props, State> {
       const showDetails = import.meta.env.DEV || this.state.errorCount < 2;
 
       return (
-        <div className="min-h-screen bg-cult-black flex items-center justify-center p-4">
-          <div className="bg-cult-near-black border-2 border-cult-danger p-8 max-w-3xl w-full">
+        <div className="min-h-screen bg-cult-opaque-black flex items-center justify-center p-4">
+          <div className="bg-cult-opaque-near-black border-2 border-cult-danger p-8 max-w-3xl w-full">
             <div className="flex items-start gap-4 mb-6">
               <div className="flex-shrink-0 w-12 h-12 bg-cult-danger rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,21 +137,21 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {showDetails && this.state.error && (
-              <details className="mb-6 bg-cult-black p-4 border border-cult-medium-gray">
+              <details className="mb-6 bg-cult-opaque-black p-4 border border-cult-medium-gray">
                 <summary className="cursor-pointer text-cult-white hover:text-cult-light-gray font-medium mb-2">
                   Technical Details
                 </summary>
                 <div className="mt-4 space-y-2">
                   <div>
                     <p className="text-cult-lighter-gray text-sm font-medium mb-1">Error Message:</p>
-                    <pre className="p-3 bg-cult-near-black text-cult-danger text-xs overflow-auto rounded">
+                    <pre className="p-3 bg-cult-opaque-near-black text-cult-danger text-xs overflow-auto rounded">
                       {this.state.error.toString()}
                     </pre>
                   </div>
                   {this.state.error.stack && (
                     <div>
                       <p className="text-cult-lighter-gray text-sm font-medium mb-1">Stack Trace:</p>
-                      <pre className="p-3 bg-cult-near-black text-cult-lighter-gray text-xs overflow-auto rounded max-h-48">
+                      <pre className="p-3 bg-cult-opaque-near-black text-cult-lighter-gray text-xs overflow-auto rounded max-h-48">
                         {this.state.error.stack}
                       </pre>
                     </div>
@@ -159,7 +159,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   {this.state.errorInfo?.componentStack && (
                     <div>
                       <p className="text-cult-lighter-gray text-sm font-medium mb-1">Component Stack:</p>
-                      <pre className="p-3 bg-cult-near-black text-cult-lighter-gray text-xs overflow-auto rounded max-h-32">
+                      <pre className="p-3 bg-cult-opaque-near-black text-cult-lighter-gray text-xs overflow-auto rounded max-h-32">
                         {this.state.errorInfo.componentStack}
                       </pre>
                     </div>
@@ -194,7 +194,7 @@ export class ErrorBoundary extends Component<Props, State> {
             {import.meta.env.DEV && (
               <div className="mt-6 pt-6 border-t border-cult-medium-gray">
                 <p className="text-cult-lighter-gray text-xs">
-                  Development Mode: Error logs are available in the console. Type <code className="px-1 py-0.5 bg-cult-black rounded">__errorService.getRecentErrors()</code> to view recent errors.
+                  Development Mode: Error logs are available in the console. Type <code className="px-1 py-0.5 bg-cult-opaque-black rounded">__errorService.getRecentErrors()</code> to view recent errors.
                 </p>
               </div>
             )}

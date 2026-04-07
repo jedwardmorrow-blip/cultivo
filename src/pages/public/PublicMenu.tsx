@@ -197,7 +197,7 @@ export function PublicMenu() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cult-black flex items-center justify-center">
+      <div className="min-h-screen bg-cult-opaque-black flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-cult-green animate-spin" />
       </div>
     );
@@ -205,8 +205,8 @@ export function PublicMenu() {
 
   if (orderSuccess) {
     return (
-      <div className="min-h-screen bg-cult-black flex items-center justify-center p-4">
-        <div className="bg-cult-near-black border-2 border-cult-green rounded-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-cult-opaque-black flex items-center justify-center p-4">
+        <div className="bg-cult-opaque-near-black border-2 border-cult-green rounded-lg p-8 max-w-md w-full text-center">
           <CheckCircle2 className="w-16 h-16 text-cult-green mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-cult-white mb-2">Order Submitted!</h2>
           <p className="text-cult-light-gray mb-6">Your order has been received and will be processed shortly.</p>
@@ -222,8 +222,8 @@ export function PublicMenu() {
   }
 
   return (
-    <div className="min-h-screen bg-cult-black text-cult-white">
-      <div className="sticky top-0 z-20 bg-cult-near-black border-b border-cult-medium-gray shadow-lg">
+    <div className="min-h-screen bg-cult-opaque-black text-cult-white">
+      <div className="sticky top-0 z-20 bg-cult-opaque-near-black border-b border-cult-medium-gray shadow-lg">
         <div className="px-4 py-4">
           <div className="flex items-center gap-3 mb-4">
             <img
@@ -387,7 +387,7 @@ export function PublicMenu() {
             return (
               <div
                 key={product.id}
-                className={`bg-cult-near-black border rounded-lg p-4 transition-all ${
+                className={`bg-cult-opaque-near-black border rounded-lg p-4 transition-all ${
                   quantity > 0 ? 'border-cult-green bg-opacity-50' : 'border-cult-medium-gray'
                 }`}
               >
@@ -449,7 +449,7 @@ export function PublicMenu() {
       </div>
 
       {cartItemCount > 0 && (
-        <div className="sticky bottom-0 z-20 bg-cult-near-black border-t-2 border-cult-green p-4 shadow-lg">
+        <div className="sticky bottom-0 z-20 bg-cult-opaque-near-black border-t-2 border-cult-green p-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs text-cult-light-gray uppercase tracking-wide">Order Total</div>

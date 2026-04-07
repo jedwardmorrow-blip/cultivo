@@ -113,7 +113,7 @@ export function OrderItemLabelPrintModal({
     <>
       <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
         <div className="bg-cult-dark-gray rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col border-2 border-cult-medium-gray">
-          <div className="p-4 border-b border-cult-medium-gray flex items-center justify-between bg-cult-near-black">
+          <div className="p-4 border-b border-cult-medium-gray flex items-center justify-between bg-cult-opaque-near-black">
             <div>
               <h3 className="text-xl font-bold text-cult-white">Print Labels</h3>
               <p className="text-sm text-cult-lighter-gray mt-1">{productName}</p>
@@ -139,7 +139,7 @@ export function OrderItemLabelPrintModal({
             </div>
           ) : (
             <>
-              <div className="p-4 border-b border-cult-medium-gray bg-cult-near-black">
+              <div className="p-4 border-b border-cult-medium-gray bg-cult-opaque-near-black">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="flex gap-2">
@@ -191,7 +191,7 @@ export function OrderItemLabelPrintModal({
                   {filteredLabels.map(label => (
                     <div
                       key={label.id}
-                      className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 hover:border-cult-lighter-gray transition-colors"
+                      className="bg-cult-opaque-near-black border border-cult-medium-gray rounded-lg p-4 hover:border-cult-lighter-gray transition-colors"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
