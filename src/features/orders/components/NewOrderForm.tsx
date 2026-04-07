@@ -554,7 +554,7 @@ export function NewOrderForm({ onClose, onSuccess, cloneFrom, preSelectedCustome
     ? `${selectedCustomer.dispensary_code}${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`
     : null;
 
-  const canSubmit = !!selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading && cartItems.every(item => !!item.batch_id);
+  const canSubmit = !!selectedCustomerId && cartItems.length > 0 && !dateError && !loading && !dataLoading;
 
   // ─── Cart Actions ────────────────────────────────────────────────────────
 
