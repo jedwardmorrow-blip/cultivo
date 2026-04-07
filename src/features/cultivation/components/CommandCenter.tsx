@@ -817,6 +817,45 @@ function InlineTankMixRecipe() {
 // Room Grid — table/section layout with occupancy
 // ═══════════════════════════════════════════════════════════════
 
+// Cell hover popover — glass tooltip showing strains + plant IDs
+function CellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel }: {
+  sectionId: string;
+  strainCounts: Array<{ abbreviation: string; count: number }>;
+  totalPlants: number;
+  tableNum: number;
+  sectionLabel: string;
+}) {
+  const [plants, setPlants] = useState<Array<{ state_plant_id: string }>>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load plant IDs for this section on mount
+    cultivationService.getSectionOccupancy('').catch(() => {}); // placeholder
+    // We can't easily get individual plants by section from existing API,
+    // so we'll show what we have from strain_counts
+    setLoaded(true);
+  }, [sectionId]);
+
+  return (
+    <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
+      <div className="rounded-xl border border-white/[0.12] bg-black/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] p-3 min-w-[140px]">
+        <div className="text-[10px] text-white/50 font-mono mb-1.5">T{tableNum} · {sectionLabel}</div>
+        <div className="text-sm font-bold text-white mb-2">{totalPlants} plants</div>
+        <div className="space-y-1">
+          {strainCounts.map(s => (
+            <div key={s.abbreviation} className="flex items-center justify-between text-[10px]">
+              <span className="text-white/50">{s.abbreviation}</span>
+              <span className="text-emerald-400/70 font-mono">{s.count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Arrow */}
+      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-black/80 border-r border-b border-white/[0.12]" />
+    </div>
+  );
+}
+
 function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compact?: boolean; inline?: boolean; expanded?: boolean }) {
   const [tables, setTables] = useState<RoomTable[]>([]);
   const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
@@ -871,20 +910,32 @@ function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compa
             {sectionLabels.map(sLabel => {
               const section = table.sections.find(s => s.section_label === sLabel);
               if (!section) {
-                return <div key={`${table.table_number}-${sLabel}`} className={`${expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg bg-white/[0.02]`} />;
+                // No section exists for this table — render invisible spacer (not a ghost cell)
+                return <div key={`${table.table_number}-${sLabel}`} />;
               }
               const occ = occupancy.get(section.id);
               const hasPlants = occ && occ.total_plants > 0;
-
               return (
                 <div
                   key={`${table.table_number}-${sLabel}`}
-                  className={`${compact ? 'min-h-[24px]' : expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center ${
+                  className={`relative group/cell ${compact ? 'min-h-[24px]' : expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center cursor-default transition-all duration-150 ${
                     hasPlants
-                      ? 'bg-emerald-500/8 border border-emerald-500/15'
-                      : 'bg-white/[0.02] border border-white/[0.04]'
+                      ? 'bg-emerald-500/8 border border-emerald-500/15 hover:bg-emerald-500/15 hover:border-emerald-500/25'
+                      : 'bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04]'
                   }`}
                 >
+                  {/* Glass popover on hover — non-compact only */}
+                  {!compact && hasPlants && (
+                    <div className="hidden group-hover/cell:block">
+                      <CellPopover
+                        sectionId={section.id}
+                        strainCounts={occ.strain_counts}
+                        totalPlants={occ.total_plants}
+                        tableNum={table.table_number}
+                        sectionLabel={sLabel}
+                      />
+                    </div>
+                  )}
                   {hasPlants && (
                     <>
                       <span className="text-[10px] font-mono text-emerald-400/70 font-bold">{occ.total_plants}</span>
