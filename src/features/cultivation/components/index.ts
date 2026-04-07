@@ -42,6 +42,7 @@ export { CultivationTodayView } from './CultivationTodayView';
 export { CultivationMapPage } from './CultivationMapPage';
 export { CommandCenter } from './CommandCenter';
 export { VisualTemplateBuilder } from './VisualTemplateBuilder';
+export { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain';
 export { WeekTaskGrid } from './WeekTaskGrid';
 export { PlantMoveSheet } from './PlantMoveSheet';
 export { RoomCapacityBar } from './RoomCapacityBar';

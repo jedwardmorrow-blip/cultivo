@@ -25,6 +25,7 @@ import type { SectionOccupancy } from '../types';
 import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { MoveToRoomModal } from './MoveToRoomModal';
+import { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain';
 import { todayIso } from '../utils/dateUtils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -411,7 +412,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
                     {focusedCard === 'room-layout' && 'Room Layout'}
-                    {focusedCard === 'plant-groups' && `Plant Groups (${roomGroups.length})`}
+                    {focusedCard === 'plant-groups' && `Plants (${state.total_plants})`}
                     {focusedCard === 'feed-recipe' && 'Feed Recipe'}
                     {focusedCard === 'room-info' && 'Room Info'}
                     {focusedCard === 'strains' && 'Strains'}
@@ -456,39 +457,14 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                   </div>
                 )}
                 {focusedCard === 'plant-groups' && (
-                  <div className="space-y-2">
-                    {roomGroups.map(g => {
-                      const batchNum = g.batch_registry?.batch_number;
-                      const strainName = g.strains?.name ?? 'Unknown';
-                      return (
-                        <div key={g.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/[0.03] group">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              {batchNum && <span className="text-sm font-mono text-white/70">{batchNum}</span>}
-                              <span className="text-xs text-white/30 uppercase">{g.growth_stage}</span>
-                            </div>
-                            <div className="text-xs text-white/40 mt-0.5">
-                              {strainName} · {g.plant_count} plants
-                              {g.room_tables && <span> · T{g.room_tables.table_number}</span>}
-                              {g.room_sections && <span> {g.room_sections.section_label}</span>}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const batchId = g.batch_registry_id;
-                              const batchGroups = batchId ? roomGroups.filter(rg => rg.batch_registry_id === batchId) : undefined;
-                              setMovingGroup(g);
-                              setMovingBatchGroups(batchGroups && batchGroups.length > 1 ? batchGroups : undefined);
-                            }}
-                            className="text-xs text-white/25 hover:text-white/50 px-3 py-1.5 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
-                          >
-                            Move
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <PlantsByStrainExpanded
+                    groups={roomGroups}
+                    roomId={state.room_id}
+                    rooms={rooms as any}
+                    onMoveToRoom={onMoveToRoom}
+                    onSplitAndMove={onSplitAndMove}
+                    onSplitAndMoveMultiple={onSplitAndMoveMultiple}
+                  />
                 )}
               </motion.div>
             ) : (
@@ -541,7 +517,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {focusedCard === 'room-layout' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
           </button>
 
-          {/* Plant Groups */}
+          {/* Plants by Strain */}
           {roomGroups.length > 0 && (
             <button
               type="button"
@@ -549,17 +525,10 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
               className={`${focusedCard === 'plant-groups' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
             >
               <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
-                Plant Groups <span className="text-white/15">({roomGroups.length})</span>
+                Plants <span className="text-white/15">({state.total_plants})</span>
               </h3>
               {focusedCard !== 'plant-groups' && (
-                <div className="space-y-1 max-h-[80px] overflow-hidden">
-                  {roomGroups.slice(0, 3).map(g => (
-                    <div key={g.id} className="text-[10px] text-white/40">
-                      {g.batch_registry?.batch_number ?? g.strains?.name} · {g.plant_count}p
-                    </div>
-                  ))}
-                  {roomGroups.length > 3 && <div className="text-[10px] text-white/20">+{roomGroups.length - 3} more</div>}
-                </div>
+                <PlantsByStrainCompact groups={roomGroups} />
               )}
               {focusedCard === 'plant-groups' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
             </button>
