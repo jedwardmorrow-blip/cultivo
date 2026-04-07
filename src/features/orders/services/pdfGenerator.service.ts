@@ -567,14 +567,14 @@ export async function generateManifestPDF(data: ManifestData, logoUrl?: string):
 
   // --- Route Map (if data URL) ---
   if (data.route_map_url && data.route_map_url.startsWith('data:image')) {
-    if (y + 220 > pageHeight - 60) { pdf.addPage(); y = margin; }
+    ensureSpace(240);
     sectionHeader('ROUTE VISUALIZATION');
     if (data.route_distance && data.route_duration) {
       pdf.setFontSize(7);
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(100);
+      pdf.setTextColor(100, 100, 100);
       pdf.text(`Distance: ${data.route_distance} | Est. Time: ${data.route_duration}`, pageWidth - margin, y - 16, { align: 'right' });
-      pdf.setTextColor(0);
+      pdf.setTextColor(0, 0, 0);
     }
     const mapW = 360;
     const mapH = 200;
@@ -582,25 +582,25 @@ export async function generateManifestPDF(data: ManifestData, logoUrl?: string):
     pdf.addImage(data.route_map_url, 'PNG', mapX, y, mapW, mapH);
     y += mapH + 12;
     pdf.setFontSize(7);
-    pdf.setTextColor(100);
+    pdf.setTextColor(100, 100, 100);
     pdf.text(`Origin: ${data.origin_location_name}  •  Destination: ${data.destination_entity_name}`, pageWidth / 2, y, { align: 'center' });
-    pdf.setTextColor(0);
+    pdf.setTextColor(0, 0, 0);
     y += 16;
   }
 
   // --- Turn-by-Turn Directions ---
   if (data.route_instructions && data.route_instructions.length > 0) {
-    if (y + 60 > pageHeight - 60) { pdf.addPage(); y = margin; }
+    ensureSpace(60);
     sectionHeader('TURN-BY-TURN DIRECTIONS');
     if (data.route_distance && data.route_duration && !(data.route_map_url && data.route_map_url.startsWith('data:image'))) {
       pdf.setFontSize(7);
-      pdf.setTextColor(100);
+      pdf.setTextColor(100, 100, 100);
       pdf.text(`Distance: ${data.route_distance} | Est. Time: ${data.route_duration}`, pageWidth - margin, y - 16, { align: 'right' });
-      pdf.setTextColor(0);
+      pdf.setTextColor(0, 0, 0);
     }
     pdf.setFontSize(7);
     data.route_instructions.forEach(inst => {
-      if (y + 12 > pageHeight - 60) { pdf.addPage(); y = margin; }
+      if (y + 12 > pageBottom) { pdf.addPage(); y = margin; }
       pdf.setFont('helvetica', 'bold');
       pdf.text(`${inst.step_number}.`, margin, y);
       pdf.setFont('helvetica', 'normal');
@@ -615,7 +615,7 @@ export async function generateManifestPDF(data: ManifestData, logoUrl?: string):
   }
 
   // --- Line Items Table ---
-  if (y + 40 > pageHeight - 100) { pdf.addPage(); y = margin; }
+  ensureSpace(60);
 
   const manifestColumns = ['#', 'Item Description', 'Batch #', 'Qty', 'Unit Wt', 'Unit Price', 'Net Wt (g)', 'Gross Wt (g)', 'Price'];
 
@@ -699,7 +699,7 @@ export async function generateManifestPDF(data: ManifestData, logoUrl?: string):
   y = (pdf as any).lastAutoTable.finalY + 16;
 
   // --- Delivery Verification ---
-  if (y + 100 > pageHeight - 60) { pdf.addPage(); y = margin; }
+  ensureSpace(100);
   sectionHeader('DELIVERY VERIFICATION');
 
   // Delivery person info box
@@ -722,7 +722,7 @@ export async function generateManifestPDF(data: ManifestData, logoUrl?: string):
   y += deliveryBoxH + 12;
 
   // --- Receiver Verification ---
-  if (y + 130 > pageHeight - 60) { pdf.addPage(); y = margin; }
+  ensureSpace(130);
   sectionHeader('RECEIVER VERIFICATION');
   pdf.setFontSize(7);
   pdf.setFont('helvetica', 'italic');
