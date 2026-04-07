@@ -20,8 +20,8 @@ export function HubShell({ section, icon: Icon, kpis, children }: HubShellProps)
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="min-h-screen bg-cult-black text-cult-text-primary">
-      <div className="px-6 py-4 border-b border-cult-dark-gray">
+    <div className="min-h-screen text-cult-text-primary">
+      <div className="px-6 py-4 border-b border-cult-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Icon className="w-6 h-6 text-cult-accent" />

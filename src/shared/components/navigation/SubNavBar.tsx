@@ -33,7 +33,7 @@ export function SubNavBar({ currentView, onNavigate, badgeMap }: SubNavBarProps)
   const hasBothGroups = primaryItems.length > 0 && secondaryItems.length > 0;
 
   return (
-    <div className="bg-cult-near-black border-b border-cult-charcoal/60 sticky z-30" style={{ top: 'calc(65px + env(safe-area-inset-top, 0px))' }}>
+    <div className="border-b border-cult-border sticky z-30" style={{ top: 'calc(65px + env(safe-area-inset-top, 0px))', background: 'rgba(26, 26, 46, 0.5)', backdropFilter: 'blur(12px) saturate(1.4)', WebkitBackdropFilter: 'blur(12px) saturate(1.4)' }}>
       <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
         <div className="flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide">
           {primaryItems.map((item) => (

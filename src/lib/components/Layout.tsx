@@ -55,7 +55,7 @@ export function Layout({ children }: LayoutProps) {
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
   return (
-    <div className="min-h-screen bg-cult-black">
+    <div className="min-h-screen bg-cult-surface">
       {isDemoMode && (
         <div className="sticky top-0 z-50 bg-cult-warning text-cult-black text-center text-xs font-semibold py-1 tracking-wider uppercase">
           Demo Environment — Data shown is fictional and for demonstration purposes only

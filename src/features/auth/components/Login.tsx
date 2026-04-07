@@ -30,7 +30,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-cult-black">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
       <div
         className="absolute inset-0 opacity-40"
         style={{

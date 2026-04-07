@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         cult: {
+          // ── Raw palette (legacy compat — prefer semantic tokens below) ──
           black: '#0A0A0A',
           white: '#FFFFFF',
           'off-white': '#F8F8F8',
@@ -19,24 +20,28 @@ export default {
           red: '#DC4545',
           green: '#10B981',
           'green-bright': '#34D399',
-                      // Semantic Surface Tokens
-                      'surface': '#0A0A0A',
-                      'surface-raised': '#111111',
-                      'surface-overlay': '#1C1C1C',
-                      'surface-sunken': '#1A1A1A',
-                      // Semantic Border Tokens
-                      'border': '#2E2E2E',
-                      'border-strong': '#404040',
-                      'border-subtle': '#1C1C1C',
-                      // Semantic Text Tokens
-                      'text-primary': '#FFFFFF',
-                      'text-secondary': '#A6A6A6',
-                      'text-muted': '#666666',
-                      'text-faint': '#404040',
-                      // Interactive / Brand Tokens
-                      'accent': '#FFFFFF',
-                      'accent-hover': '#D4D4D4',
-                      'accent-subtle': '#A6A6A6',
+
+          // ── Semantic Surface Tokens (translucent — glass system) ──
+          'surface': 'rgba(10, 10, 10, 0.95)',
+          'surface-raised': 'rgba(255, 255, 255, 0.06)',
+          'surface-overlay': 'rgba(255, 255, 255, 0.08)',
+          'surface-sunken': 'rgba(0, 0, 0, 0.2)',
+
+          // ── Semantic Border Tokens (light reflections on glass) ──
+          'border': 'rgba(255, 255, 255, 0.10)',
+          'border-strong': 'rgba(255, 255, 255, 0.20)',
+          'border-subtle': 'rgba(255, 255, 255, 0.06)',
+
+          // ── Semantic Text Tokens ──
+          'text-primary': '#FFFFFF',
+          'text-secondary': '#A6A6A6',
+          'text-muted': '#666666',
+          'text-faint': '#404040',
+
+          // ── Interactive / Brand Tokens (warm white) ──
+          'accent': '#E8E0D4',
+          'accent-hover': '#F5EDE0',
+          'accent-subtle': 'rgba(232, 224, 212, 0.6)',
                       // Status Tokens
                       'success': '#10B981',
                       'success-bright': '#34D399',
@@ -92,6 +97,7 @@ export default {
         'glow-veg': '0 0 20px rgba(16, 185, 129, 0.15)',
         'glow-flower': '0 0 20px rgba(244, 63, 94, 0.15)',
         'glow-harvest': '0 0 20px rgba(245, 158, 11, 0.15)',
+        'glow-accent': '0 0 12px rgba(232, 224, 212, 0.15)',
       },
       backdropBlur: {
         'glass': '16px',
