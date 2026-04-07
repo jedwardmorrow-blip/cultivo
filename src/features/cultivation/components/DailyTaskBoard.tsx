@@ -24,6 +24,7 @@ import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
+import { TemplateManager } from './TemplateManager';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
@@ -48,7 +49,7 @@ const CULTIVATION_ROLES = new Set(['cultivation_manager', 'cultivation_lead', 'c
 
 export function SchedulesPage() {
   const { rooms: dbRooms } = useGrowRooms();
-  const [scheduleView, setScheduleView] = useState<'calendar' | 'setup'>('calendar');
+  const [scheduleView, setScheduleView] = useState<'calendar' | 'setup' | 'templates'>('calendar');
   const [setupRoomId, setSetupRoomId] = useState<string | undefined>(undefined);
 
   const rooms = useMemo(() => {
@@ -65,6 +66,12 @@ export function SchedulesPage() {
     setScheduleView('setup');
   }
 
+  const tabs: { key: typeof scheduleView; label: string; icon: typeof Calendar }[] = [
+    { key: 'calendar', label: 'Calendar', icon: Calendar },
+    { key: 'setup', label: 'Room Setup', icon: Wrench },
+    { key: 'templates', label: 'Templates', icon: ClipboardList },
+  ];
+
   return (
     <div className="space-y-5 pb-8">
       {/* Header with view toggle */}
@@ -75,41 +82,37 @@ export function SchedulesPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setScheduleView('calendar')}
-              className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
-                scheduleView === 'calendar'
-                  ? 'bg-cult-charcoal text-cult-white'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              Calendar
-            </button>
-            <button
-              type="button"
-              onClick={() => { setSetupRoomId(undefined); setScheduleView('setup'); }}
-              className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
-                scheduleView === 'setup'
-                  ? 'bg-cult-charcoal text-cult-white'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
-              }`}
-            >
-              <Wrench className="w-4 h-4" />
-              Room Setup
-            </button>
+            {tabs.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => { if (key === 'setup') setSetupRoomId(undefined); setScheduleView(key); }}
+                className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                  scheduleView === key
+                    ? 'bg-cult-charcoal text-cult-white'
+                    : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* View content */}
-      {scheduleView === 'calendar' ? (
+      {scheduleView === 'calendar' && (
         <RoomCalendar rooms={rooms} onEditRoom={handleEditRoom} onSwitchToSetup={handleSwitchToSetup} />
-      ) : (
+      )}
+      {scheduleView === 'setup' && (
         <RoomSetupPanel rooms={rooms} initialRoomId={setupRoomId} />
       )}
-
+      {scheduleView === 'templates' && (
+        <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-5">
+          <TemplateManager inline onClose={() => {}} />
+        </div>
+      )}
     </div>
   );
 }
