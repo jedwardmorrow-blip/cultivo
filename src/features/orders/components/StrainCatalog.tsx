@@ -56,6 +56,28 @@ const STAGE_LABELS: Record<string, string> = {
   packaged: 'Packaged',
 };
 
+// ─── Pipeline-Derived Unit Availability ──────────────────────────────────────
+
+/** Parse the per-unit weight in grams from a product name (e.g. "3.5g Flower" → 3.5, "1lb Flower (454g)" → 454). */
+function parseUnitWeightGrams(productName: string): number | null {
+  const name = productName.toLowerCase();
+  if (name.includes('1lb') || name.includes('454g')) return 454;
+  const match = name.match(/(\d+(?:\.\d+)?)g\b/);
+  if (match) return parseFloat(match[1]);
+  return null;
+}
+
+/**
+ * Compute how many units of a packaged product the full pipeline can produce.
+ * Includes packaged (ready), material-specific bulk, and all upstream stages
+ * (bucked, binned) that could be processed into the final product.
+ */
+function getPipelineAvailableUnits(readyGrams: number, pipelineGrams: number, productName: string, upstreamGrams?: number): number | null {
+  const unitWeight = parseUnitWeightGrams(productName);
+  if (!unitWeight || unitWeight <= 0) return null;
+  return Math.floor((readyGrams + pipelineGrams + (upstreamGrams ?? 0)) / unitWeight);
+}
+
 // ─── Availability Dot ────────────────────────────────────────────────────────
 
 function AvailabilityDot({ level }: { level: 'high' | 'medium' | 'low' | 'out' }) {
@@ -449,6 +471,14 @@ function StrainDetailPanel({
     return (batchesByStage[materialStage] || []).reduce((s, b) => s + b.available_weight_grams, 0);
   }
 
+  // "Upstream" = bucked + binned weight that could be processed into any material type
+  function getUpstreamGrams(): number {
+    return (
+      (batchesByStage['bucked'] || []).reduce((s, b) => s + b.available_weight_grams, 0) +
+      (batchesByStage['binned'] || []).reduce((s, b) => s + b.available_weight_grams, 0)
+    );
+  }
+
   // Total pipeline across ALL material types for the strain header
   const totalPipelineGrams = Object.values(batchesByStage)
     .flat()
@@ -541,11 +571,13 @@ function StrainDetailPanel({
                 const pricingUnit = product.pricing_unit || 'unit';
                 const reservation = productReservations?.get(product.id);
                 const reservedQty = reservation?.reserved_qty ?? 0;
-                const netAvailable = reservation?.net_available ?? (product.available_quantity ?? 0);
-                // Pipeline-aware availability: don't show red warnings when upstream material exists
-                const hasPipeline = pipelineGrams > 0 || readyGrams > 0;
-                const isOverReserved = parsedQty > netAvailable && netAvailable >= 0 && !hasPipeline;
-                const isFullyReserved = netAvailable === 0 && reservedQty > 0 && !hasPipeline;
+                const staticAvailable = reservation?.net_available ?? (product.available_quantity ?? 0);
+                // Use pipeline-derived availability: packaged + bulk material + upstream (bucked/binned)
+                const upstreamGrams = getUpstreamGrams();
+                const pipelineUnits = getPipelineAvailableUnits(readyGrams, pipelineGrams, product.name, upstreamGrams);
+                const netAvailable = pipelineUnits != null ? Math.max(pipelineUnits - reservedQty, 0) : staticAvailable;
+                const isOverReserved = parsedQty > netAvailable && netAvailable >= 0;
+                const isFullyReserved = netAvailable === 0 && reservedQty > 0;
 
                 return (
                   <div key={product.id}>
@@ -609,18 +641,11 @@ function StrainDetailPanel({
                             reserved: <span className="text-cult-warning font-semibold tabular-nums">{reservedQty}</span>
                           </span>
                           <span className="text-cult-text-faint">·</span>
-                          {netAvailable > 0 ? (
-                            <span className="font-semibold tabular-nums text-cult-success">
-                              {netAvailable} net available
-                            </span>
-                          ) : hasPipeline ? (
-                            <span className="font-semibold text-cult-warning">
-                              needs production
-                            </span>
-                          ) : (
-                            <span className="font-semibold tabular-nums text-cult-danger">
-                              {netAvailable} net available
-                            </span>
+                          <span className={`font-semibold tabular-nums ${netAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
+                            {netAvailable} net available
+                          </span>
+                          {pipelineUnits != null && pipelineUnits > 0 && staticAvailable === 0 && (
+                            <span className="text-cult-text-muted">(from pipeline)</span>
                           )}
                           {isFullyReserved && (
                             <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
@@ -669,12 +694,6 @@ function StrainDetailPanel({
                           <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
                             <AlertCircle className="w-3 h-3 flex-shrink-0" />
                             exceeds net available ({netAvailable})
-                          </span>
-                        )}
-                        {!isOverReserved && netAvailable === 0 && hasPipeline && (
-                          <span className="flex items-center gap-0.5 text-[10px] text-cult-warning font-medium ml-auto">
-                            <Scissors className="w-3 h-3 flex-shrink-0" />
-                            needs production
                           </span>
                         )}
                       </div>
@@ -820,10 +839,12 @@ function StrainDetailPanel({
                 const pipelineGrams = getPipelineGrams(product);
                 const prerollReservation = productReservations?.get(product.id);
                 const prerollReservedQty = prerollReservation?.reserved_qty ?? 0;
-                const prerollNetAvailable = prerollReservation?.net_available ?? (product.available_quantity ?? 0);
-                const prerollHasPipeline = pipelineGrams > 0;
-                const prerollIsOverReserved = parsedQty > prerollNetAvailable && prerollNetAvailable >= 0 && !prerollHasPipeline;
-                const prerollFullyReserved = prerollNetAvailable === 0 && prerollReservedQty > 0 && !prerollHasPipeline;
+                const prerollStaticAvailable = prerollReservation?.net_available ?? (product.available_quantity ?? 0);
+                const prerollUpstreamGrams = getUpstreamGrams();
+                const prerollPipelineUnits = getPipelineAvailableUnits(0, pipelineGrams, product.name, prerollUpstreamGrams);
+                const prerollNetAvailable = prerollPipelineUnits != null ? Math.max(prerollPipelineUnits - prerollReservedQty, 0) : prerollStaticAvailable;
+                const prerollIsOverReserved = parsedQty > prerollNetAvailable && prerollNetAvailable >= 0;
+                const prerollFullyReserved = prerollNetAvailable === 0 && prerollReservedQty > 0;
 
                 return (
                   <div key={product.id}>
@@ -883,18 +904,11 @@ function StrainDetailPanel({
                             reserved: <span className="text-cult-warning font-semibold tabular-nums">{prerollReservedQty}</span>
                           </span>
                           <span className="text-cult-text-faint">·</span>
-                          {prerollNetAvailable > 0 ? (
-                            <span className="font-semibold tabular-nums text-cult-success">
-                              {prerollNetAvailable} net available
-                            </span>
-                          ) : prerollHasPipeline ? (
-                            <span className="font-semibold text-cult-warning">
-                              needs production
-                            </span>
-                          ) : (
-                            <span className="font-semibold tabular-nums text-cult-danger">
-                              {prerollNetAvailable} net available
-                            </span>
+                          <span className={`font-semibold tabular-nums ${prerollNetAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
+                            {prerollNetAvailable} net available
+                          </span>
+                          {prerollPipelineUnits != null && prerollPipelineUnits > 0 && prerollStaticAvailable === 0 && (
+                            <span className="text-cult-text-muted">(from pipeline)</span>
                           )}
                           {prerollFullyReserved && (
                             <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
@@ -942,12 +956,6 @@ function StrainDetailPanel({
                           <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
                             <AlertCircle className="w-3 h-3 flex-shrink-0" />
                             exceeds net available ({prerollNetAvailable})
-                          </span>
-                        )}
-                        {!prerollIsOverReserved && prerollNetAvailable === 0 && prerollHasPipeline && (
-                          <span className="flex items-center gap-0.5 text-[10px] text-cult-warning font-medium ml-auto">
-                            <Scissors className="w-3 h-3 flex-shrink-0" />
-                            needs production
                           </span>
                         )}
                       </div>
