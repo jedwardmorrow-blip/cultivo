@@ -397,7 +397,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
       {/* Bento content grid — cards swap into main panel on tap */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* ── Left column (3/5) — main content area ── */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
           <AnimatePresence mode="wait">
             {focusedCard ? (
               <motion.div
@@ -406,7 +406,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className={`${GLASS} p-5`}
+                className={`${GLASS} p-5 h-full`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
@@ -494,7 +494,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className={`${GLASS} p-5`}
+                className={`${GLASS} p-5 h-full`}
               >
                 <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
                 <TaskChecklist
