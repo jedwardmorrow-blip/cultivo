@@ -18,8 +18,10 @@ import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
+import { cultivationService } from '../services';
 import { getTaskTypeConfig } from '../types';
-import type { DailyTaskInstance, PlantGroup, SplitAndMoveInput, SplitAndMoveMultiInput } from '../types';
+import type { DailyTaskInstance, PlantGroup, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, StrainCount } from '../types';
+import type { SectionOccupancy } from '../types';
 import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { MoveToRoomModal } from './MoveToRoomModal';
@@ -437,6 +439,9 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             </div>
           </div>
 
+          {/* Room layout grid */}
+          <RoomGrid roomId={state.room_id} />
+
           {/* Feed recipe */}
           <FeedCard state={state} />
 
@@ -706,6 +711,96 @@ function InlineTankMixRecipe() {
           <span className="text-white/60 font-mono">{entry.ml_per_gal} mL/gal</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Room Grid — table/section layout with occupancy
+// ═══════════════════════════════════════════════════════════════
+
+function RoomGrid({ roomId }: { roomId: string }) {
+  const [tables, setTables] = useState<RoomTable[]>([]);
+  const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
+  const [loading, setLoading] = useState(true);
+
+  useState(() => {
+    Promise.all([
+      cultivationService.listRoomTables(roomId),
+      cultivationService.getSectionOccupancy(roomId),
+    ]).then(([t, o]) => {
+      setTables(t);
+      setOccupancy(o);
+    }).finally(() => setLoading(false));
+  });
+
+  const sortedTables = useMemo(() =>
+    [...tables].filter(t => t.sections.length > 0).sort((a, b) => a.table_number - b.table_number),
+    [tables]
+  );
+
+  const sectionLabels = useMemo(() => {
+    const labels = new Set<string>();
+    sortedTables.forEach(t => t.sections.forEach(s => labels.add(s.section_label)));
+    return [...labels].sort();
+  }, [sortedTables]);
+
+  if (loading) return <div className={`${GLASS} p-4 h-32 animate-pulse`} />;
+  if (sortedTables.length === 0) return null;
+
+  return (
+    <div className={`${GLASS} p-4`}>
+      <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Layout</h3>
+      <div
+        className="grid gap-1"
+        style={{ gridTemplateColumns: `32px repeat(${sectionLabels.length}, 1fr)` }}
+      >
+        {/* Column headers */}
+        <div />
+        {sectionLabels.map(label => (
+          <div key={label} className="text-center text-[9px] font-mono text-white/20 py-1">{label}</div>
+        ))}
+
+        {/* Rows */}
+        {sortedTables.map(table => (
+          <>
+            <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono text-white/20">
+              T{table.table_number}
+            </div>
+            {sectionLabels.map(sLabel => {
+              const section = table.sections.find(s => s.section_label === sLabel);
+              if (!section) {
+                return <div key={`${table.table_number}-${sLabel}`} className="min-h-[36px] rounded-lg bg-white/[0.02]" />;
+              }
+              const occ = occupancy.get(section.id);
+              const hasPlants = occ && occ.total_plants > 0;
+
+              return (
+                <div
+                  key={`${table.table_number}-${sLabel}`}
+                  className={`min-h-[36px] rounded-lg flex flex-col items-center justify-center ${
+                    hasPlants
+                      ? 'bg-emerald-500/8 border border-emerald-500/15'
+                      : 'bg-white/[0.02] border border-white/[0.04]'
+                  }`}
+                >
+                  {hasPlants && (
+                    <>
+                      <span className="text-[10px] font-mono text-emerald-400/70 font-bold">{occ.total_plants}</span>
+                      {occ.strain_counts.slice(0, 2).map(s => (
+                        <span key={s.abbreviation} className="text-[7px] text-white/25 leading-tight">{s.abbreviation}</span>
+                      ))}
+                      {occ.strain_counts.length > 2 && (
+                        <span className="text-[7px] text-white/15">+{occ.strain_counts.length - 2}</span>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        ))}
+      </div>
     </div>
   );
 }
