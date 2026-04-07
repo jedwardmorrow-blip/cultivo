@@ -6,7 +6,7 @@
  * See context DB: cultops_design_philosophy, design_language_master
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
