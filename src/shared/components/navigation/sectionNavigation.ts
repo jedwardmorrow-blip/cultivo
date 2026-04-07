@@ -89,7 +89,7 @@ export const sectionDefinitions: SectionDefinition[] = [
       { id: 'cultivation-plants', label: 'Plant Groups', icon: Leaf, group: 'primary' },
       { id: 'cultivation-harvest', label: 'Harvests', icon: Warehouse, group: 'primary' },
       { id: 'cultivation-binning', label: 'Drying', icon: Wind, group: 'primary' },
-      { id: 'cultivation-schedules', label: 'Schedule', icon: CalendarDays, group: 'secondary' },
+      { id: 'cultivation-schedules', label: 'Templates', icon: CalendarDays, group: 'secondary' },
       { id: 'worker-tasks', label: 'Crew', icon: Users, group: 'secondary' },
       { id: 'cultivation-analytics', label: 'Reports', icon: BarChart3, group: 'secondary' },
     ],

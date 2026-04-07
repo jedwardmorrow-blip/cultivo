@@ -39,3 +39,5 @@ export { useGenerateTasksFromSchedules } from './useGenerateTasksFromSchedules';
 export type { GenerateTasksResult, ProjectedTaskEntry } from './useGenerateTasksFromSchedules';
 export { useRoomScheduleCalendar } from './useRoomScheduleCalendar';
 export type { CalendarMilestone, UseRoomScheduleCalendarReturn } from './useRoomScheduleCalendar';
+export { useWorkerStats } from './useWorkerStats';
+export type { WorkerStats } from './useWorkerStats';

@@ -22,8 +22,26 @@ import {
   ChevronDown,
   ChevronLeft,
   Pencil,
+  Settings,
+  Lock,
+  ClipboardList,
+  Wrench,
+  Scissors,
+  Droplets,
+  Search,
+  SprayCan,
+  Sparkles,
+  Wheat,
+  Sprout,
+  GitBranch,
+  ArrowRightLeft,
+  Beaker,
+  Clock,
+  Skull,
 } from 'lucide-react';
 import { useScheduleTemplates } from '../hooks/useScheduleTemplates';
+import { useTaskTypeSettings } from '../hooks/useTaskTypeSettings';
+import type { TaskTypeSetting, CreateTaskTypeInput, UpdateTaskTypeInput } from '../hooks/useTaskTypeSettings';
 import type {
   ScheduleTemplate,
   TemplateScheduleItem,
@@ -54,6 +72,15 @@ const AVAILABLE_TASKS: TaskType[] = [
   'batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning',
   'training', 'saturation_check', 'irrigation_audit', 'maintenance', 'custom',
 ];
+
+type PageMode = 'templates' | 'task-types';
+
+const ICON_MAP: Record<string, typeof Wrench> = {
+  SprayCan, Scissors, ArrowRightLeft, Sparkles, Wheat,
+  Droplets, Search, GitBranch, Sprout, Wrench, Beaker, Settings, Clock, Skull,
+};
+const AVAILABLE_ICONS = Object.keys(ICON_MAP);
+const PRESET_COLORS = ['#0EA5E9', '#10B981', '#8B5CF6', '#6B7280', '#F43F5E', '#3B82F6', '#F59E0B', '#06B6D4', '#EC4899', '#14B8A6', '#6366F1', '#EF4444', '#A6A6A6'];
 
 /* ── helpers ───────────────────────────────────────────────────────── */
 
@@ -109,6 +136,7 @@ export function ScheduleBuilder() {
   const { rooms } = useGrowRooms();
   const { generate } = useGenerateTasksFromSchedules();
 
+  const [mode, setMode] = useState<PageMode>('templates');
   const [selectedType, setSelectedType] = useState<RoomTypeKey | null>(null);
   const [editingSchedules, setEditingSchedules] = useState<TemplateScheduleItem[] | null>(null);
   const [showApply, setShowApply] = useState(false);
@@ -224,15 +252,64 @@ export function ScheduleBuilder() {
     setSelectedRoomIds(new Set());
   }
 
+  /* ── page header with mode toggle (shared across all views) ──────── */
+
+  const pageHeader = (
+    <div className="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+          Templates & Tasks
+        </h1>
+        <p className="text-xs text-white/40 mt-1">
+          {mode === 'templates' ? 'Schedule templates by room type' : 'Configure task types and completion fields'}
+        </p>
+      </div>
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={() => { setMode('templates'); setSelectedType(null); }}
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 ${
+            mode === 'templates'
+              ? 'bg-white/10 text-white/80 border border-white/15'
+              : 'text-white/30 border border-transparent hover:bg-white/5'
+          }`}
+        >
+          <ClipboardList className="w-3.5 h-3.5" />
+          Templates
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('task-types')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 ${
+            mode === 'task-types'
+              ? 'bg-white/10 text-white/80 border border-white/15'
+              : 'text-white/30 border border-transparent hover:bg-white/5'
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5" />
+          Task Types
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ── task types mode ────────────────────────────────────────────── */
+
+  if (mode === 'task-types') {
+    return (
+      <div className="space-y-5">
+        {pageHeader}
+        <TaskTypesPanel />
+      </div>
+    );
+  }
+
   /* ── loading state ───────────────────────────────────────────────── */
 
   if (loading) {
     return (
       <div className="space-y-5">
-        <div>
-          <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">Schedule Builder</h1>
-          <p className="text-xs text-white/40 mt-1">Task templates by room type</p>
-        </div>
+        {pageHeader}
         <div className="glass-card p-6 animate-pulse h-64" />
       </div>
     );
@@ -243,12 +320,7 @@ export function ScheduleBuilder() {
   if (!selectedType) {
     return (
       <div className="space-y-5">
-        <div>
-          <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-            Schedule Builder
-          </h1>
-          <p className="text-xs text-white/40 mt-1">Task templates by room type</p>
-        </div>
+        {pageHeader}
 
         <LayoutGroup>
           <motion.div
@@ -348,7 +420,7 @@ export function ScheduleBuilder() {
         </button>
         <div className="flex-1" />
         <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-          Schedule Builder
+          Templates & Tasks
         </h1>
       </div>
 
@@ -778,6 +850,379 @@ export function ScheduleBuilder() {
 
 /* ── backwards compat export ───────────────────────────────────────── */
 export { ScheduleBuilder as VisualTemplateBuilder };
+
+/* ══════════════════════════════════════════════════════════════════════
+   TASK TYPES PANEL — glass-styled task type management
+   ══════════════════════════════════════════════════════════════════════ */
+
+function TaskTypesPanel() {
+  const { settings, loading, createTaskType, updateTaskType, deleteTaskType } = useTaskTypeSettings();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  // Fall back to TASK_TYPE_CONFIG if no settings in DB
+  const types: TaskTypeSetting[] = useMemo(() => {
+    if (settings.length > 0) return settings;
+    return (AVAILABLE_TASKS).map((key, i) => {
+      const config = getTaskTypeConfig(key);
+      return {
+        id: key,
+        task_key: key,
+        label: config.label,
+        description: '',
+        color: config.color,
+        icon: (config as Record<string, unknown>).icon as string ?? 'Wrench',
+        fields: [],
+        is_enabled: true,
+        sort_order: i * 10 + 10,
+        is_builtin: true,
+        created_at: '',
+        updated_at: '',
+      };
+    });
+  }, [settings]);
+
+  const editingType = editingId ? types.find(t => t.id === editingId) ?? null : null;
+
+  if (loading) {
+    return <div className="glass-card p-6 animate-pulse h-64" />;
+  }
+
+  // Editing a single task type
+  if (editingType || creating) {
+    return (
+      <TaskTypeEditor
+        taskType={editingType}
+        onSave={async (input) => {
+          if (editingType) {
+            await updateTaskType(editingType.id, input);
+          } else {
+            await createTaskType(input as CreateTaskTypeInput);
+          }
+          setEditingId(null);
+          setCreating(false);
+        }}
+        onDelete={editingType && !editingType.is_builtin ? async () => {
+          await deleteTaskType(editingType.id);
+          setEditingId(null);
+        } : undefined}
+        onCancel={() => { setEditingId(null); setCreating(false); }}
+      />
+    );
+  }
+
+  // Grid view
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-white/30">{types.filter(t => t.is_enabled).length} active task types</p>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/25 transition-all duration-200 active:scale-95"
+        >
+          <Plus className="w-3 h-3" />
+          New Task Type
+        </button>
+      </div>
+
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-3 gap-3"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
+        {types.map((tt) => {
+          const Icon = ICON_MAP[tt.icon] ?? Wrench;
+          return (
+            <motion.button
+              key={tt.id}
+              variants={staggerItem}
+              type="button"
+              onClick={() => setEditingId(tt.id)}
+              className={`glass-card p-4 text-left hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300 active:scale-[0.97] ${
+                !tt.is_enabled ? 'opacity-40' : ''
+              }`}
+              style={{ borderLeftWidth: 3, borderLeftColor: `${tt.color}60` }}
+            >
+              <div className="flex items-center gap-2.5 mb-2">
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${tt.color}15` }}
+                >
+                  <Icon className="w-4 h-4" style={{ color: tt.color }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs font-semibold text-white/70 uppercase tracking-wider block truncate">{tt.label}</span>
+                  {!tt.is_enabled && <span className="text-[9px] text-amber-400">Disabled</span>}
+                </div>
+                {tt.is_builtin
+                  ? <Lock className="w-3 h-3 text-white/15 flex-shrink-0" />
+                  : <Pencil className="w-3 h-3 text-white/15 flex-shrink-0" />
+                }
+              </div>
+              {tt.description && (
+                <p className="text-[10px] text-white/30 leading-relaxed line-clamp-2 mb-2">{tt.description}</p>
+              )}
+              {tt.fields && tt.fields.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {tt.fields.slice(0, 3).map(f => (
+                    <span key={f} className="text-[9px] text-white/20 px-1.5 py-0.5 rounded bg-white/[0.04]">{f}</span>
+                  ))}
+                  {tt.fields.length > 3 && <span className="text-[9px] text-white/15">+{tt.fields.length - 3}</span>}
+                </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── Task Type Editor ─────────────────────────────────────────────── */
+
+function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
+  taskType: TaskTypeSetting | null;
+  onSave: (input: UpdateTaskTypeInput & Partial<CreateTaskTypeInput>) => Promise<void>;
+  onDelete?: () => Promise<void>;
+  onCancel: () => void;
+}) {
+  const isNew = !taskType;
+  const [label, setLabel] = useState(taskType?.label ?? '');
+  const [taskKey, setTaskKey] = useState(taskType?.task_key ?? '');
+  const [description, setDescription] = useState(taskType?.description ?? '');
+  const [color, setColor] = useState(taskType?.color ?? '#A6A6A6');
+  const [icon, setIcon] = useState(taskType?.icon ?? 'Wrench');
+  const [fields, setFields] = useState<string[]>(taskType?.fields ?? []);
+  const [isEnabled, setIsEnabled] = useState(taskType?.is_enabled ?? true);
+  const [newField, setNewField] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (!label.trim()) return;
+    setSaving(true);
+    try {
+      const input: UpdateTaskTypeInput & Partial<CreateTaskTypeInput> = {
+        label: label.trim(),
+        description: description.trim(),
+        color,
+        icon,
+        fields,
+        is_enabled: isEnabled,
+      };
+      if (isNew) {
+        const key = taskKey.trim() || label.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        (input as CreateTaskTypeInput).task_key = key;
+      }
+      await onSave(input);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function addField() {
+    if (newField.trim() && !fields.includes(newField.trim())) {
+      setFields([...fields, newField.trim()]);
+      setNewField('');
+    }
+  }
+
+  function removeField(f: string) {
+    setFields(fields.filter(x => x !== f));
+  }
+
+  const SelectedIcon = ICON_MAP[icon] ?? Wrench;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card p-5 space-y-5"
+      style={{ borderLeftWidth: 3, borderLeftColor: `${color}60` }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 transition-colors active:scale-95"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            Back
+          </button>
+          <h2 className="text-sm font-semibold text-white/80">
+            {isNew ? 'New Task Type' : `Edit: ${taskType.label}`}
+          </h2>
+        </div>
+        <div className="flex gap-2">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="text-xs px-3 py-1.5 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all active:scale-95"
+            >
+              Delete
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !label.trim()}
+            className="flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95 disabled:opacity-30"
+          >
+            <Save className="w-3 h-3" />
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Left: basic info */}
+        <div className="space-y-4">
+          {/* Preview */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+              <SelectedIcon className="w-5 h-5" style={{ color }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white/70">{label || 'Task Name'}</p>
+              <p className="text-[10px] text-white/30">{description || 'Description...'}</p>
+            </div>
+          </div>
+
+          {/* Label */}
+          <div>
+            <label className="text-[10px] text-white/30 uppercase tracking-wider mb-1 block">Label</label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="e.g., Flush"
+              className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/25"
+            />
+          </div>
+
+          {isNew && (
+            <div>
+              <label className="text-[10px] text-white/30 uppercase tracking-wider mb-1 block">Key (auto-generated if blank)</label>
+              <input
+                type="text"
+                value={taskKey}
+                onChange={(e) => setTaskKey(e.target.value)}
+                placeholder="e.g., flush"
+                className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white font-mono placeholder:text-white/25"
+              />
+            </div>
+          )}
+
+          {/* Description */}
+          <div>
+            <label className="text-[10px] text-white/30 uppercase tracking-wider mb-1 block">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              placeholder="What does this task involve?"
+              className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/25 resize-none"
+            />
+          </div>
+
+          {/* Enable toggle */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-xs text-white/50">Active</span>
+            <button
+              type="button"
+              onClick={() => setIsEnabled(!isEnabled)}
+              className={`w-10 h-5 rounded-full transition-colors ${isEnabled ? 'bg-emerald-500' : 'bg-white/10'}`}
+            >
+              <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Right: color, icon, fields */}
+        <div className="space-y-4">
+          {/* Color picker */}
+          <div>
+            <label className="text-[10px] text-white/30 uppercase tracking-wider mb-2 block">Color</label>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`w-7 h-7 rounded-lg transition-all active:scale-90 ${color === c ? 'ring-2 ring-white/30 scale-110' : 'hover:scale-105'}`}
+                  style={{ backgroundColor: `${c}40`, borderWidth: 1, borderColor: `${c}60` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Icon picker */}
+          <div>
+            <label className="text-[10px] text-white/30 uppercase tracking-wider mb-2 block">Icon</label>
+            <div className="flex flex-wrap gap-1.5">
+              {AVAILABLE_ICONS.map(name => {
+                const Ic = ICON_MAP[name] ?? Wrench;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => setIcon(name)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 ${
+                      icon === name ? 'bg-white/15 border border-white/20' : 'bg-white/[0.04] hover:bg-white/[0.08]'
+                    }`}
+                  >
+                    <Ic className="w-4 h-4" style={{ color: icon === name ? color : 'rgba(255,255,255,0.3)' }} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Completion fields */}
+          <div>
+            <label className="text-[10px] text-white/30 uppercase tracking-wider mb-2 block">Completion Fields</label>
+            <div className="space-y-1.5 mb-2">
+              {fields.map(f => (
+                <div key={f} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                  <span className="text-xs text-white/50 flex-1">{f}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeField(f)}
+                    className="text-white/20 hover:text-red-400 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newField}
+                onChange={(e) => setNewField(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addField()}
+                placeholder="Add field..."
+                className="flex-1 glass-input rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/20"
+              />
+              <button
+                type="button"
+                onClick={addField}
+                disabled={!newField.trim()}
+                className="px-3 py-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-20"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 /* ── sub-components ────────────────────────────────────────────────── */
 
