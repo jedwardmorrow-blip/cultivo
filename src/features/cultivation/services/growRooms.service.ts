@@ -58,10 +58,12 @@ export const growRoomsService = {
 
     if (tables && tables.length > 0) {
       const tableIds = tables.map((t: { id: string }) => t.id);
-      const sectionUpdate: Record<string, string> = { flip_date };
-      if (projected_harvest_date) {
-        sectionUpdate.projected_harvest_date = projected_harvest_date;
-      }
+      const sectionUpdate: Record<string, string | null> = {
+        flip_date,
+        // Always reset projected_harvest_date on reflip — if a new date is
+        // provided, use it; otherwise clear the stale value from the previous run.
+        projected_harvest_date: projected_harvest_date ?? null,
+      };
       const { error: sectionErr } = await supabase
         .from('room_sections')
         .update(sectionUpdate)

@@ -105,8 +105,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     defaultView: 'production-overview',
     items: [
       { id: 'production-overview', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
-      { id: 'production-sessions', label: 'Sessions', icon: Scissors, group: 'primary' },
-      { id: 'production-pipeline', label: 'Pipeline', icon: Layers, group: 'primary' },
+      { id: 'production-sessions', label: 'Sessions (Legacy)', icon: Scissors, group: 'secondary' },
       { id: 'production-queue', label: 'Queue', icon: ClipboardList, group: 'secondary' }
     ],
   },

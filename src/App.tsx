@@ -25,6 +25,7 @@ const ProductionDispatchView = lazyRetry(() => import('./features/delivery'), 'P
 const OrderFulfillmentView = lazyRetry(() => import('./features/delivery'), 'OrderFulfillmentView');
 const DispatchExecutionQueue = lazyRetry(() => import('./features/delivery'), 'DispatchExecutionQueue');
 const ProductionDashboard = lazyRetry(() => import('./features/sessions'), 'ProductionDashboard');
+const ProductionHub = lazyRetry(() => import('./features/sessions'), 'ProductionHub');
 const SessionsHub = lazyRetry(() => import('./features/sessions'), 'SessionsHub');
 // Legacy individual session views — routes now redirect to sessions hub
 // BuckingSessionsRefactored, TrimSessionsRefactored, PackagingSessionsRefactored
@@ -198,7 +199,8 @@ function AuthenticatedApp() {
               <Route path="/worker-tasks" element={<CultivationErrorBoundary><WorkerTaskView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/cultivation-dry-rooms" element={<CultivationErrorBoundary><DryRoomsManagement /></CultivationErrorBoundary>} />
-              <Route path="/production-overview" element={<ProductionDashboard />} />
+              <Route path="/production-overview" element={<ProductionHub />} />
+              <Route path="/production-dashboard-legacy" element={<ProductionDashboard />} />
               <Route path="/production-sessions" element={<SessionsHub />} />
               <Route path="/bucking-sessions" element={<Navigate to="/production-sessions" replace />} />
               <Route path="/trim-sessions" element={<Navigate to="/production-sessions" replace />} />

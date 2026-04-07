@@ -1,24 +1,36 @@
 /**
- * Interim Cultivation Types
+ * Cultivation Types — derived from Database['public']['Tables']
  *
- * These are manually-specified types matching the CULTIVATION-ARCHITECTURE.md specification.
- * After C-2 migration runs and creates the cultivation tables, regenerate database.types.ts
- * via `npm run types:generate` and convert these to derive from Database['public']['Tables']
- * following the pattern in batch.types.ts.
- *
- * C-5A: Added RoomSection, RoomTable, UpdateRoomSectionInput for run date tracking.
- * C-5B: Added room_table_id/room_section_id to PlantGroup; added CreateRoomTableInput,
- *        UpdateRoomTableInput, CreateRoomSectionInput, UpdatePlantGroupPlacementInput,
- *        FlipRoomInput new service types.
- * D-2/D-3: Added BinningSessionStatus, DryRoom, BinningSession, CreateDryRoomInput,
- *           UpdateDryRoomInput, CreateBinningSessionInput.
- * E-1: Added IndividualPlant, AddIndividualPlantInput, BulkImportPlantResult;
- *      added batch_registry_id to PlantGroup.
- * D-9: Removed group_number from PlantGroup. Batch number (from batch_registry) is
- *      the sole human-readable identifier throughout the UI.
+ * Core entity types (GrowRoom, PlantGroup, HarvestSession, etc.) are derived from
+ * the generated database.types.ts following the pattern in batch.types.ts.
+ * App-layer extensions (join fields, narrowed unions) use Omit + interface extension.
+ * Input types, constants, and pure-app types remain manual.
  */
 
+import type { Database } from '../../../lib/database/database.types';
+
+// ═══════════════════════════════════════════════════════════════════════
+// Database table type helpers
+// ═══════════════════════════════════════════════════════════════════════
+
+type Tables = Database['public']['Tables'];
+
+// ═══════════════════════════════════════════════════════════════════════
+// Union types (narrower than DB's plain `string`)
+// ═══════════════════════════════════════════════════════════════════════
+
 export type PlanStatus = 'draft' | 'scheduled' | 'active' | 'completed' | 'cancelled';
+export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
+export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
+export type PlantSourceType = 'clone' | 'seed';
+export type HarvestSessionStatus = 'active' | 'completed' | 'finalized' | 'cancelled';
+export type HarvestType = 'flower' | 'fresh_frozen';
+export type FreshFrozenPackageStatus = 'stored' | 'allocated' | 'washed' | 'sold';
+export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
+
+// ═══════════════════════════════════════════════════════════════════════
+// Cultivation Plans (no DB table yet — manual)
+// ═══════════════════════════════════════════════════════════════════════
 
 export interface CultivationPlan {
   id: string;
@@ -77,43 +89,26 @@ export type CultivationPlanInput = Pick<CultivationPlan, 'room_id'> &
     | 'notes'
   >>;
 
-export type GrowthStage = 'clone' | 'veg' | 'flower' | 'harvested';
-export type RoomType = 'clone' | 'veg' | 'flower' | 'mother' | 'mixed';
-export type PlantSourceType = 'clone' | 'seed';
-export type HarvestSessionStatus = 'active' | 'completed' | 'finalized' | 'cancelled';
-export type HarvestType = 'flower' | 'fresh_frozen';
-export type FreshFrozenPackageStatus = 'stored' | 'allocated' | 'washed' | 'sold';
+// ═══════════════════════════════════════════════════════════════════════
+// Grow Rooms — from DB
+// ═══════════════════════════════════════════════════════════════════════
 
-export interface GrowRoom {
-  id: string;
-  name: string;
-  room_code: string;
+type GrowRoomRow = Tables['grow_rooms']['Row'];
+
+export interface GrowRoom extends Omit<GrowRoomRow, 'room_type'> {
   room_type: RoomType;
-  capacity_plants: number | null;
-  is_active: boolean;
-  created_at: string;
-  created_by: string | null;
 }
 
-export interface PlantGroup {
-  id: string;
-  name: string | null;
-  strain_id: string;
-  grow_room_id: string;
-  mother_plant_group_id: string | null;
-  room_table_id: string | null;
-  room_section_id: string | null;
-  batch_registry_id: string | null;
-  source_type: PlantSourceType;
-  is_mother: boolean;
-  plant_count: number;
+// ═══════════════════════════════════════════════════════════════════════
+// Plant Groups — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type PlantGroupRow = Tables['plant_groups']['Row'];
+
+export interface PlantGroup extends Omit<PlantGroupRow, 'growth_stage' | 'source_type'> {
   growth_stage: GrowthStage;
-  stage_entered_at: string;
-  planted_date: string | null;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
-  updated_at: string;
+  source_type: PlantSourceType;
+  // Join fields populated by select queries
   strains?: { name: string; abbreviation: string | null };
   grow_rooms?: { name: string; room_code: string };
   mother_group?: { id: string; growth_stage: GrowthStage; batch_registry?: { batch_number: string } | null; individual_plants?: Pick<IndividualPlant, 'state_plant_id' | 'is_active'>[] };
@@ -124,15 +119,13 @@ export interface PlantGroup {
   individual_plants?: Pick<IndividualPlant, 'state_plant_id' | 'is_active'>[];
 }
 
-export interface PlantGroupCutSession {
-  id: string;
-  plant_group_id: string;
-  mother_plant_group_id: string;
-  cut_count: number;
-  cut_date: string | null;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
+// ═══════════════════════════════════════════════════════════════════════
+// Plant Group Cut Sessions — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type PlantGroupCutSessionRow = Tables['plant_group_cut_sessions']['Row'];
+
+export interface PlantGroupCutSession extends PlantGroupCutSessionRow {
   mother_group?: {
     id: string;
     growth_stage: GrowthStage;
@@ -150,63 +143,52 @@ export type CreatePlantGroupCutSessionInput = {
   notes?: string;
 };
 
-export interface PlantGroupStageHistory {
-  id: string;
-  plant_group_id: string;
+// ═══════════════════════════════════════════════════════════════════════
+// Stage & Room History — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type PlantGroupStageHistoryRow = Tables['plant_group_stage_history']['Row'];
+
+export interface PlantGroupStageHistory extends Omit<PlantGroupStageHistoryRow, 'from_stage' | 'to_stage'> {
   from_stage: GrowthStage | null;
   to_stage: GrowthStage;
-  transitioned_at: string;
-  transitioned_by: string | null;
-  notes: string | null;
 }
 
-export interface PlantGroupRoomHistory {
-  id: string;
-  plant_group_id: string;
-  from_room_id: string;
-  to_room_id: string;
-  moved_at: string;
-  moved_by: string | null;
-  notes: string | null;
+type PlantGroupRoomHistoryRow = Tables['plant_group_room_history']['Row'];
+
+export interface PlantGroupRoomHistory extends PlantGroupRoomHistoryRow {
   from_room?: { name: string; room_code: string };
   to_room?: { name: string; room_code: string };
 }
 
-export interface HarvestWeightEntry {
-  id: string;
-  harvest_session_id: string;
-  weight_grams: number;
-  plant_count: number;
-  entry_order: number;
+export interface PlantGroupRoomHistoryFull extends PlantGroupRoomHistory {
+  // These fields are already on PlantGroupRoomHistoryRow (from_table_id, etc.)
+  // but listed here for clarity — the Full variant adds join context
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Harvest Weight Entries — from DB
+// ═══════════════════════════════════════════════════════════════════════
+
+type HarvestWeightEntryRow = Tables['harvest_weight_entries']['Row'];
+
+export interface HarvestWeightEntry extends Omit<HarvestWeightEntryRow, 'destination'> {
   destination: HarvestType | null;
-  location_id: string | null;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
 }
 
 export type CreateHarvestWeightEntryInput = Pick<HarvestWeightEntry, 'harvest_session_id' | 'weight_grams' | 'plant_count' | 'destination'> &
   Partial<Pick<HarvestWeightEntry, 'entry_order' | 'notes' | 'location_id'>>;
 
-export interface HarvestSession {
-  id: string;
-  plant_group_id: string | null;
-  harvest_date: string;
-  wet_weight_grams: number;
-  waste_grams: number | null;
-  plant_count_harvested: number;
-  adjusted_weight_grams: number | null;
-  adjustment_reason: string | null;
-  batch_registry_id: string;
-  grow_room_id: string | null;
+// ═══════════════════════════════════════════════════════════════════════
+// Harvest Sessions — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type HarvestSessionRow = Tables['harvest_sessions']['Row'];
+
+export interface HarvestSession extends Omit<HarvestSessionRow, 'session_status' | 'batch_registry_id'> {
   session_status: HarvestSessionStatus;
-  completed_at: string | null;
-  completed_by: string | null;
-  cancelled_at: string | null;
-  cancelled_by: string | null;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
+  batch_registry_id: string; // Non-null in app context (set on completion)
+  // Join fields
   plant_groups?: {
     strain_id: string;
     grow_room_id: string;
@@ -222,29 +204,86 @@ export interface HarvestSession {
   }>;
 }
 
-export interface RoomSection {
-  id: string;
-  room_table_id: string;
-  section_label: string;
-  section_sqft: number | null;
-  is_active: boolean;
-  created_at: string;
-  created_by: string | null;
-  flip_date: string | null;
-  projected_harvest_date: string | null;
-}
+// ═══════════════════════════════════════════════════════════════════════
+// Room Layout — from DB
+// ═══════════════════════════════════════════════════════════════════════
 
-export interface RoomTable {
-  id: string;
-  grow_room_id: string;
-  table_number: number;
-  table_name: string | null;
-  total_sqft: number | null;
-  is_active: boolean;
-  created_at: string;
-  created_by: string | null;
+export type RoomSection = Tables['room_sections']['Row'];
+
+type RoomTableRow = Tables['room_tables']['Row'];
+
+export interface RoomTable extends RoomTableRow {
   sections: RoomSection[];
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Dry Rooms — from DB
+// ═══════════════════════════════════════════════════════════════════════
+
+export type DryRoom = Tables['dry_rooms']['Row'];
+
+// ═══════════════════════════════════════════════════════════════════════
+// Bin Entries — from DB
+// ═══════════════════════════════════════════════════════════════════════
+
+export type BinEntry = Tables['bin_entries']['Row'];
+
+export type CreateBinEntryInput = Pick<BinEntry, 'binning_session_id' | 'bin_weight_grams'> &
+  Partial<Pick<BinEntry, 'entry_order' | 'notes'>>;
+
+// ═══════════════════════════════════════════════════════════════════════
+// Binning Sessions — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type BinningSessionRow = Tables['binning_sessions']['Row'];
+
+export interface BinningSession extends Omit<BinningSessionRow, 'session_status'> {
+  session_status: BinningSessionStatus;
+  // Join fields
+  harvest_sessions?: Pick<HarvestSession, 'harvest_date' | 'wet_weight_grams' | 'adjusted_weight_grams'> & {
+    plant_groups?: {
+      strains?: { name: string; abbreviation: string | null };
+    };
+  };
+  dry_rooms?: { name: string; room_code: string };
+  batch_registry?: { batch_number: string };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Fresh Frozen Packages — from DB + join fields
+// ═══════════════════════════════════════════════════════════════════════
+
+type FreshFrozenPackageRow = Tables['fresh_frozen_packages']['Row'];
+
+export interface FreshFrozenPackage extends Omit<FreshFrozenPackageRow, 'status'> {
+  status: FreshFrozenPackageStatus;
+  strains?: { name: string; abbreviation: string | null };
+}
+
+export type CreateFreshFrozenPackageInput = Pick<FreshFrozenPackage, 'batch_id' | 'weight_grams'> &
+  Partial<Pick<FreshFrozenPackage, 'strain_id' | 'package_number' | 'vacuum_sealed_at' | 'frozen_at' | 'freezer_location' | 'notes'>>;
+
+// ═══════════════════════════════════════════════════════════════════════
+// Individual Plants — from DB
+// ═══════════════════════════════════════════════════════════════════════
+
+export type IndividualPlant = Tables['individual_plants']['Row'];
+
+export type AddIndividualPlantInput = {
+  plant_group_id: string;
+  state_plant_id: string;
+  notes?: string;
+};
+
+export type BulkImportPlantResult = {
+  imported: number;
+  skipped: string[];
+  errors: { state_plant_id: string; reason: string }[];
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// Input types (app-layer — not derived from DB)
+// ═══════════════════════════════════════════════════════════════════════
 
 export type CreateGrowRoomInput = Pick<GrowRoom, 'name' | 'room_code' | 'room_type'> &
   Partial<Pick<GrowRoom, 'capacity_plants'>>;
@@ -277,21 +316,18 @@ export type UpdatePlantGroupPlacementInput = {
   room_section_id: string | null;
 };
 
-/** A single placement in a split-move operation */
 export type PlacementEntry = {
   table_id: string;
   section_id: string;
   plant_count: number;
 };
 
-/** Input for splitting a plant group across multiple table/sections during a room move */
 export type SplitAndMoveInput = {
   source_group_id: string;
   to_room_id: string;
   placements: PlacementEntry[];
 };
 
-/** Input for splitting MULTIPLE source groups across table/sections during a batch-level room move */
 export type SplitAndMoveMultiInput = {
   source_group_ids: string[];
   to_room_id: string;
@@ -299,25 +335,14 @@ export type SplitAndMoveMultiInput = {
   kill_count?: number;
 };
 
-/** Per-strain count within a section */
 export interface StrainCount {
   abbreviation: string;
   count: number;
 }
 
-/** Per-section occupancy snapshot for grid-based placement */
 export interface SectionOccupancy {
   total_plants: number;
   strain_counts: StrainCount[];
-}
-
-export interface PlantGroupRoomHistoryFull extends PlantGroupRoomHistory {
-  from_table_id: string | null;
-  to_table_id: string | null;
-  from_section_id: string | null;
-  to_section_id: string | null;
-  plant_count: number | null;
-  source_group_id: string | null;
 }
 
 export type FlipRoomInput = {
@@ -334,77 +359,6 @@ export type CreatePlantGroupInput = Pick<PlantGroup, 'strain_id' | 'grow_room_id
 export type CreateHarvestSessionInput = Pick<HarvestSession, 'batch_registry_id' | 'harvest_date' | 'wet_weight_grams' | 'plant_count_harvested'> &
   Partial<Pick<HarvestSession, 'notes' | 'waste_grams' | 'grow_room_id' | 'plant_group_id'>>;
 
-export interface FreshFrozenPackage {
-  id: string;
-  batch_id: string;
-  strain_id: string | null;
-  package_number: number;
-  weight_grams: number;
-  vacuum_sealed_at: string | null;
-  frozen_at: string | null;
-  freezer_location: string | null;
-  status: FreshFrozenPackageStatus;
-  sold_price_per_gram: number | null;
-  notes: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-  strains?: { name: string; abbreviation: string | null };
-}
-
-export type CreateFreshFrozenPackageInput = Pick<FreshFrozenPackage, 'batch_id' | 'weight_grams'> &
-  Partial<Pick<FreshFrozenPackage, 'strain_id' | 'package_number' | 'vacuum_sealed_at' | 'frozen_at' | 'freezer_location' | 'notes'>>;
-
-export type BinningSessionStatus = 'active' | 'completed' | 'cancelled';
-
-export interface DryRoom {
-  id: string;
-  name: string;
-  room_code: string;
-  capacity_lbs: number | null;
-  is_active: boolean;
-  created_at: string;
-  created_by: string | null;
-}
-
-export interface BinEntry {
-  id: string;
-  binning_session_id: string;
-  bin_weight_grams: number;
-  entry_order: number;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
-}
-
-export type CreateBinEntryInput = Pick<BinEntry, 'binning_session_id' | 'bin_weight_grams'> &
-  Partial<Pick<BinEntry, 'entry_order' | 'notes'>>;
-
-export interface BinningSession {
-  id: string;
-  harvest_session_id: string;
-  dry_room_id: string;
-  batch_registry_id: string;
-  dry_weight_grams: number;
-  water_loss_grams: number | null;
-  bin_date: string;
-  session_status: BinningSessionStatus;
-  completed_at: string | null;
-  completed_by: string | null;
-  cancelled_at: string | null;
-  cancelled_by: string | null;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
-  harvest_sessions?: Pick<HarvestSession, 'harvest_date' | 'wet_weight_grams' | 'adjusted_weight_grams'> & {
-    plant_groups?: {
-      strains?: { name: string; abbreviation: string | null };
-    };
-  };
-  dry_rooms?: { name: string; room_code: string };
-  batch_registry?: { batch_number: string };
-}
-
 export type CreateDryRoomInput = Pick<DryRoom, 'name' | 'room_code'> &
   Partial<Pick<DryRoom, 'capacity_lbs'>>;
 
@@ -413,27 +367,9 @@ export type UpdateDryRoomInput = Partial<Pick<DryRoom, 'name' | 'capacity_lbs' |
 export type CreateBinningSessionInput = Pick<BinningSession, 'harvest_session_id' | 'dry_room_id' | 'batch_registry_id' | 'bin_date'> &
   Partial<Pick<BinningSession, 'dry_weight_grams' | 'notes'>>;
 
-export interface IndividualPlant {
-  id: string;
-  plant_group_id: string;
-  state_plant_id: string;
-  is_active: boolean;
-  notes: string | null;
-  created_at: string;
-  created_by: string | null;
-}
-
-export type AddIndividualPlantInput = {
-  plant_group_id: string;
-  state_plant_id: string;
-  notes?: string;
-};
-
-export type BulkImportPlantResult = {
-  imported: number;
-  skipped: string[];
-  errors: { state_plant_id: string; reason: string }[];
-};
+// ═══════════════════════════════════════════════════════════════════════
+// Task Scheduling & Daily Operations
+// ═══════════════════════════════════════════════════════════════════════
 
 export type TaskType =
   | 'ipm_spray'
@@ -480,14 +416,10 @@ export const TASK_TYPE_CONFIG: Record<TaskType, TaskTypeConfigEntry> = {
   custom: { label: 'Custom', color: '#A6A6A6', icon: 'Settings' },
 };
 
-/** Legacy task types that may still exist in the DB but are removed from the union.
- *  Keeps the UI from crashing when rendering old schedules/instances. */
 const LEGACY_TASK_TYPE_CONFIG: Record<string, TaskTypeConfigEntry> = {
   feeding: { label: 'Feeding (legacy)', color: '#3B82F6', icon: 'Droplets' },
 };
 
-/** Safe config lookup — returns config for any task type string, falling back
- *  to legacy entries then to `custom` for truly unknown types. */
 export function getTaskTypeConfig(taskType: string): TaskTypeConfigEntry {
   return TASK_TYPE_CONFIG[taskType as TaskType]
     ?? LEGACY_TASK_TYPE_CONFIG[taskType]
@@ -496,26 +428,14 @@ export function getTaskTypeConfig(taskType: string): TaskTypeConfigEntry {
 
 export type SchedulingMode = 'calendar' | 'phase_day';
 
-export interface RoomTaskSchedule {
-  id: string;
-  room_id: string;
+// Room Task Schedules — from DB
+type RoomTaskScheduleRow = Tables['room_task_schedules']['Row'];
+
+export interface RoomTaskSchedule extends Omit<RoomTaskScheduleRow, 'task_type' | 'scheduling_mode' | 'day_of_week' | 'default_config'> {
   task_type: TaskType;
-  recurrence: string;
-  day_of_week: number[] | null;
-  start_date: string;
-  end_date: string | null;
   scheduling_mode: SchedulingMode;
-  interval_days: number | null;
-  phase_day_start: number | null;
-  phase_day_end: number | null;
+  day_of_week: number[] | null;
   default_config: Record<string, unknown>;
-  scope: string;
-  priority: string;
-  notes: string | null;
-  is_active: boolean;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 export type CreateTaskScheduleInput = Pick<
@@ -528,59 +448,31 @@ export type UpdateTaskScheduleInput = Partial<
   Pick<RoomTaskSchedule, 'recurrence' | 'day_of_week' | 'end_date' | 'default_config' | 'scope' | 'priority' | 'notes' | 'is_active' | 'scheduling_mode' | 'interval_days' | 'phase_day_start' | 'phase_day_end'>
 >;
 
-export interface DailyTaskInstance {
-  id: string;
-  schedule_id: string | null;
-  room_id: string;
-  task_date: string;
+// Daily Task Instances — from DB
+type DailyTaskInstanceRow = Tables['daily_task_instances']['Row'];
+
+export interface DailyTaskInstance extends Omit<DailyTaskInstanceRow, 'task_type' | 'status' | 'progress_data' | 'task_config'> {
   task_type: TaskType;
-  assigned_to: string | null;
-  assigned_by: string | null;
   status: TaskStatus;
-  scope: string;
   progress_data: Record<string, unknown>;
-  completion_ref_table: string | null;
-  completion_ref_id: string | null;
-  estimated_duration: string | null;
   task_config: Record<string, unknown>;
-  notes: string | null;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface DailyAttendance {
-  id: string;
-  staff_id: string;
-  attendance_date: string;
-  is_present: boolean;
-  hours_worked: number | null;
-  room_assignments: string[] | null;
-  checked_in_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Daily Attendance — from DB
+export type DailyAttendance = Tables['daily_attendance']['Row'];
 
 export type UpsertAttendanceInput = Pick<DailyAttendance, 'staff_id' | 'attendance_date' | 'is_present'> &
   Partial<Pick<DailyAttendance, 'hours_worked' | 'room_assignments'>>;
 
-export interface IpmSprayLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  applied_at: string;
-  applied_by: string | null;
-  product_name: string;
-  product_type: string;
-  concentration: string | null;
-  volume_applied: string | null;
-  application_method: string;
-  target_pest: string | null;
+// ═══════════════════════════════════════════════════════════════════════
+// Activity Logs — from DB
+// ═══════════════════════════════════════════════════════════════════════
+
+// IPM Spray Log
+type IpmSprayLogRow = Tables['ipm_spray_log']['Row'];
+
+export interface IpmSprayLog extends Omit<IpmSprayLogRow, 'tables_sprayed'> {
   tables_sprayed: string[] | null;
-  re_entry_hours: number | null;
-  pre_harvest_days: number | null;
-  notes: string | null;
-  created_at: string;
 }
 
 export type CreateSprayLogInput = Pick<
@@ -594,21 +486,10 @@ export type CreateSprayLogInput = Pick<
     >
   >;
 
-export interface FeedingLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  fed_at: string;
-  fed_by: string | null;
-  reservoir_id: string | null;
-  nutrient_mix: string | null;
-  ec_value: number | null;
-  ph_value: number | null;
-  volume_gallons: number | null;
-  water_temp_f: number | null;
-  notes: string | null;
-  created_at: string;
-}
+// Feeding Log
+type FeedingLogRow = Tables['feeding_log']['Row'];
+
+export interface FeedingLog extends FeedingLogRow {}
 
 export type CreateFeedingLogInput = Pick<FeedingLog, 'room_id'> &
   Partial<
@@ -618,17 +499,12 @@ export type CreateFeedingLogInput = Pick<FeedingLog, 'room_id'> &
     >
   >;
 
-export interface DefoliationLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  performed_at: string;
-  performed_by: string | null;
-  defoliation_type: string;
+// Defoliation Log
+type DefoliationLogRow = Tables['defoliation_log']['Row'];
+
+export interface DefoliationLog extends Omit<DefoliationLogRow, 'sections_completed' | 'sections_total'> {
   sections_completed: string[] | null;
   sections_total: string[] | null;
-  notes: string | null;
-  created_at: string;
 }
 
 export type CreateDefoliationLogInput = Pick<DefoliationLog, 'room_id' | 'defoliation_type'> &
@@ -636,36 +512,17 @@ export type CreateDefoliationLogInput = Pick<DefoliationLog, 'room_id' | 'defoli
     Pick<DefoliationLog, 'task_instance_id' | 'performed_by' | 'sections_completed' | 'sections_total' | 'notes'>
   >;
 
-export interface CleaningLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  cleaned_at: string;
-  cleaned_by: string | null;
-  cleaning_type: string;
-  notes: string | null;
-  created_at: string;
-}
+// Cleaning Log
+export type CleaningLog = Tables['cleaning_log']['Row'];
 
 export type CreateCleaningLogInput = Pick<CleaningLog, 'room_id' | 'cleaning_type'> &
   Partial<Pick<CleaningLog, 'task_instance_id' | 'cleaned_by' | 'notes'>>;
 
-export interface ScoutingLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  scouted_at: string;
-  scouted_by: string | null;
-  pest_found: boolean;
-  pest_type: string | null;
-  pest_severity: string | null;
-  disease_found: boolean;
-  disease_type: string | null;
-  nutrient_issues: string | null;
-  overall_health: string | null;
+// Scouting Log
+type ScoutingLogRow = Tables['scouting_log']['Row'];
+
+export interface ScoutingLog extends Omit<ScoutingLogRow, 'sections_scouted'> {
   sections_scouted: string[] | null;
-  notes: string | null;
-  created_at: string;
 }
 
 export type CreateScoutingLogInput = Pick<ScoutingLog, 'room_id'> &
@@ -676,50 +533,29 @@ export type CreateScoutingLogInput = Pick<ScoutingLog, 'room_id'> &
     >
   >;
 
-export interface TrainingLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  trained_at: string;
-  trained_by: string | null;
-  training_type: string;
-  plant_count: number | null;
+// Training Log
+type TrainingLogRow = Tables['training_log']['Row'];
+
+export interface TrainingLog extends Omit<TrainingLogRow, 'sections_trained'> {
   sections_trained: string[] | null;
-  notes: string | null;
-  created_at: string;
 }
 
 export type CreateTrainingLogInput = Pick<TrainingLog, 'room_id' | 'training_type'> &
   Partial<Pick<TrainingLog, 'task_instance_id' | 'trained_by' | 'plant_count' | 'sections_trained' | 'notes'>>;
 
-export interface CustomTaskLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string | null;
-  performed_at: string;
-  performed_by: string | null;
-  task_name: string;
-  description: string | null;
-  notes: string | null;
-  created_at: string;
-}
+// Custom Task Log
+export type CustomTaskLog = Tables['custom_task_log']['Row'];
 
 export type CreateCustomTaskLogInput = Pick<CustomTaskLog, 'task_name'> &
   Partial<Pick<CustomTaskLog, 'task_instance_id' | 'room_id' | 'performed_by' | 'description' | 'notes'>>;
 
-export interface DailyLogAnnotation {
-  id: string;
-  room_id: string;
-  annotation_date: string;
-  created_by: string | null;
+// Daily Log Annotations
+type DailyLogAnnotationRow = Tables['daily_log_annotations']['Row'];
+
+export interface DailyLogAnnotation extends Omit<DailyLogAnnotationRow, 'category' | 'severity' | 'photo_urls'> {
   category: AnnotationCategory;
   severity: AnnotationSeverity;
-  title: string;
-  body: string | null;
-  related_task_id: string | null;
   photo_urls: string[] | null;
-  created_at: string;
-  updated_at: string;
 }
 
 export type CreateAnnotationInput = Pick<DailyLogAnnotation, 'room_id' | 'category' | 'title'> &
@@ -727,79 +563,31 @@ export type CreateAnnotationInput = Pick<DailyLogAnnotation, 'room_id' | 'catego
 
 export type UpdateAnnotationInput = Partial<Pick<DailyLogAnnotation, 'category' | 'severity' | 'title' | 'body' | 'photo_urls'>>;
 
-export interface PlantMortalityLog {
-  id: string;
-  plant_group_id: string;
-  room_id: string;
-  mortality_date: string;
-  reported_by: string | null;
-  quantity: number;
-  cause: string | null;
-  cause_detail: string | null;
-  notes: string | null;
-  created_at: string;
-}
+// Plant Mortality Log
+export type PlantMortalityLog = Tables['plant_mortality_log']['Row'];
 
 export type CreateMortalityLogInput = Pick<PlantMortalityLog, 'plant_group_id' | 'room_id'> &
   Partial<Pick<PlantMortalityLog, 'mortality_date' | 'reported_by' | 'quantity' | 'cause' | 'cause_detail' | 'notes'>>;
 
-// ═══ Feed System ═══
+// ═══════════════════════════════════════════════════════════════════════
+// Feed System
+// ═══════════════════════════════════════════════════════════════════════
 
-export interface FeedProduct {
-  id: string;
-  name: string;
-  brand: string | null;
-  product_type: 'nutrient' | 'supplement' | 'ph_adjuster' | 'cleanse' | 'other';
-  unit: string;
-  unit_cost: number | null;
-  sku: string | null;
-  mixing_order_hint: number | null;
-  notes: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export type FeedProduct = Tables['feed_products']['Row'];
 
-export interface FeedProgram {
-  id: string;
-  name: string;
-  description: string | null;
-  brand: string | null;
-  base_unit: string;
-  concentrate_ratio: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export type FeedProgram = Tables['feed_programs']['Row'];
 
-export interface FeedProgramWeek {
-  id: string;
-  feed_program_id: string;
+type FeedProgramWeekRow = Tables['feed_program_weeks']['Row'];
+
+export interface FeedProgramWeek extends Omit<FeedProgramWeekRow, 'phase'> {
   phase: 'clone' | 'veg' | 'flower' | 'flush';
-  week_number: number;
-  target_ec: number | null;
-  target_ppm_500: number | null;
-  target_ppm_700: number | null;
-  target_ph_min: number | null;
-  target_ph_max: number | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface FeedProgramEntry {
-  id: string;
-  program_week_id: string;
-  feed_product_id: string;
-  amount_per_unit: number;
-  amount_max: number | null;
-  mixing_order: number;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type FeedProgramEntry = Tables['feed_program_entries']['Row'];
 
-// ═══ Mix Log Types (2-way confirmation) ═══
+// ═══════════════════════════════════════════════════════════════════════
+// Mix Log Types (2-way confirmation)
+// ═══════════════════════════════════════════════════════════════════════
 
 export type MixLogStatus = 'prescribed' | 'in_progress' | 'completed' | 'rejected';
 
@@ -821,53 +609,27 @@ export interface ActualProduct {
   confirmed: boolean;
 }
 
-export interface BatchTankMixLog {
-  id: string;
-  task_instance_id: string | null;
-  room_id: string;
-  batch_id: string;
-  feed_program_id: string | null;
-  program_week_id: string | null;
-  prescribed_by: string | null;
-  prescribed_at: string | null;
-  prescribed_gallons: number | null;
-  prescribed_ec: number | null;
-  prescribed_ppm: number | null;
-  prescribed_ph_min: number | null;
-  prescribed_ph_max: number | null;
-  prescribed_products: PrescribedProduct[];
-  prescription_notes: string | null;
-  completed_by: string | null;
-  completed_at: string | null;
-  actual_gallons: number | null;
-  actual_ec: number | null;
-  actual_ph: number | null;
-  actual_products: ActualProduct[];
-  completion_notes: string | null;
+// Batch Tank Mix Log — from DB
+type BatchTankMixLogRow = Tables['batch_tank_mix_log']['Row'];
+
+export interface BatchTankMixLog extends Omit<BatchTankMixLogRow, 'status' | 'prescribed_products' | 'actual_products'> {
   status: MixLogStatus;
-  created_at: string;
-  updated_at: string;
+  prescribed_products: PrescribedProduct[];
+  actual_products: ActualProduct[];
 }
 
-export interface ConcentrateMixLog {
-  id: string;
-  task_instance_id: string | null;
-  feed_program_id: string | null;
-  concentrate_ratio: string | null;
-  prescribed_by: string | null;
-  prescribed_at: string | null;
-  prescribed_volume_gal: number | null;
-  prescribed_products: Record<string, unknown>[];
-  prescription_notes: string | null;
-  completed_by: string | null;
-  completed_at: string | null;
-  actual_volume_gal: number | null;
-  actual_products: Record<string, unknown>[];
-  completion_notes: string | null;
+// Concentrate Mix Log — from DB
+type ConcentrateMixLogRow = Tables['concentrate_mix_log']['Row'];
+
+export interface ConcentrateMixLog extends Omit<ConcentrateMixLogRow, 'status' | 'prescribed_products' | 'actual_products'> {
   status: MixLogStatus;
-  created_at: string;
-  updated_at: string;
+  prescribed_products: Record<string, unknown>[];
+  actual_products: Record<string, unknown>[];
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Computed / Summary types (app-layer only)
+// ═══════════════════════════════════════════════════════════════════════
 
 export interface RoomSummaryStrain {
   name: string;

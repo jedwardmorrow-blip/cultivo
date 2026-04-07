@@ -5,7 +5,8 @@ import { generateManifestData, ManifestData, Driver, Vehicle } from '../services
 import { ManifestTemplate } from './ManifestTemplate';
 import { getAllLocations, Location } from '../../delivery/services/locations.service';
 import { notificationService } from '@/services/notification.service';
-import { generatePDFFromElement, sanitizeFilename } from '../services/pdfGenerator.service';
+import { generateManifestPDF } from '../services/pdfGenerator.service';
+import { logoService } from '@/features/settings/services';
 
 interface ManifestModalProps {
   orderId: string;
@@ -335,7 +336,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
   }
 
   async function handleDownloadPDF() {
-    if (!printRef.current || !manifestData) {
+    if (!manifestData) {
       notificationService.warning('Manifest not ready. Please try again.');
       return;
     }
@@ -347,38 +348,13 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
 
     setLoadingDownload(true);
 
-    // html2canvas cannot render display:none elements — temporarily show off-screen
-    const hiddenContainer = printRef.current.parentElement as HTMLElement | null;
-    if (hiddenContainer) {
-      hiddenContainer.style.display = 'block';
-      hiddenContainer.style.position = 'absolute';
-      hiddenContainer.style.left = '-9999px';
-      hiddenContainer.style.top = '0';
-    }
-
     try {
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const sanitizedCustomer = sanitizeFilename(manifestData.destination_entity_name);
-      const sanitizedManifest = sanitizeFilename(manifestData.manifest_number);
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `Manifest_${sanitizedManifest}_${sanitizedCustomer}_${timestamp}.pdf`;
-
-      await generatePDFFromElement(printRef.current, {
-        filename,
-        scale: 2,
-        quality: 0.95
-      });
+      const logoUrl = await logoService.getLogoUrl('dark');
+      await generateManifestPDF(manifestData, logoUrl || undefined);
     } catch (error) {
       console.error('PDF download error:', error);
       notificationService.error('Failed to download PDF. Please try again or use the Print button.');
     } finally {
-      if (hiddenContainer) {
-        hiddenContainer.style.display = 'none';
-        hiddenContainer.style.position = '';
-        hiddenContainer.style.left = '';
-        hiddenContainer.style.top = '';
-      }
       setLoadingDownload(false);
     }
   }

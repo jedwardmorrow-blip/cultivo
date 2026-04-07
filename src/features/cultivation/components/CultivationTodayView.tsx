@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Sprout, AlertTriangle, Clock, Calendar, ChevronRight,
+  Sprout, AlertTriangle, Clock, Calendar, ChevronRight, ChevronDown,
   Plus, ArrowRightLeft, ClipboardList, Leaf, Scissors,
 } from 'lucide-react';
 import { useCultivationToday, type AttentionItem } from '../hooks/useCultivationToday';
@@ -34,54 +34,127 @@ const TASK_TYPE_LABELS: Record<TaskType, string> = {
   concentrate_mix: 'Conc. Mix', custom: 'Custom',
 };
 
-// ─── Attention Card ─────────────────────────────────────────────────────────
+// ─── Attention Item Grouping ────────────────────────────────────────────────
 
-function AttentionCard({ item }: { item: AttentionItem }) {
-  const isHarvest = item.type === 'harvest_imminent';
-  const days = isHarvest && item.estimated_harvest_date ? daysUntil(item.estimated_harvest_date) : null;
+interface AttentionGroup {
+  key: string;
+  type: AttentionItem['type'];
+  room_name: string;
+  items: AttentionItem[];
+  totalPlants: number;
+  strainBreakdown: { strain: string; count: number; plants: number }[];
+}
 
-  const config = {
-    harvest_imminent: {
-      icon: Scissors, bg: 'bg-amber-900/20 border-amber-500/30',
-      label: days != null && days <= 0 ? 'Harvest Due' : `Harvest in ${days}d`,
-      urgency: 'text-amber-400',
-    },
-    stage_move_pending: {
-      icon: ArrowRightLeft, bg: 'bg-sky-900/20 border-sky-500/30',
-      label: `${item.days_in_stage ?? 0}d in ${item.growth_stage ?? 'stage'}`,
-      urgency: 'text-sky-400',
-    },
-    overdue_task: {
-      icon: AlertTriangle, bg: 'bg-red-900/20 border-red-500/30',
-      label: 'Overdue',
-      urgency: 'text-red-400',
-    },
-    unassigned_task: {
-      icon: ClipboardList, bg: 'bg-cult-charcoal border-cult-medium-gray/40',
-      label: 'Unassigned',
-      urgency: 'text-cult-text-muted',
-    },
-  }[item.type];
+function groupAttentionItems(items: AttentionItem[]): AttentionGroup[] {
+  const map = new Map<string, AttentionGroup>();
 
+  for (const item of items) {
+    const room = item.room_name ?? 'Unknown';
+    const key = `${room}::${item.type}`;
+
+    let group = map.get(key);
+    if (!group) {
+      group = { key, type: item.type, room_name: room, items: [], totalPlants: 0, strainBreakdown: [] };
+      map.set(key, group);
+    }
+    group.items.push(item);
+    group.totalPlants += item.plant_count ?? 0;
+  }
+
+  // Build strain breakdowns
+  for (const group of map.values()) {
+    const strainMap = new Map<string, { count: number; plants: number }>();
+    for (const item of group.items) {
+      const strain = item.strain_name ?? 'Unknown';
+      const entry = strainMap.get(strain) ?? { count: 0, plants: 0 };
+      entry.count += 1;
+      entry.plants += item.plant_count ?? 0;
+      strainMap.set(strain, entry);
+    }
+    group.strainBreakdown = [...strainMap.entries()]
+      .map(([strain, { count, plants }]) => ({ strain, count, plants }))
+      .sort((a, b) => b.plants - a.plants);
+  }
+
+  return [...map.values()].sort((a, b) => b.items.length - a.items.length);
+}
+
+const ATTENTION_CONFIG: Record<AttentionItem['type'], {
+  icon: typeof Scissors; bg: string; urgency: string; labelFn: (item?: AttentionItem) => string;
+}> = {
+  harvest_imminent: {
+    icon: Scissors, bg: 'bg-amber-900/20 border-amber-500/30', urgency: 'text-amber-400',
+    labelFn: (item) => {
+      const days = item?.estimated_harvest_date ? daysUntil(item.estimated_harvest_date) : null;
+      return days != null && days <= 0 ? 'Harvest Due' : `Harvest in ${days}d`;
+    },
+  },
+  stage_move_pending: {
+    icon: ArrowRightLeft, bg: 'bg-sky-900/20 border-sky-500/30', urgency: 'text-sky-400',
+    labelFn: (item) => `${item?.days_in_stage ?? 0}d in ${item?.growth_stage ?? 'stage'}`,
+  },
+  overdue_task: {
+    icon: AlertTriangle, bg: 'bg-red-900/20 border-red-500/30', urgency: 'text-red-400',
+    labelFn: () => 'Overdue',
+  },
+  unassigned_task: {
+    icon: ClipboardList, bg: 'bg-cult-charcoal border-cult-medium-gray/40', urgency: 'text-cult-text-muted',
+    labelFn: () => 'Unassigned',
+  },
+};
+
+// ─── Grouped Attention Card ────────────────────────────────────────────────
+
+function GroupedAttentionCard({ group }: { group: AttentionGroup }) {
+  const [expanded, setExpanded] = useState(false);
+  const config = ATTENTION_CONFIG[group.type];
   const Icon = config.icon;
 
+  // Use the first item's data for the group-level label
+  const groupLabel = group.type === 'harvest_imminent' ? 'Harvest Due' : config.labelFn(group.items[0]);
+  const strainSummary = group.strainBreakdown.map(s => `${s.strain} (${s.plants})`).join(', ');
+
   return (
-    <div className={`flex items-start gap-3 p-3 rounded border ${config.bg}`}>
-      <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${config.urgency}`} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] font-semibold text-cult-white truncate">
-            {item.plant_group_name ?? item.room_name ?? 'Unknown'}
-          </span>
-          <span className={`text-[10px] font-medium ${config.urgency}`}>{config.label}</span>
+    <div className={`rounded border ${config.bg} overflow-hidden`}>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-start gap-3 p-3 text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${config.urgency}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-cult-white truncate">{group.room_name}</span>
+            <span className={`text-[10px] font-medium ${config.urgency}`}>{groupLabel}</span>
+          </div>
+          <div className="text-[11px] text-cult-text-muted mt-0.5">
+            {group.strainBreakdown.length} {group.strainBreakdown.length === 1 ? 'strain' : 'strains'} · {group.totalPlants} plants · {group.items.length} groups
+          </div>
+          <div className="text-[10px] text-cult-text-faint mt-0.5 truncate">{strainSummary}</div>
         </div>
-        <div className="text-[11px] text-cult-text-muted mt-0.5">
-          {item.strain_name && <span>{item.strain_name}</span>}
-          {item.room_name && item.strain_name && <span> · </span>}
-          {item.room_name && <span>{item.room_name}</span>}
-          {item.plant_count != null && <span> · {item.plant_count} plants</span>}
+        {expanded
+          ? <ChevronDown className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-medium-gray" />
+          : <ChevronRight className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-medium-gray" />
+        }
+      </button>
+
+      {expanded && (
+        <div className="border-t border-white/[0.06] px-3 pb-3 pt-2 space-y-1.5">
+          {group.strainBreakdown.map(({ strain, count, plants }) => (
+            <div key={strain} className="flex items-center justify-between gap-2 py-1.5 px-2 rounded bg-white/[0.02]">
+              <div className="min-w-0 flex-1">
+                <span className="text-[11px] text-cult-lighter-gray font-medium">{strain}</span>
+                <span className="text-[10px] text-cult-text-muted ml-1.5">
+                  · {plants} plants · {count} {count === 1 ? 'group' : 'groups'}
+                </span>
+              </div>
+              <span className={`text-[10px] font-medium flex-shrink-0 ${config.urgency}`}>
+                {config.labelFn(group.items.find(i => i.strain_name === strain))}
+              </span>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -146,6 +219,7 @@ export function CultivationTodayView() {
   }, [roomSummaries]);
 
   const attentionItems = summary?.attention_items ?? [];
+  const attentionGroups = useMemo(() => groupAttentionItems(attentionItems), [attentionItems]);
 
   const todaysTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
@@ -190,7 +264,7 @@ export function CultivationTodayView() {
       </div>
 
       {/* ── Attention Needed ───────────────────────────────────────────── */}
-      {attentionItems.length > 0 && (
+      {attentionGroups.length > 0 && (
         <section>
           <h2 className="text-[11px] text-cult-text-muted uppercase tracking-wider font-medium mb-2 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
@@ -198,8 +272,8 @@ export function CultivationTodayView() {
             <span className="text-[10px] text-amber-400 font-semibold">({attentionItems.length})</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {attentionItems.map((item, i) => (
-              <AttentionCard key={`${item.type}-${item.plant_group_id ?? i}`} item={item} />
+            {attentionGroups.map(group => (
+              <GroupedAttentionCard key={group.key} group={group} />
             ))}
           </div>
         </section>

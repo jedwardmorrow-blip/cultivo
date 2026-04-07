@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Printer, Download, Loader2 } from 'lucide-react';
 import { generateInvoiceData, InvoiceData } from '../services/invoiceService';
 import { InvoiceTemplate } from './InvoiceTemplate';
-import { generatePDFFromElement, generateInvoiceFilename } from '../services/pdfGenerator.service';
+import { generateInvoicePDF } from '../services/pdfGenerator.service';
 import { notificationService } from '@/services/notification.service';
 
 interface InvoiceModalProps {
@@ -464,7 +464,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
   }
 
   async function handleDownloadPDF() {
-    if (!printRef.current || !invoiceData) {
+    if (!invoiceData) {
       notificationService.warning('Invoice not ready. Please try again.');
       return;
     }
@@ -476,40 +476,12 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
 
     setLoadingDownload(true);
 
-    // html2canvas cannot render display:none elements — temporarily show off-screen
-    const hiddenContainer = printRef.current.parentElement as HTMLElement | null;
-    if (hiddenContainer) {
-      hiddenContainer.style.display = 'block';
-      hiddenContainer.style.position = 'absolute';
-      hiddenContainer.style.left = '-9999px';
-      hiddenContainer.style.top = '0';
-    }
-
     try {
-      // Allow layout to settle after making visible
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const filename = generateInvoiceFilename(
-        invoiceData.invoice_number,
-        invoiceData.customer_name
-      );
-
-      await generatePDFFromElement(printRef.current, {
-        filename,
-        scale: 2,
-        quality: 0.95
-      });
+      await generateInvoicePDF(invoiceData);
     } catch (error) {
       console.error('PDF download error:', error);
       notificationService.error('Failed to download PDF. Please try again or use the Print button.');
     } finally {
-      // Re-hide the print element
-      if (hiddenContainer) {
-        hiddenContainer.style.display = 'none';
-        hiddenContainer.style.position = '';
-        hiddenContainer.style.left = '';
-        hiddenContainer.style.top = '';
-      }
       setLoadingDownload(false);
     }
   }

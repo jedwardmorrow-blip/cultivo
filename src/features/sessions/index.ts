@@ -1,4 +1,5 @@
 export { ProductionDashboard } from './components/ProductionDashboard';
+export { ProductionHub } from './components/ProductionHub';
 export { SessionsHub } from './components/SessionsHub';
 export { SessionsUnified } from './components/SessionsUnified';
 export { TrimSessionsRefactored } from './components/TrimSessionsRefactored';

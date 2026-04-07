@@ -13,3 +13,4 @@ export { TripPlanPrintView } from './TripPlanPrintView';
 export { ProductionDispatchView } from './ProductionDispatchView';
 export { OrderFulfillmentView } from './OrderFulfillmentView';
 export { DispatchExecutionQueue } from './DispatchExecutionQueue';
+export { DispatchSessionModal } from './DispatchSessionModal';

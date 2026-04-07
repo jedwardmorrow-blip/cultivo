@@ -2,6 +2,7 @@
 // Replaces 2,184-line v49 with ~80 lines
 // Auth: Supabase JWT → user identity → HMAC-signed forward to Rick
 // Streaming: SSE pass-through
+// v2.1: Attachment support — images via OpenAI vision format, docs via text extraction, storage upload
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -134,6 +135,71 @@ function getPageContext(currentPage: string): string {
   return pageHint ? pageHint[1] : currentPage !== "/" ? `User is viewing: ${currentPage}` : PAGE_CONTEXT["/"];
 }
 
+// ─── ATTACHMENTS ───
+interface Attachment { fileName: string; mimeType: string; base64Data: string; }
+
+async function uploadAttachments(attachments: Attachment[], prefix: string): Promise<void> {
+  if (!attachments || attachments.length === 0) return;
+  const prodClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  for (const att of attachments) {
+    try {
+      const binaryString = atob(att.base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+      const path = `${prefix}/${crypto.randomUUID()}/${att.fileName}`;
+      const { error } = await prodClient.storage.from("chat-attachments").upload(path, bytes, { contentType: att.mimeType });
+      if (error) console.error(`[v2] uploadAttachments error for ${att.fileName}: ${error.message}`);
+    } catch (e) { console.error(`[v2] uploadAttachments exception for ${att.fileName}: ${e}`); }
+  }
+}
+
+function buildAttachmentContent(
+  message: string,
+  attachments: Attachment[]
+): string | Array<{ type: string; [key: string]: unknown }> {
+  if (!attachments || attachments.length === 0) return message;
+
+  const imageAtts = attachments.filter(a => a.mimeType.startsWith("image/"));
+  const docAtts = attachments.filter(a => !a.mimeType.startsWith("image/"));
+
+  // Extract text from document attachments
+  const docParts: string[] = [];
+  for (const doc of docAtts) {
+    try {
+      if (doc.mimeType === "text/plain" || doc.mimeType === "text/csv") {
+        const text = atob(doc.base64Data);
+        docParts.push(`--- ATTACHED FILE: ${doc.fileName} (${doc.mimeType}) ---\n${text.slice(0, 15000)}`);
+      } else if (doc.mimeType.includes("spreadsheet") || doc.mimeType.includes("excel")) {
+        docParts.push(`--- ATTACHED FILE: ${doc.fileName} (Excel, ${Math.round(doc.base64Data.length * 0.75 / 1024)}KB) ---\nBinary Excel file uploaded. Cannot parse directly — suggest pasting key data as text.`);
+      } else if (doc.mimeType === "application/pdf") {
+        docParts.push(`--- ATTACHED FILE: ${doc.fileName} (PDF, ${Math.round(doc.base64Data.length * 0.75 / 1024)}KB) ---\nPDF uploaded. Cannot parse directly — suggest pasting relevant text.`);
+      } else {
+        docParts.push(`--- ATTACHED FILE: ${doc.fileName} (${doc.mimeType}) ---\nFile uploaded. Cannot parse this format directly.`);
+      }
+    } catch (e) {
+      console.error(`[v2] doc parse error for ${doc.fileName}: ${e}`);
+      docParts.push(`--- ATTACHED FILE: ${doc.fileName} ---\nFile received but could not be processed.`);
+    }
+  }
+
+  const textWithDocs = message + (docParts.length > 0 ? "\n\n" + docParts.join("\n\n") : "");
+
+  // If no images, return plain text
+  if (imageAtts.length === 0) return textWithDocs;
+
+  // OpenAI vision format: content array with image_url + text blocks
+  const contentBlocks: Array<{ type: string; [key: string]: unknown }> = [];
+  for (const img of imageAtts) {
+    contentBlocks.push({
+      type: "image_url",
+      image_url: { url: `data:${img.mimeType};base64,${img.base64Data}` },
+    });
+  }
+  contentBlocks.push({ type: "text", text: textWithDocs });
+  console.log(`[v2] Sending ${imageAtts.length} image(s) + ${docAtts.length} doc(s) to Rick`);
+  return contentBlocks;
+}
+
 // ─── MAIN HANDLER ───
 Deno.serve(async (req: Request) => {
   // CORS
@@ -173,6 +239,7 @@ Deno.serve(async (req: Request) => {
     const sessionId = body.session_id || null;
     const history = body.history || [];
     const currentPage = body.current_page || "/";
+    const attachments: Attachment[] = body.attachments || [];
 
     // Resolve page context BEFORE building system message
     const pageContext = getPageContext(currentPage);
@@ -221,14 +288,20 @@ Deno.serve(async (req: Request) => {
     ].filter(Boolean).join("\n");
 
     // Build messages array for OpenAI-compatible API
+    const userContent = buildAttachmentContent(message, attachments);
     const messages = [
       { role: "system", content: systemMessage },
       ...history.slice(-10).map((m: { role: string; content: string }) => ({
         role: m.role,
         content: m.content,
       })),
-      { role: "user", content: message },
+      { role: "user", content: userContent },
     ];
+
+    // Upload attachments to storage in background (non-blocking, for record-keeping)
+    if (attachments.length > 0) {
+      uploadAttachments(attachments, "chat-v2").catch((e: Error) => console.error(`[v2] background upload error: ${e.message}`));
+    }
 
     // Sign the payload
     const payloadStr = JSON.stringify({ messages, user: user.email, timestamp: Date.now() });
