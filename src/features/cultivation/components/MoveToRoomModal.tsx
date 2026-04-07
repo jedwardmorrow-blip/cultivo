@@ -254,19 +254,19 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
   const canConfirm = remainingPlants >= 0 && filledCount > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className={`bg-cult-near-black border border-cult-medium-gray p-6 ${step === 'placement' ? 'w-full max-w-2xl' : 'w-full max-w-md'}`}>
-        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">{isMultiGroup ? 'Move Batch' : 'Move Plant Group'}</h3>
-        <p className="text-cult-light-gray text-sm mb-1">
-          Moving <span className="text-cult-white font-mono font-bold">{groupLabel}</span> from{' '}
-          <span className="text-cult-white">{fromRoom}</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className={`rounded-2xl border border-white/[0.12] bg-white/[0.08] backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)] p-6 ${step === 'placement' ? 'w-full max-w-2xl' : 'w-full max-w-md'}`}>
+        <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-1">{isMultiGroup ? 'Move Batch' : 'Move Plant Group'}</h3>
+        <p className="text-white/50 text-sm mb-1">
+          Moving <span className="text-white font-mono font-bold">{groupLabel}</span> from{' '}
+          <span className="text-white">{fromRoom}</span>
         </p>
-        <p className="text-cult-medium-gray text-xs mb-4">
+        <p className="text-white/30 text-xs mb-4">
           {totalPlants} plant{totalPlants !== 1 ? 's' : ''} in group
         </p>
 
         {error && (
-          <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 mb-4">
+          <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 mb-4">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             {error}
           </div>
@@ -276,14 +276,14 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
         {step === 'room' && (
           <>
             <div className="mb-4">
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Destination Room *</label>
+              <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-1.5">Destination Room *</label>
               {availableRooms.length === 0 ? (
-                <p className="text-cult-warning text-sm">No other active rooms available.</p>
+                <p className="text-amber-400 text-sm">No other active rooms available.</p>
               ) : (
                 <select
                   value={toRoomId}
                   onChange={(e) => setToRoomId(e.target.value)}
-                  className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full rounded-xl bg-white/[0.05] border border-white/[0.08] text-white px-3 py-2.5 text-sm focus:outline-none focus:border-white/20 transition-colors"
                 >
                   <option value="">— Select destination —</option>
                   {availableRooms.map((r) => (
@@ -294,12 +294,12 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                 </select>
               )}
               {toRoomId && !loadingTables && isFlowerRoom && hasSections && (
-                <p className="text-xs text-cult-success/80 mt-1.5">
+                <p className="text-xs text-emerald-400/70 mt-1.5">
                   Flower room — you&apos;ll assign plants to tables and sections next.
                 </p>
               )}
               {toRoomId && !loadingTables && !isFlowerRoom && (
-                <p className="text-xs text-cult-medium-gray mt-1.5">
+                <p className="text-xs text-white/30 mt-1.5">
                   Non-flower room — entire group will be moved.
                 </p>
               )}
@@ -316,7 +316,7 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
               </Button>
               <button
                 onClick={onCancel}
-                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                className="px-5 py-2 text-sm font-medium rounded-xl border border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-all"
               >
                 Cancel
               </button>
@@ -328,25 +328,25 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
         {step === 'placement' && (
           <>
             <div className="mb-3">
-              <p className="text-xs text-cult-medium-gray mb-2">
-                Moving to <span className="text-cult-white font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
+              <p className="text-xs text-white/30 mb-2">
+                Moving to <span className="text-white font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
               </p>
             </div>
 
             {/* Kill plants row */}
-            <div className="flex items-center gap-3 bg-cult-danger-muted border border-cult-danger/30 px-3 py-2 mb-3">
-              <div className="w-6 h-6 rounded-sm flex items-center justify-center bg-cult-danger-muted flex-shrink-0">
-                <Skull className="w-3 h-3 text-cult-danger" />
+            <div className="flex items-center gap-3 rounded-xl bg-red-500/10 border border-red-500/20 px-3 py-2.5 mb-3">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-red-500/10 flex-shrink-0">
+                <Skull className="w-3 h-3 text-red-400" />
               </div>
               <div className="flex-1">
-                <p className="text-[10px] text-cult-danger font-medium uppercase tracking-wider">Kill Plants</p>
+                <p className="text-[10px] text-red-400 font-medium uppercase tracking-wider">Kill Plants</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setKillCount((c) => Math.max(c - 1, 0))}
                   disabled={killCount <= 0}
-                  className="w-6 h-6 flex items-center justify-center rounded-sm bg-cult-black border border-cult-danger/30 text-cult-danger hover:border-cult-danger disabled:opacity-30 transition-colors"
+                  className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/5 border border-red-500/20 text-red-400 hover:border-red-500/40 disabled:opacity-30 transition-colors"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
@@ -360,13 +360,13 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                     setKillCount(Math.min(v, totalPlants - 1));
                   }}
                   placeholder="0"
-                  className="w-12 bg-cult-black border border-cult-danger/30 text-cult-danger px-1 py-0.5 text-xs text-center font-mono focus:outline-none focus:border-cult-danger"
+                  className="w-12 rounded-lg bg-white/5 border border-red-500/20 text-red-400 px-1 py-0.5 text-xs text-center font-mono focus:outline-none focus:border-red-500/40"
                 />
                 <button
                   type="button"
                   onClick={() => setKillCount((c) => Math.min(c + 1, totalPlants - 1))}
                   disabled={killCount >= totalPlants - 1}
-                  className="w-6 h-6 flex items-center justify-center rounded-sm bg-cult-black border border-cult-danger/30 text-cult-danger hover:border-cult-danger disabled:opacity-30 transition-colors"
+                  className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/5 border border-red-500/20 text-red-400 hover:border-red-500/40 disabled:opacity-30 transition-colors"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
@@ -376,21 +376,21 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
             {/* Grid header with actions */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3 text-cult-light-gray" />
-                <span className="text-[10px] text-cult-light-gray uppercase tracking-wider font-semibold">Tap sections to select</span>
+                <MapPin className="w-3 h-3 text-white/40" />
+                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Tap sections to select</span>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={distributeEvenly}
                   disabled={selectedCells.length === 0}
-                  className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-success hover:text-cult-success disabled:opacity-30 transition-all"
+                  className="px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider rounded-lg border border-white/10 text-white/40 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-30 transition-all"
                 >
                   Distribute evenly
                 </button>
                 <button
                   onClick={clearSelection}
                   disabled={selectedCells.length === 0}
-                  className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white disabled:opacity-30 transition-all"
+                  className="px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider rounded-lg border border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 disabled:opacity-30 transition-all"
                 >
                   Clear
                 </button>
@@ -400,16 +400,16 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
             {/* Grid legend */}
             <div className="flex items-center gap-4 mb-2">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 border border-dashed border-cult-medium-gray/50 bg-cult-black" />
-                <span className="text-[9px] text-cult-medium-gray">Empty</span>
+                <div className="w-3 h-3 rounded border border-dashed border-white/15 bg-white/[0.02]" />
+                <span className="text-[9px] text-white/25">Empty</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 border border-cult-warning/40 bg-cult-warning-muted" />
-                <span className="text-[9px] text-cult-medium-gray">Occupied</span>
+                <div className="w-3 h-3 rounded border border-amber-500/30 bg-amber-500/10" />
+                <span className="text-[9px] text-white/25">Occupied</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 border border-cult-success/30 bg-cult-success-muted" />
-                <span className="text-[9px] text-cult-medium-gray">Placing here</span>
+                <div className="w-3 h-3 rounded border border-emerald-500/30 bg-emerald-500/10" />
+                <span className="text-[9px] text-white/25">Placing here</span>
               </div>
             </div>
 
@@ -421,9 +421,9 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
               }}
             >
               {/* Column headers */}
-              <div className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1" />
+              <div className="text-center text-[9px] font-mono font-bold text-white/20 py-1" />
               {sectionLabels.map((label) => (
-                <div key={label} className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1 tracking-wider">
+                <div key={label} className="text-center text-[9px] font-mono font-bold text-white/20 py-1 tracking-wider">
                   {label}
                 </div>
               ))}
@@ -432,7 +432,7 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
               {sortedTables.map((table) => (
                 <>
                   {/* Row label */}
-                  <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono font-bold text-cult-medium-gray">
+                  <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono font-bold text-white/20">
                     T{table.table_number}
                   </div>
                   {/* Cells */}
@@ -440,7 +440,7 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                     const key = `${table.table_number}-${sLabel}`;
                     const cell = cells.get(key);
                     if (!cell) {
-                      return <div key={key} className="min-h-[52px] bg-cult-black/30 border border-cult-dark-gray/30" />;
+                      return <div key={key} className="min-h-[52px] rounded-lg bg-white/[0.02] border border-white/[0.04]" />;
                     }
 
                     const isOccupied = cell.occupiedCount > 0;
@@ -448,15 +448,14 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                     const strainSummary = cell.occupiedStrains.map(s => `${s.count} ${s.abbreviation}`).join(', ');
 
                     if (isSelected) {
-                      // Selected cell — emerald border, count input, plus existing occupancy below
                       return (
                         <div
                           key={key}
-                          className="min-h-[52px] border-2 border-cult-success/40 bg-cult-success-muted flex flex-col items-center justify-center relative"
+                          className="min-h-[52px] rounded-lg border-2 border-emerald-500/40 bg-emerald-500/10 flex flex-col items-center justify-center relative"
                         >
                           <button
                             onClick={() => toggleCell(key)}
-                            className="absolute top-0.5 right-1 text-[8px] text-cult-success/40 hover:text-cult-danger transition-colors"
+                            className="absolute top-0.5 right-1 text-[8px] text-emerald-400/40 hover:text-red-400 transition-colors"
                             title="Deselect"
                           >
                             ✕
@@ -469,12 +468,12 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                             onChange={(e) => setCellCount(key, Number(e.target.value) || 0)}
                             onFocus={(e) => e.target.select()}
                             placeholder="0"
-                            className="w-full h-full text-center bg-transparent text-cult-success font-mono text-sm font-bold outline-none cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full h-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           {isOccupied && (
                             <div className="flex flex-col items-center">
                               {cell.occupiedStrains.map(s => (
-                                <span key={s.abbreviation} className="text-[7px] text-cult-warning/60 font-mono leading-tight">
+                                <span key={s.abbreviation} className="text-[7px] text-amber-400/50 font-mono leading-tight">
                                   +{s.count} {s.abbreviation}
                                 </span>
                               ))}
@@ -485,18 +484,17 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                     }
 
                     if (isOccupied) {
-                      // Occupied cell — amber tones, per-strain breakdown, clearly filled
                       return (
                         <button
                           key={key}
                           onClick={() => toggleCell(key)}
-                          className="min-h-[52px] bg-cult-warning-muted border border-cult-warning/30 flex flex-col items-center justify-center cursor-pointer hover:border-cult-warning/40 hover:bg-cult-warning-muted transition-colors"
+                          className="min-h-[52px] rounded-lg bg-amber-500/10 border border-amber-500/20 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/30 transition-colors"
                           title={`Occupied: ${strainSummary} — click to co-place`}
                         >
-                          <span className="font-mono text-[11px] font-bold text-cult-warning/80">{cell.occupiedCount}</span>
+                          <span className="font-mono text-[11px] font-bold text-amber-400/70">{cell.occupiedCount}</span>
                           <div className="flex flex-col items-center">
                             {cell.occupiedStrains.map(s => (
-                              <span key={s.abbreviation} className="text-[7px] text-cult-warning/40 uppercase tracking-wider leading-tight">
+                              <span key={s.abbreviation} className="text-[7px] text-amber-400/30 uppercase tracking-wider leading-tight">
                                 {s.count} {s.abbreviation}
                               </span>
                             ))}
@@ -505,12 +503,11 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
                       );
                     }
 
-                    // Empty cell — dashed border, clearly available
                     return (
                       <button
                         key={key}
                         onClick={() => toggleCell(key)}
-                        className="min-h-[52px] bg-cult-black border border-dashed border-cult-medium-gray/40 hover:border-cult-success/40 hover:bg-cult-success-muted transition-colors cursor-pointer"
+                        className="min-h-[52px] rounded-lg bg-white/[0.02] border border-dashed border-white/[0.08] hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-colors cursor-pointer"
                       />
                     );
                   })}
@@ -519,31 +516,31 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
             </div>
 
             {/* Running counter */}
-            <div className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-3 py-2 mb-3">
-              <div className="text-xs text-cult-medium-gray">
+            <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5 mb-3">
+              <div className="text-xs text-white/30">
                 {killCount > 0 && (
-                  <span className="text-cult-danger font-mono font-bold mr-1.5">{killCount} killed</span>
+                  <span className="text-red-400 font-mono font-bold mr-1.5">{killCount} killed</span>
                 )}
-                <span className="text-cult-white font-mono font-bold">{assignedPlants}</span> assigned
+                <span className="text-white font-mono font-bold">{assignedPlants}</span> assigned
               </div>
-              <div className="text-xs text-cult-medium-gray">
-                <span className={`font-mono font-bold ${remainingPlants === 0 ? 'text-cult-success' : remainingPlants < 0 ? 'text-cult-danger' : 'text-cult-warning'}`}>
+              <div className="text-xs text-white/30">
+                <span className={`font-mono font-bold ${remainingPlants === 0 ? 'text-emerald-400' : remainingPlants < 0 ? 'text-red-400' : 'text-amber-400'}`}>
                   {remainingPlants}
                 </span> remaining
               </div>
-              <div className="text-xs text-cult-medium-gray">
-                of <span className="text-cult-white font-mono font-bold">{availablePlants}</span> avail
+              <div className="text-xs text-white/30">
+                of <span className="text-white font-mono font-bold">{availablePlants}</span> avail
               </div>
             </div>
 
             {remainingPlants > 0 && filledCount > 0 && (
-              <p className="text-xs text-cult-medium-gray mb-3">
+              <p className="text-xs text-white/25 mb-3">
                 {remainingPlants} plant{remainingPlants !== 1 ? 's' : ''} will stay in {fromRoom}.
               </p>
             )}
 
             {remainingPlants < 0 && (
-              <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2 mb-3">
+              <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-2.5 mb-3">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                 Over-assigned by {Math.abs(remainingPlants)} — reduce plant counts{killCount > 0 ? ' or kill count' : ''}.
               </div>
@@ -561,7 +558,7 @@ export function MoveToRoomModal({ group, groups, rooms, onMove, onSplitAndMove, 
               <button
                 onClick={() => { setStep('room'); clearSelection(); setKillCount(0); }}
                 disabled={saving}
-                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                className="px-5 py-2 text-sm font-medium rounded-xl border border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-all"
               >
                 Back
               </button>
