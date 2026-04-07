@@ -10,7 +10,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
-  CheckCircle2, Clock, ChevronLeft, X,
+  CheckCircle2, Clock, ChevronLeft, X, Wheat,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
@@ -26,6 +26,7 @@ import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import { MoveToRoomModal } from './MoveToRoomModal';
 import { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain';
+import { HarvestWorkflow } from './harvest';
 import { todayIso } from '../utils/dateUtils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -313,7 +314,7 @@ function AttentionStrip({ opsRooms, onRoomClick }: {
 // SCREEN 2: Expanded Room View
 // ═══════════════════════════════════════════════════════════════
 
-function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onMoveToRoom, onSplitAndMove, onSplitAndMoveMultiple, onBack }: {
+function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onCreateTask, onMoveToRoom, onSplitAndMove, onSplitAndMoveMultiple, onBack }: {
   state: RoomOperationalState;
   tasks: DailyTaskInstance[];
   groups: PlantGroup[];
@@ -321,6 +322,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   onUpdateTaskStatus: (id: string, status: string) => void;
   onCompleteWithLog: (taskId: string, refTable: string, refId: string, duration: string | null) => void;
   onAssignWorker: (taskId: string, staffId: string) => Promise<void>;
+  onCreateTask: (input: { room_id: string; task_type: string; task_date: string; assigned_to?: string | null }) => Promise<void>;
   onMoveToRoom: (groupId: string, toRoomId: string) => Promise<void>;
   onSplitAndMove: (input: SplitAndMoveInput) => Promise<void>;
   onSplitAndMoveMultiple: (input: SplitAndMoveMultiInput) => Promise<void>;
@@ -332,6 +334,9 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   const [movingGroup, setMovingGroup] = useState<PlantGroup | null>(null);
   const [movingBatchGroups, setMovingBatchGroups] = useState<PlantGroup[] | undefined>(undefined);
   const [focusedCard, setFocusedCard] = useState<string | null>(null);
+  const [showHarvestConfirm, setShowHarvestConfirm] = useState(false);
+  const [showHarvestWorkflow, setShowHarvestWorkflow] = useState(false);
+  const [showInlineAdd, setShowInlineAdd] = useState(false);
   const { staff: activeStaff } = useActiveStaff();
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
@@ -387,10 +392,22 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             </div>
           </div>
 
-          {/* Task counter */}
-          <div className="text-right">
-            <span className="text-3xl font-bold font-mono" style={{ color: GOLD }}>{doneTasks}/{roomTasks.length}</span>
-            <p className="text-[10px] text-white/25 uppercase tracking-wider">tasks</p>
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            {state.room_type === 'flower' && (
+              <button
+                type="button"
+                onClick={() => setShowHarvestConfirm(true)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium hover:bg-amber-500/20 transition-all active:scale-95"
+              >
+                <Wheat className="w-3.5 h-3.5" />
+                Harvest
+              </button>
+            )}
+            <div className="text-right">
+              <span className="text-3xl font-bold font-mono" style={{ color: GOLD }}>{doneTasks}/{roomTasks.length}</span>
+              <p className="text-[10px] text-white/25 uppercase tracking-wider">tasks</p>
+            </div>
           </div>
         </div>
       </div>
@@ -476,7 +493,49 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className={`${GLASS} p-5 h-full`}
               >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">Today's Tasks</h3>
+                  {!showInlineAdd ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowInlineAdd(true)}
+                      className="flex items-center gap-1.5 text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+                    >
+                      <Plus className="w-3 h-3" /> Add Task
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowInlineAdd(false)}
+                      className="text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+
+                {/* Inline add task row */}
+                <AnimatePresence>
+                  {showInlineAdd && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden mb-3"
+                    >
+                      <InlineAddTask
+                        roomId={state.room_id}
+                        onAdd={async (input) => {
+                          await onCreateTask(input);
+                          setShowInlineAdd(false);
+                        }}
+                        onCancel={() => setShowInlineAdd(false)}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <TaskChecklist
                   tasks={roomTasks}
                   onUpdateStatus={onUpdateTaskStatus}
@@ -632,7 +691,113 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
           }}
         />
       )}
+
+      {/* Harvest confirmation */}
+      <AnimatePresence>
+        {showHarvestConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowHarvestConfirm(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className={`relative w-full max-w-sm ${GLASS_ELEVATED} p-6 space-y-4`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Wheat className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Harvest {state.room_code}?</h3>
+                  <p className="text-xs text-white/40 mt-0.5">{state.total_plants} plants · {state.strain_count} strains</p>
+                </div>
+              </div>
+              <p className="text-xs text-white/30">
+                This will start the harvest workflow for {state.room_code}. You'll record wet weights per batch and assign a dry room.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowHarvestConfirm(false);
+                    setShowHarvestWorkflow(true);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-medium hover:bg-amber-500/30 transition-colors active:scale-[0.98]"
+                >
+                  Start Harvest
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowHarvestConfirm(false)}
+                  className="px-4 py-2.5 rounded-xl border border-white/10 text-white/40 text-sm hover:border-white/20 hover:text-white/60 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Harvest workflow modal */}
+      {showHarvestWorkflow && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div className="max-w-4xl mx-auto p-4 pt-8">
+            <HarvestWorkflow
+              initialRoomId={state.room_id}
+              onComplete={() => {
+                setShowHarvestWorkflow(false);
+                onBack();
+              }}
+              onCancel={() => setShowHarvestWorkflow(false)}
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Inline Add Task — simple row for adding a task to the room
+// ═══════════════════════════════════════════════════════════════
+
+const INLINE_TASK_TYPES = ['batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning', 'training', 'maintenance', 'custom'] as const;
+
+function InlineAddTask({ roomId, onAdd, onCancel }: {
+  roomId: string;
+  onAdd: (input: { room_id: string; task_type: string; task_date: string }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+
+  async function handleAdd(taskType: string) {
+    setSaving(true);
+    try {
+      await onAdd({ room_id: roomId, task_type: taskType, task_date: todayIso() });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-4 gap-1.5">
+      {INLINE_TASK_TYPES.map(type => {
+        const config = getTaskTypeConfig(type);
+        return (
+          <button
+            key={type}
+            type="button"
+            onClick={() => handleAdd(type)}
+            disabled={saving}
+            className="flex items-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all active:scale-95 disabled:opacity-30"
+          >
+            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }} />
+            <span className="text-[10px] text-white/50 truncate">{config.label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1203,6 +1368,7 @@ export function CommandCenter() {
             onUpdateTaskStatus={handleUpdateTaskStatus}
             onCompleteWithLog={(taskId, refTable, refId, duration) => completeWithLog(taskId, refTable, refId, duration)}
             onAssignWorker={async (taskId, staffId) => { await assignWorker(taskId, staffId); }}
+            onCreateTask={async (input) => { await createTask(input); }}
             onMoveToRoom={async (groupId, toRoomId) => { await moveToRoom(groupId, toRoomId); }}
             onSplitAndMove={async (input) => { await splitAndMoveToRoom(input); }}
             onSplitAndMoveMultiple={async (input) => { await splitAndMoveMultipleToRoom(input); }}
