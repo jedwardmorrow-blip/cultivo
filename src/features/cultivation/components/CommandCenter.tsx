@@ -14,12 +14,15 @@ import {
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
+import { usePlantGroups } from '../hooks/usePlantGroups';
+import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { getTaskTypeConfig } from '../types';
-import type { DailyTaskInstance } from '../types';
+import type { DailyTaskInstance, PlantGroup, SplitAndMoveInput, SplitAndMoveMultiInput } from '../types';
 import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
+import { MoveToRoomModal } from './MoveToRoomModal';
 import { todayIso } from '../utils/dateUtils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -304,16 +307,24 @@ function AttentionStrip({ opsRooms, onRoomClick }: {
 // SCREEN 2: Expanded Room View
 // ═══════════════════════════════════════════════════════════════
 
-function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onBack }: {
+function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onMoveToRoom, onSplitAndMove, onSplitAndMoveMultiple, onBack }: {
   state: RoomOperationalState;
   tasks: DailyTaskInstance[];
+  groups: PlantGroup[];
+  rooms: Array<{ id: string; name: string; room_code: string; room_type: string; is_active: boolean; capacity_plants: number | null; created_at: string; created_by: string | null }>;
   onUpdateTaskStatus: (id: string, status: string) => void;
   onCompleteWithLog: (taskId: string, refTable: string, refId: string, duration: string | null) => void;
   onAssignWorker: (taskId: string, staffId: string) => Promise<void>;
+  onMoveToRoom: (groupId: string, toRoomId: string) => Promise<void>;
+  onSplitAndMove: (input: SplitAndMoveInput) => Promise<void>;
+  onSplitAndMoveMultiple: (input: SplitAndMoveMultiInput) => Promise<void>;
   onBack: () => void;
 }) {
   const roomTasks = useMemo(() => tasks.filter(t => t.room_id === state.room_id), [tasks, state.room_id]);
+  const roomGroups = useMemo(() => groups.filter(g => g.grow_room_id === state.room_id && g.growth_stage !== 'harvested'), [groups, state.room_id]);
   const [completingTask, setCompletingTask] = useState<DailyTaskInstance | null>(null);
+  const [movingGroup, setMovingGroup] = useState<PlantGroup | null>(null);
+  const [movingBatchGroups, setMovingBatchGroups] = useState<PlantGroup[] | undefined>(undefined);
   const { staff: activeStaff } = useActiveStaff();
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
@@ -425,6 +436,49 @@ function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onCompleteWithLog,
 
           {/* Feed recipe */}
           <FeedCard state={state} />
+
+          {/* Plant Groups in this room */}
+          {roomGroups.length > 0 && (
+            <div className={`${GLASS} p-4`}>
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">
+                Plant Groups <span className="text-white/15">({roomGroups.length})</span>
+              </h3>
+              <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
+                {roomGroups.map(g => {
+                  const batchNum = g.batch_registry?.batch_number;
+                  const strainName = g.strains?.name ?? 'Unknown';
+                  return (
+                    <div key={g.id} className="flex items-center justify-between py-2 px-2.5 rounded-xl bg-white/[0.03] group">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          {batchNum && <span className="text-xs font-mono text-white/70">{batchNum}</span>}
+                          <span className="text-[10px] text-white/30 uppercase">{g.growth_stage}</span>
+                        </div>
+                        <div className="text-[10px] text-white/40 mt-0.5">
+                          {strainName} · {g.plant_count} plants
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Find all groups in the same batch for batch-level moves
+                          const batchId = g.batch_registry_id;
+                          const batchGroups = batchId
+                            ? roomGroups.filter(rg => rg.batch_registry_id === batchId)
+                            : undefined;
+                          setMovingGroup(g);
+                          setMovingBatchGroups(batchGroups && batchGroups.length > 1 ? batchGroups : undefined);
+                        }}
+                        className="text-[10px] text-white/20 hover:text-white/50 px-2 py-1 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        Move
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -442,6 +496,34 @@ function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onCompleteWithLog,
           onNavigateHarvest={() => { /* TODO: inline harvest flow */ }}
           onNavigateClone={() => { /* TODO: inline clone flow */ }}
           onClose={() => setCompletingTask(null)}
+        />
+      )}
+
+      {/* Move Plant Group modal */}
+      {movingGroup && (
+        <MoveToRoomModal
+          group={movingGroup}
+          groups={movingBatchGroups}
+          rooms={rooms as any}
+          onMove={async (toRoomId) => {
+            await onMoveToRoom(movingGroup.id, toRoomId);
+            setMovingGroup(null);
+            setMovingBatchGroups(undefined);
+          }}
+          onSplitAndMove={async (input) => {
+            await onSplitAndMove(input);
+            setMovingGroup(null);
+            setMovingBatchGroups(undefined);
+          }}
+          onSplitAndMoveMultiple={async (input) => {
+            await onSplitAndMoveMultiple(input);
+            setMovingGroup(null);
+            setMovingBatchGroups(undefined);
+          }}
+          onCancel={() => {
+            setMovingGroup(null);
+            setMovingBatchGroups(undefined);
+          }}
         />
       )}
     </motion.div>
@@ -797,6 +879,8 @@ function QuickAddTask({ roomId, roomCode, staff, onAdd, onClose }: {
 
 export function CommandCenter() {
   const { rooms: opsRooms, loading } = useRoomOperationalState();
+  const { rooms: growRooms } = useGrowRooms();
+  const { groups: allGroups, moveToRoom, splitAndMoveToRoom, splitAndMoveMultipleToRoom } = usePlantGroups({ stage: 'active' });
   const today = todayIso();
   const { tasks, updateStatus, completeWithLog, assignWorker, createTask } = useDailyTasks(today);
   const { staff: allStaff } = useActiveStaff();
@@ -860,9 +944,14 @@ export function CommandCenter() {
             key={`room-${selectedRoomCode}`}
             state={selectedRoom}
             tasks={tasks}
+            groups={allGroups}
+            rooms={growRooms}
             onUpdateTaskStatus={handleUpdateTaskStatus}
             onCompleteWithLog={(taskId, refTable, refId, duration) => completeWithLog(taskId, refTable, refId, duration)}
             onAssignWorker={async (taskId, staffId) => { await assignWorker(taskId, staffId); }}
+            onMoveToRoom={async (groupId, toRoomId) => { await moveToRoom(groupId, toRoomId); }}
+            onSplitAndMove={async (input) => { await splitAndMoveToRoom(input); }}
+            onSplitAndMoveMultiple={async (input) => { await splitAndMoveMultipleToRoom(input); }}
             onBack={() => setSelectedRoomCode(null)}
           />
         ) : (
