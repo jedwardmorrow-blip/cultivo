@@ -542,8 +542,10 @@ function StrainDetailPanel({
                 const reservation = productReservations?.get(product.id);
                 const reservedQty = reservation?.reserved_qty ?? 0;
                 const netAvailable = reservation?.net_available ?? (product.available_quantity ?? 0);
-                const isOverReserved = parsedQty > netAvailable && netAvailable >= 0;
-                const isFullyReserved = netAvailable === 0 && reservedQty > 0;
+                // Pipeline-aware availability: don't show red warnings when upstream material exists
+                const hasPipeline = pipelineGrams > 0 || readyGrams > 0;
+                const isOverReserved = parsedQty > netAvailable && netAvailable >= 0 && !hasPipeline;
+                const isFullyReserved = netAvailable === 0 && reservedQty > 0 && !hasPipeline;
 
                 return (
                   <div key={product.id}>
@@ -607,9 +609,19 @@ function StrainDetailPanel({
                             reserved: <span className="text-cult-warning font-semibold tabular-nums">{reservedQty}</span>
                           </span>
                           <span className="text-cult-text-faint">·</span>
-                          <span className={`font-semibold tabular-nums ${netAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
-                            {netAvailable} net available
-                          </span>
+                          {netAvailable > 0 ? (
+                            <span className="font-semibold tabular-nums text-cult-success">
+                              {netAvailable} net available
+                            </span>
+                          ) : hasPipeline ? (
+                            <span className="font-semibold text-cult-warning">
+                              needs production
+                            </span>
+                          ) : (
+                            <span className="font-semibold tabular-nums text-cult-danger">
+                              {netAvailable} net available
+                            </span>
+                          )}
                           {isFullyReserved && (
                             <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
                               <AlertCircle className="w-3 h-3" />
@@ -657,6 +669,12 @@ function StrainDetailPanel({
                           <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
                             <AlertCircle className="w-3 h-3 flex-shrink-0" />
                             exceeds net available ({netAvailable})
+                          </span>
+                        )}
+                        {!isOverReserved && netAvailable === 0 && hasPipeline && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-cult-warning font-medium ml-auto">
+                            <Scissors className="w-3 h-3 flex-shrink-0" />
+                            needs production
                           </span>
                         )}
                       </div>
@@ -803,8 +821,9 @@ function StrainDetailPanel({
                 const prerollReservation = productReservations?.get(product.id);
                 const prerollReservedQty = prerollReservation?.reserved_qty ?? 0;
                 const prerollNetAvailable = prerollReservation?.net_available ?? (product.available_quantity ?? 0);
-                const prerollIsOverReserved = parsedQty > prerollNetAvailable && prerollNetAvailable >= 0;
-                const prerollFullyReserved = prerollNetAvailable === 0 && prerollReservedQty > 0;
+                const prerollHasPipeline = pipelineGrams > 0;
+                const prerollIsOverReserved = parsedQty > prerollNetAvailable && prerollNetAvailable >= 0 && !prerollHasPipeline;
+                const prerollFullyReserved = prerollNetAvailable === 0 && prerollReservedQty > 0 && !prerollHasPipeline;
 
                 return (
                   <div key={product.id}>
@@ -864,9 +883,19 @@ function StrainDetailPanel({
                             reserved: <span className="text-cult-warning font-semibold tabular-nums">{prerollReservedQty}</span>
                           </span>
                           <span className="text-cult-text-faint">·</span>
-                          <span className={`font-semibold tabular-nums ${prerollNetAvailable > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
-                            {prerollNetAvailable} net available
-                          </span>
+                          {prerollNetAvailable > 0 ? (
+                            <span className="font-semibold tabular-nums text-cult-success">
+                              {prerollNetAvailable} net available
+                            </span>
+                          ) : prerollHasPipeline ? (
+                            <span className="font-semibold text-cult-warning">
+                              needs production
+                            </span>
+                          ) : (
+                            <span className="font-semibold tabular-nums text-cult-danger">
+                              {prerollNetAvailable} net available
+                            </span>
+                          )}
                           {prerollFullyReserved && (
                             <span className="flex items-center gap-0.5 text-cult-danger font-semibold ml-auto">
                               <AlertCircle className="w-3 h-3" />
@@ -913,6 +942,12 @@ function StrainDetailPanel({
                           <span className="flex items-center gap-0.5 text-[10px] text-cult-danger font-medium ml-auto">
                             <AlertCircle className="w-3 h-3 flex-shrink-0" />
                             exceeds net available ({prerollNetAvailable})
+                          </span>
+                        )}
+                        {!prerollIsOverReserved && prerollNetAvailable === 0 && prerollHasPipeline && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-cult-warning font-medium ml-auto">
+                            <Scissors className="w-3 h-3 flex-shrink-0" />
+                            needs production
                           </span>
                         )}
                       </div>
