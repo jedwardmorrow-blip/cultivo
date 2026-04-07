@@ -38,7 +38,7 @@ export function CustomersFilters({
             <button
               onClick={onGeocodeAll}
               disabled={isGeocodingAll}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded font-medium uppercase tracking-wider hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 bg-cult-info text-cult-text-primary rounded font-medium uppercase tracking-wider hover:bg-cult-info/80 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isGeocodingAll ? (
                 <>
@@ -73,9 +73,9 @@ export function CustomersFilters({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-cult-light-gray">Geocoded</p>
-              <p className="text-2xl font-bold text-green-400">{geocodedCount}</p>
+              <p className="text-2xl font-bold text-cult-success">{geocodedCount}</p>
             </div>
-            <MapPin className="w-8 h-8 text-green-500" />
+            <MapPin className="w-8 h-8 text-cult-success" />
           </div>
         </div>
 
@@ -83,9 +83,9 @@ export function CustomersFilters({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-cult-light-gray">Missing Geocode</p>
-              <p className="text-2xl font-bold text-yellow-400">{missingGeocodeCount}</p>
+              <p className="text-2xl font-bold text-cult-warning">{missingGeocodeCount}</p>
             </div>
-            <AlertCircle className="w-8 h-8 text-yellow-500" />
+            <AlertCircle className="w-8 h-8 text-cult-warning" />
           </div>
         </div>
       </div>

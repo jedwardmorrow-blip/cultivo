@@ -60,7 +60,7 @@ export function ActiveBuckingSessionsTable({
                 sessions.map((session) => {
                   const stale = isStaleSession(session.started_at);
                   return (
-                  <tr key={session.id} className={`hover:bg-cult-dark-gray/50 transition-colors ${stale ? 'bg-red-950/20' : ''}`}>
+                  <tr key={session.id} className={`hover:bg-cult-dark-gray/50 transition-colors ${stale ? 'bg-cult-danger/5' : ''}`}>
                     <td className="px-4 py-3 text-sm text-cult-white font-medium">
                       {session.bucker_name}
                     </td>
@@ -68,11 +68,11 @@ export function ActiveBuckingSessionsTable({
                       {session.strain}
                     </td>
                     <td className="px-4 py-3 text-sm font-mono">
-                      <span className={stale ? 'text-red-400' : 'text-cult-silver'}>
+                      <span className={stale ? 'text-cult-danger' : 'text-cult-silver'}>
                         {session.binned_package_id}
                       </span>
                       {stale && (
-                        <span className="ml-2 text-xs bg-red-600/30 text-red-400 border border-red-600/50 rounded px-1.5 py-0.5 font-bold uppercase tracking-wide">
+                        <span className="ml-2 text-xs bg-cult-danger/30 text-cult-danger border border-cult-danger/50 rounded px-1.5 py-0.5 font-bold uppercase tracking-wide">
                           Blocking Tote
                         </span>
                       )}
@@ -82,13 +82,13 @@ export function ActiveBuckingSessionsTable({
                     </td>
                     <td className="px-4 py-3 text-sm text-center font-medium">
                       {session.is_paused ? (
-                        <span className="text-yellow-400">PAUSED</span>
+                        <span className="text-cult-warning">PAUSED</span>
                       ) : stale ? (
                         <div className="flex flex-col items-center">
-                          <span className="text-red-400 font-bold">
+                          <span className="text-cult-danger font-bold">
                             {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
                           </span>
-                          <span className="text-xs text-red-500 uppercase tracking-wide">Stuck Session</span>
+                          <span className="text-xs text-cult-danger uppercase tracking-wide">Stuck Session</span>
                         </div>
                       ) : (
                         <span className="text-cult-green">
@@ -104,7 +104,7 @@ export function ActiveBuckingSessionsTable({
                           className={`p-1.5 rounded transition ${
                             session.is_paused
                               ? 'bg-cult-green/20 text-cult-green hover:bg-cult-green/30'
-                              : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                              : 'bg-cult-warning/20 text-cult-warning hover:bg-cult-warning/30'
                           } disabled:opacity-50`}
                           title={session.is_paused ? 'Resume session' : 'Pause session'}
                         >
@@ -119,7 +119,7 @@ export function ActiveBuckingSessionsTable({
                         <button
                           onClick={() => onCancel(session)}
                           className={`px-4 py-1.5 font-bold uppercase tracking-wider transition text-sm text-white ${
-                            stale ? 'bg-red-700 hover:bg-red-800 ring-1 ring-red-400' : 'bg-red-600 hover:bg-red-700'
+                            stale ? 'bg-cult-danger hover:bg-cult-danger/80 ring-1 ring-cult-danger' : 'bg-cult-danger hover:bg-cult-danger/80'
                           }`}
                           title={stale ? 'Ghost session — cancel to unblock this tote' : 'Cancel session'}
                         >

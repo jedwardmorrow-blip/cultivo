@@ -11,10 +11,10 @@ import { BatchCOAStatusBadge } from '@/features/batches/components/BatchCOAStatu
 
 function UrgencyDot({ urgency }: { urgency: Urgency }) {
   const colors: Record<Urgency, string> = {
-    overdue: 'bg-red-400',
-    urgent: 'bg-amber-400',
-    soon: 'bg-yellow-400',
-    normal: 'bg-green-400',
+    overdue: 'bg-cult-danger',
+    urgent: 'bg-cult-warning',
+    soon: 'bg-cult-warning',
+    normal: 'bg-cult-success',
     no_date: 'bg-gray-400',
   };
   return <span className={`inline-block w-2 h-2 rounded-full ${colors[urgency]}`} />;
@@ -64,12 +64,12 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-cult-medium-gray/30">
           <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-blue-400" />
+            <Package className="w-4 h-4 text-cult-info" />
             <span className="text-sm font-medium text-white">
               Batch Assign — {strainName} · {formatLabel}
             </span>
             {ba.totalDraftCount > 0 && (
-              <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-cult-info-muted text-cult-info px-2 py-0.5 rounded-full">
                 {ba.totalDraftCount} assignment{ba.totalDraftCount !== 1 ? 's' : ''} drafted
               </span>
             )}
@@ -78,7 +78,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             {ba.totalDraftCount > 0 && (
               <button
                 onClick={ba.goToPreview}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-cult-info hover:bg-cult-info/80 text-white rounded transition-colors"
               >
                 Review & Confirm <ArrowRight className="w-3 h-3" />
               </button>
@@ -203,9 +203,9 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                       key={order.order_item_id}
                       className={`flex items-center gap-3 px-3 py-2 rounded text-sm ${
                         fullyDrafted
-                          ? 'bg-green-500/10 border border-green-500/20'
+                          ? 'bg-cult-success-muted border border-cult-success/20'
                           : partiallyDrafted
-                          ? 'bg-blue-500/10 border border-blue-500/20'
+                          ? 'bg-cult-info-muted border border-cult-info/20'
                           : 'bg-cult-dark-gray/30 border border-transparent'
                       }`}
                     >
@@ -215,11 +215,11 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                       <span className="text-gray-400 w-20 text-xs">{formatDateShort(order.requested_delivery_date)}</span>
                       <span className="text-right flex-1 text-xs">
                         {fullyDrafted ? (
-                          <span className="text-green-400 flex items-center justify-end gap-1">
+                          <span className="text-cult-success flex items-center justify-end gap-1">
                             <Check className="w-3 h-3" /> Drafted
                           </span>
                         ) : (
-                          <span className={partiallyDrafted ? 'text-blue-300' : 'text-gray-300'}>
+                          <span className={partiallyDrafted ? 'text-cult-info' : 'text-gray-300'}>
                             {needed} of {order.quantity} needed
                           </span>
                         )}
@@ -239,13 +239,13 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
               {ba.drafts.map(d => (
                 <span
                   key={d.draftId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-300 rounded text-xs border border-blue-500/20"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-cult-info-muted text-cult-info rounded text-xs border border-cult-info/20"
                 >
                   <Package className="w-3 h-3" />
                   {d.packageLabel.slice(-8)} → {d.orderNumber} ({d.quantityToAssign})
                   <button
                     onClick={() => ba.removeDraft(d.draftId)}
-                    className="hover:text-red-400 ml-1"
+                    className="hover:text-cult-danger ml-1"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -260,7 +260,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                   {d.batchNumber} → {d.orderNumber} ({formatWeight(d.weightGrams)})
                   <button
                     onClick={() => ba.removeBatchDraft(d.draftId)}
-                    className="hover:text-red-400 ml-1"
+                    className="hover:text-cult-danger ml-1"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -280,7 +280,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
       <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
         <div className="flex items-center justify-between px-4 py-3 border-b border-cult-medium-gray/30">
           <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-400" />
+            <Check className="w-4 h-4 text-cult-success" />
             <span className="text-sm font-medium text-white">
               Review Assignments — {strainName} · {formatLabel}
             </span>
@@ -324,7 +324,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                 key={d.draftId}
                 className="flex items-center gap-3 px-3 py-2 bg-cult-dark-gray/20 rounded text-sm text-gray-300"
               >
-                <Package className="w-3 h-3 text-blue-400/60" />
+                <Package className="w-3 h-3 text-cult-info/60" />
                 <span className="font-mono text-xs">{d.packageLabel.slice(-12)}</span>
                 <ArrowRight className="w-3 h-3 text-gray-500" />
                 <span>{d.orderNumber}</span>
@@ -361,7 +361,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
           </button>
           <button
             onClick={ba.commitAll}
-            className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
+            className="flex items-center gap-1 px-4 py-2 text-sm font-medium bg-cult-success hover:bg-cult-success/80 text-white rounded transition-colors"
           >
             <Check className="w-4 h-4" /> Confirm {ba.totalDraftCount} Assignment{ba.totalDraftCount !== 1 ? 's' : ''}
           </button>
@@ -380,13 +380,13 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
     return (
       <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
         <div className="px-4 py-6 text-center">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
+          <Loader2 className="w-6 h-6 animate-spin text-cult-info mx-auto mb-3" />
           <div className="text-sm text-gray-300 mb-2">
             Committing assignments… {ba.commitProgress.done}/{ba.commitProgress.total}
           </div>
           <div className="w-48 mx-auto bg-cult-dark-gray rounded-full h-2 overflow-hidden">
             <div
-              className="h-full bg-blue-500 transition-all duration-300"
+              className="h-full bg-cult-info transition-all duration-300"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -403,9 +403,9 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
       <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
         <div className="px-4 py-6 text-center">
           {hasErrors ? (
-            <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-3" />
+            <AlertTriangle className="w-6 h-6 text-cult-warning mx-auto mb-3" />
           ) : (
-            <Check className="w-6 h-6 text-green-400 mx-auto mb-3" />
+            <Check className="w-6 h-6 text-cult-success mx-auto mb-3" />
           )}
           <div className="text-sm text-gray-300 mb-2">
             {hasErrors
@@ -415,7 +415,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
           {hasErrors && (
             <div className="max-w-md mx-auto text-left mb-3 space-y-1">
               {ba.commitErrors.map((e, i) => (
-                <div key={i} className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">{e}</div>
+                <div key={i} className="text-xs text-cult-danger bg-cult-danger-muted px-2 py-1 rounded">{e}</div>
               ))}
             </div>
           )}
@@ -454,7 +454,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
   const [assignQtys, setAssignQtys] = useState<Record<string, number>>({});
 
   return (
-    <div className={`rounded border ${fullyDrafted ? 'border-green-500/20 bg-green-500/5' : 'border-cult-medium-gray/20 bg-cult-dark-gray/20'}`}>
+    <div className={`rounded border ${fullyDrafted ? 'border-cult-success/20 bg-cult-success/5' : 'border-cult-medium-gray/20 bg-cult-dark-gray/20'}`}>
       {/* Package header */}
       <div
         className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-cult-dark-gray/30"
@@ -463,12 +463,12 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
         {!fullyDrafted && (
           <ChevronRight className={`w-3 h-3 text-gray-500 transition-transform ${expanded ? 'rotate-90' : ''}`} />
         )}
-        {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
+        {fullyDrafted && <Check className="w-3 h-3 text-cult-success" />}
         <span className="font-mono text-xs text-gray-300">{pkg.package_id.slice(-10)}</span>
         <span className="text-xs text-gray-500">{pkg.batch_number || pkg.batch || ''}</span>
         <span className="ml-auto text-xs">
           {fullyDrafted ? (
-            <span className="text-green-400">Fully drafted</span>
+            <span className="text-cult-success">Fully drafted</span>
           ) : (
             <span className="text-gray-300">{remainingQty} avail</span>
           )}
@@ -517,7 +517,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
                     });
                   }}
                   disabled={maxAssignable <= 0}
-                  className="px-2 py-0.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-xs font-medium transition-colors"
+                  className="px-2 py-0.5 bg-cult-info hover:bg-cult-info/80 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded text-xs font-medium transition-colors"
                 >
                   Assign
                 </button>
@@ -571,9 +571,9 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
   return (
     <div className={`rounded border ${
       fullyDrafted
-        ? 'border-green-500/20 bg-green-500/5'
+        ? 'border-cult-success/20 bg-cult-success/5'
         : coaBlocked
-        ? 'border-amber-500/20 bg-amber-500/5'
+        ? 'border-cult-warning/20 bg-cult-warning/5'
         : 'border-indigo-500/10 bg-indigo-500/5'
     }`}>
       {/* Batch header */}
@@ -584,16 +584,16 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
         {!fullyDrafted && !coaBlocked && (
           <ChevronRight className={`w-3 h-3 text-gray-500 transition-transform ${expanded ? 'rotate-90' : ''}`} />
         )}
-        {fullyDrafted && <Check className="w-3 h-3 text-green-400" />}
-        {coaBlocked && !fullyDrafted && <AlertTriangle className="w-3 h-3 text-amber-400" />}
+        {fullyDrafted && <Check className="w-3 h-3 text-cult-success" />}
+        {coaBlocked && !fullyDrafted && <AlertTriangle className="w-3 h-3 text-cult-warning" />}
         <span className="font-mono text-xs text-gray-300">{batch.batch_number}</span>
         <span className="text-xs text-gray-500">{batchStageLabel(batch)}</span>
         {batch.coa_status && <BatchCOAStatusBadge status={batch.coa_status} size="xs" />}
         <span className="ml-auto text-xs">
           {fullyDrafted ? (
-            <span className="text-green-400">Fully drafted</span>
+            <span className="text-cult-success">Fully drafted</span>
           ) : coaBlocked ? (
-            <span className="text-amber-400">COA required</span>
+            <span className="text-cult-warning">COA required</span>
           ) : (
             <span className="text-gray-300">{formatWeight(remainingG)} avail</span>
           )}

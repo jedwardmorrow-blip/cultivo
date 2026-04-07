@@ -27,9 +27,9 @@ function getStageStyle(stage: string) {
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { style: string; label: string }> = {
-    pending:     { style: 'bg-blue-500/15 text-blue-400 border-blue-500/30', label: 'Queued' },
-    in_progress: { style: 'bg-amber-500/15 text-amber-400 border-amber-500/30', label: 'In Progress' },
-    completed:   { style: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', label: 'Complete' },
+    pending:     { style: 'bg-cult-info-muted text-cult-info border-cult-info/30', label: 'Queued' },
+    in_progress: { style: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', label: 'In Progress' },
+    completed:   { style: 'bg-cult-success-muted text-cult-success border-cult-success/30', label: 'Complete' },
     cancelled:   { style: 'bg-gray-500/15 text-gray-400 border-gray-500/30', label: 'Cancelled' },
   };
   const c = config[status] || config.pending;
@@ -54,9 +54,9 @@ function formatG(g: number): string {
 
 function PriorityBadge({ priority }: { priority: number }) {
   const config = priority <= 20
-    ? { style: 'bg-red-500/15 text-red-400 border-red-500/30', label: 'Urgent' }
+    ? { style: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30', label: 'Urgent' }
     : priority <= 40
-    ? { style: 'bg-amber-500/15 text-amber-400 border-amber-500/30', label: 'High' }
+    ? { style: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', label: 'High' }
     : priority <= 60
     ? { style: 'bg-cult-mid-gray/20 text-cult-text-muted border-cult-dark-gray', label: 'Normal' }
     : { style: 'bg-cult-mid-gray/10 text-cult-text-faint border-cult-dark-gray/50', label: 'Low' };
@@ -149,7 +149,7 @@ function DispatchCard({
             <button
               type="button"
               onClick={() => onComplete(item.id)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/25 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Mark Complete
@@ -234,10 +234,10 @@ export function DispatchExecutionQueue() {
   return (
     <HubShell section="Production Queue" icon={Zap} kpis={kpis}>
       {error && (
-        <div className="mb-4 p-3.5 rounded-xl border border-red-500/30 bg-red-500/[0.06] flex items-center gap-3 text-sm text-red-400">
+        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{error}</span>
-          <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-red-500/30 text-xs font-semibold hover:bg-red-500/10 transition-colors">Retry</button>
+          <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
         </div>
       )}
 
@@ -301,8 +301,8 @@ export function DispatchExecutionQueue() {
       ) : (
         <div className="space-y-2.5">
           {inProgress.length > 0 && (
-            <div className="flex items-center gap-2 text-[11px] font-bold text-amber-400 uppercase tracking-widest mb-1">
-              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <div className="flex items-center gap-2 text-[11px] font-bold text-cult-warning uppercase tracking-widest mb-1">
+              <div className="w-2 h-2 rounded-full bg-cult-warning animate-pulse" />
               In Progress ({inProgress.length})
             </div>
           )}

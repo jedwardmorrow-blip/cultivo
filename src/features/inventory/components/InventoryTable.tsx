@@ -263,7 +263,7 @@ export const InventoryTable = memo(function InventoryTable({
                       if (input) input.indeterminate = someSelected && !allSelectableSelected;
                     }}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
+                    className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-cult-success"
                   />
                 </th>
               )}
@@ -317,7 +317,7 @@ export const InventoryTable = memo(function InventoryTable({
                   <tr
                     key={item.id}
                     className={`transition-colors duration-100 ${
-                      isSelected ? 'bg-emerald-900/15' : 'hover:bg-cult-dark-gray/60'
+                      isSelected ? 'bg-cult-success-muted' : 'hover:bg-cult-dark-gray/60'
                     } ${rowClassName ? rowClassName(item) : ''}`}
                   >
                     {selectable && (
@@ -327,7 +327,7 @@ export const InventoryTable = memo(function InventoryTable({
                             type="checkbox"
                             checked={isSelected}
                             onChange={(e) => handleSelectItem(item.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
-                            className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-emerald-500"
+                            className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-cult-success"
                           />
                         ) : (
                           <span className="text-xs text-cult-lighter-gray">-</span>
@@ -374,7 +374,7 @@ export const InventoryTable = memo(function InventoryTable({
           <span className="text-sm text-cult-silver">
             {sortedItems.length} item{sortedItems.length !== 1 ? 's' : ''}
             {selectable && selectedIds.size > 0 && (
-              <span className="ml-2 text-emerald-400">({selectedIds.size} selected)</span>
+              <span className="ml-2 text-cult-success">({selectedIds.size} selected)</span>
             )}
           </span>
         </div>

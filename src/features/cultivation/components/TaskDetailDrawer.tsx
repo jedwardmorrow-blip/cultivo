@@ -187,8 +187,8 @@ export function TaskDetailDrawer({
                 <span
                   className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${
                     isPending ? 'bg-zinc-800 text-zinc-400'
-                    : isInProgress ? 'bg-sky-950 text-sky-400'
-                    : task.status === 'completed' ? 'bg-green-950 text-green-400'
+                    : isInProgress ? 'bg-cult-info-muted text-cult-info'
+                    : task.status === 'completed' ? 'bg-cult-success-muted text-cult-success'
                     : 'bg-zinc-800 text-zinc-500'
                   }`}
                 >
@@ -217,7 +217,7 @@ export function TaskDetailDrawer({
                 <button
                   type="button"
                   onClick={async () => { await onStartTask(task.id); onClose(); }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/50 border border-sky-800/50 hover:bg-sky-950 hover:border-sky-700 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/30 hover:bg-cult-info-muted hover:border-cult-info/50 rounded-sm transition-colors min-h-[44px]"
                 >
                   <Play className="w-3.5 h-3.5" />
                   Start Task
@@ -227,7 +227,7 @@ export function TaskDetailDrawer({
                 <button
                   type="button"
                   onClick={() => { onOpenCompletionForm(); }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/50 border border-green-800/50 hover:bg-green-950 hover:border-green-700 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/30 hover:bg-cult-success-muted hover:border-cult-success/50 rounded-sm transition-colors min-h-[44px]"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Complete Task
@@ -266,28 +266,28 @@ export function TaskDetailDrawer({
                       onClick={() => handleStaffTap(s.id)}
                       className={`relative flex items-center gap-2 px-2.5 py-2.5 text-xs rounded-sm transition-all min-h-[44px] ${
                         isLead
-                          ? 'bg-green-950/40 border border-green-700/50 text-green-400 font-semibold'
+                          ? 'bg-cult-success-muted border border-cult-success/30 text-cult-success font-semibold'
                           : inCrew
-                          ? 'bg-sky-950/40 border border-sky-700/50 text-sky-400 font-semibold'
+                          ? 'bg-cult-info-muted border border-cult-info/30 text-cult-info font-semibold'
                           : 'bg-cult-charcoal/30 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-light-gray'
                       }`}
                     >
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                        isLead ? 'bg-green-700 text-white'
-                        : inCrew ? 'bg-sky-700 text-white'
+                        isLead ? 'bg-cult-success text-white'
+                        : inCrew ? 'bg-cult-info text-white'
                         : 'bg-cult-charcoal text-cult-white'
                       }`}>
                         {s.first_name.charAt(0)}
                       </span>
                       <span className="truncate">{s.first_name}</span>
                       {s.is_present && !isSelected && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0 ml-auto" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cult-success flex-shrink-0 ml-auto" />
                       )}
                       {isLead && (
-                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-green-700 text-white rounded-sm leading-none">Lead</span>
+                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-cult-success text-white rounded-sm leading-none">Lead</span>
                       )}
                       {inCrew && (
-                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-sky-700 text-white rounded-sm leading-none">Crew</span>
+                        <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[8px] font-bold uppercase bg-cult-info text-white rounded-sm leading-none">Crew</span>
                       )}
                     </button>
                   );
@@ -299,7 +299,7 @@ export function TaskDetailDrawer({
                 {crewMembers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {crewMembers.map((s) => (
-                      <span key={s.id} className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-sky-950/30 text-sky-400 rounded-sm">
+                      <span key={s.id} className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-cult-info-muted text-cult-info rounded-sm">
                         {s.first_name}
                       </span>
                     ))}
@@ -390,14 +390,14 @@ export function TaskDetailDrawer({
                   type="button"
                   onClick={() => handleDefer(tomorrow)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/30 hover:bg-cult-warning-muted hover:border-cult-warning/40 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
                 >
                   Tomorrow
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowDatePicker(!showDatePicker)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400/70 bg-amber-950/20 border border-amber-800/20 hover:bg-amber-950/40 hover:text-amber-400 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-warning/70 bg-cult-warning-muted border border-cult-warning/20 hover:bg-cult-warning-muted hover:text-cult-warning rounded-sm transition-colors min-h-[44px]"
                 >
                   <Calendar className="w-3 h-3" />
                   {showDatePicker ? 'Hide' : 'Pick Date'}
@@ -418,7 +418,7 @@ export function TaskDetailDrawer({
                       type="button"
                       onClick={() => handleDefer(rescheduleDate)}
                       disabled={!rescheduleDate || saving}
-                      className="flex-1 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
+                      className="flex-1 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/30 hover:bg-cult-warning-muted hover:border-cult-warning/40 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
                     >
                       {saving ? 'Moving...' : 'Move to Date'}
                     </button>
@@ -445,7 +445,7 @@ export function TaskDetailDrawer({
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/30 hover:bg-cult-success-muted hover:border-cult-success/40 disabled:opacity-30 rounded-sm transition-colors min-h-[44px]"
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save Changes'}
@@ -456,12 +456,12 @@ export function TaskDetailDrawer({
             {!isCompleted && (
               confirmDelete ? (
                 <div className="flex items-center gap-2 flex-1">
-                  <span className="text-xs text-red-400 font-semibold">Cancel this task?</span>
+                  <span className="text-xs text-cult-danger font-semibold">Cancel this task?</span>
                   <button
                     type="button"
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-red-400 bg-red-950/40 border border-red-800/40 hover:bg-red-950/60 disabled:opacity-30 rounded-sm transition-colors min-h-[40px]"
+                    className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-danger bg-cult-danger-muted border border-cult-danger/30 hover:bg-cult-danger-muted hover:border-cult-danger/40 disabled:opacity-30 rounded-sm transition-colors min-h-[40px]"
                   >
                     {deleting ? 'Removing...' : 'Yes, Remove'}
                   </button>
@@ -477,7 +477,7 @@ export function TaskDetailDrawer({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-red-400/60 hover:text-red-400 hover:bg-red-950/30 rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-danger/60 hover:text-cult-danger hover:bg-cult-danger-muted rounded-sm transition-colors min-h-[44px]"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Cancel Task
@@ -518,18 +518,18 @@ function RecipePreviewPanel({
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-2.5 bg-red-950/20 border border-red-800/30 rounded-sm">
-        <Info className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-        <span className="text-xs text-red-300">{error}</span>
+      <div className="flex items-center gap-2 p-2.5 bg-cult-danger-muted border border-cult-danger/20 rounded-sm">
+        <Info className="w-3.5 h-3.5 text-cult-danger flex-shrink-0" />
+        <span className="text-xs text-cult-danger">{error}</span>
       </div>
     );
   }
 
   if (!recipe) {
     return (
-      <div className="flex items-center gap-2 p-2.5 bg-amber-950/20 border border-amber-800/30 rounded-sm">
-        <Info className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-        <span className="text-xs text-amber-300">
+      <div className="flex items-center gap-2 p-2.5 bg-cult-warning-muted border border-cult-warning/20 rounded-sm">
+        <Info className="w-3.5 h-3.5 text-cult-warning flex-shrink-0" />
+        <span className="text-xs text-cult-warning">
           No feed recipe for this room.
           {!stage ? ' No active plant groups with a stage set.' : ''}
         </span>
@@ -551,7 +551,7 @@ function RecipePreviewPanel({
         className="flex items-center justify-between w-full text-left"
       >
         <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider font-semibold cursor-pointer">
-          <Beaker className="w-3.5 h-3.5 text-blue-400" />
+          <Beaker className="w-3.5 h-3.5 text-cult-info" />
           Feed Recipe
         </label>
         <div className="flex items-center gap-2">
@@ -636,11 +636,11 @@ function RecipeProductRow({
 
   return (
     <div className={`flex items-center justify-between px-3 py-2 rounded-sm border text-xs ${
-      isOverridden ? 'bg-amber-950/20 border-amber-800/30' : 'bg-cult-charcoal/20 border-cult-dark-gray/30'
+      isOverridden ? 'bg-cult-warning-muted border-cult-warning/20' : 'bg-cult-charcoal/20 border-cult-dark-gray/30'
     }`}>
       <span className="text-cult-light-gray font-medium truncate mr-2">{name}</span>
       {isPhAdjuster ? (
-        <span className="text-amber-400/70 italic text-[10px]">as needed</span>
+        <span className="text-cult-warning/70 italic text-[10px]">as needed</span>
       ) : editing ? (
         <input
           type="number"

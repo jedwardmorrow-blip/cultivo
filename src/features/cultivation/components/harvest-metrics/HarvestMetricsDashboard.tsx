@@ -36,7 +36,7 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
           <ArrowLeft className="w-4 h-4" />
           Back to Harvests
         </button>
-        <div className="bg-red-950 border border-red-700 text-red-300 text-sm p-4">{error}</div>
+        <div className="bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-4">{error}</div>
       </div>
     );
   }

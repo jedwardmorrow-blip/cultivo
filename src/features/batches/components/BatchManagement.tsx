@@ -140,21 +140,21 @@ export function BatchManagement() {
     switch (status) {
       case 'active':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-900/20 text-green-400 border border-green-700 text-xs uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-success-muted text-cult-success border border-cult-success text-xs uppercase tracking-wider">
             <CheckCircle className="w-3 h-3" />
             COA Active
           </span>
         );
       case 'inactive':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-900/20 text-amber-400 border border-amber-700 text-xs uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-warning-muted text-cult-warning border border-cult-warning text-xs uppercase tracking-wider">
             <AlertTriangle className="w-3 h-3" />
             COA Inactive
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-900/20 text-red-400 border border-red-700 text-xs uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-danger-muted text-cult-danger border border-cult-danger text-xs uppercase tracking-wider">
             <XCircle className="w-3 h-3" />
             No COA
           </span>
@@ -252,21 +252,21 @@ export function BatchManagement() {
         </div>
 
         {isActive && warnings.length > 0 && (
-          <div className="mb-6 p-4 bg-amber-900/20 border border-amber-700">
+          <div className="mb-6 p-4 bg-cult-warning-muted border border-cult-warning">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="text-amber-400 font-bold uppercase tracking-wider mb-2">
+                <h3 className="text-cult-warning font-bold uppercase tracking-wider mb-2">
                   Over-Allocation Warnings ({warnings.length})
                 </h3>
                 <div className="space-y-2">
                   {warnings.slice(0, 5).map((warning, idx) => (
-                    <div key={idx} className="text-sm text-amber-200">
+                    <div key={idx} className="text-sm text-cult-text-primary/80">
                       <span className="font-medium">{warning.batch_number}</span> - {warning.message}
                     </div>
                   ))}
                   {warnings.length > 5 && (
-                    <div className="text-xs text-amber-300 mt-2">
+                    <div className="text-xs text-cult-text-primary/70 mt-2">
                       And {warnings.length - 5} more warnings...
                     </div>
                   )}
@@ -496,7 +496,7 @@ export function BatchManagement() {
                       <div className="flex items-center gap-2">
                         <span className="text-cult-white font-medium">{batch.batch_number}</span>
                         {hasWarning && (
-                          <AlertTriangle className="w-4 h-4 text-amber-400" />
+                          <AlertTriangle className="w-4 h-4 text-cult-warning" />
                         )}
                       </div>
                     </td>
@@ -543,10 +543,10 @@ export function BatchManagement() {
                               <div
                                 className={`h-full transition-all ${
                                   summary.allocation_percentage >= (summary.over_allocation_critical_threshold || 120)
-                                    ? 'bg-red-500'
+                                    ? 'bg-cult-danger'
                                     : summary.allocation_percentage >= (summary.over_allocation_warning_threshold || 100)
-                                    ? 'bg-amber-500'
-                                    : 'bg-green-500'
+                                    ? 'bg-cult-warning'
+                                    : 'bg-cult-success'
                                 }`}
                                 style={{ width: `${Math.min(summary.allocation_percentage, 100)}%` }}
                               />

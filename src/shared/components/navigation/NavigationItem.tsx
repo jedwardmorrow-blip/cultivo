@@ -13,13 +13,13 @@ interface NavigationItemProps {
 function getBadgeStyles(color?: string) {
   switch (color) {
     case 'warning':
-      return 'bg-amber-500 text-white';
+      return 'bg-cult-warning text-white';
     case 'success':
-      return 'bg-green-500 text-white';
+      return 'bg-cult-success text-white';
     case 'error':
-      return 'bg-red-500 text-white';
+      return 'bg-cult-danger text-white';
     case 'info':
-      return 'bg-blue-500 text-white';
+      return 'bg-cult-info text-white';
     default:
       return 'bg-cult-silver text-cult-black';
   }

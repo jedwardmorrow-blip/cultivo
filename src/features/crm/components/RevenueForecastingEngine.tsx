@@ -36,15 +36,15 @@ function fmtPct(n: number) {
 function confidenceBadge(c: ForecastConfidence) {
   switch (c) {
     case 'high':
-      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">High</span>;
+      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cult-success/20 text-cult-success">High</span>;
     case 'medium':
-      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400">Medium</span>;
+      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cult-warning/20 text-cult-warning">Medium</span>;
     case 'low':
-      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Low</span>;
+      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cult-danger/20 text-cult-danger">Low</span>;
     case 'none':
       return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cult-ash/30 text-cult-ash">None</span>;
     case 'prospect':
-      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-sky-500/20 text-sky-400">Prospect</span>;
+      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cult-info/20 text-cult-info">Prospect</span>;
   }
 }
 
@@ -179,10 +179,10 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
       <div className="bg-cult-dark rounded-xl p-4 border border-cult-dark/50">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-amber-400" />
+            <Target className="w-4 h-4 text-cult-warning" />
             <span className="text-sm font-medium text-cult-white">Monthly Target: {fmt$(agg.target)}</span>
           </div>
-          <span className={`text-sm font-semibold ${agg.forecastGap <= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+          <span className={`text-sm font-semibold ${agg.forecastGap <= 0 ? 'text-cult-success' : 'text-cult-warning'}`}>
             {agg.forecastGap <= 0 ? 'On Track' : `Gap: ${fmt$(agg.forecastGap)}`}
           </span>
         </div>
@@ -210,37 +210,37 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
         </div>
         <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><TrendingUp className="w-3 h-3" /> Pipeline Weighted</div>
-          <div className="text-lg font-bold text-sky-400">{fmt$(agg.pipelineWeighted)}</div>
+          <div className="text-lg font-bold text-cult-info">{fmt$(agg.pipelineWeighted)}</div>
           <div className="text-xs text-cult-ash">{agg.prospectCount} prospects</div>
         </div>
         <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><DollarSign className="w-3 h-3" /> Realized MTD</div>
-          <div className="text-lg font-bold text-emerald-400">{fmt$(agg.totalRealized)}</div>
+          <div className="text-lg font-bold text-cult-success">{fmt$(agg.totalRealized)}</div>
           <div className="text-xs text-cult-ash">Completed orders</div>
         </div>
         <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><Zap className="w-3 h-3" /> Expected Add'l</div>
-          <div className="text-lg font-bold text-amber-400">{fmt$(agg.totalExpectedAdditional)}</div>
+          <div className="text-lg font-bold text-cult-warning">{fmt$(agg.totalExpectedAdditional)}</div>
           <div className="text-xs text-cult-ash">Based on patterns</div>
         </div>
         <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><ArrowUpRight className="w-3 h-3" /> High Confidence</div>
-          <div className="text-lg font-bold text-emerald-400">{agg.highConfCount}</div>
+          <div className="text-lg font-bold text-cult-success">{agg.highConfCount}</div>
           <div className="text-xs text-cult-ash">Reliable reorders</div>
         </div>
         <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><AlertTriangle className="w-3 h-3" /> At Risk</div>
-          <div className="text-lg font-bold text-red-400">{agg.atRiskCount}</div>
+          <div className="text-lg font-bold text-cult-danger">{agg.atRiskCount}</div>
           <div className="text-xs text-cult-ash">Low/no confidence</div>
         </div>
       </div>
 
       {/* Gap Alert */}
       {agg.forecastGap > 0 && (
-        <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 bg-cult-warning/10 border border-cult-warning/20 rounded-xl p-3">
+          <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-400">Revenue Gap: {fmt$(agg.forecastGap)} below {fmt$(agg.target)} target</p>
+            <p className="text-sm font-medium text-cult-warning">Revenue Gap: {fmt$(agg.forecastGap)} below {fmt$(agg.target)} target</p>
             <p className="text-xs text-cult-ash mt-0.5">
               Forecasted total ({fmt$(agg.forecastedTotal)}) includes {fmt$(agg.totalRealized)} realized + {fmt$(agg.totalPipeline)} pipeline + {fmt$(agg.totalExpectedAdditional)} expected reorders + {fmt$(agg.pipelineWeighted)} weighted prospects.
               Focus on advancing pipeline prospects and re-engaging at-risk accounts to close the gap.
@@ -269,7 +269,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
               onClick={() => setFilter(fb.key)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 filter === fb.key
-                  ? 'bg-emerald-500/20 text-emerald-400'
+                  ? 'bg-cult-success/20 text-cult-success'
                   : 'bg-cult-dark text-cult-ash hover:text-cult-white'
               }`}
             >
@@ -323,8 +323,8 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                 <td className="text-center px-3 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     item.forecast_type === 'reorder'
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-sky-500/20 text-sky-400'
+                      ? 'bg-cult-success/20 text-cult-success'
+                      : 'bg-cult-info/20 text-cult-info'
                   }`}>
                     {item.forecast_type === 'reorder' ? 'Reorder' : 'Pipeline'}
                   </span>
@@ -337,9 +337,9 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                 </td>
                 <td className="text-right px-3 py-3 tabular-nums">
                   <span className={
-                    item.reorder_probability >= 0.67 ? 'text-emerald-400' :
-                    item.reorder_probability >= 0.33 ? 'text-amber-400' :
-                    'text-red-400'
+                    item.reorder_probability >= 0.67 ? 'text-cult-success' :
+                    item.reorder_probability >= 0.33 ? 'text-cult-warning' :
+                    'text-cult-danger'
                   }>
                     {fmtPct(item.reorder_probability)}
                   </span>
@@ -347,10 +347,10 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                 <td className="text-right px-3 py-3 font-semibold text-cult-white tabular-nums">
                   {fmt$(item.monthly_forecast)}
                 </td>
-                <td className="text-right px-3 py-3 text-emerald-400 tabular-nums">
+                <td className="text-right px-3 py-3 text-cult-success tabular-nums">
                   {item.current_month_realized > 0 ? fmt$(item.current_month_realized) : '—'}
                 </td>
-                <td className="text-right px-3 py-3 text-amber-400 tabular-nums">
+                <td className="text-right px-3 py-3 text-cult-warning tabular-nums">
                   {item.current_month_expected_additional > 0 ? fmt$(item.current_month_expected_additional) : '—'}
                 </td>
                 <td className="px-2 py-3">

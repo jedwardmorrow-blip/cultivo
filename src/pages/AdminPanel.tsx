@@ -63,9 +63,9 @@ function AdminContent() {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-red-400/10 border border-red-400/20 rounded-md">
-          <AlertTriangle size={14} className="text-red-400 flex-shrink-0" />
-          <span className="text-xs font-mono text-red-400">{error}</span>
+        <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-cult-danger-muted border border-cult-danger/20 rounded-md">
+          <AlertTriangle size={14} className="text-cult-danger flex-shrink-0" />
+          <span className="text-xs font-mono text-cult-danger">{error}</span>
         </div>
       )}
 

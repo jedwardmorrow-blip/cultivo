@@ -561,12 +561,12 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
 
           {error && (
             <div className="flex items-center justify-center h-64">
-              <div className="bg-red-900/30 border-2 border-red-600 text-red-400 p-6 rounded max-w-md text-center">
+              <div className="bg-cult-danger-muted border-2 border-cult-danger text-cult-danger p-6 rounded max-w-md text-center">
                 <p className="font-semibold mb-2">Error</p>
                 <p className="text-sm">{error}</p>
                 <button
                   onClick={loadInvoiceData}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-all text-sm uppercase tracking-wider"
+                  className="mt-4 px-4 py-2 bg-cult-danger text-white hover:bg-cult-danger/80 transition-all text-sm uppercase tracking-wider"
                 >
                   Retry
                 </button>

@@ -101,8 +101,8 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
           <ArrowLeft className="w-4 h-4" />
           Back to Accounts
         </button>
-        <div className="bg-cult-near-black border border-red-500/30 rounded-lg p-8 text-center">
-          <p className="text-red-400">{error || 'Account not found'}</p>
+        <div className="bg-cult-near-black border border-cult-danger/30 rounded-lg p-8 text-center">
+          <p className="text-cult-danger">{error || 'Account not found'}</p>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
         {account.parent_customer_id && (
           <button
             onClick={() => handleSelectAccount(account.parent_customer_id!)}
-            className="px-3 py-1.5 text-xs font-medium text-sky-400 bg-sky-500/10 border border-sky-500/30 rounded hover:bg-sky-500/20 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium text-cult-info bg-cult-info-muted border border-cult-info/30 rounded hover:bg-cult-info/20 transition-colors"
           >
             View Hub Parent
           </button>
@@ -185,7 +185,7 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
 
           {deepDiveRefreshing && (
             <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
-              <div className="h-full bg-emerald-500/60 rounded animate-pulse w-2/3" />
+              <div className="h-full bg-cult-success/60 rounded animate-pulse w-2/3" />
             </div>
           )}
 

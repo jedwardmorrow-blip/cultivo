@@ -270,7 +270,7 @@ export function BuckingSessionStartForm({
                 <span className={`ml-2 text-xs font-bold ${
                   form.binned_weight_grams <= (binnedPackages.find(p => p.package_id === form.binned_package_id)?.available_qty || 0)
                     ? 'text-cult-green'
-                    : 'text-red-500'
+                    : 'text-cult-danger'
                 }`}>
                   {form.binned_weight_grams <= (binnedPackages.find(p => p.package_id === form.binned_package_id)?.available_qty || 0)
                     ? '✓ Valid'

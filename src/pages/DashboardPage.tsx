@@ -16,7 +16,7 @@ const STATUS_CONFIG = {
 
 const PHASE_COLORS = {
   1: 'bg-cult-gold/10 text-cult-gold border-cult-gold/30',
-  2: 'bg-blue-900/20 text-blue-300 border-blue-700/30',
+  2: 'bg-cult-info-muted text-cult-info border-cult-info/30',
   3: 'bg-purple-900/20 text-purple-300 border-purple-700/30',
 }
 
@@ -104,7 +104,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Open Goals', value: goals.filter(g => g.status !== 'completed').length, icon: Target, color: 'text-cult-gold' },
-          { label: 'Active Rocks', value: rocks.filter(r => r.status !== 'complete').length, icon: TrendingUp, color: 'text-blue-300' },
+          { label: 'Active Rocks', value: rocks.filter(r => r.status !== 'complete').length, icon: TrendingUp, color: 'text-cult-info' },
           { label: 'Open To-Dos', value: todos.length, icon: CheckSquare, color: 'text-cult-green-bright' },
           { label: 'Open Issues', value: issues.length, icon: AlertCircle, color: 'text-cult-danger-bright' },
         ].map(({ label, value, icon: Icon, color }) => (

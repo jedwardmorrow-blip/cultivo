@@ -16,9 +16,9 @@ function formatCurrency(value: number): string {
 
 function getHealthColor(label: string): string {
   switch (label) {
-    case 'healthy': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-    case 'cooling': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    case 'at_risk': return 'bg-red-500/20 text-red-400 border-red-500/30';
+    case 'healthy': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
+    case 'cooling': return 'bg-cult-warning-muted text-cult-warning border-cult-warning/30';
+    case 'at_risk': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
     case 'dormant': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
     case 'no_orders': return 'bg-cult-medium-gray/20 text-cult-medium-gray border-cult-medium-gray/20';
     default: return 'bg-cult-medium-gray/20 text-cult-medium-gray border-cult-medium-gray/20';
@@ -76,7 +76,7 @@ export function SubAccountsPanel({
           </div>
           <div className="flex items-center gap-4 text-xs text-cult-light-gray">
             <span>{totalChildOrders} orders</span>
-            <span className="text-emerald-400 font-semibold">{formatCurrency(totalChildRevenue)}</span>
+            <span className="text-cult-success font-semibold">{formatCurrency(totalChildRevenue)}</span>
           </div>
         </div>
         <p className="text-xs text-cult-light-gray mt-1">
@@ -130,7 +130,7 @@ export function SubAccountsPanel({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-semibold ${Number(perf.revenue) > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
+                        <p className={`text-sm font-semibold ${Number(perf.revenue) > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
                           {Number(perf.revenue) > 0 ? formatCurrency(Number(perf.revenue)) : '-'}
                         </p>
                         <p className="text-xs text-cult-silver">{perf.order_count} orders</p>
@@ -139,7 +139,7 @@ export function SubAccountsPanel({
                   )}
                   {!perf && (
                     <div className="text-right hidden sm:block">
-                      <p className={`text-sm font-semibold ${Number(child.total_revenue) > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
+                      <p className={`text-sm font-semibold ${Number(child.total_revenue) > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
                         {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
                       </p>
                       <p className="text-xs text-cult-silver">{child.order_count} orders</p>
@@ -148,7 +148,7 @@ export function SubAccountsPanel({
                   <div className="text-right hidden md:block">
                     <p className={`text-xs ${
                       child.days_since_last_order !== null && child.days_since_last_order > 30
-                        ? 'text-amber-400'
+                        ? 'text-cult-warning'
                         : 'text-cult-light-gray'
                     }`}>
                       {child.days_since_last_order !== null ? `${child.days_since_last_order}d ago` : 'No orders'}
@@ -170,7 +170,7 @@ export function SubAccountsPanel({
               <span>Top performer:</span>
               <span className="text-cult-white font-medium">{chainPerformance[0].child_name}</span>
             </div>
-            <span className="text-emerald-400 font-semibold">
+            <span className="text-cult-success font-semibold">
               {formatCurrency(Number(chainPerformance[0].revenue))}
               <span className="text-cult-silver font-normal ml-1">
                 ({chainPerformance[0].revenue_share_pct.toFixed(0)}% of chain)

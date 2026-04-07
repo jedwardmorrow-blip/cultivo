@@ -85,7 +85,7 @@ function AgingAlertBanner({ batches }: { batches: ReturnType<typeof useBatchPipe
   if (!oldest) return null;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-cult bg-amber-500/10 border border-amber-500/30 text-amber-300">
+    <div className="flex items-center gap-3 px-4 py-3 rounded-cult bg-cult-warning-muted border border-cult-warning/30 text-cult-warning">
       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
       <span className="text-[12px]">
         <span className="font-semibold">{oldest.batch.batch_number}</span>

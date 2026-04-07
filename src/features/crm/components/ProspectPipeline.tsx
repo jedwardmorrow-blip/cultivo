@@ -25,10 +25,10 @@ const STAGES: { key: PipelineStage; label: string; icon: typeof Users; color: st
   { key: 'lead', label: 'Lead', icon: Users, color: 'text-slate-400', bgColor: 'bg-slate-500/15 border-slate-500/30' },
   { key: 'contacted', label: 'Contacted', icon: Phone, color: 'text-sky-400', bgColor: 'bg-sky-500/15 border-sky-500/30' },
   { key: 'meeting_set', label: 'Meeting Set', icon: Calendar, color: 'text-violet-400', bgColor: 'bg-violet-500/15 border-violet-500/30' },
-  { key: 'sample_sent', label: 'Sample Sent', icon: Gift, color: 'text-amber-400', bgColor: 'bg-amber-500/15 border-amber-500/30' },
+  { key: 'sample_sent', label: 'Sample Sent', icon: Gift, color: 'text-cult-warning', bgColor: 'bg-cult-warning-muted border-cult-warning/30' },
   { key: 'negotiating', label: 'Negotiating', icon: Handshake, color: 'text-orange-400', bgColor: 'bg-orange-500/15 border-orange-500/30' },
-  { key: 'closed_won', label: 'Closed Won', icon: Trophy, color: 'text-emerald-400', bgColor: 'bg-emerald-500/15 border-emerald-500/30' },
-  { key: 'closed_lost', label: 'Closed Lost', icon: XCircle, color: 'text-red-400', bgColor: 'bg-red-500/15 border-red-500/30' },
+  { key: 'closed_won', label: 'Closed Won', icon: Trophy, color: 'text-cult-success', bgColor: 'bg-cult-success-muted border-cult-success/30' },
+  { key: 'closed_lost', label: 'Closed Lost', icon: XCircle, color: 'text-cult-danger', bgColor: 'bg-cult-danger-muted border-cult-danger/30' },
 ];
 
 function stageMeta(stage: PipelineStage) {
@@ -134,8 +134,8 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
             <ClosedSection
               title="Closed Won"
               icon={Trophy}
-              color="text-emerald-400"
-              borderColor="border-emerald-500/30"
+              color="text-cult-success"
+              borderColor="border-cult-success/30"
               prospects={closedWon}
               onNavigate={navigateToAccount}
             />
@@ -144,8 +144,8 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
             <ClosedSection
               title="Closed Lost"
               icon={XCircle}
-              color="text-red-400"
-              borderColor="border-red-500/30"
+              color="text-cult-danger"
+              borderColor="border-cult-danger/30"
               prospects={closedLost}
               onNavigate={navigateToAccount}
             />
@@ -210,7 +210,7 @@ function ProspectCard({
               <span>{prospect.days_in_stage}d in stage</span>
             </div>
             {prospect.open_task_count > 0 && (
-              <div className="flex items-center gap-1 text-xs text-amber-400">
+              <div className="flex items-center gap-1 text-xs text-cult-warning">
                 <ClipboardList className="w-3 h-3" />
                 <span>{prospect.open_task_count} task{prospect.open_task_count !== 1 ? 's' : ''}</span>
               </div>

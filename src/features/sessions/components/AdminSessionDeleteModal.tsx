@@ -41,9 +41,9 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-cult-near-black border border-red-600 shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-6 border-b border-red-900/50">
-          <h2 className="text-xl font-bold text-red-400 uppercase tracking-wide">Delete Session</h2>
+      <div className="bg-cult-near-black border border-cult-danger shadow-xl max-w-md w-full">
+        <div className="flex items-center justify-between p-6 border-b border-cult-danger/50">
+          <h2 className="text-xl font-bold text-cult-danger uppercase tracking-wide">Delete Session</h2>
           <button onClick={onClose} className="p-1 text-cult-light-gray hover:text-cult-white transition">
             <X className="w-5 h-5" />
           </button>
@@ -51,21 +51,21 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
 
         <div className="p-6 space-y-4">
           {isBlocked ? (
-            <div className="p-4 bg-red-900/20 border border-red-600 rounded-lg flex items-start gap-3">
-              <Lock className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
+            <div className="p-4 bg-cult-danger-muted border border-cult-danger rounded-lg flex items-start gap-3">
+              <Lock className="w-5 h-5 text-cult-danger mt-0.5 shrink-0" />
               <div>
-                <p className="text-red-300 font-medium">Deletion Blocked</p>
-                <p className="text-red-200 text-sm mt-1">
+                <p className="text-cult-danger font-medium">Deletion Blocked</p>
+                <p className="text-cult-text-secondary text-sm mt-1">
                   {finalizedOutputs.join(', ')} output has been finalized. Void the conversion before deleting.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-amber-900/20 border border-amber-600 rounded-lg flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+            <div className="p-4 bg-cult-warning-muted border border-cult-warning rounded-lg flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-cult-warning mt-0.5 shrink-0" />
               <div>
-                <p className="text-amber-300 font-medium">This action cannot be undone</p>
-                <p className="text-amber-200 text-sm mt-1">
+                <p className="text-cult-warning font-medium">This action cannot be undone</p>
+                <p className="text-cult-text-secondary text-sm mt-1">
                   The session record, its consolidated package contributions, and all related data will be permanently removed.
                 </p>
               </div>
@@ -97,7 +97,7 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
             <button
               onClick={handleDelete}
               disabled={isBlocked || deleting}
-              className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 transition-all font-semibold uppercase tracking-wider text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2.5 bg-cult-danger text-white hover:bg-cult-danger/80 transition-all font-semibold uppercase tracking-wider text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-4 h-4" />
               {deleting ? 'Deleting...' : 'Delete Session'}

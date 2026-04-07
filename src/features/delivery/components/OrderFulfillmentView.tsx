@@ -28,10 +28,10 @@ import type { ProcessingStage } from '../hooks/useProductionDispatch';
 // ─── Shared helpers ─────────────────────────────────────────────────────────
 
 const URGENCY_STYLES: Record<string, { badge: string; glow: string }> = {
-  overdue: { badge: 'bg-red-500/15 text-red-400 border-red-500/30', glow: 'shadow-[0_0_12px_rgba(239,68,68,0.15)]' },
-  urgent:  { badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30', glow: 'shadow-[0_0_12px_rgba(245,158,11,0.12)]' },
-  soon:    { badge: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30', glow: '' },
-  normal:  { badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', glow: '' },
+  overdue: { badge: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30', glow: 'shadow-[0_0_12px_rgba(220,69,69,0.15)]' },
+  urgent:  { badge: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', glow: 'shadow-[0_0_12px_rgba(245,158,11,0.12)]' },
+  soon:    { badge: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', glow: '' },
+  normal:  { badge: 'bg-cult-success-muted text-cult-success border-cult-success/30', glow: '' },
   no_date: { badge: 'bg-gray-500/15 text-gray-400 border-gray-500/30', glow: '' },
 };
 const URGENCY_LABELS: Record<string, string> = {
@@ -102,10 +102,10 @@ function getDeliveryCountdown(dateStr: string | null): { label: string; color: s
   const diffMs = delivery.getTime() - today.getTime();
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return { label: `${Math.abs(diffDays)}d overdue`, color: 'text-red-400' };
-  if (diffDays === 0) return { label: 'Today', color: 'text-red-400 font-black' };
-  if (diffDays === 1) return { label: 'Tomorrow', color: 'text-amber-400' };
-  if (diffDays <= 3) return { label: `${diffDays} days`, color: 'text-amber-400' };
+  if (diffDays < 0) return { label: `${Math.abs(diffDays)}d overdue`, color: 'text-cult-danger' };
+  if (diffDays === 0) return { label: 'Today', color: 'text-cult-danger font-black' };
+  if (diffDays === 1) return { label: 'Tomorrow', color: 'text-cult-warning' };
+  if (diffDays <= 3) return { label: `${diffDays} days`, color: 'text-cult-warning' };
   return { label: `${diffDays} days`, color: 'text-cult-text-muted' };
 }
 
@@ -153,7 +153,7 @@ function LineItemRow({
       onClick={(e) => { e.stopPropagation(); onClickItem(); }}
       className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all duration-200 group animate-[card-fade-up_0.3s_ease-out] ${
         isFullyAssigned
-          ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-500/[0.04] to-transparent'
+          ? 'border-cult-success/20 bg-gradient-to-r from-cult-success/[0.04] to-transparent'
           : 'border-cult-dark-gray/60 bg-gradient-to-r from-cult-mid-gray/[0.04] to-transparent hover:border-cult-accent/30 hover:from-cult-accent/[0.03] cursor-pointer'
       }`}
     >
@@ -179,12 +179,12 @@ function LineItemRow({
           {/* Row 2: Badges */}
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {isFullyAssigned ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-cult-success-muted text-cult-success border border-cult-success/30">
                 <CheckCircle2 className="w-3 h-3" />
                 Assigned
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-cult-warning-muted text-cult-warning border border-cult-warning/30">
                 <Clock className="w-3 h-3" />
                 Needs Work
               </span>
@@ -193,7 +193,7 @@ function LineItemRow({
             <THCBadge thc={item.thc_percentage} />
             <GradeBadge code={item.batch_grade_code} label={item.batch_grade_label} />
             {inProgress > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/15 text-blue-400 border border-blue-500/30">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-cult-info-muted text-cult-info border border-cult-info/30">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 {inProgress} processing
               </span>
@@ -216,7 +216,7 @@ function LineItemRow({
           )}
           {item.subtotal != null && item.subtotal > 0 && (
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-bold text-emerald-400/90 tabular-nums">{formatCurrency(item.subtotal)}</div>
+              <div className="text-sm font-bold text-cult-success/90 tabular-nums">{formatCurrency(item.subtotal)}</div>
               <div className="text-[11px] text-cult-text-faint">{item.unit_price != null ? `@${formatCurrency(item.unit_price)}/ea` : ''}</div>
             </div>
           )}
@@ -235,7 +235,7 @@ function LineItemRow({
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${
             isFullyAssigned
-              ? 'bg-emerald-500'
+              ? 'bg-cult-success'
               : fillPct > 0
               ? 'bg-gradient-to-r from-cult-accent to-cult-accent/60'
               : 'bg-cult-dark-gray/60'
@@ -282,7 +282,7 @@ function OrderCard({
     <div
       className={`rounded-xl border overflow-hidden transition-all duration-200 ${urgencyStyle.glow} ${
         allAssigned
-          ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-500/[0.03] to-cult-black'
+          ? 'border-cult-success/20 bg-gradient-to-r from-cult-success/[0.03] to-cult-black'
           : expanded
           ? 'border-cult-accent/25 bg-gradient-to-br from-cult-mid-gray/[0.06] to-cult-black'
           : 'border-cult-dark-gray/60 bg-cult-black hover:border-cult-dark-gray'
@@ -320,7 +320,7 @@ function OrderCard({
             {order.order_total > 0 && (
               <>
                 <span className="w-px h-3 bg-cult-dark-gray/60" />
-                <span className="font-semibold text-emerald-400/80">{formatCurrency(order.order_total)}</span>
+                <span className="font-semibold text-cult-success/80">{formatCurrency(order.order_total)}</span>
               </>
             )}
           </div>
@@ -344,7 +344,7 @@ function OrderCard({
                 strokeDasharray={`${progressPct * 0.88} 88`}
                 strokeLinecap="round"
                 className={`transition-all duration-1000 ease-out ${
-                  allAssigned ? 'text-emerald-500 drop-shadow-[0_0_4px_rgba(16,185,129,0.4)]'
+                  allAssigned ? 'text-cult-success drop-shadow-[0_0_4px_rgba(16,185,129,0.4)]'
                   : progressPct > 0 ? 'text-cult-accent drop-shadow-[0_0_4px_rgba(255,255,255,0.15)]'
                   : 'text-cult-dark-gray/60'
                 }`} />
@@ -530,10 +530,10 @@ function PackageInventoryModal({
             <p className="text-sm text-cult-text-muted">Loading inventory...</p>
           </div>
         ) : pkgError ? (
-          <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-sm text-red-400 flex items-center gap-3">
+          <div className="p-4 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <div className="flex-1">{pkgError}</div>
-            <button onClick={loadPackages} className="shrink-0 px-3 py-1.5 rounded-lg border border-red-500/30 text-xs font-semibold hover:bg-red-500/10 transition-colors">Retry</button>
+            <button onClick={loadPackages} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
           </div>
         ) : packages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-cult-text-muted">
@@ -620,7 +620,7 @@ function PackageInventoryModal({
                                       disabled={isSending || pkg.available_qty <= 0}
                                       className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150 ${
                                         justSent
-                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
+                                          ? 'bg-cult-success/20 text-cult-success border border-cult-success/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
                                           : isSending
                                           ? 'bg-cult-mid-gray/30 text-cult-text-muted cursor-wait'
                                           : pkg.available_qty <= 0
@@ -702,10 +702,10 @@ export function OrderFulfillmentView() {
   return (
     <HubShell section="Order Fulfillment" icon={ClipboardList} kpis={kpis}>
       {error && (
-        <div className="mb-4 p-3.5 rounded-xl border border-red-500/30 bg-red-500/[0.06] flex items-center gap-3 text-sm text-red-400">
+        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{error}</span>
-          <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-red-500/30 text-xs font-semibold hover:bg-red-500/10 transition-colors">Retry</button>
+          <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
         </div>
       )}
 
@@ -726,8 +726,8 @@ export function OrderFulfillmentView() {
       {/* Order list */}
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-cult-text-muted">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500/60" />
+          <div className="w-16 h-16 rounded-2xl bg-cult-success/10 border border-cult-success/20 flex items-center justify-center mb-5">
+            <CheckCircle2 className="w-8 h-8 text-cult-success/60" />
           </div>
           <p className="text-base font-bold text-cult-text-secondary">All caught up</p>
           <p className="text-sm mt-1 text-cult-text-faint">No orders needing fulfillment right now.</p>

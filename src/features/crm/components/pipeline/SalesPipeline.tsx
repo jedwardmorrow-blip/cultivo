@@ -133,7 +133,7 @@ function SummaryCharts({
           })}
           {summary.aging_batches > 0 && (
             <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 text-center">
-              <span className="text-xs text-red-400 font-semibold">
+              <span className="text-xs text-cult-danger font-semibold">
                 {summary.aging_batches} batch{summary.aging_batches !== 1 ? 'es' : ''} aging — process ASAP
               </span>
             </div>
@@ -342,7 +342,7 @@ function StrainRow({
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cult-medium-gray/5 transition-colors"
       >
         <Chevron className="w-4 h-4 text-neutral-600 flex-shrink-0" />
-        <Leaf className="w-4 h-4 text-emerald-500/60 flex-shrink-0" />
+        <Leaf className="w-4 h-4 text-cult-success/60 flex-shrink-0" />
         <span className="text-sm font-bold text-neutral-200 flex-1 text-left truncate">
           {strain.strain}
         </span>
@@ -370,8 +370,8 @@ function StrainRow({
             </div>
             {allocation && allocation.aging_batches > 0 && (
               <div className="flex items-center gap-1 justify-end">
-                <AlertTriangle className="w-3 h-3 text-red-400" />
-                <span className="text-xs text-red-400">{allocation.aging_batches} aging</span>
+                <AlertTriangle className="w-3 h-3 text-cult-danger" />
+                <span className="text-xs text-cult-danger">{allocation.aging_batches} aging</span>
               </div>
             )}
           </div>
@@ -501,11 +501,11 @@ export function SalesPipeline() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-400 text-sm mb-2">Error loading inventory</p>
+        <p className="text-cult-danger text-sm mb-2">Error loading inventory</p>
         <p className="text-neutral-600 text-xs mb-4">{error}</p>
         <button
           onClick={handleRefresh}
-          className="text-xs text-blue-400 hover:underline"
+          className="text-xs text-cult-info hover:underline"
         >
           Try again
         </button>

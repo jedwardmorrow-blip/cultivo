@@ -55,7 +55,7 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
         </p>
 
         {error && (
-          <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3 mb-4">
+          <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 mb-4">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             {error}
           </div>
@@ -142,7 +142,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
               <span className="text-cult-medium-gray text-xs">·</span>
               <span className="text-cult-light-gray text-xs">
                 {formatWeight(displayWeight)}
-                {isAdjusted && <span className="text-amber-400 ml-1">(adjusted)</span>}
+                {isAdjusted && <span className="text-cult-warning ml-1">(adjusted)</span>}
               </span>
               {session.waste_grams != null && (
                 <>
@@ -185,7 +185,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
             <button
               onClick={onViewBatch}
               title="View batch in Batches module"
-              className="flex items-center gap-1 text-xs bg-green-950 border border-green-700 text-green-400 px-2 py-0.5 font-mono hover:bg-green-900 transition-colors"
+              className="flex items-center gap-1 text-xs bg-cult-success-muted border border-cult-success text-cult-success px-2 py-0.5 font-mono hover:bg-cult-success-muted/80 transition-colors"
             >
               {batchNumber}
               {onViewBatch && <ExternalLink className="w-3 h-3 opacity-70" />}
@@ -196,14 +196,14 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
             <>
               <button
                 onClick={() => onComplete(session)}
-                className="flex items-center gap-1.5 text-xs border border-green-700 text-green-400 px-3 py-1.5 hover:bg-green-950 transition-all uppercase tracking-wider font-semibold"
+                className="flex items-center gap-1.5 text-xs border border-cult-success text-cult-success px-3 py-1.5 hover:bg-cult-success-muted transition-all uppercase tracking-wider font-semibold"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Complete
               </button>
               <button
                 onClick={() => onCancel(session)}
-                className="flex items-center gap-1.5 text-xs border border-red-700 text-red-400 px-3 py-1.5 hover:bg-red-950 transition-all uppercase tracking-wider font-semibold"
+                className="flex items-center gap-1.5 text-xs border border-cult-danger text-cult-danger px-3 py-1.5 hover:bg-cult-danger-muted transition-all uppercase tracking-wider font-semibold"
               >
                 <XCircle className="w-3.5 h-3.5" />
                 Cancel
@@ -222,7 +222,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
           )}
 
           {session.session_status === 'cancelled' && (
-            <span className="text-xs text-red-400 uppercase tracking-wider">Cancelled</span>
+            <span className="text-xs text-cult-danger uppercase tracking-wider">Cancelled</span>
           )}
         </div>
       </div>
@@ -451,7 +451,7 @@ export function HarvestSessionsList() {
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>
@@ -511,7 +511,7 @@ export function HarvestSessionsList() {
               >
                 <div className="flex items-center justify-between px-5 py-4 gap-4">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="flex items-center justify-center w-11 h-11 bg-amber-950/40 border border-amber-800/50 flex-shrink-0">
+                    <div className="flex items-center justify-center w-11 h-11 bg-cult-warning-muted border border-cult-warning/50 flex-shrink-0">
                       <Leaf className="w-5 h-5 text-cult-stage-harvest" />
                     </div>
                     <div className="min-w-0">
@@ -536,7 +536,7 @@ export function HarvestSessionsList() {
                         {roomGroup.completedSessions.length > 0 && (
                           <>
                             <span className="text-cult-medium-gray">·</span>
-                            <span className="text-green-400 text-xs font-semibold">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
+                            <span className="text-cult-success text-xs font-semibold">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
                           </>
                         )}
                       </div>
@@ -579,7 +579,7 @@ export function HarvestSessionsList() {
       {completingSession && (
         <>
           {actionError && (
-            <div className="fixed bottom-4 right-4 z-50 bg-red-950 border border-red-700 text-red-300 text-sm p-3 max-w-sm">
+            <div className="fixed bottom-4 right-4 z-50 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 max-w-sm">
               {actionError}
             </div>
           )}
@@ -587,7 +587,7 @@ export function HarvestSessionsList() {
             title="Complete Harvest"
             message="Mark this harvest as complete? A batch registry entry will be created automatically for the strain. This action cannot be undone."
             confirmLabel="Complete"
-            confirmClass="bg-green-700 text-white hover:bg-green-600"
+            confirmClass="bg-cult-success text-white hover:bg-cult-success/90"
             onConfirm={handleComplete}
             onCancel={() => { setCompletingSession(null); setActionError(null); }}
             loading={actionLoading}
@@ -598,7 +598,7 @@ export function HarvestSessionsList() {
       {cancellingSession && (
         <>
           {actionError && (
-            <div className="fixed bottom-4 right-4 z-50 bg-red-950 border border-red-700 text-red-300 text-sm p-3 max-w-sm">
+            <div className="fixed bottom-4 right-4 z-50 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 max-w-sm">
               {actionError}
             </div>
           )}
@@ -606,7 +606,7 @@ export function HarvestSessionsList() {
             title="Cancel Harvest"
             message="Cancel this harvest? This cannot be undone. The plant group will remain in its current state."
             confirmLabel="Cancel Harvest"
-            confirmClass="bg-red-700 text-white hover:bg-red-600"
+            confirmClass="bg-cult-danger text-white hover:bg-cult-danger/90"
             onConfirm={handleCancel}
             onCancel={() => { setCancellingSession(null); setActionError(null); }}
             loading={actionLoading}

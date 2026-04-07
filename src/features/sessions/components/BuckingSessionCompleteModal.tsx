@@ -163,13 +163,13 @@ export function BuckingSessionCompleteModal({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-cult-silver">Variance:</span>
-                <span className={`font-medium ${Math.abs(variance) > 100 ? 'text-yellow-500' : 'text-cult-white'}`}>
+                <span className={`font-medium ${Math.abs(variance) > 100 ? 'text-cult-warning' : 'text-cult-white'}`}>
                   {variance >= 0 ? '+' : ''}{(variance / 1000).toFixed(2)} kg
                   {Math.abs(variance) > 100 && ' ⚠️'}
                 </span>
               </div>
               {Math.abs(variance) > 100 && (
-                <p className="text-xs text-yellow-500 mt-2">
+                <p className="text-xs text-cult-warning mt-2">
                   Large variance detected. Please verify weights.
                 </p>
               )}

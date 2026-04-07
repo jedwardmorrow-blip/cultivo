@@ -34,8 +34,8 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
-        <p className="text-red-400 text-sm">{error}</p>
+      <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-4">
+        <p className="text-cult-danger text-sm">{error}</p>
       </div>
     );
   }
@@ -50,7 +50,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
             placeholder="Search by batch, strain, or product..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-silver focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-silver focus:ring-2 focus:ring-cult-success focus:border-transparent"
           />
         </div>
 
@@ -58,7 +58,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
           onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
             showFilters
-              ? 'bg-green-900/30 border-green-600 text-green-400'
+              ? 'bg-cult-success-muted border-cult-success text-cult-success'
               : 'bg-cult-dark-gray border-cult-medium-gray text-cult-silver hover:bg-cult-near-black'
           }`}
         >
@@ -85,7 +85,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   type="checkbox"
                   checked={statusFilter.includes('active')}
                   onChange={() => toggleStatus('active')}
-                  className="rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-green-500"
+                  className="rounded border-cult-medium-gray bg-cult-near-black text-cult-success focus:ring-cult-success"
                 />
                 <span className="text-sm text-cult-silver">Active</span>
               </label>
@@ -94,7 +94,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
                   type="checkbox"
                   checked={statusFilter.includes('completed_today')}
                   onChange={() => toggleStatus('completed_today')}
-                  className="rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-green-500"
+                  className="rounded border-cult-medium-gray bg-cult-near-black text-cult-success focus:ring-cult-success"
                 />
                 <span className="text-sm text-cult-silver">Completed Today</span>
               </label>
@@ -105,7 +105,7 @@ export function ConversionLotsList({ onSelectLot, selectedDate }: ConversionLots
 
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cult-success"></div>
         </div>
       )}
 
@@ -149,10 +149,10 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
       disabled={lot.is_locked && !isCompleted}
       className={`w-full text-left border rounded-lg p-4 transition-all ${
         isCompleted
-          ? 'bg-green-900/20 border-green-600 hover:bg-green-900/30'
+          ? 'bg-cult-success-muted border-cult-success hover:bg-cult-success/15'
           : lot.is_locked
           ? 'bg-cult-dark-gray border-cult-medium-gray opacity-75 cursor-not-allowed'
-          : 'bg-cult-near-black border-cult-medium-gray hover:border-green-500/50 hover:bg-cult-dark-gray'
+          : 'bg-cult-near-black border-cult-medium-gray hover:border-cult-success/50 hover:bg-cult-dark-gray'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -171,14 +171,14 @@ function ConversionLotCard({ lot, onClick }: ConversionLotCardProps) {
           </p>
 
           {lot.is_locked && !isCompleted && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-900/30 border border-amber-600 rounded px-2 py-1 inline-flex">
+            <div className="flex items-center gap-1.5 text-xs text-cult-warning bg-cult-warning-muted border border-cult-warning rounded px-2 py-1 inline-flex">
               <Lock className="w-3 h-3" />
               <span>Converting: {lot.locked_by_name}</span>
             </div>
           )}
 
           {isCompleted && (
-            <div className="flex items-center gap-1.5 text-xs text-green-400 bg-green-900/30 border border-green-600 rounded px-2 py-1 inline-flex">
+            <div className="flex items-center gap-1.5 text-xs text-cult-success bg-cult-success-muted border border-cult-success rounded px-2 py-1 inline-flex">
               <Package className="w-3 h-3" />
               <span>Completed Today</span>
             </div>

@@ -161,7 +161,7 @@ export function ConversionHistoryView() {
             onClick={() => setActiveView('history')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'history'
-                ? 'bg-green-600 text-white'
+                ? 'bg-cult-success text-white'
                 : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
             }`}
           >
@@ -172,7 +172,7 @@ export function ConversionHistoryView() {
             onClick={() => setActiveView('metrics')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'metrics'
-                ? 'bg-green-600 text-white'
+                ? 'bg-cult-success text-white'
                 : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
             }`}
           >
@@ -196,7 +196,7 @@ export function ConversionHistoryView() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Batch, strain, package ID..."
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-success"
             />
           </div>
 
@@ -209,7 +209,7 @@ export function ConversionHistoryView() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="7">Last 7 days</option>
               <option value="14">Last 14 days</option>
@@ -225,7 +225,7 @@ export function ConversionHistoryView() {
             <select
               value={strainFilter}
               onChange={(e) => setStrainFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="">All Strains</option>
               {uniqueStrains.map((strain) => (
@@ -242,7 +242,7 @@ export function ConversionHistoryView() {
             <select
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="">All Users</option>
               {uniqueUsers.map((user) => (
@@ -261,7 +261,7 @@ export function ConversionHistoryView() {
             id="variance-filter"
             checked={showVarianceOnly}
             onChange={(e) => setShowVarianceOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-cult-medium-gray bg-cult-near-black text-green-600 focus:ring-2 focus:ring-green-500"
+            className="w-4 h-4 rounded border-cult-medium-gray bg-cult-near-black text-cult-success focus:ring-2 focus:ring-cult-success"
           />
           <label htmlFor="variance-filter" className="text-sm text-cult-text-secondary">
             Show only conversions with variance
@@ -379,8 +379,8 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       Math.abs(item.weight_variance_pct || 0) > 5
-                        ? 'bg-red-900 bg-opacity-30 text-red-300'
-                        : 'bg-amber-900 bg-opacity-30 text-amber-300'
+                        ? 'bg-cult-danger-muted text-cult-danger'
+                        : 'bg-cult-warning-muted text-cult-warning'
                     }`}
                   >
                     {item.weight_variance_pct?.toFixed(1)}%
@@ -461,8 +461,8 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       Math.abs(item.avg_variance_pct) > 5
-                        ? 'bg-red-900 bg-opacity-30 text-red-300'
-                        : 'bg-amber-900 bg-opacity-30 text-amber-300'
+                        ? 'bg-cult-danger-muted text-cult-danger'
+                        : 'bg-cult-warning-muted text-cult-warning'
                     }`}
                   >
                     {item.avg_variance_pct.toFixed(1)}%

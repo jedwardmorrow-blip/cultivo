@@ -14,15 +14,15 @@ interface SKUPerformanceGridProps {
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return <ArrowUpDown className="w-3 h-3 text-cult-medium-gray" />;
   return dir === 'desc'
-    ? <ArrowDown className="w-3 h-3 text-emerald-400" />
-    : <ArrowUp className="w-3 h-3 text-emerald-400" />;
+    ? <ArrowDown className="w-3 h-3 text-cult-success" />
+    : <ArrowUp className="w-3 h-3 text-cult-success" />;
 }
 
 function getCategoryColor(category: string): string {
   switch (category?.toLowerCase()) {
-    case 'flower': return 'bg-emerald-500/15 text-emerald-400';
+    case 'flower': return 'bg-cult-success-muted text-cult-success';
     case 'pre-roll':
-    case 'preroll': return 'bg-amber-500/15 text-amber-400';
+    case 'preroll': return 'bg-cult-warning-muted text-cult-warning';
     case 'concentrate': return 'bg-sky-500/15 text-sky-400';
     case 'edible': return 'bg-rose-500/15 text-rose-400';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
@@ -138,7 +138,7 @@ export function SKUPerformanceGrid({ skus, periodLabel }: SKUPerformanceGridProp
                 >
                   <td className="pl-4 py-3 w-6">
                     {isExpanded
-                      ? <ChevronDown className="w-3.5 h-3.5 text-emerald-400" />
+                      ? <ChevronDown className="w-3.5 h-3.5 text-cult-success" />
                       : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors" />
                     }
                   </td>
@@ -156,12 +156,12 @@ export function SKUPerformanceGrid({ skus, periodLabel }: SKUPerformanceGridProp
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="text-sm font-semibold text-emerald-400">{formatCurrencyShort(revenue)}</span>
+                    <span className="text-sm font-semibold text-cult-success">{formatCurrencyShort(revenue)}</span>
                   </td>
                   <td className="px-4 py-3 hidden xl:table-cell">
                     <div className="h-1.5 bg-cult-dark-gray rounded-full overflow-hidden w-full">
                       <div
-                        className="h-full bg-emerald-500/40 rounded-full transition-all"
+                        className="h-full bg-cult-success/40 rounded-full transition-all"
                         style={{ width: `${barWidth}%` }}
                       />
                     </div>

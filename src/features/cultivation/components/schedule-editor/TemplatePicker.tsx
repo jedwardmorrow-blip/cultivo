@@ -18,7 +18,7 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-amber-400 uppercase tracking-wider">Apply Template</p>
+          <p className="text-xs font-bold text-cult-warning uppercase tracking-wider">Apply Template</p>
           <p className="text-xs text-cult-dark-gray mt-0.5">Select a template to apply its schedules</p>
         </div>
         <button
@@ -44,7 +44,7 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
                 onClick={() => onApply(tmpl.id)}
                 className={`w-full text-left border p-3 transition-all disabled:opacity-50 ${
                   isMatch
-                    ? 'bg-amber-950/10 border-amber-800/40 hover:border-amber-600/60 hover:bg-amber-950/20'
+                    ? 'bg-cult-warning-muted border-cult-warning/30 hover:border-cult-warning/50 hover:bg-cult-warning-muted'
                     : 'bg-cult-charcoal/30 border-cult-dark-gray/60 hover:border-cult-medium-gray hover:bg-cult-charcoal/50'
                 }`}
               >
@@ -52,12 +52,12 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-cult-white">{tmpl.name}</span>
                     {tmpl.is_default && (
-                      <span className="text-[9px] text-amber-400 uppercase font-bold px-1 py-0.5 bg-amber-950/50 border border-amber-800/30 rounded-sm">
+                      <span className="text-[9px] text-cult-warning uppercase font-bold px-1 py-0.5 bg-cult-warning-muted border border-cult-warning/20 rounded-sm">
                         Default
                       </span>
                     )}
                     {isMatch && (
-                      <span className="text-[9px] text-green-400 uppercase font-bold px-1 py-0.5 bg-green-950/50 border border-green-800/30 rounded-sm">
+                      <span className="text-[9px] text-cult-success uppercase font-bold px-1 py-0.5 bg-cult-success-muted border border-cult-success/20 rounded-sm">
                         Match
                       </span>
                     )}
@@ -90,7 +90,7 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
       )}
 
       {applying && (
-        <p className="text-xs text-amber-400 text-center animate-pulse">Applying template...</p>
+        <p className="text-xs text-cult-warning text-center animate-pulse">Applying template...</p>
       )}
     </div>
   );

@@ -119,15 +119,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-cult-black flex items-center justify-center p-4">
-          <div className="bg-cult-near-black border-2 border-red-600 p-8 max-w-3xl w-full">
+          <div className="bg-cult-near-black border-2 border-cult-danger p-8 max-w-3xl w-full">
             <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="flex-shrink-0 w-12 h-12 bg-cult-danger rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-red-500 mb-2 uppercase tracking-wide">
+                <h1 className="text-2xl font-bold text-cult-danger mb-2 uppercase tracking-wide">
                   {errorType}
                 </h1>
                 <p className="text-cult-light-gray mb-4">
@@ -144,7 +144,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div className="mt-4 space-y-2">
                   <div>
                     <p className="text-cult-lighter-gray text-sm font-medium mb-1">Error Message:</p>
-                    <pre className="p-3 bg-cult-near-black text-red-400 text-xs overflow-auto rounded">
+                    <pre className="p-3 bg-cult-near-black text-cult-danger text-xs overflow-auto rounded">
                       {this.state.error.toString()}
                     </pre>
                   </div>
@@ -169,8 +169,8 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             {this.state.errorCount >= 3 && (
-              <div className="mb-6 p-4 bg-red-900/20 border border-red-600 rounded">
-                <p className="text-red-400 text-sm">
+              <div className="mb-6 p-4 bg-cult-danger-muted border border-cult-danger rounded">
+                <p className="text-cult-danger text-sm">
                   Multiple errors detected ({this.state.errorCount}). This may indicate a persistent issue. Please contact support if this continues.
                 </p>
               </div>

@@ -83,18 +83,18 @@ const ATTENTION_CONFIG: Record<AttentionItem['type'], {
   icon: typeof Scissors; bg: string; urgency: string; labelFn: (item?: AttentionItem) => string;
 }> = {
   harvest_imminent: {
-    icon: Scissors, bg: 'bg-amber-900/20 border-amber-500/30', urgency: 'text-amber-400',
+    icon: Scissors, bg: 'bg-cult-warning-muted border-cult-warning/30', urgency: 'text-cult-warning',
     labelFn: (item) => {
       const days = item?.estimated_harvest_date ? daysUntil(item.estimated_harvest_date) : null;
       return days != null && days <= 0 ? 'Harvest Due' : `Harvest in ${days}d`;
     },
   },
   stage_move_pending: {
-    icon: ArrowRightLeft, bg: 'bg-sky-900/20 border-sky-500/30', urgency: 'text-sky-400',
+    icon: ArrowRightLeft, bg: 'bg-cult-info-muted border-cult-info/30', urgency: 'text-cult-info',
     labelFn: (item) => `${item?.days_in_stage ?? 0}d in ${item?.growth_stage ?? 'stage'}`,
   },
   overdue_task: {
-    icon: AlertTriangle, bg: 'bg-red-900/20 border-red-500/30', urgency: 'text-red-400',
+    icon: AlertTriangle, bg: 'bg-cult-danger-muted border-cult-danger/30', urgency: 'text-cult-danger',
     labelFn: () => 'Overdue',
   },
   unassigned_task: {
@@ -164,8 +164,8 @@ function GroupedAttentionCard({ group }: { group: AttentionGroup }) {
 function TaskRow({ task, roomCodeMap }: { task: DailyTaskInstance; roomCodeMap: Map<string, string> }) {
   const roomCode = roomCodeMap.get(task.room_id) ?? task.room_id.slice(0, 8);
   const statusStyles: Record<string, string> = {
-    completed: 'bg-emerald-900/20 text-emerald-400 border-emerald-500/30',
-    in_progress: 'bg-amber-900/20 text-amber-400 border-amber-500/30',
+    completed: 'bg-cult-success-muted text-cult-success border-cult-success/30',
+    in_progress: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
     pending: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
     skipped: 'bg-cult-charcoal text-cult-text-faint border-cult-medium-gray/20',
   };
@@ -255,9 +255,9 @@ export function CultivationTodayView() {
             <span className="text-cult-text-muted">tasks done</span>
           </div>
           {taskStats.active > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900/20 rounded border border-amber-500/30">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-amber-300 font-medium">{taskStats.active} active</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cult-warning-muted rounded border border-cult-warning/30">
+              <Clock className="w-3.5 h-3.5 text-cult-warning" />
+              <span className="text-cult-warning font-medium">{taskStats.active} active</span>
             </div>
           )}
         </div>
@@ -269,7 +269,7 @@ export function CultivationTodayView() {
           <h2 className="text-[11px] text-cult-text-muted uppercase tracking-wider font-medium mb-2 flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
             Attention Needed
-            <span className="text-[10px] text-amber-400 font-semibold">({attentionItems.length})</span>
+            <span className="text-[10px] text-cult-warning font-semibold">({attentionItems.length})</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {attentionGroups.map(group => (
@@ -326,7 +326,7 @@ export function CultivationTodayView() {
               <div>
                 <div className="text-[10px] text-cult-text-faint uppercase tracking-wider mb-1.5">Rooms</div>
                 <div className="flex items-center gap-2">
-                  <Leaf className="w-3.5 h-3.5 text-emerald-400" />
+                  <Leaf className="w-3.5 h-3.5 text-cult-success" />
                   <span className="text-[13px] font-semibold text-cult-white">{roomSummaries.length}</span>
                   <span className="text-[11px] text-cult-text-muted">active</span>
                 </div>
@@ -365,7 +365,7 @@ export function CultivationTodayView() {
                       .map(s => (
                         <div key={s.room_id} className="flex items-center justify-between text-[11px]">
                           <span className="text-cult-lighter-gray truncate">{s.room_code}</span>
-                          <span className={`tabular-nums ${daysUntil(s.earliest_projected_harvest!) <= 3 ? 'text-amber-400' : 'text-cult-text-muted'}`}>
+                          <span className={`tabular-nums ${daysUntil(s.earliest_projected_harvest!) <= 3 ? 'text-cult-warning' : 'text-cult-text-muted'}`}>
                             {daysUntil(s.earliest_projected_harvest!)}d
                           </span>
                         </div>

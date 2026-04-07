@@ -37,9 +37,9 @@ import { useProductionDispatch, PROCESSING_STAGE_LABELS, TREATMENT_TYPE_LABELS }
 // ─── Stage visuals ──────────────────────────────────────────────────────────
 
 const STAGE_STYLE: Record<string, { icon: typeof Scissors; color: string; bg: string; border: string; label: string }> = {
-  buck:             { icon: Scissors, color: 'text-amber-400',   bg: 'bg-amber-500/[0.06]',   border: 'border-amber-500/20',   label: 'Bucking' },
-  trim_to_stock:    { icon: Box,      color: 'text-emerald-400', bg: 'bg-emerald-500/[0.06]', border: 'border-emerald-500/20', label: 'Trim' },
-  package_to_order: { icon: Package,  color: 'text-sky-400',     bg: 'bg-sky-500/[0.06]',     border: 'border-sky-500/20',     label: 'Packaging' },
+  buck:             { icon: Scissors, color: 'text-cult-warning',   bg: 'bg-cult-warning-muted',   border: 'border-cult-warning/20',   label: 'Bucking' },
+  trim_to_stock:    { icon: Box,      color: 'text-cult-success', bg: 'bg-cult-success-muted', border: 'border-cult-success/20', label: 'Trim' },
+  package_to_order: { icon: Package,  color: 'text-cult-info',     bg: 'bg-cult-info-muted',     border: 'border-cult-info/20',     label: 'Packaging' },
 };
 
 function getStageStyle(stage: string) {
@@ -79,9 +79,9 @@ interface ActiveSession {
 
 function PriorityBadge({ priority }: { priority: number }) {
   const config = priority <= 20
-    ? { style: 'bg-red-500/15 text-red-400 border-red-500/30', label: 'Urgent' }
+    ? { style: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30', label: 'Urgent' }
     : priority <= 40
-    ? { style: 'bg-amber-500/15 text-amber-400 border-amber-500/30', label: 'High' }
+    ? { style: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', label: 'High' }
     : priority <= 60
     ? { style: 'bg-cult-mid-gray/20 text-cult-text-muted border-cult-dark-gray/50', label: 'Normal' }
     : { style: 'bg-cult-mid-gray/10 text-cult-text-faint border-cult-dark-gray/30', label: 'Low' };
@@ -168,7 +168,7 @@ function ActiveCard({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stageStyle.bg} border ${stageStyle.border} flex items-center justify-center shrink-0 relative`}>
             <StageIcon className={`w-4 h-4 ${stageStyle.color}`} />
-            <div className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse border border-cult-black`} />
+            <div className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-cult-warning animate-pulse border border-cult-black`} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -180,7 +180,7 @@ function ActiveCard({
               <span className="w-px h-3 bg-cult-dark-gray/40" />
               <span>{session.worker}</span>
               <span className="w-px h-3 bg-cult-dark-gray/40" />
-              <span className="flex items-center gap-1 text-amber-400">
+              <span className="flex items-center gap-1 text-cult-warning">
                 <Timer className="w-3 h-3" />
                 {formatElapsedTime(session.startedAt)}
               </span>
@@ -197,7 +197,7 @@ function ActiveCard({
         <button
           type="button"
           onClick={() => onComplete(session)}
-          className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/25 transition-all"
+          className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
           Complete
@@ -214,7 +214,7 @@ function CompletedCard({ session }: { session: ActiveSession }) {
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-cult-dark-gray/30 bg-cult-mid-gray/[0.02]">
-      <CheckCircle2 className="w-4 h-4 text-emerald-500/60 shrink-0" />
+      <CheckCircle2 className="w-4 h-4 text-cult-success/60 shrink-0" />
       <span className="text-sm text-cult-text-secondary font-medium">{session.strain}</span>
       <span className={`text-[11px] ${stageStyle.color}`}>{stageStyle.label}</span>
       <span className="text-xs text-cult-text-faint">{session.worker}</span>
@@ -380,10 +380,10 @@ export function ProductionHub() {
   return (
     <HubShell section="Production" icon={Zap} kpis={kpis}>
       {dispatchError && (
-        <div className="mb-4 p-3.5 rounded-xl border border-red-500/30 bg-red-500/[0.06] flex items-center gap-3 text-sm text-red-400">
+        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger-muted flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{dispatchError}</span>
-          <button onClick={handleReload} className="shrink-0 px-3 py-1.5 rounded-lg border border-red-500/30 text-xs font-semibold hover:bg-red-500/10 transition-colors">Retry</button>
+          <button onClick={handleReload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
         </div>
       )}
 
@@ -412,8 +412,8 @@ export function ProductionHub() {
       {/* ── IN PROGRESS ──────────────────────────────────────────── */}
       {activeSessions.length > 0 && (
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-[11px] font-bold text-amber-400 uppercase tracking-widest mb-3">
-            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <div className="flex items-center gap-2 text-[11px] font-bold text-cult-warning uppercase tracking-widest mb-3">
+            <div className="w-2 h-2 rounded-full bg-cult-warning animate-pulse" />
             In Progress ({activeSessions.length})
           </div>
           <div className="space-y-2">
@@ -431,7 +431,7 @@ export function ProductionHub() {
       {/* ── QUEUED ───────────────────────────────────────────────── */}
       {queued.length > 0 && (
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-[11px] font-bold text-blue-400 uppercase tracking-widest mb-3">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-cult-info uppercase tracking-widest mb-3">
             <Clock className="w-3.5 h-3.5" />
             Queued ({queued.length})
           </div>
@@ -464,7 +464,7 @@ export function ProductionHub() {
           <button
             type="button"
             onClick={() => setShowCompleted(!showCompleted)}
-            className="flex items-center gap-2 text-[11px] font-bold text-emerald-400/70 uppercase tracking-widest mb-2 hover:text-emerald-400 transition-colors"
+            className="flex items-center gap-2 text-[11px] font-bold text-cult-success/70 uppercase tracking-widest mb-2 hover:text-cult-success transition-colors"
           >
             {showCompleted ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
             Completed Today ({completedToday.length})

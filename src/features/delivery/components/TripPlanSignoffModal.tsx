@@ -76,7 +76,7 @@ export function TripPlanSignoffModal({ plan, onClose, onDispatched }: TripPlanSi
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-gray-700 flex items-center justify-between gap-3">
-          {error && <p className="text-red-400 text-sm flex-1">{error}</p>}
+          {error && <p className="text-cult-danger text-sm flex-1">{error}</p>}
           <div className="flex gap-3 ml-auto">
             <button
               onClick={handlePrint}
@@ -94,7 +94,7 @@ export function TripPlanSignoffModal({ plan, onClose, onDispatched }: TripPlanSi
             <button
               onClick={handleDispatch}
               disabled={dispatching}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-md"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-cult-success hover:bg-cult-success/85 disabled:opacity-50 rounded-md"
             >
               <Send className="w-4 h-4" />
               {dispatching ? 'Dispatching…' : 'Confirm & Dispatch'}

@@ -6,10 +6,10 @@ import { estOutputG } from './utils';
 // ─── Urgency Badge ──────────────────────────────────────────────────────────
 
 const URGENCY_STYLES: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-  overdue: { bg: 'bg-red-500/20',    text: 'text-red-400',    dot: 'bg-red-400',    label: 'Overdue' },
-  urgent:  { bg: 'bg-amber-500/20',  text: 'text-amber-400',  dot: 'bg-amber-400',  label: 'Urgent' },
+  overdue: { bg: 'bg-cult-danger-muted',    text: 'text-cult-danger',    dot: 'bg-cult-danger',    label: 'Overdue' },
+  urgent:  { bg: 'bg-cult-warning-muted',  text: 'text-cult-warning',  dot: 'bg-cult-warning',  label: 'Urgent' },
   soon:    { bg: 'bg-sky-500/20',    text: 'text-sky-400',    dot: 'bg-sky-400',    label: 'Soon' },
-  normal:  { bg: 'bg-green-500/20',  text: 'text-green-400',  dot: 'bg-green-400',  label: 'On Track' },
+  normal:  { bg: 'bg-cult-success-muted',  text: 'text-cult-success',  dot: 'bg-cult-success',  label: 'On Track' },
   no_date: { bg: 'bg-gray-500/20',   text: 'text-gray-400',   dot: 'bg-gray-400',   label: 'No Date' },
 };
 
@@ -88,7 +88,7 @@ export function PipelineBar({ pipeline, lossPct }: { pipeline: Pipeline; lossPct
 // ─── Coverage State Colors ──────────────────────────────────────────────────
 
 export const COVERAGE_COLORS: Record<string, string> = {
-  surplus: 'text-emerald-400',
-  tight:   'text-amber-400',
-  deficit: 'text-rose-400',
+  surplus: 'text-cult-success',
+  tight:   'text-cult-warning',
+  deficit: 'text-cult-danger',
 };

@@ -108,12 +108,12 @@ export function OrderFormDetailsStep({
             max={getDateInputConstraints().max}
             className={`w-full px-4 py-3 bg-cult-dark-gray border rounded-lg text-cult-white focus:outline-none focus:ring-2 text-base ${
               dateError
-                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                ? 'border-cult-danger focus:ring-cult-danger focus:border-cult-danger'
                 : 'border-cult-medium-gray focus:ring-cult-green focus:border-cult-green'
             }`}
           />
           {dateError && (
-            <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-2 text-sm text-cult-danger flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               {dateError}
             </p>

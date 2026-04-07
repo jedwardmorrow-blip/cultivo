@@ -175,8 +175,8 @@ export function StrainsManagement() {
         <div
           className={`mb-6 p-4 border ${
             message.type === 'success'
-              ? 'bg-green-900 border-green-700 text-green-100'
-              : 'bg-red-900 border-red-700 text-red-100'
+              ? 'bg-cult-success-muted border-cult-success text-cult-text-primary'
+              : 'bg-cult-danger-muted border-cult-danger text-cult-text-primary'
           }`}
         >
           {message.text}
@@ -266,14 +266,14 @@ export function StrainsManagement() {
                     onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
                     className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
                       editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
-                        ? 'border-amber-600'
+                        ? 'border-cult-warning'
                         : 'border-cult-medium-gray'
                     }`}
                     placeholder="e.g., BLP"
                     maxLength={3}
                   />
                   {editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation) && (
-                    <p className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+                    <p className="flex items-center gap-1 text-cult-warning text-xs mt-1">
                       <AlertTriangle className="w-3 h-3" />
                       Must be exactly 3 uppercase letters (A–Z)
                     </p>
@@ -370,14 +370,14 @@ export function StrainsManagement() {
                         onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
                         className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
                           editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
-                            ? 'border-amber-600'
+                            ? 'border-cult-warning'
                             : 'border-cult-medium-gray'
                         }`}
                         maxLength={3}
                         placeholder="e.g., BLP"
                       />
                       {editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation) && (
-                        <p className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+                        <p className="flex items-center gap-1 text-cult-warning text-xs mt-1">
                           <AlertTriangle className="w-3 h-3" />
                           Must be exactly 3 uppercase letters
                         </p>
@@ -444,7 +444,7 @@ export function StrainsManagement() {
                           {strain.abbreviation}
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 px-2 py-1 bg-amber-950 border border-amber-700 text-amber-400 text-xs uppercase tracking-wider">
+                        <span className="flex items-center gap-1 px-2 py-1 bg-cult-warning-muted border border-cult-warning text-cult-warning text-xs uppercase tracking-wider">
                           <AlertTriangle className="w-3 h-3" />
                           No abbreviation — harvest blocked
                         </span>
@@ -466,7 +466,7 @@ export function StrainsManagement() {
                       className={`px-3 py-1 border text-xs font-medium uppercase tracking-wider transition-all duration-200 ${
                         strain.is_active
                           ? 'border-cult-medium-gray text-cult-lighter-gray hover:border-cult-white hover:text-cult-white'
-                          : 'border-green-700 text-green-500 hover:border-green-500'
+                          : 'border-cult-success text-cult-success hover:border-cult-success/80'
                       }`}
                     >
                       {strain.is_active ? 'Deactivate' : 'Activate'}
@@ -479,7 +479,7 @@ export function StrainsManagement() {
                     </button>
                     <button
                       onClick={() => handleDelete(strain.id)}
-                      className="px-3 py-1 border border-red-700 text-red-500 hover:border-red-500 transition-all duration-200 text-xs font-medium uppercase tracking-wider"
+                      className="px-3 py-1 border border-cult-danger text-cult-danger hover:border-cult-danger/80 transition-all duration-200 text-xs font-medium uppercase tracking-wider"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>

@@ -62,9 +62,9 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 function ageColorClass(days: number): string {
-  if (days < 14) return 'text-emerald-400';
-  if (days <= 30) return 'text-amber-400';
-  return 'text-red-400';
+  if (days < 14) return 'text-cult-success';
+  if (days <= 30) return 'text-cult-warning';
+  return 'text-cult-danger';
 }
 
 interface SortIconProps {

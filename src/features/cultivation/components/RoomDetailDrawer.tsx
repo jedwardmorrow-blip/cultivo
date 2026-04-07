@@ -635,7 +635,7 @@ export function RoomDetailDrawer({
                                       <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
                                         <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
                                         {g.is_mother && (
-                                          <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                                          <span className="text-xs border border-cult-warning/40 text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
                                             Mother
                                           </span>
                                         )}

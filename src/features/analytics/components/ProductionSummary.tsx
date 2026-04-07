@@ -99,10 +99,10 @@ export function ProductionSummary() {
               <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Trim Sessions</p>
               <p className="text-2xl font-bold text-cult-white print:text-black">{totals.trimSessions}</p>
               {totals.trimPending > 0 && (
-                <p className="text-xs text-orange-400 print:text-orange-600">{totals.trimPending} pending entry</p>
+                <p className="text-xs text-cult-warning print:text-orange-600">{totals.trimPending} pending entry</p>
               )}
             </div>
-            <FileText className="w-8 h-8 text-green-500 print:text-green-600" />
+            <FileText className="w-8 h-8 text-cult-success print:text-green-600" />
           </div>
         </div>
         <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
@@ -111,22 +111,22 @@ export function ProductionSummary() {
               <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Packaging Sessions</p>
               <p className="text-2xl font-bold text-cult-white print:text-black">{totals.packagingSessions}</p>
               {totals.packagingPending > 0 && (
-                <p className="text-xs text-orange-400 print:text-orange-600">{totals.packagingPending} pending entry</p>
+                <p className="text-xs text-cult-warning print:text-orange-600">{totals.packagingPending} pending entry</p>
               )}
             </div>
-            <FileText className="w-8 h-8 text-blue-500 print:text-blue-600" />
+            <FileText className="w-8 h-8 text-cult-info print:text-blue-600" />
           </div>
         </div>
         <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div>
             <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Flower Output</p>
-            <p className="text-2xl font-bold text-green-500 print:text-green-700">{totals.totalFlower.toFixed(0)}g</p>
+            <p className="text-2xl font-bold text-cult-success print:text-green-700">{totals.totalFlower.toFixed(0)}g</p>
           </div>
         </div>
         <div className="bg-cult-near-black print:bg-white print:border print:border-cult-border p-4 rounded-lg shadow border border-cult-medium-gray">
           <div>
             <p className="text-sm text-cult-light-gray print:text-cult-text-faint">Total Units Packaged</p>
-            <p className="text-2xl font-bold text-blue-500 print:text-blue-700">{totals.total_3_5g + totals.total_14g + totals.total_454g}</p>
+            <p className="text-2xl font-bold text-cult-info print:text-blue-700">{totals.total_3_5g + totals.total_14g + totals.total_454g}</p>
           </div>
         </div>
       </div>
@@ -159,13 +159,13 @@ export function ProductionSummary() {
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
                       {session.big_buds_grams && session.big_buds_grams > 0 && (
-                        <div className="text-green-400 print:text-green-700">
+                        <div className="text-cult-success print:text-green-700">
                           F: {session.big_buds_grams.toFixed(1)}g
                           {/* Package ID auto-generated, see EOD Summary */}
                         </div>
                       )}
                       {session.small_buds_grams && session.small_buds_grams > 0 && (
-                        <div className="text-yellow-400 print:text-yellow-700">
+                        <div className="text-cult-warning print:text-yellow-700">
                           S: {session.small_buds_grams.toFixed(1)}g
                           {/* Package ID auto-generated, see EOD Summary */}
                         </div>
@@ -181,9 +181,9 @@ export function ProductionSummary() {
                   <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-cult-success-muted text-cult-success">✓ Recorded</span>
                     ) : (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700">Pending</span>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-cult-warning-muted text-cult-warning">Pending</span>
                     )}
                   </td>
                 </tr>
@@ -227,13 +227,13 @@ export function ProductionSummary() {
                   <td className="px-4 py-3 text-sm text-cult-white print:text-black">
                     <div className="space-y-1 text-xs">
                       {session.units_3_5g && session.units_3_5g > 0 && (
-                        <div className="text-blue-400 print:text-blue-700">3.5g: {session.units_3_5g} units</div>
+                        <div className="text-cult-info print:text-blue-700">3.5g: {session.units_3_5g} units</div>
                       )}
                       {session.units_14g && session.units_14g > 0 && (
-                        <div className="text-blue-400 print:text-blue-700">14g: {session.units_14g} units</div>
+                        <div className="text-cult-info print:text-blue-700">14g: {session.units_14g} units</div>
                       )}
                       {session.units_454g && session.units_454g > 0 && (
-                        <div className="text-blue-400 print:text-blue-700">454g: {session.units_454g} units</div>
+                        <div className="text-cult-info print:text-blue-700">454g: {session.units_454g} units</div>
                       )}
                     </div>
                   </td>
@@ -241,9 +241,9 @@ export function ProductionSummary() {
                   <td className="px-4 py-3 text-sm text-cult-light-gray print:text-cult-text-muted">Holding</td>
                   <td className="px-4 py-3 text-center">
                     {session.recorded_in_dutchie ? (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">✓ Recorded</span>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-cult-success-muted text-cult-success">✓ Recorded</span>
                     ) : (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700">Pending</span>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-cult-warning-muted text-cult-warning">Pending</span>
                     )}
                   </td>
                 </tr>

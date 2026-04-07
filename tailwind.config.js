@@ -40,10 +40,15 @@ export default {
                       // Status Tokens
                       'success': '#10B981',
                       'success-bright': '#34D399',
+                      'success-muted': 'rgba(16, 185, 129, 0.12)',
                       'danger': '#DC4545',
-                      'danger-muted': '#DC454520',
+                      'danger-muted': 'rgba(220, 69, 69, 0.12)',
                       'warning': '#F59E0B',
-                      'warning-muted': '#F59E0B20',
+                      'warning-muted': 'rgba(245, 158, 11, 0.12)',
+                      'info': '#3B82F6',
+                      'info-muted': 'rgba(59, 130, 246, 0.12)',
+                      'pending': '#A78BFA',
+                      'pending-muted': 'rgba(167, 139, 250, 0.12)',
                       // Cannabis Stage Colors
                       'stage-clone': '#0EA5E9',
                       'stage-veg': '#10B981',
@@ -77,6 +82,21 @@ export default {
       boxShadow: {
         'glow': '0 0 20px rgba(255, 255, 255, 0.1)',
         'glow-strong': '0 0 30px rgba(255, 255, 255, 0.2)',
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
+        'glass-lg': '0 16px 48px rgba(0, 0, 0, 0.4)',
+        'glow-success': '0 0 20px rgba(16, 185, 129, 0.2)',
+        'glow-danger': '0 0 20px rgba(220, 69, 69, 0.2)',
+        'glow-warning': '0 0 20px rgba(245, 158, 11, 0.2)',
+        'glow-info': '0 0 20px rgba(59, 130, 246, 0.2)',
+        'glow-clone': '0 0 20px rgba(14, 165, 233, 0.15)',
+        'glow-veg': '0 0 20px rgba(16, 185, 129, 0.15)',
+        'glow-flower': '0 0 20px rgba(244, 63, 94, 0.15)',
+        'glow-harvest': '0 0 20px rgba(245, 158, 11, 0.15)',
+      },
+      backdropBlur: {
+        'glass': '16px',
+        'glass-lg': '24px',
+        'glass-xl': '40px',
       },
       animation: {
         'glitch': 'glitch 1s infinite',
@@ -91,6 +111,9 @@ export default {
         'stat-recede': 'statRecede 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
         'bar-fill': 'barFill 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
         'countdown-tick': 'countdownTick 2s ease-in-out infinite',
+        'glass-shimmer': 'glassShimmer 2s ease-in-out infinite',
+        'number-roll': 'numberRoll 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'success-pulse': 'successPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         pulseUrgentRed: {
@@ -141,6 +164,19 @@ export default {
         countdownTick: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.6' },
+        },
+        glassShimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+        numberRoll: {
+          '0%': { transform: 'translateY(-8px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        successPulse: {
+          '0%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)' },
+          '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 8px rgba(16, 185, 129, 0)' },
+          '100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)' },
         },
       },
       transitionTimingFunction: {

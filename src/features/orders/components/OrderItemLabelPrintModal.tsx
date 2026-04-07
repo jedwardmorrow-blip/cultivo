@@ -87,7 +87,7 @@ export function OrderItemLabelPrintModal({
   const getStatusBadge = (label: typeof labels[0]) => {
     if (label.voided_at) {
       return (
-        <span className="flex items-center gap-1 px-2 py-1 bg-red-900/30 text-red-400 rounded text-xs font-medium">
+        <span className="flex items-center gap-1 px-2 py-1 bg-cult-danger/15 text-cult-danger rounded text-xs font-medium">
           <Ban className="w-3 h-3" />
           Voided
         </span>
@@ -95,14 +95,14 @@ export function OrderItemLabelPrintModal({
     }
     if (label.printed_at) {
       return (
-        <span className="flex items-center gap-1 px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs font-medium">
+        <span className="flex items-center gap-1 px-2 py-1 bg-cult-success/15 text-cult-success rounded text-xs font-medium">
           <CheckCircle className="w-3 h-3" />
           Printed
         </span>
       );
     }
     return (
-      <span className="flex items-center gap-1 px-2 py-1 bg-yellow-900/30 text-yellow-400 rounded text-xs font-medium">
+      <span className="flex items-center gap-1 px-2 py-1 bg-cult-warning/15 text-cult-warning rounded text-xs font-medium">
         <Clock className="w-3 h-3" />
         Pending
       </span>
@@ -178,7 +178,7 @@ export function OrderItemLabelPrintModal({
                   <button
                     onClick={handlePrintAll}
                     disabled={stats.pending === 0 || printingAll}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Printer className="w-4 h-4" />
                     Print All Unprinted ({stats.pending})
@@ -251,7 +251,7 @@ export function OrderItemLabelPrintModal({
                           {!label.voided_at && (
                             <button
                               onClick={() => handlePrintLabel(label.id)}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors whitespace-nowrap"
+                              className="flex items-center gap-2 px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded font-medium transition-colors whitespace-nowrap"
                             >
                               <Printer className="w-4 h-4" />
                               Print

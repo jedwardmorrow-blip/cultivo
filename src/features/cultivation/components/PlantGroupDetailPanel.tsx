@@ -67,7 +67,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
               <div className="flex items-center gap-2">
                 <span className="font-mono text-sm font-bold text-cult-white">{batchNumber ?? '—'}</span>
                 {group.is_mother && (
-                  <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
+                  <span className="text-xs border border-cult-warning/40 text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
                 )}
               </div>
               <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>

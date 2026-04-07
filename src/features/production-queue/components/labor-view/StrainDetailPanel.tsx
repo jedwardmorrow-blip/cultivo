@@ -37,7 +37,7 @@ function FormatBreakdown({ formats }: { formats: StrainAggregate['formats'] }) {
             <span className="text-cult-text-primary font-semibold">{f.unitsNeeded} units</span>
             <span className="text-gray-600">({formatWeight(f.demandG)})</span>
             {f.unitsAssigned > 0 && (
-              <span className="text-emerald-400 text-[11px]">{f.unitsAssigned} assigned</span>
+              <span className="text-cult-success text-[11px]">{f.unitsAssigned} assigned</span>
             )}
           </div>
         ))}
@@ -63,15 +63,15 @@ function OrderTriage({ orders, totalEstG }: { orders: OrderLineItem[]; totalEstG
   });
 
   const statusStyles = {
-    covered:   { bg: 'bg-emerald-500/5', border: 'border-emerald-500/15', text: 'text-emerald-400', icon: '\u2713', label: 'Covered' },
-    partial:   { bg: 'bg-amber-500/5',   border: 'border-amber-500/15',   text: 'text-amber-400',   icon: '\u25D0', label: 'Partial' },
-    uncovered: { bg: 'bg-rose-500/5',    border: 'border-rose-500/15',    text: 'text-rose-400',    icon: '\u2717', label: 'At Risk' },
+    covered:   { bg: 'bg-cult-success/5', border: 'border-cult-success/15', text: 'text-cult-success', icon: '\u2713', label: 'Covered' },
+    partial:   { bg: 'bg-cult-warning/5',   border: 'border-cult-warning/15',   text: 'text-cult-warning',   icon: '\u25D0', label: 'Partial' },
+    uncovered: { bg: 'bg-cult-danger/5',    border: 'border-cult-danger/15',    text: 'text-cult-danger',    icon: '\u2717', label: 'At Risk' },
   };
 
   return (
-    <div className="p-3 rounded-cult bg-rose-500/[0.03] border border-rose-500/10">
+    <div className="p-3 rounded-cult bg-cult-danger/[0.03] border border-cult-danger/10">
       <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider">Order Triage</span>
+        <span className="text-[11px] font-bold text-cult-danger uppercase tracking-wider">Order Triage</span>
         <span className="text-[11px] text-gray-600">— FIFO, earliest due first</span>
       </div>
       <div className="flex flex-col gap-1">
@@ -131,7 +131,7 @@ export default function StrainDetailPanel({
   const bk = pipeline.bucked.weightG;
   const bl = pipeline.bulk.weightG;
   if (b > 0) tasks.push({ action: 'Buck', weight: b, colorClass: 'text-orange-400', borderClass: 'border-orange-500/20', bgClass: 'bg-orange-500/10', time: '~2-3 days', people: '1-2 people' });
-  if (bk > 0 || b > 0) tasks.push({ action: 'Trim', weight: bk + (b > 0 ? b * (1 - lossPct / 100) : 0), colorClass: 'text-amber-400', borderClass: 'border-amber-500/20', bgClass: 'bg-amber-500/10', time: '~1-2 days', people: '2-3 people' });
+  if (bk > 0 || b > 0) tasks.push({ action: 'Trim', weight: bk + (b > 0 ? b * (1 - lossPct / 100) : 0), colorClass: 'text-cult-warning', borderClass: 'border-cult-warning/20', bgClass: 'bg-cult-warning/10', time: '~1-2 days', people: '2-3 people' });
   if (bl > 0 || bk > 0 || b > 0) tasks.push({ action: 'Package', weight: bl + bk * (1 - lossPct / 100), colorClass: 'text-sky-400', borderClass: 'border-sky-500/20', bgClass: 'bg-sky-500/10', time: 'same day', people: '1 person' });
 
   return (
@@ -171,8 +171,8 @@ export default function StrainDetailPanel({
               <div className="text-xl font-bold text-cult-text-primary">{formatWeight(totalDemandG)}</div>
             </div>
             <div>
-              <div className="text-[11px] text-emerald-400 uppercase tracking-wide">Packaged</div>
-              <div className="text-xl font-bold text-emerald-400">{formatWeight(readyG)}</div>
+              <div className="text-[11px] text-cult-success uppercase tracking-wide">Packaged</div>
+              <div className="text-xl font-bold text-cult-success">{formatWeight(readyG)}</div>
             </div>
             <div>
               <div className="text-[11px] text-gray-500 uppercase tracking-wide">Fill</div>
@@ -197,19 +197,19 @@ export default function StrainDetailPanel({
 
           {/* Narrative summary */}
           {coverage.state === 'surplus' && (
-            <div className="p-3 rounded-cult bg-emerald-500/[0.04] border border-emerald-500/10 text-[13px] text-emerald-400 font-medium leading-relaxed">
+            <div className="p-3 rounded-cult bg-cult-success/[0.04] border border-cult-success/10 text-[13px] text-cult-success font-medium leading-relaxed">
               Pipeline covers all {formatWeight(totalDemandG)} needed, with ~{formatWeight(surplusG)} to spare.
             </div>
           )}
           {coverage.state === 'tight' && (
-            <div className="p-3 rounded-cult bg-amber-500/[0.04] border border-amber-500/10 text-[13px] text-amber-400 font-medium leading-relaxed">
+            <div className="p-3 rounded-cult bg-cult-warning/[0.04] border border-cult-warning/10 text-[13px] text-cult-warning font-medium leading-relaxed">
               Pipeline barely covers demand — only ~{formatWeight(Math.abs(surplusG))} buffer.
               Loss above {lossPct}% or new orders will create a shortfall.
             </div>
           )}
           {shortfall && (
-            <div className="p-3 rounded-cult bg-rose-500/[0.04] border border-rose-500/10">
-              <div className="text-[14px] font-bold text-rose-400 mb-1.5">
+            <div className="p-3 rounded-cult bg-cult-danger/[0.04] border border-cult-danger/10">
+              <div className="text-[14px] font-bold text-cult-danger mb-1.5">
                 Short ~{formatWeight(shortfall.shortG)} of finished product
               </div>
               <div className="text-[13px] text-cult-text-primary leading-relaxed">
@@ -221,8 +221,8 @@ export default function StrainDetailPanel({
                   <div className="text-lg font-bold text-cult-text-primary mt-0.5">~{formatWeight(shortfall.bulkWeightNeeded)}</div>
                   <div className="text-[11px] text-gray-600">ready to package</div>
                 </div>
-                <div className="flex-1 min-w-[140px] p-2.5 rounded-cult bg-amber-500/[0.06] border border-amber-500/10">
-                  <div className="text-[11px] text-amber-400 font-semibold uppercase tracking-wide">As pre-trim material</div>
+                <div className="flex-1 min-w-[140px] p-2.5 rounded-cult bg-cult-warning/[0.06] border border-cult-warning/10">
+                  <div className="text-[11px] text-cult-warning font-semibold uppercase tracking-wide">As pre-trim material</div>
                   <div className="text-lg font-bold text-cult-text-primary mt-0.5">~{formatWeight(shortfall.trimWeightNeeded)}</div>
                   <div className="text-[11px] text-gray-600">accounting for {lossPct}% trim loss</div>
                 </div>
@@ -261,8 +261,8 @@ export default function StrainDetailPanel({
                   </Fragment>
                 ))}
                 <div className="flex items-center text-gray-600 text-sm px-1">&rarr;</div>
-                <div className="flex-1 p-2.5 rounded-cult bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="text-[14px] font-bold text-emerald-400">Ready</div>
+                <div className="flex-1 p-2.5 rounded-cult bg-cult-success/10 border border-cult-success/20">
+                  <div className="text-[14px] font-bold text-cult-success">Ready</div>
                   <div className="text-base font-bold text-cult-text-primary my-0.5">~{formatWeight(totalEstG)}</div>
                   <div className="text-[11px] text-gray-600">assign &rarr; ship</div>
                 </div>

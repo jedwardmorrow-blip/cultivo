@@ -14,7 +14,7 @@ export function RevenueGoalBanner({ data }: Props) {
   const paceLabel = onPace ? 'on pace' : 'behind pace';
 
   return (
-    <div className="bg-cult-surface-raised border border-cult-stage-harvest rounded-cult p-4 px-6 mb-6 flex items-center justify-between gap-8 animate-fade-in">
+    <div className="glass-card border-cult-stage-harvest/30 p-4 px-6 mb-6 flex items-center justify-between gap-8 shadow-glow-harvest">
       {/* Left: Target */}
       <div className="flex-shrink-0">
         <div className="text-[0.6875rem] uppercase tracking-[1.5px] text-cult-text-secondary font-semibold">
@@ -31,7 +31,7 @@ export function RevenueGoalBanner({ data }: Props) {
           <span>MTD: ${data.mtd.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
           <span>Target: {fmt(data.target)}</span>
         </div>
-        <div className="h-1.5 bg-cult-surface-overlay rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-1000 ease-cult"
             style={{

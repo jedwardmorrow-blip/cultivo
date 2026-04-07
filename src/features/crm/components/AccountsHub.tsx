@@ -80,27 +80,27 @@ const TABS: Tab[] = [
 const HEALTH_CONFIG: Record<HealthBucket, { label: string; color: string; bgColor: string; borderColor: string }> = {
   healthy: {
     label: 'Healthy',
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-400/10',
-    borderColor: 'border-emerald-400/30',
+    color: 'text-cult-success',
+    bgColor: 'bg-cult-success/10',
+    borderColor: 'border-cult-success/30',
   },
   cooling: {
     label: 'Cooling',
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-400/10',
-    borderColor: 'border-amber-400/30',
+    color: 'text-cult-warning',
+    bgColor: 'bg-cult-warning/10',
+    borderColor: 'border-cult-warning/30',
   },
   at_risk: {
     label: 'At Risk',
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-400/10',
-    borderColor: 'border-orange-400/30',
+    color: 'text-cult-warning',
+    bgColor: 'bg-cult-warning/10',
+    borderColor: 'border-cult-warning/30',
   },
   dormant: {
     label: 'Dormant',
-    color: 'text-red-400',
-    bgColor: 'bg-red-400/10',
-    borderColor: 'border-red-400/30',
+    color: 'text-cult-danger',
+    bgColor: 'bg-cult-danger/10',
+    borderColor: 'border-cult-danger/30',
   },
 };
 
@@ -121,10 +121,10 @@ function MiniScoreBar({ score, max = 100 }: { score?: number; max?: number }) {
   if (score === undefined || score === null) return <span className="text-cult-medium-gray text-xs">â</span>;
   const pct = Math.min(100, Math.max(0, (score / max) * 100));
   const color =
-    pct >= 75 ? 'bg-emerald-400' :
-    pct >= 50 ? 'bg-amber-400' :
-    pct >= 25 ? 'bg-orange-400' :
-    'bg-red-400';
+    pct >= 75 ? 'bg-cult-success' :
+    pct >= 50 ? 'bg-cult-warning' :
+    pct >= 25 ? 'bg-cult-warning' :
+    'bg-cult-danger';
   return (
     <div className="flex items-center gap-2">
       <div className="w-16 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
@@ -363,7 +363,7 @@ function OverviewTab() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-20 text-red-400">
+      <div className="flex items-center justify-center py-20 text-cult-danger">
         <AlertTriangle className="w-5 h-5 mr-2" />
         {error}
       </div>
@@ -387,18 +387,18 @@ function OverviewTab() {
             </div>
           );
         })}
-        <div className="bg-red-400/10 rounded-lg p-3 border border-red-400/30">
-          <p className="text-xs text-red-400 mb-1">At-Risk Revenue</p>
-          <p className="text-xl font-semibold text-red-400">{formatCurrency(healthSummary.atRiskRevenue)}</p>
+        <div className="bg-cult-danger/10 rounded-lg p-3 border border-cult-danger/30">
+          <p className="text-xs text-cult-danger mb-1">At-Risk Revenue</p>
+          <p className="text-xl font-semibold text-cult-danger">{formatCurrency(healthSummary.atRiskRevenue)}</p>
         </div>
       </div>
 
       {/* ââ At-Risk Alerts ââ */}
       {healthData.some((h) => (h.health_bucket === 'at_risk' || h.health_bucket === 'dormant') && (h.revenue_90d ?? 0) > 10000) && (
-        <div className="bg-orange-400/10 border border-orange-400/30 rounded-lg p-3">
+        <div className="bg-cult-warning/10 border border-cult-warning/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-orange-400" />
-            <span className="text-sm font-medium text-orange-400">High-Value Accounts Need Attention</span>
+            <AlertTriangle className="w-4 h-4 text-cult-warning" />
+            <span className="text-sm font-medium text-cult-warning">High-Value Accounts Need Attention</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {healthData
@@ -408,7 +408,7 @@ function OverviewTab() {
                 <button
                   key={h.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${h.customer_id}`)}
-                  className="text-xs bg-cult-dark-gray/80 text-orange-300 px-2 py-1 rounded hover:bg-cult-dark-gray transition-colors"
+                  className="text-xs bg-cult-dark-gray/80 text-cult-warning/80 px-2 py-1 rounded hover:bg-cult-dark-gray transition-colors"
                 >
                   {h.customer_name} Â· {formatCurrency(h.revenue_90d)}
                 </button>
@@ -507,7 +507,7 @@ function OverviewTab() {
                       >
                         <span className="text-cult-white font-medium">{acct.name}</span>
                         <span className="text-cult-medium-gray text-xs ml-2">{acct.customer_code}</span>
-                        {isParent && <span className="ml-2 text-xs text-sky-400/70">Hub Â· {children.length} locations</span>}
+                        {isParent && <span className="ml-2 text-xs text-cult-info/70">Hub Â· {children.length} locations</span>}
                         {acct.city && <span className="block text-xs text-cult-medium-gray">{acct.city}{acct.state ? `, ${acct.state}` : ''}</span>}
                       </button>
                     </td>

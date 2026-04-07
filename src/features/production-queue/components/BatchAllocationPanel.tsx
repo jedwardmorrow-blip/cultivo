@@ -89,7 +89,7 @@ function ConversionFunnel({ conversion }: { conversion: StrainConversion }) {
         confidence={conversion.buck_confidence}
         sessions={conversion.buck_sessions}
         outputs={[
-          { name: 'bud', pct: conversion.buck_flower_pct, color: 'text-emerald-400' },
+          { name: 'bud', pct: conversion.buck_flower_pct, color: 'text-cult-success' },
           { name: 'smalls', pct: conversion.buck_smalls_pct, color: 'text-cyan-400' },
           { name: 'loss', pct: conversion.buck_waste_pct, color: 'text-gray-500' },
         ]}
@@ -100,9 +100,9 @@ function ConversionFunnel({ conversion }: { conversion: StrainConversion }) {
         confidence={conversion.trim_confidence}
         sessions={conversion.trim_sessions}
         outputs={[
-          { name: 'bud', pct: conversion.trim_bigs_pct, color: 'text-emerald-400' },
+          { name: 'bud', pct: conversion.trim_bigs_pct, color: 'text-cult-success' },
           { name: 'smalls', pct: conversion.trim_smalls_pct, color: 'text-cyan-400' },
-          { name: 'trim', pct: conversion.trim_trim_pct, color: 'text-amber-400' },
+          { name: 'trim', pct: conversion.trim_trim_pct, color: 'text-cult-warning' },
         ]}
       />
       <ArrowRight className="w-3 h-3 text-gray-700 shrink-0" />
@@ -111,7 +111,7 @@ function ConversionFunnel({ conversion }: { conversion: StrainConversion }) {
         confidence={conversion.pkg_confidence}
         sessions={conversion.pkg_sessions}
         outputs={[
-          ...(conversion.pkg_pct_3_5g > 0 ? [{ name: '3.5g', pct: conversion.pkg_pct_3_5g, color: 'text-emerald-400' }] : []),
+          ...(conversion.pkg_pct_3_5g > 0 ? [{ name: '3.5g', pct: conversion.pkg_pct_3_5g, color: 'text-cult-success' }] : []),
           ...(conversion.pkg_pct_14g > 0 ? [{ name: '14g', pct: conversion.pkg_pct_14g, color: 'text-sky-400' }] : []),
           ...(conversion.pkg_pct_1lb > 0 ? [{ name: '1lb', pct: conversion.pkg_pct_1lb, color: 'text-violet-400' }] : []),
         ]}
@@ -180,8 +180,8 @@ function RemainingBar({ batch }: { batch: BatchYield }) {
     { label: 'Binned',   grams: batch.binned_g, color: 'bg-indigo-500' },
     { label: 'Bucked',   grams: batch.bucked_flower_g + batch.bucked_smalls_g, color: 'bg-violet-500' },
     { label: 'Bulk',     grams: batch.bulk_flower_g + batch.bulk_smalls_g, color: 'bg-cyan-500' },
-    { label: 'Packaged', grams: batch.packaged_g, color: 'bg-emerald-500' },
-    { label: 'Trim',     grams: batch.trim_g, color: 'bg-amber-500/60' },
+    { label: 'Packaged', grams: batch.packaged_g, color: 'bg-cult-success' },
+    { label: 'Trim',     grams: batch.trim_g, color: 'bg-cult-warning/60' },
   ].filter(s => s.grams > 0);
 
   return (
@@ -290,7 +290,7 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
             <span className="text-white font-semibold">{formatWeight(allocation.total_remaining_g)}</span>
             <span>remaining</span>
             {allocation.aging_batches > 0 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cult-danger-muted border border-cult-danger/20 text-cult-danger">
                 <AlertTriangle className="w-3 h-3" />
                 {allocation.aging_batches} aging
               </span>
@@ -328,8 +328,8 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
               <tr
                 key={b.batch_id}
                 className={`border-t border-cult-medium-gray/20 ${
-                  b.age_pressure === 'aging' ? 'bg-red-500/[0.03]' :
-                  b.age_pressure === 'watch' ? 'bg-amber-500/[0.02]' : ''
+                  b.age_pressure === 'aging' ? 'bg-cult-danger/[0.03]' :
+                  b.age_pressure === 'watch' ? 'bg-cult-warning/[0.02]' : ''
                 }`}
               >
                 <td className="px-3 py-2">

@@ -165,8 +165,8 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
+          <div className="p-2 rounded-lg bg-cult-success/15 border border-cult-success/30">
+            <DollarSign className="w-5 h-5 text-cult-success" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-cult-white">Revenue Tracking</h1>
@@ -186,13 +186,13 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
         {/* Current Month Realized */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Realized</p>
-          <p className="text-2xl font-bold text-emerald-400">{fmt$(totals.totalRealized)}</p>
+          <p className="text-2xl font-bold text-cult-success">{fmt$(totals.totalRealized)}</p>
           <p className="text-xs text-cult-silver">completed deliveries</p>
         </div>
         {/* Current Month Tentative */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Tentative</p>
-          <p className="text-2xl font-bold text-amber-400">{fmt$(totals.totalTentative)}</p>
+          <p className="text-2xl font-bold text-cult-warning">{fmt$(totals.totalTentative)}</p>
           <p className="text-xs text-cult-silver">pending delivery</p>
         </div>
         {/* Prior Month */}
@@ -204,7 +204,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
         {/* Rolling 90d */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">90-Day Total</p>
-          <p className="text-2xl font-bold text-sky-400">{fmt$(totals.rolling90Total)}</p>
+          <p className="text-2xl font-bold text-cult-info">{fmt$(totals.rolling90Total)}</p>
           <p className="text-xs text-cult-silver">
             + {fmt$(totals.rolling90Tentative)} tentative
           </p>
@@ -214,12 +214,12 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
           onClick={() => setFilter(filter === 'has_unresolved' ? 'all' : 'has_unresolved')}
           className={`rounded-lg px-4 py-3 text-left border transition-colors ${
             filter === 'has_unresolved'
-              ? 'bg-red-500/15 border-red-500/30 ring-1 ring-red-500/40'
+              ? 'bg-cult-danger/15 border-cult-danger/30 ring-1 ring-cult-danger/40'
               : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
           }`}
         >
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Unresolved</p>
-          <p className="text-2xl font-bold text-red-400">{fmt$(totals.totalUnresolved)}</p>
+          <p className="text-2xl font-bold text-cult-danger">{fmt$(totals.totalUnresolved)}</p>
           <p className="text-xs text-cult-silver">{totals.unresolvedAccounts} accounts</p>
         </button>
         {/* Lifetime */}
@@ -265,14 +265,14 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
 
       {/* Unresolved Alert */}
       {totals.totalUnresolved > 0 && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+        <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-lg px-4 py-3">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
-            <p className="text-sm font-semibold text-red-400">
+            <AlertTriangle className="w-4 h-4 text-cult-danger" />
+            <p className="text-sm font-semibold text-cult-danger">
               {fmt$(totals.totalUnresolved)} in unresolved revenue across {totals.unresolvedAccounts} account{totals.unresolvedAccounts !== 1 ? 's' : ''}
             </p>
           </div>
-          <p className="text-xs text-red-300/70 mb-2">
+          <p className="text-xs text-cult-danger/70 mb-2">
             These orders have past delivery dates but were never completed. They need to be addressed — either mark complete or cancel.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -284,17 +284,17 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-cult-danger/15 border border-cult-danger/25 rounded-md text-cult-danger/80 hover:bg-cult-danger/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{fmt$(a.total_unresolved_revenue)}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{a.total_unresolved_orders} order{a.total_unresolved_orders !== 1 ? 's' : ''}</span>
                 </button>
               ))}
             {totals.unresolvedAccounts > 5 && (
-              <span className="text-xs text-red-400/60 self-center">+{totals.unresolvedAccounts - 5} more</span>
+              <span className="text-xs text-cult-danger/60 self-center">+{totals.unresolvedAccounts - 5} more</span>
             )}
           </div>
         </div>
@@ -309,14 +309,14 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-sky-500/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
           />
         </div>
         <div className="flex items-center gap-1.5">
           {([
-            { key: 'growing' as const, label: 'Growing', icon: TrendingUp, color: 'text-emerald-400' },
-            { key: 'declining' as const, label: 'Declining', icon: TrendingDown, color: 'text-orange-400' },
-            { key: 'has_unresolved' as const, label: 'Unresolved', icon: AlertTriangle, color: 'text-red-400' },
+            { key: 'growing' as const, label: 'Growing', icon: TrendingUp, color: 'text-cult-success' },
+            { key: 'declining' as const, label: 'Declining', icon: TrendingDown, color: 'text-cult-warning' },
+            { key: 'has_unresolved' as const, label: 'Unresolved', icon: AlertTriangle, color: 'text-cult-danger' },
           ]).map(({ key, label, icon: Icon, color }) => (
             <button
               key={key}
@@ -384,8 +384,8 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
             {sorted.map((a) => {
               const momColor =
                 a.mom_change_pct == null ? 'text-cult-medium-gray'
-                : a.mom_change_pct > 10 ? 'text-emerald-400'
-                : a.mom_change_pct < -10 ? 'text-orange-400'
+                : a.mom_change_pct > 10 ? 'text-cult-success'
+                : a.mom_change_pct < -10 ? 'text-cult-warning'
                 : 'text-cult-silver';
               const MomIcon =
                 a.mom_change_pct == null ? Minus
@@ -398,7 +398,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   {/* Account */}
                   <td className="py-2.5 px-3">
                     <button onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)} className="text-left">
-                      <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
                       <p className="text-xs text-cult-light-gray">
@@ -409,9 +409,9 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   {/* This Month */}
                   <td className="py-2.5 px-2 text-right">
                     <div>
-                      <span className="text-xs text-emerald-400 font-medium">{fmt$(a.current_month_realized)}</span>
+                      <span className="text-xs text-cult-success font-medium">{fmt$(a.current_month_realized)}</span>
                       {a.current_month_tentative > 0 && (
-                        <span className="text-xs text-amber-400 ml-1">+{fmt$(a.current_month_tentative)}</span>
+                        <span className="text-xs text-cult-warning ml-1">+{fmt$(a.current_month_tentative)}</span>
                       )}
                     </div>
                     <p className="text-xs text-cult-medium-gray">{a.current_month_orders} orders</p>
@@ -427,7 +427,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   <td className="py-2.5 px-2 text-right hidden md:table-cell">
                     <span className="text-xs text-cult-silver">{fmt$(a.rolling_90d_realized)}</span>
                     {a.rolling_90d_tentative > 0 && (
-                      <span className="text-xs text-amber-400/60 ml-1">+{fmt$(a.rolling_90d_tentative)}</span>
+                      <span className="text-xs text-cult-warning/60 ml-1">+{fmt$(a.rolling_90d_tentative)}</span>
                     )}
                   </td>
                   {/* Lifetime */}
@@ -437,9 +437,9 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   {/* Unresolved */}
                   <td className="py-2.5 px-2 text-right hidden lg:table-cell">
                     {a.total_unresolved_revenue > 0 ? (
-                      <span className="text-xs text-red-400 font-medium">
+                      <span className="text-xs text-cult-danger font-medium">
                         {fmt$(a.total_unresolved_revenue)}
-                        <span className="text-xs text-red-400/60 ml-1">({a.total_unresolved_orders})</span>
+                        <span className="text-xs text-cult-danger/60 ml-1">({a.total_unresolved_orders})</span>
                       </span>
                     ) : (
                       <span className="text-xs text-cult-medium-gray">—</span>

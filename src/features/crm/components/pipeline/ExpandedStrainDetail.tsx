@@ -31,10 +31,10 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
   return (
     <div className="px-4 py-3 border-b border-cult-medium-gray/20 bg-[#090909]">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-        <MetricBox label="SELLABLE FLOWER" value={formatGrams(s.sellableFlowerGrams) + 'g'} colorClass="text-emerald-400" />
-        <MetricBox label="SELLABLE SMALLS" value={formatGrams(s.sellableSmallsGrams) + 'g'} colorClass="text-emerald-300" />
-        <MetricBox label="PACKAGED UNITS" value={s.packagedUnits.toLocaleString()} colorClass="text-emerald-600" />
-        <MetricBox label="PIPELINE" value={formatGrams(s.pipelineGrams) + 'g'} colorClass="text-blue-400" />
+        <MetricBox label="SELLABLE FLOWER" value={formatGrams(s.sellableFlowerGrams) + 'g'} colorClass="text-cult-success" />
+        <MetricBox label="SELLABLE SMALLS" value={formatGrams(s.sellableSmallsGrams) + 'g'} colorClass="text-cult-success" />
+        <MetricBox label="PACKAGED UNITS" value={s.packagedUnits.toLocaleString()} colorClass="text-cult-success/60" />
+        <MetricBox label="PIPELINE" value={formatGrams(s.pipelineGrams) + 'g'} colorClass="text-cult-info" />
       </div>
 
       <div className="mb-3">
@@ -68,19 +68,19 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
           <div className="flex-1">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-neutral-500">Supply</span>
-              <span className="font-bold text-emerald-400 tabular-nums">{formatGrams(totalSellable)}g</span>
+              <span className="font-bold text-cult-success tabular-nums">{formatGrams(totalSellable)}g</span>
             </div>
             <div className="h-[6px] rounded-full overflow-hidden bg-neutral-800/50">
-              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(totalSellable / maxBar) * 100}%` }} />
+              <div className="h-full rounded-full bg-cult-success" style={{ width: `${(totalSellable / maxBar) * 100}%` }} />
             </div>
           </div>
           <div className="flex-1">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-neutral-500">Demand</span>
-              <span className="font-bold text-red-400 tabular-nums">{s.demandUnits.toLocaleString()} units</span>
+              <span className="font-bold text-cult-danger tabular-nums">{s.demandUnits.toLocaleString()} units</span>
             </div>
             <div className="h-[6px] rounded-full overflow-hidden bg-neutral-800/50">
-              <div className="h-full rounded-full bg-red-400" style={{ width: `${(totalDemandGrams / maxBar) * 100}%` }} />
+              <div className="h-full rounded-full bg-cult-danger" style={{ width: `${(totalDemandGrams / maxBar) * 100}%` }} />
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
                       <GradeBadge grade={b.grade_code as GradeCode} />
                     )}
                     {b.thc_percentage != null && (
-                      <span className="text-emerald-400 font-semibold">THC {b.thc_percentage}%</span>
+                      <span className="text-cult-success font-semibold">THC {b.thc_percentage}%</span>
                     )}
                     <span className="text-neutral-600">{ageDays}d old</span>
                     {b.harvest_date && (

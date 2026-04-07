@@ -690,7 +690,7 @@ function TodoDetailItem({
                 ? `${color.text}/60`
                 : todo.type === 'personal'
                   ? 'text-cult-gold/60'
-                  : 'text-cyan-400/60'
+                  : 'text-cult-info/60'
             }`}
           >
             {todo.type === 'personal' ? 'Personal' : 'Team'}

@@ -59,7 +59,7 @@ export function AssignedPackagesDisplay({
 
   if (error) {
     return (
-      <div className="p-4 bg-red-900/20 border border-red-500 text-red-400">
+      <div className="p-4 bg-cult-danger-muted border border-cult-danger text-cult-danger">
         <div className="flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
           <span>Failed to load assignments: {error.message}</span>
@@ -88,7 +88,7 @@ export function AssignedPackagesDisplay({
         </h4>
         <div className="text-sm">
           <span className="text-cult-lighter-gray">Total: </span>
-          <span className="font-bold text-green-400">
+          <span className="font-bold text-cult-success">
             {totalAssigned} {unit}
           </span>
         </div>
@@ -106,24 +106,24 @@ export function AssignedPackagesDisplay({
               key={assignment.id}
               className={`p-4 bg-cult-dark-gray border transition-colors ${
                 isFulfilled
-                  ? 'border-green-600/40'
+                  ? 'border-cult-success/40'
                   : 'border-cult-medium-gray hover:border-cult-lighter-gray'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <Package className={`w-5 h-5 ${isFulfilled ? 'text-green-500' : 'text-green-400'}`} />
+                    <Package className={`w-5 h-5 ${isFulfilled ? 'text-cult-success' : 'text-cult-success'}`} />
                     <span className="font-bold text-cult-white">
                       {assignment.package_id || 'Unknown Package'}
                     </span>
                     {isFulfilled ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/40 border border-green-600/50 text-green-400 text-xs font-bold uppercase">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cult-success-muted border border-cult-success/50 text-cult-success text-xs font-bold uppercase">
                         <ShieldCheck className="w-3 h-3" />
                         Fulfilled
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-900/30 border border-blue-600/40 text-blue-400 text-xs font-bold uppercase">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cult-info-muted border border-cult-info/40 text-cult-info text-xs font-bold uppercase">
                         <Lock className="w-3 h-3" />
                         Reserved
                       </span>
@@ -161,10 +161,10 @@ export function AssignedPackagesDisplay({
                   )}
 
                   {hasLabel && (
-                    <div className="mt-3 p-3 bg-cult-near-black border border-green-500/50">
+                    <div className="mt-3 p-3 bg-cult-near-black border border-cult-success/50">
                       <div className="flex items-center gap-2 mb-2">
-                        <Tag className="w-4 h-4 text-green-400" />
-                        <span className="text-xs font-bold text-green-400 uppercase tracking-wider">
+                        <Tag className="w-4 h-4 text-cult-success" />
+                        <span className="text-xs font-bold text-cult-success uppercase tracking-wider">
                           Label Generated
                         </span>
                       </div>
@@ -174,17 +174,17 @@ export function AssignedPackagesDisplay({
                             {assignment.label_number || 'Unknown Label'}
                           </p>
                           {labelVoided && (
-                            <span className="inline-block mt-1 px-2 py-1 bg-red-900/50 border border-red-500 text-red-400 text-xs font-bold uppercase">
+                            <span className="inline-block mt-1 px-2 py-1 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs font-bold uppercase">
                               VOIDED
                             </span>
                           )}
                           {!labelVoided && labelPrinted && (
-                            <span className="inline-block mt-1 px-2 py-1 bg-green-900/50 border border-green-500 text-green-400 text-xs font-bold uppercase">
+                            <span className="inline-block mt-1 px-2 py-1 bg-cult-success-muted border border-cult-success text-cult-success text-xs font-bold uppercase">
                               PRINTED
                             </span>
                           )}
                           {!labelVoided && !labelPrinted && (
-                            <span className="inline-block mt-1 px-2 py-1 bg-yellow-900/50 border border-yellow-500 text-yellow-400 text-xs font-bold uppercase">
+                            <span className="inline-block mt-1 px-2 py-1 bg-cult-warning-muted border border-cult-warning text-cult-warning text-xs font-bold uppercase">
                               PENDING PRINT
                             </span>
                           )}
@@ -194,7 +194,7 @@ export function AssignedPackagesDisplay({
                             <button
                               onClick={() => handleMarkPrinted(assignment.label_id!)}
                               disabled={marking}
-                              className="p-2 bg-green-600 hover:bg-green-700 text-white transition-colors disabled:opacity-50"
+                              className="p-2 bg-cult-success hover:bg-cult-success/80 text-white transition-colors disabled:opacity-50"
                               title="Mark as printed"
                             >
                               <Printer className="w-4 h-4" />
@@ -204,7 +204,7 @@ export function AssignedPackagesDisplay({
                             <button
                               onClick={() => handleVoidLabel(assignment.label_id!)}
                               disabled={voiding}
-                              className="p-2 bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                              className="p-2 bg-cult-danger hover:bg-cult-danger/80 text-white transition-colors disabled:opacity-50"
                               title="Void label"
                             >
                               <XCircle className="w-4 h-4" />
@@ -231,7 +231,7 @@ export function AssignedPackagesDisplay({
                   <button
                     onClick={() => handleRemoveAssignment(assignment.id, hasLabel)}
                     disabled={removing}
-                    className="ml-4 p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                    className="ml-4 p-2 text-cult-danger hover:text-cult-danger/80 hover:bg-cult-danger-muted transition-colors disabled:opacity-50"
                     title="Remove assignment"
                   >
                     <Trash2 className="w-5 h-5" />

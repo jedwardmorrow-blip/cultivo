@@ -12,8 +12,8 @@ const CATEGORIES: { value: AnnotationCategory; label: string }[] = [
 
 const SEVERITIES: { value: AnnotationSeverity; label: string; cls: string }[] = [
   { value: 'info', label: 'Info', cls: 'text-cult-text-muted' },
-  { value: 'warning', label: 'Warning', cls: 'text-amber-400' },
-  { value: 'critical', label: 'Critical', cls: 'text-red-400' },
+  { value: 'warning', label: 'Warning', cls: 'text-cult-warning' },
+  { value: 'critical', label: 'Critical', cls: 'text-cult-danger' },
 ];
 
 interface AnnotationInputProps {
@@ -128,7 +128,7 @@ export function AnnotationInput({ date, rooms, onSubmit }: AnnotationInputProps)
       </div>
 
       {error && (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-cult-danger">{error}</p>
       )}
 
       <button

@@ -18,10 +18,10 @@ function Toast({ notification, onClose }: ToastProps) {
   };
 
   const colors = {
-    success: 'bg-green-900/90 border-green-600 text-green-100',
-    error: 'bg-red-900/90 border-red-600 text-red-100',
-    warning: 'bg-amber-900/90 border-amber-600 text-amber-100',
-    info: 'bg-blue-900/90 border-blue-600 text-blue-100',
+    success: 'bg-cult-success/20 border-cult-success text-cult-text-primary',
+    error: 'bg-cult-danger/20 border-cult-danger text-cult-text-primary',
+    warning: 'bg-cult-warning/20 border-cult-warning text-cult-text-primary',
+    info: 'bg-cult-info/20 border-cult-info text-cult-text-primary',
   };
 
   return (

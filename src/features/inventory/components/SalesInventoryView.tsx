@@ -64,7 +64,7 @@ function buildStrainSummaries(items: InventoryItem[]): StrainSummary[] {
 function GramBadge({ grams, label }: { grams: number; label: string }) {
   if (grams <= 0) return null;
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-300 border border-amber-800/40">
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-cult-warning-muted text-cult-warning border border-cult-warning/40">
       {label}: {formatWeight(grams)}
     </span>
   );
@@ -73,7 +73,7 @@ function GramBadge({ grams, label }: { grams: number; label: string }) {
 function UnitBadge({ units }: { units: number }) {
   if (units <= 0) return null;
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-teal-900/30 text-teal-300 border border-teal-800/40">
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-cult-stage-packaged/15 text-cult-stage-packaged border border-cult-stage-packaged/40">
       Packaged: {units.toLocaleString()} units
     </span>
   );
@@ -129,15 +129,15 @@ export function SalesInventoryView() {
         </div>
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
           <div className="text-xs text-cult-silver uppercase tracking-wide mb-1">Bulk Available</div>
-          <div className="text-2xl font-bold text-amber-300">{formatWeight(totals.bulkGrams)}</div>
+          <div className="text-2xl font-bold text-cult-warning">{formatWeight(totals.bulkGrams)}</div>
         </div>
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
           <div className="text-xs text-cult-silver uppercase tracking-wide mb-1">Packaged (g)</div>
-          <div className="text-2xl font-bold text-teal-300">{formatWeight(totals.packagedGrams)}</div>
+          <div className="text-2xl font-bold text-cult-stage-packaged">{formatWeight(totals.packagedGrams)}</div>
         </div>
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4">
           <div className="text-xs text-cult-silver uppercase tracking-wide mb-1">Packaged (units)</div>
-          <div className="text-2xl font-bold text-teal-300">{totals.packagedUnits.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-cult-stage-packaged">{totals.packagedUnits.toLocaleString()}</div>
         </div>
       </div>
 
@@ -220,9 +220,9 @@ export function SalesInventoryView() {
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
                                     {stage === 'bulk' ? (
-                                      <Box className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                                      <Box className="w-4 h-4 text-cult-warning flex-shrink-0" />
                                     ) : (
-                                      <Package className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                                      <Package className="w-4 h-4 text-cult-stage-packaged flex-shrink-0" />
                                     )}
                                     <span className="text-xs font-mono text-cult-silver truncate">
                                       {pkg.package_id}

@@ -19,11 +19,11 @@ function pct(val: number | null | undefined) {
 }
 
 const BUCKET_COLORS: Record<string, string> = {
-  'current': 'text-green-400',
-  '1-30': 'text-amber-400',
-  '31-60': 'text-orange-400',
-  '61-90': 'text-red-400',
-  '90+': 'text-red-500',
+  'current': 'text-cult-success',
+  '1-30': 'text-cult-warning',
+  '31-60': 'text-cult-warning',
+  '61-90': 'text-cult-danger',
+  '90+': 'text-cult-danger',
 };
 
 export function FinancialDashboard() {
@@ -182,11 +182,11 @@ export function FinancialDashboard() {
             <div className="text-cult-white font-mono text-sm mt-1">{fmt(apOpex)}</div>
           </div>
           <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
-            <div className="text-xs text-amber-400 uppercase">Due This Week</div>
+            <div className="text-xs text-cult-warning uppercase">Due This Week</div>
             <div className="text-cult-white font-mono text-sm mt-1">
               {apDueSoon.length} bill{apDueSoon.length !== 1 ? 's' : ''}
               {apDueSoon.length > 0 && (
-                <span className="text-amber-400 ml-1">
+                <span className="text-cult-warning ml-1">
                   ({fmt(apDueSoon.reduce((s, r) => s + Number(r.amount_outstanding), 0))})
                 </span>
               )}
@@ -202,12 +202,12 @@ export function FinancialDashboard() {
                 <div key={r.id} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-cult-black/30">
                   <div>
                     <span className="text-cult-white">{r.vendor_name}</span>
-                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${r.is_cogs ? 'bg-green-900/40 text-green-400' : 'bg-amber-900/40 text-amber-400'}`}>
+                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${r.is_cogs ? 'bg-cult-success-muted text-cult-success' : 'bg-cult-warning-muted text-cult-warning'}`}>
                       {r.is_cogs ? 'COGS' : 'OpEx'}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-red-400 text-xs">{r.days_overdue}d overdue</span>
+                    <span className="text-cult-danger text-xs">{r.days_overdue}d overdue</span>
                     <span className="text-cult-white font-mono">{fmt(r.amount_outstanding)}</span>
                   </div>
                 </div>
@@ -222,14 +222,14 @@ export function FinancialDashboard() {
         {/* Top Margin */}
         <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-green-400" />
+            <BarChart3 className="w-5 h-5 text-cult-success" />
             <h2 className="text-lg font-semibold text-cult-white">Top 5 — Highest Margin</h2>
           </div>
           {bestStrain && (
-            <div className="bg-green-900/20 border border-green-800/40 rounded-cult p-3 mb-3">
-              <div className="text-xs text-green-400 uppercase">Most Profitable to Process</div>
+            <div className="bg-cult-success-muted border border-cult-success/40 rounded-cult p-3 mb-3">
+              <div className="text-xs text-cult-success uppercase">Most Profitable to Process</div>
               <div className="text-cult-white font-bold mt-1">{bestStrain.strain}</div>
-              <div className="text-green-400 text-sm font-mono">{fmtDec(bestStrain.labor_margin_per_gram)}/g margin</div>
+              <div className="text-cult-success text-sm font-mono">{fmtDec(bestStrain.labor_margin_per_gram)}/g margin</div>
             </div>
           )}
           <div className="space-y-1">
@@ -242,7 +242,7 @@ export function FinancialDashboard() {
                 <div className="flex items-center gap-4 font-mono text-xs">
                   <span className="text-cult-text-muted">cost {fmtDec(s.labor_cost_per_gram)}/g</span>
                   <span className="text-cult-text-muted">rev {fmtDec(s.avg_revenue_per_gram)}/g</span>
-                  <span className="text-green-400 font-medium">{fmtDec(s.labor_margin_per_gram)}/g</span>
+                  <span className="text-cult-success font-medium">{fmtDec(s.labor_margin_per_gram)}/g</span>
                 </div>
               </div>
             ))}
@@ -252,7 +252,7 @@ export function FinancialDashboard() {
         {/* Bottom Margin */}
         <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingDown className="w-5 h-5 text-red-400" />
+            <TrendingDown className="w-5 h-5 text-cult-danger" />
             <h2 className="text-lg font-semibold text-cult-white">Bottom 5 — Highest Cost</h2>
           </div>
           <div className="space-y-1 mt-10">
@@ -265,7 +265,7 @@ export function FinancialDashboard() {
                 <div className="flex items-center gap-4 font-mono text-xs">
                   <span className="text-cult-text-muted">cost {fmtDec(s.labor_cost_per_gram)}/g</span>
                   <span className="text-cult-text-muted">rev {fmtDec(s.avg_revenue_per_gram)}/g</span>
-                  <span className={`font-medium ${s.labor_margin_per_gram != null && s.labor_margin_per_gram < 2 ? 'text-red-400' : 'text-amber-400'}`}>
+                  <span className={`font-medium ${s.labor_margin_per_gram != null && s.labor_margin_per_gram < 2 ? 'text-cult-danger' : 'text-cult-warning'}`}>
                     {fmtDec(s.labor_margin_per_gram)}/g
                   </span>
                 </div>
@@ -307,9 +307,9 @@ export function FinancialDashboard() {
                 <div className="text-xs text-cult-text-muted mt-1">Revenue - all expenses (what it would be)</div>
               </div>
             </div>
-            <div className="flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-800/40 rounded-cult">
-              <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-amber-200">
+            <div className="flex items-start gap-2 p-3 bg-cult-warning-muted border border-cult-warning/40 rounded-cult">
+              <AlertTriangle className="w-4 h-4 text-cult-warning mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-cult-warning">
                 These figures are for operational visibility only. Consult your cannabis CPA for final 280E tax calculations.
                 Classification is operator-entered and should be reviewed by your accountant.
               </p>
@@ -324,7 +324,7 @@ export function FinancialDashboard() {
 }
 
 function StatCard({ label, value, subtitle, color }: { label: string; value: string; subtitle?: string; color?: 'red' | 'amber' | 'green' }) {
-  const colorClass = color === 'red' ? 'text-red-400' : color === 'amber' ? 'text-amber-400' : color === 'green' ? 'text-green-400' : 'text-cult-white';
+  const colorClass = color === 'red' ? 'text-cult-danger' : color === 'amber' ? 'text-cult-warning' : color === 'green' ? 'text-cult-success' : 'text-cult-white';
   return (
     <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
       <div className="text-xs text-cult-text-muted uppercase">{label}</div>

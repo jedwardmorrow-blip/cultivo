@@ -86,18 +86,18 @@ export function OrderHeader({
                 <option value="cancelled">Cancelled</option>
               </select>
               {order.is_sample && (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-amber-500/20 text-amber-400 border-2 border-amber-500/40 uppercase tracking-wider">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-cult-warning/20 text-cult-warning border-2 border-cult-warning/40 uppercase tracking-wider">
                   <Gift className="w-3.5 h-3.5" />
                   SAMPLE
                 </span>
               )}
               {workflow?.ready_to_ship && (
-                <span className="px-3 py-1.5 text-xs font-bold bg-green-900/30 text-green-400 border-2 border-green-600 uppercase tracking-wider">
+                <span className="px-3 py-1.5 text-xs font-bold bg-cult-success/15 text-cult-success border-2 border-cult-success uppercase tracking-wider">
                   READY TO SHIP
                 </span>
               )}
               {order.priority === 'urgent' && (
-                <span className="px-3 py-1.5 text-xs font-bold bg-red-900/30 text-red-400 border-2 border-red-600 uppercase tracking-wider">
+                <span className="px-3 py-1.5 text-xs font-bold bg-cult-danger/15 text-cult-danger border-2 border-cult-danger uppercase tracking-wider">
                   URGENT
                 </span>
               )}
@@ -155,7 +155,7 @@ export function OrderHeader({
             </div>
             <div className="text-center">
               <div className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Order Total</div>
-              <div className="flex items-center gap-2 font-bold text-green-400 text-lg">
+              <div className="flex items-center gap-2 font-bold text-cult-success text-lg">
                 <DollarSign className="w-5 h-5" />
                 <span>{formatCurrency(order.total_amount)}</span>
               </div>
@@ -167,7 +167,7 @@ export function OrderHeader({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-2 text-red-400 hover:bg-red-900/30 border-2 border-transparent hover:border-red-600 transition-all"
+            className="p-2 text-cult-danger hover:bg-cult-danger/15 border-2 border-transparent hover:border-cult-danger transition-all"
             title="Delete order"
           >
             <Trash2 className="w-5 h-5" />

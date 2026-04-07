@@ -34,8 +34,8 @@ export function COAConfirmationScreen({
           </div>
           <div className={`flex items-center gap-2 px-4 py-2 border ${
             allReviewed
-              ? 'border-green-700 bg-green-900/20 text-green-400'
-              : 'border-amber-700 bg-amber-900/20 text-amber-400'
+              ? 'border-cult-success bg-cult-success-muted text-cult-success'
+              : 'border-cult-warning bg-cult-warning-muted text-cult-warning'
           }`}>
             {allReviewed ? (
               <CheckCircle className="w-5 h-5" />
@@ -49,7 +49,7 @@ export function COAConfirmationScreen({
         </div>
 
         {!allReviewed && (
-          <div className="mb-6 flex items-start gap-2 p-4 bg-amber-900/20 border border-amber-700 text-amber-100">
+          <div className="mb-6 flex items-start gap-2 p-4 bg-cult-warning-muted border border-cult-warning text-cult-text-primary">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Not all COAs have been reviewed</p>
@@ -61,7 +61,7 @@ export function COAConfirmationScreen({
         )}
 
         {hasErrors && (
-          <div className="mb-6 flex items-start gap-2 p-4 bg-red-900/20 border border-red-700 text-red-100">
+          <div className="mb-6 flex items-start gap-2 p-4 bg-cult-danger-muted border border-cult-danger text-cult-text-primary">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Some COAs have errors</p>
@@ -78,20 +78,20 @@ export function COAConfirmationScreen({
               key={item.id}
               className={`p-4 border transition-all ${
                 item.status === 'reviewed'
-                  ? 'border-green-700/50 bg-green-900/10'
+                  ? 'border-cult-success/50 bg-cult-success-muted'
                   : item.status === 'error'
-                  ? 'border-red-700/50 bg-red-900/10'
-                  : 'border-amber-700/50 bg-amber-900/10'
+                  ? 'border-cult-danger/50 bg-cult-danger-muted'
+                  : 'border-cult-warning/50 bg-cult-warning-muted'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
                   {item.status === 'reviewed' ? (
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-1" />
+                    <CheckCircle className="w-5 h-5 text-cult-success flex-shrink-0 mt-1" />
                   ) : item.status === 'error' ? (
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-1" />
+                    <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-1" />
                   ) : (
-                    <FileText className="w-5 h-5 text-amber-400 flex-shrink-0 mt-1" />
+                    <FileText className="w-5 h-5 text-cult-warning flex-shrink-0 mt-1" />
                   )}
 
                   <div className="flex-1 min-w-0">
@@ -100,7 +100,7 @@ export function COAConfirmationScreen({
                         {item.fileName}
                       </h4>
                       {item.status === 'reviewed' && (
-                        <span className="text-xs px-2 py-0.5 bg-green-700 text-green-100 uppercase tracking-wider">
+                        <span className="text-xs px-2 py-0.5 bg-cult-success text-cult-text-primary uppercase tracking-wider">
                           Ready
                         </span>
                       )}
@@ -117,7 +117,7 @@ export function COAConfirmationScreen({
                           <span>{item.parsedData.batch_number}</span>
                         </div>
                         {item.selectedBatchId && (
-                          <div className="flex items-center gap-2 text-green-400">
+                          <div className="flex items-center gap-2 text-cult-success">
                             <CheckCircle className="w-3 h-3" />
                             <span>Batch assigned</span>
                           </div>
@@ -143,11 +143,11 @@ export function COAConfirmationScreen({
                     )}
 
                     {item.error && (
-                      <p className="text-sm text-red-400 mt-2">{item.error}</p>
+                      <p className="text-sm text-cult-danger mt-2">{item.error}</p>
                     )}
 
                     {item.status !== 'reviewed' && !item.error && (
-                      <p className="text-sm text-amber-400 mt-2">
+                      <p className="text-sm text-cult-warning mt-2">
                         Not yet reviewed
                       </p>
                     )}
@@ -179,7 +179,7 @@ export function COAConfirmationScreen({
           <button
             onClick={onConfirm}
             disabled={!allReviewed || hasErrors || isUploading}
-            className="px-8 py-3 bg-green-600 text-white font-medium uppercase tracking-wider hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-cult-success text-cult-text-primary font-medium uppercase tracking-wider hover:bg-cult-success/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? 'Uploading...' : `Confirm & Save ${queue.length} COA${queue.length !== 1 ? 's' : ''}`}
           </button>

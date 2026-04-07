@@ -19,18 +19,18 @@ const PIPELINE_STAGES: { key: PipelineStage; label: string; color: string }[] = 
   { key: 'lead', label: 'Lead', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
   { key: 'contacted', label: 'Contacted', color: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
   { key: 'meeting_set', label: 'Meeting Set', color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
-  { key: 'sample_sent', label: 'Sample Sent', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  { key: 'sample_sent', label: 'Sample Sent', color: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
   { key: 'negotiating', label: 'Negotiating', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
-  { key: 'closed_won', label: 'Closed Won', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  { key: 'closed_lost', label: 'Closed Lost', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  { key: 'closed_won', label: 'Closed Won', color: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
+  { key: 'closed_lost', label: 'Closed Lost', color: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
 ];
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'active': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    case 'active': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
     case 'prospect': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
     case 'inactive': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
-    case 'churned': return 'bg-red-500/20 text-red-400 border-red-500/30';
+    case 'churned': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
     default: return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
   }
 }
@@ -180,7 +180,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
             {onCreateSampleOrder && (
               <button
                 onClick={onCreateSampleOrder}
-                className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded-lg hover:bg-amber-500/30 transition-all text-sm font-bold"
+                className="flex items-center gap-2 px-4 py-2.5 bg-cult-warning-muted text-cult-warning border border-cult-warning/50 rounded-lg hover:bg-cult-warning/30 transition-all text-sm font-bold"
               >
                 <Gift className="w-4 h-4" />
                 Send Sample
@@ -205,24 +205,24 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-4">
           {isHubParent ? (
             <>
-              <MetricBlock label="Chain Revenue" value={formatCurrency(chainRevenue)} accent="emerald" />
+              <MetricBlock label="Chain Revenue" value={formatCurrency(chainRevenue)} accent="success" />
               <MetricBlock label="Chain Orders" value={String(chainOrders)} />
               <MetricBlock label="Direct Revenue" value={formatCurrency(Number(account.total_revenue))} />
               <MetricBlock
                 label="Last Order"
                 value={account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : 'Never'}
-                accent={account.days_since_last_order !== null && account.days_since_last_order > 30 ? 'amber' : undefined}
+                accent={account.days_since_last_order !== null && account.days_since_last_order > 30 ? 'warning' : undefined}
               />
             </>
           ) : (
             <>
-              <MetricBlock label="Lifetime Revenue" value={formatCurrency(Number(account.total_revenue))} accent="emerald" />
+              <MetricBlock label="Lifetime Revenue" value={formatCurrency(Number(account.total_revenue))} accent="success" />
               <MetricBlock label="Total Orders" value={String(account.order_count)} />
               <MetricBlock label="Avg Order" value={formatCurrency(Number(account.avg_order_value))} />
               <MetricBlock
                 label="Last Order"
                 value={account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : 'Never'}
-                accent={account.days_since_last_order !== null && account.days_since_last_order > 30 ? 'amber' : undefined}
+                accent={account.days_since_last_order !== null && account.days_since_last_order > 30 ? 'warning' : undefined}
               />
             </>
           )}
@@ -233,8 +233,8 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
   );
 }
 
-function MetricBlock({ label, value, accent }: { label: string; value: string; accent?: 'emerald' | 'amber' }) {
-  const valueColor = accent === 'emerald' ? 'text-emerald-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
+function MetricBlock({ label, value, accent }: { label: string; value: string; accent?: 'success' | 'warning' }) {
+  const valueColor = accent === 'success' ? 'text-cult-success' : accent === 'warning' ? 'text-cult-warning' : 'text-cult-white';
   return (
     <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50">
       <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>

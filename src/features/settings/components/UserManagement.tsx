@@ -144,12 +144,12 @@ export function UserManagement() {
   if (!isAdmin) {
     return (
       <div>
-        <div className="bg-red-900/20 border border-red-500 rounded-lg p-6 flex items-start gap-3">
-          <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+        <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-6 flex items-start gap-3">
+          <AlertCircle className="w-6 h-6 text-cult-danger flex-shrink-0" />
           <div>
-            <h2 className="text-xl font-bold text-red-200 mb-2">Access Denied</h2>
-            <p className="text-red-300">You must be an administrator to access user management.</p>
-            <p className="text-red-300 mt-2 text-sm">Debug: profile={JSON.stringify(profile)}, isAdmin={String(isAdmin)}</p>
+            <h2 className="text-xl font-bold text-cult-text-primary mb-2">Access Denied</h2>
+            <p className="text-cult-text-primary/80">You must be an administrator to access user management.</p>
+            <p className="text-cult-text-primary/80 mt-2 text-sm">Debug: profile={JSON.stringify(profile)}, isAdmin={String(isAdmin)}</p>
           </div>
         </div>
       </div>
@@ -172,11 +172,11 @@ export function UserManagement() {
       </div>
 
       {resetSuccess && (
-        <div className="bg-green-900/20 border border-green-500 rounded-lg p-4 mb-6 flex items-start gap-3">
-          <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
+        <div className="bg-cult-success-muted border border-cult-success rounded-lg p-4 mb-6 flex items-start gap-3">
+          <Check className="w-6 h-6 text-cult-success flex-shrink-0" />
           <div>
-            <p className="text-green-200 font-medium">{resetSuccess}</p>
-            <p className="text-green-300 text-sm mt-1">The user will receive an email with instructions to reset their password.</p>
+            <p className="text-cult-text-primary font-medium">{resetSuccess}</p>
+            <p className="text-cult-text-primary/80 text-sm mt-1">The user will receive an email with instructions to reset their password.</p>
           </div>
         </div>
       )}
@@ -186,9 +186,9 @@ export function UserManagement() {
           <h2 className="text-xl font-bold text-white mb-4">Create New User</h2>
           <form onSubmit={handleAddUser} className="space-y-4">
             {error && (
-              <div className="bg-red-900/20 border border-red-500 rounded p-3 flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-red-200 text-sm">{error}</p>
+              <div className="bg-cult-danger-muted border border-cult-danger rounded p-3 flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+                <p className="text-cult-text-primary/80 text-sm">{error}</p>
               </div>
             )}
 
@@ -308,12 +308,12 @@ export function UserManagement() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     {user.is_active ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-cult-success-muted text-cult-success">
                         <Check className="w-3 h-3" />
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-cult-danger-muted text-cult-danger">
                         <X className="w-3 h-3" />
                         Inactive
                       </span>
@@ -333,7 +333,7 @@ export function UserManagement() {
                       </button>
                       <button
                         onClick={() => setResetPasswordUser(user)}
-                        className="flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition"
+                        className="flex items-center gap-1 text-xs font-medium text-cult-info hover:text-cult-info/80 transition"
                       >
                         <RotateCw className="w-3 h-3" />
                         Reset Password
@@ -369,8 +369,8 @@ export function UserManagement() {
 
             {error && (
               <div className="bg-red-900/20 border border-red-500 rounded p-3 mb-4 flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-red-200 text-sm">{error}</p>
+                <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+                <p className="text-cult-text-primary/80 text-sm">{error}</p>
               </div>
             )}
 

@@ -115,13 +115,13 @@ export function COABatchSelector({
             </select>
             {hasMatch && selectedStrain === suggestedStrain && (
               <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                <Check className="w-5 h-5 text-green-400" />
+                <Check className="w-5 h-5 text-cult-success" />
               </div>
             )}
           </div>
         )}
         {suggestedStrain && !hasMatch && (
-          <div className="mt-2 flex items-start gap-2 text-xs text-amber-400">
+          <div className="mt-2 flex items-start gap-2 text-xs text-cult-warning">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>
               Parsed strain "{suggestedStrain}" not found. Please select the correct strain.
@@ -165,17 +165,17 @@ export function COABatchSelector({
             </select>
             {hasBatchMatch && selectedBatch?.batch_number.toLowerCase() === suggestedBatchNumber?.toLowerCase() && (
               <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                <Check className="w-5 h-5 text-green-400" />
+                <Check className="w-5 h-5 text-cult-success" />
               </div>
             )}
           </div>
         )}
         {selectedBatch && (
-          <div className="mt-2 p-3 bg-green-900/20 border border-green-700">
-            <p className="text-sm text-green-100">
+          <div className="mt-2 p-3 bg-cult-success-muted border border-cult-success">
+            <p className="text-sm text-cult-text-primary">
               <span className="font-medium">Selected Batch:</span> {selectedBatch.batch_number}
               {selectedBatch.harvest_date && (
-                <span className="text-green-200">
+                <span className="text-cult-text-primary/80">
                   {' '}- Harvested {new Date(selectedBatch.harvest_date).toLocaleDateString()}
                 </span>
               )}
@@ -183,7 +183,7 @@ export function COABatchSelector({
           </div>
         )}
         {suggestedBatchNumber && !hasBatchMatch && batches.length > 0 && (
-          <div className="mt-2 flex items-start gap-2 text-xs text-amber-400">
+          <div className="mt-2 flex items-start gap-2 text-xs text-cult-warning">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>
               Parsed batch "{suggestedBatchNumber}" not found. Please select the correct batch.
@@ -193,7 +193,7 @@ export function COABatchSelector({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-700 text-red-100 text-sm">
+        <div className="flex items-start gap-2 p-3 bg-cult-danger-muted border border-cult-danger text-cult-text-primary text-sm">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>

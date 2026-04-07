@@ -49,9 +49,9 @@ function formatCountdown(minutesUntilDeadline: number): string {
 
 function pillStyles(state: DocStatusPill['state']): string {
   switch (state) {
-    case 'sent':     return 'bg-emerald-900/30 text-emerald-400 border-emerald-500/40';
-    case 'overdue':  return 'bg-red-900/30 text-red-400 border-red-500/40';
-    case 'due_soon': return 'bg-amber-900/20 text-amber-400 border-amber-500/30';
+    case 'sent':     return 'bg-cult-success/15 text-cult-success border-cult-success/40';
+    case 'overdue':  return 'bg-cult-danger/15 text-cult-danger border-cult-danger/40';
+    case 'due_soon': return 'bg-cult-warning/10 text-cult-warning border-cult-warning/30';
     default:         return 'bg-cult-charcoal text-cult-light-gray border-cult-medium-gray/40';
   }
 }
@@ -101,7 +101,7 @@ function SendButton({ docType: _docType, label, sent, sending, onSend }: SendBut
     return (
       <button
         disabled
-        className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-emerald-900/20 text-emerald-500/60 border border-emerald-600/20 cursor-default"
+        className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-cult-success/10 text-cult-success/60 border border-cult-success/20 cursor-default"
       >
         <CheckCircle2 className="w-3 h-3" />
         Sent
@@ -175,7 +175,7 @@ function OrderRow({ row, onSent }: OrderRowProps) {
 
   return (
     <div className={`border-b border-cult-medium-gray/30 transition-colors ${
-      hasOverdue ? 'bg-red-950/10' : ''
+      hasOverdue ? 'bg-cult-danger/5' : ''
     }`}>
       <div
         className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-3 cursor-pointer hover:bg-cult-charcoal/30 transition-colors"
@@ -188,13 +188,13 @@ function OrderRow({ row, onSent }: OrderRowProps) {
               {row.order_number}
             </span>
             {hasOverdue && (
-              <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-red-900/40 border border-red-500/40 rounded text-[10px] font-bold text-red-400 uppercase tracking-wider">
+              <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-cult-danger/15 border border-cult-danger/40 rounded text-[10px] font-bold text-cult-danger uppercase tracking-wider">
                 <AlertTriangle className="w-2.5 h-2.5" />
                 Docs Overdue
               </span>
             )}
             {allSent && (
-              <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-900/20 border border-emerald-500/30 rounded text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+              <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-cult-success/10 border border-cult-success/30 rounded text-[10px] font-semibold text-cult-success uppercase tracking-wider">
                 <CheckCircle2 className="w-2.5 h-2.5" />
                 All Sent
               </span>
@@ -228,7 +228,7 @@ function OrderRow({ row, onSent }: OrderRowProps) {
       {expanded && (
         <div className="px-4 pb-3 bg-cult-black/30">
           {sendError && (
-            <div className="mb-2 px-3 py-1.5 bg-red-900/20 border border-red-500/30 rounded text-xs text-red-400">
+            <div className="mb-2 px-3 py-1.5 bg-cult-danger/10 border border-cult-danger/30 rounded text-xs text-cult-danger">
               {sendError}
             </div>
           )}
@@ -366,16 +366,16 @@ export function DocumentDispatchQueue() {
           <div className="text-2xl font-bold text-cult-white mt-1">{rows.length}</div>
         </div>
         <div className={`bg-cult-near-black border p-3 ${
-          overdueCount > 0 ? 'border-red-500/40' : 'border-cult-medium-gray'
+          overdueCount > 0 ? 'border-cult-danger/40' : 'border-cult-medium-gray'
         }`}>
           <div className="text-xs text-cult-light-gray uppercase tracking-wider">Docs Overdue</div>
           <div className={`text-2xl font-bold mt-1 ${
-            overdueCount > 0 ? 'text-red-400' : 'text-cult-white'
+            overdueCount > 0 ? 'text-cult-danger' : 'text-cult-white'
           }`}>{overdueCount}</div>
         </div>
         <div className="bg-cult-near-black border border-cult-medium-gray p-3">
           <div className="text-xs text-cult-light-gray uppercase tracking-wider">All Docs Sent</div>
-          <div className="text-2xl font-bold text-emerald-400 mt-1">{allSentCount}</div>
+          <div className="text-2xl font-bold text-cult-success mt-1">{allSentCount}</div>
         </div>
       </div>
 
@@ -432,7 +432,7 @@ export function DocumentDispatchQueue() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-cult-light-gray">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500/40 mb-2" />
+            <CheckCircle2 className="w-8 h-8 text-cult-success/40 mb-2" />
             <p className="text-sm">
               {rows.length === 0
                 ? 'No active orders'

@@ -25,14 +25,14 @@ interface Alert {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const healthStyles: Record<Health, { bg: string; text: string; dot: string }> = {
-  green: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', dot: 'bg-emerald-500' },
-  amber: { bg: 'bg-amber-500/15',   text: 'text-amber-300',   dot: 'bg-amber-500'   },
-  red:   { bg: 'bg-red-500/15',     text: 'text-red-300',     dot: 'bg-red-500'     },
+  green: { bg: 'bg-cult-success-muted', text: 'text-cult-success', dot: 'bg-cult-success' },
+  amber: { bg: 'bg-cult-warning-muted', text: 'text-cult-warning', dot: 'bg-cult-warning' },
+  red:   { bg: 'bg-cult-danger-muted',  text: 'text-cult-danger',  dot: 'bg-cult-danger'  },
 };
 
 const alertSeverityStyle: Record<string, string> = {
-  high:   'bg-red-500/20 text-red-300 border-red-500/30',
-  medium: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  high:   'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
+  medium: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
   low:    'bg-slate-700/50 text-slate-300 border-slate-600/50',
 };
 
@@ -79,8 +79,8 @@ function AttentionAlertStrip({ alerts, loading }: { alerts: Alert[]; loading: bo
 
   if (!alerts.length) {
     return (
-      <div className="flex items-center gap-2 py-3 text-[12px] text-emerald-400">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+      <div className="flex items-center gap-2 py-3 text-[12px] text-cult-success">
+        <span className="w-2 h-2 rounded-full bg-cult-success flex-shrink-0" />
         All clear — no items need immediate attention.
       </div>
     );
@@ -121,7 +121,7 @@ function RevenueSummaryPanel({
     <div className="grid grid-cols-2 gap-4">
       <div className="bg-cult-charcoal/30 rounded-cult p-4">
         <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">Recognized (30d)</div>
-        <div className="text-[24px] font-semibold text-emerald-400 tabular-nums">
+        <div className="text-[24px] font-semibold text-cult-success tabular-nums">
           {loading ? '—' : formatCurrencyShort(recognized)}
         </div>
         <div className="text-[11px] text-cult-text-faint mt-1">completed orders</div>
@@ -134,8 +134,8 @@ function RevenueSummaryPanel({
           </div>
           {!loading && (
             pipeline >= recognized
-              ? <TrendingUp className="w-4 h-4 text-emerald-400" />
-              : <TrendingDown className="w-4 h-4 text-amber-400" />
+              ? <TrendingUp className="w-4 h-4 text-cult-success" />
+              : <TrendingDown className="w-4 h-4 text-cult-warning" />
           )}
         </div>
         <div className="text-[11px] text-cult-text-faint mt-1">open order value</div>
@@ -424,7 +424,7 @@ export function ExecutiveHub() {
         {/* Attention Alert Strip */}
         <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <AlertTriangle className="w-4 h-4 text-cult-warning" />
             Attention Required
           </h2>
           <AttentionAlertStrip alerts={alerts} loading={isAlertsLoading} />

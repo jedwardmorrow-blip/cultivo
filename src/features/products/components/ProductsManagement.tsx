@@ -230,7 +230,7 @@ export function ProductsManagement() {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={saveProduct}
-                              className="p-1.5 text-green-400 hover:text-green-300 hover:bg-cult-near-black"
+                              className="p-1.5 text-cult-success hover:text-cult-success/80 hover:bg-cult-near-black"
                               title="Save"
                             >
                               <Save className="w-4 h-4" />
@@ -264,8 +264,8 @@ export function ProductsManagement() {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 text-xs ${
-                            product.product_category === 'bulk' ? 'bg-blue-900 text-blue-200' :
-                            product.product_category === 'packaged' ? 'bg-green-900 text-green-200' :
+                            product.product_category === 'bulk' ? 'bg-cult-info-muted text-cult-info' :
+                            product.product_category === 'packaged' ? 'bg-cult-success-muted text-cult-success' :
                             'bg-purple-900 text-purple-200'
                           }`}>
                             {product.product_category}

@@ -142,9 +142,9 @@ function BatchMarginTable({ rows, loading }: { rows: MarginRow[]; loading: boole
 
   function marginColor(pct: number | null): string {
     if (pct == null) return 'text-cult-text-faint';
-    if (pct >= 60) return 'text-emerald-400';
-    if (pct >= 40) return 'text-amber-400';
-    return 'text-red-400';
+    if (pct >= 60) return 'text-cult-success';
+    if (pct >= 40) return 'text-cult-warning';
+    return 'text-cult-danger';
   }
 
   return (
@@ -244,8 +244,8 @@ function OperationalKPIChips({
               chip.value === '—'
                 ? 'text-cult-text-faint'
                 : chip.good
-                ? 'text-emerald-400'
-                : 'text-amber-400'
+                ? 'text-cult-success'
+                : 'text-cult-warning'
             }`}
           >
             {chip.value}

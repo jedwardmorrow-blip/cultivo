@@ -94,8 +94,8 @@ function PipelineStats({ stats, loading }: {
       )}
       {stats.quarantined > 0 && (
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-3 h-3 text-red-400" />
-          <span className="text-red-400">{stats.quarantined}</span>
+          <AlertTriangle className="w-3 h-3 text-cult-danger" />
+          <span className="text-cult-danger">{stats.quarantined}</span>
         </div>
       )}
       <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ function VarianceBadge({ value }: { value: number | null }) {
   const pct = (value * 100).toFixed(1);
   const isPositive = value >= 0;
   return (
-    <span className={`flex items-center gap-0.5 ${isPositive ? 'text-emerald-400' : 'text-amber-400'}`}>
+    <span className={`flex items-center gap-0.5 ${isPositive ? 'text-cult-success' : 'text-cult-warning'}`}>
       {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
       {isPositive ? '+' : ''}{pct}%
     </span>
@@ -175,9 +175,9 @@ function PredictionDetail({ prediction, strainMetrics }: {
 
   const sm = strainMetrics.getMetricsForStrain(prediction.strain);
   const confidenceColors = {
-    high: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-    medium: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    low: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+    high: 'text-cult-success bg-cult-success-muted border-cult-success/30',
+    medium: 'text-cult-warning bg-cult-warning-muted border-cult-warning/30',
+    low: 'text-cult-warning bg-cult-warning-muted border-cult-warning/30',
     fallback: 'text-cult-lighter-gray bg-cult-charcoal/30 border-cult-charcoal/50',
   };
 
@@ -302,7 +302,7 @@ export function BatchPipeline() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="w-8 h-8 text-amber-400" />
+        <AlertTriangle className="w-8 h-8 text-cult-warning" />
         <p className="text-cult-silver text-sm">{error}</p>
         <button
           onClick={reload}
@@ -419,8 +419,8 @@ export function BatchPipeline() {
             </div>
 
             {selectedBatch.is_quarantined && (
-              <div className="p-3 bg-red-900/20 border border-red-700/50 rounded-cult">
-                <div className="flex items-center gap-2 text-red-400 text-xs uppercase tracking-wider font-bold">
+              <div className="p-3 bg-cult-danger-muted border border-cult-danger/50 rounded-cult">
+                <div className="flex items-center gap-2 text-cult-danger text-xs uppercase tracking-wider font-bold">
                   <AlertTriangle className="w-4 h-4" />
                   Quarantined
                 </div>

@@ -134,13 +134,13 @@ export function CoversheetActions({
     <div className={`space-y-4 ${className}`}>
       {/* Outdated Warning */}
       {existingCoversheet?.is_outdated && (
-        <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+        <div className="bg-cult-warning-muted border border-cult-warning rounded p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-yellow-200 font-semibold mb-1">
+            <p className="text-cult-warning font-semibold mb-1">
               Coversheet Outdated
             </p>
-            <p className="text-yellow-300 text-sm">
+            <p className="text-cult-warning/80 text-sm">
               This order was modified after the coversheet was generated.
               Regenerate to include the latest changes.
             </p>
@@ -150,9 +150,9 @@ export function CoversheetActions({
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-900/20 border border-red-600 rounded p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-red-200 text-sm">{error}</p>
+        <div className="bg-cult-danger-muted border border-cult-danger rounded p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+          <p className="text-cult-danger/80 text-sm">{error}</p>
         </div>
       )}
 
@@ -181,7 +181,7 @@ export function CoversheetActions({
           <button
             onClick={() => handleGenerate(true)}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-600 text-white hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold uppercase tracking-wider"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-cult-warning text-white hover:bg-cult-warning/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold uppercase tracking-wider"
           >
             {isGenerating ? (
               <>
@@ -213,8 +213,8 @@ export function CoversheetActions({
             >
               {copiedToClipboard ? (
                 <>
-                  <CheckCircle2 className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400">Copied!</span>
+                  <CheckCircle2 className="w-5 h-5 text-cult-success" />
+                  <span className="text-cult-success">Copied!</span>
                 </>
               ) : (
                 <>
@@ -231,7 +231,7 @@ export function CoversheetActions({
       {existingCoversheet && !existingCoversheet.is_outdated && (
         <div className="flex items-center gap-4 text-sm text-cult-lighter-gray">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-400" />
+            <CheckCircle2 className="w-4 h-4 text-cult-success" />
             <span>Coversheet Active</span>
           </div>
 

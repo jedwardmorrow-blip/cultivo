@@ -89,7 +89,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           <button
             onClick={handleGenerateAll}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-cult-info text-white hover:bg-cult-info/80 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Tag className="w-4 h-4" />
             Generate All Labels ({unlabeledAssignments.length})
@@ -101,7 +101,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-cult-surface-raised rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-cult-black text-cult-white p-6 flex items-center justify-between">
           <div>
@@ -121,31 +121,31 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
         {/* Statistics */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-cult-surface-sunken border-b">
           <div className="text-center">
-            <div className="text-3xl font-bold text-cult-black">{stats.total}</div>
+            <div className="text-3xl font-bold text-cult-text-primary">{stats.total}</div>
             <div className="text-sm text-cult-text-faint uppercase tracking-wide">Total</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-3xl font-bold text-cult-warning">{stats.pending}</div>
             <div className="text-sm text-cult-text-faint uppercase tracking-wide">Pending</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{stats.printed}</div>
+            <div className="text-3xl font-bold text-cult-success">{stats.printed}</div>
             <div className="text-sm text-cult-text-faint uppercase tracking-wide">Printed</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-red-600">{stats.voided}</div>
+            <div className="text-3xl font-bold text-cult-danger">{stats.voided}</div>
             <div className="text-sm text-cult-text-faint uppercase tracking-wide">Voided</div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="p-6 border-b flex items-center justify-between bg-white">
+        <div className="p-6 border-b flex items-center justify-between bg-cult-surface-raised">
           <div className="flex items-center gap-3">
             {unlabeledAssignments.length > 0 && (
               <button
                 onClick={handleGenerateAll}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 bg-cult-info text-white hover:bg-cult-info/80 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <Tag className="w-4 h-4" />
                 Generate All ({unlabeledAssignments.length})
@@ -158,7 +158,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                   setBatchPrintLabelIds(printableLabels);
                 }}
                 disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 bg-cult-success text-white hover:bg-cult-success/80 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <Printer className="w-4 h-4" />
                 Print All Labels ({labels.filter(l => !l.voided_at).length})
@@ -180,18 +180,18 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           {/* Unlabeled Assignments */}
           {unlabeledAssignments.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-cult-black mb-4 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              <h3 className="text-lg font-bold text-cult-text-primary mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-cult-warning" />
                 Packages Without Labels ({unlabeledAssignments.length})
               </h3>
               <div className="space-y-2">
                 {unlabeledAssignments.map(assignment => (
                   <div
                     key={assignment.id}
-                    className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center justify-between"
+                    className="bg-cult-warning-muted border border-cult-warning/30 rounded p-4 flex items-center justify-between"
                   >
                     <div>
-                      <div className="font-medium text-cult-black">{assignment.package_id}</div>
+                      <div className="font-medium text-cult-text-primary">{assignment.package_id}</div>
                       <div className="text-sm text-cult-text-faint">
                         {assignment.product_name} • {assignment.strain || 'Unknown strain'}
                       </div>
@@ -199,7 +199,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                     <button
                       onClick={() => handleGenerateSingle(assignment.id)}
                       disabled={loading}
-                      className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-2 bg-cult-info text-white hover:bg-cult-info/80 transition-all font-medium uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <Tag className="w-4 h-4" />
                       Generate Label
@@ -213,8 +213,8 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
           {/* Generated Labels */}
           {labels.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-cult-black mb-4 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <h3 className="text-lg font-bold text-cult-text-primary mb-4 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-cult-success" />
                 Generated Labels ({labels.length})
               </h3>
               <div className="space-y-2">
@@ -229,29 +229,29 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                       key={label.id}
                       className={`border rounded p-4 flex items-center justify-between ${
                         isVoided
-                          ? 'bg-red-50 border-red-200 opacity-60'
+                          ? 'bg-cult-danger-muted border border-cult-danger/30 opacity-60'
                           : isPrinted
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-white border-cult-border-subtle'
+                          ? 'bg-cult-success-muted border border-cult-success/30'
+                          : 'bg-cult-surface-raised border-cult-border-subtle'
                       }`}
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-mono font-bold text-cult-black">
+                          <span className="font-mono font-bold text-cult-text-primary">
                             {label.label_number}
                           </span>
                           {isVoided && (
-                            <span className="px-2 py-0.5 bg-red-600 text-white text-xs uppercase tracking-wide rounded">
+                            <span className="px-2 py-0.5 bg-cult-danger text-white text-xs uppercase tracking-wide rounded">
                               Voided
                             </span>
                           )}
                           {isPrinted && (
-                            <span className="px-2 py-0.5 bg-green-600 text-white text-xs uppercase tracking-wide rounded">
+                            <span className="px-2 py-0.5 bg-cult-success text-white text-xs uppercase tracking-wide rounded">
                               Printed
                             </span>
                           )}
                           {isPending && (
-                            <span className="px-2 py-0.5 bg-yellow-600 text-white text-xs uppercase tracking-wide rounded flex items-center gap-1">
+                            <span className="px-2 py-0.5 bg-cult-warning text-cult-surface text-xs uppercase tracking-wide rounded flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               Pending
                             </span>
@@ -272,7 +272,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                             <button
                               onClick={() => setPreviewLabelId(label.id)}
                               disabled={loading}
-                              className="px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              className="px-3 py-1 bg-cult-info text-white hover:bg-cult-info/80 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                             >
                               <Eye className="w-3 h-3" />
                               Preview
@@ -281,7 +281,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                               <button
                                 onClick={() => handleMarkPrinted(label.id)}
                                 disabled={loading}
-                                className="px-3 py-1 bg-green-600 text-white hover:bg-green-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-3 py-1 bg-cult-success text-white hover:bg-cult-success/80 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                               >
                                 <Printer className="w-3 h-3" />
                                 Mark Printed
@@ -293,7 +293,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                           <button
                             onClick={() => handleRegenerate(assignment.id)}
                             disabled={loading}
-                            className="px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-3 py-1 bg-cult-info text-white hover:bg-cult-info/80 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                           >
                             <RefreshCw className="w-3 h-3" />
                             Regenerate
@@ -303,7 +303,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
                           <button
                             onClick={() => handleVoid(label.id)}
                             disabled={loading}
-                            className="px-3 py-1 bg-red-600 text-white hover:bg-red-700 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-3 py-1 bg-cult-danger text-white hover:bg-cult-danger/80 transition-all text-xs uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                           >
                             <X className="w-3 h-3" />
                             Void

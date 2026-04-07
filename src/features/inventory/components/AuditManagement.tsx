@@ -129,10 +129,10 @@ export function AuditManagement() {
 
   const getStatusBadge = (status: string) => {
     const configs = {
-      initiated: { bg: 'bg-blue-100', text: 'text-blue-800', icon: Clock },
-      in_progress: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: Clock },
-      completed: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle },
-      cancelled: { bg: 'bg-red-100', text: 'text-red-800', icon: XCircle }
+      initiated: { bg: 'bg-cult-info-muted', text: 'text-cult-info', icon: Clock },
+      in_progress: { bg: 'bg-cult-warning-muted', text: 'text-cult-warning', icon: Clock },
+      completed: { bg: 'bg-cult-success-muted', text: 'text-cult-success', icon: CheckCircle },
+      cancelled: { bg: 'bg-cult-danger-muted', text: 'text-cult-danger', icon: XCircle }
     };
 
     const config = configs[status as keyof typeof configs] || configs.initiated;
@@ -158,7 +158,7 @@ export function AuditManagement() {
           <button
             onClick={() => setShowInitModal(true)}
             disabled={!!activeAudit}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center px-4 py-2 bg-cult-info text-white rounded-lg hover:bg-cult-info/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Plus className="h-5 w-5 mr-2" />
             New Audit
@@ -171,7 +171,7 @@ export function AuditManagement() {
             onClick={() => setView('current')}
             className={`px-4 py-2 font-medium transition-colors ${
               view === 'current'
-                ? 'text-blue-600 border-b-2 border-blue-600'
+                ? 'text-cult-info border-b-2 border-cult-info'
                 : 'text-cult-text-faint hover:text-cult-text-primary'
             }`}
           >
@@ -181,7 +181,7 @@ export function AuditManagement() {
             onClick={() => setView('history')}
             className={`px-4 py-2 font-medium transition-colors ${
               view === 'history'
-                ? 'text-blue-600 border-b-2 border-blue-600'
+                ? 'text-cult-info border-b-2 border-cult-info'
                 : 'text-cult-text-faint hover:text-cult-text-primary'
             }`}
           >
@@ -195,7 +195,7 @@ export function AuditManagement() {
         <div>
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-info mx-auto"></div>
               <p className="mt-4 text-cult-text-faint">Loading audit...</p>
             </div>
           ) : audit ? (
@@ -208,7 +208,7 @@ export function AuditManagement() {
                     <div className="flex items-center space-x-4">
                       {getStatusBadge(audit.status)}
                       {audit.is_locked && (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cult-warning-muted text-cult-warning">
                           <Lock className="h-4 w-4 mr-1" />
                           Stages Locked
                         </span>
@@ -221,7 +221,7 @@ export function AuditManagement() {
                         {audit.is_locked ? (
                           <button
                             onClick={handleUnlockStages}
-                            className="flex items-center px-3 py-2 text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50"
+                            className="flex items-center px-3 py-2 text-cult-warning border border-cult-warning/40 rounded-lg hover:bg-cult-warning-muted"
                           >
                             <Unlock className="h-4 w-4 mr-1" />
                             Unlock
@@ -229,7 +229,7 @@ export function AuditManagement() {
                         ) : (
                           <button
                             onClick={handleLockStages}
-                            className="flex items-center px-3 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50"
+                            className="flex items-center px-3 py-2 text-cult-info border border-cult-info/40 rounded-lg hover:bg-cult-info-muted"
                           >
                             <Lock className="h-4 w-4 mr-1" />
                             Lock
@@ -238,7 +238,7 @@ export function AuditManagement() {
                         <button
                           onClick={handleDownloadPDF}
                           disabled={isGenerating}
-                          className="flex items-center px-3 py-2 text-green-600 border border-green-300 rounded-lg hover:bg-green-50 disabled:opacity-50"
+                          className="flex items-center px-3 py-2 text-cult-success border border-cult-success/40 rounded-lg hover:bg-cult-success-muted disabled:opacity-50"
                         >
                           <Download className="h-4 w-4 mr-1" />
                           {isGenerating ? 'Generating...' : 'PDF'}
@@ -246,14 +246,14 @@ export function AuditManagement() {
                         <button
                           onClick={handleCompleteAudit}
                           disabled={!canComplete || isSaving}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-cult-success text-white rounded-lg hover:bg-cult-success/80 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Complete Audit
                         </button>
                         <button
                           onClick={handleCancelAudit}
                           disabled={isSaving}
-                          className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                          className="px-4 py-2 text-cult-danger border border-cult-danger/40 rounded-lg hover:bg-cult-danger-muted disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -262,7 +262,7 @@ export function AuditManagement() {
                       <button
                         onClick={handleDownloadPDF}
                         disabled={isGenerating}
-                        className="flex items-center px-3 py-2 text-green-600 border border-green-300 rounded-lg hover:bg-green-50 disabled:opacity-50"
+                        className="flex items-center px-3 py-2 text-cult-success border border-cult-success/40 rounded-lg hover:bg-cult-success-muted disabled:opacity-50"
                       >
                         <Download className="h-4 w-4 mr-1" />
                         {isGenerating ? 'Generating...' : 'Download PDF'}
@@ -315,7 +315,7 @@ export function AuditManagement() {
               <p className="text-cult-text-faint mb-4">No active audit</p>
               <button
                 onClick={() => setShowInitModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-cult-info text-white rounded-lg hover:bg-cult-info/80"
               >
                 Start New Audit
               </button>
@@ -330,7 +330,7 @@ export function AuditManagement() {
           <h3 className="text-lg font-bold text-cult-text-primary mb-4">Audit History</h3>
           {historyLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cult-info mx-auto"></div>
             </div>
           ) : historyAudits.length > 0 ? (
             <div className="space-y-3">
@@ -374,8 +374,8 @@ export function AuditManagement() {
 
       {/* Error Display */}
       {(error || pdfError) && (
-        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg max-w-md">
-          <p className="text-sm text-red-800">{error || pdfError}</p>
+        <div className="fixed bottom-4 right-4 p-4 bg-cult-danger-muted border border-cult-danger/40 rounded-lg shadow-lg max-w-md">
+          <p className="text-sm text-cult-danger">{error || pdfError}</p>
         </div>
       )}
     </div>

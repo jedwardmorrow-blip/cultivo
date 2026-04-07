@@ -97,7 +97,7 @@ export function AnalyticsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
+            <BarChart3 className="w-5 h-5 text-cult-info" />
             <span className="text-cult-text-muted text-sm">Avg Trimmer Speed</span>
           </div>
           <div className="text-3xl font-bold text-white">{avgTrimmerProductivity.toFixed(0)}</div>
@@ -106,7 +106,7 @@ export function AnalyticsDashboard() {
 
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
-            <Package className="w-5 h-5 text-green-400" />
+            <Package className="w-5 h-5 text-cult-success" />
             <span className="text-cult-text-muted text-sm">Avg Packager Speed</span>
           </div>
           <div className="text-3xl font-bold text-white">{avgPackagerProductivity.toFixed(0)}</div>
@@ -115,7 +115,7 @@ export function AnalyticsDashboard() {
 
         <div className="bg-cult-surface-raised/50 border border-cult-border rounded-lg p-6 transition-colors duration-200 hover:border-cult-border-strong">
           <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-5 h-5 text-yellow-400" />
+            <TrendingUp className="w-5 h-5 text-cult-warning" />
             <span className="text-cult-text-muted text-sm">Total Processed</span>
           </div>
           <div className="text-3xl font-bold text-white">{(totalWeightProcessed / 1000).toFixed(1)}</div>
@@ -174,8 +174,8 @@ export function AnalyticsDashboard() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-white font-medium">{conv.strain}</span>
                     <span className={`px-2 py-1 rounded text-xs ${
-                      conv.performance_status === 'over_performing' ? 'bg-green-900/30 text-green-400' :
-                      conv.performance_status === 'under_performing' ? 'bg-red-900/30 text-red-400' :
+                      conv.performance_status === 'over_performing' ? 'bg-cult-success-muted text-cult-success' :
+                      conv.performance_status === 'under_performing' ? 'bg-cult-danger-muted text-cult-danger' :
                       'bg-cult-surface-overlay text-cult-text-secondary'
                     }`}>
                       {conv.variance_percentage > 0 ? '+' : ''}{conv.variance_percentage.toFixed(1)}%

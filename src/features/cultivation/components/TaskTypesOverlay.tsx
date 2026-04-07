@@ -129,7 +129,7 @@ export function TaskTypesOverlay({ onClose, inline = false }: TaskTypesOverlayPr
           <button
             type="button"
             onClick={() => { setEditingId(null); setShowAdd(true); }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-cult-success hover:bg-cult-success/90 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Type
@@ -168,7 +168,7 @@ export function TaskTypesOverlay({ onClose, inline = false }: TaskTypesOverlayPr
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="text-xs font-semibold text-cult-white uppercase tracking-wider block truncate">{tt.label}</span>
-                      {!tt.is_enabled && <span className="text-[10px] text-amber-400 uppercase">Disabled</span>}
+                      {!tt.is_enabled && <span className="text-[10px] text-cult-warning uppercase">Disabled</span>}
                     </div>
                     {tt.is_builtin
                       ? <Lock className="w-3 h-3 text-cult-dark-gray flex-shrink-0" title="Built-in type — cannot be deleted" />
@@ -330,7 +330,7 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
         <div className="px-5 pb-4 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Built-in banner */}
           {taskType?.is_builtin && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/30 border border-amber-700/40 text-xs text-amber-400">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cult-warning-muted border border-cult-warning/30 text-xs text-cult-warning">
               <Lock className="w-3 h-3" /> Built-in type — cannot be deleted
             </div>
           )}
@@ -433,15 +433,15 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                className="text-xs text-cult-danger hover:text-cult-danger transition-colors"
               >
                 Delete
               </button>
             )}
             {onDelete && confirmDelete && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-red-400">Confirm?</span>
-                <button type="button" onClick={handleDelete} className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded-sm transition-colors" disabled={saving}>
+                <span className="text-xs text-cult-danger">Confirm?</span>
+                <button type="button" onClick={handleDelete} className="px-2 py-1 text-xs bg-cult-danger hover:bg-cult-danger/90 text-white rounded-sm transition-colors" disabled={saving}>
                   Yes
                 </button>
                 <button type="button" onClick={() => setConfirmDelete(false)} className="px-2 py-1 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">
@@ -462,7 +462,7 @@ function TaskTypeEditorModal({ taskType, onSave, onDelete, onClose }: TaskTypeEd
               type="button"
               onClick={handleSave}
               disabled={saving || !label.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-cult-success hover:bg-cult-success/90 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
             >
               <Save className="w-3.5 h-3.5" />
               {saving ? 'Saving...' : isNew ? 'Create' : 'Save Changes'}

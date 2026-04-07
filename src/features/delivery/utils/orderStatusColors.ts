@@ -6,13 +6,13 @@ export interface OrderStatusStyle {
 }
 
 const ORDER_STATUS_COLORS: Record<string, OrderStatusStyle> = {
-  submitted: { bg: 'bg-blue-900/30', text: 'text-blue-400', border: 'border-blue-600', label: 'Submitted' },
+  submitted: { bg: 'bg-cult-info/15', text: 'text-cult-info', border: 'border-cult-info', label: 'Submitted' },
   accepted: { bg: 'bg-cyan-900/30', text: 'text-cyan-400', border: 'border-cyan-600', label: 'Accepted' },
-  processing: { bg: 'bg-yellow-900/30', text: 'text-yellow-400', border: 'border-yellow-600', label: 'Processing' },
-  ready_for_delivery: { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-600', label: 'Ready' },
-  completed: { bg: 'bg-emerald-900/30', text: 'text-emerald-400', border: 'border-emerald-600', label: 'Completed' },
+  processing: { bg: 'bg-cult-warning/15', text: 'text-cult-warning', border: 'border-cult-warning', label: 'Processing' },
+  ready_for_delivery: { bg: 'bg-cult-success/15', text: 'text-cult-success', border: 'border-cult-success', label: 'Ready' },
+  completed: { bg: 'bg-cult-success/15', text: 'text-cult-success', border: 'border-cult-success', label: 'Completed' },
   delivered: { bg: 'bg-teal-900/30', text: 'text-teal-400', border: 'border-teal-600', label: 'Delivered' },
-  cancelled: { bg: 'bg-red-900/30', text: 'text-red-400', border: 'border-red-600', label: 'Cancelled' },
+  cancelled: { bg: 'bg-cult-danger/15', text: 'text-cult-danger', border: 'border-cult-danger', label: 'Cancelled' },
 };
 
 const READY_STATUSES = new Set(['ready_for_delivery', 'completed', 'delivered']);

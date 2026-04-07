@@ -181,9 +181,9 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
           sub=""
           custom={
             <div className="space-y-1 mt-1">
-              <CostBar label="Labor" amount={grandTotal.labor} total={grandTotal.total} color="bg-sky-500" />
-              <CostBar label="Grow" amount={grandTotal.grow} total={grandTotal.total} color="bg-green-500" />
-              <CostBar label="Dry" amount={grandTotal.dry} total={grandTotal.total} color="bg-amber-500" />
+              <CostBar label="Labor" amount={grandTotal.labor} total={grandTotal.total} color="bg-cult-info" />
+              <CostBar label="Grow" amount={grandTotal.grow} total={grandTotal.total} color="bg-cult-success" />
+              <CostBar label="Dry" amount={grandTotal.dry} total={grandTotal.total} color="bg-cult-warning" />
             </div>
           }
         />
@@ -214,12 +214,12 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
                         <div className="flex items-center gap-2">
                           <span className="text-cult-white font-semibold">{sc.strain_name}</span>
                           {isBest && (
-                            <span className="flex items-center gap-0.5 text-xs text-green-400">
+                            <span className="flex items-center gap-0.5 text-xs text-cult-success">
                               <TrendingDown className="w-3 h-3" /> lowest
                             </span>
                           )}
                           {isWorst && (
-                            <span className="flex items-center gap-0.5 text-xs text-red-400">
+                            <span className="flex items-center gap-0.5 text-xs text-cult-danger">
                               <TrendingUp className="w-3 h-3" /> highest
                             </span>
                           )}

@@ -181,7 +181,7 @@ export const OrderItemRow = memo(function OrderItemRow({
               {item.product_category === 'packaged' && <span className="text-xs">📦</span>}
               <span className="truncate" title={item.product_name}>{item.product_name}</span>
               {item.is_sample && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded flex-shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold uppercase bg-cult-warning-muted text-cult-warning border border-cult-warning/40 rounded flex-shrink-0">
                   <Gift className="w-3 h-3" />
                   Sample
                 </span>
@@ -214,8 +214,8 @@ export const OrderItemRow = memo(function OrderItemRow({
             {!labelsLoading && stats.total > 0 && (
               <div className="flex items-center gap-2">
                 <span className={`text-xs flex items-center gap-1 ${
-                  stats.pending === 0 ? 'text-green-400' :
-                  stats.printed > 0 ? 'text-yellow-400' :
+                  stats.pending === 0 ? 'text-cult-success' :
+                  stats.printed > 0 ? 'text-cult-warning' :
                   'text-cult-lighter-gray'
                 }`}>
                   {stats.printed} of {stats.total} labels printed
@@ -223,8 +223,8 @@ export const OrderItemRow = memo(function OrderItemRow({
                 <div className="w-24 h-1.5 bg-cult-medium-gray rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all ${
-                      stats.pending === 0 ? 'bg-green-500' :
-                      stats.printed > 0 ? 'bg-yellow-500' :
+                      stats.pending === 0 ? 'bg-cult-success' :
+                      stats.printed > 0 ? 'bg-cult-warning' :
                       'bg-cult-lighter-gray'
                     }`}
                     style={{ width: `${stats.total > 0 ? (stats.printed / stats.total) * 100 : 0}%` }}
@@ -243,7 +243,7 @@ export const OrderItemRow = memo(function OrderItemRow({
           onChange={(e) => onBatchUpdate(item.id, orderId, e.target.value || null, item.strain)}
           disabled={!item.strain || batchesLoading}
           className={`px-2 py-1 text-xs border-2 bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-white font-medium w-28 ${
-            !item.batch_id ? 'border-yellow-600 text-yellow-400' : 'border-cult-medium-gray'
+            !item.batch_id ? 'border-cult-warning text-cult-warning' : 'border-cult-medium-gray'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <option value="">
@@ -261,13 +261,13 @@ export const OrderItemRow = memo(function OrderItemRow({
           </div>
         )}
         {!item.strain && (
-          <p className="text-xs text-red-500 mt-1">Product missing strain</p>
+          <p className="text-xs text-cult-danger mt-1">Product missing strain</p>
         )}
         {item.strain && !item.batch_id && batchesLoaded && availableBatches.length > 0 && (
-          <p className="text-xs text-yellow-500 mt-1">Assign batch to track</p>
+          <p className="text-xs text-cult-warning mt-1">Assign batch to track</p>
         )}
         {item.strain && batchesLoaded && availableBatches.length === 0 && (
-          <p className="text-xs text-orange-500 mt-1">No batches available for {item.strain}</p>
+          <p className="text-xs text-cult-warning mt-1">No batches available for {item.strain}</p>
         )}
       </td>
       <td className="px-3 py-3 text-sm font-bold text-cult-white text-right whitespace-nowrap">
@@ -284,7 +284,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                 if (e.key === 'Enter') saveQuantity();
                 if (e.key === 'Escape') setEditingQuantity(false);
               }}
-              className="w-20 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-green-500"
+              className="w-20 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-success"
               autoFocus
             />
           </div>
@@ -314,7 +314,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                 if (e.key === 'Enter') savePrice();
                 if (e.key === 'Escape') setEditingPrice(false);
               }}
-              className="w-24 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-green-500"
+              className="w-24 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-success"
               autoFocus
             />
           </div>
@@ -334,7 +334,7 @@ export const OrderItemRow = memo(function OrderItemRow({
           </div>
         )}
       </td>
-      <td className="px-3 py-3 text-sm font-bold text-green-400 text-right whitespace-nowrap">
+      <td className="px-3 py-3 text-sm font-bold text-cult-success text-right whitespace-nowrap">
         {formatCurrency(Number(item.subtotal))}
       </td>
       <td className="px-3 py-3 text-sm text-right sticky right-0 bg-cult-near-black border-l border-cult-medium-gray z-10">
@@ -343,9 +343,9 @@ export const OrderItemRow = memo(function OrderItemRow({
             onClick={() => setShowAssignmentModal(true)}
             className={`flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
               isFullyAssigned
-                ? 'bg-green-600 hover:bg-green-700 text-white'
+                ? 'bg-cult-success hover:bg-cult-success/80 text-white'
                 : isPartiallyAssigned
-                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                ? 'bg-cult-warning hover:bg-cult-warning/80 text-cult-surface'
                 : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white'
             }`}
             title={
@@ -370,9 +370,9 @@ export const OrderItemRow = memo(function OrderItemRow({
               onClick={() => setShowLabelPrintModal(true)}
               className={`flex items-center gap-1 px-3 py-1 text-xs font-bold transition-colors rounded ${
                 stats.pending === 0
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  ? 'bg-cult-success hover:bg-cult-success/80 text-white'
                   : stats.printed > 0
-                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  ? 'bg-cult-warning hover:bg-cult-warning/80 text-cult-surface'
                   : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white'
               }`}
               title={`${stats.pending} label${stats.pending !== 1 ? 's' : ''} pending print`}
@@ -386,7 +386,7 @@ export const OrderItemRow = memo(function OrderItemRow({
               onClick={() => onSampleToggle(item.id, orderId, !item.is_sample)}
               className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded transition-colors ${
                 item.is_sample
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30'
+                  ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/50 hover:bg-cult-warning/30'
                   : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white border border-transparent'
               }`}
               title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
@@ -396,7 +396,7 @@ export const OrderItemRow = memo(function OrderItemRow({
           )}
           <button
             onClick={() => onDelete(item.id, orderId)}
-            className="text-red-400 hover:text-red-300"
+            className="text-cult-danger hover:text-cult-danger/80"
             title="Delete item"
           >
             <Trash2 className="w-4 h-4" />

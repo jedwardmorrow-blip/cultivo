@@ -79,13 +79,13 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
           {/* End time */}
           <div>
             <label className="block text-gray-400 text-xs uppercase tracking-wide mb-1">
-              Actual Return Time <span className="text-red-400">*</span>
+              Actual Return Time <span className="text-cult-danger">*</span>
             </label>
             <input
               type="datetime-local"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-cult-success"
             />
           </div>
 
@@ -97,7 +97,7 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
               </label>
               <button
                 onClick={addDeviation}
-                className="flex items-center gap-1 text-xs text-green-400 hover:text-green-300"
+                className="flex items-center gap-1 text-xs text-cult-success hover:text-cult-success/80"
               >
                 <Plus className="w-3 h-3" />
                 Add
@@ -112,7 +112,7 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
                   <select
                     value={d.deviation_type}
                     onChange={(e) => updateDeviation(i, 'deviation_type', e.target.value)}
-                    className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-500"
+                    className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-cult-success"
                   >
                     <option value="">— Type —</option>
                     <option value="route_change">Route Change</option>
@@ -124,7 +124,7 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
                   </select>
                   <button
                     onClick={() => removeDeviation(i)}
-                    className="text-gray-500 hover:text-red-400"
+                    className="text-gray-500 hover:text-cult-danger"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -134,13 +134,13 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
                   value={d.description}
                   onChange={(e) => updateDeviation(i, 'description', e.target.value)}
                   rows={2}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs resize-none focus:outline-none focus:border-green-500"
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs resize-none focus:outline-none focus:border-cult-success"
                 />
               </div>
             ))}
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-cult-danger text-sm">{error}</p>}
         </div>
 
         <div className="px-5 py-4 border-t border-gray-700 flex justify-end gap-3">
@@ -153,7 +153,7 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-md"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-cult-success hover:bg-cult-success/85 disabled:opacity-50 rounded-md"
           >
             <CheckCircle className="w-4 h-4" />
             {saving ? 'Saving…' : 'Complete Trip'}

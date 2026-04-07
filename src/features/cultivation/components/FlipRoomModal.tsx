@@ -85,7 +85,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
         {/* Scrollable body */}
         <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
           {isUpdate && (
-            <div className="bg-amber-950/40 border border-amber-800 px-3 py-2 text-xs text-amber-300">
+            <div className="bg-cult-warning-muted border border-cult-warning px-3 py-2 text-xs text-cult-warning">
               This room already has groups at flower stage. Re-triggering will update the flip date on all sections.
             </div>
           )}
@@ -171,7 +171,7 @@ export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoo
           )}
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-3">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-3">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -251,7 +251,7 @@ function GroupSummary({
               </span>
               {showStageTransition && (
                 <>
-                  <span className="text-xs border border-amber-800 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+                  <span className="text-xs border border-cult-warning text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
                     {Array.from(s.stages).map((st) => STAGE_LABELS[st] ?? st).join('/')}
                   </span>
                   <span className="text-xs text-cult-medium-gray">→</span>

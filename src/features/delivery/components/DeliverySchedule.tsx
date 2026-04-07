@@ -67,11 +67,11 @@ export function DeliverySchedule() {
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, { bg: string; text: string }> = {
-      scheduled: { bg: 'bg-blue-100', text: 'text-blue-700' },
+      scheduled: { bg: 'bg-cult-info-muted', text: 'text-cult-info' },
       loaded: { bg: 'bg-purple-100', text: 'text-purple-700' },
       in_transit: { bg: 'bg-teal-100', text: 'text-teal-700' },
-      delivered: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
-      failed: { bg: 'bg-red-100', text: 'text-red-700' },
+      delivered: { bg: 'bg-cult-success-muted', text: 'text-cult-success' },
+      failed: { bg: 'bg-cult-danger-muted', text: 'text-cult-danger' },
     };
 
     const { bg, text } = config[status] || config.scheduled;
@@ -109,11 +109,11 @@ export function DeliverySchedule() {
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="text-sm font-medium text-cult-light-gray">In Transit</div>
-          <div className="text-3xl font-bold text-teal-600 mt-2">{inTransitCount}</div>
+          <div className="text-3xl font-bold text-cult-info mt-2">{inTransitCount}</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="text-sm font-medium text-cult-light-gray">Delivered</div>
-          <div className="text-3xl font-bold text-emerald-600 mt-2">
+          <div className="text-3xl font-bold text-cult-success mt-2">
             {deliveredCount} / {schedules.length}
           </div>
         </div>
@@ -130,7 +130,7 @@ export function DeliverySchedule() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cult-success"
           />
           <span className="text-sm text-cult-light-gray">
             Showing deliveries for {new Date(selectedDate).toLocaleDateString()}
@@ -201,7 +201,7 @@ export function DeliverySchedule() {
                     {schedule.status === 'scheduled' && (
                       <button
                         onClick={() => updateStatus(schedule.id, 'loaded')}
-                        className="text-emerald-600 hover:text-emerald-900 font-medium"
+                        className="text-cult-success hover:text-cult-success/70 font-medium"
                       >
                         Load
                       </button>
@@ -209,7 +209,7 @@ export function DeliverySchedule() {
                     {schedule.status === 'loaded' && (
                       <button
                         onClick={() => updateStatus(schedule.id, 'in_transit')}
-                        className="text-emerald-600 hover:text-emerald-900 font-medium"
+                        className="text-cult-success hover:text-cult-success/70 font-medium"
                       >
                         Dispatch
                       </button>
@@ -217,7 +217,7 @@ export function DeliverySchedule() {
                     {schedule.status === 'in_transit' && (
                       <button
                         onClick={() => updateStatus(schedule.id, 'delivered')}
-                        className="text-emerald-600 hover:text-emerald-900 font-medium"
+                        className="text-cult-success hover:text-cult-success/70 font-medium"
                       >
                         Delivered
                       </button>

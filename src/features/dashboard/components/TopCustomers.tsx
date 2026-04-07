@@ -11,7 +11,7 @@ export function TopCustomers({ customers }: Props) {
   const top3Pct = totalRev > 0 ? Math.round((top3Rev / totalRev) * 100) : 0;
 
   return (
-    <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
+    <div className="glass-card p-6 h-full">
       <div className="flex justify-between items-center mb-5">
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
           Top Customers — Lifetime Revenue

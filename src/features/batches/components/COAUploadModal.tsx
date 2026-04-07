@@ -250,14 +250,14 @@ export function COAUploadModal({
           ) : (
             <>
               {existingCOA && (
-                <div className="mb-6 flex items-start gap-3 p-4 bg-blue-900/20 border border-blue-700">
-                  <AlertTriangle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="mb-6 flex items-start gap-3 p-4 bg-cult-info-muted border border-cult-info">
+                  <AlertTriangle className="w-5 h-5 text-cult-info flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-blue-100 font-medium mb-1">Existing COA Detected</p>
-                    <p className="text-sm text-blue-200 mb-2">
+                    <p className="text-cult-text-primary font-medium mb-1">Existing COA Detected</p>
+                    <p className="text-sm text-cult-text-primary/80 mb-2">
                       This batch already has an active COA. Uploading a new COA will replace the existing one.
                     </p>
-                    <div className="text-xs text-blue-300 space-y-1">
+                    <div className="text-xs text-cult-text-primary/70 space-y-1">
                       <p>Sample Date: {existingCOA.sample_date || 'N/A'}</p>
                       <p>THC: {existingCOA.thc_percentage?.toFixed(2)}% | CBD: {existingCOA.cbd_percentage?.toFixed(2)}%</p>
                     </div>
@@ -266,11 +266,11 @@ export function COAUploadModal({
               )}
 
               {error && (
-                <div className="mb-6 flex items-start gap-3 p-4 bg-red-900/20 border border-red-700">
-                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="mb-6 flex items-start gap-3 p-4 bg-cult-danger-muted border border-cult-danger">
+                  <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-red-100 font-medium mb-1">Error</p>
-                    <p className="text-sm text-red-200">{error}</p>
+                    <p className="text-cult-text-primary font-medium mb-1">Error</p>
+                    <p className="text-sm text-cult-text-primary/80">{error}</p>
                   </div>
                 </div>
               )}
@@ -309,11 +309,11 @@ export function COAUploadModal({
 
           {step === 'confirm' && parsedData && (
             <div className="space-y-6">
-              <div className="flex items-start gap-3 p-4 bg-yellow-900/20 border border-yellow-700">
-                <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-cult-warning-muted border border-cult-warning">
+                <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-yellow-100 font-medium mb-2">Batch Information Mismatch</p>
-                  <p className="text-sm text-yellow-200 mb-4">
+                  <p className="text-cult-text-primary font-medium mb-2">Batch Information Mismatch</p>
+                  <p className="text-sm text-cult-text-primary/80 mb-4">
                     The COA PDF contains different information than the selected batch. Please confirm this is correct before proceeding.
                   </p>
 
@@ -364,20 +364,20 @@ export function COAUploadModal({
 
           {step === 'review' && parsedData && (
             <div className="space-y-6">
-              <div className="flex items-start gap-3 p-4 bg-blue-900/20 border border-blue-700">
-                <FileText className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-cult-info-muted border border-cult-info">
+                <FileText className="w-5 h-5 text-cult-info flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-blue-100 font-medium mb-1">PDF Parsed Successfully</p>
-                  <p className="text-sm text-blue-200">
+                  <p className="text-cult-text-primary font-medium mb-1">PDF Parsed Successfully</p>
+                  <p className="text-sm text-cult-text-primary/80">
                     Review the extracted data below. Make corrections if needed.
                   </p>
                 </div>
               </div>
 
               {hasMismatch && confirmedMismatch && (
-                <div className="flex items-start gap-3 p-3 bg-yellow-900/10 border border-yellow-700/50">
-                  <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-yellow-200">
+                <div className="flex items-start gap-3 p-3 bg-cult-warning-muted border border-cult-warning/50">
+                  <AlertTriangle className="w-4 h-4 text-cult-warning flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-cult-text-primary/80">
                     Mismatch confirmed. COA will be linked to batch <strong>{batchNumber}</strong> ({strain}).
                   </p>
                 </div>
@@ -517,7 +517,7 @@ export function COAUploadModal({
 
               {step === 'success' && (
                 <div className="py-12 text-center">
-                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                  <CheckCircle className="w-16 h-16 text-cult-success mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-2">
                     COA {existingCOA ? 'Replaced' : 'Uploaded'} Successfully
                   </h3>

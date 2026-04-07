@@ -16,10 +16,10 @@ import type { ProductionQueueTab, ProductCategory, StrainFormatRow, OrderLineIte
 
 function urgencyBadge(urgency: Urgency) {
   const styles: Record<Urgency, string> = {
-    overdue: 'bg-red-500/20 text-red-400 border-red-500/30',
-    urgent: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    soon: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    normal: 'bg-green-500/20 text-green-400 border-green-500/30',
+    overdue: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
+    urgent: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+    soon: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+    normal: 'bg-cult-success-muted text-cult-success border-cult-success/30',
     no_date: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
   };
   const labels: Record<Urgency, string> = {
@@ -32,10 +32,10 @@ function urgencyBadge(urgency: Urgency) {
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border ${styles[urgency]}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${
-        urgency === 'overdue' ? 'bg-red-400' :
-        urgency === 'urgent' ? 'bg-amber-400' :
-        urgency === 'soon' ? 'bg-yellow-400' :
-        urgency === 'normal' ? 'bg-green-400' : 'bg-gray-400'
+        urgency === 'overdue' ? 'bg-cult-danger' :
+        urgency === 'urgent' ? 'bg-cult-warning' :
+        urgency === 'soon' ? 'bg-cult-warning' :
+        urgency === 'normal' ? 'bg-cult-success' : 'bg-gray-400'
       }`} />
       {labels[urgency]}
     </span>
@@ -45,11 +45,11 @@ function urgencyBadge(urgency: Urgency) {
 // ─── Stage badge for batch processing stage ────────────────────────────────
 
 const STAGE_STYLES: Record<string, string> = {
-  'Packaged': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  'Packaged': 'bg-cult-success-muted text-cult-success border-cult-success/20',
   'Trimming': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   'Bulk Available': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  'Bucked': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'Bucking': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'Bucked': 'bg-cult-info-muted text-cult-info border-cult-info/20',
+  'Bucking': 'bg-cult-info-muted text-cult-info border-cult-info/20',
   'Binned': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
   'Trimmed': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
 };
@@ -69,11 +69,11 @@ function BatchInventorySnippet({ batch }: { batch: BatchYield | undefined }) {
   if (!batch) return null;
 
   const stages = [
-    batch.packaged_g > 0 && { label: 'pkgd', value: formatWeight(batch.packaged_g), color: 'text-emerald-400' },
+    batch.packaged_g > 0 && { label: 'pkgd', value: formatWeight(batch.packaged_g), color: 'text-cult-success' },
     (batch.bulk_flower_g + batch.bulk_smalls_g) > 0 && { label: 'bulk', value: formatWeight(batch.bulk_flower_g + batch.bulk_smalls_g), color: 'text-cyan-400' },
-    (batch.bucked_flower_g + batch.bucked_smalls_g) > 0 && { label: 'bucked', value: formatWeight(batch.bucked_flower_g + batch.bucked_smalls_g), color: 'text-blue-400' },
+    (batch.bucked_flower_g + batch.bucked_smalls_g) > 0 && { label: 'bucked', value: formatWeight(batch.bucked_flower_g + batch.bucked_smalls_g), color: 'text-cult-info' },
     batch.binned_g > 0 && { label: 'binned', value: formatWeight(batch.binned_g), color: 'text-indigo-400' },
-    batch.trim_g > 0 && { label: 'trim', value: formatWeight(batch.trim_g), color: 'text-amber-400/70' },
+    batch.trim_g > 0 && { label: 'trim', value: formatWeight(batch.trim_g), color: 'text-cult-warning/70' },
   ].filter(Boolean) as { label: string; value: string; color: string }[];
 
   if (stages.length === 0) return <span className="text-xs text-gray-600">depleted</span>;
@@ -97,10 +97,10 @@ function StrainInventorySummary({ formats }: { formats: StrainFormatRow[] }) {
   if (!f) return null;
 
   const items = [
-    f.already_packaged_units > 0 && { value: `${f.already_packaged_units} units`, label: 'packaged', color: 'text-emerald-400' },
-    f.ready_flower_g > 0 && { value: formatWeight(f.ready_flower_g), label: 'flower ready', color: 'text-emerald-400' },
+    f.already_packaged_units > 0 && { value: `${f.already_packaged_units} units`, label: 'packaged', color: 'text-cult-success' },
+    f.ready_flower_g > 0 && { value: formatWeight(f.ready_flower_g), label: 'flower ready', color: 'text-cult-success' },
     f.ready_smalls_g > 0 && { value: formatWeight(f.ready_smalls_g), label: 'smalls ready', color: 'text-cyan-400' },
-    f.pipeline_bucked_g > 0 && { value: formatWeight(f.pipeline_bucked_g), label: 'bucked', color: 'text-blue-400' },
+    f.pipeline_bucked_g > 0 && { value: formatWeight(f.pipeline_bucked_g), label: 'bucked', color: 'text-cult-info' },
     f.pipeline_binned_g > 0 && { value: formatWeight(f.pipeline_binned_g), label: 'binned', color: 'text-indigo-400' },
   ].filter(Boolean) as { value: string; label: string; color: string }[];
 
@@ -131,8 +131,8 @@ function stockStatusIndicator(formats: StrainFormatRow[]) {
   const hasReady = f.ready_flower_g > 0 || f.ready_smalls_g > 0;
 
   const label = hasPackaged ? 'Has stock' : hasReady ? 'Needs packaging' : 'Needs processing';
-  const dotColor = hasPackaged ? 'bg-emerald-400' : hasReady ? 'bg-amber-400' : 'bg-red-400';
-  const textColor = hasPackaged ? 'text-emerald-400' : hasReady ? 'text-amber-400' : 'text-red-400';
+  const dotColor = hasPackaged ? 'bg-cult-success' : hasReady ? 'bg-cult-warning' : 'bg-cult-danger';
+  const textColor = hasPackaged ? 'text-cult-success' : hasReady ? 'text-cult-warning' : 'text-cult-danger';
 
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -343,7 +343,7 @@ function SimplifiedByStrainView({
               </div>
               <div className="w-28 shrink-0 text-right">
                 {unassignedCount > 0 && (
-                  <span className="text-xs text-amber-400/70 font-medium">{unassignedCount} unassigned</span>
+                  <span className="text-xs text-cult-warning/70 font-medium">{unassignedCount} unassigned</span>
                 )}
               </div>
             </button>
@@ -368,7 +368,7 @@ function SimplifiedByStrainView({
                         key={date}
                         className={`rounded-cult border overflow-hidden ${
                           isDateToday ? 'border-sky-500/30 bg-sky-500/[0.03]' :
-                          isPast ? 'border-red-500/20 bg-red-500/[0.02]' :
+                          isPast ? 'border-cult-danger/20 bg-cult-danger/[0.02]' :
                           'border-cult-medium-gray/30 bg-cult-dark-gray/20'
                         }`}
                       >
@@ -377,7 +377,7 @@ function SimplifiedByStrainView({
                           <div className="flex items-center gap-2.5">
                             <Calendar className="w-3.5 h-3.5 text-gray-600" />
                             <span className={`text-sm font-semibold ${
-                              isDateToday ? 'text-sky-400' : isPast ? 'text-red-400' : 'text-gray-300'
+                              isDateToday ? 'text-sky-400' : isPast ? 'text-cult-danger' : 'text-gray-300'
                             }`}>
                               {date === 'No Date' ? 'No Date' : (() => {
                                 const d = new Date(date + 'T12:00:00');
@@ -412,8 +412,8 @@ function SimplifiedByStrainView({
                               <div
                                 key={`${o.order_item_id}-${i}`}
                                 className={`flex items-center gap-0 py-2 px-3 rounded-cult text-sm transition-colors ${
-                                  isFullyAssigned ? 'bg-emerald-500/5' :
-                                  hasAssignment ? 'bg-amber-500/5' :
+                                  isFullyAssigned ? 'bg-cult-success/5' :
+                                  hasAssignment ? 'bg-cult-warning/5' :
                                   'hover:bg-white/[0.02]'
                                 }`}
                               >
@@ -439,12 +439,12 @@ function SimplifiedByStrainView({
                                     <>
                                       <div className="w-12 h-1 bg-gray-800 rounded-full overflow-hidden">
                                         <div
-                                          className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                          className={`h-full rounded-full ${pct >= 100 ? 'bg-cult-success' : 'bg-cult-warning'}`}
                                           style={{ width: `${Math.min(pct, 100)}%` }}
                                         />
                                       </div>
                                       <span className={`text-xs tabular-nums font-medium ${
-                                        isFullyAssigned ? 'text-emerald-400' : 'text-amber-400'
+                                        isFullyAssigned ? 'text-cult-success' : 'text-cult-warning'
                                       }`}>
                                         {assigned}/{o.quantity}
                                       </span>
@@ -523,7 +523,7 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
       <div className="flex items-center gap-3 px-1 mb-3">
         <span className="text-sm text-gray-400">{totalOrders} orders</span>
         {overdueCount > 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-red-900/60 text-rose-400">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-cult-danger-muted text-cult-danger">
             {overdueCount} overdue
           </span>
         )}
@@ -557,9 +557,9 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
               }, 'no_date' as Urgency);
 
               const urgencyBorder = worstUrgency === 'overdue'
-                ? 'border-l-[3px] border-l-rose-500/50'
+                ? 'border-l-[3px] border-l-cult-danger/50'
                 : worstUrgency === 'urgent'
-                  ? 'border-l-[3px] border-l-amber-500/40'
+                  ? 'border-l-[3px] border-l-cult-warning/40'
                   : 'border-l-[3px] border-l-transparent';
 
               return (
@@ -589,13 +589,13 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                         <div className="w-14 h-1.5 bg-cult-border rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
-                              assignPct >= 100 ? 'bg-emerald-400' : assignPct > 0 ? 'bg-amber-400' : 'bg-gray-600'
+                              assignPct >= 100 ? 'bg-cult-success' : assignPct > 0 ? 'bg-cult-warning' : 'bg-gray-600'
                             }`}
                             style={{ width: `${Math.min(assignPct, 100)}%` }}
                           />
                         </div>
                         <span className={`text-xs font-semibold ${
-                          assignPct >= 100 ? 'text-emerald-400' : assignPct > 0 ? 'text-amber-400' : 'text-gray-600'
+                          assignPct >= 100 ? 'text-cult-success' : assignPct > 0 ? 'text-cult-warning' : 'text-gray-600'
                         }`}>
                           {Math.round(assignPct)}%
                         </span>
@@ -616,13 +616,13 @@ function ByOrderView({ byOrder }: { byOrder: OrderLineItem[] }) {
                         <td className="px-5 py-2.5 text-sm text-gray-400">{item.quantity} units</td>
                         <td className="px-5 py-2.5 text-center">
                           {item.batch_number
-                            ? <span className="text-xs text-emerald-400 font-medium">{item.batch_stage_label}</span>
+                            ? <span className="text-xs text-cult-success font-medium">{item.batch_stage_label}</span>
                             : <span className="text-xs text-gray-600">No batch</span>}
                         </td>
                         <td className="px-5 py-2.5 text-right text-sm text-gray-300">{formatWeight(item.line_demand_g)}</td>
                         <td className="px-5 py-2.5 text-right">
                           <span className={`text-xs font-semibold ${
-                            itemAssignPct >= 100 ? 'text-emerald-400' : itemAssignPct > 0 ? 'text-amber-400' : 'text-gray-600'
+                            itemAssignPct >= 100 ? 'text-cult-success' : itemAssignPct > 0 ? 'text-cult-warning' : 'text-gray-600'
                           }`}>
                             {Number(item.units_assigned ?? 0)}/{item.quantity}
                           </span>
@@ -785,9 +785,9 @@ export function ProductionQueue() {
                 step={1}
                 value={lossPct}
                 onChange={e => setLossPct(Number(e.target.value))}
-                className="w-16 accent-amber-400"
+                className="w-16 accent-cult-warning"
               />
-              <span className="text-xs font-semibold text-amber-400 min-w-[28px]">{lossPct}%</span>
+              <span className="text-xs font-semibold text-cult-warning min-w-[28px]">{lossPct}%</span>
             </div>
           )}
           {activeTab === 'orders' && (

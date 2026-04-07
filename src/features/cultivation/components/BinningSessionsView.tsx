@@ -52,7 +52,7 @@ export function BinningSessionsView() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-red-950 border border-red-700 px-3 py-2 text-sm text-red-400">
+        <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-2 text-sm text-cult-danger">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <span>{error}</span>
           <button onClick={reload} className="ml-auto text-xs underline hover:no-underline">Retry</button>

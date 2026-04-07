@@ -157,7 +157,7 @@ export function DriversManagement() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-900 border border-red-700 text-red-100">
+        <div className="mb-4 p-4 bg-cult-danger-muted border border-cult-danger text-cult-text-primary">
           {error}
         </div>
       )}
@@ -201,7 +201,7 @@ export function DriversManagement() {
                       onClick={() => toggleActive(driver)}
                       className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium uppercase tracking-wider transition-all ${
                         driver.is_active
-                          ? 'bg-green-900/30 text-green-400 border border-green-600 hover:bg-green-900/50'
+                          ? 'bg-cult-success-muted text-cult-success border border-cult-success hover:bg-cult-success-muted/80'
                           : 'bg-cult-surface/30 text-cult-text-muted border border-cult-border-strong hover:bg-cult-surface/50'
                       }`}
                     >
@@ -229,7 +229,7 @@ export function DriversManagement() {
                       </button>
                       <button
                         onClick={() => handleDelete(driver.id)}
-                        className="p-2 text-cult-light-gray hover:text-red-400 hover:bg-cult-black transition-all"
+                        className="p-2 text-cult-light-gray hover:text-cult-danger hover:bg-cult-black transition-all"
                         title="Delete driver"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -300,7 +300,7 @@ export function DriversManagement() {
               </div>
 
               {error && (
-                <div className="p-3 bg-red-900 border border-red-700 text-red-100 text-sm">
+                <div className="p-3 bg-cult-danger-muted border border-cult-danger text-cult-text-primary text-sm">
                   {error}
                 </div>
               )}

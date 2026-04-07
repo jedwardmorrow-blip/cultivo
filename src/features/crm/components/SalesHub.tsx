@@ -29,7 +29,7 @@ const FUNNEL_STAGES = [
   { statuses: ['allocated'],                       label: 'Allocated', color: 'bg-violet-600', textColor: 'text-violet-300' },
   { statuses: ['processing'],                      label: 'Processing', color: 'bg-sky-600', textColor: 'text-sky-300' },
   { statuses: ['ready_for_delivery'],              label: 'Ready', color: 'bg-cyan-500', textColor: 'text-cyan-300' },
-  { statuses: ['delivered', 'completed'],          label: 'Shipped', color: 'bg-emerald-500', textColor: 'text-emerald-300' },
+  { statuses: ['delivered', 'completed'],          label: 'Shipped', color: 'bg-cult-success', textColor: 'text-cult-success' },
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -63,9 +63,9 @@ function ATPInventoryTable({ rows, loading }: { rows: ATPRow[]; loading: boolean
               <td className="py-2 pr-3 text-cult-off-white font-medium truncate max-w-[120px]">{row.strain}</td>
               <td className="py-2 pr-3 text-cult-text-muted truncate max-w-[100px]">{row.stage}</td>
               <td className="py-2 pr-3 text-right text-cult-text-muted tabular-nums">{formatWeight(row.onHand)}</td>
-              <td className="py-2 pr-3 text-right text-amber-400/80 tabular-nums">{formatWeight(row.reserved)}</td>
+              <td className="py-2 pr-3 text-right text-cult-warning/80 tabular-nums">{formatWeight(row.reserved)}</td>
               <td className="py-2 text-right tabular-nums">
-                <span className={`font-semibold ${row.atp > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                <span className={`font-semibold ${row.atp > 0 ? 'text-cult-success' : 'text-cult-danger'}`}>
                   {formatWeight(Math.max(0, row.atp))}
                 </span>
               </td>
@@ -171,9 +171,9 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
         const days = d.runwayDays;
         const chipClass = days == null
           ? 'bg-slate-700/50 text-slate-400'
-          : days >= 14 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-          : days >= 7  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-          :              'bg-red-500/20 text-red-300 border border-red-500/30';
+          : days >= 14 ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
+          : days >= 7  ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/30'
+          :              'bg-cult-danger-muted text-cult-danger border border-cult-danger/30';
 
         return (
           <div key={d.strain} className="flex items-center gap-3">
@@ -181,7 +181,7 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
             <div className="flex-1 bg-cult-charcoal/40 rounded-full h-2 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  days == null || days >= 14 ? 'bg-emerald-500' : days >= 7 ? 'bg-amber-500' : 'bg-red-500'
+                  days == null || days >= 14 ? 'bg-cult-success' : days >= 7 ? 'bg-cult-warning' : 'bg-cult-danger'
                 }`}
                 style={{ width: `${Math.min(100, ((days ?? 0) / 30) * 100)}%` }}
               />

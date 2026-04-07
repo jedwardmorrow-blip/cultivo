@@ -193,7 +193,7 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
         </td>
         <td className="text-right py-3 px-3">
           {strain.avg_yield_pct != null ? (
-            <span className="text-green-400 font-mono font-semibold">{strain.avg_yield_pct}%</span>
+            <span className="text-cult-success font-mono font-semibold">{strain.avg_yield_pct}%</span>
           ) : (
             <span className="text-cult-medium-gray">—</span>
           )}
@@ -227,7 +227,7 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
                   <span className="w-16 text-right font-mono text-cult-white">{row.dry_weight_grams != null ? formatWeight(row.dry_weight_grams) : '—'}</span>
                   <span className="w-14 text-right font-mono">
                     {row.yield_percentage != null ? (
-                      <span className="text-green-400">{row.yield_percentage}%</span>
+                      <span className="text-cult-success">{row.yield_percentage}%</span>
                     ) : '—'}
                   </span>
                   <span className="w-12 text-right font-mono text-cult-light-gray">{row.plant_count_harvested}</span>
@@ -239,11 +239,11 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
 
               {strain.best_yield_pct != null && strain.worst_yield_pct != null && strain.best_yield_pct !== strain.worst_yield_pct && (
                 <div className="flex items-center gap-4 mt-2 pt-2 border-t border-cult-dark-gray text-xs">
-                  <div className="flex items-center gap-1.5 text-green-400">
+                  <div className="flex items-center gap-1.5 text-cult-success">
                     <TrendingUp className="w-3 h-3" />
                     Best: {strain.best_yield_pct}%
                   </div>
-                  <div className="flex items-center gap-1.5 text-red-400">
+                  <div className="flex items-center gap-1.5 text-cult-danger">
                     <TrendingDown className="w-3 h-3" />
                     Worst: {strain.worst_yield_pct}%
                   </div>

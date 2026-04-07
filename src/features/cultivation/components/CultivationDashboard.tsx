@@ -429,8 +429,8 @@ export function CultivationDashboard() {
             </h3>
 
             {isCloneToVeg && (
-              <div className="flex items-start gap-2.5 bg-sky-950 border border-sky-700 text-sky-300 p-3 text-sm">
-                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-sky-400" />
+              <div className="flex items-start gap-2.5 bg-cult-info-muted border border-cult-info/30 text-cult-info p-3 text-sm">
+                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-cult-info" />
                 <div>
                   <span className="font-semibold block mb-0.5">Plant IDs will be auto-generated</span>
                   {advanceGroup.plant_count} unique placeholder IDs will be created for this group.

@@ -4,7 +4,7 @@ import type { BatchPlanData } from '../types';
 const STAGE_CONFIG = [
   { key: 'binned_g' as const, label: 'Binned', color: 'bg-indigo-500' },
   { key: 'bucked_g' as const, label: 'Bucked', color: 'bg-violet-500' },
-  { key: 'bulk_g' as const, label: 'Bulk', color: 'bg-emerald-500' },
+  { key: 'bulk_g' as const, label: 'Bulk', color: 'bg-cult-success' },
   { key: 'packaged_g' as const, label: 'Packaged', color: 'bg-cyan-500' },
   { key: 'trim_g' as const, label: 'Trim', color: 'bg-stone-500' },
 ] as const;

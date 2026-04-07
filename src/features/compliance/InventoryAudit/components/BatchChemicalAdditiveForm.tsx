@@ -45,9 +45,9 @@ const TYPE_LABELS: Record<ChemicalAdditiveType, string> = {
 };
 
 const TYPE_COLORS: Record<ChemicalAdditiveType, string> = {
-  pesticide: 'bg-red-900/20 text-red-400 border-red-500/30',
-  herbicide: 'bg-orange-900/20 text-orange-400 border-orange-500/30',
-  fertilizer: 'bg-emerald-900/20 text-emerald-400 border-emerald-500/30',
+  pesticide: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
+  herbicide: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  fertilizer: 'bg-cult-success-muted text-cult-success border-cult-success/30',
   other: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
 };
 
@@ -85,7 +85,7 @@ function AdditiveFormFields({
   ) => (
     <div>
       <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+        {label}{required && <span className="text-cult-danger ml-0.5">*</span>}
       </label>
       <input
         type={type}
@@ -101,7 +101,7 @@ function AdditiveFormFields({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
-            Type <span className="text-red-400">*</span>
+            Type <span className="text-cult-danger">*</span>
           </label>
           <select
             value={form.additive_type}
@@ -135,7 +135,7 @@ function AdditiveFormFields({
       {field('notes', 'Notes')}
 
       {error && (
-        <div className="text-[12px] text-red-400 flex items-center gap-1.5">
+        <div className="text-[12px] text-cult-danger flex items-center gap-1.5">
           <X className="w-3.5 h-3.5 flex-shrink-0" />
           {error}
         </div>
@@ -190,7 +190,7 @@ function AdditiveRow({
           {additive.phi_days != null && <span>PHI: {additive.phi_days}d</span>}
           {additive.epa_reg_number && <span>EPA: {additive.epa_reg_number}</span>}
           {additive.ipm_log_id && (
-            <span className="text-sky-400">Linked from IPM log</span>
+            <span className="text-cult-info">Linked from IPM log</span>
           )}
         </div>
         {additive.notes && (
@@ -208,7 +208,7 @@ function AdditiveRow({
         {!confirmDelete ? (
           <button
             onClick={() => setConfirmDelete(true)}
-            className="p-1.5 text-cult-text-muted hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+            className="p-1.5 text-cult-text-muted hover:text-cult-danger hover:bg-cult-danger-muted rounded transition-colors"
             title="Delete"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -362,7 +362,7 @@ export function BatchChemicalAdditiveForm({ batchId }: BatchChemicalAdditiveForm
         <div className="px-4 pb-4 space-y-3">
           {/* Error */}
           {error && (
-            <div className="text-[12px] text-amber-400 flex items-center gap-1.5">
+            <div className="text-[12px] text-cult-warning flex items-center gap-1.5">
               <X className="w-3.5 h-3.5" />
               {error} — table may not be deployed yet (CUL-359)
             </div>

@@ -41,9 +41,9 @@ export function PipelineHeroCards({ summary }: PipelineHeroCardsProps) {
 
           {i === 0 && t.totalSellableGrams > 0 && (
             <div className="flex gap-[3px] mt-2 h-[3px] rounded-full overflow-hidden">
-              <div className="rounded-full bg-emerald-500" style={{ width: `${(t.sellableFlowerGrams / t.totalSellableGrams) * 100}%` }} />
-              <div className="rounded-full bg-emerald-400" style={{ width: `${(t.sellableSmallsGrams / t.totalSellableGrams) * 100}%` }} />
-              <div className="rounded-full bg-emerald-800" style={{ width: `${((t.packagedUnits * 3.5) / t.totalSellableGrams) * 100}%` }} />
+              <div className="rounded-full bg-cult-success" style={{ width: `${(t.sellableFlowerGrams / t.totalSellableGrams) * 100}%` }} />
+              <div className="rounded-full bg-cult-success/80" style={{ width: `${(t.sellableSmallsGrams / t.totalSellableGrams) * 100}%` }} />
+              <div className="rounded-full bg-cult-success/30" style={{ width: `${((t.packagedUnits * 3.5) / t.totalSellableGrams) * 100}%` }} />
             </div>
           )}
 

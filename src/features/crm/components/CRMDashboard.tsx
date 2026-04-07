@@ -79,7 +79,7 @@ export function CRMDashboard({ onSelectAccount, onCreateOrder }: CRMDashboardPro
 
       {isRefreshing && (
         <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
-          <div className="h-full bg-emerald-500/60 rounded animate-pulse w-2/3" />
+          <div className="h-full bg-cult-success/60 rounded animate-pulse w-2/3" />
         </div>
       )}
 

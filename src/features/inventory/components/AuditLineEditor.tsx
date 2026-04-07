@@ -114,9 +114,9 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
   const getVarianceClass = (percentage: number | null) => {
     if (percentage === null) return '';
     const abs = Math.abs(percentage);
-    if (abs >= 5) return 'text-red-600 font-bold';
-    if (abs >= 3) return 'text-orange-600 font-semibold';
-    if (abs >= 1) return 'text-yellow-600';
+    if (abs >= 5) return 'text-cult-danger font-bold';
+    if (abs >= 3) return 'text-cult-warning font-semibold';
+    if (abs >= 1) return 'text-cult-warning';
     return 'text-cult-text-faint';
   };
 
@@ -135,13 +135,13 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by package ID, product, or strain..."
-            className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'confirmed' | 'variance')}
-          className="px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent"
         >
           <option value="all">All Lines</option>
           <option value="pending">Pending</option>
@@ -156,21 +156,21 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
           <div className="text-sm text-cult-text-faint">Total Lines</div>
           <div className="text-2xl font-bold text-cult-text-primary">{lines.length}</div>
         </div>
-        <div className="p-4 bg-green-50 rounded-lg">
-          <div className="text-sm text-green-600">Confirmed</div>
-          <div className="text-2xl font-bold text-green-900">
+        <div className="p-4 bg-cult-success-muted rounded-lg">
+          <div className="text-sm text-cult-success">Confirmed</div>
+          <div className="text-2xl font-bold text-cult-text-primary">
             {lines.filter(l => l.confirmed).length}
           </div>
         </div>
-        <div className="p-4 bg-yellow-50 rounded-lg">
-          <div className="text-sm text-yellow-600">Pending</div>
-          <div className="text-2xl font-bold text-yellow-900">
+        <div className="p-4 bg-cult-warning-muted rounded-lg">
+          <div className="text-sm text-cult-warning">Pending</div>
+          <div className="text-2xl font-bold text-cult-text-primary">
             {lines.filter(l => !l.confirmed).length}
           </div>
         </div>
-        <div className="p-4 bg-red-50 rounded-lg">
-          <div className="text-sm text-red-600">Variances</div>
-          <div className="text-2xl font-bold text-red-900">
+        <div className="p-4 bg-cult-danger-muted rounded-lg">
+          <div className="text-sm text-cult-danger">Variances</div>
+          <div className="text-2xl font-bold text-cult-text-primary">
             {lines.filter(l => l.variance_qty !== null && Math.abs(l.variance_qty) > 0.01).length}
           </div>
         </div>
@@ -199,7 +199,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                 const hasVariance = line.variance_qty !== null && Math.abs(line.variance_qty) > 0.01;
 
                 return (
-                  <tr key={line.id} className={line.confirmed ? 'bg-green-50' : ''}>
+                  <tr key={line.id} className={line.confirmed ? 'bg-cult-success-muted' : ''}>
                     <td className="px-4 py-3 text-sm text-cult-text-primary">{line.line_order}</td>
                     <td className="px-4 py-3 text-sm font-mono text-cult-text-primary">{line.package_id}</td>
                     <td className="px-4 py-3 text-sm text-cult-text-primary">
@@ -238,12 +238,12 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                     </td>
                     <td className="px-4 py-3 text-center">
                       {line.confirmed ? (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-cult-success bg-cult-success-muted rounded-full">
                           <Check className="h-3 w-3 mr-1" />
                           Confirmed
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-cult-warning bg-cult-warning-muted rounded-full">
                           Pending
                         </span>
                       )}
@@ -267,14 +267,14 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                           )}
                           <button
                             onClick={() => handleSaveEdit(line)}
-                            className="p-1 text-green-600 hover:text-green-700"
+                            className="p-1 text-cult-success hover:text-cult-success/80"
                             title="Save"
                           >
                             <Check className="h-5 w-5" />
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="p-1 text-red-600 hover:text-red-700"
+                            className="p-1 text-cult-danger hover:text-cult-danger/80"
                             title="Cancel"
                           >
                             <X className="h-5 w-5" />
@@ -283,7 +283,7 @@ export function AuditLineEditor({ lines, onUpdateLine, isReadOnly = false }: Aud
                       ) : !isReadOnly && (
                         <button
                           onClick={() => handleStartEdit(line)}
-                          className="px-3 py-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                          className="px-3 py-1 text-sm text-cult-info hover:text-cult-info/80 font-medium"
                         >
                           Edit
                         </button>

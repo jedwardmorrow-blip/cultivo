@@ -66,9 +66,9 @@ function OrderTimeline({ currentStatus }: { currentStatus: string }) {
 
   if (currentStatus === 'cancelled') {
     return (
-      <div className="flex items-center gap-1 px-4 py-2 bg-red-900/20 border border-red-800/50 rounded">
-        <X className="w-3.5 h-3.5 text-red-400" />
-        <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Cancelled</span>
+      <div className="flex items-center gap-1 px-4 py-2 bg-cult-danger-muted border border-cult-danger/50 rounded">
+        <X className="w-3.5 h-3.5 text-cult-danger" />
+        <span className="text-xs font-semibold text-cult-danger uppercase tracking-wider">Cancelled</span>
       </div>
     );
   }
@@ -150,7 +150,7 @@ function CustomerCard({ customer }: { customer: CustomerInfo }) {
         )}
         {customer.account_credit_balance != null && customer.account_credit_balance !== 0 && (
           <div className={`flex items-center gap-2 font-semibold ${
-            customer.account_credit_balance > 0 ? 'text-green-400' : 'text-red-400'
+            customer.account_credit_balance > 0 ? 'text-cult-success' : 'text-cult-danger'
           }`}>
             <span className="text-cult-lighter-gray">Credit:</span>
             {formatCurrency(customer.account_credit_balance)}
@@ -267,18 +267,18 @@ export function OrderDrawer({
               {STATUS_LABELS[order.status || 'submitted'] || order.status}
             </span>
             {(order as OrderExtended).is_sample && (
-              <span className="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase flex items-center gap-1">
+              <span className="px-2 py-0.5 text-xs font-bold bg-cult-warning-muted text-cult-warning border border-cult-warning/40 rounded uppercase flex items-center gap-1">
                 <Gift className="w-3 h-3" />
                 Sample
               </span>
             )}
             {order.priority === 'urgent' && (
-              <span className="px-2 py-0.5 text-xs font-bold bg-red-900/40 text-red-400 border border-red-700 rounded uppercase">
+              <span className="px-2 py-0.5 text-xs font-bold bg-cult-danger-muted text-cult-danger border border-cult-danger/70 rounded uppercase">
                 Urgent
               </span>
             )}
             {order.priority === 'high' && (
-              <span className="px-2 py-0.5 text-xs font-bold bg-amber-900/30 text-amber-400 border border-amber-700 rounded uppercase">
+              <span className="px-2 py-0.5 text-xs font-bold bg-cult-warning-muted text-cult-warning border border-cult-warning/70 rounded uppercase">
                 High
               </span>
             )}
@@ -343,7 +343,7 @@ export function OrderDrawer({
                   </button>
                 )}
               </div>
-              <span className="font-bold text-green-400 text-sm">
+              <span className="font-bold text-cult-success text-sm">
                 {formatCurrency(order.total_amount || 0)}
               </span>
             </div>
@@ -407,7 +407,7 @@ export function OrderDrawer({
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/30 border border-red-800/50 rounded transition-all uppercase tracking-wider ml-auto"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cult-danger hover:text-cult-danger/80 bg-cult-danger-muted hover:bg-cult-danger-muted/80 border border-cult-danger/50 rounded transition-all uppercase tracking-wider ml-auto"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Delete

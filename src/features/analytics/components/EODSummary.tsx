@@ -124,7 +124,7 @@ export function EODSummary() {
               <p className="text-sm text-cult-light-gray">Strains</p>
               <p className="text-2xl font-bold text-cult-white">{stats.totalStrains}</p>
             </div>
-            <FileText className="w-8 h-8 text-blue-500" />
+            <FileText className="w-8 h-8 text-cult-info" />
           </div>
         </div>
         <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">

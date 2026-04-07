@@ -23,7 +23,7 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-sky-400 uppercase tracking-wider">Copy schedules to {targetRoomCode}</p>
+          <p className="text-xs font-bold text-cult-info uppercase tracking-wider">Copy schedules to {targetRoomCode}</p>
           <p className="text-xs text-cult-dark-gray mt-0.5">Select a source room below</p>
         </div>
         <button
@@ -48,7 +48,7 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
                 type="button"
                 disabled={copying}
                 onClick={() => onCopy(room.id)}
-                className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-sky-700/60 hover:bg-sky-950/10 p-3 transition-all disabled:opacity-50"
+                className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-cult-info/40 hover:bg-cult-info-muted p-3 transition-all disabled:opacity-50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -85,11 +85,11 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
       )}
 
       {copying && (
-        <p className="text-xs text-sky-400 text-center animate-pulse">Copying schedules...</p>
+        <p className="text-xs text-cult-info text-center animate-pulse">Copying schedules...</p>
       )}
 
       {copySuccess && (
-        <p className="text-xs text-green-400 text-center">{copySuccess}</p>
+        <p className="text-xs text-cult-success text-center">{copySuccess}</p>
       )}
     </div>
   );

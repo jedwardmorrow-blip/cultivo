@@ -13,14 +13,14 @@ export function FormField({ label, required, helpText, error, children }: FormFi
     <div className="space-y-2">
       <label className="block text-sm font-bold text-cult-white uppercase tracking-wider">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-cult-danger ml-1">*</span>}
       </label>
       {children}
       {helpText && !error && (
         <p className="text-xs text-cult-lighter-gray">{helpText}</p>
       )}
       {error && (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-cult-danger">{error}</p>
       )}
     </div>
   );

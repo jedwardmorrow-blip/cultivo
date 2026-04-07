@@ -67,11 +67,11 @@ export function getLaborTag(pipeline: Pipeline, totalDemandG: number, lossPct: n
   const readyG = pipeline.packaged.weightG;
   const readyPct = totalDemandG > 0 ? (readyG / totalDemandG) * 100 : 0;
 
-  if (shortfall) return { label: `Short ~${fmtW(shortfall.bulkWeightNeeded)}`, color: 'text-rose-400' };
+  if (shortfall) return { label: `Short ~${fmtW(shortfall.bulkWeightNeeded)}`, color: 'text-cult-danger' };
   if (pipeline.binned.weightG > 0) return { label: `Buck ${fmtW(pipeline.binned.weightG)} first`, color: 'text-orange-400' };
-  if (pipeline.bucked.weightG > 0) return { label: `Trim ${fmtW(pipeline.bucked.weightG)}`, color: 'text-amber-400' };
-  if (pipeline.bulk.weightG > 0) return { label: `Package ${fmtW(pipeline.bulk.weightG)}`, color: 'text-sky-400' };
-  if (readyPct >= 100) return { label: 'Ship it', color: 'text-emerald-400' };
+  if (pipeline.bucked.weightG > 0) return { label: `Trim ${fmtW(pipeline.bucked.weightG)}`, color: 'text-cult-warning' };
+  if (pipeline.bulk.weightG > 0) return { label: `Package ${fmtW(pipeline.bulk.weightG)}`, color: 'text-cult-info' };
+  if (readyPct >= 100) return { label: 'Ship it', color: 'text-cult-success' };
   return { label: '', color: '' };
 }
 

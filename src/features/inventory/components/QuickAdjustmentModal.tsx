@@ -88,7 +88,7 @@ export function QuickAdjustmentModal({
 
           <div>
             <label className="block text-sm font-medium text-cult-silver mb-2">
-              New Quantity <span className="text-red-400">*</span>
+              New Quantity <span className="text-cult-danger">*</span>
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -105,36 +105,36 @@ export function QuickAdjustmentModal({
               <span className="text-sm text-cult-lighter-gray">{state.unit}</span>
             </div>
             {state.validation.errors.new_qty && (
-              <p className="mt-1 text-xs text-red-400">{state.validation.errors.new_qty}</p>
+              <p className="mt-1 text-xs text-cult-danger">{state.validation.errors.new_qty}</p>
             )}
           </div>
 
           {hasVariance && (
             <div className={`p-4 rounded-lg border ${
               isIncrease
-                ? 'bg-emerald-900/15 border-emerald-800/40'
-                : 'bg-red-900/15 border-red-800/40'
+                ? 'bg-cult-success-muted border-cult-success/40'
+                : 'bg-cult-danger-muted border-cult-danger/40'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   {isIncrease ? (
-                    <TrendingUp className="h-5 w-5 text-emerald-400 mr-2" />
+                    <TrendingUp className="h-5 w-5 text-cult-success mr-2" />
                   ) : (
-                    <TrendingDown className="h-5 w-5 text-red-400 mr-2" />
+                    <TrendingDown className="h-5 w-5 text-cult-danger mr-2" />
                   )}
                   <div>
                     <div className="text-xs font-medium text-cult-silver">
                       {isIncrease ? 'Increase' : 'Decrease'}
                     </div>
                     <div className={`text-xl font-bold ${
-                      isIncrease ? 'text-emerald-400' : 'text-red-400'
+                      isIncrease ? 'text-cult-success' : 'text-cult-danger'
                     }`}>
                       {isIncrease ? '+' : ''}{state.varianceQty.toFixed(2)} {state.unit}
                     </div>
                   </div>
                 </div>
                 <div className={`text-2xl font-bold ${
-                  isIncrease ? 'text-emerald-400' : 'text-red-400'
+                  isIncrease ? 'text-cult-success' : 'text-cult-danger'
                 }`}>
                   {isIncrease ? '+' : ''}{state.variancePercentage.toFixed(1)}%
                 </div>
@@ -145,7 +145,7 @@ export function QuickAdjustmentModal({
           {hasVariance && (
             <div>
               <label className="block text-sm font-medium text-cult-silver mb-2">
-                Variance Reason <span className="text-red-400">*</span>
+                Variance Reason <span className="text-cult-danger">*</span>
               </label>
               <select
                 value={state.varianceReason}
@@ -161,14 +161,14 @@ export function QuickAdjustmentModal({
                 ))}
               </select>
               {state.validation.errors.variance_reason && (
-                <p className="mt-1 text-xs text-red-400">{state.validation.errors.variance_reason}</p>
+                <p className="mt-1 text-xs text-cult-danger">{state.validation.errors.variance_reason}</p>
               )}
             </div>
           )}
 
           <div>
             <label className="block text-sm font-medium text-cult-silver mb-2">
-              Notes {hasVariance && <span className="text-red-400">*</span>}
+              Notes {hasVariance && <span className="text-cult-danger">*</span>}
             </label>
             <textarea
               value={state.notes}
@@ -179,15 +179,15 @@ export function QuickAdjustmentModal({
               className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-lighter-gray focus:outline-none focus:border-cult-silver disabled:opacity-50 resize-none"
             />
             {state.validation.errors.notes && (
-              <p className="mt-1 text-xs text-red-400">{state.validation.errors.notes}</p>
+              <p className="mt-1 text-xs text-cult-danger">{state.validation.errors.notes}</p>
             )}
           </div>
 
           {hasVariance && Math.abs(state.variancePercentage) >= 5 && (
-            <div className="p-3 rounded-lg bg-amber-900/15 border border-amber-800/40">
+            <div className="p-3 rounded-lg bg-cult-warning-muted border border-cult-warning/40">
               <div className="flex items-start gap-2.5">
-                <AlertCircle className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-amber-300">
+                <AlertCircle className="h-4 w-4 text-cult-warning mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-cult-warning">
                   <p className="font-medium mb-0.5">High Variance Warning</p>
                   <p>This adjustment represents a variance of {Math.abs(state.variancePercentage).toFixed(1)}%, which exceeds the critical threshold.</p>
                 </div>
@@ -198,8 +198,8 @@ export function QuickAdjustmentModal({
           {state.error && (
             <div className="p-3 rounded-lg bg-red-900/15 border border-red-800/40">
               <div className="flex items-start gap-2.5">
-                <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-red-400">{state.error}</p>
+                <AlertCircle className="h-4 w-4 text-cult-danger mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-cult-danger">{state.error}</p>
               </div>
             </div>
           )}
@@ -216,7 +216,7 @@ export function QuickAdjustmentModal({
           <button
             onClick={handleSubmit}
             disabled={state.isSaving || !state.validation.isValid}
-            className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2 text-sm font-medium text-white bg-cult-info rounded-lg hover:bg-cult-info/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {state.isSaving ? 'Applying...' : 'Apply Adjustment'}
           </button>

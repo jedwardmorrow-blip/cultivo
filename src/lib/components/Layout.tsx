@@ -57,7 +57,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-cult-black">
       {isDemoMode && (
-        <div className="sticky top-0 z-50 bg-amber-500 text-black text-center text-xs font-semibold py-1 tracking-wider uppercase">
+        <div className="sticky top-0 z-50 bg-cult-warning text-cult-black text-center text-xs font-semibold py-1 tracking-wider uppercase">
           Demo Environment — Data shown is fictional and for demonstration purposes only
         </div>
       )}

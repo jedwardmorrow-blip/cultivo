@@ -161,7 +161,7 @@ export function ExpandedPlantsList({
               {!confirmDeactivate ? (
                 <button
                   onClick={() => setConfirmDeactivate(true)}
-                  className="flex items-center gap-1 text-xs border border-red-800 text-red-400 px-2 py-0.5 hover:border-red-600 hover:text-red-300 transition-all uppercase tracking-wider"
+                  className="flex items-center gap-1 text-xs border border-cult-danger/40 text-cult-danger px-2 py-0.5 hover:border-cult-danger hover:text-cult-danger transition-all uppercase tracking-wider"
                 >
                   <CircleOff className="w-3 h-3" />
                   Deactivate ({selectedIds.size})
@@ -171,7 +171,7 @@ export function ExpandedPlantsList({
                   <button
                     onClick={handleDeactivateSelected}
                     disabled={deactivating}
-                    className="flex items-center gap-1 text-xs bg-red-900 border border-red-700 text-red-200 px-2 py-0.5 hover:bg-red-800 transition-all uppercase tracking-wider disabled:opacity-40"
+                    className="flex items-center gap-1 text-xs bg-cult-danger-muted border border-cult-danger text-cult-danger px-2 py-0.5 hover:bg-cult-danger-muted transition-all uppercase tracking-wider disabled:opacity-40"
                   >
                     {deactivating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                     Confirm
@@ -200,7 +200,7 @@ export function ExpandedPlantsList({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 mx-4 mb-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2">
+        <div className="flex items-start gap-2 mx-4 mb-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
           {error}
         </div>

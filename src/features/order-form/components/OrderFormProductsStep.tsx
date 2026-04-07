@@ -97,7 +97,7 @@ export function OrderFormProductsStep({
                       <div>{strainName} • {typeName}</div>
                       <div className="flex items-center justify-between">
                         <span className="text-cult-green font-semibold">{priceDisplay}</span>
-                        <span className={(product.available_quantity || 0) > 0 ? 'text-cult-green' : 'text-red-400'}>
+                        <span className={(product.available_quantity || 0) > 0 ? 'text-cult-green' : 'text-cult-danger'}>
                           {product.available_quantity || 0} available
                         </span>
                       </div>

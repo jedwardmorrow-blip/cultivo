@@ -264,7 +264,7 @@ export function LabelGenerator() {
         <h2 className="text-2xl font-bold text-white">Compliance Label Generator</h2>
         <button
           onClick={() => dispatchForm({ type: 'SHOW_NEW_FORM' })}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded transition-colors"
         >
           <Plus className="w-4 h-4" />
           Generate Labels
@@ -324,7 +324,7 @@ export function LabelGenerator() {
                 </div>
               )}
               {packageIdWarning && (
-                <div className="mt-2 text-xs text-yellow-400 bg-yellow-900/20 px-2 py-1 rounded">
+                <div className="mt-2 text-xs text-cult-warning bg-cult-warning-muted px-2 py-1 rounded">
                   {packageIdWarning}
                 </div>
               )}
@@ -445,7 +445,7 @@ export function LabelGenerator() {
           <div className="flex gap-3 mt-4">
             <button
               onClick={generateLabels}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+              className="px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded transition-colors"
             >
               Generate {formData.quantity_to_generate} Label{formData.quantity_to_generate !== 1 ? 's' : ''}
             </button>
@@ -490,11 +490,11 @@ export function LabelGenerator() {
                   </td>
                   <td className="px-4 py-3">
                     {label.printed_at ? (
-                      <span className="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-cult-success-muted text-cult-success rounded text-xs">
                         Printed
                       </span>
                     ) : (
-                      <span className="px-2 py-1 bg-yellow-900/30 text-yellow-400 rounded text-xs">
+                      <span className="px-2 py-1 bg-cult-warning-muted text-cult-warning rounded text-xs">
                         Pending
                       </span>
                     )}
@@ -611,7 +611,7 @@ export function LabelGenerator() {
                   <button
                     onClick={handlePrint}
                     disabled={!imagesLoaded || loadingPrint}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Printer className="w-4 h-4" />
                     {loadingPrint ? 'Printing...' : imagesLoaded ? 'Print Label' : 'Loading...'}
@@ -629,7 +629,7 @@ export function LabelGenerator() {
 
               <div className="p-16 bg-cult-surface flex items-center justify-center no-print overflow-hidden" style={{ minHeight: '800px' }}>
                 {imageError && (
-                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
+                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-cult-danger-muted border border-cult-danger text-cult-danger px-4 py-3 rounded z-50">
                     {imageError}
                   </div>
                 )}

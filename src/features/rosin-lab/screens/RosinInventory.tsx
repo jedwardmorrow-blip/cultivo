@@ -97,11 +97,11 @@ function CureStatusCell({ pkg }: { pkg: RosinPackage }) {
   }
 
   if (status === 'completed') {
-    return <span className="text-[13px] text-emerald-400 font-medium">Complete ✓</span>;
+    return <span className="text-[13px] text-cult-success font-medium">Complete ✓</span>;
   }
 
   if (status === 'failed') {
-    return <span className="text-[13px] text-red-400 font-medium">Failed</span>;
+    return <span className="text-[13px] text-cult-danger font-medium">Failed</span>;
   }
 
   return <span className="text-[13px] text-[#666666]">—</span>;

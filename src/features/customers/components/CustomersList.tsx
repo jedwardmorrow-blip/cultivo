@@ -103,12 +103,12 @@ export function CustomersList({
                 </td>
                 <td className="px-4 py-3 text-center">
                   {customer.latitude && customer.longitude ? (
-                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
+                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-cult-success-muted text-cult-success rounded text-xs">
                       <CheckCircle className="w-3 h-3" />
                       Yes
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs">
+                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-cult-warning-muted text-cult-warning rounded text-xs">
                       <AlertCircle className="w-3 h-3" />
                       No
                     </div>
@@ -120,11 +120,11 @@ export function CustomersList({
                       <button
                         onClick={() => onGeocode(customer.id)}
                         disabled={isGeocoding && geocodingCustomerId === customer.id}
-                        className="text-blue-400 hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-cult-info hover:text-cult-info/80 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Geocode address"
                       >
                         {isGeocoding && geocodingCustomerId === customer.id ? (
-                          <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-cult-info border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <Navigation className="w-4 h-4" />
                         )}
@@ -139,7 +139,7 @@ export function CustomersList({
                     </button>
                     <button
                       onClick={() => onDelete(customer.id)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-cult-danger hover:text-cult-danger/80"
                       title="Delete customer"
                     >
                       <Trash2 className="w-4 h-4" />

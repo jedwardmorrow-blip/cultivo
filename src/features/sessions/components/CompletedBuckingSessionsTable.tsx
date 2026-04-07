@@ -128,11 +128,11 @@ export function CompletedBuckingSessionsTable({
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {session.session_status === 'completed' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-900/30 text-green-400 border border-green-600">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-success-muted text-cult-success border border-cult-success">
                           Completed
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-900/30 text-red-400 border border-red-600">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-danger-muted text-cult-danger border border-cult-danger">
                           Cancelled
                         </span>
                       )}
@@ -151,10 +151,10 @@ export function CompletedBuckingSessionsTable({
                           disabled={undoingSessionId === session.id || recentlyUndoneId === session.id}
                           className={`p-1.5 rounded transition ${
                             recentlyUndoneId === session.id
-                              ? 'bg-green-900/30 border border-green-600 text-green-400'
+                              ? 'bg-cult-success-muted border border-cult-success text-cult-success'
                               : undoingSessionId === session.id
-                              ? 'opacity-50 cursor-not-allowed border border-blue-600 text-blue-500'
-                              : 'hover:bg-blue-900/30 border border-blue-600 text-blue-500'
+                              ? 'opacity-50 cursor-not-allowed border border-cult-info text-cult-info'
+                              : 'hover:bg-cult-info-muted border border-cult-info text-cult-info'
                           }`}
                           title={
                             recentlyUndoneId === session.id
@@ -181,7 +181,7 @@ export function CompletedBuckingSessionsTable({
                           </div>
                           <div>
                             <span className="text-cult-silver">Variance:</span>
-                            <span className={`ml-2 font-medium ${Math.abs(session.variance_grams) > 100 ? 'text-yellow-500' : 'text-cult-white'}`}>
+                            <span className={`ml-2 font-medium ${Math.abs(session.variance_grams) > 100 ? 'text-cult-warning' : 'text-cult-white'}`}>
                               {session.variance_grams >= 0 ? '+' : ''}{(session.variance_grams / 1000).toFixed(2)} kg
                             </span>
                           </div>

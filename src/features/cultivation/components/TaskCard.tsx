@@ -7,10 +7,10 @@ import { PRIORITY_COLOR } from '../constants/taskColors';
 
 const STATUS_STYLES: Record<TaskStatus, { bg: string; text: string; label: string }> = {
   pending: { bg: 'bg-zinc-800', text: 'text-zinc-400', label: 'Pending' },
-  in_progress: { bg: 'bg-sky-950', text: 'text-sky-400', label: 'In Progress' },
-  completed: { bg: 'bg-green-950', text: 'text-green-400', label: 'Completed' },
+  in_progress: { bg: 'bg-cult-info-muted', text: 'text-cult-info', label: 'In Progress' },
+  completed: { bg: 'bg-cult-success-muted', text: 'text-cult-success', label: 'Completed' },
   skipped: { bg: 'bg-zinc-800', text: 'text-zinc-500 line-through', label: 'Skipped' },
-  carry_forward: { bg: 'bg-amber-950', text: 'text-amber-400', label: 'Carried' },
+  carry_forward: { bg: 'bg-cult-warning-muted', text: 'text-cult-warning', label: 'Carried' },
 };
 
 export interface TaskCardData {
@@ -99,7 +99,7 @@ function TaskOverflowMenu({ taskId, onSkip, onCarryForward }: {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onCarryForward(taskId); setOpen(false); }}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-amber-400/80 hover:bg-amber-950/40 transition-colors text-left min-h-[40px]"
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-cult-warning/80 hover:bg-cult-warning-muted transition-colors text-left min-h-[40px]"
             >
               <FastForward className="w-3.5 h-3.5" />
               Defer to Tomorrow
@@ -192,19 +192,19 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
             isSwipeRight ? 'justify-start pl-4' : 'justify-end pr-4'
           } ${
             isSwipeRight
-              ? isSwipeTriggered ? 'bg-sky-600' : 'bg-sky-950'
-              : isSwipeTriggered ? 'bg-green-600' : 'bg-green-950'
+              ? isSwipeTriggered ? 'bg-cult-info' : 'bg-cult-info-muted'
+              : isSwipeTriggered ? 'bg-cult-success' : 'bg-cult-success-muted'
           } transition-colors duration-150`}
         >
           {isSwipeRight ? (
-            <div className="flex items-center gap-2 text-sky-100">
+            <div className="flex items-center gap-2 text-cult-info">
               <Play className="w-5 h-5" style={{ opacity: Math.min(1, swipeProgress) }} />
               <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: Math.min(1, swipeProgress) }}>
                 Start
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-green-100">
+            <div className="flex items-center gap-2 text-cult-success">
               <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: Math.min(1, swipeProgress) }}>
                 Open
               </span>
@@ -226,7 +226,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           type="button"
           onClick={onClick}
           className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors px-2.5 sm:px-3 py-2 group ${
-            isCarried ? 'border-l-2 border-l-amber-500 bg-amber-950/10' :
+            isCarried ? 'border-l-2 border-l-cult-warning bg-cult-warning-muted' :
             task.priority === 'high' ? `border-l-2 ${PRIORITY_COLOR.high.border}` : ''
           }`}
         >
@@ -251,21 +251,21 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                   <span className="truncate">{task.assigned_to_name}</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-amber-400/80 text-xs">
+                <span className="flex items-center gap-1 text-cult-warning/80 text-xs">
                   <UserPlus className="w-3 h-3" />
                 </span>
               )}
 
               {/* Crew indicator */}
               {task.task_config?.crew && Array.isArray(task.task_config.crew) && (task.task_config.crew as string[]).length > 0 && (
-                <span className="hidden sm:flex items-center gap-0.5 text-xs text-sky-400/80">
+                <span className="hidden sm:flex items-center gap-0.5 text-xs text-cult-info/80">
                   <Users className="w-3 h-3" />
                   <span className="font-mono text-xs">+{(task.task_config.crew as string[]).length}</span>
                 </span>
               )}
 
               {isCarried && (
-                <span className="flex items-center gap-1 text-xs text-amber-400">
+                <span className="flex items-center gap-1 text-xs text-cult-warning">
                   <AlertTriangle className="w-3 h-3" />
                   <span className="font-medium hidden sm:inline">Carried</span>
                 </span>
@@ -311,7 +311,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                 setStarting(true);
                 onStartTask(task.id);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/50 border border-sky-800/50 hover:bg-sky-950 hover:border-sky-700 active:bg-sky-900 rounded-sm transition-colors disabled:opacity-50 min-h-[36px]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/50 hover:bg-cult-info-muted/80 hover:border-cult-info/70 active:bg-cult-info/20 rounded-sm transition-colors disabled:opacity-50 min-h-[36px]"
             >
               <Play className="w-3.5 h-3.5" />
               {starting ? 'Starting...' : 'Start'}
@@ -335,7 +335,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                 e.stopPropagation();
                 setShowAssignDropdown((v) => !v);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/50 border border-amber-800/50 hover:bg-amber-950 hover:border-amber-700 active:bg-amber-900 rounded-sm transition-colors min-h-[36px]"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/50 hover:bg-cult-warning-muted/80 hover:border-cult-warning/70 active:bg-cult-warning/20 rounded-sm transition-colors min-h-[36px]"
             >
               <UserPlus className="w-3 h-3" />
               Assign
@@ -361,7 +361,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                         {s.first_name.charAt(0)}
                       </span>
                       {s.is_present && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-400 ring-1 ring-cult-near-black" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-cult-success ring-1 ring-cult-near-black" />
                       )}
                     </span>
                     <span>{s.first_name}</span>

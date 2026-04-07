@@ -73,17 +73,17 @@ export function BaseModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/80" onClick={handleBackdropClick} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={handleBackdropClick} />
 
-        <div className={`relative w-full ${maxWidthClasses[maxWidth]} bg-cult-near-black border border-cult-medium-gray`}>
-          <div className="flex items-center justify-between border-b border-cult-medium-gray p-6">
+        <div className={`relative w-full ${maxWidthClasses[maxWidth]} glass-modal rounded-2xl shadow-glass-lg animate-fade-in`}>
+          <div className="flex items-center justify-between border-b border-white/[0.08] p-6">
             <div className="flex items-center gap-3">
               {icon && <div className="text-cult-white">{icon}</div>}
               <h2 className="text-h2 font-bold text-cult-white uppercase tracking-wider">{title}</h2>
             </div>
             <button
               onClick={attemptClose}
-              className="p-2 -m-2 text-cult-lighter-gray hover:text-cult-white hover:bg-cult-charcoal active:bg-cult-charcoal/80 transition-colors rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2 -m-2 text-cult-lighter-gray hover:text-cult-white hover:bg-white/[0.08] active:scale-95 transition-all duration-200 rounded-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Close"
             >
               <X className="w-6 h-6" />

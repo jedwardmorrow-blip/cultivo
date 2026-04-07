@@ -83,11 +83,11 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
         </div>
 
         {isBlocked && (
-          <div className="mx-6 mt-6 p-4 bg-red-900/20 border border-red-600 rounded-lg flex items-start gap-3">
-            <Lock className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
+          <div className="mx-6 mt-6 p-4 bg-cult-danger-muted border border-cult-danger rounded-lg flex items-start gap-3">
+            <Lock className="w-5 h-5 text-cult-danger mt-0.5 shrink-0" />
             <div>
-              <p className="text-red-300 font-medium">Editing Blocked</p>
-              <p className="text-red-200 text-sm mt-1">
+              <p className="text-cult-danger font-medium">Editing Blocked</p>
+              <p className="text-cult-text-secondary text-sm mt-1">
                 {finalizedOutputs.join(', ')} output has been finalized. Void the conversion before editing.
               </p>
             </div>
@@ -212,12 +212,12 @@ export function AdminSessionEditModal({ session, onClose, onUpdate }: AdminSessi
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-cult-light-gray">Variance</span>
-              <span className={`font-bold ${Math.abs(variance) > 0.5 ? 'text-amber-400' : 'text-cult-white'}`}>
+              <span className={`font-bold ${Math.abs(variance) > 0.5 ? 'text-cult-warning' : 'text-cult-white'}`}>
                 {variance.toFixed(1)}g
               </span>
             </div>
             {Math.abs(variance) > 5 && (
-              <div className="flex items-center gap-2 text-amber-400 text-xs mt-1">
+              <div className="flex items-center gap-2 text-cult-warning text-xs mt-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>Large variance detected</span>
               </div>

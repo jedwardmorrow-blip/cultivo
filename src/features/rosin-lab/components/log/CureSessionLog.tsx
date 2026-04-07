@@ -394,7 +394,7 @@ export function CureSessionLog({ searchTerm }: CureSessionLogProps) {
                                         </span>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-2 text-sm text-emerald-400">
+                                      <div className="flex items-center gap-2 text-sm text-cult-success">
                                         <CheckCircle className="w-4 h-4 flex-shrink-0" />
                                         <span>
                                           Achieved target{' '}

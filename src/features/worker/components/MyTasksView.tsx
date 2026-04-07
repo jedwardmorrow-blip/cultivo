@@ -46,7 +46,7 @@ export function MyTasksView() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>
@@ -69,13 +69,13 @@ export function MyTasksView() {
         <div className="w-full h-2 bg-cult-black rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              progress === 100 ? 'bg-green-500' : 'bg-cult-white'
+              progress === 100 ? 'bg-cult-success' : 'bg-cult-white'
             }`}
             style={{ width: `${progress}%` }}
           />
         </div>
         {progress === 100 && totalCount > 0 && (
-          <p className="text-green-400 text-xs mt-2 text-center uppercase tracking-wider font-semibold">
+          <p className="text-cult-success text-xs mt-2 text-center uppercase tracking-wider font-semibold">
             All tasks complete
           </p>
         )}
@@ -222,14 +222,14 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
         isDone
           ? 'opacity-50'
           : isCarried
-            ? 'border-l-2 border-l-amber-600 active:bg-cult-near-black'
+            ? 'border-l-2 border-l-cult-warning active:bg-cult-near-black'
             : 'active:bg-cult-near-black'
       }`}
     >
       {/* Status icon */}
       <div className="flex-shrink-0">
         {isDone ? (
-          <CheckCircle className="w-6 h-6 text-green-500" />
+          <CheckCircle className="w-6 h-6 text-cult-success" />
         ) : task.status === 'in_progress' ? (
           <Clock className="w-6 h-6 text-sky-400" />
         ) : (
@@ -258,7 +258,7 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
             </span>
           )}
           {isDone && task.completed_at && (
-            <span className="text-green-600 text-xs">
+            <span className="text-cult-success text-xs">
               Done {new Date(task.completed_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
             </span>
           )}

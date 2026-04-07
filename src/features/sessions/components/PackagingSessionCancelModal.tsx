@@ -37,11 +37,11 @@ export function PackagingSessionCancelModal({
       className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
     >
       <div
-        className="bg-cult-near-black border-2 border-red-600 shadow-xl max-w-lg w-full"
+        className="bg-cult-near-black border-2 border-cult-danger shadow-xl max-w-lg w-full"
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <XCircle className="w-8 h-8 text-red-500" />
+            <XCircle className="w-8 h-8 text-cult-danger" />
             <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">Cancel Packaging Session</h2>
           </div>
 
@@ -66,9 +66,9 @@ export function PackagingSessionCancelModal({
             </div>
           </div>
 
-          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mb-6">
-            <p className="text-red-400 text-sm font-medium mb-2">Warning: Cancelling this session will:</p>
-            <ul className="text-red-300 text-sm space-y-1 ml-4">
+          <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-4 mb-6">
+            <p className="text-cult-danger text-sm font-medium mb-2">Warning: Cancelling this session will:</p>
+            <ul className="text-cult-danger text-sm space-y-1 ml-4">
               <li>• Unlink all order allocations from this session</li>
               <li>• Return {session.pull_weight}g to available inventory</li>
               <li>• Reset order workflow stages appropriately</li>
@@ -81,7 +81,7 @@ export function PackagingSessionCancelModal({
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-cult-danger focus:border-cult-danger"
               rows={3}
               placeholder="e.g., Incorrect strain pulled, equipment malfunction, etc..."
             />
@@ -90,7 +90,7 @@ export function PackagingSessionCancelModal({
           <div className="flex gap-3">
             <button
               onClick={handleCancel}
-              className="flex-1 bg-red-600 text-white px-6 py-3 font-bold uppercase tracking-wider hover:bg-red-700 transition"
+              className="flex-1 bg-cult-danger text-white px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-danger/80 transition"
             >
               Confirm Cancellation
             </button>

@@ -106,8 +106,8 @@ function RoomSummaryMini({ summary }: { summary: RoomSummary }) {
 
 function HarvestCountdownRow({ roomCode, strain, projectedDate }: { roomCode: string; strain: string; projectedDate: string }) {
   const days = daysUntil(projectedDate);
-  const chipColor = days <= 7 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-    : days <= 14 ? 'bg-sky-500/20 text-sky-300 border-sky-500/30'
+  const chipColor = days <= 7 ? 'bg-cult-warning-muted text-cult-warning border-cult-warning/30'
+    : days <= 14 ? 'bg-cult-info-muted text-cult-info border-cult-info/30'
     : 'bg-cult-charcoal text-cult-text-muted border-cult-border';
   const formattedDate = new Date(projectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
@@ -142,7 +142,7 @@ function TaskQueueMini({ tasks, roomCodeMap }: { tasks: DailyTaskInstance[]; roo
     <div className="space-y-0">
       {active.map(t => {
         const roomCode = roomCodeMap.get(t.room_id) ?? t.room_id.slice(0, 8);
-        const statusColor = t.status === 'in_progress' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+        const statusColor = t.status === 'in_progress' ? 'bg-cult-warning-muted text-cult-warning border-cult-warning/30'
           : 'bg-cult-charcoal text-cult-text-muted border-cult-border';
         return (
           <div key={t.id} className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0">

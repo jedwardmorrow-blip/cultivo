@@ -53,7 +53,7 @@ export function DateRangeFilter({
             onClick={() => handlePresetClick(preset.key)}
             className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 ${
               activePreset === preset.key && !showCustom
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
                 : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
             }`}
           >
@@ -65,7 +65,7 @@ export function DateRangeFilter({
           onClick={() => setShowCustom(!showCustom)}
           className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 flex items-center gap-1 ${
             showCustom || (!activePreset && value.label === 'Custom')
-              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+              ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
               : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
           }`}
         >
@@ -80,14 +80,14 @@ export function DateRangeFilter({
             type="date"
             value={value.start}
             onChange={(e) => handleCustomDateChange('start', e.target.value)}
-            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-emerald-500/50 focus:outline-none"
+            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-cult-success/50 focus:outline-none"
           />
           <span className="text-xs text-cult-silver">to</span>
           <input
             type="date"
             value={value.end}
             onChange={(e) => handleCustomDateChange('end', e.target.value)}
-            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-emerald-500/50 focus:outline-none"
+            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-cult-success/50 focus:outline-none"
           />
         </div>
       )}
@@ -97,7 +97,7 @@ export function DateRangeFilter({
           onClick={() => onCompareToggle(!compareEnabled)}
           className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 ${
             compareEnabled
-              ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+              ? 'bg-cult-info-muted text-cult-info border border-cult-info/30'
               : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
           }`}
         >

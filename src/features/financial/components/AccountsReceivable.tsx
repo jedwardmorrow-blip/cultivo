@@ -49,18 +49,18 @@ type ViewMode = 'customers' | 'invoices';
 
 const BUCKET_COLORS: Record<string, string> = {
   'draft': 'text-cult-text-muted',
-  'current': 'text-green-400',
-  '1-30': 'text-amber-400',
-  '31-60': 'text-orange-400',
-  '61-90': 'text-red-400',
-  '90+': 'text-red-500',
+  'current': 'text-cult-success',
+  '1-30': 'text-cult-warning',
+  '31-60': 'text-cult-warning',
+  '61-90': 'text-cult-danger',
+  '90+': 'text-cult-danger',
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  'open': 'bg-blue-900/40 text-blue-400 border border-blue-800/50',
-  'partial': 'bg-amber-900/40 text-amber-400 border border-amber-800/50',
-  'paid': 'bg-green-900/40 text-green-400 border border-green-800/50',
-  'overdue': 'bg-red-900/40 text-red-400 border border-red-800/50',
+  'open': 'bg-cult-info-muted text-cult-info border border-cult-info/50',
+  'partial': 'bg-cult-warning-muted text-cult-warning border border-cult-warning/50',
+  'paid': 'bg-cult-success-muted text-cult-success border border-cult-success/50',
+  'overdue': 'bg-cult-danger-muted text-cult-danger border border-cult-danger/50',
   'draft': 'bg-cult-border text-cult-text-muted border border-cult-border',
   'sent': 'bg-purple-900/40 text-purple-400 border border-purple-800/50',
   'void': 'bg-gray-900/40 text-gray-400 border border-gray-800/50',
@@ -469,23 +469,23 @@ export function AccountsReceivable() {
             <div className="text-xs text-cult-text-muted mt-0.5">{overview.total_open_invoices} invoices</div>
           </div>
           <div className="bg-cult-surface border border-cult-border rounded-cult p-4">
-            <div className="text-xs text-red-400 uppercase">Overdue</div>
-            <div className="text-red-400 font-mono text-lg mt-1">{fmt(overview.total_overdue)}</div>
+            <div className="text-xs text-cult-danger uppercase">Overdue</div>
+            <div className="text-cult-danger font-mono text-lg mt-1">{fmt(overview.total_overdue)}</div>
           </div>
           <div className="bg-cult-surface border border-cult-border rounded-cult p-4">
-            <div className="text-xs text-green-400 uppercase">Current</div>
+            <div className="text-xs text-cult-success uppercase">Current</div>
             <div className="text-cult-white font-mono text-lg mt-1">{fmt(overview.current_amount)}</div>
           </div>
           <div className="bg-cult-surface border border-cult-border rounded-cult p-4">
-            <div className="text-xs text-amber-400 uppercase">1-30 Days</div>
+            <div className="text-xs text-cult-warning uppercase">1-30 Days</div>
             <div className="text-cult-white font-mono text-lg mt-1">{fmt(overview.bucket_1_30)}</div>
           </div>
           <div className="bg-cult-surface border border-cult-border rounded-cult p-4">
-            <div className="text-xs text-orange-400 uppercase">31-60 Days</div>
+            <div className="text-xs text-cult-warning uppercase">31-60 Days</div>
             <div className="text-cult-white font-mono text-lg mt-1">{fmt(overview.bucket_31_60)}</div>
           </div>
           <div className="bg-cult-surface border border-cult-border rounded-cult p-4">
-            <div className="text-xs text-red-500 uppercase">90+ Days</div>
+            <div className="text-xs text-cult-danger uppercase">90+ Days</div>
             <div className="text-cult-white font-mono text-lg mt-1">
               {fmt(Number(overview.bucket_61_90) + Number(overview.bucket_90_plus))}
             </div>
@@ -650,7 +650,7 @@ export function AccountsReceivable() {
                         <td className="px-4 py-3 text-right text-cult-white font-mono">{fmt(c.total_outstanding)}</td>
                         <td className="px-4 py-3 text-right font-mono">
                           {Number(c.overdue_amount) > 0 ? (
-                            <span className="text-red-400">{fmt(c.overdue_amount)}</span>
+                            <span className="text-cult-danger">{fmt(c.overdue_amount)}</span>
                           ) : (
                             <span className="text-cult-text-muted">—</span>
                           )}
@@ -728,7 +728,7 @@ export function AccountsReceivable() {
                                         <td className="px-4 py-2.5 text-right text-cult-white font-mono text-xs">
                                           {fmtDec(inv.total_amount)}
                                         </td>
-                                        <td className="px-4 py-2.5 text-right font-mono text-xs text-green-400">
+                                        <td className="px-4 py-2.5 text-right font-mono text-xs text-cult-success">
                                           {Number(inv.paid_amount) > 0 ? fmtDec(inv.paid_amount) : '—'}
                                         </td>
                                         <td className="px-4 py-2.5 text-right text-cult-white font-mono text-xs">
@@ -752,7 +752,7 @@ export function AccountsReceivable() {
                                                 setPaymentModal(inv);
                                                 setPaymentForm(f => ({ ...f, amount: String(inv.amount_due) }));
                                               }}
-                                              className="text-xs text-green-400 hover:text-green-300 font-medium flex items-center gap-1"
+                                              className="text-xs text-cult-success hover:text-cult-success/80 font-medium flex items-center gap-1"
                                             >
                                               <CreditCard className="w-3 h-3" />
                                               Pay
@@ -834,7 +834,7 @@ export function AccountsReceivable() {
                     <td className="px-4 py-3 text-cult-light-gray">{formatDate(inv.issue_date)}</td>
                     <td className="px-4 py-3 text-cult-light-gray">{formatDate(inv.due_date)}</td>
                     <td className="px-4 py-3 text-right text-cult-white font-mono">{fmtDec(inv.total_amount)}</td>
-                    <td className="px-4 py-3 text-right font-mono text-green-400">
+                    <td className="px-4 py-3 text-right font-mono text-cult-success">
                       {Number(inv.paid_amount) > 0 ? fmtDec(inv.paid_amount) : '—'}
                     </td>
                     <td className="px-4 py-3 text-right text-cult-white font-mono">{fmtDec(inv.amount_due)}</td>
@@ -853,7 +853,7 @@ export function AccountsReceivable() {
                             setPaymentModal(inv);
                             setPaymentForm(f => ({ ...f, amount: String(inv.amount_due) }));
                           }}
-                          className="text-xs text-green-400 hover:text-green-300 font-medium flex items-center gap-1"
+                          className="text-xs text-cult-success hover:text-cult-success/80 font-medium flex items-center gap-1"
                         >
                           <CreditCard className="w-3 h-3" />
                           Pay
@@ -884,7 +884,7 @@ export function AccountsReceivable() {
                             </button>
                             <button
                               onClick={() => handleMarkStatus(inv.id, 'void')}
-                              className="block w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-red-400 hover:bg-cult-surface/50"
+                              className="block w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-cult-danger hover:bg-cult-surface/50"
                             >
                               <Trash2 className="w-3 h-3 inline mr-2" />
                               Void
@@ -962,7 +962,7 @@ export function AccountsReceivable() {
                   {Number(invoiceDetails.paid_amount) > 0 && (
                     <div className="flex justify-between mb-2">
                       <span className="text-cult-text-muted">Paid</span>
-                      <span className="text-green-400 font-mono">{fmtDec(invoiceDetails.paid_amount)}</span>
+                      <span className="text-cult-success font-mono">{fmtDec(invoiceDetails.paid_amount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-2 border-t border-cult-border/50">
@@ -1091,7 +1091,7 @@ export function AccountsReceivable() {
                         setPaymentModal(invoiceDetails);
                         setPaymentForm(f => ({ ...f, amount: String(invoiceDetails.amount_due) }));
                       }}
-                      className="flex-1 bg-green-600 text-white px-3 py-2 rounded-cult text-sm font-medium hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-cult-success text-white px-3 py-2 rounded-cult text-sm font-medium hover:bg-cult-success/80 transition-colors flex items-center justify-center gap-2"
                     >
                       <CreditCard className="w-4 h-4" />
                       Record Payment
@@ -1115,7 +1115,7 @@ export function AccountsReceivable() {
                         </button>
                         <button
                           onClick={() => handleMarkStatus(invoiceDetails.id, 'void')}
-                          className="block w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-red-400 hover:bg-cult-surface/50"
+                          className="block w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-cult-danger hover:bg-cult-surface/50"
                         >
                           <Trash2 className="w-3 h-3 inline mr-2" />
                           Void
@@ -1156,7 +1156,7 @@ export function AccountsReceivable() {
               {Number(paymentModal.paid_amount) > 0 && (
                 <div className="flex justify-between text-sm mt-1">
                   <span className="text-cult-text-muted">Already Paid</span>
-                  <span className="text-green-400 font-mono">{fmtDec(paymentModal.paid_amount)}</span>
+                  <span className="text-cult-success font-mono">{fmtDec(paymentModal.paid_amount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm mt-1 pt-1 border-t border-cult-border/50">
@@ -1214,14 +1214,14 @@ export function AccountsReceivable() {
               </div>
 
               {paymentError && (
-                <div className="flex items-center gap-2 text-red-400 text-sm">
+                <div className="flex items-center gap-2 text-cult-danger text-sm">
                   <AlertTriangle className="w-4 h-4" />
                   {paymentError}
                 </div>
               )}
 
               {paymentSuccess && (
-                <div className="flex items-center gap-2 text-green-400 text-sm">
+                <div className="flex items-center gap-2 text-cult-success text-sm">
                   <CheckCircle className="w-4 h-4" />
                   Payment recorded — invoice updated
                 </div>
@@ -1231,7 +1231,7 @@ export function AccountsReceivable() {
                 <button
                   type="submit"
                   disabled={paymentSaving || paymentSuccess}
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2.5 rounded-cult text-sm font-semibold hover:bg-green-500 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 bg-cult-success text-white px-4 py-2.5 rounded-cult text-sm font-semibold hover:bg-cult-success/80 transition-colors disabled:opacity-50"
                 >
                   <CheckCircle className="w-4 h-4" />
                   {paymentSaving ? 'Recording...' : 'Record Payment'}

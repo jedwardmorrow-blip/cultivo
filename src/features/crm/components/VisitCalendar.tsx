@@ -40,11 +40,11 @@ const visitTypeLabels: Record<VisitType, string> = {
 
 
 const COMPLIANCE_CONFIG: Record<ComplianceStatus, { label: string; color: string; bg: string; border: string; order: number }> = {
-  overdue: { label: 'Overdue', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30', order: 0 },
-  never_visited: { label: 'Never Visited', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30', order: 1 },
-  due_soon: { label: 'Due Soon', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30', order: 2 },
-  scheduled: { label: 'Scheduled', color: 'text-sky-400', bg: 'bg-sky-500/15', border: 'border-sky-500/30', order: 3 },
-  on_track: { label: 'On Track', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', order: 4 },
+  overdue: { label: 'Overdue', color: 'text-cult-danger', bg: 'bg-cult-danger/15', border: 'border-cult-danger/30', order: 0 },
+  never_visited: { label: 'Never Visited', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30', order: 1 },
+  due_soon: { label: 'Due Soon', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30', order: 2 },
+  scheduled: { label: 'Scheduled', color: 'text-cult-info', bg: 'bg-cult-info/15', border: 'border-cult-info/30', order: 3 },
+  on_track: { label: 'On Track', color: 'text-cult-success', bg: 'bg-cult-success/15', border: 'border-cult-success/30', order: 4 },
 };
 
 const CADENCE_LS_KEY = 'cult-crm-calendar-showCadence';
@@ -64,9 +64,9 @@ function formatDateLocal(date: Date): string {
 function getDeliveryStatusDot(orders: CRMCalendarOrder[]): string {
   if (orders.length === 0) return '';
   const allReady = orders.every(o => isOrderReadyStatus(o.status));
-  if (allReady) return 'bg-emerald-400';
+  if (allReady) return 'bg-cult-success';
   const someReady = orders.some(o => isOrderReadyStatus(o.status));
-  return someReady ? 'bg-amber-400' : 'bg-orange-400';
+  return someReady ? 'bg-cult-warning' : 'bg-cult-warning';
 }
 
 
@@ -224,7 +224,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
             onClick={toggleDeliveries}
             className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
               showDeliveries
-                ? 'text-amber-400 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'
+                ? 'text-cult-warning bg-cult-warning/10 border-cult-warning/30 hover:bg-cult-warning/20'
                 : 'text-cult-silver bg-cult-dark-gray border-cult-medium-gray hover:text-cult-white hover:bg-cult-charcoal'
             }`}
             title={showDeliveries ? 'Hide deliveries' : 'Show deliveries'}
@@ -239,7 +239,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
             <Plus className="w-4 h-4" />
             Schedule Visit
           </button>
-            <button onClick={toggleCadencePanel} className={`p-2 ${showCadencePanel ? "text-sky-400" : "text-cult-silver"} hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors`} title="Toggle Visit Cadence Panel">
+            <button onClick={toggleCadencePanel} className={`p-2 ${showCadencePanel ? "text-cult-info" : "text-cult-silver"} hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors`} title="Toggle Visit Cadence Panel">
               <CalendarClock className="w-4 h-4" />
             </button>
           <button onClick={reload} className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors">
@@ -249,10 +249,10 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatBlock label="Scheduled" value={scheduledCount} icon={CalendarDays} iconColor="text-sky-400" />
-        <StatBlock label="Completed" value={completedCount} icon={CheckCircle2} iconColor="text-emerald-400" />
+        <StatBlock label="Scheduled" value={scheduledCount} icon={CalendarDays} iconColor="text-cult-info" />
+        <StatBlock label="Completed" value={completedCount} icon={CheckCircle2} iconColor="text-cult-success" />
         <StatBlock label="Total Visits" value={scheduledCount + completedCount} icon={MapPin} iconColor="text-cult-silver" />
-        <StatBlock label="Deliveries" value={deliveryCount} icon={Truck} iconColor="text-amber-400" />
+        <StatBlock label="Deliveries" value={deliveryCount} icon={Truck} iconColor="text-cult-warning" />
       </div>
 
       <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
@@ -297,15 +297,15 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
                 key={dateKey}
                 className={`min-h-[100px] border-b border-r border-cult-charcoal/30 p-1.5 cursor-pointer transition-colors flex flex-col
                   ${isToday ? 'bg-cult-dark-gray/60' : 'hover:bg-cult-dark-gray/30'}
-                  ${isDragOver ? 'bg-sky-500/10 ring-1 ring-sky-500/30' : ''}
+                  ${isDragOver ? 'bg-cult-info/10 ring-1 ring-cult-info/30' : ''}
                 `}
                 onClick={() => handleDayClick(day)}
                 onDragOver={(e) => { e.preventDefault(); setDragOverDate(dateKey); }}
                 onDragLeave={() => setDragOverDate(null)}
                 onDrop={(e) => { e.preventDefault(); handleDrop(dateKey); }}
               >
-                <div className={`text-xs font-medium mb-1 ${isToday ? 'text-sky-400' : 'text-cult-light-gray'}`}>
-                  {isToday && <span className="inline-block w-5 h-5 leading-5 text-center bg-sky-500 text-cult-black rounded-full text-xs font-bold">{day}</span>}
+                <div className={`text-xs font-medium mb-1 ${isToday ? 'text-cult-info' : 'text-cult-light-gray'}`}>
+                  {isToday && <span className="inline-block w-5 h-5 leading-5 text-center bg-cult-info text-cult-black rounded-full text-xs font-bold">{day}</span>}
                   {!isToday && day}
                 </div>
                 <div className="space-y-0.5 flex-1">
@@ -331,7 +331,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
                 {dayOrders.length > 0 && (
                   <div className="mt-auto pt-1">
                     <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-cult-dark-gray/50 border border-cult-charcoal/40">
-                      <Truck className="w-2.5 h-2.5 text-amber-400/80 flex-shrink-0" />
+                      <Truck className="w-2.5 h-2.5 text-cult-warning/80 flex-shrink-0" />
                       <span className="text-xs text-cult-lighter-gray font-medium">{dayOrders.length}</span>
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ml-auto ${getDeliveryStatusDot(dayOrders)}`} />
                     </div>
@@ -352,7 +352,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
         ))}
         {showDeliveries && (
           <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-cult-charcoal">
-            <Truck className="w-3 h-3 text-amber-400/70" />
+            <Truck className="w-3 h-3 text-cult-warning/70" />
             <span>Deliveries</span>
           </div>
         )}
@@ -413,7 +413,7 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
         <div className="w-80 shrink-0 bg-cult-dark-gray border border-cult-medium-gray rounded-xl p-4 h-fit max-h-[calc(100vh-8rem)] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-cult-white flex items-center gap-2">
-              <CalendarClock className="w-5 h-5 text-sky-400" />
+              <CalendarClock className="w-5 h-5 text-cult-info" />
               Visit Cadence
             </h3>
             <button
@@ -426,21 +426,21 @@ export function VisitCalendar({ onSelectOrder }: VisitCalendarProps) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-              <div className="text-red-400 text-lg font-bold">{cadenceStats.overdue}</div>
-              <div className="text-red-400/70 text-xs">Overdue</div>
+            <div className="bg-cult-danger/10 border border-cult-danger/20 rounded-lg px-3 py-2">
+              <div className="text-cult-danger text-lg font-bold">{cadenceStats.overdue}</div>
+              <div className="text-cult-danger/70 text-xs">Overdue</div>
             </div>
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-              <div className="text-amber-400 text-lg font-bold">{cadenceStats.dueSoon}</div>
-              <div className="text-amber-400/70 text-xs">Due Soon</div>
+            <div className="bg-cult-warning/10 border border-cult-warning/20 rounded-lg px-3 py-2">
+              <div className="text-cult-warning text-lg font-bold">{cadenceStats.dueSoon}</div>
+              <div className="text-cult-warning/70 text-xs">Due Soon</div>
             </div>
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2">
-              <div className="text-orange-400 text-lg font-bold">{cadenceStats.neverVisited}</div>
-              <div className="text-orange-400/70 text-xs">Never Visited</div>
+            <div className="bg-cult-warning/10 border border-cult-warning/20 rounded-lg px-3 py-2">
+              <div className="text-cult-warning text-lg font-bold">{cadenceStats.neverVisited}</div>
+              <div className="text-cult-warning/70 text-xs">Never Visited</div>
             </div>
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
-              <div className="text-emerald-400 text-lg font-bold">{cadenceStats.onTrack}</div>
-              <div className="text-emerald-400/70 text-xs">On Track</div>
+            <div className="bg-cult-success/10 border border-cult-success/20 rounded-lg px-3 py-2">
+              <div className="text-cult-success text-lg font-bold">{cadenceStats.onTrack}</div>
+              <div className="text-cult-success/70 text-xs">On Track</div>
             </div>
           </div>
 
@@ -544,7 +544,7 @@ function DayDetailModal({
                         {visitTypeLabels[visit.visit_type]}
                       </span>
                       {visit.status === 'completed' && (
-                        <span className="px-1.5 py-0.5 text-xs rounded bg-emerald-500/15 text-emerald-400">Done</span>
+                        <span className="px-1.5 py-0.5 text-xs rounded bg-cult-success/15 text-cult-success">Done</span>
                       )}
                     </div>
                     {visit.visit_time_window && (
@@ -554,21 +554,21 @@ function DayDetailModal({
                       <p className="text-xs text-cult-silver mt-0.5">{visit.location_notes}</p>
                     )}
                     {visit.outcome_notes && (
-                      <p className="text-xs text-emerald-400/80 mt-1 italic">{visit.outcome_notes}</p>
+                      <p className="text-xs text-cult-success/80 mt-1 italic">{visit.outcome_notes}</p>
                     )}
                   </div>
                   {visit.status === 'scheduled' && (
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => onComplete(visit)}
-                        className="p-1.5 text-cult-medium-gray hover:text-emerald-400 transition-colors"
+                        className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors"
                         title="Complete"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onCancel(visit.id)}
-                        className="p-1.5 text-cult-medium-gray hover:text-red-400 transition-colors"
+                        className="p-1.5 text-cult-medium-gray hover:text-cult-danger transition-colors"
                         title="Cancel"
                       >
                         <X className="w-4 h-4" />
@@ -583,7 +583,7 @@ function DayDetailModal({
           {orders.length > 0 && (
             <div className="border-t border-cult-charcoal">
               <div className="px-5 py-3 flex items-center gap-2 bg-cult-dark-gray/30">
-                <Truck className="w-4 h-4 text-amber-400" />
+                <Truck className="w-4 h-4 text-cult-warning" />
                 <span className="text-xs font-semibold text-cult-white uppercase tracking-wider">Scheduled Deliveries</span>
                 <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full ml-auto">{orders.length}</span>
               </div>

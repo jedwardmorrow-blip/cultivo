@@ -312,7 +312,7 @@ export function PlantMoveSheet({
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3 mb-4">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 mb-4">
               <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -324,7 +324,7 @@ export function PlantMoveSheet({
               <div className="space-y-2 mb-5">
                 <p className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Select Destination Room</p>
                 {availableRooms.length === 0 ? (
-                  <p className="text-amber-400 text-sm">No other active rooms available.</p>
+                  <p className="text-cult-warning text-sm">No other active rooms available.</p>
                 ) : (
                   availableRooms.map((r) => {
                     const currentCount = roomPlantCounts?.get(r.id) ?? 0;
@@ -389,20 +389,20 @@ export function PlantMoveSheet({
                 </p>
 
                 {/* Mortality input */}
-                <div className="flex items-center gap-3 bg-red-950/30 border border-red-900/40 px-4 py-3">
-                  <div className="w-8 h-8 rounded-sm flex items-center justify-center bg-red-950 flex-shrink-0">
-                    <Skull className="w-4 h-4 text-red-400" />
+                <div className="flex items-center gap-3 bg-cult-danger-muted border border-cult-danger/30 px-4 py-3">
+                  <div className="w-8 h-8 rounded-sm flex items-center justify-center bg-cult-danger-muted flex-shrink-0">
+                    <Skull className="w-4 h-4 text-cult-danger" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-red-300 font-medium uppercase tracking-wider">Kill Plants (optional)</p>
-                    <p className="text-xs text-red-900/80 mt-0.5">Plants too small / unhealthy to move</p>
+                    <p className="text-xs text-cult-danger font-medium uppercase tracking-wider">Kill Plants (optional)</p>
+                    <p className="text-xs text-cult-danger/60 mt-0.5">Plants too small / unhealthy to move</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setKillCount((c) => Math.max(c - 1, 0))}
                       disabled={killCount <= 0}
-                      className="w-8 h-8 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-sm bg-cult-black border border-cult-danger/30 text-cult-danger hover:border-cult-danger disabled:opacity-30 transition-colors"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -416,13 +416,13 @@ export function PlantMoveSheet({
                         setKillCount(Math.min(v, totalPlants - 1));
                       }}
                       placeholder="0"
-                      className="w-14 bg-cult-black border border-red-900/50 text-red-300 px-1 py-1.5 text-sm text-center font-mono focus:outline-none focus:border-red-700"
+                      className="w-14 bg-cult-black border border-cult-danger/30 text-cult-danger px-1 py-1.5 text-sm text-center font-mono focus:outline-none focus:border-cult-danger"
                     />
                     <button
                       type="button"
                       onClick={() => setKillCount((c) => Math.min(c + 1, totalPlants - 1))}
                       disabled={killCount >= totalPlants - 1}
-                      className="w-8 h-8 flex items-center justify-center rounded-sm bg-cult-black border border-red-900/50 text-red-400 hover:border-red-700 disabled:opacity-30 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-sm bg-cult-black border border-cult-danger/30 text-cult-danger hover:border-cult-danger disabled:opacity-30 transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -462,7 +462,7 @@ export function PlantMoveSheet({
               <div className="mb-3">
                 <p className="text-xs text-cult-medium-gray mb-2">
                   Moving to <span className="text-cult-white font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
-                  {killCount > 0 && <span className="text-red-400 ml-2">{killCount} killed</span>}
+                  {killCount > 0 && <span className="text-cult-danger ml-2">{killCount} killed</span>}
                 </p>
               </div>
 
@@ -475,7 +475,7 @@ export function PlantMoveSheet({
                   <button
                     onClick={distributeEvenly}
                     disabled={selectedCells.length === 0}
-                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-emerald-700 hover:text-emerald-400 disabled:opacity-30 transition-all"
+                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-emerald-700 hover:text-cult-success disabled:opacity-30 transition-all"
                   >
                     Distribute evenly
                   </button>
@@ -495,11 +495,11 @@ export function PlantMoveSheet({
                   <span className="text-[9px] text-cult-medium-gray">Empty</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 border border-amber-700/60 bg-amber-950/40" />
+                  <div className="w-3 h-3 border border-cult-warning/40 bg-cult-warning-muted" />
                   <span className="text-[9px] text-cult-medium-gray">Occupied</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 border border-emerald-500/50 bg-emerald-950/30" />
+                  <div className="w-3 h-3 border border-cult-success/30 bg-cult-success-muted" />
                   <span className="text-[9px] text-cult-medium-gray">Placing here</span>
                 </div>
               </div>
@@ -530,10 +530,10 @@ export function PlantMoveSheet({
 
                       if (isSelected) {
                         return (
-                          <div key={key} className="min-h-[52px] border-2 border-emerald-500/60 bg-emerald-950/20 flex flex-col items-center justify-center relative">
+                          <div key={key} className="min-h-[52px] border-2 border-cult-success/40 bg-cult-success-muted flex flex-col items-center justify-center relative">
                             <button
                               onClick={() => toggleCell(key)}
-                              className="absolute top-0.5 right-1 text-[8px] text-emerald-500/60 hover:text-red-400 transition-colors"
+                              className="absolute top-0.5 right-1 text-[8px] text-cult-success/40 hover:text-cult-danger transition-colors"
                             >
                               ✕
                             </button>
@@ -545,12 +545,12 @@ export function PlantMoveSheet({
                               onChange={(e) => setCellCount(key, Number(e.target.value) || 0)}
                               onFocus={(e) => e.target.select()}
                               placeholder="0"
-                              className="w-full h-full text-center bg-transparent text-emerald-400 font-mono text-sm font-bold outline-none cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-full h-full text-center bg-transparent text-cult-success font-mono text-sm font-bold outline-none cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             {isOccupied && (
                               <div className="flex flex-col items-center">
                                 {cell.occupiedStrains.map(s => (
-                                  <span key={s.abbreviation} className="text-[7px] text-amber-400/60 font-mono leading-tight">
+                                  <span key={s.abbreviation} className="text-[7px] text-cult-warning/60 font-mono leading-tight">
                                     +{s.count} {s.abbreviation}
                                   </span>
                                 ))}
@@ -565,12 +565,12 @@ export function PlantMoveSheet({
                           <button
                             key={key}
                             onClick={() => toggleCell(key)}
-                            className="min-h-[52px] bg-amber-950/30 border border-amber-700/40 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/60 hover:bg-amber-950/40 transition-colors"
+                            className="min-h-[52px] bg-cult-warning-muted border border-cult-warning/30 flex flex-col items-center justify-center cursor-pointer hover:border-cult-warning/40 hover:bg-cult-warning-muted transition-colors"
                           >
-                            <span className="font-mono text-[11px] font-bold text-amber-400/80">{cell.occupiedCount}</span>
+                            <span className="font-mono text-[11px] font-bold text-cult-warning/80">{cell.occupiedCount}</span>
                             <div className="flex flex-col items-center">
                               {cell.occupiedStrains.map(s => (
-                                <span key={s.abbreviation} className="text-[7px] text-amber-500/60 uppercase tracking-wider leading-tight">
+                                <span key={s.abbreviation} className="text-[7px] text-cult-warning/40 uppercase tracking-wider leading-tight">
                                   {s.count} {s.abbreviation}
                                 </span>
                               ))}
@@ -583,7 +583,7 @@ export function PlantMoveSheet({
                         <button
                           key={key}
                           onClick={() => toggleCell(key)}
-                          className="min-h-[52px] bg-cult-black border border-dashed border-cult-medium-gray/40 hover:border-emerald-600/50 hover:bg-emerald-950/10 transition-colors cursor-pointer"
+                          className="min-h-[52px] bg-cult-black border border-dashed border-cult-medium-gray/40 hover:border-cult-success/40 hover:bg-cult-success-muted transition-colors cursor-pointer"
                         />
                       );
                     })}
@@ -596,7 +596,7 @@ export function PlantMoveSheet({
                   <span className="text-cult-white font-mono font-bold">{assignedPlants}</span> assigned
                 </div>
                 <div className="text-xs text-cult-medium-gray">
-                  <span className={`font-mono font-bold ${remainingPlants === 0 ? 'text-emerald-400' : remainingPlants < 0 ? 'text-red-400' : 'text-amber-400'}`}>
+                  <span className={`font-mono font-bold ${remainingPlants === 0 ? 'text-cult-success' : remainingPlants < 0 ? 'text-cult-danger' : 'text-cult-warning'}`}>
                     {remainingPlants}
                   </span> remaining
                 </div>
@@ -612,7 +612,7 @@ export function PlantMoveSheet({
               )}
 
               {remainingPlants < 0 && (
-                <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-3">
+                <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2 mb-3">
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                   Over-assigned by {Math.abs(remainingPlants)} — reduce plant counts.
                 </div>

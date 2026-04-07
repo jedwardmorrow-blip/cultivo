@@ -69,12 +69,12 @@ export default function TriageTable({
       <div className="flex items-center gap-3 px-1 mb-3">
         <span className="text-sm text-gray-400">{strains.length} strains</span>
         {deficitCount > 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-red-900/60 text-rose-400">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-cult-danger-muted text-cult-danger">
             {deficitCount} deficit
           </span>
         )}
         {tightCount > 0 && (
-          <span className="text-xs font-bold px-2.5 py-1 rounded bg-amber-900/60 text-amber-400">
+          <span className="text-xs font-bold px-2.5 py-1 rounded bg-cult-warning-muted text-cult-warning">
             {tightCount} tight
           </span>
         )}
@@ -107,9 +107,9 @@ export default function TriageTable({
           {sorted.map(row => {
             const isSelected = (row.strain.strainId ?? row.strain.strainName) === selectedStrainId;
             const coverageBorderClass = row.coverage.state === 'deficit'
-              ? 'border-l-[3px] border-l-rose-500/50'
+              ? 'border-l-[3px] border-l-cult-danger/50'
               : row.coverage.state === 'tight'
-                ? 'border-l-[3px] border-l-amber-500/40'
+                ? 'border-l-[3px] border-l-cult-warning/40'
                 : 'border-l-[3px] border-l-transparent';
 
             return (
@@ -158,9 +158,9 @@ export default function TriageTable({
                   <div className="flex h-1.5 rounded-sm bg-cult-border overflow-hidden mt-1 w-20">
                     <div
                       className={`rounded-sm ${
-                        row.coverage.state === 'surplus' ? 'bg-emerald-400'
-                        : row.coverage.state === 'tight' ? 'bg-amber-400'
-                        : 'bg-rose-400'
+                        row.coverage.state === 'surplus' ? 'bg-cult-success'
+                        : row.coverage.state === 'tight' ? 'bg-cult-warning'
+                        : 'bg-cult-danger'
                       }`}
                       style={{ width: `${Math.min(row.readyPct, 100)}%` }}
                     />
@@ -170,14 +170,14 @@ export default function TriageTable({
                 {/* Coverage state badge */}
                 <div className="flex items-center">
                   {row.coverage.state === 'surplus' ? (
-                    <span className="text-xs font-semibold text-emerald-400">
+                    <span className="text-xs font-semibold text-cult-success">
                       {row.coverage.label}
                     </span>
                   ) : (
                     <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide ${
                       row.coverage.state === 'tight'
-                        ? 'bg-amber-500/15 text-amber-400'
-                        : 'bg-rose-500/15 text-rose-400'
+                        ? 'bg-cult-warning/15 text-cult-warning'
+                        : 'bg-cult-danger/15 text-cult-danger'
                     }`}>
                       {row.coverage.label}
                     </span>

@@ -28,8 +28,8 @@ function formatHours(h: number): string {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  completed: 'bg-emerald-500',
-  in_progress: 'bg-amber-400',
+  completed: 'bg-cult-success',
+  in_progress: 'bg-cult-warning',
   pending: 'bg-cult-dark-gray',
   skipped: 'bg-cult-medium-gray',
   carry_forward: 'bg-violet-500',
@@ -60,10 +60,10 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
   const utilizationPct = capacityHours > 0 ? Math.min((totalHours / capacityHours) * 100, 100) : 0;
 
   const barColor = isOverAllocated
-    ? 'bg-red-500'
+    ? 'bg-cult-danger'
     : totalHours > capacityHours * 0.8
-      ? 'bg-amber-500'
-      : 'bg-emerald-500';
+      ? 'bg-cult-warning'
+      : 'bg-cult-success';
 
   async function handleReassign(taskId: string, newStaffId: string) {
     setAssigning(taskId);
@@ -75,7 +75,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
   }
 
   return (
-    <div className={`border rounded-sm ${isOverAllocated ? 'border-red-600/50 bg-red-950/20' : 'border-cult-dark-gray bg-cult-graphite'}`}>
+    <div className={`border rounded-sm ${isOverAllocated ? 'border-cult-danger/50 bg-cult-danger-muted' : 'border-cult-dark-gray bg-cult-graphite'}`}>
       {/* Row header */}
       <button
         type="button"
@@ -92,7 +92,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-cult-off-white truncate">{displayName}</span>
             {isOverAllocated && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold text-red-400 bg-red-950/60 border border-red-600/40 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-cult-danger bg-cult-danger-muted border border-cult-danger/40 px-1.5 py-0.5 rounded">
                 <AlertTriangle className="w-3 h-3" />
                 OVER
               </span>
@@ -112,11 +112,11 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
         {/* Stats */}
         <div className="flex items-center gap-3 flex-shrink-0 text-xs text-cult-medium-gray">
           <span className="flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-500/70" />
+            <CheckCircle2 className="w-3 h-3 text-cult-success/70" />
             {completedCount}/{tasks.length}
           </span>
           {totalHours > 0 && (
-            <span className={`flex items-center gap-1 ${isOverAllocated ? 'text-red-400' : ''}`}>
+            <span className={`flex items-center gap-1 ${isOverAllocated ? 'text-cult-danger' : ''}`}>
               <Clock className="w-3 h-3" />
               {formatHours(totalHours)}
               {capacityHours > 0 && <span className="text-cult-dark-gray">/{formatHours(capacityHours)}</span>}
@@ -233,7 +233,7 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
           <Users className="w-4 h-4 text-cult-accent" />
           <span className="text-sm font-semibold text-cult-off-white">Staff Capacity</span>
           {overAllocatedCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-semibold text-red-400 bg-red-950/60 border border-red-600/40 px-1.5 py-0.5 rounded">
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-cult-danger bg-cult-danger-muted border border-cult-danger/40 px-1.5 py-0.5 rounded">
               <AlertTriangle className="w-3 h-3" />
               {overAllocatedCount} overallocated
             </span>
@@ -245,7 +245,7 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
             {totalUnassigned} unassigned
           </span>
           <span className="flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-500/70" />
+            <CheckCircle2 className="w-3 h-3 text-cult-success/70" />
             {totalAssigned} assigned
           </span>
           {/* Capacity threshold control */}

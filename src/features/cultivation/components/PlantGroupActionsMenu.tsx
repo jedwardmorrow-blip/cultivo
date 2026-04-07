@@ -136,7 +136,7 @@ export function PlantGroupActionsMenu({
               onClick={() => handle(onToggleMother)}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cult-white hover:bg-cult-black transition-colors text-left"
             >
-              <Star className={`w-3.5 h-3.5 flex-shrink-0 ${group.is_mother ? 'text-amber-400' : 'text-cult-medium-gray'}`} />
+              <Star className={`w-3.5 h-3.5 flex-shrink-0 ${group.is_mother ? 'text-cult-warning' : 'text-cult-medium-gray'}`} />
               {group.is_mother ? 'Remove Mother Status' : 'Mark as Mother'}
             </button>
           ) : (

@@ -152,7 +152,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
             <button
               onClick={handleCopy}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 ${
-                copied ? 'bg-emerald-500/10 text-emerald-400' : 'bg-neutral-800/60 text-neutral-400 hover:text-neutral-200'
+                copied ? 'bg-cult-success/10 text-cult-success' : 'bg-neutral-800/60 text-neutral-400 hover:text-neutral-200'
               }`}
             >
               {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -167,7 +167,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
             </button>
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-500 hover:text-red-400 hover:bg-red-950/30 transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-500 hover:text-cult-danger hover:bg-cult-danger/10 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -184,7 +184,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                   placeholder="Search strains..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full rounded-lg border border-cult-medium-gray/30 bg-cult-black pl-8 pr-3 py-1.5 text-xs text-white outline-none focus:border-emerald-500/50 transition-colors"
+                  className="w-full rounded-lg border border-cult-medium-gray/30 bg-cult-black pl-8 pr-3 py-1.5 text-xs text-white outline-none focus:border-cult-success/50 transition-colors"
                 />
               </div>
               <div className="flex gap-1 mt-2 flex-wrap">
@@ -250,7 +250,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                     </div>
                     <button
                       onClick={() => removeStrain(item.strain)}
-                      className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-600 hover:text-red-400 hover:bg-red-950/20 transition-colors"
+                      className="w-6 h-6 rounded-md flex items-center justify-center text-neutral-600 hover:text-cult-danger hover:bg-cult-danger/10 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -263,7 +263,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                       return (
                         <div
                           key={f.id}
-                          className={`flex items-center gap-2 py-[5px] rounded-lg px-2 mb-[2px] ${hasQty ? 'bg-emerald-950/20' : ''}`}
+                          className={`flex items-center gap-2 py-[5px] rounded-lg px-2 mb-[2px] ${hasQty ? 'bg-cult-success/10' : ''}`}
                         >
                           <span className={`text-xs font-semibold min-w-[85px] ${hasQty ? 'text-neutral-300' : 'text-neutral-600'}`}>
                             {f.label}
@@ -274,7 +274,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                             value={d.qty || ''}
                             placeholder="0"
                             onChange={e => updateQty(item.strain, f.id, e.target.value)}
-                            className="w-[52px] py-[5px] px-2 rounded-md border border-neutral-700/50 bg-neutral-800/40 text-[13px] font-semibold text-right text-white outline-none focus:border-emerald-500/50 transition-colors tabular-nums"
+                            className="w-[52px] py-[5px] px-2 rounded-md border border-neutral-700/50 bg-neutral-800/40 text-[13px] font-semibold text-right text-white outline-none focus:border-cult-success/50 transition-colors tabular-nums"
                           />
                           <span className="text-xs text-neutral-600">&times;</span>
                           <div className="flex items-center">
@@ -284,11 +284,11 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                               min="0"
                               value={d.price || ''}
                               onChange={e => updatePrice(item.strain, f.id, e.target.value)}
-                              className="w-[60px] py-[5px] px-2 rounded-md border border-neutral-700/50 bg-neutral-800/40 text-[13px] font-semibold text-right text-white outline-none focus:border-emerald-500/50 transition-colors tabular-nums"
+                              className="w-[60px] py-[5px] px-2 rounded-md border border-neutral-700/50 bg-neutral-800/40 text-[13px] font-semibold text-right text-white outline-none focus:border-cult-success/50 transition-colors tabular-nums"
                             />
                           </div>
                           {hasQty && (
-                            <span className="text-xs font-bold text-emerald-400 min-w-[70px] text-right ml-auto tabular-nums">
+                            <span className="text-xs font-bold text-cult-success min-w-[70px] text-right ml-auto tabular-nums">
                               = ${(d.qty * d.price).toLocaleString()}
                             </span>
                           )}
@@ -316,7 +316,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-neutral-500 tracking-[0.1em]">EST. REVENUE</div>
-                  <div className={`text-lg font-extrabold tabular-nums ${totals.revenue > 0 ? 'text-emerald-400' : 'text-neutral-700'}`}>
+                  <div className={`text-lg font-extrabold tabular-nums ${totals.revenue > 0 ? 'text-cult-success' : 'text-neutral-700'}`}>
                     ${totals.revenue.toLocaleString()}
                   </div>
                 </div>

@@ -208,29 +208,29 @@ export function PackagingSessionCompleteModal({
             </div>
 
             <div className="border-t border-cult-medium-gray pt-4">
-              <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-4 mb-4">
-                <p className="text-blue-300 text-sm font-medium mb-2">Auto-Consolidation Notice:</p>
-                <p className="text-blue-200 text-sm">
+              <div className="bg-cult-info-muted border border-cult-info rounded-lg p-4 mb-4">
+                <p className="text-cult-info text-sm font-medium mb-2">Auto-Consolidation Notice:</p>
+                <p className="text-cult-info/80 text-sm">
                   Package IDs will be automatically generated when you complete this session.
                   All outputs will be consolidated in the "Holding" room for EOD Dutchie conversion.
                 </p>
               </div>
 
               {Object.keys(consolidatedPackages).length > 0 && (
-                <div className="bg-green-900/20 border border-green-600 rounded-lg p-4 mb-4">
-                  <p className="text-green-300 text-sm font-bold mb-2">Generated Package IDs:</p>
+                <div className="bg-cult-success-muted border border-cult-success rounded-lg p-4 mb-4">
+                  <p className="text-cult-success text-sm font-bold mb-2">Generated Package IDs:</p>
                   <div className="space-y-1">
                     {consolidatedPackages['3.5g'] && (
-                      <p className="text-green-200 text-sm">3.5g Units: <span className="font-mono font-bold">{consolidatedPackages['3.5g']}</span></p>
+                      <p className="text-cult-success/80 text-sm">3.5g Units: <span className="font-mono font-bold">{consolidatedPackages['3.5g']}</span></p>
                     )}
                     {consolidatedPackages['14g'] && (
-                      <p className="text-green-200 text-sm">14g Units: <span className="font-mono font-bold">{consolidatedPackages['14g']}</span></p>
+                      <p className="text-cult-success/80 text-sm">14g Units: <span className="font-mono font-bold">{consolidatedPackages['14g']}</span></p>
                     )}
                     {consolidatedPackages['454g'] && (
-                      <p className="text-green-200 text-sm">454g Units: <span className="font-mono font-bold">{consolidatedPackages['454g']}</span></p>
+                      <p className="text-cult-success/80 text-sm">454g Units: <span className="font-mono font-bold">{consolidatedPackages['454g']}</span></p>
                     )}
                   </div>
-                  <p className="text-green-300 text-xs mt-2">All packages are in "Holding" room</p>
+                  <p className="text-cult-success text-xs mt-2">All packages are in "Holding" room</p>
                 </div>
               )}
             </div>

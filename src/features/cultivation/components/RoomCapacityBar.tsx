@@ -15,13 +15,13 @@ export function RoomCapacityBar({ currentCount, capacity, className = '' }: Room
 
   const pct = Math.min(Math.round((currentCount / capacity) * 100), 100);
   const barColor =
-    pct >= 90 ? 'bg-red-500' :
-    pct >= 70 ? 'bg-amber-400' :
-    'bg-emerald-500';
+    pct >= 90 ? 'bg-cult-danger' :
+    pct >= 70 ? 'bg-cult-warning' :
+    'bg-cult-success';
   const textColor =
-    pct >= 90 ? 'text-red-400' :
-    pct >= 70 ? 'text-amber-400' :
-    'text-emerald-400';
+    pct >= 90 ? 'text-cult-danger' :
+    pct >= 70 ? 'text-cult-warning' :
+    'text-cult-success';
 
   return (
     <div className={`space-y-1 ${className}`}>

@@ -71,8 +71,8 @@ export function ConversionsView() {
   if (error) {
     return (
       <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-6">
-        <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-red-400">
+        <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-4">
+          <div className="flex items-center gap-2 text-cult-danger">
             <AlertCircle className="w-5 h-5" />
             <span className="text-sm">Error loading conversions: {error}</span>
           </div>
@@ -98,19 +98,19 @@ export function ConversionsView() {
 
       {/* Alert Banner - Pending Sessions */}
       {pendingSessions.length > 0 && (
-        <div className="bg-amber-900 bg-opacity-30 border border-amber-700 rounded-lg p-4 mb-6">
+        <div className="bg-cult-warning-muted border border-cult-warning rounded-lg p-4 mb-6">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-amber-300 mb-1">
+              <h3 className="text-sm font-semibold text-cult-warning mb-1">
                 Sessions Awaiting Finalization
               </h3>
-              <p className="text-sm text-amber-200 mb-3">
+              <p className="text-sm text-cult-warning/80 mb-3">
                 {pendingSessions.length} session{pendingSessions.length !== 1 ? 's have' : ' has'} completed
                 but not yet finalized to inventory. Define package weights/quantities and finalize to create
                 immediately available inventory.
               </p>
-              <div className="flex items-center gap-2 text-xs text-amber-200">
+              <div className="flex items-center gap-2 text-xs text-cult-warning/80">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Click any session below to create packages and finalize</span>
               </div>
@@ -120,14 +120,14 @@ export function ConversionsView() {
       )}
 
       {/* Info banner */}
-      <div className="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg p-4 mb-6">
+      <div className="bg-cult-info-muted border border-cult-info rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-cult-info flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-sm font-semibold text-blue-300 mb-1">
+            <h3 className="text-sm font-semibold text-cult-info mb-1">
               Conversion to Inventory Workflow
             </h3>
-            <p className="text-sm text-blue-200">
+            <p className="text-sm text-cult-info/80">
               When production sessions (bucking, trim, packaging) complete, they appear here grouped by batch and product.
               Define package weights or case quantities with auto-generated IDs, track variance, and
               finalize to create immediately available inventory.
@@ -157,7 +157,7 @@ export function ConversionsView() {
         </div>
       ) : (
         <div className="bg-cult-surface-raised border border-cult-border rounded-lg p-8 text-center">
-          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+          <CheckCircle2 className="w-12 h-12 text-cult-success mx-auto mb-3" />
           <h3 className="text-lg font-medium text-cult-text-secondary mb-1">All sessions finalized</h3>
           <p className="text-sm text-cult-text-muted">
             No sessions awaiting finalization. Complete production sessions to create pending conversions.
@@ -196,11 +196,11 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
   const isUrgent = daysSinceCompleted > 3;
 
   const borderClass = isUrgent
-    ? 'border-amber-500'
+    ? 'border-cult-warning'
     : 'border-cult-medium-gray';
 
   const bgClass = isUrgent
-    ? 'bg-amber-900/10'
+    ? 'bg-cult-warning-muted'
     : 'bg-cult-dark-gray';
 
   return (
@@ -212,7 +212,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
           onClick={onClick}
           className={`flex-1 text-left p-4 transition-colors ${
             isUrgent
-              ? 'hover:bg-amber-900/20'
+              ? 'hover:bg-cult-warning/10'
               : 'hover:bg-cult-medium-gray/40'
           }`}
         >
@@ -235,7 +235,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
 
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-sm text-cult-text-secondary">{session.product_name}</span>
-                <span className="text-xs px-2 py-0.5 bg-blue-900/40 border border-blue-700 rounded text-blue-300">
+                <span className="text-xs px-2 py-0.5 bg-cult-info-muted border border-cult-info rounded text-cult-info">
                   {sessionTypeLabel}
                 </span>
               </div>
@@ -246,7 +246,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
                   <span>Last completed {daysSinceCompleted}d ago</span>
                 </div>
                 {isUrgent && (
-                  <div className="flex items-center gap-1 text-amber-400">
+                  <div className="flex items-center gap-1 text-cult-warning">
                     <AlertTriangle className="w-3 h-3" />
                     <span>Needs attention</span>
                   </div>
@@ -294,7 +294,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             }}
             className={`flex items-center justify-center w-12 border-l transition-colors ${
               isUrgent
-                ? 'border-amber-700/50 hover:bg-amber-900/30'
+                ? 'border-cult-warning/50 hover:bg-cult-warning/15'
                 : 'border-cult-medium-gray/50 hover:bg-cult-medium-gray/40'
             }`}
             aria-label={isExpanded ? 'Collapse session breakdown' : 'Expand session breakdown'}
@@ -340,8 +340,8 @@ function SessionBreakdownPanel({
     true
   );
 
-  const borderTop = isUrgent ? 'border-amber-700/40' : 'border-cult-medium-gray/40';
-  const bg = isUrgent ? 'bg-amber-900/10' : 'bg-black/20';
+  const borderTop = isUrgent ? 'border-cult-warning/40' : 'border-cult-medium-gray/40';
+  const bg = isUrgent ? 'bg-cult-warning-muted' : 'bg-black/20';
 
   if (isLoading) {
     return (
@@ -358,7 +358,7 @@ function SessionBreakdownPanel({
   if (error) {
     return (
       <div className={`border-t ${borderTop} ${bg} px-4 py-3`}>
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-cult-danger">{error}</p>
       </div>
     );
   }
@@ -417,7 +417,7 @@ function SessionBreakdownPanel({
           ))}
         </tbody>
         <tfoot>
-          <tr className={`border-t ${isUrgent ? 'border-amber-700/40' : 'border-white/10'}`}>
+          <tr className={`border-t ${isUrgent ? 'border-cult-warning/40' : 'border-white/10'}`}>
             <td colSpan={3} className="pt-2 text-cult-text-muted font-medium">Total</td>
             <td className="pt-2 text-right font-bold text-cult-white">
               {isBulk ? `${total.toFixed(0)}g` : `${total}`}

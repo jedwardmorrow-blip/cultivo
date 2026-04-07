@@ -97,7 +97,7 @@ export function COAReviewWizard({
         </div>
 
         {currentItem.error && (
-          <div className="mb-6 flex items-start gap-2 p-4 bg-red-900/20 border border-red-700 text-red-100">
+          <div className="mb-6 flex items-start gap-2 p-4 bg-cult-danger-muted border border-cult-danger text-cult-text-primary">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Parse Error</p>
@@ -338,7 +338,7 @@ export function COAReviewWizard({
               <button
                 onClick={handleFinish}
                 disabled={!canProceed}
-                className="px-6 py-3 bg-green-600 text-white font-medium uppercase tracking-wider hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-cult-success text-cult-text-primary font-medium uppercase tracking-wider hover:bg-cult-success/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Review All
               </button>
@@ -347,7 +347,7 @@ export function COAReviewWizard({
         </div>
 
         {!canProceed && (
-          <div className="mt-4 flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-700 text-amber-100 text-sm">
+          <div className="mt-4 flex items-start gap-2 p-3 bg-cult-warning-muted border border-cult-warning text-cult-text-primary text-sm">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>Please fill in all required fields and select a batch before proceeding.</span>
           </div>

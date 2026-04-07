@@ -79,9 +79,9 @@ export function VarianceLogViewer({
 
   const getVarianceClass = (percentage: number) => {
     const abs = Math.abs(percentage);
-    if (abs >= 5) return 'text-red-600 font-bold';
-    if (abs >= 3) return 'text-orange-600 font-semibold';
-    if (abs >= 1) return 'text-yellow-600';
+    if (abs >= 5) return 'text-cult-danger font-bold';
+    if (abs >= 3) return 'text-cult-warning font-semibold';
+    if (abs >= 1) return 'text-cult-warning';
     return 'text-cult-text-faint';
   };
 
@@ -116,21 +116,21 @@ export function VarianceLogViewer({
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search by package ID, product..."
-              className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center px-4 py-2 border rounded-lg transition-colors ${
               showFilters || activeFiltersCount > 0
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                ? 'border-cult-info bg-cult-info-muted text-cult-info'
                 : 'border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
             }`}
           >
             <Filter className="h-5 w-5 mr-2" />
             Filters
             {activeFiltersCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
+              <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-cult-info text-white rounded-full">
                 {activeFiltersCount}
               </span>
             )}
@@ -140,7 +140,7 @@ export function VarianceLogViewer({
         <button
           onClick={onExport}
           disabled={isLoading}
-          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+          className="flex items-center px-4 py-2 bg-cult-success text-white rounded-lg hover:bg-cult-success/80 disabled:opacity-50 transition-colors"
         >
           <Download className="h-5 w-5 mr-2" />
           Export CSV
@@ -163,7 +163,7 @@ export function VarianceLogViewer({
                   type="date"
                   value={filters.start_date?.split('T')[0] || ''}
                   onChange={(e) => handleDateRangeChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info"
                 />
               </div>
               <div>
@@ -172,7 +172,7 @@ export function VarianceLogViewer({
                   type="date"
                   value={filters.end_date?.split('T')[0] || ''}
                   onChange={(e) => handleDateRangeChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info"
                 />
               </div>
             </div>
@@ -188,7 +188,7 @@ export function VarianceLogViewer({
                   onClick={() => handleSourceToggle(source.value)}
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.source_type?.includes(source.value)
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-cult-info text-white'
                       : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
@@ -208,7 +208,7 @@ export function VarianceLogViewer({
                   onClick={() => handleReasonToggle(reason.value)}
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     filters.variance_reason?.includes(reason.value)
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-cult-info text-white'
                       : 'bg-white border border-cult-border text-cult-text-muted hover:bg-cult-surface-sunken'
                   }`}
                 >
@@ -264,7 +264,7 @@ export function VarianceLogViewer({
                   <td className="px-4 py-3 text-sm">
                     <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
                       entry.source_type === 'audit_reconciliation'
-                        ? 'bg-blue-100 text-blue-800'
+                        ? 'bg-cult-info-muted text-cult-info'
                         : entry.source_type === 'session_conversion'
                         ? 'bg-purple-100 text-purple-800'
                         : 'bg-cult-surface text-cult-text-primary'

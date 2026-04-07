@@ -237,7 +237,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
       <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
         <div className="bg-white rounded-lg p-8 max-w-md">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
+            <h3 className="text-xl font-bold text-cult-danger mb-2">Error</h3>
             <p className="text-cult-text-muted mb-4">{error || 'Label not found'}</p>
             <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>
@@ -346,7 +346,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
             <button
               onClick={handlePrint}
               disabled={!imagesReady || isPrinting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-cult-success hover:bg-cult-success/80 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer className="w-4 h-4" />
               {isPrinting ? 'Printing...' : imagesReady ? 'Print Label' : 'Loading...'}
@@ -361,7 +361,7 @@ export function LabelPrintPreview({ labelId, onClose, onPrintComplete }: LabelPr
             {labelContent}
           </div>
         </div>
-        <div className="p-4 bg-yellow-50 border-t-2 border-yellow-300 text-xs text-cult-text-muted">
+        <div className="p-4 bg-cult-warning-muted border-t-2 border-cult-warning text-xs text-cult-text-muted">
           <p className="font-semibold mb-1">Preview Mode - Not to Scale</p>
           <p>This preview shows label content. Actual printed size: 1.5" x 2"</p>
         </div>
@@ -424,7 +424,7 @@ export function BatchLabelPrintPreview({ labelIds, onClose, onPrintComplete }: B
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg p-8 max-w-md">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-red-600 mb-2">Error</h3>
+            <h3 className="text-xl font-bold text-cult-danger mb-2">Error</h3>
             <p className="text-cult-text-muted mb-4">{error || 'No labels found'}</p>
             <button onClick={onClose} className="px-4 py-2 bg-cult-surface-overlay text-white hover:bg-cult-surface-overlay transition-colors rounded">Close</button>
           </div>

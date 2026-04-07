@@ -15,12 +15,12 @@ export function InventoryOversightDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-600 p-4 text-red-400">
+      <div className="bg-cult-danger-muted border border-cult-danger p-4 text-cult-danger">
         <p className="font-semibold">Error Loading Inventory Requirements</p>
         <p className="text-sm mt-1">{error.message}</p>
         <button
           onClick={reload}
-          className="mt-2 px-4 py-2 bg-red-900/50 border border-red-600 hover:bg-red-900/70 transition-colors text-sm"
+          className="mt-2 px-4 py-2 bg-cult-danger-muted border border-cult-danger hover:bg-cult-danger/30 transition-colors text-sm"
         >
           Retry
         </button>
@@ -41,12 +41,12 @@ export function InventoryOversightDashboard() {
   const getStatusIcon = (requirement: typeof requirements[0]) => {
     const status = getStatusColor(requirement);
     if (status === 'green') {
-      return <CheckCircle className="w-5 h-5 text-green-400" />;
+      return <CheckCircle className="w-5 h-5 text-cult-success" />;
     }
     if (status === 'yellow') {
-      return <Package className="w-5 h-5 text-yellow-400" />;
+      return <Package className="w-5 h-5 text-cult-warning" />;
     }
-    return <AlertTriangle className="w-5 h-5 text-red-400" />;
+    return <AlertTriangle className="w-5 h-5 text-cult-danger" />;
   };
 
   const groupedByStrain = requirements.reduce((acc, req) => {
@@ -121,24 +121,24 @@ export function InventoryOversightDashboard() {
                             {req.total_units_needed}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.packaged_units_available > 0 ? 'text-green-400' : 'text-cult-light-gray'
+                            req.packaged_units_available > 0 ? 'text-cult-success' : 'text-cult-light-gray'
                           }`}>
                             {req.packaged_units_available}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-bold ${
-                            statusColor === 'green' ? 'text-green-400' :
-                            statusColor === 'yellow' ? 'text-yellow-400' :
-                            'text-red-400'
+                            statusColor === 'green' ? 'text-cult-success' :
+                            statusColor === 'yellow' ? 'text-cult-warning' :
+                            'text-cult-danger'
                           }`}>
                             {req.units_still_needed > 0 ? req.units_still_needed : 0}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.bulk_grams_available > 0 ? 'text-blue-400' : 'text-cult-light-gray'
+                            req.bulk_grams_available > 0 ? 'text-cult-info' : 'text-cult-light-gray'
                           }`}>
                             {req.bulk_grams_available.toFixed(1)}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.bucked_grams_needed > 0 ? 'text-orange-400' : 'text-cult-light-gray'
+                            req.bucked_grams_needed > 0 ? 'text-cult-warning' : 'text-cult-light-gray'
                           }`}>
                             {req.bucked_grams_needed.toFixed(1)}
                           </td>
@@ -167,15 +167,15 @@ export function InventoryOversightDashboard() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-400" />
+            <CheckCircle className="w-4 h-4 text-cult-success" />
             <span className="text-cult-light-gray">Fully Stocked - All inventory available</span>
           </div>
           <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-yellow-400" />
+            <Package className="w-4 h-4 text-cult-warning" />
             <span className="text-cult-light-gray">Partial - Some processing needed</span>
           </div>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
+            <AlertTriangle className="w-4 h-4 text-cult-danger" />
             <span className="text-cult-light-gray">Shortage - Insufficient inventory</span>
           </div>
         </div>

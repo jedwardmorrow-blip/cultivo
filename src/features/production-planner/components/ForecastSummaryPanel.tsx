@@ -87,9 +87,9 @@ export function ForecastSummaryPanel() {
                     <th className="text-right py-1.5 px-2 font-medium text-violet-400">Proj. Rev</th>
                     <th className="text-right py-1.5 px-2 font-medium text-violet-400">Proj. Labor</th>
                     {/* Committed */}
-                    <th className="text-right py-1.5 px-2 font-medium text-emerald-400">Cmmt. Yield</th>
-                    <th className="text-right py-1.5 px-2 font-medium text-emerald-400">Cmmt. Rev</th>
-                    <th className="text-right py-1.5 px-2 font-medium text-emerald-400">Cmmt. Labor</th>
+                    <th className="text-right py-1.5 px-2 font-medium text-cult-success">Cmmt. Yield</th>
+                    <th className="text-right py-1.5 px-2 font-medium text-cult-success">Cmmt. Rev</th>
+                    <th className="text-right py-1.5 px-2 font-medium text-cult-success">Cmmt. Labor</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -110,13 +110,13 @@ export function ForecastSummaryPanel() {
                           {formatHours(row.projected_labor_hours)}
                         </td>
                         {/* Committed */}
-                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-emerald-300' : 'text-cult-text-muted'}`}>
+                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-cult-success' : 'text-cult-text-muted'}`}>
                           {formatGrams(row.committed_yield_grams)}
                         </td>
-                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-emerald-300' : 'text-cult-text-muted'}`}>
+                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-cult-success' : 'text-cult-text-muted'}`}>
                           {formatRevenue(row.committed_revenue)}
                         </td>
-                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-emerald-300' : 'text-cult-text-muted'}`}>
+                        <td className={`text-right py-1.5 px-2 ${hasCommitted ? 'text-cult-success' : 'text-cult-text-muted'}`}>
                           {formatHours(row.committed_labor_hours)}
                         </td>
                       </tr>
@@ -126,7 +126,7 @@ export function ForecastSummaryPanel() {
               </table>
               <div className="flex items-center gap-4 pt-2 text-xs text-cult-silver">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-500 inline-block" /> Projected — from planned cycles</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" /> Committed — active plant groups</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cult-success inline-block" /> Committed — active plant groups</span>
               </div>
             </div>
           )}

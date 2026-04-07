@@ -16,10 +16,10 @@ import { PackageAssignmentModal } from '@/features/orders/components/PackageAssi
 // ─── Urgency badge ───────────────────────────────────────────────────────────
 
 const URGENCY_STYLES: Record<string, string> = {
-  overdue: 'bg-red-500/20 text-red-400 border-red-500/30',
-  urgent: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  soon: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  normal: 'bg-green-500/20 text-green-400 border-green-500/30',
+  overdue: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
+  urgent: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  soon: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  normal: 'bg-cult-success-muted text-cult-success border-cult-success/30',
   no_date: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
 };
 const URGENCY_LABELS: Record<string, string> = {
@@ -68,9 +68,9 @@ function ToteCard({
         selected
           ? 'border-cult-accent bg-cult-accent/10'
           : strainMatch
-          ? 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60 hover:bg-emerald-500/10 cursor-pointer'
+          ? 'border-cult-success/40 bg-cult-success/5 hover:border-cult-success/60 hover:bg-cult-success/10 cursor-pointer'
           : tote.is_quarantined
-          ? 'border-red-500/30 bg-red-500/5 opacity-60 cursor-not-allowed'
+          ? 'border-cult-danger/30 bg-cult-danger/5 opacity-60 cursor-not-allowed'
           : !hasStock
           ? 'border-cult-dark-gray bg-cult-dark-gray/20 opacity-50 cursor-not-allowed'
           : 'border-cult-dark-gray bg-cult-mid-gray/20 hover:border-cult-accent/50 hover:bg-cult-accent/5 cursor-pointer'
@@ -81,12 +81,12 @@ function ToteCard({
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold text-cult-text-primary truncate">{tote.strain}</span>
             {strainMatch && !selected && (
-              <span className="shrink-0 px-1 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
+              <span className="shrink-0 px-1 py-0.5 rounded text-[10px] bg-cult-success-muted text-cult-success border border-cult-success/30 font-medium">
                 Match
               </span>
             )}
             {tote.is_quarantined && (
-              <span className="shrink-0 px-1 py-0.5 rounded text-xs bg-red-500/20 text-red-400 border border-red-500/30">
+              <span className="shrink-0 px-1 py-0.5 rounded text-xs bg-cult-danger-muted text-cult-danger border border-cult-danger/30">
                 QTN
               </span>
             )}
@@ -195,10 +195,10 @@ function AssignPackagesShortcut({
 
   return (
     <>
-      <div className="p-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+      <div className="p-2.5 rounded-lg border border-cult-success/30 bg-cult-success/5">
         <div className="flex items-center gap-2 mb-1.5">
-          <PackageCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-xs font-medium text-emerald-300">Packages ready?</span>
+          <PackageCheck className="w-4 h-4 text-cult-success shrink-0" />
+          <span className="text-xs font-medium text-cult-success">Packages ready?</span>
         </div>
         <p className="text-[11px] text-cult-text-muted mb-2">
           If packaged inventory is available, assign it directly to this order.
@@ -206,7 +206,7 @@ function AssignPackagesShortcut({
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="w-full py-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2 rounded-lg border border-cult-success/40 bg-cult-success/10 text-cult-success text-sm font-semibold hover:bg-cult-success/20 transition-colors flex items-center justify-center gap-2"
         >
           <Package className="w-3.5 h-3.5" />
           Assign Packages to Order
@@ -235,9 +235,9 @@ function AssignPackagesShortcut({
 
 // Priority presets — human-readable, not a raw 0-100 input
 const PRIORITY_PRESETS = [
-  { label: 'Urgent', value: 10, style: 'text-red-400 border-red-500/30 bg-red-500/10' },
-  { label: 'High', value: 30, style: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
-  { label: 'Normal', value: 50, style: 'text-green-400 border-green-500/30 bg-green-500/10' },
+  { label: 'Urgent', value: 10, style: 'text-cult-danger border-cult-danger/30 bg-cult-danger/10' },
+  { label: 'High', value: 30, style: 'text-cult-warning border-cult-warning/30 bg-cult-warning/10' },
+  { label: 'Normal', value: 50, style: 'text-cult-success border-cult-success/30 bg-cult-success/10' },
   { label: 'Low', value: 70, style: 'text-cult-text-muted border-cult-dark-gray bg-cult-mid-gray/10' },
 ] as const;
 
@@ -512,7 +512,7 @@ function ActionPanel({
           disabled={!canSubmit}
           className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
             confirmSuccess
-              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              ? 'bg-cult-success/20 text-cult-success border border-cult-success/30'
               : canSubmit
               ? 'bg-cult-accent text-cult-black hover:bg-cult-accent/90'
               : 'bg-cult-mid-gray/30 text-cult-text-muted cursor-not-allowed'
@@ -619,7 +619,7 @@ export function ProductionDispatchView() {
   return (
     <HubShell section="Production Dispatch" icon={Truck} kpis={kpis}>
       {error && (
-        <div className="mb-4 p-3 rounded-lg border border-red-500/30 bg-red-500/10 flex items-center gap-2 text-sm text-red-400">
+        <div className="mb-4 p-3 rounded-lg border border-cult-danger/30 bg-cult-danger/10 flex items-center gap-2 text-sm text-cult-danger">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {error}
           <button onClick={reload} className="ml-auto underline text-xs">Retry</button>
@@ -791,8 +791,8 @@ export function ProductionDispatchView() {
                     <td className="py-2">
                       <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${
                         item.status === 'in_progress'
-                          ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                          : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                          ? 'bg-cult-warning-muted text-cult-warning border-cult-warning/30'
+                          : 'bg-cult-info-muted text-cult-info border-cult-info/30'
                       }`}>
                         {item.status === 'in_progress' ? 'In Progress' : 'Queued'}
                       </span>

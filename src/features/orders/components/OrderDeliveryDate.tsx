@@ -15,7 +15,7 @@ export function OrderDeliveryDate({ orderId, deliveryDate, onUpdate }: OrderDeli
   return (
     <div className="text-center relative">
       <div className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Delivery Date</div>
-      <div className="flex items-center gap-2 px-3 py-2 border-2 border-cult-medium-gray bg-cult-near-black hover:border-green-500 transition-all">
+      <div className="flex items-center gap-2 px-3 py-2 border-2 border-cult-medium-gray bg-cult-near-black hover:border-cult-success transition-all">
         <input
           type="date"
           value={isEditing ? tempDate : (deliveryDate || '')}

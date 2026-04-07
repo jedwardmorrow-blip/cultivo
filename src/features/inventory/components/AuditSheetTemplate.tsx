@@ -107,9 +107,9 @@ export const AuditSheetTemplate = forwardRef<HTMLDivElement, AuditSheetTemplateP
     const getVarianceClass = (percentage: number | null) => {
       if (!percentage) return '';
       const abs = Math.abs(percentage);
-      if (abs >= 5) return 'text-red-600 font-bold';
-      if (abs >= 3) return 'text-orange-600 font-semibold';
-      if (abs >= 1) return 'text-yellow-600';
+      if (abs >= 5) return 'text-cult-danger font-bold';
+      if (abs >= 3) return 'text-cult-warning font-semibold';
+      if (abs >= 1) return 'text-cult-warning';
       return 'text-cult-text-faint';
     };
 

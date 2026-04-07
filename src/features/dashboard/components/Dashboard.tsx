@@ -23,7 +23,7 @@ class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { 
   render() {
     if (this.state.error) {
       return (
-        <div className="bg-cult-surface-raised border border-cult-danger rounded-cult p-6 animate-fade-in">
+        <div className="glass-card border-cult-danger/30 p-6 animate-fade-in shadow-glow-danger">
           <p className="text-cult-danger text-xs font-semibold uppercase tracking-wider mb-1">{this.props.name} — Error</p>
           <p className="text-cult-text-muted text-xs">{this.state.error.message}</p>
         </div>
@@ -64,9 +64,15 @@ export function Dashboard({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="font-sans text-xs text-cult-text-muted tracking-widest animate-pulse uppercase">
-          Loading dashboard...
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-6 space-y-4">
+        <div className="glass-skeleton h-20 w-full" />
+        <div className="glass-skeleton h-14 w-full" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {[...Array(5)].map((_, i) => <div key={i} className="glass-skeleton h-28" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="glass-skeleton h-64 lg:col-span-2 lg:row-span-2" />
+          <div className="glass-skeleton h-64 lg:col-span-2 lg:row-span-2" />
         </div>
       </div>
     );
@@ -89,9 +95,9 @@ export function Dashboard({
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-4 pb-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pb-8 space-y-4">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 pb-5 border-b border-cult-border mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 pb-5 border-b border-white/[0.06] mb-4">
         <div>
           <h1 className="text-xl sm:text-h1 text-cult-text-primary uppercase tracking-wider">
             CULT <span className="text-cult-text-secondary font-light">OPS</span>
@@ -135,28 +141,32 @@ export function Dashboard({
         <KPIRow data={data.kpi} />
       </WidgetBoundary>
 
-      {/* ── Row 1: Pipeline + Revenue Trend ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <WidgetBoundary name="InventoryFunnel">
-          <InventoryFunnel stages={data.funnel} />
-        </WidgetBoundary>
-        <WidgetBoundary name="RevenueChart">
-          <RevenueChart data={data.monthlyRevenue} />
-        </WidgetBoundary>
+      {/* ── Bento Grid: Primary Data ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 stagger-fade-in">
+        {/* Large tile: Inventory Pipeline */}
+        <div className="lg:col-span-2 lg:row-span-2">
+          <WidgetBoundary name="InventoryFunnel">
+            <InventoryFunnel stages={data.funnel} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Revenue Chart */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="RevenueChart">
+            <RevenueChart data={data.monthlyRevenue} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Active Orders */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="ActiveOrdersTable">
+            <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => navigate('/orders')} />
+          </WidgetBoundary>
+        </div>
       </div>
 
-      {/* ── Row 2: Active Orders + Top Customers ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <WidgetBoundary name="ActiveOrdersTable">
-          <ActiveOrdersTable orders={data.orders} onSelectOrder={onSelectOrder} onViewAll={() => navigate('/orders')} />
-        </WidgetBoundary>
-        <WidgetBoundary name="TopCustomers">
-          <TopCustomers customers={data.customers} />
-        </WidgetBoundary>
-      </div>
-
-      {/* ── Row 3: Production + Facility + Strains ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* ── Bento Grid: Operations ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade-in">
         <WidgetBoundary name="ProductionSessions">
           <ProductionSessions data={data.production} />
         </WidgetBoundary>
@@ -171,27 +181,43 @@ export function Dashboard({
         </WidgetBoundary>
       </div>
 
-      {/* ── Row 4: Harvest Pipeline + Revenue Projections ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <WidgetBoundary name="HarvestPipeline">
-          <HarvestPipeline windows={data.harvestPipeline} />
-        </WidgetBoundary>
-        <WidgetBoundary name="ProjectionChart">
-          <ProjectionChart windows={data.harvestPipeline} />
-        </WidgetBoundary>
+      {/* ── Bento Grid: Pipeline & Projections ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 stagger-fade-in">
+        {/* Large tile: Harvest Pipeline */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="HarvestPipeline">
+            <HarvestPipeline windows={data.harvestPipeline} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Projections */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="ProjectionChart">
+            <ProjectionChart windows={data.harvestPipeline} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Top Customers */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="TopCustomers">
+            <TopCustomers customers={data.customers} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Weekly Revenue */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="WeeklyRevenueChart">
+            <WeeklyRevenueChart data={data.weeklyRevenue} />
+          </WidgetBoundary>
+        </div>
       </div>
 
-      {/* ── Row 5: Veg Pipeline (full width) ── */}
+      {/* ── Full-width: Veg Pipeline ── */}
       {data.vegStrains.length > 0 && (
         <WidgetBoundary name="VegPipeline">
           <VegPipeline strains={data.vegStrains} />
         </WidgetBoundary>
       )}
-
-      {/* ── Row 6: Weekly Revenue (full width) ── */}
-      <WidgetBoundary name="WeeklyRevenueChart">
-        <WeeklyRevenueChart data={data.weeklyRevenue} />
-      </WidgetBoundary>
 
       {/* ── Footer ── */}
       <div className="text-center py-6 text-cult-text-faint text-xs font-light tracking-[1px] uppercase">

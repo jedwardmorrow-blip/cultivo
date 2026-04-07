@@ -171,7 +171,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3 mb-4">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3 mb-4">
               <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -230,7 +230,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                   })}
                 </select>
                 {selectedStrain && !hasAbbrev && (
-                  <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
+                  <p className="text-cult-warning text-xs mt-1 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
                     This strain has no 3-letter abbreviation. Harvest will be blocked.
                   </p>
@@ -296,7 +296,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                       Cut Sessions *
                     </label>
                     {strainId && strainFilteredMothers.length === 0 && (
-                      <span className="text-xs text-amber-400 flex items-center gap-1">
+                      <span className="text-xs text-cult-warning flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
                         No mothers for this strain
                       </span>
@@ -313,7 +313,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                           <button
                             type="button"
                             onClick={() => removeCutSession(row.id)}
-                            className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                            className="text-cult-medium-gray hover:text-cult-danger transition-colors"
                             title="Remove cut session"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -362,7 +362,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                   ))}
 
                   {cloneValidation && cutSessions.some((cs) => cs.motherGroupId) && (
-                    <p className="text-xs text-red-400 flex items-center gap-1">
+                    <p className="text-xs text-cult-danger flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />
                       {cloneValidation}
                     </p>

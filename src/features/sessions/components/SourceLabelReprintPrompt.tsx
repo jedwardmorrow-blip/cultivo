@@ -278,22 +278,22 @@ export function SourceLabelReprintPrompt({
   }
 
   return (
-    <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-4 mt-4">
+    <div className="bg-cult-warning-muted border border-cult-warning/50 rounded-lg p-4 mt-4">
       <div className="flex items-start gap-3">
-        <Printer className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+        <Printer className="w-5 h-5 text-cult-warning mt-0.5 flex-shrink-0" />
         <div className="flex-1">
-          <h3 className="text-sm font-bold text-yellow-200 mb-1">
+          <h3 className="text-sm font-bold text-cult-warning/80 mb-1">
             Reprint Source Label?
           </h3>
           <p className="text-sm text-cult-silver mb-3">
-            <span className="font-mono text-yellow-300">{sourcePackageId}</span> now has{' '}
+            <span className="font-mono text-cult-warning">{sourcePackageId}</span> now has{' '}
             <span className="font-bold text-cult-white">{remainingWeight.toFixed(1)}g</span> remaining
             <span className="text-cult-light-gray"> (was {originalWeight.toFixed(1)}g, pulled {pullWeight.toFixed(1)}g)</span>.
             {' '}The physical label still shows the old weight.
           </p>
 
           {error && (
-            <div className="mb-3 text-sm text-red-300 bg-red-900/30 px-3 py-2 rounded">
+            <div className="mb-3 text-sm text-cult-danger bg-cult-danger-muted px-3 py-2 rounded">
               {error}
             </div>
           )}
@@ -314,7 +314,7 @@ export function SourceLabelReprintPrompt({
               <button
                 onClick={handlePrint}
                 disabled={isPrinting || isLoading}
-                className="flex items-center gap-2 px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-black rounded font-bold text-sm transition disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-1.5 bg-cult-warning hover:bg-cult-warning/80 text-black rounded font-bold text-sm transition disabled:opacity-50"
               >
                 <Printer className="w-4 h-4" />
                 {isPrinting ? 'Printing...' : isLoading ? 'Loading...' : 'Reprint Label'}

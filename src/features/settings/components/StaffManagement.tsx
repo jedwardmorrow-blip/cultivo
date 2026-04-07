@@ -198,7 +198,7 @@ export function StaffManagement() {
           </select>
         </div>
       </div>
-      {error && (<div className="bg-red-900/30 border border-red-600 text-red-400 px-4 py-2 rounded-lg text-sm">{error}</div>)}
+      {error && (<div className="bg-cult-danger-muted border border-cult-danger text-cult-danger px-4 py-2 rounded-lg text-sm">{error}</div>)}
       <div className="overflow-x-auto border border-cult-medium-gray rounded-lg">
         <table className="w-full text-sm">
           <thead>
@@ -222,14 +222,14 @@ export function StaffManagement() {
                   <td className="px-4 py-3 text-cult-light-gray capitalize">{member.role || '\u2014'}</td>
                   <td className="px-4 py-3 text-cult-light-gray">{member.email || '\u2014'}</td>
                   <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => toggleActive(member)} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors ${member.is_active ? 'bg-green-900/30 text-green-400 border-green-600 hover:bg-green-900/50' : 'bg-red-900/30 text-red-400 border-red-600 hover:bg-red-900/50'}`}>
+                    <button onClick={() => toggleActive(member)} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors ${member.is_active ? 'bg-cult-success-muted text-cult-success border-cult-success hover:bg-cult-success-muted/80' : 'bg-red-900/30 text-cult-danger border-red-600 hover:bg-red-900/50'}`}>
                       {member.is_active ? (<><Check className="w-3 h-3" /> Active</>) : (<><X className="w-3 h-3" /> Inactive</>)}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => handleEdit(member)} className="p-1.5 rounded hover:bg-cult-medium-gray/30 text-cult-light-gray hover:text-cult-white transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(member)} className="p-1.5 rounded hover:bg-red-900/30 text-cult-light-gray hover:text-red-400 transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(member)} className="p-1.5 rounded hover:bg-cult-danger-muted text-cult-light-gray hover:text-cult-danger transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
@@ -247,7 +247,7 @@ export function StaffManagement() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">First Name <span className="text-red-400">*</span></label><input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-light-gray mb-1">First Name <span className="text-cult-danger">*</span></label><input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
                 <div><label className="block text-sm text-cult-light-gray mb-1">Last Name</label><input type="text" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -273,7 +273,7 @@ export function StaffManagement() {
               </div>
               <div><label className="block text-sm text-cult-light-gray mb-1">Notes</label><textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray resize-none" /></div>
               <div className="flex items-center gap-2"><input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="rounded border-cult-medium-gray" /><label htmlFor="is_active" className="text-sm text-cult-light-gray">Active Staff Member</label></div>
-              {error && (<div className="bg-red-900/30 border border-red-600 text-red-400 px-4 py-2 rounded-lg text-sm">{error}</div>)}
+              {error && (<div className="bg-cult-danger-muted border border-cult-danger text-cult-danger px-4 py-2 rounded-lg text-sm">{error}</div>)}
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button type="button" onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="px-4 py-2 text-sm text-cult-light-gray hover:text-cult-white transition-colors">Cancel</button>
                 <Button type="submit" size="sm" icon={editingStaff ? Check : Plus}>{editingStaff ? 'Save Changes' : 'Add Staff Member'}</Button>

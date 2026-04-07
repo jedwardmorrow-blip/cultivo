@@ -44,7 +44,7 @@ function LifecycleBadge({ state }: { state: string }) {
     binned: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     bucked: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     bulk_available: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-    packaged: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    packaged: 'bg-cult-success-muted text-cult-success border-cult-success/20',
     archived: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
   };
   const labels: Record<string, string> = {
@@ -69,7 +69,7 @@ function PotentialBar({ sellable, potential }: { sellable: number; potential: nu
     <div className="flex items-center gap-2 min-w-[120px]">
       <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden" title={`${formatLbs(sellable)} sellable of ${formatLbs(potential)} potential`}>
         <div
-          className="h-full bg-emerald-500 rounded-full transition-all"
+          className="h-full bg-cult-success rounded-full transition-all"
           style={{ width: `${sellablePct}%` }}
         />
       </div>
@@ -108,7 +108,7 @@ export function BatchIntelligencePanel({ strainSummary, strainName }: BatchIntel
             Batch Inventory — {batches.length} batch{batches.length !== 1 ? 'es' : ''}
           </span>
           {strainSummary.aging_batches > 0 && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cult-danger-muted border border-cult-danger/20 text-xs text-cult-danger">
               <AlertTriangle className="w-3 h-3" />
               {strainSummary.aging_batches} aging
             </span>
@@ -147,8 +147,8 @@ export function BatchIntelligencePanel({ strainSummary, strainName }: BatchIntel
               <tr
                 key={b.batch_id}
                 className={`border-t border-cult-medium-gray/20 ${
-                  b.age_pressure === 'aging' ? 'bg-red-500/[0.03]' :
-                  b.age_pressure === 'watch' ? 'bg-amber-500/[0.02]' : ''
+                  b.age_pressure === 'aging' ? 'bg-cult-danger/[0.03]' :
+                  b.age_pressure === 'watch' ? 'bg-cult-warning/[0.02]' : ''
                 }`}
               >
                 <td className="px-3 py-2">
@@ -156,10 +156,10 @@ export function BatchIntelligencePanel({ strainSummary, strainName }: BatchIntel
                     <span className="text-xs font-mono text-gray-400">{b.batch_number}</span>
                     {b.quality_grade !== 'UNDEFINED' && (
                       <span className={`text-xs font-medium ${
-                        b.quality_grade === 'CULT' ? 'text-emerald-400' :
+                        b.quality_grade === 'CULT' ? 'text-cult-success' :
                         b.quality_grade === 'B' ? 'text-sky-400' :
-                        b.quality_grade === 'C' ? 'text-amber-400' :
-                        'text-rose-400'
+                        b.quality_grade === 'C' ? 'text-cult-warning' :
+                        'text-cult-danger'
                       }`}>{b.quality_grade}</span>
                     )}
                   </div>
@@ -195,18 +195,18 @@ export function BatchIntelligencePanel({ strainSummary, strainName }: BatchIntel
       {(hasUnallocated || hasCultivation) && (
         <div className="flex items-center gap-4 text-xs">
           {hasUnallocated && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-cult bg-amber-500/5 border border-amber-500/15">
-              <Clock className="w-3 h-3 text-amber-400" />
-              <span className="text-amber-400 font-semibold">{unalloc_orders} order{unalloc_orders !== 1 ? 's' : ''}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-cult bg-cult-warning/5 border border-cult-warning/15">
+              <Clock className="w-3 h-3 text-cult-warning" />
+              <span className="text-cult-warning font-semibold">{unalloc_orders} order{unalloc_orders !== 1 ? 's' : ''}</span>
               <span className="text-gray-500">unallocated</span>
-              <span className="text-amber-400 font-semibold">(${unalloc_revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })})</span>
+              <span className="text-cult-warning font-semibold">(${unalloc_revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })})</span>
             </div>
           )}
           {hasCultivation && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-cult bg-emerald-500/5 border border-emerald-500/15">
-              <Sprout className="w-3 h-3 text-emerald-400" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-cult bg-cult-success/5 border border-cult-success/15">
+              <Sprout className="w-3 h-3 text-cult-success" />
               {flower_plants > 0 && (
-                <span className="text-emerald-400">
+                <span className="text-cult-success">
                   <span className="font-semibold">{flower_plants}</span> in flower
                   {next_harvest_date && <span className="text-gray-500"> · harvest ~{formatDate(next_harvest_date)}</span>}
                 </span>

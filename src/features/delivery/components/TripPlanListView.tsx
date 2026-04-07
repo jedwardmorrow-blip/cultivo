@@ -17,8 +17,8 @@ const STATUS_LABELS: Record<TripPlan['status'], string> = {
 
 const STATUS_COLORS: Record<TripPlan['status'], string> = {
   draft: 'bg-gray-700 text-gray-300',
-  active: 'bg-green-900/50 text-green-300',
-  completed: 'bg-blue-900/50 text-blue-300',
+  active: 'bg-cult-success/20 text-cult-success',
+  completed: 'bg-cult-info/20 text-cult-info',
 };
 
 function fmt(dt: string | null | undefined): string {
@@ -80,7 +80,7 @@ export function TripPlanListView() {
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
                 statusFilter === s
-                  ? 'bg-green-700 text-white'
+                  ? 'bg-cult-success text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
@@ -99,7 +99,7 @@ export function TripPlanListView() {
           </button>
           <button
             onClick={() => setShowGenerator(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-green-700 hover:bg-green-600 rounded-md"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-cult-success hover:bg-cult-success/85 rounded-md"
           >
             <Plus className="w-3.5 h-3.5" />
             New Trip Plan
@@ -115,7 +115,7 @@ export function TripPlanListView() {
           <p>No trip plans found.</p>
           <button
             onClick={() => setShowGenerator(true)}
-            className="mt-3 text-green-400 hover:text-green-300 text-sm"
+            className="mt-3 text-cult-success hover:text-cult-success/80 text-sm"
           >
             Create your first trip plan
           </button>
@@ -185,7 +185,7 @@ export function TripPlanListView() {
                         <button
                           onClick={() => setSignoffPlan(plan)}
                           title="Sign-Off & Dispatch"
-                          className="p-1.5 text-green-400 hover:text-green-300 hover:bg-gray-700 rounded"
+                          className="p-1.5 text-cult-success hover:text-cult-success/80 hover:bg-gray-700 rounded"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -196,7 +196,7 @@ export function TripPlanListView() {
                         <button
                           onClick={() => setCompletePlan(plan)}
                           title="Complete Trip"
-                          className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-gray-700 rounded"
+                          className="p-1.5 text-cult-info hover:text-cult-info/80 hover:bg-gray-700 rounded"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>

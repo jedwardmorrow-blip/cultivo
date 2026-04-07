@@ -277,8 +277,8 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         <StatCard
           label="Scheduled"
           value={String(scheduledOrders.length)}
-          borderColor="border-green-600"
-          valueColor="text-green-500"
+          borderColor="border-cult-success"
+          valueColor="text-cult-success"
         />
         <StatCard
           label="Total Weight"
@@ -296,9 +296,9 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         <StatCard
           label="Needs Prep (7d)"
           value={String(needsPrepCount)}
-          borderColor={needsPrepCount > 0 ? 'border-amber-600' : 'border-cult-light-gray'}
-          valueColor={needsPrepCount > 0 ? 'text-amber-400' : 'text-cult-white'}
-          icon={needsPrepCount > 0 ? <AlertTriangle className="w-4 h-4 text-amber-400" /> : undefined}
+          borderColor={needsPrepCount > 0 ? 'border-cult-warning' : 'border-cult-light-gray'}
+          valueColor={needsPrepCount > 0 ? 'text-cult-warning' : 'text-cult-white'}
+          icon={needsPrepCount > 0 ? <AlertTriangle className="w-4 h-4 text-cult-warning" /> : undefined}
         />
       </div>
 
@@ -313,7 +313,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
               onClick={() => setShowPlanPanel(!showPlanPanel)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-cult transition-all ${
                 showPlanPanel
-                  ? 'bg-green-900/40 text-green-400 border border-green-600'
+                  ? 'bg-cult-success/15 text-cult-success border border-cult-success'
                   : 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray hover:border-cult-light-gray hover:text-cult-white'
               }`}
             >
@@ -321,7 +321,7 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
               Plan
               {unscheduledOrders.length > 0 && (
                 <span className={`ml-1 px-1.5 py-0.5 text-xs font-bold rounded-full ${
-                  showPlanPanel ? 'bg-green-600 text-white' : 'bg-cult-medium-gray text-cult-white'
+                  showPlanPanel ? 'bg-cult-success text-white' : 'bg-cult-medium-gray text-cult-white'
                 }`}>
                   {unscheduledOrders.length}
                 </span>
@@ -464,9 +464,9 @@ function DayCell({
   // Load indicator color semantics per spec §5
   const loadDotClass =
     routeCount === 0 ? '' :
-    routeCount === 1 ? 'bg-emerald-400' :
-    routeCount === 2 ? 'bg-amber-400' :
-    'bg-red-400';
+    routeCount === 1 ? 'bg-cult-success' :
+    routeCount === 2 ? 'bg-cult-warning' :
+    'bg-cult-danger';
 
   return (
     <div
@@ -478,23 +478,23 @@ function DayCell({
         orders.length > 0 ? 'cursor-pointer' : ''
       } ${
         isDragOver
-          ? 'border-green-500 bg-green-950/20 scale-[1.03]'
+          ? 'border-cult-success bg-cult-success/10 scale-[1.03]'
           : isSuggested
-          ? 'border-green-700/60 bg-green-950/10 animate-pulse'
+          ? 'border-cult-success/60 bg-cult-success/5 animate-pulse'
           : isTodayDate
-          ? 'border-yellow-500 bg-yellow-950/20'
+          ? 'border-cult-warning bg-cult-warning/10'
           : 'border-cult-medium-gray hover:border-cult-light-gray bg-cult-black'
       }`}
     >
       {/* Header row: date + readiness indicator */}
       <div className="flex items-center justify-between mb-1">
         <span className={`text-sm font-medium ${
-          isTodayDate ? 'text-yellow-500 font-bold' : 'text-cult-white'
+          isTodayDate ? 'text-cult-warning font-bold' : 'text-cult-white'
         }`}>
           {date.getDate()}
         </span>
         {orders.length > 0 && someNotReady && !allReady && (
-          <AlertTriangle className="w-3 h-3 text-amber-400" title="Needs prep" />
+          <AlertTriangle className="w-3 h-3 text-cult-warning" title="Needs prep" />
         )}
       </div>
 
@@ -608,7 +608,7 @@ function UpcomingDeliveriesTable({
                         {overdueDocOrderIds.has(order.id) && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onShowDocuments(); }}
-                            className="flex items-center gap-0.5 px-1.5 py-0.5 bg-red-900/40 border border-red-500/40 rounded text-[10px] font-bold text-red-400 uppercase tracking-wider hover:bg-red-900/60 transition-colors"
+                            className="flex items-center gap-0.5 px-1.5 py-0.5 bg-cult-danger/15 border border-cult-danger/40 rounded text-[10px] font-bold text-cult-danger uppercase tracking-wider hover:bg-cult-danger/25 transition-colors"
                             title="Documents overdue — click to open Dispatch Queue"
                           >
                             <AlertTriangle className="w-2.5 h-2.5" />

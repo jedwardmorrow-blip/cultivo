@@ -68,12 +68,12 @@ function gradeBadgeLg(grade: string | null, confidence: string | null) {
 
 function runwayStatusBadge(status: string | null, days: number | null) {
   const map: Record<string, { label: string; classes: string }> = {
-    critical: { label: 'Critical', classes: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-    tight: { label: 'Tight', classes: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    healthy: { label: 'Healthy', classes: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    surplus: { label: 'Surplus', classes: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
+    critical: { label: 'Critical', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
+    tight: { label: 'Tight', classes: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
+    healthy: { label: 'Healthy', classes: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
+    surplus: { label: 'Surplus', classes: 'bg-cult-info-muted text-cult-info border-cult-info/30' },
     no_demand: { label: 'No Demand', classes: 'bg-cult-charcoal text-cult-silver border-cult-charcoal' },
-    no_stock: { label: 'No Stock', classes: 'bg-rose-500/10 text-rose-300 border-rose-500/20' },
+    no_stock: { label: 'No Stock', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
   };
   if (!status || !map[status]) return <span className="text-cult-text-muted text-sm">—</span>;
   const { label, classes } = map[status];
@@ -90,7 +90,7 @@ function runwayStatusBadge(status: string | null, days: number | null) {
 }
 
 function completenessBar(pct: number) {
-  const color = pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+  const color = pct >= 70 ? 'bg-cult-success' : pct >= 40 ? 'bg-cult-warning' : 'bg-cult-danger';
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1 h-2 bg-cult-charcoal rounded-full overflow-hidden">

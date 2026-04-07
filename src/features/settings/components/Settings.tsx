@@ -298,10 +298,10 @@ export function Settings() {
       )}
 
       {dbStatus && dbStatus.hasPermissions && (
-        <div className="mb-6 p-3 border border-green-700 bg-green-900/20">
+        <div className="mb-6 p-3 border border-cult-success bg-cult-success-muted">
           <div className="flex items-center gap-2">
-            <span className="text-green-400">✓</span>
-            <p className="text-green-100 text-sm">{dbStatus.message}</p>
+            <span className="text-cult-success">✓</span>
+            <p className="text-cult-text-primary text-sm">{dbStatus.message}</p>
           </div>
         </div>
       )}

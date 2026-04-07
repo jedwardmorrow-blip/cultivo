@@ -35,7 +35,7 @@ function BatchCard({ batch }: BatchCardProps) {
       <div className="flex items-center gap-3 mt-2 text-xs text-cult-text-muted">
         {harvestStr && <span>Harvested {harvestStr}</span>}
         {cureCompleteStr && batch.coa_status === 'curing' && (
-          <span className="text-amber-400">Cure done {cureCompleteStr}</span>
+          <span className="text-cult-warning">Cure done {cureCompleteStr}</span>
         )}
         {batch.days_until_available != null && batch.days_until_available > 0 && (
           <span className="ml-auto text-cult-text-muted">~{batch.days_until_available}d</span>
@@ -105,7 +105,7 @@ export function COATimelineView() {
   if (error) {
     return (
       <HubShell section="COA Timeline" icon={FlaskConical} kpis={[]}>
-        <div className="flex items-center gap-3 p-4 bg-red-900/20 rounded-lg text-red-400 text-sm">
+        <div className="flex items-center gap-3 p-4 bg-cult-danger-muted rounded-lg text-cult-danger text-sm">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
           <button onClick={reload} className="ml-auto text-xs underline hover:no-underline">Retry</button>
@@ -134,7 +134,7 @@ export function COATimelineView() {
           title="Available Now"
           subtitle="COA passed · ready to sell"
           batches={[...buckets.available, ...buckets.coa_received]}
-          accentClass="border-emerald-500 text-emerald-400"
+          accentClass="border-cult-success text-cult-success"
           icon={CheckCircle2}
           emptyText="No batches available yet"
         />
@@ -142,7 +142,7 @@ export function COATimelineView() {
           title="In Testing"
           subtitle="Sample submitted · results pending"
           batches={buckets.testing}
-          accentClass="border-blue-500 text-blue-400"
+          accentClass="border-cult-info text-cult-info"
           icon={FlaskConical}
           emptyText="No batches in testing"
         />
@@ -150,7 +150,7 @@ export function COATimelineView() {
           title="Curing — Ready Soon"
           subtitle="Cure complete within 7 days"
           batches={buckets.curing_soon}
-          accentClass="border-amber-400 text-amber-400"
+          accentClass="border-cult-warning text-cult-warning"
           icon={Clock}
           emptyText="None finishing soon"
         />
@@ -166,7 +166,7 @@ export function COATimelineView() {
             title="Failed"
             subtitle="COA did not pass"
             batches={buckets.failed}
-            accentClass="border-red-500 text-red-400"
+            accentClass="border-cult-danger text-cult-danger"
             icon={AlertTriangle}
           />
         )}

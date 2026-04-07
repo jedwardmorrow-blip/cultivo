@@ -17,11 +17,11 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
       case 'parsing':
         return <Loader className="w-4 h-4 text-cult-white animate-spin" />;
       case 'parsed':
-        return <CheckCircle className="w-4 h-4 text-blue-400" />;
+        return <CheckCircle className="w-4 h-4 text-cult-info" />;
       case 'reviewed':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle className="w-4 h-4 text-cult-success" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
+        return <AlertCircle className="w-4 h-4 text-cult-danger" />;
       default:
         return <FileText className="w-4 h-4 text-cult-light-gray" />;
     }
@@ -58,9 +58,9 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
               index === currentIndex
                 ? 'border-cult-white bg-cult-black'
                 : item.status === 'reviewed'
-                ? 'border-green-700/50 bg-green-900/10'
+                ? 'border-cult-success/50 bg-cult-success-muted'
                 : item.status === 'error'
-                ? 'border-red-700/50 bg-red-900/10'
+                ? 'border-cult-danger/50 bg-cult-danger-muted'
                 : 'border-cult-medium-gray bg-cult-black/50'
             }`}
           >
@@ -87,7 +87,7 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
                   )}
                 </div>
                 {item.error && (
-                  <p className="text-xs text-red-400 mt-1">{item.error}</p>
+                  <p className="text-xs text-cult-danger mt-1">{item.error}</p>
                 )}
               </div>
             </div>

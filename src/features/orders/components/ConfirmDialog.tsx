@@ -27,15 +27,15 @@ export function ConfirmDialog({
   }, [onCancel]);
 
   const confirmColors = variant === 'danger'
-    ? 'bg-red-600 hover:bg-red-700 text-white'
+    ? 'bg-cult-danger hover:bg-cult-danger/80 text-white'
     : variant === 'warning'
-      ? 'bg-amber-600 hover:bg-amber-700 text-white'
+      ? 'bg-cult-warning hover:bg-cult-warning/80 text-white'
       : 'bg-cult-green hover:bg-cult-green-bright text-cult-black';
 
   const iconColors = variant === 'danger'
-    ? 'text-red-400 bg-red-900/30'
+    ? 'text-cult-danger bg-cult-danger/15'
     : variant === 'warning'
-      ? 'text-amber-400 bg-amber-900/30'
+      ? 'text-cult-warning bg-cult-warning/15'
       : 'text-cult-green bg-cult-green/10';
 
   return (

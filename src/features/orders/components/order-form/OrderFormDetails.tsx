@@ -114,7 +114,7 @@ export function OrderFormDetails({
             }`}
           />
           {dateError && (
-            <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-2 text-sm text-cult-danger flex items-center gap-1">
               <AlertCircle className="w-4 h-4" />
               {dateError}
             </p>

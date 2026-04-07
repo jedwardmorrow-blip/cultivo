@@ -21,11 +21,11 @@ interface AccountOrderHistoryProps {
 
 function getOrderStatusColor(status: string): string {
   switch (status) {
-    case 'completed': return 'bg-emerald-500/20 text-emerald-400';
-    case 'pending': return 'bg-amber-500/20 text-amber-400';
-    case 'processing': return 'bg-sky-500/20 text-sky-400';
-    case 'ready_for_delivery': return 'bg-cyan-500/20 text-cyan-400';
-    case 'cancelled': return 'bg-red-500/20 text-red-400';
+    case 'completed': return 'bg-cult-success-muted text-cult-success';
+    case 'pending': return 'bg-cult-warning-muted text-cult-warning';
+    case 'processing': return 'bg-cult-info-muted text-cult-info';
+    case 'ready_for_delivery': return 'bg-cult-info-muted text-cult-info';
+    case 'cancelled': return 'bg-cult-danger-muted text-cult-danger';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
   }
 }
@@ -65,7 +65,7 @@ export function AccountOrderHistory({ orders, onSelectOrder, periodLabel }: Acco
         </div>
         <div className="flex items-center gap-4 text-xs text-cult-light-gray">
           <span>{orders.length} orders</span>
-          <span className="text-emerald-400 font-semibold">{formatCurrency(totalValue)}</span>
+          <span className="text-cult-success font-semibold">{formatCurrency(totalValue)}</span>
         </div>
       </div>
 

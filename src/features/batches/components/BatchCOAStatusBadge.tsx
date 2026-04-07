@@ -7,11 +7,11 @@ interface StatusConfig {
 
 const STATUS_CONFIG: Record<BatchCOAStatus, StatusConfig> = {
   curing:              { label: 'Curing',         className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-  pending_sampling:    { label: 'Pending Sample',  className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  testing_in_progress: { label: 'Testing',         className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  pending_sampling:    { label: 'Pending Sample',  className: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
+  testing_in_progress: { label: 'Testing',         className: 'bg-cult-info-muted text-cult-info border-cult-info/30' },
   coa_received:        { label: 'COA Received',    className: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
-  coa_failed:          { label: 'COA Failed',      className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  available:           { label: 'Available',       className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  coa_failed:          { label: 'COA Failed',      className: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
+  available:           { label: 'Available',       className: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
 };
 
 interface BatchCOAStatusBadgeProps {

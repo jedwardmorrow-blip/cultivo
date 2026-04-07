@@ -161,12 +161,12 @@ export function AccountContacts({
                     onClick={() => handleTogglePrimary(contact)}
                     className={`transition-all ${
                       contact.is_primary
-                        ? 'text-amber-400'
-                        : 'text-cult-charcoal hover:text-amber-400/60 opacity-0 group-hover:opacity-100'
+                        ? 'text-cult-warning'
+                        : 'text-cult-charcoal hover:text-cult-warning/60 opacity-0 group-hover:opacity-100'
                     }`}
                     title={contact.is_primary ? 'Primary contact' : 'Set as primary'}
                   >
-                    <Star className={`w-3 h-3 ${contact.is_primary ? 'fill-amber-400' : ''}`} />
+                    <Star className={`w-3 h-3 ${contact.is_primary ? 'fill-cult-warning' : ''}`} />
                   </button>
                   {contact.title && (
                     <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-1.5 py-0.5 rounded">{contact.title}</span>
@@ -197,7 +197,7 @@ export function AccountContacts({
                 </button>
                 <button
                   onClick={() => handleDelete(contact.id)}
-                  className="p-1.5 text-cult-medium-gray hover:text-red-400 transition-colors"
+                  className="p-1.5 text-cult-medium-gray hover:text-cult-danger transition-colors"
                   title="Remove contact"
                 >
                   <X className="w-3.5 h-3.5" />

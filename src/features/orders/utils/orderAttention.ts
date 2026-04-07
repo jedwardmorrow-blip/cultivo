@@ -98,8 +98,8 @@ export function getOrderAgeColor(createdAt: string | null, status: string | null
   const created = new Date(createdAt);
   const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
 
-  if (status === 'submitted' && diffHours > 72) return 'text-red-400';
-  if (status === 'submitted' && diffHours > 24) return 'text-amber-400';
+  if (status === 'submitted' && diffHours > 72) return 'text-cult-danger';
+  if (status === 'submitted' && diffHours > 24) return 'text-cult-warning';
   return 'text-cult-silver';
 }
 
@@ -126,9 +126,9 @@ export function getTurnaroundDays(createdAt: string | null, deliveryDateStr: str
  */
 export function getTurnaroundColor(days: number | null): string {
   if (days === null) return 'text-cult-text-muted';
-  if (days < 7) return 'text-emerald-400';
-  if (days <= 10) return 'text-amber-400';
-  return 'text-red-400';
+  if (days < 7) return 'text-cult-success';
+  if (days <= 10) return 'text-cult-warning';
+  return 'text-cult-danger';
 }
 
 /**
@@ -136,7 +136,7 @@ export function getTurnaroundColor(days: number | null): string {
  */
 export function getTurnaroundBgColor(days: number | null): string {
   if (days === null) return 'bg-cult-surface-raised/50';
-  if (days < 7) return 'bg-emerald-500/10';
-  if (days <= 10) return 'bg-amber-500/10';
-  return 'bg-red-500/10';
+  if (days < 7) return 'bg-cult-success-muted';
+  if (days <= 10) return 'bg-cult-warning-muted';
+  return 'bg-cult-danger-muted';
 }

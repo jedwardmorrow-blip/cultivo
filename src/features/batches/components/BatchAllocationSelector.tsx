@@ -68,14 +68,14 @@ export function BatchAllocationSelector({
   function getCOABadge(batch: BatchWithCOAStatus) {
     if (batch.coa_status === 'active') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-900/20 text-green-400 border border-green-700 text-xs">
+        <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-success-muted text-cult-success border border-cult-success text-xs">
           <CheckCircle className="w-3 h-3" />
           COA
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-900/20 text-red-400 border border-red-700 text-xs">
+      <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-danger-muted text-cult-danger border border-cult-danger text-xs">
         <XCircle className="w-3 h-3" />
         No COA
       </span>
@@ -86,14 +86,14 @@ export function BatchAllocationSelector({
     switch (level) {
       case 'critical':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-900/20 text-red-400 border border-red-700 text-xs">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-danger-muted text-cult-danger border border-cult-danger text-xs">
             <AlertTriangle className="w-3 h-3" />
             Critical
           </span>
         );
       case 'warning':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-900/20 text-amber-400 border border-amber-700 text-xs">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-cult-warning-muted text-cult-warning border border-cult-warning text-xs">
             <AlertTriangle className="w-3 h-3" />
             Warning
           </span>
@@ -187,7 +187,7 @@ export function BatchAllocationSelector({
                 isSelected
                   ? 'border-cult-white bg-cult-near-black'
                   : isAlreadySelected
-                  ? 'border-green-700 bg-green-900/10'
+                  ? 'border-cult-success bg-cult-success-muted'
                   : 'border-cult-medium-gray bg-cult-black hover:border-cult-light-gray'
               } p-4 cursor-pointer`}
               onClick={() => !isAlreadySelected && setSelectedBatch(batch.batch_id)}
@@ -199,7 +199,7 @@ export function BatchAllocationSelector({
                     {getCOABadge(batch)}
                     {stageStatus && getWarningLevelBadge(stageStatus.allocation_warning_level)}
                     {isAlreadySelected && (
-                      <span className="px-2 py-1 bg-green-900/20 text-green-400 border border-green-700 text-xs">
+                      <span className="px-2 py-1 bg-cult-success-muted text-cult-success border border-cult-success text-xs">
                         Selected
                       </span>
                     )}
@@ -261,10 +261,10 @@ export function BatchAllocationSelector({
                       <div className="text-cult-lighter-gray mb-1">Utilization</div>
                       <div className={`font-medium ${
                         stageStatus.stage_allocation_percentage >= (stageStatus.over_allocation_critical_threshold || 120)
-                          ? 'text-red-400'
+                          ? 'text-cult-danger'
                           : stageStatus.stage_allocation_percentage >= (stageStatus.over_allocation_warning_threshold || 100)
-                          ? 'text-amber-400'
-                          : 'text-green-400'
+                          ? 'text-cult-warning'
+                          : 'text-cult-success'
                       }`}>
                         {stageStatus.stage_allocation_percentage.toFixed(0)}%
                       </div>
@@ -272,10 +272,10 @@ export function BatchAllocationSelector({
                   </div>
 
                   {stageStatus.is_over_allocated && (
-                    <div className="mt-3 p-2 bg-amber-900/20 border border-amber-700">
+                    <div className="mt-3 p-2 bg-cult-warning-muted border border-cult-warning">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                        <div className="text-xs text-amber-200">
+                        <AlertTriangle className="w-4 h-4 text-cult-warning flex-shrink-0 mt-0.5" />
+                        <div className="text-xs text-cult-text-primary/80">
                           Over-allocated by {stageStatus.over_allocation_grams.toFixed(1)}g
                         </div>
                       </div>

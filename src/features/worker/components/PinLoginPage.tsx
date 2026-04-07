@@ -112,7 +112,7 @@ export function PinLoginPage() {
         {/* Error message */}
         {error && (
           <div className="text-center mb-4">
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-cult-danger text-sm">{error}</p>
           </div>
         )}
 

@@ -105,14 +105,14 @@ function ProductRow({ entry, gallons, override, onOverride }: {
 
   return (
     <div className={`flex items-center gap-3 py-2.5 px-3 rounded-sm border transition-colors ${
-      isOverridden ? 'bg-amber-950/20 border-amber-800/30' : 'bg-cult-charcoal/30 border-cult-dark-gray/40'
+      isOverridden ? 'bg-cult-warning-muted border-cult-warning/30' : 'bg-cult-charcoal/30 border-cult-dark-gray/40'
     }`}>
       {/* Product info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-cult-white">{entry.product.name}</span>
           {isVariable && (
-            <span className="text-[9px] uppercase tracking-wider text-amber-400 bg-amber-950/40 px-1.5 py-0.5 rounded-sm">pH Up</span>
+            <span className="text-[9px] uppercase tracking-wider text-cult-warning bg-cult-warning-muted px-1.5 py-0.5 rounded-sm">pH Up</span>
           )}
           {entry.notes && (
             <span className="text-[9px] text-cult-medium-gray italic truncate">{entry.notes}</span>
@@ -123,7 +123,7 @@ function ProductRow({ entry, gallons, override, onOverride }: {
       {/* Rate (editable) */}
       <div className="w-24 text-right">
         {isVariable ? (
-          <span className="text-xs text-amber-400/80 italic">as needed</span>
+          <span className="text-xs text-cult-warning/80 italic">as needed</span>
         ) : editing ? (
           <input
             type="number"
@@ -163,8 +163,8 @@ function ProductRow({ entry, gallons, override, onOverride }: {
 function TargetBadge({ label, value, unit, inRange }: { label: string; value: string; unit?: string; inRange?: boolean }) {
   return (
     <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border text-xs ${
-      inRange === true ? 'border-green-600/40 bg-green-950/20 text-green-400'
-        : inRange === false ? 'border-red-600/40 bg-red-950/20 text-red-400'
+      inRange === true ? 'border-cult-success/40 bg-cult-success-muted text-cult-success'
+        : inRange === false ? 'border-cult-danger/40 bg-cult-danger-muted text-cult-danger'
           : 'border-cult-dark-gray/50 bg-cult-charcoal/20 text-cult-medium-gray'
     }`}>
       <span className="uppercase tracking-wider text-[10px] font-semibold opacity-70">{label}</span>
@@ -256,9 +256,9 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-red-950/20 border border-red-800/40 rounded-sm">
-        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-        <span className="text-xs text-red-300">{error}</span>
+      <div className="flex items-center gap-2 p-3 bg-cult-danger-muted border border-cult-danger/40 rounded-sm">
+        <AlertCircle className="w-4 h-4 text-cult-danger flex-shrink-0" />
+        <span className="text-xs text-cult-danger">{error}</span>
       </div>
     );
   }
@@ -267,11 +267,11 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
     return (
       <div className="space-y-4">
         {/* Warning banner */}
-        <div className="flex items-center gap-2 p-3 bg-amber-950/20 border border-amber-800/40 rounded-sm">
-          <Info className="w-4 h-4 text-amber-400 flex-shrink-0" />
-          <div className="text-xs text-amber-300">
+        <div className="flex items-center gap-2 p-3 bg-cult-warning-muted border border-cult-warning/40 rounded-sm">
+          <Info className="w-4 h-4 text-cult-warning flex-shrink-0" />
+          <div className="text-xs text-cult-warning">
             <p className="font-semibold">No feed recipe found — manual entry</p>
-            <p className="text-amber-400/70 mt-0.5">
+            <p className="text-cult-warning/70 mt-0.5">
               {!stage ? 'This room has no active plant groups with a stage set.'
                 : !resolvedPhase ? `Stage "${stage}" does not map to a feed program phase.`
                   : `No feed program week found for ${resolvedPhase} W${resolvedWeek}.`}
@@ -301,7 +301,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
         <div className="border-t border-cult-dark-gray/40 pt-4">
           <div className="flex items-center gap-2 mb-3">
             <span className={labelClass}>Post-Mix Readings</span>
-            <span className="text-[9px] text-red-400 uppercase tracking-wider font-semibold">Required</span>
+            <span className="text-[9px] text-cult-danger uppercase tracking-wider font-semibold">Required</span>
           </div>
 
           {/* EC or PPM toggle */}
@@ -312,7 +312,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 onClick={() => set('reading_mode', 'ec')}
                 className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                   data.reading_mode === 'ec'
-                    ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                    ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
                     : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
                 }`}
               >
@@ -323,7 +323,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 onClick={() => set('reading_mode', 'ppm')}
                 className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                   data.reading_mode === 'ppm'
-                    ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                    ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
                     : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
                 }`}
               >
@@ -409,7 +409,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
       {/* ── Header: Phase / Week / Program ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Beaker className="w-4 h-4 text-blue-400" />
+          <Beaker className="w-4 h-4 text-cult-info" />
           <PhaseLabel phase={recipe.phase} week={recipe.week_number} />
           <span className="text-[10px] text-cult-medium-gray">Day {daysInStage ?? '?'}</span>
         </div>
@@ -432,7 +432,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
           <TargetBadge label="PPM 700" value={recipe.targets.target_ppm_700?.toString() ?? '—'} inRange={data.ppm_scale === '700' ? ppmInRange : undefined} />
           <TargetBadge label="pH" value={`${recipe.targets.target_ph_min?.toFixed(1) ?? '?'} – ${recipe.targets.target_ph_max?.toFixed(1) ?? '?'}`} inRange={phInRange} />
           {recipe.targets.notes && (
-            <div className="w-full flex items-center gap-1.5 text-[10px] text-amber-400/80 italic">
+            <div className="w-full flex items-center gap-1.5 text-[10px] text-cult-warning/80 italic">
               <Info className="w-3 h-3 flex-shrink-0" />
               {recipe.targets.notes}
             </div>
@@ -485,7 +485,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
       <div className="border-t border-cult-dark-gray/40 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className={labelClass}>Post-Mix Readings</span>
-          <span className="text-[9px] text-red-400 uppercase tracking-wider font-semibold">Required</span>
+          <span className="text-[9px] text-cult-danger uppercase tracking-wider font-semibold">Required</span>
         </div>
 
         {/* EC or PPM toggle */}
@@ -496,7 +496,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
               onClick={() => set('reading_mode', 'ec')}
               className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                 data.reading_mode === 'ec'
-                  ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                  ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
                   : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
               }`}
             >
@@ -507,7 +507,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
               onClick={() => set('reading_mode', 'ppm')}
               className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                 data.reading_mode === 'ppm'
-                  ? 'bg-blue-600/20 text-blue-400 border-blue-600/40'
+                  ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
                   : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
               }`}
             >
@@ -525,7 +525,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 value={data.ec_value}
                 onChange={(e) => set('ec_value', e.target.value)}
                 placeholder={`Target: ${recipe.targets.target_ec?.toFixed(1) ?? '—'}`}
-                className={`${inputClass} ${ecInRange === false ? 'border-red-600/60' : ecInRange === true ? 'border-green-600/60' : ''}`}
+                className={`${inputClass} ${ecInRange === false ? 'border-cult-danger/60' : ecInRange === true ? 'border-cult-success/60' : ''}`}
                 inputMode="decimal"
               />
             </div>
@@ -561,7 +561,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 value={data.ppm_value}
                 onChange={(e) => set('ppm_value', e.target.value)}
                 placeholder={`Target: ${data.ppm_scale === '700' ? (recipe.targets.target_ppm_700 ?? '—') : (recipe.targets.target_ppm_500 ?? '—')}`}
-                className={`${inputClass} ${ppmInRange === false ? 'border-red-600/60' : ppmInRange === true ? 'border-green-600/60' : ''}`}
+                className={`${inputClass} ${ppmInRange === false ? 'border-cult-danger/60' : ppmInRange === true ? 'border-cult-success/60' : ''}`}
                 inputMode="numeric"
               />
             </div>
@@ -579,7 +579,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
             value={data.ph_value}
             onChange={(e) => set('ph_value', e.target.value)}
             placeholder={`Target: ${recipe.targets.target_ph_min?.toFixed(1) ?? '?'} – ${recipe.targets.target_ph_max?.toFixed(1) ?? '?'}`}
-            className={`${inputClass} ${phInRange === false ? 'border-red-600/60' : phInRange === true ? 'border-green-600/60' : ''}`}
+            className={`${inputClass} ${phInRange === false ? 'border-cult-danger/60' : phInRange === true ? 'border-cult-success/60' : ''}`}
             inputMode="decimal"
           />
         </div>

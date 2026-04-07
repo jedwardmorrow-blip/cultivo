@@ -11,10 +11,10 @@ import { BatchStageBar } from './BatchStageBar';
 type SortKey = 'weight' | 'strain' | 'demand' | 'allocated';
 
 const URGENCY_STYLES: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-  overdue: { bg: 'bg-red-500/20',    text: 'text-red-400',    dot: 'bg-red-400',    label: 'Overdue' },
-  urgent:  { bg: 'bg-amber-500/20',  text: 'text-amber-400',  dot: 'bg-amber-400',  label: 'Urgent' },
+  overdue: { bg: 'bg-cult-danger-muted',    text: 'text-cult-danger',    dot: 'bg-cult-danger',    label: 'Overdue' },
+  urgent:  { bg: 'bg-cult-warning-muted',  text: 'text-cult-warning',  dot: 'bg-cult-warning',  label: 'Urgent' },
   soon:    { bg: 'bg-sky-500/20',    text: 'text-sky-400',    dot: 'bg-sky-400',    label: 'Soon' },
-  normal:  { bg: 'bg-green-500/20',  text: 'text-green-400',  dot: 'bg-green-400',  label: 'On Track' },
+  normal:  { bg: 'bg-cult-success-muted',  text: 'text-cult-success',  dot: 'bg-cult-success',  label: 'On Track' },
   no_date: { bg: 'bg-cult-medium-gray/20', text: 'text-cult-silver', dot: 'bg-cult-silver', label: 'No Demand' },
 };
 
@@ -74,10 +74,10 @@ function sortGroups(groups: StrainBatchGroup[], sortBy: SortKey): StrainBatchGro
 function dominantStage(b: BatchPlanData): { label: string; colorClass: string } {
   const stages = [
     { key: 'binned_g', label: 'Binned', colorClass: 'text-orange-400', value: b.binned_g },
-    { key: 'bucked_g', label: 'Bucked', colorClass: 'text-amber-400', value: b.bucked_g },
-    { key: 'trim_g', label: 'Trim', colorClass: 'text-amber-400', value: b.trim_g },
+    { key: 'bucked_g', label: 'Bucked', colorClass: 'text-cult-warning', value: b.bucked_g },
+    { key: 'trim_g', label: 'Trim', colorClass: 'text-cult-warning', value: b.trim_g },
     { key: 'bulk_g', label: 'Bulk', colorClass: 'text-sky-400', value: b.bulk_g },
-    { key: 'packaged_g', label: 'Packaged', colorClass: 'text-emerald-400', value: b.packaged_g },
+    { key: 'packaged_g', label: 'Packaged', colorClass: 'text-cult-success', value: b.packaged_g },
   ];
   const top = stages.reduce((a, c) => c.value > a.value ? c : a, stages[0]);
   return { label: top.label, colorClass: top.colorClass };
@@ -114,7 +114,7 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
           </span>
         )}
         {unallocated > 0 && (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded bg-amber-900/60 text-amber-400">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded bg-cult-warning-muted text-cult-warning">
             {unallocated} unallocated
           </span>
         )}
@@ -159,9 +159,9 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                     isExpanded ? 'bg-cult-surface-raised' : ''
                   } ${
                     hasDemand && group.totalAllocatedG === 0
-                      ? 'border-l-[3px] border-l-amber-500/40'
+                      ? 'border-l-[3px] border-l-cult-warning/40'
                       : hasDemand
-                        ? 'border-l-[3px] border-l-emerald-500/30'
+                        ? 'border-l-[3px] border-l-cult-success/30'
                         : 'border-l-[3px] border-l-transparent'
                   }`}
                   style={{ gridTemplateColumns: '2fr 0.8fr 0.8fr 0.8fr 1fr' }}
@@ -187,7 +187,7 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                       {formatWeight(group.totalWeightG)}
                     </div>
                     {hasDemand && (
-                      <div className={`text-xs ${coverPct >= 100 ? 'text-emerald-400' : coverPct >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                      <div className={`text-xs ${coverPct >= 100 ? 'text-cult-success' : coverPct >= 50 ? 'text-cult-warning' : 'text-cult-danger'}`}>
                         {Math.round(coverPct)}% of demand
                       </div>
                     )}
@@ -212,11 +212,11 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                   {/* Allocated */}
                   <div className="flex flex-col justify-center">
                     {group.totalAllocatedG > 0 ? (
-                      <div className="text-sm font-bold text-emerald-400">
+                      <div className="text-sm font-bold text-cult-success">
                         {formatWeight(group.totalAllocatedG)}
                       </div>
                     ) : hasDemand ? (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/15 text-amber-400">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-cult-warning/15 text-cult-warning">
                         None
                       </span>
                     ) : (
@@ -271,7 +271,7 @@ export default function BatchesView({ batches }: { batches: BatchPlanData[] }) {
                             <div className="w-28 text-right flex-shrink-0">
                               {batch.allocated_order_items > 0 ? (
                                 <>
-                                  <div className="text-sm font-semibold text-emerald-400">
+                                  <div className="text-sm font-semibold text-cult-success">
                                     {formatWeight(batch.total_allocated_g)}
                                   </div>
                                   <div className="text-xs text-cult-medium-gray">

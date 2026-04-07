@@ -56,10 +56,10 @@ const WEEKS_AFTER = 20;
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; barBg: string }> = {
   draft: { bg: 'bg-cult-charcoal/60', text: 'text-cult-medium-gray', border: 'border-cult-dark-gray/40', barBg: 'rgba(107,114,128,0.25)' },
-  scheduled: { bg: 'bg-blue-950/40', text: 'text-blue-400', border: 'border-blue-800/30', barBg: 'rgba(59,130,246,0.2)' },
-  active: { bg: 'bg-green-950/40', text: 'text-green-400', border: 'border-green-800/30', barBg: 'rgba(16,185,129,0.25)' },
+  scheduled: { bg: 'bg-cult-info-muted', text: 'text-cult-info', border: 'border-cult-info/30', barBg: 'rgba(59,130,246,0.2)' },
+  active: { bg: 'bg-cult-success-muted', text: 'text-cult-success', border: 'border-cult-success/30', barBg: 'rgba(16,185,129,0.25)' },
   completed: { bg: 'bg-cult-charcoal/30', text: 'text-cult-dark-gray', border: 'border-cult-dark-gray/30', barBg: 'rgba(107,114,128,0.15)' },
-  cancelled: { bg: 'bg-red-950/20', text: 'text-red-400/50', border: 'border-red-800/20', barBg: 'rgba(239,68,68,0.1)' },
+  cancelled: { bg: 'bg-cult-danger-muted', text: 'text-cult-danger/50', border: 'border-cult-danger/20', barBg: 'rgba(239,68,68,0.1)' },
 };
 
 const STATUS_OPTIONS: PlanStatus[] = ['draft', 'scheduled', 'active', 'completed', 'cancelled'];
@@ -470,7 +470,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
       <div className="flex items-center justify-between pt-2 border-t border-cult-dark-gray/30">
         <div>
           {onDelete && (
-            <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 hover:bg-red-950/30 rounded transition-colors">
+            <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-danger hover:bg-cult-danger-muted rounded transition-colors">
               <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>
           )}
@@ -832,11 +832,11 @@ export function PipelinePlanner() {
         <div className="flex items-center gap-3">
           {/* Quick stats */}
           <div className="flex items-center gap-4 mr-2 text-xs">
-            <span className="text-green-400">{activeCount} active</span>
-            <span className="text-blue-400">{scheduledCount} scheduled</span>
+            <span className="text-cult-success">{activeCount} active</span>
+            <span className="text-cult-info">{scheduledCount} scheduled</span>
             <span className="text-cult-medium-gray">{draftCount} draft</span>
             {totalProjectedWet > 0 && (
-              <span className="text-amber-400 flex items-center gap-1">
+              <span className="text-cult-warning flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 {(totalProjectedWet / 453.592).toFixed(1)} lbs proj.
               </span>
@@ -846,7 +846,7 @@ export function PipelinePlanner() {
           {/* Heatmap toggle */}
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`p-1.5 rounded transition-colors ${showHeatmap ? 'text-amber-400 bg-amber-950/30' : 'text-cult-dark-gray hover:text-cult-medium-gray'}`}
+            className={`p-1.5 rounded transition-colors ${showHeatmap ? 'text-cult-warning bg-cult-warning-muted' : 'text-cult-dark-gray hover:text-cult-medium-gray'}`}
             title="Toggle labor heatmap"
           >
             <Zap className="w-3.5 h-3.5" />
@@ -881,9 +881,9 @@ export function PipelinePlanner() {
 
       {/* Upcoming harvests banner */}
       {upcomingHarvests.length > 0 && (
-        <div className="px-6 py-1.5 bg-amber-950/20 border-b border-amber-800/20 flex items-center gap-3">
-          <Scissors className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-          <span className="text-[11px] text-amber-300">
+        <div className="px-6 py-1.5 bg-cult-warning-muted border-b border-cult-warning/20 flex items-center gap-3">
+          <Scissors className="w-3.5 h-3.5 text-cult-warning flex-shrink-0" />
+          <span className="text-[11px] text-cult-warning">
             Upcoming harvests ({upcomingHarvests.length}):
             {upcomingHarvests.slice(0, 4).map((p) => {
               const s = p.strain_id ? strainMap.get(p.strain_id) : null;
@@ -926,13 +926,13 @@ export function PipelinePlanner() {
 
             {/* Labor heatmap row */}
             {showHeatmap && (
-              <div className="flex border-b border-amber-800/20 bg-cult-near-black">
+              <div className="flex border-b border-cult-warning/20 bg-cult-near-black">
                 <div
                   className="flex-shrink-0 flex items-center gap-1.5 px-3 border-r border-cult-dark-gray/20"
                   style={{ width: LABEL_WIDTH, height: HEATMAP_HEIGHT }}
                 >
-                  <Zap className="w-3 h-3 text-amber-400" />
-                  <span className="text-[10px] font-semibold text-amber-400">Labor Load</span>
+                  <Zap className="w-3 h-3 text-cult-warning" />
+                  <span className="text-[10px] font-semibold text-cult-warning">Labor Load</span>
                 </div>
                 <div className="relative flex-1" style={{ height: HEATMAP_HEIGHT }}>
                   {heatmap.map((val, i) => {
@@ -1001,11 +1001,11 @@ export function PipelinePlanner() {
                     {gaps.map((gap, i) => (
                       <div
                         key={`gap-${i}`}
-                        className="absolute top-1/2 -translate-y-1/2 h-3 rounded-full border border-dashed border-amber-600/30 bg-amber-950/10 flex items-center justify-center"
+                        className="absolute top-1/2 -translate-y-1/2 h-3 rounded-full border border-dashed border-cult-warning/30 bg-cult-warning-muted flex items-center justify-center"
                         style={{ left: gap.startX, width: gap.width }}
                         title={`${gap.days}d gap — room idle`}
                       >
-                        <span className="text-[8px] text-amber-500/50">{gap.days}d</span>
+                        <span className="text-[8px] text-cult-warning/50">{gap.days}d</span>
                       </div>
                     ))}
 

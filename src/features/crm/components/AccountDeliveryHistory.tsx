@@ -10,9 +10,9 @@ interface AccountDeliveryHistoryProps {
 
 function getStatusStyle(status: string): string {
   switch (status) {
-    case 'delivered': return 'bg-emerald-500/15 text-emerald-400';
-    case 'completed': return 'bg-emerald-500/15 text-emerald-400';
-    case 'ready_for_delivery': return 'bg-sky-500/15 text-sky-400';
+    case 'delivered': return 'bg-cult-success-muted text-cult-success';
+    case 'completed': return 'bg-cult-success-muted text-cult-success';
+    case 'ready_for_delivery': return 'bg-cult-info-muted text-cult-info';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
   }
 }
@@ -58,10 +58,10 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
       {deliveries.length > 0 && (
         <div className="px-5 py-3 border-b border-cult-charcoal/50 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-cult-silver">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-cult-success" />
             <span>{totalDelivered} completed</span>
           </div>
-          <span className="text-xs font-semibold text-emerald-400">{formatCurrency(totalValue)} total</span>
+          <span className="text-xs font-semibold text-cult-success">{formatCurrency(totalValue)} total</span>
         </div>
       )}
 

@@ -74,7 +74,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
 
       {/* End date indicator (calendar mode) */}
       {schedule.end_date && (
-        <div className="mt-2 text-[10px] text-amber-400/70">
+        <div className="mt-2 text-[10px] text-cult-warning/70">
           Stops {new Date(schedule.end_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </div>
       )}

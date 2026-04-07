@@ -45,9 +45,9 @@ const taskTypeLabels: Record<TaskType, string> = {
 };
 
 const priorityColors: Record<string, string> = {
-  urgent: 'text-red-400 bg-red-500/15',
-  high: 'text-orange-400 bg-orange-500/15',
-  medium: 'text-amber-400 bg-amber-500/15',
+  urgent: 'text-cult-danger bg-cult-danger/15',
+  high: 'text-cult-warning bg-cult-warning/15',
+  medium: 'text-cult-warning bg-cult-warning/15',
   low: 'text-cult-silver bg-cult-dark-gray',
 };
 
@@ -135,14 +135,14 @@ function TaskRow({
   };
 
   return (
-    <div className={`transition-colors ${task.focus_today ? 'border-l-2 border-l-amber-400' : ''}`}>
+    <div className={`transition-colors ${task.focus_today ? 'border-l-2 border-l-cult-warning' : ''}`}>
       <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
         <button
           onClick={onToggleFocus}
           className={`p-0.5 flex-shrink-0 transition-colors ${
             task.focus_today
-              ? 'text-amber-400 hover:text-amber-300'
-              : 'text-cult-charcoal hover:text-amber-400/60'
+              ? 'text-cult-warning hover:text-cult-warning/80'
+              : 'text-cult-charcoal hover:text-cult-warning/60'
           }`}
           title={task.focus_today ? 'Remove from Today focus' : 'Focus Today'}
         >
@@ -156,7 +156,7 @@ function TaskRow({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={onNavigate}
-              className="text-sm font-medium text-cult-white hover:text-sky-400 transition-colors truncate"
+              className="text-sm font-medium text-cult-white hover:text-cult-info transition-colors truncate"
             >
               {task.title}
             </button>
@@ -167,7 +167,7 @@ function TaskRow({
               </span>
             )}
             {task.focus_today && (
-              <span className="text-xs text-amber-400 font-medium">★ Focus</span>
+              <span className="text-xs text-cult-warning font-medium">★ Focus</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-silver">
@@ -176,7 +176,7 @@ function TaskRow({
               <span className="font-mono text-cult-medium-gray">{task.dispensary_code}</span>
             )}
             {isOverdue && (
-              <span className="text-red-400 font-medium">{overdueDays}d overdue</span>
+              <span className="text-cult-danger font-medium">{overdueDays}d overdue</span>
             )}
           </div>
         </div>
@@ -190,7 +190,7 @@ function TaskRow({
           </button>
           <button
             onClick={onComplete}
-            className="p-1.5 text-cult-medium-gray hover:text-emerald-400 transition-colors"
+            className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors"
             title="Complete"
           >
             <CheckCircle2 className="w-4 h-4" />
@@ -231,7 +231,7 @@ function TaskRow({
                 </button>
                 <button
                   onClick={() => { onCancel(); setShowActions(false); }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-danger hover:bg-cult-danger/10 transition-colors"
                 >
                   Cancel task
                 </button>
@@ -329,7 +329,7 @@ function VisitRow({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={onNavigate}
-            className="text-sm font-medium text-cult-white hover:text-sky-400 transition-colors truncate"
+            className="text-sm font-medium text-cult-white hover:text-cult-info transition-colors truncate"
           >
             {visit.customer_name}
           </button>
@@ -344,7 +344,7 @@ function VisitRow({
       </div>
       <button
         onClick={onComplete}
-        className="p-1.5 text-cult-medium-gray hover:text-emerald-400 transition-colors flex-shrink-0"
+        className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors flex-shrink-0"
         title="Complete visit"
       >
         <CheckCircle2 className="w-4 h-4" />
@@ -579,9 +579,9 @@ export function SalesQueue() {
         <QueueSection
           title="Overdue"
           icon={AlertTriangle}
-          iconColor="text-red-400"
+          iconColor="text-cult-danger"
           count={fOverdue.length}
-          accentBorder="border-red-500/30"
+          accentBorder="border-cult-danger/30"
         >
           {fOverdue.map((task) => renderTaskRow(task, true))}
         </QueueSection>
@@ -590,7 +590,7 @@ export function SalesQueue() {
       <QueueSection
         title="Today"
         icon={Calendar}
-        iconColor="text-amber-400"
+        iconColor="text-cult-warning"
         count={totalToday}
       >
         {fToday.map((task) => renderTaskRow(task, false))}
@@ -744,7 +744,7 @@ function QueueSection({
 /* ── Stat block ────────────────────────────────────────────────── */
 
 function StatBlock({ label, value, accent, sub }: { label: string; value: number; accent?: 'red' | 'amber'; sub?: string }) {
-  const valueColor = accent === 'red' ? 'text-red-400' : accent === 'amber' ? 'text-amber-400' : 'text-cult-white';
+  const valueColor = accent === 'red' ? 'text-cult-danger' : accent === 'amber' ? 'text-cult-warning' : 'text-cult-white';
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
       <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>

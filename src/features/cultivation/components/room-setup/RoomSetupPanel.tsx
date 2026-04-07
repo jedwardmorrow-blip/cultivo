@@ -107,8 +107,8 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                 className={`flex-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-all ${
                   filter === f.key
                     ? f.key === 'needs-setup' && needsSetupCount > 0
-                      ? 'bg-amber-500 text-black border border-amber-500'
-                      : 'bg-green-600 text-white border border-green-600'
+                      ? 'bg-cult-warning text-black border border-cult-warning'
+                      : 'bg-cult-success text-white border border-cult-success'
                     : 'text-cult-medium-gray border border-cult-dark-gray/60 hover:border-cult-medium-gray hover:text-cult-light-gray'
                 }`}
               >
@@ -133,9 +133,9 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                 onClick={() => selectRoom(room.id)}
                 className={`w-full text-left p-3 min-h-[44px] rounded-sm transition-all border ${
                   isSelected
-                    ? 'bg-green-950/30 border-green-600/50'
+                    ? 'bg-cult-success-muted border-cult-success/50'
                     : !hasSchedules
-                      ? 'bg-cult-charcoal/20 border-amber-700/40 hover:border-amber-600/60 hover:bg-amber-950/10 animate-pulse-subtle'
+                      ? 'bg-cult-charcoal/20 border-cult-warning/40 hover:border-cult-warning/60 hover:bg-cult-warning-muted animate-pulse-subtle'
                       : 'bg-cult-charcoal/10 border-cult-dark-gray/40 hover:border-cult-medium-gray hover:bg-cult-charcoal/30'
                 }`}
               >
@@ -163,7 +163,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                       <span className="text-xs text-cult-medium-gray font-mono">{roomSchedules.length} tasks</span>
                     </>
                   ) : (
-                    <span className="text-[10px] text-amber-500 font-semibold uppercase tracking-wider">Needs Setup</span>
+                    <span className="text-[10px] text-cult-warning font-semibold uppercase tracking-wider">Needs Setup</span>
                   )}
                 </div>
               </button>
@@ -183,7 +183,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
               </div>
               <p className="text-sm text-cult-medium-gray">Select a room to view & edit its schedule</p>
               {needsSetupCount > 0 && (
-                <p className="text-xs text-amber-500/80 mt-2">
+                <p className="text-xs text-cult-warning/80 mt-2">
                   {needsSetupCount} room{needsSetupCount !== 1 ? 's' : ''} still need{needsSetupCount === 1 ? 's' : ''} configuration
                 </p>
               )}
@@ -217,14 +217,14 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                     <button
                       type="button"
                       onClick={() => setShowTemplatePicker(true)}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/40 hover:bg-cult-warning-muted/80 rounded-sm transition-colors"
                     >
                       Apply Template
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowCopyPicker(true)}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/40 hover:bg-cult-info-muted/80 rounded-sm transition-colors"
                     >
                       <Copy className="w-3 h-3" />
                       Copy from Room
@@ -232,7 +232,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                     <button
                       type="button"
                       onClick={() => { setEditingId(null); setIsNew(true); }}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 rounded-sm transition-colors"
                     >
                       <Plus className="w-3 h-3" />
                       Add Schedule
@@ -250,8 +250,8 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
               {/* Empty state for room with no schedules */}
               {selectedSchedules.length === 0 && !isNew && !showCopyPicker && !showTemplatePicker && (
                 <div className="text-center py-12">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-amber-950/30 flex items-center justify-center mb-4">
-                    <AlertCircle className="w-6 h-6 text-amber-500" />
+                  <div className="w-14 h-14 mx-auto rounded-full bg-cult-warning-muted flex items-center justify-center mb-4">
+                    <AlertCircle className="w-6 h-6 text-cult-warning" />
                   </div>
                   <p className="text-sm text-cult-light-gray font-semibold">No schedules configured</p>
                   <p className="text-xs text-cult-medium-gray mt-1 mb-5">Apply a template, copy from another room, or create manually</p>
@@ -260,7 +260,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                       <button
                         type="button"
                         onClick={() => setShowTemplatePicker(true)}
-                        className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+                        className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/40 hover:bg-cult-warning-muted/80 rounded-sm transition-colors"
                       >
                         Apply Template
                       </button>
@@ -268,7 +268,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                     <button
                       type="button"
                       onClick={() => setShowCopyPicker(true)}
-                      className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                      className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/40 hover:bg-cult-info-muted/80 rounded-sm transition-colors"
                     >
                       <Copy className="w-3.5 h-3.5 inline mr-1" />
                       Copy from Room
@@ -276,7 +276,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                     <button
                       type="button"
                       onClick={() => { setEditingId(null); setIsNew(true); }}
-                      className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                      className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 rounded-sm transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5 inline mr-1" />
                       Create Manually
@@ -411,7 +411,7 @@ export function RoomSetupPanel({ rooms, initialRoomId }: RoomSetupPanelProps) {
                             setSavingAsTemplate(false);
                             setTemplateName('');
                           }}
-                          className="flex-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 disabled:opacity-30 rounded-sm transition-colors"
+                          className="flex-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 disabled:opacity-30 rounded-sm transition-colors"
                         >
                           <Save className="w-3 h-3 inline mr-1" />
                           Save

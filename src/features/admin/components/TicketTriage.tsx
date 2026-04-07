@@ -29,16 +29,16 @@ type StatusFilter = 'all' | 'open' | 'in_progress' | 'resolved';
 const STATUS_OPTIONS = ['open', 'in_progress', 'resolved'] as const;
 
 const severityColors: Record<string, string> = {
-  critical: 'bg-red-500/20 text-red-400 border-red-500/30',
-  high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  low: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  critical: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
+  high: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  medium: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  low: 'bg-cult-info-muted text-cult-info border-cult-info/30',
 };
 
 const statusColors: Record<string, string> = {
-  open: 'bg-red-500/20 text-red-400',
-  in_progress: 'bg-amber-500/20 text-amber-400',
-  resolved: 'bg-green-500/20 text-green-400',
+  open: 'bg-cult-danger-muted text-cult-danger',
+  in_progress: 'bg-cult-warning-muted text-cult-warning',
+  resolved: 'bg-cult-success-muted text-cult-success',
 };
 
 export function TicketTriage() {

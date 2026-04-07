@@ -14,10 +14,10 @@ function formatCurrency(value: number): string {
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'active': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    case 'active': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
     case 'prospect': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
     case 'inactive': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
-    case 'churned': return 'bg-red-500/20 text-red-400 border-red-500/30';
+    case 'churned': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
     default: return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
   }
 }
@@ -348,7 +348,7 @@ function ParentRow({
         </td>
         <td className="px-4 py-3 text-right">
           <div>
-            <span className={`text-sm font-semibold ${combinedRevenue > 0 ? 'text-emerald-400' : 'text-cult-medium-gray'}`}>
+            <span className={`text-sm font-semibold ${combinedRevenue > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
               {combinedRevenue > 0 ? formatCurrency(combinedRevenue) : '-'}
             </span>
             {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
@@ -369,7 +369,7 @@ function ParentRow({
         <td className="px-4 py-3 text-right hidden lg:table-cell">
           <span className={`text-xs ${
             account.days_since_last_order !== null && account.days_since_last_order > 30
-              ? 'text-amber-400'
+              ? 'text-cult-warning'
               : 'text-cult-light-gray'
           }`}>
             {account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : '-'}
@@ -406,7 +406,7 @@ function ParentRow({
             </span>
           </td>
           <td className="px-4 py-2.5 text-right">
-            <span className={`text-sm ${Number(child.total_revenue) > 0 ? 'text-emerald-400/80' : 'text-cult-medium-gray'}`}>
+            <span className={`text-sm ${Number(child.total_revenue) > 0 ? 'text-cult-success/80' : 'text-cult-medium-gray'}`}>
               {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
             </span>
           </td>
@@ -416,7 +416,7 @@ function ParentRow({
           <td className="px-4 py-2.5 text-right hidden lg:table-cell">
             <span className={`text-xs ${
               child.days_since_last_order !== null && child.days_since_last_order > 30
-                ? 'text-amber-400'
+                ? 'text-cult-warning'
                 : 'text-cult-light-gray'
             }`}>
               {child.days_since_last_order !== null ? `${child.days_since_last_order}d ago` : '-'}

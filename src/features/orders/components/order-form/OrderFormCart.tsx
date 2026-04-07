@@ -108,7 +108,7 @@ export function OrderFormCart({
                 <button
                   type="button"
                   onClick={() => onRemoveItem(index)}
-                  className="p-2 text-red-400 hover:text-red-300 hover:bg-cult-dark-gray rounded-lg transition-colors"
+                  className="p-2 text-cult-danger hover:text-cult-danger hover:bg-cult-dark-gray rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -199,7 +199,7 @@ export function OrderFormCart({
                     />
                   </div>
                   {hasCustomPrice && !item.price_locked && (
-                    <p className="mt-1 text-xs text-amber-400 flex items-center gap-1">
+                    <p className="mt-1 text-xs text-cult-warning flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       Custom price (default: ${selectedProduct.price_per_unit.toFixed(2)})
                     </p>
@@ -217,7 +217,7 @@ export function OrderFormCart({
                   </div>
                 </div>
                 {hasCustomPrice && (
-                  <div className="text-xs text-amber-400 flex items-center gap-1">
+                  <div className="text-xs text-cult-warning flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     Custom pricing
                   </div>

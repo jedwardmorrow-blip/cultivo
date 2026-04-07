@@ -59,7 +59,7 @@ export function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBin
       <h3 className="text-sm font-semibold text-cult-white">New Binning Session</h3>
 
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-red-950 border border-red-700 px-3 py-2 text-sm text-red-400">
+        <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-2 text-sm text-cult-danger">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -86,7 +86,7 @@ export function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBin
           {selectedHarvest && wetWeight !== null && (
             <p className="mt-1 text-xs text-cult-medium-gray">
               Wet weight: <span className="text-cult-white">{formatWeight(wetWeight)}</span>
-              {selectedHarvest.adjusted_weight_grams && <span className="text-amber-400 ml-1">(adjusted)</span>}
+              {selectedHarvest.adjusted_weight_grams && <span className="text-cult-warning ml-1">(adjusted)</span>}
             </p>
           )}
         </div>
@@ -99,7 +99,7 @@ export function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBin
                 Assigned {dryRoomCode ? <span className="text-cult-medium-gray font-mono ml-1">({dryRoomCode})</span> : null}
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 rounded-md bg-amber-950 border border-amber-700 px-3 py-2 text-xs text-amber-400">
+              <div className="flex items-center gap-1.5 rounded-md bg-cult-warning-muted border border-cult-warning px-3 py-2 text-xs text-cult-warning">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
                 No dry room assigned to this harvest.
               </div>
@@ -134,7 +134,7 @@ export function NewBinningForm({ unbinnedHarvests, onSuccess, onCancel }: NewBin
       </div>
 
       {selectedHarvest && !selectedHarvest.batch_registry_id && (
-        <div className="flex items-center gap-2 rounded-md bg-amber-950 border border-amber-700 px-3 py-2 text-sm text-amber-400">
+        <div className="flex items-center gap-2 rounded-md bg-cult-warning-muted border border-cult-warning px-3 py-2 text-sm text-cult-warning">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <span>This harvest session has no linked batch. Complete the harvest first.</span>
         </div>

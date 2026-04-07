@@ -159,12 +159,12 @@ export function requiresInvestigation(variancePercentage: number): boolean {
 export function getVarianceColor(severity: VarianceSeverity): string {
   switch (severity) {
     case 'low':
-      return 'text-green-600';
+      return 'text-cult-success';
     case 'medium':
-      return 'text-yellow-600';
+      return 'text-cult-warning';
     case 'high':
-      return 'text-orange-600';
+      return 'text-cult-warning';
     case 'critical':
-      return 'text-red-600';
+      return 'text-cult-danger';
   }
 }

@@ -1,10 +1,10 @@
 import type { HealthStatus, GradeCode } from '../../hooks/useSalesPipeline';
 
 export const HEALTH_STYLES: Record<HealthStatus, { bg: string; text: string; border: string; label: string }> = {
-  critical: { bg: 'bg-red-950/60', text: 'text-red-400', border: 'border-red-900', label: 'Critical' },
-  low: { bg: 'bg-amber-950/60', text: 'text-amber-400', border: 'border-amber-900', label: 'Low' },
-  warning: { bg: 'bg-yellow-950/60', text: 'text-yellow-400', border: 'border-yellow-900', label: 'Warning' },
-  healthy: { bg: 'bg-emerald-950/60', text: 'text-emerald-400', border: 'border-emerald-900', label: 'Healthy' },
+  critical: { bg: 'bg-cult-danger/10', text: 'text-cult-danger', border: 'border-cult-danger/30', label: 'Critical' },
+  low: { bg: 'bg-cult-warning/10', text: 'text-cult-warning', border: 'border-cult-warning/30', label: 'Low' },
+  warning: { bg: 'bg-cult-warning/10', text: 'text-cult-warning', border: 'border-cult-warning/30', label: 'Warning' },
+  healthy: { bg: 'bg-cult-success/10', text: 'text-cult-success', border: 'border-cult-success/30', label: 'Healthy' },
 };
 
 export const HEALTH_HEX: Record<HealthStatus, string> = {
@@ -15,9 +15,9 @@ export const HEALTH_HEX: Record<HealthStatus, string> = {
 };
 
 export const GRADE_STYLES: Record<GradeCode, { bg: string; text: string; border: string; label: string }> = {
-  CULT: { bg: 'bg-emerald-950/50', text: 'text-emerald-400', border: 'border-emerald-800', label: 'CULT' },
+  CULT: { bg: 'bg-cult-success/10', text: 'text-cult-success', border: 'border-cult-success/30', label: 'CULT' },
   B: { bg: 'bg-sky-950/50', text: 'text-sky-400', border: 'border-sky-800', label: 'B Grade' },
-  C: { bg: 'bg-amber-950/50', text: 'text-amber-400', border: 'border-amber-800', label: 'C Grade' },
+  C: { bg: 'bg-cult-warning/10', text: 'text-cult-warning', border: 'border-cult-warning/30', label: 'C Grade' },
   D: { bg: 'bg-neutral-800/50', text: 'text-neutral-400', border: 'border-neutral-700', label: 'D Grade' },
   UNDEFINED: { bg: 'bg-neutral-900/50', text: 'text-neutral-500', border: 'border-neutral-800', label: 'Ungraded' },
 };
@@ -31,10 +31,10 @@ export const STAGE_COLORS: Record<string, string> = {
 };
 
 export const STAGE_TW: Record<string, { text: string; bg: string }> = {
-  binned: { text: 'text-blue-400', bg: 'bg-blue-500' },
+  binned: { text: 'text-cult-info', bg: 'bg-cult-info' },
   bucked: { text: 'text-violet-400', bg: 'bg-violet-500' },
-  trimmed: { text: 'text-amber-400', bg: 'bg-amber-500' },
-  packaged: { text: 'text-emerald-400', bg: 'bg-emerald-500' },
+  trimmed: { text: 'text-cult-warning', bg: 'bg-cult-warning' },
+  packaged: { text: 'text-cult-success', bg: 'bg-cult-success' },
   byproduct: { text: 'text-neutral-500', bg: 'bg-neutral-600' },
 };
 

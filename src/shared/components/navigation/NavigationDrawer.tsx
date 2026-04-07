@@ -32,7 +32,7 @@ export function NavigationDrawer({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 animate-fade-in"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fade-in"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -40,20 +40,20 @@ export function NavigationDrawer({
 
       <aside
         className={`
-          fixed top-0 left-0 h-full w-[260px] sm:w-[280px] bg-cult-graphite border-r border-cult-charcoal z-50
+          fixed top-0 left-0 h-full w-[260px] sm:w-[280px] glass-nav z-50
           transform transition-transform duration-300 ease-in-out overflow-y-auto safe-top safe-bottom
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="flex items-center justify-between p-4 border-b border-cult-charcoal">
+        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
           <h2 className="text-base font-bold text-cult-white uppercase tracking-wider">
             Navigation
           </h2>
           <button
             onClick={onClose}
-            className="p-2.5 text-cult-silver hover:text-cult-white active:bg-cult-charcoal/80 transition-colors rounded-lg hover:bg-cult-charcoal min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2.5 text-cult-silver hover:text-cult-white active:scale-95 transition-all duration-200 rounded-xl hover:bg-white/[0.08] min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Close navigation menu"
           >
             <X className="w-5 h-5" />

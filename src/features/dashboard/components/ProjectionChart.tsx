@@ -130,7 +130,7 @@ export function ProjectionChart({ windows }: Props) {
   };
 
   return (
-    <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
+    <div className="glass-card p-6 h-full">
       <div className="flex justify-between items-center mb-5">
         <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary">
           Revenue Projection — Harvest to Cash

@@ -26,7 +26,7 @@ export function AuditOverdueBadge() {
 
   if (audit_clock_status === 'overdue') {
     return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-900/30 border border-red-500/40 rounded text-[11px] font-bold text-red-400 uppercase tracking-wider">
+      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cult-danger-muted border border-cult-danger/40 rounded text-[11px] font-bold text-cult-danger uppercase tracking-wider">
         <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
         AUDIT OVERDUE — {days_since_last_audit ?? '?'} days
       </div>
@@ -36,7 +36,7 @@ export function AuditOverdueBadge() {
   if (audit_clock_status === 'warning') {
     const daysLeft = 30 - (days_since_last_audit ?? 30);
     return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-900/20 border border-amber-500/30 rounded text-[11px] font-semibold text-amber-400">
+      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cult-warning-muted border border-cult-warning/30 rounded text-[11px] font-semibold text-cult-warning">
         <Clock className="w-3.5 h-3.5 flex-shrink-0" />
         Audit due in {Math.max(0, daysLeft)} day{daysLeft !== 1 ? 's' : ''}
       </div>

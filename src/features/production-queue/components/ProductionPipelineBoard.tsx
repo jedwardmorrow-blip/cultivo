@@ -12,17 +12,17 @@ function formatWeight(g: number): string {
 
 const STAGE_COLORS: Record<PipelineStage, { bg: string; border: string; header: string }> = {
   binned:   { bg: 'bg-indigo-900/10',  border: 'border-indigo-500/20', header: 'text-indigo-400' },
-  bucked:   { bg: 'bg-blue-900/10',    border: 'border-blue-500/20',   header: 'text-blue-400' },
+  bucked:   { bg: 'bg-cult-info/10',    border: 'border-cult-info/20',   header: 'text-cult-info' },
   bulk:     { bg: 'bg-cyan-900/10',    border: 'border-cyan-500/20',   header: 'text-cyan-400' },
   trimming: { bg: 'bg-teal-900/10',    border: 'border-teal-500/20',   header: 'text-teal-400' },
-  packaged: { bg: 'bg-emerald-900/10', border: 'border-emerald-500/20', header: 'text-emerald-400' },
+  packaged: { bg: 'bg-cult-success/10', border: 'border-cult-success/20', header: 'text-cult-success' },
 };
 
 const URGENCY_DOT: Record<Urgency, string> = {
-  overdue: 'bg-red-400',
-  urgent: 'bg-amber-400',
-  soon: 'bg-yellow-400',
-  normal: 'bg-emerald-400',
+  overdue: 'bg-cult-danger',
+  urgent: 'bg-cult-warning',
+  soon: 'bg-cult-warning',
+  normal: 'bg-cult-success',
   no_date: 'bg-gray-400',
 };
 
@@ -37,7 +37,7 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
   return (
     <div
       className={`bg-cult-near-black border rounded p-2.5 cursor-pointer transition-colors ${
-        hasOrders ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-cult-dark-gray hover:border-cult-medium-gray'
+        hasOrders ? 'border-cult-warning/30 hover:border-cult-warning/50' : 'border-cult-dark-gray hover:border-cult-medium-gray'
       }`}
       onClick={() => setExpanded(e => !e)}
     >
@@ -57,8 +57,8 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
 
       {hasOrders && (
         <div className="flex items-center gap-1 mt-1.5 ml-[18px]">
-          <Package className="w-3 h-3 text-amber-400" />
-          <span className="text-[10px] text-amber-300">{batch.allocated_order_items} order{batch.allocated_order_items !== 1 ? 's' : ''} waiting</span>
+          <Package className="w-3 h-3 text-cult-warning" />
+          <span className="text-[10px] text-cult-warning">{batch.allocated_order_items} order{batch.allocated_order_items !== 1 ? 's' : ''} waiting</span>
         </div>
       )}
 
@@ -74,7 +74,7 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
           {batch.trim_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Trim</span><span className="tabular-nums">{formatWeight(batch.trim_g)}</span></div>}
           {batch.packaged_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Packaged</span><span className="tabular-nums">{formatWeight(batch.packaged_g)}</span></div>}
           {batch.total_allocated_g > 0 && (
-            <div className="flex justify-between text-amber-300 pt-1 border-t border-cult-charcoal/30">
+            <div className="flex justify-between text-cult-warning pt-1 border-t border-cult-charcoal/30">
               <span>Allocated to orders</span>
               <span className="tabular-nums">{formatWeight(batch.total_allocated_g)}</span>
             </div>
@@ -85,7 +85,7 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
             </div>
           )}
           {batch.coa_status && (
-            <div className={`flex items-center gap-1 pt-1 ${batch.coa_status === 'active' ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`flex items-center gap-1 pt-1 ${batch.coa_status === 'active' ? 'text-cult-success' : 'text-cult-danger'}`}>
               {batch.coa_status === 'active' ? '✓' : '✗'} COA {batch.coa_status}
             </div>
           )}
@@ -166,9 +166,9 @@ export function ProductionPipelineBoard() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-3 p-3 bg-red-900/20 border border-red-500/30 rounded">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
-          <span className="text-[12px] text-red-300">{error}</span>
+        <div className="flex items-center gap-3 p-3 bg-cult-danger-muted border border-cult-danger/30 rounded">
+          <AlertTriangle className="w-4 h-4 text-cult-danger" />
+          <span className="text-[12px] text-cult-danger">{error}</span>
         </div>
       )}
 

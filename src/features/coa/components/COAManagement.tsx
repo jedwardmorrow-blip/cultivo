@@ -248,7 +248,7 @@ export function COAManagement() {
         </div>
 
         {success && (
-          <div className="mb-4 flex items-start gap-2 p-4 bg-green-900/20 border border-green-700 text-green-100">
+          <div className="mb-4 flex items-start gap-2 p-4 bg-cult-success-muted border border-cult-success text-cult-text-primary">
             <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Success</p>
@@ -309,7 +309,7 @@ export function COAManagement() {
         )}
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 p-4 bg-red-900/20 border border-red-700 text-red-100">
+          <div className="mt-4 flex items-start gap-2 p-4 bg-cult-danger-muted border border-cult-danger text-cult-text-primary">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Error</p>
@@ -421,10 +421,10 @@ export function COAManagement() {
           </div>
         </div>
 
-        <div className="mt-4 p-4 bg-blue-900/20 border border-blue-700">
+        <div className="mt-4 p-4 bg-cult-info-muted border border-cult-info">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-100">
+            <AlertCircle className="w-5 h-5 text-cult-info flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-cult-text-primary">
               <p className="font-medium mb-1">Visibility Control</p>
               <p>Only COAs marked as "Active" will appear on public pages. Use the eye icon toggle in the list below to control visibility.</p>
             </div>
@@ -481,7 +481,7 @@ export function COAManagement() {
                         onClick={() => handleToggleActive(coa)}
                         className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium uppercase tracking-wider transition-colors ${
                           coa.is_active
-                            ? 'bg-green-900/20 text-green-400 border border-green-700'
+                            ? 'bg-cult-success-muted text-cult-success border border-cult-success'
                             : 'bg-cult-medium-gray/20 text-cult-light-gray border border-cult-medium-gray'
                         }`}
                       >
@@ -504,10 +504,10 @@ export function COAManagement() {
                         )}
                         <button
                           onClick={() => handleDeleteCOA(coa)}
-                          className="p-2 hover:bg-red-900/20 transition-colors"
+                          className="p-2 hover:bg-cult-danger-muted transition-colors"
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4 text-red-400" />
+                          <Trash2 className="w-4 h-4 text-cult-danger" />
                         </button>
                       </div>
                     </td>

@@ -629,12 +629,12 @@ export function getVarianceSeverity(percentage: number): VarianceSeverity {
 export function getVarianceColorClass(severity: VarianceSeverity): string {
   switch (severity) {
     case 'low':
-      return 'text-green-600 bg-green-50';
+      return 'text-cult-success bg-cult-success-muted';
     case 'medium':
-      return 'text-yellow-600 bg-yellow-50';
+      return 'text-cult-warning bg-cult-warning-muted';
     case 'high':
-      return 'text-orange-600 bg-orange-50';
+      return 'text-cult-warning bg-cult-warning-muted';
     case 'critical':
-      return 'text-red-600 bg-red-50';
+      return 'text-cult-danger bg-cult-danger-muted';
   }
 }

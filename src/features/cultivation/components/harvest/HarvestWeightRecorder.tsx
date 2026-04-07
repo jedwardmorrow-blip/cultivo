@@ -46,7 +46,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
   return (
     <div className="mt-3">
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2 mb-2">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
           {error}
         </div>
@@ -156,7 +156,7 @@ export function PlantGroupWeightCard({
   }
 
   return (
-    <div className={`border ${isComplete ? 'border-green-800 bg-green-950/20' : 'border-cult-medium-gray bg-cult-near-black'} p-4`}>
+    <div className={`border ${isComplete ? 'border-cult-success/30 bg-cult-success-muted' : 'border-cult-medium-gray bg-cult-near-black'} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function PlantGroupWeightCard({
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isComplete && (
-            <span className="flex items-center gap-1 text-green-400 text-xs font-semibold uppercase tracking-wider">
+            <span className="flex items-center gap-1 text-cult-success text-xs font-semibold uppercase tracking-wider">
               <CheckCircle className="w-3.5 h-3.5" />
               Done
             </span>
@@ -196,7 +196,7 @@ export function PlantGroupWeightCard({
         </div>
         <div className="w-full bg-cult-black h-1.5 overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-600' : 'bg-cult-white'}`}
+            className={`h-full transition-all duration-300 ${isComplete ? 'bg-cult-success' : 'bg-cult-white'}`}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -205,7 +205,7 @@ export function PlantGroupWeightCard({
       {!harvestSession && (
         <div className="mt-3">
           {error && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2 mb-2">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2 mb-2">
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -233,14 +233,14 @@ export function PlantGroupWeightCard({
                 <span className="text-cult-medium-gray">|</span>
                 <span className="text-cult-light-gray">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
                 {entry.destination && (
-                  <span className={`text-xs px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-green-800 text-green-400'}`}>
+                  <span className={`text-xs px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-cult-success/30 text-cult-success'}`}>
                     {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
                   </span>
                 )}
               </div>
               <button
                 onClick={() => handleRemoveEntry(entry.id)}
-                className="text-cult-medium-gray hover:text-red-400 transition-colors p-0.5"
+                className="text-cult-medium-gray hover:text-cult-danger transition-colors p-0.5"
                 title="Remove entry"
               >
                 <Trash2 className="w-3 h-3" />

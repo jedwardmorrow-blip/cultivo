@@ -12,10 +12,10 @@ function formatG(g: number | null | undefined): string {
 }
 
 const STATUS_CONFIG: Record<AuditVarianceStatus, { label: string; bg: string; text: string }> = {
-  within_scale_tolerance: { label: 'Tolerance', bg: 'bg-emerald-900/20 border-emerald-500/30', text: 'text-emerald-400' },
-  requires_explanation:   { label: 'Needs Explanation', bg: 'bg-amber-900/20 border-amber-500/30', text: 'text-amber-400' },
-  flagged:                { label: 'Flagged', bg: 'bg-red-900/20 border-red-500/30', text: 'text-red-400' },
-  resolved:               { label: 'Resolved', bg: 'bg-blue-900/20 border-blue-500/30', text: 'text-blue-400' },
+  within_scale_tolerance: { label: 'Tolerance', bg: 'bg-cult-success-muted border-cult-success/30', text: 'text-cult-success' },
+  requires_explanation:   { label: 'Needs Explanation', bg: 'bg-cult-warning-muted border-cult-warning/30', text: 'text-cult-warning' },
+  flagged:                { label: 'Flagged', bg: 'bg-cult-danger-muted border-cult-danger/30', text: 'text-cult-danger' },
+  resolved:               { label: 'Resolved', bg: 'bg-cult-info-muted border-cult-info/30', text: 'text-cult-info' },
 };
 
 function StatusBadge({ status }: { status: AuditVarianceStatus }) {
@@ -78,7 +78,7 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
         <td className="px-3 py-2.5 text-[12px] text-cult-lighter-gray tabular-nums text-right">{formatG(item.expected_qty)}</td>
         <td className="px-3 py-2.5 text-[12px] text-cult-lighter-gray tabular-nums text-right">{formatG(item.actual_qty)}</td>
         <td className={`px-3 py-2.5 text-[12px] tabular-nums text-right font-medium ${
-          item.variance_g < -0.5 ? 'text-red-400' : item.variance_g > 0.5 ? 'text-amber-400' : 'text-emerald-400'
+          item.variance_g < -0.5 ? 'text-cult-danger' : item.variance_g > 0.5 ? 'text-cult-warning' : 'text-cult-success'
         }`}>
           {item.variance_g >= 0 ? '+' : ''}{formatG(item.variance_g)}
         </td>
@@ -91,7 +91,7 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
             <div className="ml-6 space-y-3 bg-cult-charcoal/30 rounded p-3">
               <div>
                 <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
-                  Explanation <span className="text-red-400">*</span>
+                  Explanation <span className="text-cult-danger">*</span>
                 </label>
                 <textarea
                   value={explanation}
@@ -103,7 +103,7 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
               </div>
               <div>
                 <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
-                  Corrective Action <span className="text-red-400">*</span>
+                  Corrective Action <span className="text-cult-danger">*</span>
                 </label>
                 <textarea
                   value={correctiveAction}
@@ -115,15 +115,15 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
               </div>
 
               {showCriminalFlag && (
-                <label className="flex items-center gap-2 p-2 bg-red-900/20 border border-red-500/30 rounded cursor-pointer">
+                <label className="flex items-center gap-2 p-2 bg-cult-danger-muted border border-cult-danger/30 rounded cursor-pointer">
                   <input
                     type="checkbox"
                     checked={criminalFlag}
                     onChange={e => setCriminalFlag(e.target.checked)}
                     className="accent-red-500"
                   />
-                  <Shield className="w-3.5 h-3.5 text-red-400" />
-                  <span className="text-[11px] text-red-300">Flag suspected criminal activity (supervisor only)</span>
+                  <Shield className="w-3.5 h-3.5 text-cult-danger" />
+                  <span className="text-[11px] text-cult-danger/80">Flag suspected criminal activity (supervisor only)</span>
                 </label>
               )}
 
@@ -184,11 +184,11 @@ export function AuditReconciliationTable({ auditId, onAllResolved }: AuditReconc
 
   if (error) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-red-900/20 border border-red-500/40 rounded">
-        <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+      <div className="flex items-center gap-3 p-4 bg-cult-danger-muted border border-cult-danger/40 rounded">
+        <AlertTriangle className="w-5 h-5 text-cult-danger flex-shrink-0" />
         <div>
-          <div className="text-[13px] text-red-300 font-medium">Failed to load line items</div>
-          <div className="text-[12px] text-red-400 mt-0.5">{error}</div>
+          <div className="text-[13px] text-cult-danger/80 font-medium">Failed to load line items</div>
+          <div className="text-[12px] text-cult-danger mt-0.5">{error}</div>
         </div>
       </div>
     );
@@ -208,22 +208,22 @@ export function AuditReconciliationTable({ auditId, onAllResolved }: AuditReconc
       <div className="flex flex-wrap gap-2">
         <span className="text-[11px] text-cult-text-muted">{counts.total} items</span>
         {counts.tolerance > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-900/20 border border-emerald-500/30 text-emerald-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-cult-success-muted border border-cult-success/30 text-cult-success">
             <CheckCircle className="w-3 h-3" /> {counts.tolerance} within tolerance
           </span>
         )}
         {counts.needsExplanation > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-900/20 border border-amber-500/30 text-amber-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-cult-warning-muted border border-cult-warning/30 text-cult-warning">
             <AlertTriangle className="w-3 h-3" /> {counts.needsExplanation} need explanation
           </span>
         )}
         {counts.flagged > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-red-900/20 border border-red-500/30 text-red-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-cult-danger-muted border border-cult-danger/30 text-cult-danger">
             <AlertTriangle className="w-3 h-3" /> {counts.flagged} flagged
           </span>
         )}
         {counts.resolved > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-900/20 border border-blue-500/30 text-blue-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-cult-info-muted border border-cult-info/30 text-cult-info">
             <CheckCircle className="w-3 h-3" /> {counts.resolved} resolved
           </span>
         )}

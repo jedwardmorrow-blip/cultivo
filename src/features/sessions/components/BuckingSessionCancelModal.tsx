@@ -37,7 +37,7 @@ export function BuckingSessionCancelModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-cult-near-black rounded-lg shadow-2xl max-w-md w-full border-2 border-red-500">
+      <div className="bg-cult-near-black rounded-lg shadow-2xl max-w-md w-full border-2 border-cult-danger">
         <div className="px-6 py-4 border-b border-cult-medium-gray">
           <h2 className="text-xl font-bold text-cult-white uppercase tracking-wide">
             Cancel Bucking Session
@@ -78,7 +78,7 @@ export function BuckingSessionCancelModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-danger"
               placeholder="Why is this session being cancelled?"
             />
           </div>
@@ -99,7 +99,7 @@ export function BuckingSessionCancelModal({
           <button
             onClick={handleConfirm}
             disabled={submitting}
-            className="px-6 py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700 transition disabled:opacity-50"
+            className="px-6 py-2 bg-cult-danger text-white rounded font-bold hover:bg-cult-danger/80 transition disabled:opacity-50"
           >
             {submitting ? 'Cancelling...' : 'Cancel Session'}
           </button>

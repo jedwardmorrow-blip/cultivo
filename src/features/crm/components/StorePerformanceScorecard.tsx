@@ -33,31 +33,31 @@ type SortField =
 type SortDir = 'asc' | 'desc';
 
 const HEALTH_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  healthy: { label: 'Healthy', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' },
-  cooling: { label: 'Cooling', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30' },
-  at_risk: { label: 'At Risk', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30' },
-  dormant: { label: 'Dormant', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30' },
+  healthy: { label: 'Healthy', color: 'text-cult-success', bg: 'bg-cult-success/15', border: 'border-cult-success/30' },
+  cooling: { label: 'Cooling', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30' },
+  at_risk: { label: 'At Risk', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30' },
+  dormant: { label: 'Dormant', color: 'text-cult-danger', bg: 'bg-cult-danger/15', border: 'border-cult-danger/30' },
 };
 
 const TREND_ICON: Record<string, { icon: typeof TrendingUp; color: string }> = {
-  growing: { icon: TrendingUp, color: 'text-emerald-400' },
+  growing: { icon: TrendingUp, color: 'text-cult-success' },
   stable: { icon: Minus, color: 'text-cult-silver' },
-  declining: { icon: TrendingDown, color: 'text-orange-400' },
-  inactive: { icon: TrendingDown, color: 'text-red-400' },
+  declining: { icon: TrendingDown, color: 'text-cult-warning' },
+  inactive: { icon: TrendingDown, color: 'text-cult-danger' },
 };
 
 const FREQ_CONFIG: Record<OrderFrequencyLabel, { label: string; color: string }> = {
-  high: { label: 'High', color: 'text-emerald-400' },
-  medium: { label: 'Med', color: 'text-amber-400' },
-  low: { label: 'Low', color: 'text-orange-400' },
-  none: { label: '—', color: 'text-red-400' },
+  high: { label: 'High', color: 'text-cult-success' },
+  medium: { label: 'Med', color: 'text-cult-warning' },
+  low: { label: 'Low', color: 'text-cult-warning' },
+  none: { label: '—', color: 'text-cult-danger' },
 };
 
 const MIX_CONFIG: Record<ProductMixLabel, { label: string; color: string; dots: number }> = {
-  full: { label: 'Full', color: 'text-emerald-400', dots: 3 },
-  moderate: { label: 'Mod', color: 'text-amber-400', dots: 2 },
-  narrow: { label: 'Narrow', color: 'text-orange-400', dots: 1 },
-  none: { label: 'None', color: 'text-red-400', dots: 0 },
+  full: { label: 'Full', color: 'text-cult-success', dots: 3 },
+  moderate: { label: 'Mod', color: 'text-cult-warning', dots: 2 },
+  narrow: { label: 'Narrow', color: 'text-cult-warning', dots: 1 },
+  none: { label: 'None', color: 'text-cult-danger', dots: 0 },
 };
 
 function fmt$(n: number) {
@@ -154,8 +154,8 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-sky-500/15 border border-sky-500/30">
-            <BarChart3 className="w-5 h-5 text-sky-400" />
+          <div className="p-2 rounded-lg bg-cult-info/15 border border-cult-info/30">
+            <BarChart3 className="w-5 h-5 text-cult-info" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-cult-white">Store Scorecard</h1>
@@ -181,24 +181,24 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
         {/* Avg Order Value — CULT-LOS metric */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Order Value</p>
-          <p className="text-2xl font-bold text-emerald-400">{fmt$(avgOrderValue)}</p>
+          <p className="text-2xl font-bold text-cult-success">{fmt$(avgOrderValue)}</p>
           <p className="text-xs text-cult-silver">90-day avg</p>
         </div>
         {/* Active Accounts — CULT-LOS metric */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Active (60d)</p>
-          <p className="text-2xl font-bold text-sky-400">{orderedLast60}</p>
+          <p className="text-2xl font-bold text-cult-info">{orderedLast60}</p>
           <p className="text-xs text-cult-silver">ordered last 60 days</p>
         </div>
         {/* Product Mix Distribution */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Product Mix</p>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-bold text-emerald-400">{mixCounts.full || 0}</span>
+            <span className="text-lg font-bold text-cult-success">{mixCounts.full || 0}</span>
             <span className="text-xs text-cult-medium-gray">/</span>
-            <span className="text-lg font-bold text-amber-400">{mixCounts.moderate || 0}</span>
+            <span className="text-lg font-bold text-cult-warning">{mixCounts.moderate || 0}</span>
             <span className="text-xs text-cult-medium-gray">/</span>
-            <span className="text-lg font-bold text-orange-400">{mixCounts.narrow || 0}</span>
+            <span className="text-lg font-bold text-cult-warning">{mixCounts.narrow || 0}</span>
           </div>
           <p className="text-xs text-cult-silver">full / mod / narrow</p>
         </div>
@@ -240,7 +240,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-sky-500/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
           />
         </div>
         {filter !== 'all' && (
@@ -321,7 +321,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                       onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
-                      <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
                       <p className="text-xs text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
@@ -354,7 +354,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                           key={i}
                           className={`w-2.5 h-2.5 rounded-full ${
                             i <= mix.dots
-                              ? mix.dots === 3 ? 'bg-emerald-500' : mix.dots === 2 ? 'bg-amber-500' : 'bg-orange-500'
+                              ? mix.dots === 3 ? 'bg-cult-success' : mix.dots === 2 ? 'bg-cult-warning' : 'bg-cult-warning'
                               : 'bg-cult-charcoal'
                           }`}
                         />
@@ -369,7 +369,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   {/* Recency */}
                   <td className="py-2.5 px-2 text-center hidden lg:table-cell">
                     {a.days_since_last_order !== null ? (
-                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-red-400' : a.days_since_last_order > 30 ? 'text-orange-400' : 'text-cult-silver'}`}>
+                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-cult-danger' : a.days_since_last_order > 30 ? 'text-cult-warning' : 'text-cult-silver'}`}>
                         {a.days_since_last_order}d
                       </span>
                     ) : (
@@ -402,10 +402,10 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
 /* Visit compliance badge */
 function VisitBadge({ status, pct }: { status: string; pct: number }) {
   const cfg: Record<string, { label: string; color: string }> = {
-    on_track: { label: 'On Track', color: 'text-emerald-400' },
-    scheduled: { label: 'Scheduled', color: 'text-sky-400' },
-    due_soon: { label: 'Due Soon', color: 'text-amber-400' },
-    overdue: { label: 'Overdue', color: 'text-red-400' },
+    on_track: { label: 'On Track', color: 'text-cult-success' },
+    scheduled: { label: 'Scheduled', color: 'text-cult-info' },
+    due_soon: { label: 'Due Soon', color: 'text-cult-warning' },
+    overdue: { label: 'Overdue', color: 'text-cult-danger' },
     never_visited: { label: 'Never', color: 'text-cult-medium-gray' },
   };
   const c = cfg[status] || cfg.never_visited;

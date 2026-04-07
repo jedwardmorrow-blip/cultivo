@@ -79,7 +79,7 @@ export function AccountSampleHistory({ customerId }: AccountSampleHistoryProps) 
           <div className="px-4 py-3 bg-cult-dark-gray/50 border-b border-cult-medium-gray flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold text-cult-white">{group.orderNumber}</span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded uppercase">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-cult-warning-muted text-cult-warning border border-cult-warning/40 rounded uppercase">
                 <Gift className="w-3 h-3" />
                 Sample
               </span>

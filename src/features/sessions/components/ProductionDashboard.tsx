@@ -116,9 +116,9 @@ function computeTodaySummary(
 }
 
 const TYPE_CONFIG = {
-  bucking: { label: 'Bucking', icon: Scissors, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-  trim: { label: 'Trim', icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  packaging: { label: 'Packaging', icon: Box, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/20' },
+  bucking: { label: 'Bucking', icon: Scissors, color: 'text-cult-warning', bg: 'bg-cult-warning-muted', border: 'border-cult-warning/20' },
+  trim: { label: 'Trim', icon: Leaf, color: 'text-cult-success', bg: 'bg-cult-success-muted', border: 'border-cult-success/20' },
+  packaging: { label: 'Packaging', icon: Box, color: 'text-cult-info', bg: 'bg-cult-info-muted', border: 'border-cult-info/20' },
 } as const;
 
 function ProductionDashboardInner() {
@@ -215,18 +215,18 @@ function ProductionDashboardInner() {
       {pendingFinalizationCount > 0 && (
         <button
           onClick={() => navigate('/sessions')}
-          className="w-full text-left bg-amber-900/20 border border-amber-600/50 p-4 flex items-center gap-3 hover:bg-amber-900/30 transition-colors"
+          className="w-full text-left bg-cult-warning-muted border border-cult-warning/50 p-4 flex items-center gap-3 hover:bg-cult-warning/15 transition-colors"
         >
-          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-amber-400 font-bold uppercase tracking-wider text-sm">
+            <p className="text-cult-warning font-bold uppercase tracking-wider text-sm">
               {pendingFinalizationCount} Session{pendingFinalizationCount !== 1 ? 's' : ''} Pending Finalization
             </p>
-            <p className="text-amber-200/70 text-xs mt-0.5">
+            <p className="text-cult-warning/70 text-xs mt-0.5">
               Completed sessions not yet finalized — inventory is not visible until finalized
             </p>
           </div>
-          <span className="text-amber-400 text-xs font-bold uppercase tracking-wider flex-shrink-0">
+          <span className="text-cult-warning text-xs font-bold uppercase tracking-wider flex-shrink-0">
             Finalize Now →
           </span>
         </button>
@@ -243,17 +243,17 @@ function ProductionDashboardInner() {
         <StatCard
           label="Completed Today"
           value={totalCompletedToday}
-          icon={<CheckCircle className="w-5 h-5 text-emerald-400" />}
+          icon={<CheckCircle className="w-5 h-5 text-cult-success" />}
         />
         <StatCard
           label="Flower Bucked"
           value={`${(todaySummary.totalFlowerBucked / 1000).toFixed(1)} kg`}
-          icon={<Scissors className="w-5 h-5 text-amber-400" />}
+          icon={<Scissors className="w-5 h-5 text-cult-warning" />}
         />
         <StatCard
           label="Units Packaged"
           value={todaySummary.totalUnitsPackaged}
-          icon={<Box className="w-5 h-5 text-sky-400" />}
+          icon={<Box className="w-5 h-5 text-cult-info" />}
         />
       </div>
 
@@ -457,9 +457,9 @@ function QuickActionButton({
   accentColor: 'amber' | 'emerald' | 'sky';
 }) {
   const hoverMap = {
-    amber: 'hover:border-amber-400/40 hover:bg-amber-400/5',
-    emerald: 'hover:border-emerald-400/40 hover:bg-emerald-400/5',
-    sky: 'hover:border-sky-400/40 hover:bg-sky-400/5',
+    amber: 'hover:border-cult-warning/40 hover:bg-cult-warning/5',
+    emerald: 'hover:border-cult-success/40 hover:bg-cult-success/5',
+    sky: 'hover:border-cult-info/40 hover:bg-cult-info/5',
   };
 
   return (

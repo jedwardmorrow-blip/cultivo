@@ -206,7 +206,7 @@ export function BulkBagCreationModal({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="relative bg-cult-surface-raised rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border-subtle">
             <div>
@@ -226,16 +226,16 @@ export function BulkBagCreationModal({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-medium text-blue-900 mb-2">Available Weight</h3>
+            <div className="bg-cult-info-muted border border-cult-info/30 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-medium text-cult-text-primary mb-2">Available Weight</h3>
               <div className="flex items-baseline gap-2">
-                <div className="text-3xl font-bold text-blue-900">{availableWeight}g</div>
-                <div className="text-sm text-blue-700">
+                <div className="text-3xl font-bold text-cult-text-primary">{availableWeight}g</div>
+                <div className="text-sm text-cult-text-secondary">
                   from {session.session_count} session{session.session_count !== 1 ? 's' : ''}
                 </div>
               </div>
               {writeOffGrams != null && writeOffGrams > 0 && (
-                <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1 inline-block">
+                <div className="mt-2 text-xs text-cult-text-secondary bg-cult-info-muted rounded px-2 py-1 inline-block">
                   After {writeOffGrams}g water loss write-off (original: {session.output_weight}g)
                 </div>
               )}
@@ -245,29 +245,29 @@ export function BulkBagCreationModal({
             <div
               className={`p-4 rounded-lg mb-6 ${
                 isOverAllocated
-                  ? 'bg-red-50 border border-red-200'
+                  ? 'bg-cult-danger-muted border border-cult-danger/30'
                   : isUnderAllocated
-                  ? 'bg-yellow-50 border border-yellow-200'
-                  : 'bg-green-50 border border-green-200'
+                  ? 'bg-cult-warning-muted border border-cult-warning/30'
+                  : 'bg-cult-success-muted border border-cult-success/30'
               }`}
             >
               <div className="flex items-center gap-2">
                 {isOverAllocated ? (
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <AlertTriangle className="w-5 h-5 text-cult-danger" />
                 ) : isUnderAllocated ? (
-                  <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                  <AlertTriangle className="w-5 h-5 text-cult-warning" />
                 ) : (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <CheckCircle className="w-5 h-5 text-cult-success" />
                 )}
                 <div className="flex-1">
                   <div className="text-sm font-medium">
                     <span
                       className={
                         isOverAllocated
-                          ? 'text-red-900'
+                          ? 'text-cult-text-primary'
                           : isUnderAllocated
-                          ? 'text-yellow-900'
-                          : 'text-green-900'
+                          ? 'text-cult-text-primary'
+                          : 'text-cult-text-primary'
                       }
                     >
                       Remaining: {remainingWeight}g
@@ -276,10 +276,10 @@ export function BulkBagCreationModal({
                   <div
                     className={`text-xs ${
                       isOverAllocated
-                        ? 'text-red-700'
+                        ? 'text-cult-text-secondary'
                         : isUnderAllocated
-                        ? 'text-yellow-700'
-                        : 'text-green-700'
+                        ? 'text-cult-text-secondary'
+                        : 'text-cult-text-secondary'
                     }`}
                   >
                     {isOverAllocated
@@ -294,12 +294,12 @@ export function BulkBagCreationModal({
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="bg-cult-danger-muted border border-cult-danger/30 rounded-lg p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-red-900 mb-1">Error</h4>
-                    <p className="text-sm text-red-800">{error}</p>
+                    <h4 className="text-sm font-medium text-cult-text-primary mb-1">Error</h4>
+                    <p className="text-sm text-cult-text-secondary">{error}</p>
                   </div>
                 </div>
               </div>
@@ -337,7 +337,7 @@ export function BulkBagCreationModal({
                   <p className="text-sm text-cult-text-faint mb-4">No bags added yet</p>
                   <button
                     onClick={handleAddBag}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-cult-info text-white rounded-lg hover:bg-cult-info/80 transition-colors"
                     disabled={isSubmitting}
                   >
                     <Plus className="w-4 h-4" />
@@ -351,8 +351,8 @@ export function BulkBagCreationModal({
                       key={bag.id}
                       className="flex items-center gap-3 p-3 bg-cult-surface-sunken border border-cult-border-subtle rounded-lg"
                     >
-                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-900">{index + 1}</span>
+                      <div className="flex-shrink-0 w-8 h-8 bg-cult-info-muted rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-cult-text-primary">{index + 1}</span>
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs text-cult-text-faint mb-1">Weight (grams)</label>
@@ -360,7 +360,7 @@ export function BulkBagCreationModal({
                           type="number"
                           value={bag.weight || ''}
                           onChange={e => handleWeightChange(bag.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 bg-cult-surface-raised text-cult-text-primary border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent"
                           placeholder="0"
                           min="0"
                           step="0.1"
@@ -369,7 +369,7 @@ export function BulkBagCreationModal({
                       </div>
                       <button
                         onClick={() => handleRemoveBag(bag.id)}
-                        className="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="flex-shrink-0 p-2 text-cult-danger hover:bg-cult-danger-muted rounded-lg transition-colors"
                         disabled={isSubmitting}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -379,7 +379,7 @@ export function BulkBagCreationModal({
 
                   <button
                     onClick={handleAddBag}
-                    className="w-full py-2 border-2 border-dashed border-cult-border rounded-lg text-cult-text-faint hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2 border-2 border-dashed border-cult-border rounded-lg text-cult-text-faint hover:border-cult-info hover:text-cult-info transition-colors flex items-center justify-center gap-2"
                     disabled={isSubmitting}
                   >
                     <Plus className="w-4 h-4" />
@@ -410,10 +410,10 @@ export function BulkBagCreationModal({
                     <div
                       className={`font-semibold ${
                         isOverAllocated
-                          ? 'text-red-600'
+                          ? 'text-cult-danger'
                           : isUnderAllocated
-                          ? 'text-yellow-600'
-                          : 'text-green-600'
+                          ? 'text-cult-warning'
+                          : 'text-cult-success'
                       }`}
                     >
                       {remainingWeight}g
@@ -425,20 +425,20 @@ export function BulkBagCreationModal({
 
             {bags.length > 0 && Math.abs(remainingWeight) > VARIANCE_THRESHOLD_GRAMS && (
               <div className="space-y-4">
-                <div className="p-4 rounded-lg border bg-red-50 border-red-200">
+                <div className="p-4 rounded-lg border bg-cult-danger-muted border-cult-danger/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <TrendingDown className="h-5 w-5 text-red-600 mr-2" />
+                      <TrendingDown className="h-5 w-5 text-cult-danger mr-2" />
                       <div>
-                        <div className="text-xs font-medium text-red-900">
+                        <div className="text-xs font-medium text-cult-text-primary">
                           Weight Variance
                         </div>
-                        <div className="text-xl font-bold text-red-600">
+                        <div className="text-xl font-bold text-cult-danger">
                           {remainingWeight > 0 ? '-' : '+'}{Math.abs(remainingWeight).toFixed(1)}g
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-2xl font-bold text-cult-danger">
                       {availableWeight > 0 ? (Math.abs(remainingWeight) / availableWeight * 100).toFixed(1) : '0.0'}%
                     </div>
                   </div>
@@ -446,13 +446,13 @@ export function BulkBagCreationModal({
 
                 <div>
                   <label className="block text-sm font-medium text-cult-text-primary mb-2">
-                    Variance Reason <span className="text-red-500">*</span>
+                    Variance Reason <span className="text-cult-danger">*</span>
                   </label>
                   <select
                     value={varianceReason}
                     onChange={(e) => setVarianceReason(e.target.value as VarianceReason)}
                     disabled={isSubmitting}
-                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-cult-surface-raised text-cult-text-primary border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent"
                   >
                     <option value="">Select a reason...</option>
                     {(Object.entries(VarianceReasonLabels) as [VarianceReason, string][]).map(([value, label]) => (
@@ -463,7 +463,7 @@ export function BulkBagCreationModal({
 
                 <div>
                   <label className="block text-sm font-medium text-cult-text-primary mb-2">
-                    Notes <span className="text-red-500">*</span>
+                    Notes <span className="text-cult-danger">*</span>
                   </label>
                   <textarea
                     value={varianceNote}
@@ -471,15 +471,15 @@ export function BulkBagCreationModal({
                     disabled={isSubmitting}
                     rows={3}
                     placeholder="Explain the reason for this variance..."
-                    className="w-full px-3 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 bg-cult-surface-raised text-cult-text-primary border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent resize-none"
                   />
                 </div>
 
                 {availableWeight > 0 && variancePct >= 5 && !isHighVariance && (
-                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <div className="p-3 rounded-lg bg-cult-warning-muted border border-cult-warning/30">
                     <div className="flex items-start gap-2.5">
-                      <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-amber-800">
+                      <AlertCircle className="h-4 w-4 text-cult-warning mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-cult-text-secondary">
                         <p className="font-medium mb-0.5">High Variance Warning</p>
                         <p>This adjustment represents a variance of {variancePct.toFixed(1)}%, which exceeds the 5% threshold.</p>
                       </div>
@@ -488,10 +488,10 @@ export function BulkBagCreationModal({
                 )}
 
                 {isHighVariance && (
-                  <div className="p-4 rounded-lg bg-red-50 border-2 border-red-400">
+                  <div className="p-4 rounded-lg bg-cult-danger-muted border-2 border-cult-danger">
                     <div className="flex items-start gap-3 mb-3">
-                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-sm text-red-900">
+                      <AlertTriangle className="h-5 w-5 text-cult-danger mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-cult-text-primary">
                         <p className="font-semibold mb-1">Unusually High Variance — {variancePct.toFixed(1)}%</p>
                         <p className="text-xs">This variance exceeds 50% of the available weight. All high-variance finalizations are logged for compliance and AI analysis. You must acknowledge before proceeding.</p>
                       </div>
@@ -502,9 +502,9 @@ export function BulkBagCreationModal({
                         checked={highVarianceConfirmed}
                         onChange={(e) => setHighVarianceConfirmed(e.target.checked)}
                         disabled={isSubmitting}
-                        className="w-4 h-4 text-red-600 border-red-400 rounded focus:ring-red-500"
+                        className="w-4 h-4 text-cult-danger border-cult-danger rounded focus:ring-cult-danger"
                       />
-                      <span className="text-xs font-medium text-red-900">
+                      <span className="text-xs font-medium text-cult-text-primary">
                         I confirm this variance is correct and understand it will be logged to the variance record.
                       </span>
                     </label>
@@ -518,7 +518,7 @@ export function BulkBagCreationModal({
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-cult-border-subtle bg-cult-surface-sunken">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-cult-text-muted bg-white border border-cult-border rounded-lg hover:bg-cult-surface-sunken transition-colors"
+              className="px-4 py-2 text-cult-text-muted bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-sunken transition-colors"
               disabled={isSubmitting}
             >
               Cancel
@@ -527,8 +527,8 @@ export function BulkBagCreationModal({
               onClick={handleConfirm}
               className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                 hasVarianceAtThreshold
-                  ? 'bg-amber-600 hover:bg-amber-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  ? 'bg-cult-warning hover:bg-cult-warning/80'
+                  : 'bg-cult-info hover:bg-cult-info/80'
               }`}
               disabled={
                 isSubmitting ||

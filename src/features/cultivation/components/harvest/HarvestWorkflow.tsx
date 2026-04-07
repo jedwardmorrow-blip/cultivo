@@ -504,7 +504,7 @@ function BatchWeightCard({
   }
 
   const accentBorder = isComplete
-    ? 'border-l-green-600'
+    ? 'border-l-cult-success'
     : formOpen || priorHarvestedPlants > 0
       ? 'border-l-cult-stage-harvest'
       : 'border-l-cult-charcoal';
@@ -512,7 +512,7 @@ function BatchWeightCard({
   return (
     <div className={`border border-l-4 ${accentBorder} ${
       isComplete
-        ? 'border-green-900/60 bg-green-950/10'
+        ? 'border-cult-success/20 bg-cult-success-muted'
         : formOpen
           ? 'border-cult-lighter-gray bg-cult-graphite'
           : 'border-cult-charcoal bg-cult-near-black hover:border-cult-medium-gray'
@@ -548,7 +548,7 @@ function BatchWeightCard({
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isComplete && (
-            <span className="flex items-center gap-1.5 bg-green-950/40 border border-green-800 text-green-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1">
+            <span className="flex items-center gap-1.5 bg-cult-success-muted border border-cult-success/30 text-cult-success text-xs font-bold uppercase tracking-wider px-2.5 py-1">
               <CheckCircle className="w-3.5 h-3.5" />
               Done
             </span>
@@ -575,7 +575,7 @@ function BatchWeightCard({
           </div>
           <div className="w-full bg-cult-black h-2 overflow-hidden border border-cult-charcoal">
             <div
-              className={`h-full transition-all duration-500 ease-out ${isComplete ? 'bg-green-600' : 'bg-cult-stage-harvest'}`}
+              className={`h-full transition-all duration-500 ease-out ${isComplete ? 'bg-cult-success' : 'bg-cult-stage-harvest'}`}
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -586,7 +586,7 @@ function BatchWeightCard({
       {!formOpen && !isComplete && (
         <div className="mt-4">
           {error && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2.5 mb-3">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2.5 mb-3">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -655,7 +655,7 @@ function BatchWeightCard({
                     <button
                       onClick={() => saveEdit(entry.id)}
                       disabled={editSaving}
-                      className="p-1.5 text-green-400 hover:text-green-300 transition-colors"
+                      className="p-1.5 text-cult-success hover:text-cult-success transition-colors"
                       title="Save"
                     >
                       <Check className="w-4 h-4" />
@@ -687,7 +687,7 @@ function BatchWeightCard({
                       <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${
                         entry.destination === 'fresh_frozen'
                           ? 'border-cyan-700 text-cyan-400 bg-cyan-950/30'
-                          : 'border-green-700 text-green-400 bg-green-950/30'
+                          : 'border-cult-success/30 text-cult-success bg-cult-success-muted'
                       }`}>
                         {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
                       </span>
@@ -703,7 +703,7 @@ function BatchWeightCard({
                     </button>
                     <button
                       onClick={() => handleRemoveEntry(entry.id)}
-                      className="text-cult-medium-gray hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100"
+                      className="text-cult-medium-gray hover:text-cult-danger transition-colors p-1 opacity-0 group-hover:opacity-100"
                       title="Remove entry"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -720,7 +720,7 @@ function BatchWeightCard({
       {formOpen && remaining > 0 && (
         <div className="mt-4 bg-cult-black/40 border border-cult-charcoal p-3">
           {entryError && (
-            <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2.5 mb-3">
+            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2.5 mb-3">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
               {entryError}
             </div>

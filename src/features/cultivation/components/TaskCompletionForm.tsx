@@ -353,7 +353,7 @@ export function TaskCompletionForm({
             className={`w-full flex items-center justify-between gap-2 px-3 py-3 min-h-[44px] text-xs border rounded-sm transition-colors ${
               selectedStaff
                 ? 'bg-cult-charcoal border-cult-medium-gray text-cult-white'
-                : 'bg-cult-charcoal/60 border-amber-700/50 text-amber-400'
+                : 'bg-cult-charcoal/60 border-cult-warning/30 text-cult-warning'
             } hover:border-cult-light-gray disabled:opacity-50`}
           >
             <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ export function TaskCompletionForm({
                 <button
                   type="button"
                   onClick={() => handleAssign(null)}
-                  className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs text-amber-400 hover:bg-amber-950/30 transition-colors border-b border-cult-dark-gray/50"
+                  className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs text-cult-warning hover:bg-cult-warning-muted transition-colors border-b border-cult-dark-gray/50"
                 >
                   <UserX className="w-3.5 h-3.5" />
                   Unassign
@@ -619,7 +619,7 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-sm px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-cult-danger bg-cult-danger-muted border border-cult-danger/30 rounded-sm px-3 py-2">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           {error}
         </div>

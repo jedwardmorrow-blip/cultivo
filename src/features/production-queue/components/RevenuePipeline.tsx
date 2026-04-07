@@ -14,9 +14,9 @@ interface Props {
 }
 
 const segments = [
-  { key: 'delivered' as const, label: 'Delivered', color: 'bg-emerald-500', textColor: 'text-emerald-400', icon: TrendingUp },
+  { key: 'delivered' as const, label: 'Delivered', color: 'bg-cult-success', textColor: 'text-cult-success', icon: TrendingUp },
   { key: 'readyForDelivery' as const, label: 'Staged', color: 'bg-cyan-500', textColor: 'text-cyan-400', icon: Truck },
-  { key: 'packaging' as const, label: 'Packaging', color: 'bg-amber-500', textColor: 'text-amber-400', icon: Package },
+  { key: 'packaging' as const, label: 'Packaging', color: 'bg-cult-warning', textColor: 'text-cult-warning', icon: Package },
   { key: 'notStarted' as const, label: 'Not Started', color: 'bg-gray-600', textColor: 'text-gray-400', icon: Clock },
 ];
 
@@ -30,8 +30,8 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
       {/* Header row with week navigation */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-cult bg-emerald-500/10 border border-emerald-500/20">
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-cult bg-cult-success-muted border border-cult-success/20">
+            <DollarSign className="w-4 h-4 text-cult-success" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -40,12 +40,12 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
               <span className="text-xs text-gray-500">{weekRange}</span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className={`text-2xl font-bold tabular-nums ${overTarget ? 'text-emerald-400' : 'text-white'}`}>
+              <span className={`text-2xl font-bold tabular-nums ${overTarget ? 'text-cult-success' : 'text-white'}`}>
                 {formatCurrencyShort(total)}
               </span>
               <span className="text-sm text-gray-500">of {formatCurrencyShort(target)}</span>
               <span className={`text-sm font-semibold ${
-                pct >= 100 ? 'text-emerald-400' : pct >= 75 ? 'text-cyan-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400'
+                pct >= 100 ? 'text-cult-success' : pct >= 75 ? 'text-cyan-400' : pct >= 50 ? 'text-cult-warning' : 'text-cult-danger'
               }`}>
                 {pct}%
               </span>
@@ -130,9 +130,9 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
           {weekOutlook.map(week => {
             const isSelected = week.weekOffset === weekOffset;
             const barFill = Math.min(week.pctOfTarget, 100);
-            const fillColor = week.pctOfTarget >= 100 ? 'bg-emerald-500' :
+            const fillColor = week.pctOfTarget >= 100 ? 'bg-cult-success' :
               week.pctOfTarget >= 75 ? 'bg-cyan-500' :
-              week.pctOfTarget >= 50 ? 'bg-amber-500' : 'bg-red-500';
+              week.pctOfTarget >= 50 ? 'bg-cult-warning' : 'bg-cult-danger';
 
             return (
               <button

@@ -71,12 +71,12 @@ function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh,
               {group.growth_stage}
             </span>
             {group.is_mother && (
-              <span className="text-xs border border-amber-700 text-amber-400 px-1.5 py-0.5 uppercase tracking-wider">
+              <span className="text-xs border border-cult-warning/40 text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
                 Mother
               </span>
             )}
             {!hasAbbrev && (
-              <span className="flex items-center gap-1 text-xs text-amber-400">
+              <span className="flex items-center gap-1 text-xs text-cult-warning">
                 <AlertTriangle className="w-3 h-3" />
                 No abbreviation
               </span>
@@ -203,7 +203,7 @@ export function PlantGroupsList() {
       </div>
 
       {(error || actionError) && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error || actionError}
         </div>
@@ -295,8 +295,8 @@ export function PlantGroupsList() {
             <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">Advance Stage</h3>
 
             {isCloneToVeg && (
-              <div className="flex items-start gap-2.5 bg-sky-950 border border-sky-700 text-sky-300 p-3 text-sm">
-                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-sky-400" />
+              <div className="flex items-start gap-2.5 bg-cult-info-muted border border-cult-info/30 text-cult-info p-3 text-sm">
+                <Sprout className="w-4 h-4 mt-0.5 flex-shrink-0 text-cult-info" />
                 <div>
                   <span className="font-semibold block mb-0.5">Plant IDs will be auto-generated</span>
                   {advanceGroup.plant_count} unique placeholder IDs will be created for this group.
@@ -315,7 +315,7 @@ export function PlantGroupsList() {
             </p>
 
             {actionError && (
-              <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+              <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
                 <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 {actionError}
               </div>

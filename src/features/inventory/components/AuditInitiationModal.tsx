@@ -66,7 +66,7 @@ export function AuditInitiationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-cult-surface-raised rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-cult-border-subtle">
           <h2 className="text-2xl font-bold text-cult-text-primary">Initiate Inventory Audit</h2>
@@ -82,10 +82,10 @@ export function AuditInitiationModal({
         {/* Content */}
         <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
           {/* Instructions */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mb-6 p-4 bg-cult-info-muted border border-cult-info/30 rounded-lg">
             <div className="flex items-start">
-              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-              <div className="text-sm text-blue-800">
+              <AlertCircle className="h-5 w-5 text-cult-info mt-0.5 mr-2 flex-shrink-0" />
+              <div className="text-sm text-cult-text-secondary">
                 <p className="font-semibold mb-1">Starting an audit will:</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>Create a snapshot of current inventory for selected stages</li>
@@ -100,7 +100,7 @@ export function AuditInitiationModal({
           {/* Stage Selection */}
           <div className="mb-6">
             <label className="block text-sm font-semibold text-cult-text-primary mb-3">
-              Select Stages to Audit <span className="text-red-500">*</span>
+              Select Stages to Audit <span className="text-cult-danger">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availableStages.map(stage => (
@@ -109,8 +109,8 @@ export function AuditInitiationModal({
                   className={`
                     flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors
                     ${selectedStages.includes(stage)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-cult-border-subtle bg-white hover:border-cult-border'
+                      ? 'border-cult-info bg-cult-info-muted'
+                      : 'border-cult-border-subtle bg-cult-surface-raised hover:border-cult-border'
                     }
                   `}
                 >
@@ -119,14 +119,14 @@ export function AuditInitiationModal({
                     checked={selectedStages.includes(stage)}
                     onChange={() => handleStageToggle(stage)}
                     disabled={isLoading}
-                    className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                    className="h-5 w-5 text-cult-info rounded focus:ring-cult-info"
                   />
                   <span className="ml-3 font-medium text-cult-text-primary">{stage}</span>
                 </label>
               ))}
             </div>
             {validationError && (
-              <p className="mt-2 text-sm text-red-600">{validationError}</p>
+              <p className="mt-2 text-sm text-cult-danger">{validationError}</p>
             )}
           </div>
 
@@ -141,16 +141,16 @@ export function AuditInitiationModal({
               disabled={isLoading}
               rows={4}
               placeholder="Add any notes about this audit (e.g., reason, special instructions)"
-              className="w-full px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-cult-surface disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-cult-border rounded-lg focus:ring-2 focus:ring-cult-info focus:border-transparent disabled:bg-cult-surface disabled:cursor-not-allowed"
             />
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-6 p-4 bg-cult-danger-muted border border-cult-danger/30 rounded-lg">
               <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-                <div className="text-sm text-red-800">{error}</div>
+                <AlertCircle className="h-5 w-5 text-cult-danger mt-0.5 mr-2 flex-shrink-0" />
+                <div className="text-sm text-cult-text-secondary">{error}</div>
               </div>
             </div>
           )}
@@ -162,7 +162,7 @@ export function AuditInitiationModal({
               <div className="text-sm text-cult-text-muted">
                 <p>Stages to audit: <span className="font-medium">{selectedStages.join(', ')}</span></p>
                 <p className="mt-1">
-                  Selected stages will be <span className="font-medium text-orange-600">locked</span> during the audit
+                  Selected stages will be <span className="font-medium text-cult-warning">locked</span> during the audit
                 </p>
               </div>
             </div>
@@ -181,7 +181,7 @@ export function AuditInitiationModal({
           <button
             onClick={handleSubmit}
             disabled={isLoading || selectedStages.length === 0}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-6 py-2 bg-cult-info text-white rounded-lg hover:bg-cult-info/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {isLoading ? 'Starting Audit...' : 'Start Audit'}
           </button>

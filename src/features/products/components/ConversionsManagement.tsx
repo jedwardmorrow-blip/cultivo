@@ -82,18 +82,18 @@ export function ConversionsManagement() {
   }
 
   function getConfidenceLevel(sampleSize: number): { level: string; color: string } {
-    if (sampleSize >= 20) return { level: 'High', color: 'text-green-400' };
-    if (sampleSize >= 5) return { level: 'Medium', color: 'text-yellow-400' };
-    return { level: 'Low', color: 'text-red-400' };
+    if (sampleSize >= 20) return { level: 'High', color: 'text-cult-success' };
+    if (sampleSize >= 5) return { level: 'Medium', color: 'text-cult-warning' };
+    return { level: 'Low', color: 'text-cult-danger' };
   }
 
   function getTrendIcon(minYield: number, maxYield: number, avgYield: number) {
     const range = maxYield - minYield;
     const position = (avgYield - minYield) / range;
 
-    if (position > 0.6) return <TrendingUp className="w-4 h-4 text-green-400" />;
-    if (position < 0.4) return <TrendingDown className="w-4 h-4 text-red-400" />;
-    return <Minus className="w-4 h-4 text-yellow-400" />;
+    if (position > 0.6) return <TrendingUp className="w-4 h-4 text-cult-success" />;
+    if (position < 0.4) return <TrendingDown className="w-4 h-4 text-cult-danger" />;
+    return <Minus className="w-4 h-4 text-cult-warning" />;
   }
 
   async function calculateProjection() {
@@ -274,15 +274,15 @@ export function ConversionsManagement() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div className="p-2 bg-cult-near-black">
                         <p className="text-cult-lighter-gray mb-1">Min</p>
-                        <p className="font-bold text-red-400">{stat.min_yield?.toFixed(1)}%</p>
+                        <p className="font-bold text-cult-danger">{stat.min_yield?.toFixed(1)}%</p>
                       </div>
                       <div className="p-2 bg-cult-near-black">
                         <p className="text-cult-lighter-gray mb-1">Std Dev</p>
-                        <p className="font-bold text-yellow-400">{stat.std_dev_yield?.toFixed(1)}%</p>
+                        <p className="font-bold text-cult-warning">{stat.std_dev_yield?.toFixed(1)}%</p>
                       </div>
                       <div className="p-2 bg-cult-near-black">
                         <p className="text-cult-lighter-gray mb-1">Max</p>
-                        <p className="font-bold text-green-400">{stat.max_yield?.toFixed(1)}%</p>
+                        <p className="font-bold text-cult-success">{stat.max_yield?.toFixed(1)}%</p>
                       </div>
                     </div>
 
@@ -444,7 +444,7 @@ export function ConversionsManagement() {
           </div>
 
           {projection && (
-            <div className="p-4 bg-cult-dark-gray border-2 border-green-600">
+            <div className="p-4 bg-cult-dark-gray border-2 border-cult-success">
               <h4 className="text-lg font-bold text-cult-white mb-4 uppercase tracking-wide">
                 Projection Results
               </h4>
@@ -453,7 +453,7 @@ export function ConversionsManagement() {
                 <div className="space-y-3">
                   <div className="p-3 bg-cult-near-black">
                     <p className="text-sm text-cult-light-gray mb-1">Expected Output</p>
-                    <p className="text-2xl font-bold text-green-400">
+                    <p className="text-2xl font-bold text-cult-success">
                       {projection.expectedUnits} units
                     </p>
                   </div>
@@ -476,7 +476,7 @@ export function ConversionsManagement() {
                 <div className="space-y-3">
                   <div className="p-3 bg-cult-near-black">
                     <p className="text-sm text-cult-light-gray mb-1">Required Input Weight</p>
-                    <p className="text-2xl font-bold text-green-400">
+                    <p className="text-2xl font-bold text-cult-success">
                       {projection.requiredWeight}g
                     </p>
                   </div>

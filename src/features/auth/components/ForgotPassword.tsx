@@ -34,8 +34,8 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
       <div className="min-h-screen bg-cult-black flex items-center justify-center p-6">
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl w-full max-w-md p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-10 h-10 text-green-500" />
+            <div className="w-16 h-16 bg-cult-success-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-10 h-10 text-cult-success" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Check Your Email</h1>
             <p className="text-cult-light-gray">
@@ -77,9 +77,9 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-900/20 border border-red-500 rounded p-3 flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-200 text-sm">{error}</p>
+            <div className="bg-cult-danger-muted border border-cult-danger rounded p-3 flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+              <p className="text-cult-text-primary/80 text-sm">{error}</p>
             </div>
           )}
 

@@ -161,9 +161,9 @@ export function MetrcCredentialsSettings() {
       </div>
 
       {existingId && (
-        <div className="mb-6 p-3 border border-green-700 bg-green-900/20 flex items-center gap-2">
-          <span className="text-green-400">✓</span>
-          <p className="text-green-100 text-sm">Active credential on file. Enter a new API key only to rotate it.</p>
+        <div className="mb-6 p-3 border border-cult-success bg-cult-success-muted flex items-center gap-2">
+          <span className="text-cult-success">✓</span>
+          <p className="text-cult-text-primary text-sm">Active credential on file. Enter a new API key only to rotate it.</p>
         </div>
       )}
 
@@ -241,13 +241,13 @@ export function MetrcCredentialsSettings() {
         {testResult && (
           <div className={`p-3 border flex items-start gap-2 ${
             testResult.success
-              ? 'border-green-700 bg-green-900/20'
-              : 'border-red-700 bg-red-900/20'
+              ? 'border-cult-success bg-cult-success-muted'
+              : 'border-cult-danger bg-cult-danger-muted'
           }`}>
-            <span className={testResult.success ? 'text-green-400' : 'text-red-400'}>
+            <span className={testResult.success ? 'text-cult-success' : 'text-cult-danger'}>
               {testResult.success ? '✓' : '✗'}
             </span>
-            <p className={`text-sm ${testResult.success ? 'text-green-100' : 'text-red-100'}`}>
+            <p className={`text-sm ${testResult.success ? 'text-cult-text-primary' : 'text-cult-text-primary'}`}>
               {testResult.success
                 ? `Connected — ${testResult.facilityName ?? 'facility name unavailable'}`
                 : testResult.error}

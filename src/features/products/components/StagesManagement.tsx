@@ -81,8 +81,8 @@ export function StagesManagement() {
         <div
           className={`mb-6 p-4 border ${
             message.type === 'success'
-              ? 'bg-green-900 border-green-700 text-green-100'
-              : 'bg-red-900 border-red-700 text-red-100'
+              ? 'bg-cult-success-muted border-cult-success text-cult-text-primary'
+              : 'bg-cult-danger-muted border-cult-danger text-cult-text-primary'
           }`}
         >
           {message.text}

@@ -37,17 +37,17 @@ interface AllInventoryViewProps {
 }
 
 const stageBadgeStyles: Record<string, string> = {
-  binned: 'bg-emerald-900/30 text-emerald-400',
-  bucked: 'bg-blue-900/30 text-blue-400',
-  bulk: 'bg-amber-900/30 text-amber-400',
-  packaged: 'bg-teal-900/30 text-teal-400',
+  binned: 'bg-cult-stage-binned/30 text-cult-stage-binned',
+  bucked: 'bg-cult-stage-bucked/30 text-cult-stage-bucked',
+  bulk: 'bg-cult-stage-bulk/30 text-cult-stage-bulk',
+  packaged: 'bg-cult-stage-packaged/30 text-cult-stage-packaged',
 };
 
 const stageBreakdownConfig = [
-  { key: 'binnedCount' as const, label: 'Binned', icon: Leaf, color: 'text-emerald-400', borderColor: 'border-emerald-800/40' },
-  { key: 'buckedCount' as const, label: 'Bucked', icon: Archive, color: 'text-blue-400', borderColor: 'border-blue-800/40' },
-  { key: 'bulkCount' as const, label: 'Bulk', icon: Box, color: 'text-amber-400', borderColor: 'border-amber-800/40' },
-  { key: 'packagedCount' as const, label: 'Packaged', icon: Package, color: 'text-teal-400', borderColor: 'border-teal-800/40' },
+  { key: 'binnedCount' as const, label: 'Binned', icon: Leaf, color: 'text-cult-stage-binned', borderColor: 'border-cult-stage-binned/40' },
+  { key: 'buckedCount' as const, label: 'Bucked', icon: Archive, color: 'text-cult-stage-bucked', borderColor: 'border-cult-stage-bucked/40' },
+  { key: 'bulkCount' as const, label: 'Bulk', icon: Box, color: 'text-cult-stage-bulk', borderColor: 'border-cult-stage-bulk/40' },
+  { key: 'packagedCount' as const, label: 'Packaged', icon: Package, color: 'text-cult-stage-packaged', borderColor: 'border-cult-stage-packaged/40' },
 ];
 
 const defaultAdjustmentState: QuickAdjustmentModalState = {
@@ -327,31 +327,31 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
           label="Total Weight"
           value={formatWeight(stats.totalWeight)}
           icon={<Scale className="w-5 h-5" />}
-          accentColor="border-blue-800/40"
+          accentColor="border-cult-info/40"
         />
         <StatsCard
           label="Unique Strains"
           value={stats.strainCount}
           icon={<Leaf className="w-5 h-5" />}
-          accentColor="border-emerald-800/40"
+          accentColor="border-cult-success/40"
         />
         <StatsCard
           label="Packaged Units"
           value={stats.packagedCount}
           icon={<Box className="w-5 h-5" />}
-          accentColor="border-teal-800/40"
+          accentColor="border-cult-stage-packaged/40"
         />
       </div>
 
       {showSuccessMessage && (
-        <div className="bg-emerald-900/15 border border-emerald-800/40 rounded-lg p-4 mb-6 animate-fade-in">
+        <div className="bg-cult-success-muted border border-cult-success/40 rounded-lg p-4 mb-6 animate-fade-in">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-cult-success flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-300">
+              <p className="text-sm font-medium text-cult-success">
                 Packages combined successfully!
               </p>
-              <p className="text-xs text-emerald-400/70 mt-1">
+              <p className="text-xs text-cult-success/70 mt-1">
                 Your inventory has been updated with the new combined package.
               </p>
             </div>
@@ -362,22 +362,22 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
       {selectedPackageIds.size > 0 && (
         <div className={`rounded-lg p-4 mb-6 transition-all ${
           combineError
-            ? 'bg-red-900/15 border border-red-800/40'
-            : 'bg-blue-900/15 border border-blue-800/40'
+            ? 'bg-cult-danger-muted border border-cult-danger/40'
+            : 'bg-cult-info-muted border border-cult-info/40'
         }`}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-4 min-w-0">
               {combineError ? (
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0" />
               ) : (
-                <Package className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                <Package className="w-5 h-5 text-cult-info flex-shrink-0" />
               )}
               <div className="min-w-0">
-                <p className={`text-sm font-medium ${combineError ? 'text-red-300' : 'text-blue-300'}`}>
+                <p className={`text-sm font-medium ${combineError ? 'text-cult-danger' : 'text-cult-info'}`}>
                   {selectedPackageIds.size} package{selectedPackageIds.size !== 1 ? 's' : ''} selected
                 </p>
                 {combineError && (
-                  <p className="text-sm text-red-400/80 mt-1">
+                  <p className="text-sm text-cult-danger/80 mt-1">
                     {combineError}
                   </p>
                 )}
@@ -386,7 +386,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrintLabelsClick}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all flex items-center gap-2 text-sm font-medium"
+                className="px-4 py-2 bg-cult-success text-white rounded-lg hover:bg-cult-success/80 transition-all flex items-center gap-2 text-sm font-medium"
               >
                 <Printer className="w-4 h-4" />
                 Print Labels
@@ -394,7 +394,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               <button
                 onClick={handleCombineClick}
                 disabled={isValidating}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                className="px-4 py-2 bg-cult-info text-white rounded-lg hover:bg-cult-info/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
               >
                 <Combine className="w-4 h-4" />
                 {isValidating ? 'Validating...' : 'Combine Packages'}
@@ -444,9 +444,9 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                       reviewFilter === key
                         ? key === 'verified'
-                          ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-800/50'
+                          ? 'bg-cult-success-muted text-cult-success border border-cult-success/50'
                           : key === 'unverified'
-                          ? 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
+                          ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/50'
                           : 'bg-cult-medium-gray text-cult-white shadow-sm'
                         : 'text-cult-lighter-gray hover:text-cult-white'
                     }`}
@@ -460,7 +460,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               <div className="flex items-center gap-2">
                 <div className="w-24 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                    className="h-full bg-cult-success rounded-full transition-all duration-300"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -562,13 +562,13 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             format: (_, item) => {
               if (item.available_qty === 0 && item.on_hand_qty > 0) {
                 return (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 text-amber-400">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-cult-warning-muted text-cult-warning">
                     Reserved
                   </span>
                 );
               }
               return (
-                <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-900/30 text-emerald-400">
+                <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-cult-success-muted text-cult-success">
                   {item.status || 'Active'}
                 </span>
               );
@@ -589,7 +589,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
                   }}
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all cursor-pointer ${
                     verified
-                      ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50'
+                      ? 'bg-cult-success-muted text-cult-success hover:bg-cult-success/20'
                       : 'bg-cult-medium-gray/30 text-cult-lighter-gray hover:bg-cult-medium-gray/50 hover:text-cult-silver'
                   }`}
                   title={verified ? 'Click to mark as unverified' : 'Click to mark as verified'}

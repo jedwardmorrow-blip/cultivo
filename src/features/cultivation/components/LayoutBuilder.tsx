@@ -72,7 +72,7 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
           Cancel
         </button>
       </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-cult-danger">{error}</p>}
     </div>
   );
 }
@@ -107,11 +107,11 @@ function SectionRow({ section, onArchive, onRestore }: SectionRowProps) {
         {!section.is_active && <span className="text-cult-medium-gray italic">archived</span>}
       </div>
       {section.is_active ? (
-        <button onClick={handleArchive} disabled={acting} title="Archive section" className="p-0.5 text-cult-medium-gray hover:text-red-400 transition-colors disabled:opacity-40">
+        <button onClick={handleArchive} disabled={acting} title="Archive section" className="p-0.5 text-cult-medium-gray hover:text-cult-danger transition-colors disabled:opacity-40">
           <Archive className="w-3 h-3" />
         </button>
       ) : (
-        <button onClick={handleRestore} disabled={acting} title="Restore section" className="p-0.5 text-cult-medium-gray hover:text-green-400 transition-colors disabled:opacity-40">
+        <button onClick={handleRestore} disabled={acting} title="Restore section" className="p-0.5 text-cult-medium-gray hover:text-cult-success transition-colors disabled:opacity-40">
           <RotateCcw className="w-3 h-3" />
         </button>
       )}
@@ -183,7 +183,7 @@ function TableBlock({
                 onClick={handleArchiveTable}
                 disabled={acting}
                 title="Archive table"
-                className="p-1 text-cult-medium-gray hover:text-red-400 transition-colors disabled:opacity-40"
+                className="p-1 text-cult-medium-gray hover:text-cult-danger transition-colors disabled:opacity-40"
               >
                 <Archive className="w-3.5 h-3.5" />
               </button>
@@ -194,7 +194,7 @@ function TableBlock({
               onClick={handleRestoreTable}
               disabled={acting}
               title="Restore table"
-              className="p-1 text-cult-medium-gray hover:text-green-400 transition-colors disabled:opacity-40"
+              className="p-1 text-cult-medium-gray hover:text-cult-success transition-colors disabled:opacity-40"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -312,7 +312,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
         </Button>
       </div>
       {error && (
-        <div className="flex items-center gap-1 text-xs text-red-400">
+        <div className="flex items-center gap-1 text-xs text-cult-danger">
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           {error}
         </div>
@@ -345,7 +345,7 @@ export function LayoutBuilder({ roomId }: LayoutBuilderProps) {
   }
 
   if (error) {
-    return <p className="text-xs text-red-400 py-2">{error}</p>;
+    return <p className="text-xs text-cult-danger py-2">{error}</p>;
   }
 
   const visibleTables = tables.filter((t) => showArchived || t.is_active);

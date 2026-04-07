@@ -58,7 +58,7 @@ export const OrdersList = memo(function OrdersList({
             key={order.id}
             className={`bg-cult-near-black border-2 overflow-hidden hover:border-cult-white transition-all ${
               selectedOrderId === order.id
-                ? 'border-cyan-400 shadow-lg shadow-cyan-500/50'
+                ? 'border-cult-info shadow-lg shadow-cult-info/50'
                 : 'border-cult-light-gray'
             }`}
           >

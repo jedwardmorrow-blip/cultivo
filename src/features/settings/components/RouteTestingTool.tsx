@@ -181,7 +181,7 @@ export function RouteTestingTool() {
           </button>
 
           {error && (
-            <div className="flex items-start gap-2 p-4 bg-red-900/20 border border-red-700 text-red-100">
+            <div className="flex items-start gap-2 p-4 bg-cult-danger-muted border border-cult-danger text-cult-text-primary">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <p className="text-sm">{error}</p>
             </div>
@@ -214,10 +214,10 @@ export function RouteTestingTool() {
 
             <div className="bg-cult-near-black border border-cult-medium-gray p-6">
               <div className="flex items-center gap-3 mb-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-5 h-5 text-cult-success" />
                 <span className="text-sm text-cult-light-gray uppercase tracking-wider">Status</span>
               </div>
-              <p className="text-2xl font-bold text-green-500">
+              <p className="text-2xl font-bold text-cult-success">
                 Success
               </p>
             </div>

@@ -446,7 +446,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
             </div>
 
             {error && (
-              <div className="mb-4 p-4 bg-red-900 border border-red-700 text-red-100">
+              <div className="mb-4 p-4 bg-cult-danger-muted border border-cult-danger text-cult-danger">
                 {error}
               </div>
             )}
@@ -567,7 +567,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
               <button
                 onClick={handleGenerate}
                 disabled={generating || !selectedDriverId || !selectedVehicleId}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white hover:bg-green-700 border-2 border-green-600 transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-cult-success text-white hover:bg-cult-success/80 border-2 border-cult-success transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FileText className="w-4 h-4" />
                 {generating ? 'Generating...' : 'Generate Manifest'}

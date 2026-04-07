@@ -122,7 +122,7 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
         </div>
         <div className="w-px h-6 bg-cult-dark-gray" />
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-green-400 font-mono">{totalScheduleCount}</span>
+          <span className="text-2xl font-bold text-cult-success font-mono">{totalScheduleCount}</span>
           <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Active Schedules</span>
         </div>
         {unconfiguredRooms > 0 && (
@@ -139,18 +139,18 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
               }}
               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-sm transition-all ${
                 filterUnconfigured
-                  ? 'bg-amber-950/60 border border-amber-700/50'
+                  ? 'bg-cult-warning-muted border border-cult-warning/30'
                   : 'hover:bg-cult-charcoal/40'
               }`}
             >
-              <AlertCircle className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-amber-400 font-semibold">
+              <AlertCircle className="w-4 h-4 text-cult-warning" />
+              <span className="text-xs text-cult-warning font-semibold">
                 {unconfiguredRooms} room{unconfiguredRooms !== 1 ? 's' : ''} with no schedule
               </span>
               {onSwitchToSetup ? (
-                <Settings className="w-3 h-3 text-amber-400/60" />
+                <Settings className="w-3 h-3 text-cult-warning/60" />
               ) : filterUnconfigured ? (
-                <X className="w-3 h-3 text-amber-400/60" />
+                <X className="w-3 h-3 text-cult-warning/60" />
               ) : null}
             </button>
           </>

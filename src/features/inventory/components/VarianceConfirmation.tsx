@@ -36,17 +36,17 @@ export function VarianceConfirmation({
   const isShortage = varianceAmount < 0;
 
   return (
-    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 space-y-4">
+    <div className="bg-cult-warning-muted border-2 border-cult-warning rounded-lg p-4 space-y-4">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-amber-100 rounded-lg">
-          <AlertTriangle className="w-6 h-6 text-amber-600" />
+        <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-cult-warning-muted rounded-lg">
+          <AlertTriangle className="w-6 h-6 text-cult-warning" />
         </div>
         <div className="flex-1">
-          <h3 className="text-base font-semibold text-amber-900 mb-1">
+          <h3 className="text-base font-semibold text-cult-text-primary mb-1">
             Variance Detected
           </h3>
-          <p className="text-sm text-amber-800">
+          <p className="text-sm text-cult-text-secondary">
             {isShortage ? 'Shortage' : 'Overage'} of{' '}
             <span className="font-semibold">
               {Math.abs(varianceAmount).toFixed(2)}
@@ -65,13 +65,13 @@ export function VarianceConfirmation({
       {/* Reason selection */}
       <div>
         <label htmlFor="variance-reason" className="block text-sm font-medium text-cult-text-primary mb-2">
-          Variance Reason <span className="text-red-500">*</span>
+          Variance Reason <span className="text-cult-danger">*</span>
         </label>
         <select
           id="variance-reason"
           value={varianceReason || ''}
           onChange={(e) => onReasonChange(e.target.value as VarianceReason)}
-          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-cult-warning focus:border-transparent"
         >
           <option value="">Select a reason...</option>
           {(Object.keys(VarianceReasonLabels) as VarianceReason[]).map((reason) => (
@@ -85,7 +85,7 @@ export function VarianceConfirmation({
       {/* Additional notes */}
       <div>
         <label htmlFor="variance-note" className="block text-sm font-medium text-cult-text-primary mb-2">
-          Additional Notes {varianceReason === 'other' && <span className="text-red-500">*</span>}
+          Additional Notes {varianceReason === 'other' && <span className="text-cult-danger">*</span>}
         </label>
         <textarea
           id="variance-note"
@@ -93,18 +93,18 @@ export function VarianceConfirmation({
           onChange={(e) => onNoteChange(e.target.value)}
           rows={3}
           placeholder="Provide additional context about this variance..."
-          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 border border-cult-border rounded-lg text-sm focus:ring-2 focus:ring-cult-warning focus:border-transparent resize-none"
         />
       </div>
 
       {/* Acknowledgment checkbox */}
-      <div className="bg-white border border-amber-200 rounded-lg p-4">
+      <div className="bg-cult-surface border border-cult-warning/30 rounded-lg p-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={varianceAcknowledged}
             onChange={(e) => onAcknowledge(e.target.checked)}
-            className="mt-1 rounded border-cult-border text-amber-600 focus:ring-amber-500"
+            className="mt-1 rounded border-cult-border text-cult-warning focus:ring-cult-warning"
           />
           <div className="flex-1">
             <div className="text-sm font-medium text-cult-text-primary mb-1">
@@ -121,8 +121,8 @@ export function VarianceConfirmation({
 
       {/* Guidance based on severity */}
       {severity === 'critical' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-xs text-red-800">
+        <div className="bg-cult-danger-muted border border-cult-danger/30 rounded-lg p-3">
+          <p className="text-xs text-cult-danger">
             <span className="font-semibold">High variance detected:</span> Variances
             exceeding 5% require additional review. Please ensure the reason and notes
             are detailed and accurate.

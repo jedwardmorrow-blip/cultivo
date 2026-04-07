@@ -80,8 +80,8 @@ export function StatusActionPanel({
         </h4>
 
         {showDatePrompt && (
-          <div className="bg-amber-900/15 border border-amber-700/50 rounded-cult p-3 space-y-2">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold">
+          <div className="bg-cult-warning/15 border border-cult-warning/50 rounded-cult p-3 space-y-2">
+            <div className="flex items-center gap-2 text-cult-warning text-xs font-semibold">
               <Calendar className="w-3.5 h-3.5" />
               Delivery date required
             </div>
@@ -116,7 +116,7 @@ export function StatusActionPanel({
           <button
             onClick={() => setConfirmReopen(true)}
             disabled={!!updating}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-cult transition-all disabled:opacity-40"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-cult-info hover:bg-cult-info/80 text-white text-sm font-bold rounded-cult transition-all disabled:opacity-40"
           >
             <RotateCcw className="w-4 h-4" />
             {updating === 'submitted' ? 'Reopening...' : 'Reopen Order'}
@@ -160,7 +160,7 @@ export function StatusActionPanel({
               <button
                 onClick={() => setConfirmCancel(true)}
                 disabled={!!updating}
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 text-red-400 hover:text-red-300 text-xs font-semibold transition-all disabled:opacity-40"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 text-cult-danger hover:text-cult-danger/80 text-xs font-semibold transition-all disabled:opacity-40"
               >
                 <XCircle className="w-3.5 h-3.5" />
                 Cancel Order

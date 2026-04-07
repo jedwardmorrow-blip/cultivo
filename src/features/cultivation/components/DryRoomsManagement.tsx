@@ -56,7 +56,7 @@ function DryRoomForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel, is
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {err && (
-        <div className="flex items-center gap-2 rounded-md bg-red-950 border border-red-700 px-3 py-2 text-sm text-red-400">
+        <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-2 text-sm text-cult-danger">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <span>{err}</span>
         </div>
@@ -148,7 +148,7 @@ function DryRoomRow({ room, onEdit, onArchive, onRestore, showArchived }: DryRoo
   return (
     <div className={`flex items-center justify-between rounded-md border px-4 py-3 transition-colors ${room.is_active ? 'bg-cult-dark-gray border-cult-medium-gray' : 'bg-cult-black border-cult-dark-gray opacity-60'}`}>
       <div className="flex items-center gap-3 min-w-0">
-        <Wind className="h-4 w-4 text-sky-400 flex-shrink-0" />
+        <Wind className="h-4 w-4 text-cult-info flex-shrink-0" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-cult-white">{room.name}</span>
@@ -275,7 +275,7 @@ export function DryRoomsManagement() {
       )}
 
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-red-950 border border-red-700 px-3 py-2 text-sm text-red-400">
+        <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-2 text-sm text-cult-danger">
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           <span>{error}</span>
           <button onClick={reload} className="ml-auto text-xs underline hover:no-underline">Retry</button>

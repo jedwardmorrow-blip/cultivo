@@ -106,9 +106,9 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDay(isSelected ? null : cell.num); } }}
                   className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 p-1 sm:p-2 transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-green-950/30 ring-1 ring-inset ring-green-500/40'
+                      ? 'bg-cult-success-muted ring-1 ring-inset ring-cult-success/40'
                       : isToday
-                        ? 'bg-green-950/20 hover:bg-green-950/30'
+                        ? 'bg-cult-success-muted hover:bg-cult-success-muted'
                         : isWeekend
                           ? 'bg-cult-charcoal/5 hover:bg-cult-charcoal/25'
                           : 'hover:bg-cult-charcoal/25'
@@ -118,7 +118,7 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
                     <span
                       className={`text-xs font-mono font-bold ${
                         isToday
-                          ? 'bg-green-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
+                          ? 'bg-cult-success text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
                           : 'text-cult-light-gray text-[10px] sm:text-xs'
                       }`}
                     >

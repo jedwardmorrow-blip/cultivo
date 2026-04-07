@@ -132,9 +132,9 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {success && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-900/15 border border-emerald-800/40">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-              <p className="text-sm text-emerald-300 font-medium">Weight rebalanced successfully.</p>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-cult-success-muted border border-cult-success/40">
+              <CheckCircle2 className="w-5 h-5 text-cult-success flex-shrink-0" />
+              <p className="text-sm text-cult-success font-medium">Weight rebalanced successfully.</p>
             </div>
           )}
 
@@ -184,7 +184,7 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
                     onClick={() => setDestItemId(item.id)}
                     className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors ${
                       destItemId === item.id
-                        ? 'bg-blue-900/25 text-blue-300'
+                        ? 'bg-cult-info-muted text-cult-info'
                         : 'text-cult-silver hover:bg-cult-medium-gray/40 hover:text-cult-white'
                     }`}
                   >
@@ -203,7 +203,7 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
 
           <div>
             <label className="block text-sm font-medium text-cult-silver mb-2">
-              Transfer Amount <span className="text-red-400">*</span>
+              Transfer Amount <span className="text-cult-danger">*</span>
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -220,16 +220,16 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
               <span className="text-sm text-cult-lighter-gray">{sourceUnit}</span>
             </div>
             {transferQty && !isQtyValid && (
-              <p className="mt-1 text-xs text-red-400">
+              <p className="mt-1 text-xs text-cult-danger">
                 {qty > sourceQty ? 'Exceeds source quantity' : 'Enter a valid positive number'}
               </p>
             )}
           </div>
 
           {isOver50 && (
-            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-900/15 border border-amber-800/40">
-              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-300">
+            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-cult-warning-muted border border-cult-warning/40">
+              <AlertTriangle className="w-4 h-4 text-cult-warning flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-cult-warning">
                 Transferring more than 50% of the source quantity ({((qty / sourceQty) * 100).toFixed(0)}%). Verify this is intentional.
               </p>
             </div>
@@ -242,7 +242,7 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
                 <div className="text-lg font-bold text-cult-white tabular-nums">
                   {sourceAfter.toFixed(sourceUnit === 'g' ? 1 : 0)}
                 </div>
-                <div className="text-xs text-red-400 tabular-nums">-{qty.toFixed(sourceUnit === 'g' ? 1 : 0)}</div>
+                <div className="text-xs text-cult-danger tabular-nums">-{qty.toFixed(sourceUnit === 'g' ? 1 : 0)}</div>
               </div>
               <ArrowRight className="w-5 h-5 text-cult-lighter-gray" />
               <div className="text-center">
@@ -250,14 +250,14 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
                 <div className="text-lg font-bold text-cult-white tabular-nums">
                   {destAfter.toFixed(sourceUnit === 'g' ? 1 : 0)}
                 </div>
-                <div className="text-xs text-emerald-400 tabular-nums">+{qty.toFixed(sourceUnit === 'g' ? 1 : 0)}</div>
+                <div className="text-xs text-cult-success tabular-nums">+{qty.toFixed(sourceUnit === 'g' ? 1 : 0)}</div>
               </div>
             </div>
           )}
 
           <div>
             <label className="block text-sm font-medium text-cult-silver mb-2">
-              Reason <span className="text-red-400">*</span>
+              Reason <span className="text-cult-danger">*</span>
             </label>
             <select
               value={reason}
@@ -285,8 +285,8 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-red-900/15 border border-red-800/40">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="p-3 rounded-lg bg-cult-danger-muted border border-cult-danger/40">
+              <p className="text-sm text-cult-danger">{error}</p>
             </div>
           )}
         </div>
@@ -302,7 +302,7 @@ export function RebalanceWeightModal({ isOpen, sourceItem, allItems, onClose, on
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2 text-sm font-medium text-white bg-cult-info rounded-lg hover:bg-cult-info/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? 'Applying...' : 'Apply Rebalance'}
           </button>

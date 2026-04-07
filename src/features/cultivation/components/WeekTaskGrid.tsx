@@ -117,7 +117,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
 
   if (loadError) {
     return (
-      <div className="flex items-center gap-2 py-8 text-red-400 text-sm">
+      <div className="flex items-center gap-2 py-8 text-cult-danger text-sm">
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
         {loadError}
       </div>
@@ -137,11 +137,11 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
       {/* Legend */}
       <div className="flex items-center gap-4 mb-3 text-xs text-cult-medium-gray flex-wrap">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-amber-500/30 border border-amber-500/50" />
+          <div className="w-3 h-3 rounded-sm bg-cult-warning/30 border border-cult-warning/50" />
           <span>Collision (≥{COLLISION_COUNT_THRESHOLD} high-labor tasks or &gt;{COLLISION_HOURS_THRESHOLD}h)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-red-500/30 border border-red-500/50" />
+          <div className="w-3 h-3 rounded-sm bg-cult-danger/30 border border-cult-danger/50" />
           <span>Critical collision</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -165,9 +165,9 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                 const collision = collisionByDay.get(dateStr)!;
                 const colBg =
                   collision.severity === 'critical'
-                    ? 'bg-red-900/30'
+                    ? 'bg-cult-danger/15'
                     : collision.severity === 'warning'
-                      ? 'bg-amber-900/20'
+                      ? 'bg-cult-warning/10'
                       : isToday
                         ? 'bg-cult-accent/10'
                         : isWeekend
@@ -190,7 +190,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                     {collision.isCollision && (
                       <div
                         className={`mt-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                          collision.severity === 'critical' ? 'text-red-400' : 'text-amber-400'
+                          collision.severity === 'critical' ? 'text-cult-danger' : 'text-cult-warning'
                         }`}
                       >
                         {collision.totalHighLaborHours.toFixed(0)}h
@@ -216,9 +216,9 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                   const collision = collisionByDay.get(dateStr)!;
                   const cellBg =
                     collision.severity === 'critical'
-                      ? 'bg-red-900/20'
+                      ? 'bg-cult-danger/10'
                       : collision.severity === 'warning'
-                        ? 'bg-amber-900/10'
+                        ? 'bg-cult-warning/5'
                         : isToday
                           ? 'bg-cult-accent/5'
                           : isWeekend
@@ -285,7 +285,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
                     <span className="text-cult-light-gray">{cfg.label}</span>
                     {HIGH_LABOR_TASK_TYPES.has(t.taskType) && (
-                      <span className="text-[9px] text-amber-400 font-semibold uppercase">HIGH</span>
+                      <span className="text-[9px] text-cult-warning font-semibold uppercase">HIGH</span>
                     )}
                   </div>
                   <span className="text-cult-medium-gray ml-3">{t.estimatedHours}h</span>

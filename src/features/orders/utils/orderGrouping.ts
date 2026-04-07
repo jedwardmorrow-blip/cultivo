@@ -91,10 +91,10 @@ export function getStatusColor(status: string): string {
 }
 
 export function getFulfillmentColor(percentage: number): string {
-  if (percentage === 0) return 'bg-red-900/30 text-red-400 border-red-600';
-  if (percentage < 50) return 'bg-orange-900/30 text-orange-400 border-orange-600';
-  if (percentage < 100) return 'bg-yellow-900/30 text-yellow-400 border-yellow-600';
-  return 'bg-green-900/30 text-green-400 border-green-600';
+  if (percentage === 0) return 'bg-cult-danger-muted text-cult-danger border-cult-danger';
+  if (percentage < 50) return 'bg-cult-warning-muted text-cult-warning border-cult-warning';
+  if (percentage < 100) return 'bg-cult-warning-muted text-cult-warning border-cult-warning';
+  return 'bg-cult-success-muted text-cult-success border-cult-success';
 }
 
 export function getStatusColorMap(status: string): string {

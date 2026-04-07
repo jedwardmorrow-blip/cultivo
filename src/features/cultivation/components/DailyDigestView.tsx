@@ -83,7 +83,7 @@ function ProgressRing({ completed, total, size = 56 }: { completed: number; tota
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        className={pct >= 1 ? 'text-cult-success' : pct >= 0.5 ? 'text-amber-400' : 'text-red-400'}
+        className={pct >= 1 ? 'text-cult-success' : pct >= 0.5 ? 'text-cult-warning' : 'text-cult-danger'}
       />
     </svg>
   );
@@ -96,9 +96,9 @@ function ScoreCard({ label, value, subtitle, ring, variant }: {
   ring?: { completed: number; total: number };
   variant?: 'default' | 'amber' | 'success' | 'danger';
 }) {
-  const borderCls = variant === 'amber' ? 'border-amber-500/40'
+  const borderCls = variant === 'amber' ? 'border-cult-warning/40'
     : variant === 'success' ? 'border-cult-success/40'
-    : variant === 'danger' ? 'border-red-500/40'
+    : variant === 'danger' ? 'border-cult-danger/40'
     : 'border-cult-border';
 
   return (
@@ -122,10 +122,10 @@ function ScoreCard({ label, value, subtitle, ring, variant }: {
 
 function AlertCard({ type, room, message }: { type: 'missed' | 'concern' | 'carry'; room: string; message: string }) {
   const config = type === 'missed'
-    ? { bg: 'bg-red-950/40', border: 'border-red-800/40', icon: <AlertTriangle className="w-4 h-4 text-red-400" />, tag: 'Missed', tagCls: 'bg-red-900 text-red-300' }
+    ? { bg: 'bg-cult-danger-muted', border: 'border-cult-danger/40', icon: <AlertTriangle className="w-4 h-4 text-cult-danger" />, tag: 'Missed', tagCls: 'bg-cult-danger-muted text-cult-danger' }
     : type === 'concern'
-    ? { bg: 'bg-amber-950/30', border: 'border-amber-800/40', icon: <AlertTriangle className="w-4 h-4 text-amber-400" />, tag: 'Concern', tagCls: 'bg-amber-900 text-amber-300' }
-    : { bg: 'bg-sky-950/30', border: 'border-sky-800/40', icon: <Clock className="w-4 h-4 text-sky-400" />, tag: 'Carry Forward', tagCls: 'bg-sky-900 text-sky-300' };
+    ? { bg: 'bg-cult-warning-muted', border: 'border-cult-warning/40', icon: <AlertTriangle className="w-4 h-4 text-cult-warning" />, tag: 'Concern', tagCls: 'bg-cult-warning-muted text-cult-warning' }
+    : { bg: 'bg-cult-info-muted', border: 'border-cult-info/40', icon: <Clock className="w-4 h-4 text-cult-info" />, tag: 'Carry Forward', tagCls: 'bg-cult-info-muted text-cult-info' };
 
   return (
     <div className={`${config.bg} border ${config.border} rounded-cult px-4 py-3 flex items-start gap-3`}>
@@ -143,11 +143,11 @@ function AlertCard({ type, room, message }: { type: 'missed' | 'concern' | 'carr
 
 function AnnotationCard({ annotation, roomName }: { annotation: DailyLogAnnotation; roomName: string }) {
   const catBadge = annotation.category === 'concern'
-    ? 'bg-amber-900 text-amber-300'
+    ? 'bg-cult-warning-muted text-cult-warning'
     : annotation.category === 'decision'
-    ? 'bg-sky-900 text-sky-300'
+    ? 'bg-cult-info-muted text-cult-info'
     : annotation.category === 'action_taken'
-    ? 'bg-green-900 text-green-300'
+    ? 'bg-cult-success-muted text-cult-success'
     : 'bg-cult-border text-cult-text-secondary';
 
   return (
@@ -160,10 +160,10 @@ function AnnotationCard({ annotation, roomName }: { annotation: DailyLogAnnotati
           </span>
           {roomName && <span className="text-xs text-cult-text-muted">{roomName}</span>}
           {annotation.severity === 'critical' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-red-900 text-red-300 font-medium">critical</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-cult-danger-muted text-cult-danger font-medium">critical</span>
           )}
           {annotation.severity === 'warning' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-900 text-amber-300 font-medium">warning</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-cult-warning-muted text-cult-warning font-medium">warning</span>
           )}
         </div>
         <p className="text-sm text-cult-text-primary mt-1">{annotation.title}</p>
@@ -620,8 +620,8 @@ function ByRoomTab({ roomDigests }: { roomDigests: RoomDigest[] }) {
             <div className="flex flex-wrap gap-1.5">
               {rd.tasks.map((t) => {
                 const dotCls = t.status === 'completed' ? 'bg-cult-success'
-                  : t.status === 'carry_forward' ? 'bg-amber-400'
-                  : t.status === 'skipped' ? 'bg-red-400'
+                  : t.status === 'carry_forward' ? 'bg-cult-warning'
+                  : t.status === 'skipped' ? 'bg-cult-danger'
                   : 'bg-cult-text-muted';
                 return (
                   <div key={t.id} className="flex items-center gap-1.5">
@@ -673,12 +673,12 @@ function LaborTab({
           <span className="text-xs text-cult-text-muted uppercase tracking-wider">Tasks Done</span>
           <div className="mt-1 text-lg font-bold text-cult-text-primary">{tasksCompleted}/{tasksTotal}</div>
           <div className="mt-1.5 w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
-            <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+            <div className="h-full bg-cult-success rounded-full transition-all" style={{ width: `${completionPct}%` }} />
           </div>
         </div>
         <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
           <span className="text-xs text-cult-text-muted uppercase tracking-wider">Completion</span>
-          <div className={`mt-1 text-lg font-bold ${completionPct >= 80 ? 'text-green-400' : completionPct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{completionPct}%</div>
+          <div className={`mt-1 text-lg font-bold ${completionPct >= 80 ? 'text-cult-success' : completionPct >= 50 ? 'text-cult-warning' : 'text-cult-danger'}`}>{completionPct}%</div>
         </div>
         <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
           <span className="text-xs text-cult-text-muted uppercase tracking-wider">Labor Hours</span>
@@ -700,10 +700,10 @@ function LaborTab({
                 <span className="w-24 text-xs text-cult-text-secondary truncate">{TASK_TYPE_LABELS[c.type] ?? c.type}</span>
                 <div className="flex-1 h-5 bg-cult-surface-overlay rounded-sm overflow-hidden">
                   <div
-                    className="h-full bg-green-700/60 rounded-sm transition-all flex items-center px-2"
+                    className="h-full bg-cult-success/60 rounded-sm transition-all flex items-center px-2"
                     style={{ width: `${Math.max(5, (c.cost / maxCost) * 100)}%` }}
                   >
-                    <span className="text-[10px] text-green-200 font-semibold whitespace-nowrap">${c.cost.toFixed(0)}</span>
+                    <span className="text-[10px] text-cult-success font-semibold whitespace-nowrap">${c.cost.toFixed(0)}</span>
                   </div>
                 </div>
                 <span className="text-xs text-cult-text-muted w-16 text-right">{c.tasks} task{c.tasks !== 1 ? 's' : ''}</span>

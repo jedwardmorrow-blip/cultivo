@@ -34,15 +34,15 @@ function LabelModal({ labelHook }: { labelHook: ReturnType<typeof useInventoryLa
 function SelectionSummary({ count, onClear, onPrintLabels }: { count: number; onClear: () => void; onPrintLabels?: () => void }) {
   if (count === 0) return null;
   return (
-    <div className="bg-blue-900/15 border border-blue-800/40 rounded-lg p-3 mb-6 flex items-center justify-between">
-      <span className="text-sm text-blue-300 font-medium">
+    <div className="bg-cult-info-muted border border-cult-info/40 rounded-lg p-3 mb-6 flex items-center justify-between">
+      <span className="text-sm text-cult-info font-medium">
         {count} package{count !== 1 ? 's' : ''} selected
       </span>
       <div className="flex items-center gap-2">
         {onPrintLabels && (
           <button
             onClick={onPrintLabels}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-500 rounded-md transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-cult-success hover:bg-cult-success/80 rounded-md transition-colors"
           >
             <Printer className="w-3 h-3" />
             Print Labels
@@ -115,22 +115,22 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
-        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-blue-800/40" />
+        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-cult-success/40" />
+        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cult-info/40" />
         <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
         <StatsCard
           label="Oldest Package"
           value={`${stats.oldestPackage || 0}d`}
           icon={<Clock className="w-5 h-5" />}
-          accentColor={(stats.oldestPackage || 0) > 14 ? 'border-amber-700/60' : 'border-cult-medium-gray'}
+          accentColor={(stats.oldestPackage || 0) > 14 ? 'border-cult-warning/60' : 'border-cult-medium-gray'}
           subtitle={(stats.oldestPackage || 0) > 14 ? 'Aging - consider processing' : undefined}
         />
       </div>
 
       {(stats.oldestPackage || 0) > 14 && (
-        <div className="mb-6 px-4 py-3 bg-amber-900/10 border border-amber-800/40 rounded-lg flex items-center gap-3">
-          <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
-          <p className="text-amber-300/90 text-sm">
+        <div className="mb-6 px-4 py-3 bg-cult-warning-muted border border-cult-warning/40 rounded-lg flex items-center gap-3">
+          <Clock className="w-4 h-4 text-cult-warning flex-shrink-0" />
+          <p className="text-cult-warning/90 text-sm">
             Binned material waiting <span className="font-semibold">{stats.oldestPackage} days</span> -- process soon for optimal quality.
           </p>
         </div>
@@ -159,7 +159,7 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
             format: (days) => {
               const isAging = days > 14;
               return (
-                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isAging ? 'bg-amber-900/30 text-amber-400' : 'text-cult-silver'}`}>
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isAging ? 'bg-cult-warning-muted text-cult-warning' : 'text-cult-silver'}`}>
                   {days}d
                 </span>
               );
@@ -171,7 +171,7 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
         emptyMessage="No binned inventory"
         rowClassName={(item) => {
           const days = Math.floor((Date.now() - new Date(item.last_updated).getTime()) / (1000 * 60 * 60 * 24));
-          return days > 14 ? 'bg-amber-900/5' : '';
+          return days > 14 ? 'bg-cult-warning/5' : '';
         }}
       />
       <LabelModal labelHook={labelHook} />
@@ -215,8 +215,8 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-blue-800/40" />
-        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cyan-800/40" />
+        <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-cult-info/40" />
+        <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cult-info/40" />
         <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
       </div>
 
@@ -240,7 +240,7 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
             accessor: 'status',
             align: 'center',
             sortable: false,
-            format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400">{val || 'Ready'}</span>
+            format: (val) => <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-cult-info-muted text-cult-info">{val || 'Ready'}</span>
           },
           GradeColumn(onDataRefresh),
         ]}
@@ -314,10 +314,10 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
-        <StatsCard label="Flower" value={formatWeight(stats.flower)} icon={<Leaf className="w-5 h-5" />} accentColor="border-green-800/40" />
-        <StatsCard label="Smalls" value={formatWeight(stats.smalls)} icon={<Package className="w-5 h-5" />} accentColor="border-amber-800/40" />
-        <StatsCard label="Trim" value={formatWeight(stats.trim)} icon={<Scissors className="w-5 h-5" />} accentColor="border-orange-800/40" />
+        <StatsCard label="Total Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-cult-success/40" />
+        <StatsCard label="Flower" value={formatWeight(stats.flower)} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-success/40" />
+        <StatsCard label="Smalls" value={formatWeight(stats.smalls)} icon={<Package className="w-5 h-5" />} accentColor="border-cult-warning/40" />
+        <StatsCard label="Trim" value={formatWeight(stats.trim)} icon={<Scissors className="w-5 h-5" />} accentColor="border-cult-warning/40" />
       </div>
 
       <div className="mb-6 flex gap-1 p-1 bg-cult-dark-gray rounded-lg w-fit">
@@ -407,9 +407,9 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatsCard label="Total Units" value={stats.totalUnits.toFixed(0)} icon={<Box className="w-5 h-5" />} accentColor="border-teal-800/40" />
-        <StatsCard label="3.5g Units" value={stats.total_3_5g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-blue-800/40" />
-        <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-emerald-800/40" />
+        <StatsCard label="Total Units" value={stats.totalUnits.toFixed(0)} icon={<Box className="w-5 h-5" />} accentColor="border-cult-stage-packaged/40" />
+        <StatsCard label="3.5g Units" value={stats.total_3_5g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-cult-info/40" />
+        <StatsCard label="14g Units" value={stats.total_14g.toFixed(0)} icon={<Package className="w-5 h-5" />} accentColor="border-cult-success/40" />
       </div>
 
       <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />

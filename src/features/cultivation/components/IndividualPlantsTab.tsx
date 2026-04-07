@@ -145,7 +145,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-xs p-2">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-2">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
           {error}
         </div>
@@ -163,7 +163,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
               maxLength={12}
               className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-cult-lighter-gray"
             />
-            {addError && <p className="text-red-400 text-xs mt-1">{addError}</p>}
+            {addError && <p className="text-cult-danger text-xs mt-1">{addError}</p>}
           </div>
           <div>
             <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes (optional)</label>
@@ -230,18 +230,18 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
           {importResult && (
             <div className="space-y-1 text-xs">
               {importResult.imported > 0 && (
-                <div className="flex items-center gap-1.5 text-green-400">
+                <div className="flex items-center gap-1.5 text-cult-success">
                   <CheckCircle2 className="w-3 h-3" />
                   {importResult.imported} plant ID{importResult.imported !== 1 ? 's' : ''} imported
                 </div>
               )}
               {importResult.skipped.length > 0 && (
-                <div className="text-amber-400">
+                <div className="text-cult-warning">
                   {importResult.skipped.length} skipped (already exist): {importResult.skipped.slice(0, 5).join(', ')}{importResult.skipped.length > 5 ? '...' : ''}
                 </div>
               )}
               {importResult.errors.length > 0 && (
-                <div className="text-red-400">
+                <div className="text-cult-danger">
                   {importResult.errors.length} invalid: {importResult.errors.slice(0, 3).map((e) => `${e.state_plant_id} (${e.reason})`).join(', ')}{importResult.errors.length > 3 ? '...' : ''}
                 </div>
               )}
@@ -273,7 +273,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
                 <button
                   onClick={() => handleDeactivate(p.id)}
                   title="Mark as removed/dead"
-                  className="p-1 text-cult-medium-gray hover:text-red-400 transition-colors flex-shrink-0"
+                  className="p-1 text-cult-medium-gray hover:text-cult-danger transition-colors flex-shrink-0"
                 >
                   <CircleOff className="w-3 h-3" />
                 </button>

@@ -31,19 +31,19 @@ export function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsFo
                   ref={isToday ? todayRef : undefined}
                   className={`px-0 py-2 text-center min-w-[32px] transition-colors ${
                     isToday
-                      ? 'bg-green-950/40'
+                      ? 'bg-cult-success-muted'
                       : d.isWeekend
                         ? 'bg-cult-charcoal/15'
                         : ''
                   }`}
                 >
                   <div className={`text-xs uppercase tracking-wider font-semibold ${
-                    isToday ? 'text-green-400' : d.isWeekend ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
+                    isToday ? 'text-cult-success' : d.isWeekend ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
                   }`}>
                     {d.dayOfWeek}
                   </div>
                   <div className={`text-xs font-mono font-bold ${
-                    isToday ? 'text-green-400' : 'text-cult-medium-gray'
+                    isToday ? 'text-cult-success' : 'text-cult-medium-gray'
                   }`}>
                     {d.num}
                   </div>
@@ -93,7 +93,7 @@ export function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsFo
                             {room.room_code}
                           </span>
                           {!hasSchedules && (
-                            <span className="text-xs text-amber-500/80 font-semibold uppercase tracking-wider">
+                            <span className="text-xs text-cult-warning/80 font-semibold uppercase tracking-wider">
                               No tasks
                             </span>
                           )}
@@ -125,7 +125,7 @@ export function GanttView({ days, today, roomsByType, schedulesByRoom, getDotsFo
                           key={d.num}
                           className={`px-0 py-1 text-center transition-colors ${
                             isToday
-                              ? 'bg-green-950/25'
+                              ? 'bg-cult-success-muted'
                               : d.isWeekend
                                 ? 'bg-cult-charcoal/10'
                                 : ''

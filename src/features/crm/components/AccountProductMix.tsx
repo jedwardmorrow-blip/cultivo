@@ -10,11 +10,11 @@ interface AccountProductMixProps {
 
 function getCategoryColor(category: string): string {
   switch (category?.toLowerCase()) {
-    case 'flower': return 'bg-emerald-500/15 text-emerald-400';
+    case 'flower': return 'bg-cult-success-muted text-cult-success';
     case 'pre-roll':
-    case 'preroll': return 'bg-amber-500/15 text-amber-400';
-    case 'concentrate': return 'bg-sky-500/15 text-sky-400';
-    case 'edible': return 'bg-rose-500/15 text-rose-400';
+    case 'preroll': return 'bg-cult-warning-muted text-cult-warning';
+    case 'concentrate': return 'bg-cult-info-muted text-cult-info';
+    case 'edible': return 'bg-cult-danger-muted text-cult-danger';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
   }
 }
@@ -53,7 +53,7 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
         <div className="px-5 py-3 border-b border-cult-charcoal/50 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="text-center">
             <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Revenue</p>
-            <p className="text-sm font-bold text-emerald-400">{formatCurrencyShort(totalRevenue)}</p>
+            <p className="text-sm font-bold text-cult-success">{formatCurrencyShort(totalRevenue)}</p>
           </div>
           <div className="text-center">
             <p className="text-xs font-medium uppercase tracking-wider text-cult-silver">Units</p>
@@ -95,14 +95,14 @@ export function AccountProductMix({ productMix, loading, periodLabel }: AccountP
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-semibold text-emerald-400">{formatCurrencyShort(Number(product.total_revenue))}</p>
+                  <p className="text-sm font-semibold text-cult-success">{formatCurrencyShort(Number(product.total_revenue))}</p>
                   <p className="text-xs text-cult-silver">{product.total_units} units</p>
                   <p className="text-xs text-cult-light-gray">{formatCurrencyShort(Number(product.avg_unit_price))}/ea</p>
                 </div>
               </div>
               <div className="mt-2 h-1 bg-cult-dark-gray rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500/40 rounded-full transition-all"
+                  className="h-full bg-cult-success/40 rounded-full transition-all"
                   style={{ width: `${Math.min(revenueShare, 100)}%` }}
                 />
               </div>

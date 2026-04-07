@@ -61,8 +61,8 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
 
   function countdownColor(): string {
     if (daysToHarvest === null) return 'text-cult-medium-gray';
-    if (daysToHarvest < 0) return 'text-red-400';
-    if (daysToHarvest <= 7) return 'text-amber-400';
+    if (daysToHarvest < 0) return 'text-cult-danger';
+    if (daysToHarvest <= 7) return 'text-cult-warning';
     return 'text-cult-light-gray';
   }
 
@@ -112,7 +112,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
             {flipDate && (
               <button
                 onClick={() => onUpdate(section.id, null, section.projected_harvest_date)}
-                className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                className="text-cult-medium-gray hover:text-cult-danger transition-colors"
                 title="Clear flip date"
               >
                 <X className="w-3 h-3" />
@@ -164,7 +164,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
             {harvestDate && (
               <button
                 onClick={() => onUpdate(section.id, section.flip_date, null)}
-                className="text-cult-medium-gray hover:text-red-400 transition-colors"
+                className="text-cult-medium-gray hover:text-cult-danger transition-colors"
                 title="Clear harvest date"
               >
                 <X className="w-3 h-3" />
@@ -202,7 +202,7 @@ function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
   }
 
   if (error) {
-    return <p className="text-xs text-red-400 px-1 py-2">{error}</p>;
+    return <p className="text-xs text-cult-danger px-1 py-2">{error}</p>;
   }
 
   if (!hasSections) {
@@ -286,7 +286,7 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
   return (
     <div className="bg-cult-near-black border border-cult-medium-gray p-5 space-y-4">
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>
@@ -425,7 +425,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
                 </button>
                 <button
                   onClick={() => onArchive(room)}
-                  className="p-1.5 text-cult-medium-gray hover:text-red-400 transition-colors"
+                  className="p-1.5 text-cult-medium-gray hover:text-cult-danger transition-colors"
                   title="Archive room"
                 >
                   <Archive className="w-3.5 h-3.5" />
@@ -435,7 +435,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
             {!room.is_active && (
               <button
                 onClick={() => onRestore(room)}
-                className="p-1.5 text-cult-medium-gray hover:text-green-400 transition-colors"
+                className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors"
                 title="Restore room"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -507,7 +507,7 @@ export function GrowRoomsManagement() {
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>

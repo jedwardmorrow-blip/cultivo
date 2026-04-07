@@ -16,10 +16,10 @@ interface TopAccountsTableProps {
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'active': return 'bg-emerald-500/20 text-emerald-400';
+    case 'active': return 'bg-cult-success-muted text-cult-success';
     case 'prospect': return 'bg-cyan-500/20 text-cyan-400';
     case 'inactive': return 'bg-cult-medium-gray/30 text-cult-silver';
-    case 'churned': return 'bg-red-500/20 text-red-400';
+    case 'churned': return 'bg-cult-danger-muted text-cult-danger';
     default: return 'bg-cult-medium-gray/30 text-cult-silver';
   }
 }
@@ -27,8 +27,8 @@ function getStatusColor(status: string): string {
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return <ArrowUpDown className="w-3 h-3 text-cult-medium-gray" />;
   return dir === 'desc'
-    ? <ArrowDown className="w-3 h-3 text-emerald-400" />
-    : <ArrowUp className="w-3 h-3 text-emerald-400" />;
+    ? <ArrowDown className="w-3 h-3 text-cult-success" />
+    : <ArrowUp className="w-3 h-3 text-cult-success" />;
 }
 
 export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap, periodLabel }: TopAccountsTableProps) {
@@ -163,7 +163,7 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div>
-                      <span className="text-sm font-semibold text-emerald-400">
+                      <span className="text-sm font-semibold text-cult-success">
                         {formatCurrencyShort(isHub ? combinedRevenue : account.period_revenue)}
                       </span>
                       {isHub && account.period_revenue > 0 && account.child_period_revenue > 0 && (
@@ -195,8 +195,8 @@ export function TopAccountsTable({ accounts, onSelectAccount, monthlyRevenueMap,
                   </td>
                   <td className="px-4 py-3 text-right hidden md:table-cell">
                     <div className="flex items-center justify-end gap-1.5">
-                      {isAtRisk && <TrendingDown className="w-3.5 h-3.5 text-amber-400" />}
-                      <span className={`text-xs ${isAtRisk ? 'text-amber-400' : 'text-cult-light-gray'}`}>
+                      {isAtRisk && <TrendingDown className="w-3.5 h-3.5 text-cult-warning" />}
+                      <span className={`text-xs ${isAtRisk ? 'text-cult-warning' : 'text-cult-light-gray'}`}>
                         {account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : '-'}
                       </span>
                     </div>

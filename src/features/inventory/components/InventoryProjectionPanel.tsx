@@ -40,9 +40,9 @@ interface StrainRunwayRow {
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    high:   { label: 'High',    cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-    medium: { label: 'Medium',  cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
-    low:    { label: 'Low',     cls: 'bg-red-500/15 text-red-300 border-red-500/30' },
+    high:   { label: 'High',    cls: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
+    medium: { label: 'Medium',  cls: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
+    low:    { label: 'Low',     cls: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
     none:   { label: 'No data', cls: 'bg-cult-graphite text-cult-text-faint border-cult-dark-gray' },
   };
   const { label, cls } = map[confidence] ?? map.none;
@@ -56,7 +56,7 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
 function GapBadge({ gapG }: { gapG: number }) {
   if (gapG > 500) {
     return (
-      <span className="flex items-center gap-1 text-emerald-300 text-[11px] font-medium">
+      <span className="flex items-center gap-1 text-cult-success text-[11px] font-medium">
         <CheckCircle className="w-3 h-3" />
         +{formatWeightShort(gapG)}
       </span>
@@ -64,14 +64,14 @@ function GapBadge({ gapG }: { gapG: number }) {
   }
   if (gapG >= -200) {
     return (
-      <span className="flex items-center gap-1 text-amber-300 text-[11px] font-medium">
+      <span className="flex items-center gap-1 text-cult-warning text-[11px] font-medium">
         <AlertTriangle className="w-3 h-3" />
         {gapG >= 0 ? `+${formatWeightShort(gapG)}` : `-${formatWeightShort(Math.abs(gapG))}`}
       </span>
     );
   }
   return (
-    <span className="flex items-center gap-1 text-red-400 text-[11px] font-medium">
+    <span className="flex items-center gap-1 text-cult-danger text-[11px] font-medium">
       <AlertTriangle className="w-3 h-3" />
       -{formatWeightShort(Math.abs(gapG))}
     </span>
@@ -142,7 +142,7 @@ export function InventoryProjectionPanel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
+          <TrendingUp className="w-4 h-4 text-cult-success" />
           Inventory Projection
         </h2>
         <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -150,7 +150,7 @@ export function InventoryProjectionPanel() {
           <button
             onClick={() => setOnlyWithDemand(v => !v)}
             className={`relative w-8 h-4 rounded-full transition-colors ${
-              onlyWithDemand ? 'bg-emerald-600' : 'bg-cult-graphite'
+              onlyWithDemand ? 'bg-cult-success' : 'bg-cult-graphite'
             }`}
           >
             <span
@@ -179,12 +179,12 @@ export function InventoryProjectionPanel() {
             key={kpi.label}
             className={`rounded-cult border p-3 ${
               kpi.alert
-                ? 'bg-red-950/30 border-red-500/30'
+                ? 'bg-cult-danger-muted border-cult-danger/30'
                 : 'bg-cult-graphite/40 border-cult-charcoal/50'
             }`}
           >
             <p className="text-[10px] text-cult-text-faint uppercase tracking-wider">{kpi.label}</p>
-            <p className={`text-lg font-semibold mt-0.5 ${kpi.alert ? 'text-red-400' : 'text-cult-text-primary'}`}>
+            <p className={`text-lg font-semibold mt-0.5 ${kpi.alert ? 'text-cult-danger' : 'text-cult-text-primary'}`}>
               {kpi.value}
             </p>
             <p className="text-[10px] text-cult-text-faint">{kpi.sub}</p>
@@ -221,7 +221,7 @@ export function InventoryProjectionPanel() {
                   <tr
                     key={row.strain_id}
                     className={`transition-colors ${
-                      hasRisk ? 'bg-red-950/20 hover:bg-red-950/30' : 'hover:bg-cult-graphite/20'
+                      hasRisk ? 'bg-cult-danger/10 hover:bg-cult-danger/15' : 'hover:bg-cult-graphite/20'
                     }`}
                   >
                     <td className="px-3 py-2.5">

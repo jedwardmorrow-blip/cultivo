@@ -15,7 +15,7 @@ interface Props {
 
 function routeIndicator(count: number) {
   if (count === 0) return null;
-  const color = count >= 3 ? 'bg-red-400' : count === 2 ? 'bg-amber-400' : 'bg-emerald-400';
+  const color = count >= 3 ? 'bg-cult-danger' : count === 2 ? 'bg-cult-warning' : 'bg-cult-success';
   const label = count >= 3 ? 'Heavy' : count === 2 ? 'Moderate' : 'Light';
 
   return (
@@ -52,15 +52,15 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
         {/* Route legend */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+            <div className="w-2 h-2 rounded-full bg-cult-success" />
             <span className="text-xs text-gray-500">1 route</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <div className="w-2 h-2 rounded-full bg-cult-warning" />
             <span className="text-xs text-gray-500">2 routes</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-400" />
+            <div className="w-2 h-2 rounded-full bg-cult-danger" />
             <span className="text-xs text-gray-500">3+ routes</span>
           </div>
         </div>
@@ -168,11 +168,11 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
                   <span className="text-white font-semibold">{formatCurrencyShort(o.revenue)}</span>
                   <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                     o.status === 'delivered' || o.status === 'completed'
-                      ? 'bg-emerald-500/20 text-emerald-400'
+                      ? 'bg-cult-success-muted text-cult-success'
                       : o.status === 'ready_for_delivery'
                         ? 'bg-cyan-500/20 text-cyan-400'
                         : o.status === 'processing'
-                          ? 'bg-amber-500/20 text-amber-400'
+                          ? 'bg-cult-warning-muted text-cult-warning'
                           : 'bg-gray-500/20 text-gray-400'
                   }`}>
                     {o.status === 'ready_for_delivery' ? 'Staged' : o.status}

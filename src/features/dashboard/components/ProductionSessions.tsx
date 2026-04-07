@@ -86,7 +86,7 @@ export function ProductionSessions({ data }: Props) {
   ];
 
   return (
-    <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 animate-fade-in">
+    <div className="glass-card p-6 h-full">
       <h3 className="text-xs font-semibold uppercase tracking-[1.5px] text-cult-text-primary mb-5">
         Production Sessions
       </h3>

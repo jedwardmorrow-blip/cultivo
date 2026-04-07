@@ -31,17 +31,17 @@ type SortField = 'health_score' | 'days_since_last_order' | 'revenue_90d' | 'lif
 type SortDir = 'asc' | 'desc';
 
 const HEALTH_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  healthy: { label: 'Healthy', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' },
-  cooling: { label: 'Cooling', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30' },
-  at_risk: { label: 'At Risk', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30' },
-  dormant: { label: 'Dormant', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30' },
+  healthy: { label: 'Healthy', color: 'text-cult-success', bg: 'bg-cult-success/15', border: 'border-cult-success/30' },
+  cooling: { label: 'Cooling', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30' },
+  at_risk: { label: 'At Risk', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30' },
+  dormant: { label: 'Dormant', color: 'text-cult-danger', bg: 'bg-cult-danger/15', border: 'border-cult-danger/30' },
 };
 
 const TREND_ICON: Record<string, { icon: typeof TrendingUp; color: string }> = {
-  growing: { icon: TrendingUp, color: 'text-emerald-400' },
+  growing: { icon: TrendingUp, color: 'text-cult-success' },
   stable: { icon: Minus, color: 'text-cult-silver' },
-  declining: { icon: TrendingDown, color: 'text-orange-400' },
-  inactive: { icon: TrendingDown, color: 'text-red-400' },
+  declining: { icon: TrendingDown, color: 'text-cult-warning' },
+  inactive: { icon: TrendingDown, color: 'text-cult-danger' },
 };
 
 function fmt$(n: number) {
@@ -129,8 +129,8 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-orange-500/15 border border-orange-500/30">
-            <Activity className="w-5 h-5 text-orange-400" />
+          <div className="p-2 rounded-lg bg-cult-warning/15 border border-cult-warning/30">
+            <Activity className="w-5 h-5 text-cult-warning" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-cult-white">Account Health</h1>
@@ -163,7 +163,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
               onClick={() => setFilter(filter === label ? 'all' : label)}
               className={`rounded-lg px-4 py-3 text-left border transition-colors ${
                 filter === label
-                  ? `${cfg.bg} ${cfg.border} ring-1 ring-${label === 'healthy' ? 'emerald' : label === 'cooling' ? 'amber' : label === 'at_risk' ? 'orange' : 'red'}-500/40`
+                  ? `${cfg.bg} ${cfg.border} ring-1 ring-white/10`
                   : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
               }`}
             >
@@ -176,7 +176,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
         {/* At-risk revenue */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">At-Risk Revenue</p>
-          <p className="text-2xl font-bold text-red-400">{fmt$(atRiskRevenue)}</p>
+          <p className="text-2xl font-bold text-cult-danger">{fmt$(atRiskRevenue)}</p>
           <p className="text-xs text-cult-silver">lifetime total</p>
         </div>
       </div>
@@ -188,10 +188,10 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
         );
         if (criticals.length === 0) return null;
         return (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+          <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-lg px-4 py-3">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
-              <p className="text-sm font-semibold text-red-400">
+              <AlertTriangle className="w-4 h-4 text-cult-danger" />
+              <p className="text-sm font-semibold text-cult-danger">
                 {criticals.length} high-value account{criticals.length > 1 ? 's' : ''} need attention
               </p>
             </div>
@@ -200,17 +200,17 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-cult-danger/15 border border-cult-danger/25 rounded-md text-cult-danger/80 hover:bg-cult-danger/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{fmt$(a.lifetime_revenue)}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{a.days_since_last_order ?? '?'}d silent</span>
                 </button>
               ))}
               {criticals.length > 5 && (
-                <span className="text-xs text-red-400/60 self-center">+{criticals.length - 5} more</span>
+                <span className="text-xs text-cult-danger/60 self-center">+{criticals.length - 5} more</span>
               )}
             </div>
           </div>
@@ -226,7 +226,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-sky-500/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
           />
         </div>
         {filter !== 'all' && (
@@ -292,7 +292,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                       onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
-                      <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
                       <p className="text-xs text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
@@ -317,7 +317,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
                   {/* Last Order */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     {a.days_since_last_order !== null ? (
-                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-red-400' : a.days_since_last_order > 30 ? 'text-orange-400' : 'text-cult-silver'}`}>
+                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-cult-danger' : a.days_since_last_order > 30 ? 'text-cult-warning' : 'text-cult-silver'}`}>
                         {a.days_since_last_order}d
                       </span>
                     ) : (
@@ -377,7 +377,7 @@ export function AccountHealthDashboard({}: AccountHealthDashboardProps) {
 function ScoreBar({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = Math.min(100, (value / max) * 100);
   const color =
-    pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : pct > 0 ? 'bg-red-500' : 'bg-cult-charcoal';
+    pct >= 70 ? 'bg-cult-success' : pct >= 40 ? 'bg-cult-warning' : pct > 0 ? 'bg-cult-danger' : 'bg-cult-charcoal';
   return (
     <div className="flex flex-col items-center gap-0.5" title={`${label}: ${value}/${max}`}>
       <span className="text-xs text-cult-medium-gray leading-none">{label}</span>

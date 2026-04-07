@@ -99,7 +99,7 @@ function FlagReviewQueue({ items, loading }: { items: FlaggedItem[]; loading: bo
           className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] px-1.5 py-0.5 rounded border bg-amber-500/15 text-amber-300 border-amber-500/30 flex-shrink-0">
+            <span className="text-[10px] px-1.5 py-0.5 rounded border bg-cult-warning-muted text-cult-warning border-cult-warning/30 flex-shrink-0">
               {item.review_status ?? 'flagged'}
             </span>
             <span className="text-[12px] text-cult-off-white truncate">
@@ -150,7 +150,7 @@ function MovementLogMini({ movements, loading }: { movements: MovementRow[]; loa
               <span className="text-[12px] text-cult-off-white truncate block">{itemName}</span>
               {cat && <span className="text-[11px] text-cult-text-faint">{cat}</span>}
             </div>
-            <span className={`text-[11px] font-mono flex-shrink-0 ${isIn ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span className={`text-[11px] font-mono flex-shrink-0 ${isIn ? 'text-cult-success' : 'text-cult-danger'}`}>
               {qtyStr}
             </span>
             <span className="text-[11px] text-cult-text-faint flex-shrink-0 w-14 text-right">
@@ -296,7 +296,7 @@ export function InventoryHub() {
         {/* Flag Review Queue */}
         <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Flag className="w-4 h-4 text-amber-400" />
+            <Flag className="w-4 h-4 text-cult-warning" />
             Flag Review Queue
           </h2>
           <FlagReviewQueue items={flaggedItems} loading={loading} />

@@ -103,9 +103,9 @@ function buildQueues(strains: StrainAggregate[], lossPct: number): QueueGroup[] 
     {
       key: 'trim',
       label: 'Trimming',
-      colorClass: 'text-amber-400',
-      bgClass: 'bg-amber-500/[0.06]',
-      borderClass: 'border-amber-500/15',
+      colorClass: 'text-cult-warning',
+      bgClass: 'bg-cult-warning/[0.06]',
+      borderClass: 'border-cult-warning/15',
       accentHex: '#fbbf24',
       timeEstimate: '~1-2 days',
       items: trimItems,
@@ -184,9 +184,9 @@ function QueueCard({
                   : 'hover:bg-cult-surface/50 border border-transparent'
               } ${
                 item.strain.urgency === 'overdue'
-                  ? 'border-l-2 !border-l-rose-500/60'
+                  ? 'border-l-2 !border-l-cult-danger/60'
                   : item.strain.urgency === 'urgent'
-                    ? 'border-l-2 !border-l-amber-500/50'
+                    ? 'border-l-2 !border-l-cult-warning/50'
                     : ''
               }`}
             >
@@ -196,7 +196,7 @@ function QueueCard({
                 </span>
                 <UrgencyBadge urgency={item.strain.urgency} />
                 {item.isShortfall && (
-                  <span className="text-[10px] font-bold px-1 py-px rounded bg-rose-500/15 text-rose-400">
+                  <span className="text-[10px] font-bold px-1 py-px rounded bg-cult-danger/15 text-cult-danger">
                     NEED
                   </span>
                 )}

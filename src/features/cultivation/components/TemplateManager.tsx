@@ -68,7 +68,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
           {templates.length > 0 && (
             <button
               onClick={() => setShowBulkApply(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/30 hover:bg-cult-warning-muted rounded-sm transition-colors"
               title="Apply a template to multiple rooms at once"
             >
               <Layers className="w-3 h-3" /> Bulk Apply
@@ -76,7 +76,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
           )}
           <button
             onClick={() => { setCreatingNew(true); setEditingTemplateId(null); setExpandedId(null); }}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/30 hover:bg-cult-success-muted rounded-sm transition-colors"
           >
             <Plus className="w-3 h-3" /> New Template
           </button>
@@ -133,7 +133,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
                           {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-cult-medium-gray" /> : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray" />}
                           <span className="text-xs font-bold text-cult-white truncate">{tmpl.name}</span>
                           {tmpl.is_default && (
-                            <span className="text-[9px] text-amber-400 uppercase font-bold px-1 py-0.5 bg-amber-950/50 border border-amber-800/30 rounded-sm flex-shrink-0">
+                            <span className="text-[9px] text-cult-warning uppercase font-bold px-1 py-0.5 bg-cult-warning-muted border border-cult-warning/20 rounded-sm flex-shrink-0">
                               Default
                             </span>
                           )}
@@ -159,7 +159,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
                           <div className="flex items-center gap-2 pt-2 border-t border-cult-dark-gray/20">
                             <button
                               onClick={() => setEditingTemplateId(tmpl.id)}
-                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-sky-400 bg-sky-950/30 border border-sky-800/30 hover:bg-sky-950/50 rounded-sm transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-cult-info bg-cult-info-muted border border-cult-info/20 hover:bg-cult-info-muted rounded-sm transition-colors"
                             >
                               <Edit3 className="w-3 h-3" /> Edit
                             </button>
@@ -170,7 +170,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
                                   setExpandedId(null);
                                 }
                               }}
-                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-red-400 bg-red-950/20 border border-red-800/20 hover:bg-red-950/40 rounded-sm transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-cult-danger bg-cult-danger-muted border border-cult-danger/20 hover:bg-cult-danger-muted rounded-sm transition-colors"
                             >
                               <Trash2 className="w-3 h-3" /> Delete
                             </button>
@@ -178,7 +178,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
                               onClick={async () => {
                                 await updateTemplate(tmpl.id, { is_default: !tmpl.is_default });
                               }}
-                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-400 bg-amber-950/20 border border-amber-800/20 hover:bg-amber-950/40 rounded-sm transition-colors ml-auto"
+                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-cult-warning bg-cult-warning-muted border border-cult-warning/20 hover:bg-cult-warning-muted rounded-sm transition-colors ml-auto"
                             >
                               {tmpl.is_default ? 'Remove Default' : 'Set Default'}
                             </button>
@@ -261,7 +261,7 @@ function ScheduleItemRow({ item }: { item: TemplateScheduleItem }) {
         <span className="text-[9px] text-violet-400 bg-violet-950/40 px-1 rounded font-semibold">Phase</span>
       )}
       <span className={`text-[9px] ml-auto uppercase font-semibold ${
-        item.priority === 'high' ? 'text-amber-400' : item.priority === 'low' ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
+        item.priority === 'high' ? 'text-cult-warning' : item.priority === 'low' ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
       }`}>
         {item.priority}
       </span>
@@ -347,7 +347,7 @@ function TemplateEditor({ existing, onSave, onCancel }: TemplateEditorProps) {
           <div className={labelClass}>Schedule Items ({schedules.length})</div>
           <button
             onClick={() => setAddingSchedule(true)}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-green-400 hover:bg-green-950/30 rounded transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-cult-success hover:bg-cult-success-muted rounded transition-colors"
           >
             <Plus className="w-3 h-3" /> Add
           </button>
@@ -370,7 +370,7 @@ function TemplateEditor({ existing, onSave, onCancel }: TemplateEditorProps) {
 
         {/* Add new schedule item inline */}
         {addingSchedule && (
-          <div className="mt-2 border border-green-800/30 rounded-sm bg-green-950/10 p-3">
+          <div className="mt-2 border border-cult-success/20 rounded-sm bg-cult-success-muted p-3">
             <NewScheduleItemForm
               onAdd={(item) => {
                 setSchedules((prev) => [...prev, item]);
@@ -428,7 +428,7 @@ function ScheduleItemEditor({
         <span className="text-xs font-semibold text-cult-white">{config.label}</span>
         {isPhaseDay && <span className="text-[9px] text-violet-400 bg-violet-950/40 px-1 rounded">Phase</span>}
         <span className="text-[10px] text-cult-dark-gray ml-auto mr-1">{item.priority}</span>
-        <button onClick={onRemove} className="text-red-400/50 hover:text-red-400 transition-colors p-0.5">
+        <button onClick={onRemove} className="text-cult-danger/50 hover:text-cult-danger transition-colors p-0.5">
           <X className="w-3 h-3" />
         </button>
       </div>
@@ -700,7 +700,7 @@ function NewScheduleItemForm({
         <button onClick={onCancel} className="px-2.5 py-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">Cancel</button>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-cult-success hover:bg-cult-success text-white rounded transition-colors"
         >
           <Check className="w-3 h-3" /> Add Schedule
         </button>

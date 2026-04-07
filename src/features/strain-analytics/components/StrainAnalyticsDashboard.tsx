@@ -49,12 +49,12 @@ function formatNum(val: number | null): string {
 
 function runwayBadge(status: string | null) {
   const map: Record<string, { label: string; classes: string }> = {
-    critical: { label: 'Critical', classes: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-    tight: { label: 'Tight', classes: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    healthy: { label: 'Healthy', classes: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    surplus: { label: 'Surplus', classes: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
+    critical: { label: 'Critical', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
+    tight: { label: 'Tight', classes: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
+    healthy: { label: 'Healthy', classes: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
+    surplus: { label: 'Surplus', classes: 'bg-cult-info-muted text-cult-info border-cult-info/30' },
     no_demand: { label: 'No Demand', classes: 'bg-cult-charcoal text-cult-silver border-cult-charcoal' },
-    no_stock: { label: 'No Stock', classes: 'bg-rose-500/10 text-rose-300 border-rose-500/20' },
+    no_stock: { label: 'No Stock', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
   };
   if (!status || !map[status]) return null;
   const { label, classes } = map[status];
@@ -67,11 +67,11 @@ function runwayBadge(status: string | null) {
 
 function confidenceDot(confidence: string | null) {
   const map: Record<string, string> = {
-    high: 'bg-emerald-400',
-    medium: 'bg-amber-400',
-    low: 'bg-rose-400',
+    high: 'bg-cult-success',
+    medium: 'bg-cult-warning',
+    low: 'bg-cult-danger',
     estimated: 'bg-cult-silver',
-    calibrated: 'bg-emerald-400',
+    calibrated: 'bg-cult-success',
   };
   const color = confidence ? map[confidence] || 'bg-cult-charcoal' : 'bg-cult-charcoal';
   return <span className={`inline-block w-2 h-2 rounded-full ${color}`} title={confidence || 'no data'} />;
@@ -95,7 +95,7 @@ function gradeBadge(grade: string | null) {
 
 function completenessBar(pct: number) {
   const color =
-    pct >= 70 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+    pct >= 70 ? 'bg-cult-success' : pct >= 40 ? 'bg-cult-warning' : 'bg-cult-danger';
   return (
     <div className="flex items-center gap-2">
       <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
@@ -153,10 +153,10 @@ function HeroCards({ summary }: { summary: ReturnType<typeof useStrainAnalytics>
       {cards.map((card) => (
         <div key={card.label} className="bg-cult-graphite rounded-cult border border-cult-charcoal p-4">
           <div className="flex items-center gap-2 mb-2">
-            <card.icon className={`w-4 h-4 ${card.accent ? 'text-amber-400' : 'text-cult-silver'}`} />
+            <card.icon className={`w-4 h-4 ${card.accent ? 'text-cult-warning' : 'text-cult-silver'}`} />
             <span className="text-xs text-cult-text-muted uppercase tracking-wider">{card.label}</span>
           </div>
-          <div className={`text-2xl font-bold ${card.accent ? 'text-amber-400' : 'text-cult-white'}`}>
+          <div className={`text-2xl font-bold ${card.accent ? 'text-cult-warning' : 'text-cult-white'}`}>
             {card.value}
           </div>
           <div className="text-xs text-cult-text-muted mt-1">{card.sub}</div>
@@ -227,7 +227,7 @@ function FilterBar({
         onClick={() => setFilters((f) => ({ ...f, hasData: !f.hasData }))}
         className={`flex items-center gap-1.5 px-3 py-2 rounded-cult text-sm border transition-colors ${
           filters.hasData
-            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+            ? 'bg-cult-success-muted text-cult-success border-cult-success/30'
             : 'bg-cult-graphite text-cult-text-muted border-cult-charcoal hover:text-cult-silver'
         }`}
       >
@@ -270,7 +270,7 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
           <div>
-            <div className="text-sm font-medium text-cult-white group-hover:text-emerald-400 transition-colors">
+            <div className="text-sm font-medium text-cult-white group-hover:text-cult-success transition-colors">
               {row.display_name}
             </div>
             {row.dominance_type && (
@@ -325,7 +325,7 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
 
       {/* Margin */}
       <td className="py-3 px-4 text-right">
-        <span className={`text-sm ${row.true_margin_per_gram !== null && row.true_margin_per_gram > 0 ? 'text-emerald-400' : row.true_margin_per_gram !== null ? 'text-rose-400' : 'text-cult-text-muted'}`}>
+        <span className={`text-sm ${row.true_margin_per_gram !== null && row.true_margin_per_gram > 0 ? 'text-cult-success' : row.true_margin_per_gram !== null ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
           {formatCurrency(row.true_margin_per_gram)}
         </span>
       </td>

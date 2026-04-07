@@ -261,7 +261,7 @@ export function DispatchSessionModal({
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-sm text-red-400 flex items-center gap-2">
+          <div className="p-3 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             {error}
           </div>

@@ -277,7 +277,7 @@ export function PlantGroupLabelPrintModal({
           )}
 
           {error && (
-            <div className="bg-red-950 border border-red-700 text-red-300 text-xs p-3">
+            <div className="bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-3">
               {error}
             </div>
           )}

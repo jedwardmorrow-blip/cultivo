@@ -63,7 +63,7 @@ export const RowActionMenu = memo(function RowActionMenu({ actions }: RowActionM
               }}
               className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-sm transition-colors ${
                 action.destructive
-                  ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300'
+                  ? 'text-cult-danger hover:bg-cult-danger-muted hover:text-cult-danger'
                   : 'text-cult-silver hover:bg-cult-dark-gray hover:text-cult-white'
               }`}
             >

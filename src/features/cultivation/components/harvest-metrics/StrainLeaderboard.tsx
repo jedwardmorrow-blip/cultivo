@@ -57,7 +57,7 @@ export function StrainLeaderboard({ strainAggregates }: StrainLeaderboardProps) 
                 <div className="flex items-center gap-6 text-xs">
                   <div className="w-20">
                     <span className="text-cult-medium-gray">Avg Yield </span>
-                    <span className="text-green-400 font-mono font-bold text-sm">{strain.avg_yield_pct}%</span>
+                    <span className="text-cult-success font-mono font-bold text-sm">{strain.avg_yield_pct}%</span>
                   </div>
                   <div>
                     <span className="text-cult-medium-gray">Harvests </span>
@@ -81,11 +81,11 @@ export function StrainLeaderboard({ strainAggregates }: StrainLeaderboardProps) 
                   </div>
                   {strain.best_yield_pct != null && strain.worst_yield_pct != null && strain.best_yield_pct !== strain.worst_yield_pct && (
                     <>
-                      <div className="flex items-center gap-1 text-green-400">
+                      <div className="flex items-center gap-1 text-cult-success">
                         <TrendingUp className="w-3 h-3" />
                         {strain.best_yield_pct}%
                       </div>
-                      <div className="flex items-center gap-1 text-red-400">
+                      <div className="flex items-center gap-1 text-cult-danger">
                         <TrendingDown className="w-3 h-3" />
                         {strain.worst_yield_pct}%
                       </div>
@@ -95,7 +95,7 @@ export function StrainLeaderboard({ strainAggregates }: StrainLeaderboardProps) 
 
                 <div className="mt-2 w-full bg-cult-dark-gray h-1.5 overflow-hidden">
                   <div
-                    className="h-full bg-green-600 transition-all"
+                    className="h-full bg-cult-success transition-all"
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>

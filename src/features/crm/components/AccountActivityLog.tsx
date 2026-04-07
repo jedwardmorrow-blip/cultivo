@@ -21,8 +21,8 @@ const activityIcons: Record<ActivityType, typeof MessageSquare> = {
 const activityColors: Record<ActivityType, string> = {
   call: 'text-sky-400 bg-sky-500/15',
   email: 'text-cyan-400 bg-cyan-500/15',
-  visit: 'text-emerald-400 bg-emerald-500/15',
-  sample: 'text-amber-400 bg-amber-500/15',
+  visit: 'text-cult-success bg-cult-success-muted',
+  sample: 'text-cult-warning bg-cult-warning-muted',
   note: 'text-cult-silver bg-cult-dark-gray',
   follow_up: 'text-rose-400 bg-rose-500/15',
 };
@@ -157,7 +157,7 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-cult-white">{activity.subject}</span>
                   <span className="text-xs text-cult-silver capitalize">{activity.activity_type.replace('_', ' ')}</span>
-                  {isPinned && <Pin className="w-3 h-3 text-amber-400" />}
+                  {isPinned && <Pin className="w-3 h-3 text-cult-warning" />}
                 </div>
                 {activity.body && (
                   <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{activity.body}</p>
@@ -166,7 +166,7 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                   <span>{formatRelativeDate(activity.created_at)}</span>
                   {activity.user_name && <span>by {activity.user_name}</span>}
                   {activity.follow_up_date && (
-                    <span className="text-amber-400">Follow up: {activity.follow_up_date}</span>
+                    <span className="text-cult-warning">Follow up: {activity.follow_up_date}</span>
                   )}
                 </div>
               </div>
@@ -177,8 +177,8 @@ export function AccountActivityLog({ activities, customerId, onReload }: Account
                 }}
                 className={`p-1.5 rounded flex-shrink-0 transition-all ${
                   isPinned
-                    ? 'text-amber-400 hover:bg-amber-500/15'
-                    : 'opacity-0 group-hover:opacity-100 text-cult-medium-gray hover:text-amber-400 hover:bg-cult-dark-gray'
+                    ? 'text-cult-warning hover:bg-cult-warning-muted'
+                    : 'opacity-0 group-hover:opacity-100 text-cult-medium-gray hover:text-cult-warning hover:bg-cult-dark-gray'
                 }`}
                 title={isPinned ? 'Unpin' : 'Pin to top'}
               >

@@ -95,8 +95,8 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
           {mode !== 'manual' && mode !== 'edit' && (
             <>
               <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
-              <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-green-400' : 'text-cult-dark-gray'}`}>
-                <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-green-600 bg-green-950/40 text-green-400' : 'border-cult-dark-gray'}`}>3</span>
+              <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-cult-success' : 'text-cult-dark-gray'}`}>
+                <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-cult-success bg-cult-success-muted text-cult-success' : 'border-cult-dark-gray'}`}>3</span>
                 <span>Done</span>
               </div>
             </>
@@ -113,14 +113,14 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
               <button
                 type="button"
                 onClick={() => startMode('template')}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/40 hover:bg-cult-warning-muted/80 rounded-sm transition-colors"
               >
                 Template
               </button>
               <button
                 type="button"
                 onClick={() => startMode('copy')}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/40 hover:bg-cult-info-muted/80 rounded-sm transition-colors"
               >
                 <Copy className="w-3 h-3" />
                 Copy
@@ -128,7 +128,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
               <button
                 type="button"
                 onClick={() => startMode('manual')}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 rounded-sm transition-colors"
               >
                 <Plus className="w-3 h-3" />
                 Add
@@ -154,7 +154,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                       <button
                         type="button"
                         onClick={() => startMode('template')}
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-800/40 hover:bg-amber-950/60 rounded-sm transition-colors w-52"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-warning bg-cult-warning-muted border border-cult-warning/40 hover:bg-cult-warning-muted/80 rounded-sm transition-colors w-52"
                       >
                         Apply Template
                       </button>
@@ -163,7 +163,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                       <button
                         type="button"
                         onClick={() => startMode('copy')}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-800/40 hover:bg-sky-950/60 rounded-sm transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/40 hover:bg-cult-info-muted/80 rounded-sm transition-colors"
                       >
                         <Copy className="w-3.5 h-3.5" />
                         Copy from Room
@@ -171,7 +171,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                       <button
                         type="button"
                         onClick={() => startMode('manual')}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 rounded-sm transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 rounded-sm transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Create Manually
@@ -222,7 +222,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                             setSavingAsTemplate(false);
                             setTemplateName('');
                           }}
-                          className="flex-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 border border-green-800/40 hover:bg-green-950/60 disabled:opacity-30 rounded-sm transition-colors"
+                          className="flex-1 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 hover:bg-cult-success-muted/80 disabled:opacity-30 rounded-sm transition-colors"
                         >
                           <Save className="w-3 h-3 inline mr-1" />
                           Save
@@ -321,10 +321,10 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
           {/* Step 3: Done */}
           {step === 3 && mode === 'template' && (
             <div className="text-center py-10">
-              <div className="w-12 h-12 mx-auto rounded-full bg-green-950/60 flex items-center justify-center mb-3">
-                <Check className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 mx-auto rounded-full bg-cult-success-muted flex items-center justify-center mb-3">
+                <Check className="w-6 h-6 text-cult-success" />
               </div>
-              <p className="text-sm font-semibold text-green-400">Template applied</p>
+              <p className="text-sm font-semibold text-cult-success">Template applied</p>
               <p className="text-xs text-cult-medium-gray mt-1">Schedules have been added to {roomCode}</p>
               <button
                 type="button"
@@ -338,10 +338,10 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
 
           {step === 3 && mode === 'copy' && copySuccess && (
             <div className="text-center py-8">
-              <div className="w-12 h-12 mx-auto rounded-full bg-green-950/60 flex items-center justify-center mb-3">
-                <Check className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 mx-auto rounded-full bg-cult-success-muted flex items-center justify-center mb-3">
+                <Check className="w-6 h-6 text-cult-success" />
               </div>
-              <p className="text-sm font-semibold text-green-400">{copySuccess}</p>
+              <p className="text-sm font-semibold text-cult-success">{copySuccess}</p>
             </div>
           )}
 

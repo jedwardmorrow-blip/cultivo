@@ -296,7 +296,7 @@ export function PackagingSessionStartForm({
                     <span className="font-medium">Valid COA on file</span>
                   </div>
                 ) : coaStatus.hasValidCoa === false ? (
-                  <div className="flex items-center gap-2 text-sm text-yellow-500">
+                  <div className="flex items-center gap-2 text-sm text-cult-warning">
                     <AlertCircle className="h-4 w-4" />
                     <span className="font-medium">No COA found - upload required before packaging</span>
                   </div>
@@ -370,7 +370,7 @@ export function PackagingSessionStartForm({
                 <span className={`ml-2 text-xs font-bold ${
                   formData.pull_weight <= (inventoryPackages.find(p => p.package_id === formData.package_id)?.available_qty || 0)
                     ? 'text-cult-green'
-                    : 'text-red-500'
+                    : 'text-cult-danger'
                 }`}>
                   {formData.pull_weight <= (inventoryPackages.find(p => p.package_id === formData.package_id)?.available_qty || 0)
                     ? '✓ Valid'

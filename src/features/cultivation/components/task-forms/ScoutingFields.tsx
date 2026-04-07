@@ -61,7 +61,7 @@ export function ScoutingFields({ data, onChange, sections }: Props) {
             type="button"
             onClick={() => set('pest_found', !data.pest_found)}
             className={`w-10 h-5 rounded-full transition-colors relative ${
-              data.pest_found ? 'bg-red-600' : 'bg-cult-dark-gray'
+              data.pest_found ? 'bg-cult-danger' : 'bg-cult-dark-gray'
             }`}
           >
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
@@ -98,7 +98,7 @@ export function ScoutingFields({ data, onChange, sections }: Props) {
             type="button"
             onClick={() => set('disease_found', !data.disease_found)}
             className={`w-10 h-5 rounded-full transition-colors relative ${
-              data.disease_found ? 'bg-red-600' : 'bg-cult-dark-gray'
+              data.disease_found ? 'bg-cult-danger' : 'bg-cult-dark-gray'
             }`}
           >
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${

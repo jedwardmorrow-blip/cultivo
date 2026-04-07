@@ -334,7 +334,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
       )}
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-sm text-red-400 flex items-center gap-2">
+        <div className="mb-4 p-3 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -386,7 +386,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
                             {formatG(pkg.on_hand_qty)}
                           </span>
                           {pkg.reserved_qty > 0 && (
-                            <span className="text-[11px] text-amber-400/70 font-medium">
+                            <span className="text-[11px] text-cult-warning/70 font-medium">
                               ({formatG(pkg.reserved_qty)} held)
                             </span>
                           )}
@@ -399,7 +399,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
                             disabled={isSending || pkg.available_qty <= 0}
                             className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150 ${
                               justSent
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
+                                ? 'bg-cult-success/20 text-cult-success border border-cult-success/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
                                 : isSending
                                 ? 'bg-cult-mid-gray/30 text-cult-text-muted cursor-wait'
                                 : pkg.available_qty <= 0

@@ -155,17 +155,17 @@ export function BrandingManagement() {
         <div
           className={`mb-6 p-4 border flex items-start gap-3 ${
             message.type === 'success'
-              ? 'bg-green-900/20 border-green-700'
-              : 'bg-red-900/20 border-red-700'
+              ? 'bg-cult-success-muted border-cult-success'
+              : 'bg-cult-danger-muted border-cult-danger'
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-cult-success flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
           )}
           <div>
-            <p className={`${message.type === 'success' ? 'text-green-100' : 'text-red-100'}`}>
+            <p className={`${message.type === 'success' ? 'text-cult-text-primary' : 'text-cult-text-primary'}`}>
               {message.text}
             </p>
           </div>
@@ -250,7 +250,7 @@ export function BrandingManagement() {
                         </div>
                         <button
                           onClick={() => handleDelete(variant.key)}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-700 text-red-400 hover:bg-red-900/20 transition-all text-sm uppercase tracking-wider"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-cult-danger text-cult-danger hover:bg-cult-danger-muted transition-all text-sm uppercase tracking-wider"
                         >
                           <Trash2 className="w-4 h-4" />
                           Delete

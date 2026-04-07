@@ -18,7 +18,7 @@ const IN_PROGRESS_STATUSES = new Set(['processing', 'accepted']);
 function ReadinessBadge({ status }: { status: string }) {
   if (READY_STATUSES.has(status)) {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-green-900/30 text-green-400 border border-green-600 rounded-sm">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-cult-success/15 text-cult-success border border-cult-success rounded-sm">
         <CheckCircle2 className="w-3 h-3" />
         Ready
       </span>
@@ -26,14 +26,14 @@ function ReadinessBadge({ status }: { status: string }) {
   }
   if (IN_PROGRESS_STATUSES.has(status)) {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-amber-900/30 text-amber-400 border border-amber-600 rounded-sm">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-cult-warning/15 text-cult-warning border border-cult-warning rounded-sm">
         <Clock className="w-3 h-3" />
         In Progress
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-red-900/30 text-red-400 border border-red-600 rounded-sm">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-cult-danger/15 text-cult-danger border border-cult-danger rounded-sm">
       <AlertTriangle className="w-3 h-3" />
       Needs Work
     </span>
@@ -180,7 +180,7 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
               ))}
             </div>
             <div className="text-base font-semibold text-cult-white">
-              Total: <span className="text-green-500">{formatCurrency(totalValue)}</span>
+              Total: <span className="text-cult-success">{formatCurrency(totalValue)}</span>
             </div>
           </div>
         </div>

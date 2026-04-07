@@ -239,7 +239,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 <button
                   type="button"
                   onClick={() => setEndDate('')}
-                  className="px-2.5 py-2.5 min-h-[44px] text-xs text-cult-medium-gray hover:text-red-400 border border-cult-dark-gray/50 hover:border-red-800/40 rounded-sm transition-colors"
+                  className="px-2.5 py-2.5 min-h-[44px] text-xs text-cult-medium-gray hover:text-cult-danger border border-cult-dark-gray/50 hover:border-cult-danger/30 rounded-sm transition-colors"
                 >
                   Clear
                 </button>
@@ -354,7 +354,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:bg-red-950/40 active:bg-red-950/60 rounded-sm transition-colors"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-danger hover:bg-cult-danger-muted active:bg-cult-danger-muted rounded-sm transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>

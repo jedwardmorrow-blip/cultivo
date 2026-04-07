@@ -53,9 +53,9 @@ function getPrimaryVariance(p: BatchPrediction | undefined, state: string): numb
 }
 
 const CONFIDENCE_DOT: Record<string, string> = {
-  high: 'bg-emerald-500',
-  medium: 'bg-amber-500',
-  low: 'bg-orange-500',
+  high: 'bg-cult-success',
+  medium: 'bg-cult-warning',
+  low: 'bg-cult-warning',
   fallback: 'bg-cult-charcoal',
 };
 
@@ -91,7 +91,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
         </span>
         <div className="flex items-center gap-1 flex-shrink-0">
           {batch.is_quarantined && (
-            <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+            <AlertTriangle className="w-3.5 h-3.5 text-cult-danger" />
           )}
           {batch.coa_status && batch.coa_status !== 'curing' && (
             <BatchCOAStatusBadge status={batch.coa_status} size="xs" />
@@ -119,7 +119,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
           <span className="text-cult-silver font-medium">{formatWeight(predWeight)}</span>
           {primaryVariance != null && (
             <span className={`flex items-center gap-0.5 ml-auto ${
-              primaryVariance >= 0 ? 'text-emerald-400' : 'text-amber-400'
+              primaryVariance >= 0 ? 'text-cult-success' : 'text-cult-warning'
             }`}>
               {primaryVariance >= 0
                 ? <TrendingUp className="w-2.5 h-2.5" />
@@ -134,7 +134,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
       {/* Bottom row: metrics */}
       <div className="flex items-center gap-3 text-[10px] text-cult-lighter-gray">
         <span className={`flex items-center gap-1 ${
-          daysInStage > 14 ? 'text-amber-400' : ''
+          daysInStage > 14 ? 'text-cult-warning' : ''
         }`}>
           <Clock className="w-3 h-3" />
           {daysInStage}d

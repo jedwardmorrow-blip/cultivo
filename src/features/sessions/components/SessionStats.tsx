@@ -19,7 +19,7 @@ interface SessionStatsProps {
 export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-cult-near-black p-4 rounded-lg shadow border border-sky-500/30">
+      <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-info/30">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-cult-light-gray font-medium">
@@ -27,7 +27,7 @@ export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
             </p>
             <p className="text-2xl font-bold text-cult-white">{stats.activeSessions}</p>
           </div>
-          <Clock className="w-8 h-8 text-sky-400" />
+          <Clock className="w-8 h-8 text-cult-info" />
         </div>
       </div>
       <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
@@ -36,7 +36,7 @@ export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
             <p className="text-sm text-cult-light-gray">Completed Today</p>
             <p className="text-2xl font-bold text-cult-white">{stats.completedToday}</p>
           </div>
-          <CheckCircle className="w-8 h-8 text-green-500" />
+          <CheckCircle className="w-8 h-8 text-cult-success" />
         </div>
       </div>
       <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
@@ -53,7 +53,7 @@ export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
                 : (stats.avgUnitsPerHour || 0).toFixed(1)}
             </p>
           </div>
-          <TrendingUp className="w-8 h-8 text-green-500" />
+          <TrendingUp className="w-8 h-8 text-cult-success" />
         </div>
       </div>
       <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
@@ -70,7 +70,7 @@ export function SessionStats({ stats, type = 'trim' }: SessionStatsProps) {
                 : (stats.totalUnitsToday || 0).toFixed(0)}
             </p>
           </div>
-          <Calendar className="w-8 h-8 text-green-500" />
+          <Calendar className="w-8 h-8 text-cult-success" />
         </div>
       </div>
     </div>

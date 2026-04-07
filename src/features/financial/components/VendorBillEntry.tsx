@@ -108,11 +108,11 @@ const VENDOR_CATEGORIES = [
 ] as const;
 
 const AGE_BUCKETS = [
-  { key: 'current', label: 'Current (0-30)', min: 0, max: 30, color: 'text-green-400' },
-  { key: '1-30', label: '1-30 Days', min: 1, max: 30, color: 'text-yellow-400' },
-  { key: '31-60', label: '31-60 Days', min: 31, max: 60, color: 'text-amber-400' },
-  { key: '61-90', label: '61-90 Days', min: 61, max: 90, color: 'text-orange-400' },
-  { key: '90+', label: '90+ Days', min: 91, max: Infinity, color: 'text-red-400' },
+  { key: 'current', label: 'Current (0-30)', min: 0, max: 30, color: 'text-cult-success' },
+  { key: '1-30', label: '1-30 Days', min: 1, max: 30, color: 'text-cult-warning' },
+  { key: '31-60', label: '31-60 Days', min: 31, max: 60, color: 'text-cult-warning' },
+  { key: '61-90', label: '61-90 Days', min: 61, max: 90, color: 'text-cult-warning' },
+  { key: '90+', label: '90+ Days', min: 91, max: Infinity, color: 'text-cult-danger' },
 ];
 
 interface NewBillFormState {
@@ -593,7 +593,7 @@ export function VendorBillEntry() {
 
       <div className="flex items-center gap-2">
         <label
-          className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-cult text-sm font-semibold hover:bg-green-500 transition-colors cursor-pointer"
+          className="flex items-center gap-2 bg-cult-success text-white px-3 py-1.5 rounded-cult text-sm font-semibold hover:bg-cult-success/80 transition-colors cursor-pointer"
         >
           <FileUp className="w-4 h-4" />
           Scan Invoice
@@ -695,7 +695,7 @@ export function VendorBillEntry() {
                     </div>
                     <div className="text-right">
                       <div className="text-cult-white font-mono text-sm">{fmt.currency(bill.amount_due)}</div>
-                      <div className="text-xs text-red-400">{fmt.daysSince(bill.due_date || bill.bill_date)} days old</div>
+                      <div className="text-xs text-cult-danger">{fmt.daysSince(bill.due_date || bill.bill_date)} days old</div>
                     </div>
                   </div>
                 ))}
@@ -739,16 +739,16 @@ export function VendorBillEntry() {
                   <td className="px-4 py-3 text-cult-white text-right font-mono">{fmt.currency(bill.total_amount)}</td>
                   <td className="px-4 py-3 text-cult-white text-right font-mono">{fmt.currency(bill.amount_due)}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`text-xs font-semibold ${fmt.daysSince(bill.due_date || bill.bill_date) > 30 ? 'text-red-400' : 'text-cult-light-gray'}`}>
+                    <span className={`text-xs font-semibold ${fmt.daysSince(bill.due_date || bill.bill_date) > 30 ? 'text-cult-danger' : 'text-cult-light-gray'}`}>
                       {fmt.daysSince(bill.due_date || bill.bill_date)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                      bill.status === 'paid' ? 'bg-green-900/40 text-green-400' :
-                      bill.status === 'partial' ? 'bg-amber-900/40 text-amber-400' :
+                      bill.status === 'paid' ? 'bg-cult-success-muted text-cult-success' :
+                      bill.status === 'partial' ? 'bg-cult-warning-muted text-cult-warning' :
                       bill.status === 'void' ? 'bg-cult-border text-cult-text-muted' :
-                      'bg-red-900/40 text-red-400'
+                      'bg-cult-danger-muted text-cult-danger'
                     }`}>
                       {bill.status}
                     </span>
@@ -831,7 +831,7 @@ export function VendorBillEntry() {
             </div>
             <div className="border-t border-cult-border pt-2 flex justify-between">
               <span className="text-cult-light-gray">Balance Due</span>
-              <span className={`font-mono font-bold ${selectedBill.amount_due > 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <span className={`font-mono font-bold ${selectedBill.amount_due > 0 ? 'text-cult-danger' : 'text-cult-success'}`}>
                 {fmt.currency(selectedBill.amount_due)}
               </span>
             </div>
@@ -883,13 +883,13 @@ export function VendorBillEntry() {
             <div className="space-y-2 border-t border-cult-border pt-6">
               <button
                 onClick={() => { setShowPaymentModal(true); }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-cult text-sm font-semibold transition-colors"
+                className="w-full bg-cult-success hover:bg-cult-success/80 text-white px-4 py-2 rounded-cult text-sm font-semibold transition-colors"
               >
                 Record Payment
               </button>
               <button
                 onClick={() => handleVoidBill(selectedBill.id)}
-                className="w-full bg-red-900/40 hover:bg-red-900/60 text-red-400 px-4 py-2 rounded-cult text-sm font-semibold transition-colors"
+                className="w-full bg-cult-danger-muted hover:bg-cult-danger-muted/80 text-cult-danger px-4 py-2 rounded-cult text-sm font-semibold transition-colors"
               >
                 Void Bill
               </button>
@@ -927,7 +927,7 @@ export function VendorBillEntry() {
               billUploadLoading
                 ? 'border-cult-text-muted bg-cult-black/30'
                 : billFile
-                  ? 'border-green-500/50 bg-green-900/10'
+                  ? 'border-cult-success/50 bg-cult-success-muted'
                   : 'border-cult-border hover:border-cult-white'
             }`}
             onDragOver={e => !billUploadLoading && e.preventDefault()}
@@ -945,8 +945,8 @@ export function VendorBillEntry() {
               </>
             ) : billFile ? (
               <>
-                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <div className="text-sm text-green-400 font-medium">{billFile.name}</div>
+                <CheckCircle className="w-8 h-8 text-cult-success mx-auto mb-2" />
+                <div className="text-sm text-cult-success font-medium">{billFile.name}</div>
                 <div className="text-xs text-cult-text-muted mt-1">Click to replace</div>
               </>
             ) : (
@@ -969,9 +969,9 @@ export function VendorBillEntry() {
           </div>
 
           {billUploadError && (
-            <div className="bg-red-900/30 border border-red-500/50 rounded-cult p-3 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-red-300">{billUploadError}</div>
+            <div className="bg-cult-danger-muted border border-cult-danger/50 rounded-cult p-3 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-cult-danger flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-cult-danger">{billUploadError}</div>
             </div>
           )}
 
@@ -1047,7 +1047,7 @@ export function VendorBillEntry() {
             <button
               type="button"
               onClick={() => setNewBillForm(p => ({ ...p, is_cogs: !p.is_cogs }))}
-              className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors ${newBillForm.is_cogs ? 'bg-green-600' : 'bg-cult-border'}`}
+              className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors ${newBillForm.is_cogs ? 'bg-cult-success' : 'bg-cult-border'}`}
             >
               <span className={`block w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${newBillForm.is_cogs ? 'translate-x-5' : 'translate-x-1'}`} />
             </button>
@@ -1126,7 +1126,7 @@ export function VendorBillEntry() {
               />
             </div>
             {paymentForm.amount > selectedBill.amount_due && (
-              <div className="text-xs text-amber-400 mt-1">Amount exceeds balance due by {fmt.currency(paymentForm.amount - selectedBill.amount_due)}</div>
+              <div className="text-xs text-cult-warning mt-1">Amount exceeds balance due by {fmt.currency(paymentForm.amount - selectedBill.amount_due)}</div>
             )}
           </div>
 
@@ -1154,8 +1154,8 @@ export function VendorBillEntry() {
 
           {/* Summary */}
           {paymentForm.amount > 0 && (
-            <div className="bg-green-900/20 border border-green-500/30 rounded-cult p-3">
-              <div className="text-xs text-green-300">New Balance: {fmt.currency(Math.max(0, selectedBill.amount_due - paymentForm.amount))}</div>
+            <div className="bg-cult-success-muted border border-cult-success/30 rounded-cult p-3">
+              <div className="text-xs text-cult-success">New Balance: {fmt.currency(Math.max(0, selectedBill.amount_due - paymentForm.amount))}</div>
             </div>
           )}
 
@@ -1172,7 +1172,7 @@ export function VendorBillEntry() {
             <button
               onClick={handleRecordPayment}
               disabled={paymentLoading || paymentForm.amount <= 0}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-cult text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 bg-cult-success hover:bg-cult-success/80 text-white px-4 py-2.5 rounded-cult text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {paymentLoading ? (
                 <>
@@ -1294,8 +1294,8 @@ export function VendorBillEntry() {
     <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top">
       <div className={`rounded-cult px-4 py-3 flex items-center gap-3 ${
         notification.type === 'success'
-          ? 'bg-green-900/40 border border-green-500/50 text-green-300'
-          : 'bg-red-900/40 border border-red-500/50 text-red-300'
+          ? 'bg-cult-success-muted border border-cult-success/50 text-cult-success'
+          : 'bg-cult-danger-muted border border-cult-danger/50 text-cult-danger'
       }`}>
         {notification.type === 'success' ? (
           <CheckCircle className="w-5 h-5 flex-shrink-0" />
@@ -1340,9 +1340,9 @@ export function VendorBillEntry() {
 
       {/* Full-page drag overlay */}
       {isDraggingPage && (
-        <div className="border-2 border-dashed border-green-500 bg-green-900/20 rounded-cult p-8 flex flex-col items-center justify-center text-center transition-all">
-          <FileUp className="w-10 h-10 text-green-400 mb-3" />
-          <div className="text-lg font-semibold text-green-400">Drop invoice PDF to scan</div>
+        <div className="border-2 border-dashed border-cult-success bg-cult-success-muted rounded-cult p-8 flex flex-col items-center justify-center text-center transition-all">
+          <FileUp className="w-10 h-10 text-cult-success mb-3" />
+          <div className="text-lg font-semibold text-cult-success">Drop invoice PDF to scan</div>
           <div className="text-sm text-cult-text-muted mt-1">We'll extract vendor, amounts, dates, and line items automatically</div>
         </div>
       )}

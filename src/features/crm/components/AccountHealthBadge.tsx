@@ -9,13 +9,13 @@ interface AccountHealthBadgeProps {
 function getHealthStyle(label: string): { bg: string; text: string; border: string; ring: string } {
   switch (label) {
     case 'healthy':
-      return { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', ring: 'ring-emerald-500/20' };
+      return { bg: 'bg-cult-success-muted', text: 'text-cult-success', border: 'border-cult-success/30', ring: 'ring-cult-success/20' };
     case 'cooling':
-      return { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30', ring: 'ring-amber-500/20' };
+      return { bg: 'bg-cult-warning-muted', text: 'text-cult-warning', border: 'border-cult-warning/30', ring: 'ring-cult-warning/20' };
     case 'at_risk':
-      return { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30', ring: 'ring-orange-500/20' };
+      return { bg: 'bg-cult-warning-muted', text: 'text-cult-warning', border: 'border-cult-warning/30', ring: 'ring-cult-warning/20' };
     case 'dormant':
-      return { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30', ring: 'ring-red-500/20' };
+      return { bg: 'bg-cult-danger-muted', text: 'text-cult-danger', border: 'border-cult-danger/30', ring: 'ring-cult-danger/20' };
     default:
       return { bg: 'bg-cult-medium-gray/30', text: 'text-cult-silver', border: 'border-cult-medium-gray/30', ring: 'ring-cult-medium-gray/20' };
   }

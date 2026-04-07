@@ -61,7 +61,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                   <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pull_weight != null ? session.pull_weight.toFixed(1) : '-'}</td>
                   <td className="px-4 py-3 text-sm text-center font-medium">
                     {session.is_paused ? (
-                      <span className="text-yellow-400">PAUSED</span>
+                      <span className="text-cult-warning">PAUSED</span>
                     ) : (
                       <span className="text-cult-green">
                         {formatElapsedTime(session.started_at!, session.total_pause_minutes)}
@@ -76,7 +76,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                         className={`p-1.5 rounded transition ${
                           session.is_paused
                             ? 'bg-cult-green/20 text-cult-green hover:bg-cult-green/30'
-                            : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                            : 'bg-cult-warning/20 text-cult-warning hover:bg-cult-warning/30'
                         } disabled:opacity-50`}
                         title={session.is_paused ? 'Resume session' : 'Pause session'}
                       >
@@ -90,7 +90,7 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
                       </Button>
                       <button
                         onClick={() => onCancel(session)}
-                        className="bg-red-600 text-white px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-red-700 transition text-sm"
+                        className="bg-cult-danger text-white px-4 py-1.5 font-bold uppercase tracking-wider hover:bg-cult-danger/80 transition text-sm"
                       >
                         Cancel
                       </button>

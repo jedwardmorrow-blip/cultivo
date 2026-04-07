@@ -319,7 +319,7 @@ export function NewWashForm({ onSuccess }: NewWashFormProps) {
       )}
 
       {error && (
-        <p className="text-sm text-red-400 mb-4">{error}</p>
+        <p className="text-sm text-cult-danger mb-4">{error}</p>
       )}
 
       <button

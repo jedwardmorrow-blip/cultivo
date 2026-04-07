@@ -55,7 +55,7 @@ export const OrderDetailsView = memo(function OrderDetailsView({
 
   if (!order) {
     return (
-      <div className="p-6 text-center text-red-400">
+      <div className="p-6 text-center text-cult-danger">
         Error: Order data not available
       </div>
     );
@@ -68,14 +68,14 @@ export const OrderDetailsView = memo(function OrderDetailsView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowManifestModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 border-2 border-blue-600 transition-all font-medium uppercase tracking-wider text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-cult-info text-white hover:bg-cult-info/80 border-2 border-cult-info transition-all font-medium uppercase tracking-wider text-sm"
           >
             <FileText className="w-4 h-4" />
             Generate Manifest
           </button>
           <button
             onClick={() => onGenerateInvoice(order.id, order.order_number)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 border-2 border-green-600 transition-all font-medium uppercase tracking-wider text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-cult-success text-white hover:bg-cult-success/80 border-2 border-cult-success transition-all font-medium uppercase tracking-wider text-sm"
           >
             <Receipt className="w-4 h-4" />
             Generate Invoice

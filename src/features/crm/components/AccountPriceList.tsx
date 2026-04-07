@@ -140,7 +140,7 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
       {futureOverrides.length > 0 && (
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
           <div className="px-5 py-3 border-b border-cult-charcoal/50 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-cyan-400" />
+            <Calendar className="w-4 h-4 text-cult-info" />
             <h3 className="text-xs font-semibold text-cult-silver uppercase tracking-wider">Scheduled</h3>
             <span className="text-xs text-cult-silver bg-cult-dark-gray px-2 py-0.5 rounded-full">
               {futureOverrides.length}
@@ -196,16 +196,16 @@ function PriceRow({ override, onDelete, variant }: {
               ${override.standard_price.toFixed(2)}
             </span>
           )}
-          <span className="text-xs font-semibold text-emerald-400">
+          <span className="text-xs font-semibold text-cult-success">
             ${override.custom_price.toFixed(2)}
           </span>
           {discount !== null && discount > 0 && (
-            <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-bold text-cult-warning bg-cult-warning-muted px-1.5 py-0.5 rounded">
               {discount.toFixed(0)}% off
             </span>
           )}
           {discount !== null && discount < 0 && (
-            <span className="text-xs font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-xs font-bold text-cult-danger bg-cult-danger-muted px-1.5 py-0.5 rounded">
               +{Math.abs(discount).toFixed(0)}% premium
             </span>
           )}
@@ -229,7 +229,7 @@ function PriceRow({ override, onDelete, variant }: {
         )}
         <button
           onClick={() => onDelete(override.id)}
-          className="p-1.5 text-cult-medium-gray hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-red-500/10"
+          className="p-1.5 text-cult-medium-gray hover:text-cult-danger opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-cult-danger-muted"
           title="Remove override"
         >
           <Trash2 className="w-3.5 h-3.5" />

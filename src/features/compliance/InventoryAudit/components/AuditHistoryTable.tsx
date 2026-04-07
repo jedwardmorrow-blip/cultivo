@@ -23,8 +23,8 @@ function formatDate(dateStr: string | null): string {
 
 function StatusBadge({ status }: { status: InventoryAudit['status'] }) {
   const styles: Record<string, string> = {
-    completed: 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30',
-    flagged:   'bg-red-900/30 text-red-400 border-red-500/30',
+    completed: 'bg-cult-success-muted text-cult-success border-cult-success/30',
+    flagged:   'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
     cancelled: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
   };
   return (
@@ -166,7 +166,7 @@ export function AuditHistoryTable() {
 
       {/* Error state */}
       {error && (
-        <div className="p-4 bg-red-900/20 border border-red-500/30 rounded text-[13px] text-red-300">
+        <div className="p-4 bg-cult-danger-muted border border-cult-danger/30 rounded text-[13px] text-cult-danger/80">
           {error}
         </div>
       )}
@@ -209,8 +209,8 @@ export function AuditHistoryTable() {
                   const varClass = varianceG == null
                     ? 'text-cult-text-muted'
                     : Math.abs(varianceG) < 0.001
-                    ? 'text-emerald-400'
-                    : 'text-red-400';
+                    ? 'text-cult-success'
+                    : 'text-cult-danger';
                   const isExpanded = expandedAuditId === audit.id;
 
                   return (

@@ -126,14 +126,14 @@ export function HarvestReviewFinalize({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-red-950 border border-red-700 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>
       )}
 
       {hasPartialBatches && (
-        <div className="flex items-start gap-2 bg-amber-950/60 border border-amber-800/60 text-amber-300 text-sm p-3">
+        <div className="flex items-start gap-2 bg-cult-warning-muted border border-cult-warning/60 text-cult-warning text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           Some selected batches are partially weighed. Finalizing will record the current weights — you can harvest more from these batches in a future session.
         </div>
@@ -172,7 +172,7 @@ export function HarvestReviewFinalize({
           {selectedBatchIds.size > 0 && (hasFlowerSessions && hasFrozenSessions) && (
             <div className="flex items-center gap-4 mt-1.5 ml-7 text-xs text-cult-lighter-gray">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-500 inline-block" />
+                <span className="w-2 h-2 bg-cult-success inline-block" />
                 Flower: {formatWeight(flowerWeight)}
               </span>
               <span className="flex items-center gap-1">
@@ -210,22 +210,22 @@ export function HarvestReviewFinalize({
                   )}
                   {/* Status icon */}
                   {status === 'complete' ? (
-                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-cult-success flex-shrink-0" />
                   ) : (
-                    <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <Clock className="w-4 h-4 text-cult-warning flex-shrink-0" />
                   )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-cult-white font-mono text-xs font-bold">{batch.batchNumber}</span>
                       <span className="text-cult-light-gray text-xs truncate">{batch.strainName}</span>
                       {flowerWeight > 0 && (
-                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-green-800 text-green-400 bg-green-950/30">FLW</span>
+                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-cult-success text-cult-success bg-cult-success-muted">FLW</span>
                       )}
                       {frozenWeight > 0 && (
                         <span className="text-xs px-1 py-0.5 uppercase font-bold border border-cyan-800 text-cyan-400 bg-cyan-950/30">FF</span>
                       )}
                       {status === 'partial' && (
-                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-amber-800 text-amber-400 bg-amber-950/30">Partial</span>
+                        <span className="text-xs px-1 py-0.5 uppercase font-bold border border-cult-warning text-cult-warning bg-cult-warning-muted">Partial</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
@@ -299,7 +299,7 @@ export function HarvestReviewFinalize({
             )}
           </label>
           {activeDryRooms.length === 0 ? (
-            <p className="text-amber-400 text-sm">
+            <p className="text-cult-warning text-sm">
               No active dry rooms. Create one in Settings or Cultivation &gt; Dry Rooms first.
             </p>
           ) : (

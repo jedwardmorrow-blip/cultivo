@@ -57,8 +57,8 @@ export function OrderFormReview({
           <div className="flex justify-between">
             <span className="text-cult-light-gray">Priority:</span>
             <span className={`font-semibold uppercase text-xs px-2 py-1 rounded ${
-              priority === 'urgent' ? 'bg-red-500/20 text-red-400' :
-              priority === 'high' ? 'bg-amber-500/20 text-amber-400' :
+              priority === 'urgent' ? 'bg-cult-danger-muted text-cult-danger' :
+              priority === 'high' ? 'bg-cult-warning-muted text-cult-warning' :
               'bg-cult-green/20 text-cult-green'
             }`}>
               {priority}
@@ -128,7 +128,7 @@ export function OrderFormReview({
                     <div className="flex items-center gap-2">
                       <span>{item.quantity} {selectedProduct.pricing_unit} × ${item.unit_price.toFixed(2)}</span>
                       {hasCustomPrice && (
-                        <span className="text-amber-400">★</span>
+                        <span className="text-cult-warning">★</span>
                       )}
                     </div>
                   </div>
@@ -153,18 +153,18 @@ export function OrderFormReview({
       </div>
 
       {!customer && (
-        <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3 flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-red-400">
+        <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-3 flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-cult-danger">
             Please select a dispensary before submitting
           </div>
         </div>
       )}
 
       {dateError && (
-        <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3 flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-red-400">
+        <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-3 flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-cult-danger">
             {dateError}
           </div>
         </div>

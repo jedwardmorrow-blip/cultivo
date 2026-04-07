@@ -195,7 +195,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
   if (packaged || cureStarted) {
     return (
       <div className="bg-[#111111] border border-[#2E2E2E] rounded-md p-4 flex items-center gap-3">
-        <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+        <CheckCircle2 className="w-5 h-5 text-cult-success flex-shrink-0" />
         <div>
           <p className="text-sm font-medium text-[#FFFFFF]">{strainName} · {batchNum}</p>
           <p className="text-xs text-[#A6A6A6]">
@@ -380,7 +380,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
                       {pkgRows.length > 1 && (
                         <button
                           onClick={() => removeRow(row.id)}
-                          className="text-[#666666] hover:text-red-400 transition-colors flex-shrink-0"
+                          className="text-[#666666] hover:text-cult-danger transition-colors flex-shrink-0"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -405,7 +405,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
                 </div>
 
                 {pkgError && (
-                  <p className="text-xs text-red-400">{pkgError}</p>
+                  <p className="text-xs text-cult-danger">{pkgError}</p>
                 )}
 
                 <button

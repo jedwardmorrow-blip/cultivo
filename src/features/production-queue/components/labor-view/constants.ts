@@ -16,10 +16,10 @@ export interface StageConfig {
 }
 
 export const STAGES: Record<string, StageConfig> = {
-  packaged: { label: 'Packaged', short: 'Pkg', colorClass: 'text-emerald-400', bgClass: 'bg-emerald-500/10', borderClass: 'border-emerald-500/20', barBg: 'linear-gradient(135deg, #065f46, rgba(52,211,153,0.09))', barBorder: '#34d399', hurdles: 0, verb: 'Done', time: '' },
-  bulk:     { label: 'Bulk',     short: 'Bulk', colorClass: 'text-sky-400',     bgClass: 'bg-sky-500/10',     borderClass: 'border-sky-500/20',     barBg: 'linear-gradient(135deg, #0c4a6e, rgba(56,189,248,0.09))', barBorder: '#38bdf8', hurdles: 1, verb: 'Package', time: 'same day' },
-  trimming: { label: 'Trimming', short: 'Trim', colorClass: 'text-amber-400',   bgClass: 'bg-amber-500/10',   borderClass: 'border-amber-500/20',   barBg: 'linear-gradient(135deg, #78350f, rgba(251,191,36,0.09))', barBorder: '#fbbf24', hurdles: 2, verb: 'Trim → Pkg', time: '~1 day' },
-  bucked:   { label: 'Bucked',   short: 'Buck', colorClass: 'text-amber-400',   bgClass: 'bg-amber-500/10',   borderClass: 'border-amber-500/20',   barBg: 'linear-gradient(135deg, #78350f, rgba(251,191,36,0.09))', barBorder: '#fbbf24', hurdles: 2, verb: 'Trim → Pkg', time: '~1-2 days' },
+  packaged: { label: 'Packaged', short: 'Pkg', colorClass: 'text-cult-success', bgClass: 'bg-cult-success-muted', borderClass: 'border-cult-success/20', barBg: 'linear-gradient(135deg, #065f46, rgba(52,211,153,0.09))', barBorder: '#34d399', hurdles: 0, verb: 'Done', time: '' },
+  bulk:     { label: 'Bulk',     short: 'Bulk', colorClass: 'text-cult-info',     bgClass: 'bg-cult-info-muted',     borderClass: 'border-cult-info/20',     barBg: 'linear-gradient(135deg, #0c4a6e, rgba(56,189,248,0.09))', barBorder: '#38bdf8', hurdles: 1, verb: 'Package', time: 'same day' },
+  trimming: { label: 'Trimming', short: 'Trim', colorClass: 'text-cult-warning',   bgClass: 'bg-cult-warning-muted',   borderClass: 'border-cult-warning/20',   barBg: 'linear-gradient(135deg, #78350f, rgba(251,191,36,0.09))', barBorder: '#fbbf24', hurdles: 2, verb: 'Trim → Pkg', time: '~1 day' },
+  bucked:   { label: 'Bucked',   short: 'Buck', colorClass: 'text-cult-warning',   bgClass: 'bg-cult-warning-muted',   borderClass: 'border-cult-warning/20',   barBg: 'linear-gradient(135deg, #78350f, rgba(251,191,36,0.09))', barBorder: '#fbbf24', hurdles: 2, verb: 'Trim → Pkg', time: '~1-2 days' },
   binned:   { label: 'Binned',   short: 'Bin',  colorClass: 'text-orange-400',  bgClass: 'bg-orange-500/10',  borderClass: 'border-orange-500/20',  barBg: 'linear-gradient(135deg, #7c2d12, rgba(251,146,60,0.09))', barBorder: '#fb923c', hurdles: 3, verb: 'Buck → Trim → Pkg', time: '~2-3 days' },
 };
 

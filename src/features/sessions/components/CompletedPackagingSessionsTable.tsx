@@ -78,12 +78,12 @@ export function CompletedPackagingSessionsTable({
                 <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
                 <td className="px-4 py-3 text-sm">
                   {session.session_status === 'cancelled' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-900/30 text-red-400 border border-red-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-danger-muted text-cult-danger border border-cult-danger">
                       <XCircle className="w-3 h-3" />
                       Cancelled
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-900/30 text-green-400 border border-green-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-success-muted text-cult-success border border-cult-success">
                       <CheckCircle className="w-3 h-3" />
                       Completed
                     </span>
@@ -91,12 +91,12 @@ export function CompletedPackagingSessionsTable({
                 </td>
                 <td className="px-4 py-3 text-sm">
                   {conversionStatus === 'converted' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400 border border-blue-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-info-muted text-cult-info border border-cult-info">
                       <Package className="w-3 h-3" />
                       Converted
                     </span>
                   ) : conversionStatus === 'pending' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 text-amber-400 border border-amber-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-cult-warning-muted text-cult-warning border border-cult-warning">
                       <Clock className="w-3 h-3" />
                       Pending
                     </span>
@@ -118,10 +118,10 @@ export function CompletedPackagingSessionsTable({
                           disabled={undoingSessionId === session.id || recentlyUndoneId === session.id}
                           className={`p-1.5 rounded transition ${
                             recentlyUndoneId === session.id
-                              ? 'bg-green-900/30 border border-green-600 text-green-400'
+                              ? 'bg-cult-success-muted border border-cult-success text-cult-success'
                               : undoingSessionId === session.id
-                              ? 'opacity-50 cursor-not-allowed border border-blue-600 text-blue-500'
-                              : 'hover:bg-blue-900/30 border border-blue-600 text-blue-500'
+                              ? 'opacity-50 cursor-not-allowed border border-cult-info text-cult-info'
+                              : 'hover:bg-cult-info-muted border border-cult-info text-cult-info'
                           }`}
                           title={
                             recentlyUndoneId === session.id
@@ -136,14 +136,14 @@ export function CompletedPackagingSessionsTable({
                       )}
                       <button
                         onClick={() => onEdit(session)}
-                        className="p-1.5 hover:bg-amber-900/30 border border-amber-600 text-amber-500 rounded transition"
+                        className="p-1.5 hover:bg-cult-warning-muted border border-cult-warning text-cult-warning rounded transition"
                         title="Edit Session"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDelete(session)}
-                        className="p-1.5 hover:bg-red-900/30 border border-red-600 text-red-500 rounded transition"
+                        className="p-1.5 hover:bg-cult-danger-muted border border-cult-danger text-cult-danger rounded transition"
                         title="Delete Session"
                       >
                         <Trash2 className="w-4 h-4" />

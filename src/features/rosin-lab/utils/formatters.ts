@@ -24,14 +24,14 @@ export function formatLogDate(dateStr: string | null): string {
 
 export function getYieldColorClass(yieldPct: number | null): string {
   if (yieldPct === null) return 'text-cult-text-muted';
-  if (yieldPct >= 15) return 'text-emerald-400';
-  if (yieldPct >= 10) return 'text-amber-400';
-  return 'text-red-400';
+  if (yieldPct >= 15) return 'text-cult-success';
+  if (yieldPct >= 10) return 'text-cult-warning';
+  return 'text-cult-danger';
 }
 
 export function getCureLossColorClass(lossPct: number | null): string {
   if (lossPct === null) return 'text-cult-text-muted';
-  if (lossPct < 3) return 'text-emerald-400';
-  if (lossPct <= 5) return 'text-amber-400';
-  return 'text-red-400';
+  if (lossPct < 3) return 'text-cult-success';
+  if (lossPct <= 5) return 'text-cult-warning';
+  return 'text-cult-danger';
 }

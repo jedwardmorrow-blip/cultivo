@@ -32,10 +32,10 @@ const ICON_MAP: Record<string, typeof Scissors> = {
 
 const STATUS_CONFIG: Record<TaskStatus, { icon: typeof Circle; color: string; label: string }> = {
   pending: { icon: Circle, color: 'text-cult-silver', label: 'To Do' },
-  in_progress: { icon: CircleDot, color: 'text-sky-400', label: 'In Progress' },
-  completed: { icon: CheckCircle2, color: 'text-green-400', label: 'Done' },
+  in_progress: { icon: CircleDot, color: 'text-cult-info', label: 'In Progress' },
+  completed: { icon: CheckCircle2, color: 'text-cult-success', label: 'Done' },
   skipped: { icon: SkipForward, color: 'text-cult-medium-gray', label: 'Skipped' },
-  carry_forward: { icon: AlertTriangle, color: 'text-amber-400', label: 'Carried' },
+  carry_forward: { icon: AlertTriangle, color: 'text-cult-warning', label: 'Carried' },
 };
 
 interface WorkerIdentity {
@@ -88,13 +88,13 @@ function ProgressHeader({ completed, total, workerName }: { completed: number; t
           </p>
         </div>
         <div className="text-right">
-          <span className={`text-2xl font-bold ${allDone ? 'text-green-400' : 'text-cult-white'}`}>{pct}%</span>
+          <span className={`text-2xl font-bold ${allDone ? 'text-cult-success' : 'text-cult-white'}`}>{pct}%</span>
           <p className="text-xs text-cult-medium-gray">{completed}/{total} done</p>
         </div>
       </div>
       <div className="w-full h-2 bg-cult-charcoal rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-green-500' : 'bg-violet-500'}`}
+          className={`h-full rounded-full transition-all duration-500 ${allDone ? 'bg-cult-success' : 'bg-violet-500'}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -143,7 +143,7 @@ function TaskRow({ task, roomName, onTap, onStart, onComplete }: TaskRowProps) {
               {config.label}
             </span>
             {task.status === 'carry_forward' && (
-              <span className="text-xs text-amber-400 font-semibold">CARRIED</span>
+              <span className="text-xs text-cult-warning font-semibold">CARRIED</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -169,7 +169,7 @@ function TaskRow({ task, roomName, onTap, onStart, onComplete }: TaskRowProps) {
           {isPending && (
             <button
               onClick={(e) => { e.stopPropagation(); onStart(); }}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-sky-300 bg-sky-950/50 border border-sky-800/40 rounded-lg active:bg-sky-900 transition-colors min-h-[44px]"
+              className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-info bg-cult-info-muted border border-cult-info/40 rounded-lg active:bg-cult-info/20 transition-colors min-h-[44px]"
             >
               <Play className="w-4 h-4" />
               Start
@@ -178,7 +178,7 @@ function TaskRow({ task, roomName, onTap, onStart, onComplete }: TaskRowProps) {
           {isInProgress && (
             <button
               onClick={(e) => { e.stopPropagation(); onComplete(); }}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-green-300 bg-green-950/50 border border-green-800/40 rounded-lg active:bg-green-900 transition-colors min-h-[44px]"
+              className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-success bg-cult-success-muted border border-cult-success/40 rounded-lg active:bg-cult-success/20 transition-colors min-h-[44px]"
             >
               <CheckCircle2 className="w-4 h-4" />
               Complete
@@ -227,7 +227,7 @@ function RoomGroup({
           <ChevronDown className={`w-4 h-4 text-cult-medium-gray transition-transform ${collapsed ? '-rotate-90' : ''}`} />
           <span className="text-xs font-bold text-cult-light-gray uppercase tracking-wider font-mono">{roomCode}</span>
         </div>
-        <span className={`text-xs font-semibold ${allDone ? 'text-green-400' : 'text-cult-medium-gray'}`}>
+        <span className={`text-xs font-semibold ${allDone ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
           {doneCount}/{tasks.length}
         </span>
       </button>
@@ -422,7 +422,7 @@ export function WorkerTaskView() {
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             {filter === 'mine' ? (
               <>
-                <CheckCircle2 className="w-12 h-12 text-green-500/30 mb-4" />
+                <CheckCircle2 className="w-12 h-12 text-cult-success/30 mb-4" />
                 <p className="text-base text-cult-light-gray font-medium">No tasks assigned to you</p>
                 <p className="text-xs text-cult-medium-gray mt-2">
                   Check with your manager or tap "All Tasks" to see what's on the board.
@@ -453,10 +453,10 @@ export function WorkerTaskView() {
         {/* All done state */}
         {totalCount > 0 && completedCount === totalCount && (
           <div className="flex flex-col items-center py-12 px-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-950/40 flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-400" />
+            <div className="w-16 h-16 rounded-full bg-cult-success-muted flex items-center justify-center mb-4">
+              <CheckCircle2 className="w-8 h-8 text-cult-success" />
             </div>
-            <p className="text-lg font-bold text-green-400">All done!</p>
+            <p className="text-lg font-bold text-cult-success">All done!</p>
             <p className="text-sm text-cult-medium-gray mt-1">Great work today, {workerName}.</p>
           </div>
         )}

@@ -123,19 +123,19 @@ export function getProcessingStageForCategory(category: string): string | null {
 // ─── COA helpers ────────────────────────────────────────────────────────────
 
 export const COA_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  available: { label: 'COA Active', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30' },
-  coa_received: { label: 'COA Received', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30' },
-  testing_in_progress: { label: 'Testing', color: 'text-blue-400 bg-blue-500/15 border-blue-500/30' },
-  pending_sampling: { label: 'Pending Sample', color: 'text-amber-400 bg-amber-500/15 border-amber-500/30' },
+  available: { label: 'COA Active', color: 'text-cult-success bg-cult-success-muted border-cult-success/30' },
+  coa_received: { label: 'COA Received', color: 'text-cult-success bg-cult-success-muted border-cult-success/30' },
+  testing_in_progress: { label: 'Testing', color: 'text-cult-info bg-cult-info-muted border-cult-info/30' },
+  pending_sampling: { label: 'Pending Sample', color: 'text-cult-warning bg-cult-warning-muted border-cult-warning/30' },
   curing: { label: 'Curing', color: 'text-purple-400 bg-purple-500/15 border-purple-500/30' },
-  coa_failed: { label: 'COA Failed', color: 'text-red-400 bg-red-500/15 border-red-500/30' },
+  coa_failed: { label: 'COA Failed', color: 'text-cult-danger bg-cult-danger-muted border-cult-danger/30' },
 };
 
 export const GRADE_COLOR_MAP: Record<string, string> = {
-  CULT: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
-  B: 'text-sky-400 bg-sky-500/15 border-sky-500/30',
-  C: 'text-amber-400 bg-amber-500/15 border-amber-500/30',
-  D: 'text-rose-400 bg-rose-500/15 border-rose-500/30',
+  CULT: 'text-cult-success bg-cult-success-muted border-cult-success/30',
+  B: 'text-cult-info bg-cult-info-muted border-cult-info/30',
+  C: 'text-cult-warning bg-cult-warning-muted border-cult-warning/30',
+  D: 'text-cult-danger bg-cult-danger-muted border-cult-danger/30',
   UNDEFINED: 'text-gray-400 bg-gray-500/15 border-gray-500/30',
 };
 

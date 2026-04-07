@@ -67,7 +67,7 @@ export function OrderCard({
             onCheck(order.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey);
           }}
           onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 w-3.5 h-3.5 rounded border-cult-border bg-cult-surface text-cult-success focus:ring-cult-success/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
+          className="mt-0.5 w-3.5 h-3.5 rounded border-cult-border bg-cult-surface text-cult-success focus:ring-cult-success/50 focus:ring-offset-0 cursor-pointer accent-cult-success"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -121,10 +121,10 @@ export function OrderCard({
       {turnaroundDays !== null && (
         <div className={`flex items-center gap-1.5 mb-2 ml-6 px-2 py-1 rounded-cult border w-fit text-xs font-semibold ${
           turnaroundDays < 7
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            ? 'bg-cult-success/10 border-cult-success/30 text-cult-success'
             : turnaroundDays <= 10
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
+              ? 'bg-cult-warning/10 border-cult-warning/30 text-cult-warning'
+              : 'bg-cult-danger/10 border-cult-danger/30 text-cult-danger'
         }`}>
           <Clock className="w-3 h-3" />
           <span>Turnaround: {turnaroundDays}d</span>

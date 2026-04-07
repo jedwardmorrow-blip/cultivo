@@ -122,7 +122,7 @@ export function TrimSessionStartForm({
       </h2>
 
       {error && (
-        <div className="mb-4 bg-red-900/20 border border-red-500 text-red-200 p-3 rounded">
+        <div className="mb-4 bg-cult-danger-muted border border-cult-danger text-cult-danger p-3 rounded">
           {error}
         </div>
       )}

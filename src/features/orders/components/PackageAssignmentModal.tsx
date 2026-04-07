@@ -130,7 +130,7 @@ export function PackageAssignmentModal({
     >
       <div className="space-y-6">
         {!batchId && (
-          <div className="flex items-center gap-2 p-3 bg-yellow-900/20 border border-yellow-600 text-yellow-400 text-sm">
+          <div className="flex items-center gap-2 p-3 bg-cult-warning-muted border border-cult-warning text-cult-warning text-sm">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>No batch assigned to this order item. Assign a batch first to restrict packages to the correct batch.</span>
           </div>
@@ -144,13 +144,13 @@ export function PackageAssignmentModal({
           </div>
           <div>
             <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Already Assigned</p>
-            <p className="text-2xl font-bold text-green-400">
+            <p className="text-2xl font-bold text-cult-success">
               {loadingTotal ? '...' : `${totalAssigned} ${unit}`}
             </p>
           </div>
           <div>
             <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Remaining to Assign</p>
-            <p className={`text-2xl font-bold ${remainingQty > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+            <p className={`text-2xl font-bold ${remainingQty > 0 ? 'text-cult-warning' : 'text-cult-success'}`}>
               {loadingTotal ? '...' : `${remainingQty} ${unit}`}
             </p>
           </div>
@@ -165,7 +165,7 @@ export function PackageAssignmentModal({
               {Array.from(selectedPackages.values()).map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="flex items-center justify-between p-2 bg-cult-near-black border border-green-500"
+                  className="flex items-center justify-between p-2 bg-cult-near-black border border-cult-success"
                 >
                   <div className="flex items-center gap-4">
                     <span className="text-cult-white font-medium">{pkg.package_id}</span>
@@ -180,14 +180,14 @@ export function PackageAssignmentModal({
                       max={Math.min(pkg.available_qty, remainingQty - selectedTotal + pkg.quantityToAssign)}
                       value={pkg.quantityToAssign}
                       onChange={(e) => handleQuantityChange(pkg.id, parseFloat(e.target.value) || 0)}
-                      className="w-24 px-3 py-1 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-green-500"
+                      className="w-24 px-3 py-1 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-success"
                     />
                     <span className="text-cult-lighter-gray text-sm">
                       of {pkg.available_qty} {unit}
                     </span>
                     <button
                       onClick={() => handleSelectPackage(pkg)}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      className="text-cult-danger hover:text-cult-danger/80 text-sm"
                     >
                       Remove
                     </button>
@@ -208,7 +208,7 @@ export function PackageAssignmentModal({
               {loadingPackages ? (
                 <LoadingSpinner message="Loading available packages..." />
               ) : packagesError ? (
-                <div className="p-4 bg-red-900/20 border border-red-500 text-red-400">
+                <div className="p-4 bg-cult-danger-muted border border-cult-danger text-cult-danger">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />
                     <span>Failed to load packages: {packagesError.message}</span>
@@ -233,7 +233,7 @@ export function PackageAssignmentModal({
                         disabled={!isSelected && selectedTotal >= remainingQty}
                         className={`w-full p-4 border-2 text-left transition-all ${
                           isSelected
-                            ? 'border-green-500 bg-green-900/20'
+                            ? 'border-cult-success bg-cult-success-muted'
                             : 'border-cult-medium-gray bg-cult-dark-gray hover:border-cult-lighter-gray'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
@@ -242,7 +242,7 @@ export function PackageAssignmentModal({
                             <div
                               className={`w-6 h-6 border-2 flex items-center justify-center ${
                                 isSelected
-                                  ? 'border-green-500 bg-green-500'
+                                  ? 'border-cult-success bg-cult-success'
                                   : 'border-cult-medium-gray'
                               }`}
                             >
@@ -264,7 +264,7 @@ export function PackageAssignmentModal({
                               <p className="text-xs text-cult-lighter-gray mt-1">Room: {pkg.room}</p>
                             )}
                             {pkg.thc_percentage && (
-                              <p className="text-xs text-green-400 mt-1">
+                              <p className="text-xs text-cult-success mt-1">
                                 THC: {pkg.thc_percentage.toFixed(2)}%
                               </p>
                             )}
@@ -294,7 +294,7 @@ export function PackageAssignmentModal({
 
         <div className="flex items-center justify-between gap-4 pt-4 border-t border-cult-medium-gray">
           {selectedTotal > remainingQty && (
-            <div className="flex items-center gap-2 text-red-400">
+            <div className="flex items-center gap-2 text-cult-danger">
               <AlertCircle className="w-5 h-5" />
               <span className="text-sm">
                 Selected quantity ({selectedTotal}) exceeds remaining ({remainingQty})
@@ -313,7 +313,7 @@ export function PackageAssignmentModal({
             <button
               onClick={handleAssign}
               disabled={!canAssign || assigning}
-              className="px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold uppercase tracking-wider"
+              className="px-6 py-3 bg-cult-success text-white hover:bg-cult-success/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold uppercase tracking-wider"
             >
               {assigning ? 'Assigning...' : `Assign ${selectedTotal} ${unit}`}
             </button>

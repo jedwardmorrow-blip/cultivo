@@ -32,7 +32,7 @@ export function StatsCard({
             )}
             {trend && trendValue && (
               <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${
-                trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-amber-400'
+                trend === 'up' ? 'text-cult-success' : trend === 'down' ? 'text-cult-danger' : 'text-cult-warning'
               }`}>
                 {trend === 'up' && <TrendingUp className="w-3 h-3" />}
                 {trend === 'down' && <TrendingDown className="w-3 h-3" />}

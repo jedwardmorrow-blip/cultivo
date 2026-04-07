@@ -23,7 +23,7 @@ function VariancePill({ value }: { value: number | null }) {
   const isPositive = value >= 0;
   return (
     <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${
-      isPositive ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'
+      isPositive ? 'text-cult-success bg-cult-success-muted' : 'text-cult-warning bg-cult-warning-muted'
     }`}>
       {isPositive ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
       {isPositive ? '+' : ''}{pct}%
@@ -32,9 +32,9 @@ function VariancePill({ value }: { value: number | null }) {
 }
 
 const CONFIDENCE_STYLES: Record<string, string> = {
-  high: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  medium: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  low: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+  high: 'bg-cult-success-muted text-cult-success border-cult-success/30',
+  medium: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
+  low: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
   fallback: 'bg-cult-charcoal/30 text-cult-lighter-gray border-cult-charcoal/50',
 };
 
@@ -250,7 +250,7 @@ function SummaryCard({ label, value, sub, highlight }: {
   return (
     <div className="bg-cult-near-black/50 border border-cult-charcoal/30 rounded-cult p-3">
       <p className="text-[9px] text-cult-charcoal uppercase tracking-wider font-montserrat font-bold mb-1">{label}</p>
-      <p className={`text-lg font-bold font-montserrat ${highlight ? 'text-emerald-400' : 'text-cult-off-white'}`}>{value}</p>
+      <p className={`text-lg font-bold font-montserrat ${highlight ? 'text-cult-success' : 'text-cult-off-white'}`}>{value}</p>
       <p className="text-[10px] text-cult-lighter-gray mt-0.5">{sub}</p>
     </div>
   );
@@ -281,7 +281,7 @@ export function StrainYieldAnalytics() {
   if (strainMetrics.error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="w-8 h-8 text-amber-400" />
+        <AlertTriangle className="w-8 h-8 text-cult-warning" />
         <p className="text-cult-silver text-sm">{strainMetrics.error}</p>
       </div>
     );

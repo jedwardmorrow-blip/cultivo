@@ -72,7 +72,7 @@ export function DayDetailPanel({ date, breakdown, onClose, onEditRoom }: DayDeta
                       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
                       {cfg.label}
                       {sched?.priority === 'high' && (
-                        <span className="text-[9px] font-bold text-amber-400 ml-0.5">!</span>
+                        <span className="text-[9px] font-bold text-cult-warning ml-0.5">!</span>
                       )}
                     </div>
                   );

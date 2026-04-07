@@ -70,7 +70,7 @@ export function RoomLeaderboard({ roomAggregates }: RoomLeaderboardProps) {
                   <div>
                     <span className="text-cult-medium-gray">Yield </span>
                     {room.avg_yield_pct != null ? (
-                      <span className="text-green-400 font-mono font-semibold">{room.avg_yield_pct}%</span>
+                      <span className="text-cult-success font-mono font-semibold">{room.avg_yield_pct}%</span>
                     ) : (
                       <span className="text-cult-medium-gray">—</span>
                     )}
@@ -85,7 +85,7 @@ export function RoomLeaderboard({ roomAggregates }: RoomLeaderboardProps) {
 
                 <div className="mt-2 w-full bg-cult-dark-gray h-1.5 overflow-hidden">
                   <div
-                    className="h-full bg-green-600 transition-all"
+                    className="h-full bg-cult-success transition-all"
                     style={{ width: `${barWidth}%` }}
                   />
                 </div>

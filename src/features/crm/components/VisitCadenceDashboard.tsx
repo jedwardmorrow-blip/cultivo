@@ -21,16 +21,16 @@ type SortField = 'compliance_status' | 'days_until_due' | 'lifetime_revenue' | '
 type SortDir = 'asc' | 'desc';
 
 const COMPLIANCE_CONFIG: Record<ComplianceStatus, { label: string; color: string; bg: string; border: string; order: number }> = {
-  overdue:       { label: 'Overdue',       color: 'text-red-400',     bg: 'bg-red-500/15',     border: 'border-red-500/30',     order: 1 },
-  never_visited: { label: 'Never Visited', color: 'text-orange-400',  bg: 'bg-orange-500/15',  border: 'border-orange-500/30',  order: 2 },
-  due_soon:      { label: 'Due Soon',      color: 'text-amber-400',   bg: 'bg-amber-500/15',   border: 'border-amber-500/30',   order: 3 },
-  scheduled:     { label: 'Scheduled',     color: 'text-sky-400',     bg: 'bg-sky-500/15',     border: 'border-sky-500/30',     order: 4 },
-  on_track:      { label: 'On Track',      color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', order: 5 },
+  overdue:       { label: 'Overdue',       color: 'text-cult-danger',  bg: 'bg-cult-danger/15',  border: 'border-cult-danger/30',  order: 1 },
+  never_visited: { label: 'Never Visited', color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30', order: 2 },
+  due_soon:      { label: 'Due Soon',      color: 'text-cult-warning', bg: 'bg-cult-warning/15', border: 'border-cult-warning/30', order: 3 },
+  scheduled:     { label: 'Scheduled',     color: 'text-cult-info',    bg: 'bg-cult-info/15',    border: 'border-cult-info/30',    order: 4 },
+  on_track:      { label: 'On Track',      color: 'text-cult-success', bg: 'bg-cult-success/15', border: 'border-cult-success/30', order: 5 },
 };
 
 const TIER_CONFIG: Record<AccountTier, { label: string; freq: string; color: string }> = {
-  top_10:   { label: 'Top 10',   freq: 'Weekly',    color: 'text-amber-400' },
-  mid_tier: { label: 'Mid Tier', freq: 'Bi-Weekly', color: 'text-sky-400' },
+  top_10:   { label: 'Top 10',   freq: 'Weekly',    color: 'text-cult-warning' },
+  mid_tier: { label: 'Mid Tier', freq: 'Bi-Weekly', color: 'text-cult-info' },
   tail:     { label: 'Tail',     freq: 'Monthly',   color: 'text-cult-silver' },
   prospect: { label: 'Prospect', freq: 'Bi-Weekly', color: 'text-violet-400' },
 };
@@ -159,7 +159,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
         {/* Avg Compliance */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Compliance</p>
-          <p className={`text-2xl font-bold ${avgCompliance >= 70 ? 'text-emerald-400' : avgCompliance >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+          <p className={`text-2xl font-bold ${avgCompliance >= 70 ? 'text-cult-success' : avgCompliance >= 40 ? 'text-cult-warning' : 'text-cult-danger'}`}>
             {avgCompliance}%
           </p>
           <p className="text-xs text-cult-silver">30-day avg</p>
@@ -187,7 +187,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
         {/* At-risk Revenue */}
         <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
           <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Overdue Rev</p>
-          <p className="text-2xl font-bold text-red-400">{fmt$(overdueRevenue)}</p>
+          <p className="text-2xl font-bold text-cult-danger">{fmt$(overdueRevenue)}</p>
           <p className="text-xs text-cult-silver">lifetime total</p>
         </div>
       </div>
@@ -214,10 +214,10 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
         );
         if (criticals.length === 0) return null;
         return (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+          <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-lg px-4 py-3">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
-              <p className="text-sm font-semibold text-red-400">
+              <AlertTriangle className="w-4 h-4 text-cult-danger" />
+              <p className="text-sm font-semibold text-cult-danger">
                 {criticals.length} high-value account{criticals.length > 1 ? 's' : ''} overdue for visits
               </p>
             </div>
@@ -226,17 +226,17 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                 <button
                   key={a.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-red-500/15 border border-red-500/25 rounded-md text-red-300 hover:bg-red-500/25 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-cult-danger/15 border border-cult-danger/25 rounded-md text-cult-danger/80 hover:bg-cult-danger/25 transition-colors"
                 >
                   <span className="font-medium">{a.customer_name}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{fmt$(a.lifetime_revenue)}</span>
-                  <span className="text-red-400/60">·</span>
+                  <span className="text-cult-danger/60">·</span>
                   <span>{TIER_CONFIG[a.account_tier]?.label || a.account_tier}</span>
                 </button>
               ))}
               {criticals.length > 6 && (
-                <span className="text-xs text-red-400/60 self-center">+{criticals.length - 6} more</span>
+                <span className="text-xs text-cult-danger/60 self-center">+{criticals.length - 6} more</span>
               )}
             </div>
           </div>
@@ -252,7 +252,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-sky-500/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
           />
         </div>
         {filter !== 'all' && (
@@ -321,7 +321,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
-                      <p className="text-cult-white font-medium hover:text-sky-400 transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
                       <p className="text-xs text-cult-light-gray">
@@ -343,9 +343,9 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   {/* Next Due */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     <span className={`text-xs ${
-                      a.days_until_due === -999 ? 'text-orange-400' :
-                      a.days_until_due < 0 ? 'text-red-400' :
-                      a.days_until_due <= 2 ? 'text-amber-400' :
+                      a.days_until_due === -999 ? 'text-cult-warning' :
+                      a.days_until_due < 0 ? 'text-cult-danger' :
+                      a.days_until_due <= 2 ? 'text-cult-warning' :
                       'text-cult-silver'
                     }`}>
                       {daysLabel(a.days_until_due)}
@@ -357,9 +357,9 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       <div className="w-12 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
-                            a.compliance_pct_30d >= 80 ? 'bg-emerald-500' :
-                            a.compliance_pct_30d >= 50 ? 'bg-amber-500' :
-                            a.compliance_pct_30d > 0 ? 'bg-red-500' :
+                            a.compliance_pct_30d >= 80 ? 'bg-cult-success' :
+                            a.compliance_pct_30d >= 50 ? 'bg-cult-warning' :
+                            a.compliance_pct_30d > 0 ? 'bg-cult-danger' :
                             'bg-cult-charcoal'
                           }`}
                           style={{ width: `${a.compliance_pct_30d}%` }}
@@ -372,7 +372,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   <td className="py-2.5 px-2 text-center hidden md:table-cell">
                     <span className="text-xs text-cult-silver">{a.visits_completed_30d}</span>
                     {a.upcoming_scheduled > 0 && (
-                      <span className="text-xs text-sky-400 ml-1" title="Upcoming scheduled">
+                      <span className="text-xs text-cult-info ml-1" title="Upcoming scheduled">
                         +{a.upcoming_scheduled}
                       </span>
                     )}
@@ -385,8 +385,8 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   <td className="py-2.5 px-2 text-center hidden xl:table-cell">
                     {a.days_since_last_visit !== null ? (
                       <span className={`text-xs ${
-                        a.days_since_last_visit > 30 ? 'text-red-400' :
-                        a.days_since_last_visit > 14 ? 'text-orange-400' :
+                        a.days_since_last_visit > 30 ? 'text-cult-danger' :
+                        a.days_since_last_visit > 14 ? 'text-cult-warning' :
                         'text-cult-silver'
                       }`}>
                         {a.days_since_last_visit}d ago

@@ -7,9 +7,9 @@ import { getOrderItemsForCalendar, type CalendarOrderItem } from '../services/de
 const ITEM_STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; label: string; Icon: typeof Scissors }> = {
   trimming: { bg: 'bg-cyan-900/30', text: 'text-cyan-400', border: 'border-cyan-600', label: 'Trim', Icon: Scissors },
   packaging: { bg: 'bg-blue-900/30', text: 'text-blue-400', border: 'border-blue-600', label: 'Pkg', Icon: Package },
-  labeling: { bg: 'bg-amber-900/30', text: 'text-amber-400', border: 'border-amber-600', label: 'Label', Icon: Tag },
-  pending_coa: { bg: 'bg-orange-900/30', text: 'text-orange-400', border: 'border-orange-600', label: 'COA', Icon: FileWarning },
-  ready_for_delivery: { bg: 'bg-green-900/30', text: 'text-green-400', border: 'border-green-600', label: 'Ready', Icon: CheckCircle2 },
+  labeling: { bg: 'bg-cult-warning/15', text: 'text-cult-warning', border: 'border-cult-warning', label: 'Label', Icon: Tag },
+  pending_coa: { bg: 'bg-cult-warning/15', text: 'text-cult-warning', border: 'border-cult-warning', label: 'COA', Icon: FileWarning },
+  ready_for_delivery: { bg: 'bg-cult-success/15', text: 'text-cult-success', border: 'border-cult-success', label: 'Ready', Icon: CheckCircle2 },
 };
 
 function ItemStatusBadge({ status }: { status: string | null }) {

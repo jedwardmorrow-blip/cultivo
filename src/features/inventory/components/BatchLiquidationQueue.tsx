@@ -41,20 +41,20 @@ function daysSince(isoDate: string): number {
 function AgeBadge({ days }: { days: number }) {
   if (days < 14) {
     return (
-      <span className="text-[10px] px-1.5 py-0.5 rounded border bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-medium whitespace-nowrap">
+      <span className="text-[10px] px-1.5 py-0.5 rounded border bg-cult-success-muted text-cult-success border-cult-success/30 font-medium whitespace-nowrap">
         {days}d
       </span>
     );
   }
   if (days <= 30) {
     return (
-      <span className="text-[10px] px-1.5 py-0.5 rounded border bg-amber-500/15 text-amber-300 border-amber-500/30 font-medium whitespace-nowrap">
+      <span className="text-[10px] px-1.5 py-0.5 rounded border bg-cult-warning-muted text-cult-warning border-cult-warning/30 font-medium whitespace-nowrap">
         {days}d
       </span>
     );
   }
   return (
-    <span className="text-[10px] px-1.5 py-0.5 rounded border bg-red-500/15 text-red-300 border-red-500/30 font-medium whitespace-nowrap">
+    <span className="text-[10px] px-1.5 py-0.5 rounded border bg-cult-danger-muted text-cult-danger border-cult-danger/30 font-medium whitespace-nowrap">
       {days}d
     </span>
   );
@@ -166,7 +166,7 @@ export function BatchLiquidationQueue() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider flex items-center gap-2">
-          <Clock className="w-4 h-4 text-amber-400" />
+          <Clock className="w-4 h-4 text-cult-warning" />
           Liquidation Queue
         </h2>
         <span className="text-[11px] text-cult-text-faint">Oldest batch first — ship to reduce holding cost</span>
@@ -206,18 +206,18 @@ export function BatchLiquidationQueue() {
                     key={row.batch_number}
                     className={`transition-colors ${
                       isShipFirst
-                        ? 'bg-amber-950/20 hover:bg-amber-950/30'
+                        ? 'bg-cult-warning/10 hover:bg-cult-warning/15'
                         : 'hover:bg-cult-graphite/20'
                     }`}
                   >
                     {/* Rank */}
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-[11px] font-mono ${isShipFirst ? 'text-amber-300 font-semibold' : 'text-cult-text-faint'}`}>
+                        <span className={`text-[11px] font-mono ${isShipFirst ? 'text-cult-warning font-semibold' : 'text-cult-text-faint'}`}>
                           #{row.rank}
                         </span>
                         {isShipFirst && (
-                          <span className="flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded border bg-amber-500/20 text-amber-300 border-amber-500/40 font-semibold whitespace-nowrap">
+                          <span className="flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded border bg-cult-warning/20 text-cult-warning border-cult-warning/40 font-semibold whitespace-nowrap">
                             <ArrowUp className="w-2.5 h-2.5" />
                             Ship First
                           </span>
@@ -250,7 +250,7 @@ export function BatchLiquidationQueue() {
                     {/* Available (ATP) */}
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       {hasAtp ? (
-                        <span className="text-emerald-300 font-medium">
+                        <span className="text-cult-success font-medium">
                           {formatWeight(row.available_g)}
                         </span>
                       ) : (

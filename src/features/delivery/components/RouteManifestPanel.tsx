@@ -29,9 +29,9 @@ function groupByZone(orders: CalendarOrder[]): Map<string, CalendarOrder[]> {
 
 function loadLabel(routeCount: number): { label: string; dotClass: string } {
   if (routeCount === 0) return { label: 'No routes', dotClass: 'bg-cult-medium-gray' };
-  if (routeCount === 1) return { label: 'Light', dotClass: 'bg-emerald-400' };
-  if (routeCount === 2) return { label: 'Moderate', dotClass: 'bg-amber-400' };
-  return { label: 'Heavy', dotClass: 'bg-red-400' };
+  if (routeCount === 1) return { label: 'Light', dotClass: 'bg-cult-success' };
+  if (routeCount === 2) return { label: 'Moderate', dotClass: 'bg-cult-warning' };
+  return { label: 'Heavy', dotClass: 'bg-cult-danger' };
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
@@ -200,7 +200,7 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
               ))}
             </div>
             <div className="text-[12px] text-cult-white font-semibold flex-shrink-0">
-              Total: <span className="text-green-400">{formatCurrency(totalRevenue)}</span>
+              Total: <span className="text-cult-success">{formatCurrency(totalRevenue)}</span>
             </div>
           </div>
         </div>
