@@ -24,7 +24,7 @@ import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
-import { TemplateManager } from './TemplateManager';
+import { VisualTemplateBuilder } from './VisualTemplateBuilder';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
@@ -109,9 +109,7 @@ export function SchedulesPage() {
         <RoomSetupPanel rooms={rooms} initialRoomId={setupRoomId} />
       )}
       {scheduleView === 'templates' && (
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-5">
-          <TemplateManager inline onClose={() => {}} />
-        </div>
+        <VisualTemplateBuilder inline />
       )}
     </div>
   );
@@ -573,7 +571,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             </span>
             <div className="flex items-center gap-3 text-xs">
               {stats.inProgress > 0 && (
-                <span className="text-sky-400">{stats.inProgress} active</span>
+                <span className="text-cult-info">{stats.inProgress} active</span>
               )}
               <span className="text-cult-medium-gray font-mono">{staffPresent}/{staff.length} crew</span>
             </div>
@@ -587,7 +585,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             />
           </div>
           {stats.unassigned > 0 && (
-            <p className="text-xs text-amber-400/80 mt-1">
+            <p className="text-xs text-cult-warning/80 mt-1">
               {stats.unassigned} task{stats.unassigned !== 1 ? 's' : ''} unassigned
             </p>
           )}
@@ -596,7 +594,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
           <button
             type="button"
             onClick={() => openAddTask()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-cult-success hover:bg-cult-success/90 text-white text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Task
@@ -606,7 +604,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             onClick={() => openDeadPlantForm()}
             className="flex items-center gap-2 px-4 py-2.5 bg-cult-charcoal hover:bg-cult-medium-gray text-cult-light-gray text-xs font-semibold uppercase tracking-wider transition-colors border border-cult-dark-gray"
           >
-            <Skull className="w-3.5 h-3.5 text-red-400" />
+            <Skull className="w-3.5 h-3.5 text-cult-danger" />
             Dead Plant
           </button>
         </div>
@@ -614,15 +612,15 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
 
       {/* ── Alert Bar (conditional) ───────────────────────── */}
       {alerts.length > 0 && !alertDismissed && (
-        <div className="flex items-start justify-between gap-3 px-4 py-3 bg-amber-950/40 border border-amber-500/30">
+        <div className="flex items-start justify-between gap-3 px-4 py-3 bg-cult-warning-muted border border-cult-warning/30">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-300 leading-relaxed">{alerts.join(' · ')}</p>
+            <AlertTriangle className="w-4 h-4 text-cult-warning flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-cult-warning leading-relaxed">{alerts.join(' · ')}</p>
           </div>
           <button
             type="button"
             onClick={() => setAlertDismissed(true)}
-            className="p-1 -m-1 text-amber-500/60 hover:text-amber-400 transition-colors flex-shrink-0"
+            className="p-1 -m-1 text-cult-warning/60 hover:text-cult-warning transition-colors flex-shrink-0"
             aria-label="Dismiss alerts"
           >
             <X className="w-3.5 h-3.5" />
@@ -665,7 +663,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             <button
               type="button"
               onClick={() => openAddTask()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold uppercase tracking-wider transition-colors min-w-[160px] justify-center"
+              className="flex items-center gap-2 px-5 py-2.5 bg-cult-success hover:bg-cult-success/90 text-white text-xs font-semibold uppercase tracking-wider transition-colors min-w-[160px] justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Task Now
@@ -727,7 +725,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     )}
                     {ops.days_to_harvest != null && ops.days_to_harvest > 0 && (
                       <span className={`text-[11px] font-mono font-semibold flex-shrink-0 ${
-                        ops.days_to_harvest <= 7 ? 'text-amber-400' : 'text-cult-medium-gray'
+                        ops.days_to_harvest <= 7 ? 'text-cult-warning' : 'text-cult-medium-gray'
                       }`}>
                         Harvest {ops.days_to_harvest}d
                       </span>
@@ -747,7 +745,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     {roomCrew.slice(0, 3).map((s) => (
                       <span
                         key={s.id}
-                        className="w-5 h-5 rounded-full bg-green-900/50 text-green-300 ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold"
+                        className="w-5 h-5 rounded-full bg-cult-success-muted text-cult-success ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold"
                         title={s.first_name}
                       >
                         {crewInitials(s.first_name)}
@@ -816,7 +814,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     <button
                       type="button"
                       onClick={() => openDeadPlantForm(room.id)}
-                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-danger min-w-[36px] min-h-[36px] flex items-center justify-center"
                       title="Log dead plant"
                     >
                       <Skull className="w-3.5 h-3.5" />
@@ -968,7 +966,7 @@ function BatchAssignButton({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-amber-400/70 hover:text-amber-400 active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-warning/70 hover:text-cult-warning active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
         title={`Batch assign ${unassignedTasks.length} unassigned task${unassignedTasks.length !== 1 ? 's' : ''}`}
       >
         <Users className="w-4 h-4" />
@@ -992,7 +990,7 @@ function BatchAssignButton({
                 onClick={() => handleAssignAll(s.id)}
                 className="w-full text-left px-3 py-2 text-xs text-cult-light-gray hover:bg-cult-charcoal/50 hover:text-cult-white transition-colors disabled:opacity-40 flex items-center gap-2"
               >
-                <span className="w-6 h-6 rounded-full bg-green-900/50 text-green-300 ring-1 ring-green-500/50 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                <span className="w-6 h-6 rounded-full bg-cult-success-muted text-cult-success ring-1 ring-cult-success/50 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                   {s.first_name.slice(0, 2).toUpperCase()}
                 </span>
                 {s.first_name}
@@ -1000,7 +998,7 @@ function BatchAssignButton({
             ))
           )}
           {assigning && (
-            <div className="px-3 py-1.5 text-[10px] text-amber-400 animate-pulse text-center">Assigning...</div>
+            <div className="px-3 py-1.5 text-[10px] text-cult-warning animate-pulse text-center">Assigning...</div>
           )}
         </div>
       )}
@@ -1051,7 +1049,7 @@ function InlineCrewStrip({
               title={`${s.first_name} — ${isPresent ? 'Present' : 'Absent'} (tap to toggle)`}
               className={`relative w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-200 flex-shrink-0 ${
                 isPresent
-                  ? 'bg-green-900/50 text-green-300 ring-2 ring-green-500/70'
+                  ? 'bg-cult-success-muted text-cult-success ring-2 ring-cult-success/70'
                   : 'bg-cult-charcoal text-cult-medium-gray opacity-40 hover:opacity-70'
               }`}
             >
@@ -1192,7 +1190,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
         notes={notes} setNotes={setNotes}
         rooms={rooms} staff={staff} taskTypes={TASK_TYPES}
       />
-      {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+      {error && <p className="text-xs text-cult-danger mt-2">{error}</p>}
       <Button onClick={handleSave} disabled={saving || !roomId} className="w-full mt-3">
         {saving ? 'Saving...' : 'Add Task'}
       </Button>
