@@ -402,11 +402,11 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {focusedCard ? (
               <motion.div
                 key={`main-${focusedCard}`}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className={`${GLASS} p-5 h-full`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className={`${GLASS} p-5 h-full flex flex-col`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
@@ -425,7 +425,11 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                   </button>
                 </div>
 
-                {focusedCard === 'room-layout' && <RoomGrid roomId={state.room_id} inline />}
+                {focusedCard === 'room-layout' && (
+                  <div className="flex-1 flex flex-col">
+                    <RoomGrid roomId={state.room_id} inline expanded />
+                  </div>
+                )}
                 {focusedCard === 'feed-recipe' && <FeedCardContent state={state} />}
                 {focusedCard === 'room-info' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -490,10 +494,10 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             ) : (
               <motion.div
                 key="main-tasks"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className={`${GLASS} p-5 h-full`}
               >
                 <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
@@ -844,7 +848,7 @@ function InlineTankMixRecipe() {
 // Room Grid — table/section layout with occupancy
 // ═══════════════════════════════════════════════════════════════
 
-function RoomGrid({ roomId, compact, inline }: { roomId: string; compact?: boolean; inline?: boolean }) {
+function RoomGrid({ roomId, compact, inline, expanded }: { roomId: string; compact?: boolean; inline?: boolean; expanded?: boolean }) {
   const [tables, setTables] = useState<RoomTable[]>([]);
   const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -874,11 +878,14 @@ function RoomGrid({ roomId, compact, inline }: { roomId: string; compact?: boole
   if (sortedTables.length === 0) return compact ? <div className="text-[10px] text-white/20">No tables configured</div> : null;
 
   return (
-    <div className={inline ? '' : ''}>
+    <div className={`${expanded ? 'flex-1 flex flex-col' : ''}`}>
       {!compact && !inline && <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Layout</h3>}
       <div
-        className="grid gap-1"
-        style={{ gridTemplateColumns: `32px repeat(${sectionLabels.length}, 1fr)` }}
+        className={`grid ${expanded ? 'gap-1.5 flex-1' : 'gap-1'}`}
+        style={{
+          gridTemplateColumns: `32px repeat(${sectionLabels.length}, 1fr)`,
+          ...(expanded ? { gridTemplateRows: `auto repeat(${sortedTables.length}, 1fr)` } : {}),
+        }}
       >
         {/* Column headers */}
         <div />
@@ -895,7 +902,7 @@ function RoomGrid({ roomId, compact, inline }: { roomId: string; compact?: boole
             {sectionLabels.map(sLabel => {
               const section = table.sections.find(s => s.section_label === sLabel);
               if (!section) {
-                return <div key={`${table.table_number}-${sLabel}`} className="min-h-[36px] rounded-lg bg-white/[0.02]" />;
+                return <div key={`${table.table_number}-${sLabel}`} className={`${expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg bg-white/[0.02]`} />;
               }
               const occ = occupancy.get(section.id);
               const hasPlants = occ && occ.total_plants > 0;
@@ -903,7 +910,7 @@ function RoomGrid({ roomId, compact, inline }: { roomId: string; compact?: boole
               return (
                 <div
                   key={`${table.table_number}-${sLabel}`}
-                  className={`${compact ? 'min-h-[24px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center ${
+                  className={`${compact ? 'min-h-[24px]' : expanded ? 'min-h-[48px]' : 'min-h-[36px]'} rounded-lg flex flex-col items-center justify-center ${
                     hasPlants
                       ? 'bg-emerald-500/8 border border-emerald-500/15'
                       : 'bg-white/[0.02] border border-white/[0.04]'
