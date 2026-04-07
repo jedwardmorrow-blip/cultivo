@@ -1,295 +1,626 @@
-import { useState, useMemo } from 'react';
+/**
+ * Command Center — Cultivation operational hub
+ *
+ * Design system: Liquid Glass + Bento Grid
+ * Philosophy: "Less enterprise SaaS, more Tesla touchscreen"
+ * See context DB: cultops_design_philosophy, design_language_master
+ */
+
+import { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sprout, ChevronRight, ChevronDown, ClipboardList,
-  Scissors, AlertTriangle, Calendar, Users, Droplets,
-  X, CheckCircle2, Clock, Leaf,
+  Sprout, ClipboardList, AlertTriangle, Plus,
+  CheckCircle2, Clock, ChevronLeft, X,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
-import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
 import { getTaskTypeConfig } from '../types';
-import type { DailyTaskInstance, TaskType } from '../types';
-import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT } from '../constants/stageColors';
+import type { DailyTaskInstance } from '../types';
 import { todayIso } from '../utils/dateUtils';
 
 // ═══════════════════════════════════════════════════════════════
-// Room Row — compact room summary, click to expand
+// Design tokens — Liquid Glass
 // ═══════════════════════════════════════════════════════════════
 
-function RoomRow({ state, isOpen, onToggle, tasks }: {
+const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
+const GLASS_ELEVATED = 'rounded-2xl border border-white/[0.12] bg-white/[0.09] backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)]';
+const GLASS_TILE = 'rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)]';
+const GLASS_HOVER = 'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
+const GLASS_EMPTY = 'rounded-2xl border border-white/[0.04] bg-white/[0.02]';
+
+// Brand gold accent
+const GOLD = '#D4A843';
+
+// Stage color mapping — room type drives the glass tint
+const STAGE_COLORS: Record<string, { base: string; glow: string }> = {
+  flower: { base: '#F43F5E', glow: 'rgba(244,63,94,' },   // rose
+  veg:    { base: '#10B981', glow: 'rgba(16,185,129,' },   // emerald
+  clone:  { base: '#0EA5E9', glow: 'rgba(14,165,233,' },   // sky
+  mother: { base: '#F59E0B', glow: 'rgba(245,158,11,' },   // amber
+  mixed:  { base: '#8B5CF6', glow: 'rgba(139,92,246,' },   // purple
+};
+
+function getStageColor(roomType: string) {
+  return STAGE_COLORS[roomType] ?? STAGE_COLORS.mixed;
+}
+
+function statusColor(urgency: number): string {
+  if (urgency >= 3) return '#ef4444';
+  if (urgency >= 2) return '#f59e0b';
+  if (urgency >= 1) return '#eab308';
+  return '#10b981';
+}
+
+function statusRingStyle(urgency: number, isEmpty: boolean, roomType?: string): React.CSSProperties {
+  if (isEmpty) return { borderColor: 'rgba(255,255,255,0.06)' };
+  // Use stage color for calm rooms, urgency color for attention rooms
+  const color = urgency >= 2 ? statusColor(urgency) : getStageColor(roomType ?? 'mixed').base;
+  return {
+    borderColor: color,
+    boxShadow: urgency >= 3
+      ? `0 0 14px ${color}90, 0 0 40px ${color}35, inset 0 0 10px ${color}20`
+      : urgency >= 2
+        ? `0 0 12px ${color}70, 0 0 30px ${color}25`
+        : `0 0 8px ${color}40, 0 0 20px ${color}15`,
+  };
+}
+
+// Tile glass tint — room type colors the glass surface
+function tileBg(roomType: string, urgency: number, isEmpty: boolean): string {
+  if (isEmpty) return 'rgba(255,255,255,0.012)';
+  const stage = getStageColor(roomType);
+  if (urgency >= 3) return 'rgba(239,68,68,0.08)';
+  if (urgency >= 2) return 'rgba(245,158,11,0.06)';
+  return `${stage.glow}0.04)`;
+}
+
+// Tile border — tinted by stage
+function tileBorder(roomType: string, urgency: number, isEmpty: boolean): string {
+  if (isEmpty) return 'rgba(255,255,255,0.03)';
+  if (urgency >= 3) return 'rgba(239,68,68,0.2)';
+  if (urgency >= 2) return 'rgba(245,158,11,0.15)';
+  const stage = getStageColor(roomType);
+  return `${stage.glow}0.1)`;
+}
+
+// Stagger animation variants
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const tileVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.97 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const expandVariants = {
+  initial: { opacity: 0, scale: 0.98 },
+  animate: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  exit: { opacity: 0, scale: 0.98, transition: { duration: 0.2 } },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN 1: Bento Room Tile
+// ═══════════════════════════════════════════════════════════════
+
+function RoomTile({ state, tasks, onClick }: {
   state: RoomOperationalState;
-  isOpen: boolean;
-  onToggle: () => void;
   tasks: DailyTaskInstance[];
+  onClick: () => void;
 }) {
   const isEmpty = state.occupancy_status === 'empty';
-  const borderCls = ROOM_TYPE_LEFT_BORDER[state.room_type] ?? ROOM_TYPE_LEFT_BORDER.mixed;
-  const typeTextCls = ROOM_TYPE_TEXT[state.room_type] ?? ROOM_TYPE_TEXT.mixed;
-
-  const roomTasks = tasks.filter(t => t.room_id === state.room_id);
-  const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
-  const totalTasks = roomTasks.length;
-
+  const color = statusColor(state.urgency_score);
+  const stage = getStageColor(state.room_type);
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
   const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
-
-  let urgencyDot = '';
-  if (state.urgency_score === 3) urgencyDot = 'bg-red-500';
-  else if (state.urgency_score === 2) urgencyDot = 'bg-amber-500';
-  else if (state.urgency_score === 1) urgencyDot = 'bg-yellow-500';
+  const roomTasks = tasks.filter(t => t.room_id === state.room_id);
+  const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
+  const isLarge = state.urgency_score >= 2;
 
   return (
-    <button
+    <motion.button
+      variants={tileVariants}
       type="button"
-      onClick={onToggle}
-      className={`w-full text-left border-l-4 ${borderCls} ${
-        isOpen ? 'bg-cult-charcoal/60' : 'bg-cult-near-black hover:bg-cult-charcoal/30'
-      } border-b border-cult-dark-gray/50 transition-colors`}
+      onClick={isEmpty ? undefined : onClick}
+      className={`${isEmpty ? GLASS_EMPTY : GLASS_TILE} ${isEmpty ? '' : GLASS_HOVER} text-left transition-all duration-300 active:scale-[0.97] ${
+        isLarge ? 'col-span-2 row-span-2' : ''
+      } relative overflow-hidden group`}
+      style={{
+        minHeight: isLarge ? '220px' : '130px',
+        backgroundColor: tileBg(state.room_type, state.urgency_score, isEmpty),
+        borderColor: tileBorder(state.room_type, state.urgency_score, isEmpty),
+        cursor: isEmpty ? 'default' : 'pointer',
+      }}
     >
-      <div className="flex items-center gap-3 px-4 py-3">
-        {/* Expand chevron */}
-        {isOpen
-          ? <ChevronDown className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
-          : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
-        }
+      {/* Ambient glow — stage-colored light bleeding through glass */}
+      {!isEmpty && (() => {
+        const glowColor = state.urgency_score >= 2 ? color : stage.base;
+        return (
+          <div
+            className="absolute -top-8 left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
+            style={{
+              width: isLarge ? '160px' : '100px',
+              height: isLarge ? '160px' : '100px',
+              background: `radial-gradient(circle, ${glowColor}${isLarge ? '22' : '15'} 0%, ${glowColor}06 45%, transparent 70%)`,
+              filter: 'blur(12px)',
+            }}
+          />
+        );
+      })()}
 
-        {/* Urgency dot */}
-        {urgencyDot && <div className={`w-2 h-2 rounded-full ${urgencyDot} flex-shrink-0`} />}
+      <div className="relative p-4 flex flex-col h-full">
+        {/* Header: code + status ring */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            {/* Status ring — stage-colored for calm, urgency-colored for alerts */}
+            <div
+              className="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-500"
+              style={statusRingStyle(state.urgency_score, isEmpty, state.room_type)}
+            >
+              {state.urgency_score >= 3 && (
+                <motion.div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: color }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              )}
+              {state.urgency_score < 3 && !isEmpty && (
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: state.urgency_score >= 2 ? color : stage.base, opacity: 0.7 }} />
+              )}
+            </div>
+            <div>
+              <span className="font-mono text-base font-bold text-white tracking-wide">{state.room_code}</span>
+              <span className="text-[10px] uppercase tracking-widest ml-2" style={{ color: `${stage.base}80` }}>{state.room_type}</span>
+            </div>
+          </div>
 
-        {/* Room code */}
-        <span className="font-mono text-sm font-bold text-cult-white w-16 flex-shrink-0">{state.room_code}</span>
+          {/* Day counter */}
+          {dayCount != null && (
+            <span className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>D{dayCount}</span>
+          )}
+        </div>
 
-        {/* Type badge */}
-        <span className={`text-[10px] px-1.5 py-0.5 uppercase tracking-wider font-bold border flex-shrink-0 ${
-          isEmpty ? 'border-cult-dark-gray text-cult-medium-gray' : typeTextCls
-        }`}>
-          {isEmpty ? 'Empty' : state.room_type}
-        </span>
-
-        {/* Plants + strains */}
+        {/* Middle: plant info */}
         {!isEmpty && (
-          <span className="text-xs text-cult-lighter-gray flex-shrink-0">
-            {state.total_plants}p · {state.strain_count}s
-          </span>
+          <div className="mt-3 flex-1">
+            <div className="text-2xl font-bold font-mono" style={{ color: GOLD }}>{state.total_plants}</div>
+            <div className="text-[10px] text-white/30 uppercase tracking-wider">
+              plants · {state.strain_count} strains
+            </div>
+          </div>
         )}
 
-        {/* Day counter */}
-        {dayCount != null && (
-          <span className="text-xs text-cult-medium-gray flex-shrink-0">Day {dayCount}</span>
+        {isEmpty && (
+          <div className="mt-3 flex-1 flex items-center">
+            <span className="text-sm text-white/20">Empty</span>
+          </div>
         )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
+        {/* Footer: harvest + tasks */}
+        {!isEmpty && (
+          <div className="flex items-end justify-between mt-auto pt-3">
+            {/* Harvest countdown */}
+            {state.room_type === 'flower' && harvestDays != null ? (
+              <span className={`text-xs font-medium ${
+                harvestDays <= 0 ? 'text-red-400' : harvestDays <= 7 ? 'text-amber-400' : 'text-white/40'
+              }`}>
+                {harvestDays <= 0 ? `${Math.abs(harvestDays)}d overdue` : `${harvestDays}d to harvest`}
+              </span>
+            ) : (
+              <span />
+            )}
 
-        {/* Harvest countdown */}
-        {state.room_type === 'flower' && harvestDays != null && (
-          <span className={`text-xs font-medium flex-shrink-0 ${
-            harvestDays <= 0 ? 'text-red-400' : harvestDays <= 7 ? 'text-amber-400' : 'text-cult-medium-gray'
-          }`}>
-            {harvestDays <= 0 ? `${Math.abs(harvestDays)}d overdue` : `${harvestDays}d to harvest`}
-          </span>
+            {/* Task progress */}
+            {roomTasks.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="flex gap-0.5">
+                  {roomTasks.map((t, i) => (
+                    <div
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        backgroundColor: t.status === 'completed' ? '#10b981' :
+                          t.status === 'in_progress' ? '#f59e0b' : 'rgba(255,255,255,0.15)',
+                      }}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] text-white/30 font-mono">{doneTasks}/{roomTasks.length}</span>
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Task progress */}
-        {totalTasks > 0 && (
-          <span className={`text-xs flex-shrink-0 font-mono ${
-            doneTasks === totalTasks ? 'text-emerald-400' : 'text-cult-medium-gray'
-          }`}>
-            {doneTasks}/{totalTasks}
-          </span>
-        )}
-
-        {/* Strains preview */}
-        {!isEmpty && state.strain_names && state.strain_names.length > 0 && (
-          <span className="text-[10px] text-cult-text-faint truncate max-w-[200px] hidden lg:inline">
-            {state.strain_names.slice(0, 3).join(', ')}{state.strain_names.length > 3 ? ` +${state.strain_names.length - 3}` : ''}
-          </span>
+        {/* Strain chips — large tiles only */}
+        {isLarge && !isEmpty && state.strain_names && state.strain_names.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {state.strain_names.slice(0, 6).map(s => (
+              <span key={s} className="text-[10px] text-white/50 px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5">
+                {s}
+              </span>
+            ))}
+            {state.strain_names.length > 6 && (
+              <span className="text-[10px] text-white/30">+{state.strain_names.length - 6}</span>
+            )}
+          </div>
         )}
       </div>
-    </button>
+    </motion.button>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Room Panel — expanded operational view with tabs
+// Attention Strip
 // ═══════════════════════════════════════════════════════════════
 
-type PanelTab = 'status' | 'tasks' | 'feed';
-
-function RoomPanel({ state, tasks, onUpdateTaskStatus }: {
-  state: RoomOperationalState;
-  tasks: DailyTaskInstance[];
-  onUpdateTaskStatus: (taskId: string, status: string) => void;
+function AttentionStrip({ opsRooms, onRoomClick }: {
+  opsRooms: RoomOperationalState[];
+  onRoomClick: (code: string) => void;
 }) {
-  const [tab, setTab] = useState<PanelTab>('tasks');
-  const roomTasks = useMemo(() => tasks.filter(t => t.room_id === state.room_id), [tasks, state.room_id]);
+  const items = useMemo(() => {
+    return opsRooms
+      .filter(r => r.urgency_score >= 1)
+      .sort((a, b) => b.urgency_score - a.urgency_score)
+      .map(r => {
+        const harvestDays = r.section_days_to_harvest ?? r.days_to_harvest;
+        let message = '';
+        if (harvestDays !== null && harvestDays <= 0) message = `${Math.abs(harvestDays)}d overdue`;
+        else if (harvestDays !== null && harvestDays <= 7) message = `Harvest in ${harvestDays}d`;
+        else if (r.days_in_stage && r.days_in_stage > 30 && r.room_type === 'veg') message = `${r.days_in_stage}d in veg`;
+        else if (r.urgency_score >= 2) message = 'Needs attention';
+        else message = 'Watch';
+        return { code: r.room_code, message, urgency: r.urgency_score };
+      });
+  }, [opsRooms]);
 
-  const tabs: { key: PanelTab; label: string; icon: typeof ClipboardList; count?: number }[] = [
-    { key: 'tasks', label: 'Tasks', icon: ClipboardList, count: roomTasks.length },
-    { key: 'status', label: 'Status', icon: Leaf },
-    { key: 'feed', label: 'Feed', icon: Droplets },
-  ];
+  if (items.length === 0) return null;
 
   return (
-    <div className="bg-cult-charcoal/30 border-b border-cult-dark-gray/50 border-l-4 border-l-transparent">
-      {/* Tab bar */}
-      <div className="flex items-center gap-1 px-4 pt-2 border-b border-cult-dark-gray/30">
-        {tabs.map(({ key, label, icon: Icon, count }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-              tab === key
-                ? 'border-cult-accent text-cult-white'
-                : 'border-transparent text-cult-medium-gray hover:text-cult-lighter-gray'
-            }`}
-          >
-            <Icon className="w-3 h-3" />
-            {label}
-            {count != null && count > 0 && (
-              <span className="text-[10px] bg-cult-dark-gray px-1 rounded">{count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div className="px-4 py-3 max-h-[400px] overflow-y-auto">
-        {tab === 'tasks' && <TasksPanel tasks={roomTasks} onUpdateStatus={onUpdateTaskStatus} />}
-        {tab === 'status' && <StatusPanel state={state} />}
-        {tab === 'feed' && <FeedPanel state={state} />}
-      </div>
+    <div className={`${GLASS} py-2.5 px-4 flex items-center gap-4 overflow-x-auto scrollbar-hide`}>
+      <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+      {items.map(item => (
+        <button
+          key={item.code}
+          type="button"
+          onClick={() => onRoomClick(item.code)}
+          className="flex items-center gap-2 text-xs whitespace-nowrap hover:opacity-80 transition-opacity active:scale-95"
+        >
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: statusColor(item.urgency) }} />
+          <span className="font-mono font-semibold text-white">{item.code}</span>
+          <span className={item.urgency >= 3 ? 'text-red-400' : 'text-amber-400'}>{item.message}</span>
+        </button>
+      ))}
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Tasks Panel
+// SCREEN 2: Expanded Room View
 // ═══════════════════════════════════════════════════════════════
 
-function TasksPanel({ tasks, onUpdateStatus }: {
+function ExpandedRoomView({ state, tasks, onUpdateTaskStatus, onBack }: {
+  state: RoomOperationalState;
   tasks: DailyTaskInstance[];
-  onUpdateStatus: (taskId: string, status: string) => void;
+  onUpdateTaskStatus: (id: string, status: string) => void;
+  onBack: () => void;
 }) {
+  const roomTasks = useMemo(() => tasks.filter(t => t.room_id === state.room_id), [tasks, state.room_id]);
+  const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
+  const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
+  const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
+  const color = statusColor(state.urgency_score);
+  const stage = getStageColor(state.room_type);
+  const headerColor = state.urgency_score >= 2 ? color : stage.base;
+
+  return (
+    <motion.div {...expandVariants} className="space-y-4">
+      {/* Room header */}
+      <div className={`${GLASS_ELEVATED} p-5 relative overflow-hidden`}
+        style={{ borderColor: `${headerColor}20` }}
+      >
+        {/* Background glow — stage-colored light through header glass */}
+        <div
+          className="absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none"
+          style={{
+            background: `radial-gradient(circle, ${headerColor}18 0%, ${headerColor}06 40%, transparent 65%)`,
+            filter: 'blur(16px)',
+          }}
+        />
+
+        <div className="relative flex items-center gap-5">
+          <button type="button" onClick={onBack} className="p-2 rounded-xl hover:bg-white/10 transition-colors active:scale-95">
+            <ChevronLeft className="w-5 h-5 text-white/60" />
+          </button>
+
+          {/* Status ring */}
+          <div
+            className="w-14 h-14 rounded-full border-[3px] flex items-center justify-center"
+            style={statusRingStyle(state.urgency_score, false, state.room_type)}
+          >
+            <span className="text-sm font-mono font-bold text-white">
+              {state.room_type === 'flower' ? 'F' : state.room_type === 'veg' ? 'V' : state.room_type[0].toUpperCase()}
+            </span>
+          </div>
+
+          <div className="flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="font-mono text-xl font-bold text-white">{state.room_code}</span>
+              <span className="text-xs uppercase tracking-widest text-white/30">{state.room_type}</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-white/40 mt-1">
+              <span>{state.total_plants} plants</span>
+              <span>{state.strain_count} strains</span>
+              {dayCount != null && <span>Day {dayCount}</span>}
+              {harvestDays != null && (
+                <span className={harvestDays <= 0 ? 'text-red-400 font-medium' : harvestDays <= 7 ? 'text-amber-400' : ''}>
+                  {harvestDays <= 0 ? `${Math.abs(harvestDays)}d overdue` : `${harvestDays}d to harvest`}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Task counter */}
+          <div className="text-right">
+            <span className="text-3xl font-bold font-mono" style={{ color: GOLD }}>{doneTasks}/{roomTasks.length}</span>
+            <p className="text-[10px] text-white/25 uppercase tracking-wider">tasks</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bento content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Task checklist — takes 3/5 */}
+        <div className={`lg:col-span-3 ${GLASS} p-5`}>
+          <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
+          <TaskChecklist tasks={roomTasks} onUpdateStatus={onUpdateTaskStatus} />
+        </div>
+
+        {/* Right column — 2/5 */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Strains */}
+          {state.strain_names && state.strain_names.length > 0 && (
+            <div className={`${GLASS} p-4`}>
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Strains</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {state.strain_names.map(s => (
+                  <span key={s} className="text-xs text-white/60 px-2.5 py-1 rounded-full bg-white/5 border border-white/5">{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Room stats */}
+          <div className={`${GLASS} p-4`}>
+            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Room Info</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Plants', value: state.total_plants },
+                { label: 'Groups', value: state.plant_group_count },
+                { label: 'Day', value: dayCount ?? '—' },
+                { label: 'Strains', value: state.strain_count },
+                ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
+                ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
+              ].map(({ label, value }) => (
+                <div key={label} className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.04]">
+                  <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
+                  <div className="text-sm font-semibold text-white/90 mt-0.5">{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Feed recipe */}
+          <FeedCard state={state} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Task Checklist
+// ═══════════════════════════════════════════════════════════════
+
+function TaskChecklist({ tasks, onUpdateStatus }: {
+  tasks: DailyTaskInstance[];
+  onUpdateStatus: (id: string, status: string) => void;
+}) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const sorted = useMemo(() => {
     const order: Record<string, number> = { in_progress: 0, pending: 1, completed: 2, skipped: 3 };
     return [...tasks].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
   }, [tasks]);
 
   if (sorted.length === 0) {
-    return <p className="text-xs text-cult-text-faint py-4 text-center">No tasks scheduled for this room today.</p>;
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm text-white/20">No tasks scheduled today</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-1">
-      {sorted.map(task => (
-        <TaskRow key={task.id} task={task} onUpdateStatus={onUpdateStatus} />
+    <motion.div className="space-y-1" variants={containerVariants} initial="hidden" animate="show">
+      {sorted.map(task => {
+        const config = getTaskTypeConfig(task.task_type);
+        const isExpanded = expandedId === task.id;
+
+        return (
+          <motion.div key={task.id} variants={tileVariants}>
+            {/* Task row */}
+            <button
+              type="button"
+              onClick={() => setExpandedId(isExpanded ? null : task.id)}
+              className="w-full flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-white/5 transition-all duration-200 text-left group"
+            >
+              {/* Checkbox */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (task.status === 'pending') onUpdateStatus(task.id, 'in_progress');
+                  else if (task.status === 'in_progress') onUpdateStatus(task.id, 'completed');
+                }}
+                className="flex-shrink-0 active:scale-90 transition-transform duration-200"
+              >
+                {task.status === 'completed' ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                ) : task.status === 'in_progress' ? (
+                  <motion.div
+                    className="w-5 h-5 rounded-full border-2 border-amber-400 bg-amber-400/20"
+                    animate={{ borderColor: ['#f59e0b', '#fbbf24', '#f59e0b'] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-white/15 group-hover:border-white/30 transition-colors" />
+                )}
+              </button>
+
+              {/* Color accent */}
+              <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }} />
+
+              {/* Label */}
+              <span className={`text-sm flex-1 transition-colors ${
+                task.status === 'completed' ? 'text-white/25 line-through' :
+                task.status === 'skipped' ? 'text-white/20 line-through' :
+                'text-white/80'
+              }`}>
+                {config.label}
+              </span>
+
+              {/* Status hint */}
+              {task.status === 'pending' && (
+                <span className="text-[10px] text-white/15 opacity-0 group-hover:opacity-100 transition-opacity">tap to start</span>
+              )}
+            </button>
+
+            {/* Expanded detail */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <TaskExpandedDetail task={task} onUpdateStatus={onUpdateStatus} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+function TaskExpandedDetail({ task, onUpdateStatus }: {
+  task: DailyTaskInstance;
+  onUpdateStatus: (id: string, status: string) => void;
+}) {
+  return (
+    <div className="ml-11 mb-2 p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-white/60">{getTaskTypeConfig(task.task_type).label}</span>
+        <div className="flex gap-2">
+          {task.status === 'pending' && (
+            <button
+              type="button"
+              onClick={() => onUpdateStatus(task.id, 'in_progress')}
+              className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-colors active:scale-95"
+            >
+              Start
+            </button>
+          )}
+          {(task.status === 'pending' || task.status === 'in_progress') && (
+            <button
+              type="button"
+              onClick={() => onUpdateStatus(task.id, 'completed')}
+              className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors active:scale-95"
+            >
+              Complete
+            </button>
+          )}
+        </div>
+      </div>
+
+      {task.notes && <p className="text-xs text-white/40">{task.notes}</p>}
+
+      {task.task_type === 'batch_tank_mix' && <InlineTankMixRecipe />}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Feed / Recipe Cards
+// ═══════════════════════════════════════════════════════════════
+
+function InlineTankMixRecipe() {
+  const { recipe, loading } = useFeedProgramRecipe('flower', 60);
+
+  if (loading) return <div className="h-16 rounded-lg bg-white/5 animate-pulse" />;
+  if (!recipe) return <p className="text-[10px] text-white/20">No feed program configured.</p>;
+
+  return (
+    <div className="space-y-2 pt-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-white/50">{recipe.program_name} · W{recipe.week_number}</span>
+        {recipe.targets.target_ec && (
+          <span className="text-xs font-mono text-emerald-400">EC {recipe.targets.target_ec}</span>
+        )}
+      </div>
+      {recipe.entries.map((entry, i) => (
+        <div key={i} className="flex justify-between text-[11px] py-1 px-2 rounded-lg bg-white/[0.03]">
+          <span className="text-white/40">{entry.product.name}</span>
+          <span className="text-white/60 font-mono">{entry.ml_per_gal} mL/gal</span>
+        </div>
       ))}
     </div>
   );
 }
 
-function TaskRow({ task, onUpdateStatus }: {
-  task: DailyTaskInstance;
-  onUpdateStatus: (taskId: string, status: string) => void;
-}) {
-  const config = getTaskTypeConfig(task.task_type);
-  const statusStyles: Record<string, string> = {
-    completed: 'text-emerald-400',
-    in_progress: 'text-amber-400',
-    pending: 'text-cult-text-muted',
-    skipped: 'text-cult-text-faint line-through',
-  };
+function FeedCard({ state }: { state: RoomOperationalState }) {
+  const stage = state.dominant_stage ?? state.room_type;
+  const days = state.days_since_flip ?? state.days_in_stage ?? 0;
+  const { recipe, loading } = useFeedProgramRecipe(stage, days);
+
+  if (loading) return <div className={`${GLASS} p-4 h-32 animate-pulse`} />;
+  if (!recipe) return null;
 
   return (
-    <div className="flex items-center gap-3 py-2 px-2 rounded hover:bg-white/[0.03] group">
-      {/* Status toggle */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (task.status === 'pending') onUpdateStatus(task.id, 'in_progress');
-          else if (task.status === 'in_progress') onUpdateStatus(task.id, 'completed');
-        }}
-        className="flex-shrink-0"
-      >
-        {task.status === 'completed' ? (
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-        ) : task.status === 'in_progress' ? (
-          <Clock className="w-4 h-4 text-amber-400" />
-        ) : (
-          <div className="w-4 h-4 rounded-full border border-cult-medium-gray group-hover:border-cult-accent transition-colors" />
-        )}
-      </button>
-
-      {/* Task type indicator */}
-      <div
-        className="w-1.5 h-4 rounded-sm flex-shrink-0"
-        style={{ backgroundColor: config.color }}
-      />
-
-      {/* Label */}
-      <span className={`text-xs flex-1 ${statusStyles[task.status] ?? 'text-cult-lighter-gray'}`}>
-        {config.label}
-      </span>
-
-      {/* Quick actions for pending */}
-      {task.status === 'pending' && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onUpdateStatus(task.id, 'in_progress'); }}
-          className="text-[10px] text-cult-accent opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          Start
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Status Panel
-// ═══════════════════════════════════════════════════════════════
-
-function StatusPanel({ state }: { state: RoomOperationalState }) {
-  const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
-
-  const stats: { label: string; value: string | number | null }[] = [
-    { label: 'Plants', value: state.total_plants },
-    { label: 'Strains', value: state.strain_count },
-    { label: 'Day', value: dayCount },
-    { label: 'Groups', value: state.plant_group_count },
-  ];
-
-  if (state.room_type === 'flower') {
-    if (state.earliest_flip_date) stats.push({ label: 'Flipped', value: state.earliest_flip_date });
-    if (state.section_projected_harvest) stats.push({ label: 'Harvest Date', value: state.section_projected_harvest });
-    if (state.last_harvest_date) stats.push({ label: 'Last Harvest', value: state.last_harvest_date });
-  }
-
-  return (
-    <div className="space-y-3">
-      {/* Stats grid */}
-      <div className="grid grid-cols-4 gap-2">
-        {stats.map(({ label, value }) => (
-          <div key={label} className="bg-cult-near-black border border-cult-dark-gray/50 rounded p-2">
-            <div className="text-[10px] text-cult-text-faint uppercase tracking-wider">{label}</div>
-            <div className="text-sm font-semibold text-cult-white mt-0.5">{value ?? '—'}</div>
+    <div className={`${GLASS} p-4`}>
+      <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-3">Feed Recipe</h3>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-white/60">{recipe.program_name}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-white/30">{recipe.phase} · W{recipe.week_number}</span>
+          {recipe.targets.target_ec && (
+            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              EC {recipe.targets.target_ec}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="space-y-1">
+        {recipe.entries.map((entry, i) => (
+          <div key={i} className="flex justify-between items-center py-1.5 px-2.5 rounded-lg bg-white/[0.03]">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/20 font-mono w-3">{entry.mixing_order}</span>
+              <span className="text-xs text-white/60">{entry.product.name}</span>
+            </div>
+            <span className="text-xs font-mono text-white/80">{entry.ml_per_gal}</span>
           </div>
         ))}
       </div>
-
-      {/* Strains list */}
-      {state.strain_names && state.strain_names.length > 0 && (
-        <div>
-          <div className="text-[10px] text-cult-text-faint uppercase tracking-wider mb-1.5">Strains</div>
-          <div className="flex flex-wrap gap-1">
-            {state.strain_names.map(s => (
-              <span key={s} className="text-xs border border-cult-dark-gray text-cult-lighter-gray px-1.5 py-0.5 bg-cult-surface-overlay">{s}</span>
-            ))}
-          </div>
+      {recipe.targets.target_ph_min && recipe.targets.target_ph_max && (
+        <div className="flex gap-4 mt-3 text-[10px] text-white/25">
+          <span>pH {recipe.targets.target_ph_min}–{recipe.targets.target_ph_max}</span>
+          {recipe.targets.target_ppm_500 && <span>PPM {recipe.targets.target_ppm_500}</span>}
         </div>
       )}
     </div>
@@ -297,54 +628,19 @@ function StatusPanel({ state }: { state: RoomOperationalState }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Feed Panel — current week's recipe
+// Loading Skeleton
 // ═══════════════════════════════════════════════════════════════
 
-function FeedPanel({ state }: { state: RoomOperationalState }) {
-  const stage = state.dominant_stage ?? state.room_type;
-  const daysInStage = state.days_since_flip ?? state.days_in_stage ?? 0;
-  const { recipe, loading } = useFeedProgramRecipe(stage, daysInStage);
-
-  if (loading) return <p className="text-xs text-cult-text-faint py-4 text-center">Loading recipe...</p>;
-  if (!recipe) return <p className="text-xs text-cult-text-faint py-4 text-center">No feed program configured for this stage.</p>;
-
+function GlassSkeleton() {
   return (
-    <div className="space-y-3">
-      {/* Program header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-xs font-semibold text-cult-white">{recipe.program_name}</span>
-          <span className="text-[10px] text-cult-medium-gray ml-2">
-            {recipe.phase} · Week {recipe.week_number}
-          </span>
-        </div>
-        {recipe.targets.target_ec && (
-          <span className="text-xs font-mono text-cult-accent">EC {recipe.targets.target_ec}</span>
-        )}
-      </div>
-
-      {/* Targets row */}
-      <div className="flex gap-3 text-[10px]">
-        {recipe.targets.target_ppm_500 && (
-          <span className="text-cult-lighter-gray">PPM 500: <span className="text-cult-white font-medium">{recipe.targets.target_ppm_500}</span></span>
-        )}
-        {recipe.targets.target_ph_min && recipe.targets.target_ph_max && (
-          <span className="text-cult-lighter-gray">pH: <span className="text-cult-white font-medium">{recipe.targets.target_ph_min}–{recipe.targets.target_ph_max}</span></span>
-        )}
-      </div>
-
-      {/* Recipe entries */}
-      <div className="space-y-1">
-        {recipe.entries.map((entry, i) => (
-          <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded bg-cult-near-black border border-cult-dark-gray/30">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-cult-text-faint w-4 text-right">{entry.mixing_order}</span>
-              <span className="text-xs text-cult-lighter-gray">{entry.product.name}</span>
-            </div>
-            <span className="text-xs font-mono text-cult-white">
-              {entry.ml_per_gal} {entry.product.unit}/gal
-            </span>
-          </div>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className={`${GLASS} animate-pulse ${i < 2 ? 'col-span-2 row-span-2' : ''}`}
+            style={{ minHeight: i < 2 ? '200px' : '120px' }}
+          />
         ))}
       </div>
     </div>
@@ -359,103 +655,88 @@ export function CommandCenter() {
   const { rooms: opsRooms, loading } = useRoomOperationalState();
   const today = todayIso();
   const { tasks, updateStatus } = useDailyTasks(today);
+  const [selectedRoomCode, setSelectedRoomCode] = useState<string | null>(null);
 
-  const [openRoomId, setOpenRoomId] = useState<string | null>(null);
+  const selectedRoom = useMemo(
+    () => selectedRoomCode ? opsRooms.find(r => r.room_code === selectedRoomCode) ?? null : null,
+    [selectedRoomCode, opsRooms]
+  );
 
-  // Group rooms by type
-  const roomsByType = useMemo(() => {
-    const typeOrder = ['flower', 'veg', 'clone', 'mother', 'mixed'];
-    const groups = new Map<string, RoomOperationalState[]>();
-    for (const room of opsRooms) {
-      const type = room.room_type;
-      if (!groups.has(type)) groups.set(type, []);
-      groups.get(type)!.push(room);
-    }
-    return typeOrder
-      .filter(t => groups.has(t))
-      .map(t => ({ type: t, rooms: groups.get(t)! }));
+  // Sort: urgent first, then by room code
+  const sortedRooms = useMemo(() => {
+    return [...opsRooms].sort((a, b) => {
+      if (b.urgency_score !== a.urgency_score) return b.urgency_score - a.urgency_score;
+      return a.room_code.localeCompare(b.room_code);
+    });
   }, [opsRooms]);
 
-  // Summary stats
-  const totalPlants = opsRooms.reduce((sum, r) => sum + r.total_plants, 0);
-  const activeRooms = opsRooms.filter(r => r.total_plants > 0).length;
-  const totalTasksToday = tasks.length;
-  const completedToday = tasks.filter(t => t.status === 'completed').length;
-  const urgentRooms = opsRooms.filter(r => r.urgency_score >= 2).length;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
 
-  function handleToggle(roomId: string) {
-    setOpenRoomId(prev => prev === roomId ? null : roomId);
-  }
+  const handleRoomClick = useCallback((code: string) => {
+    setSelectedRoomCode(code);
+  }, []);
 
-  function handleUpdateTaskStatus(taskId: string, status: string) {
+  const handleUpdateTaskStatus = useCallback((taskId: string, status: string) => {
     updateStatus(taskId, status as DailyTaskInstance['status']);
-  }
+  }, [updateStatus]);
 
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="animate-pulse space-y-3">
-          {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 bg-cult-charcoal rounded" />)}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <GlassSkeleton />;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+    <div className={`min-h-screen ${PAGE_BG}`}>
+    <div className="max-w-6xl mx-auto px-4 py-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Sprout className="w-6 h-6 text-cult-accent" />
+          <Sprout className="w-5 h-5 text-emerald-400" />
           <div>
-            <h1 className="text-lg font-semibold text-cult-white font-montserrat">Command Center</h1>
-            <p className="text-[12px] text-cult-text-muted">{activeRooms} rooms · {totalPlants} plants · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+            <h1 className="text-base font-semibold text-white">Command Center</h1>
+            <p className="text-[11px] text-white/30">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
           </div>
         </div>
-
-        {/* Summary badges */}
-        <div className="flex items-center gap-2">
-          {urgentRooms > 0 && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-900/20 border border-red-500/30 rounded text-xs">
-              <AlertTriangle className="w-3 h-3 text-red-400" />
-              <span className="text-red-300 font-medium">{urgentRooms} need attention</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-cult-charcoal border border-cult-dark-gray rounded text-xs">
-            <ClipboardList className="w-3 h-3 text-cult-accent" />
-            <span className="text-cult-white font-medium">{completedToday}/{totalTasksToday}</span>
-            <span className="text-cult-text-muted">tasks</span>
-          </div>
+        <div className={`${GLASS} px-3 py-1.5 flex items-center gap-2`}>
+          <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-mono text-sm font-semibold text-white">{completedTasks}/{totalTasks}</span>
+          <span className="text-[10px] text-white/30">done</span>
         </div>
       </div>
 
-      {/* Room list grouped by type */}
-      {roomsByType.map(({ type, rooms }) => (
-        <div key={type}>
-          <div className="text-[10px] text-cult-text-faint uppercase tracking-wider font-medium px-4 py-1.5">
-            {type} rooms
-          </div>
-          <div className="border border-cult-dark-gray/50 rounded overflow-hidden">
-            {rooms.map(room => (
-              <div key={room.room_id}>
-                <RoomRow
-                  state={room}
-                  isOpen={openRoomId === room.room_id}
-                  onToggle={() => handleToggle(room.room_id)}
-                  tasks={tasks}
-                />
-                {openRoomId === room.room_id && (
-                  <RoomPanel
-                    state={room}
-                    tasks={tasks}
-                    onUpdateTaskStatus={handleUpdateTaskStatus}
-                  />
-                )}
-              </div>
+      {/* Attention strip */}
+      <AttentionStrip opsRooms={opsRooms} onRoomClick={handleRoomClick} />
+
+      {/* Main content */}
+      <AnimatePresence mode="wait">
+        {selectedRoom ? (
+          <ExpandedRoomView
+            key={`room-${selectedRoomCode}`}
+            state={selectedRoom}
+            tasks={tasks}
+            onUpdateTaskStatus={handleUpdateTaskStatus}
+            onBack={() => setSelectedRoomCode(null)}
+          />
+        ) : (
+          <motion.div
+            key="grid"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {sortedRooms.map(room => (
+              <RoomTile
+                key={room.room_id}
+                state={room}
+                tasks={tasks}
+                onClick={() => handleRoomClick(room.room_code)}
+              />
             ))}
-          </div>
-        </div>
-      ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
     </div>
   );
 }

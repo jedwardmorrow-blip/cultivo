@@ -33,16 +33,8 @@ export class CultivationErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[CultivationErrorBoundary]', error, info.componentStack);
 
-    if (isChunkLoadError(error)) {
-      const reloadKey = 'cult-chunk-reload';
-      const lastReload = sessionStorage.getItem(reloadKey);
-      const now = Date.now();
-      if (!lastReload || now - Number(lastReload) > 10000) {
-        sessionStorage.setItem(reloadKey, String(now));
-        window.location.reload();
-        return;
-      }
-    }
+    // Auto-reload disabled — was causing browser crash loops
+    // when chunk loads fail repeatedly during development.
   }
 
   render() {
@@ -51,8 +43,8 @@ export class CultivationErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8">
-          <div className="flex items-center gap-3 rounded-lg border border-red-700 bg-red-950/40 px-6 py-4 max-w-md">
-            <AlertTriangle className="h-6 w-6 text-red-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 rounded-lg border border-cult-danger bg-cult-danger-muted px-6 py-4 max-w-md">
+            <AlertTriangle className="h-6 w-6 text-cult-danger flex-shrink-0" />
             <div>
               <h3 className="text-sm font-semibold text-cult-white">
                 {isChunk ? 'App update available' : 'Something went wrong in Cultivation'}
