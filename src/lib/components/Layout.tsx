@@ -61,7 +61,7 @@ export function Layout({ children }: LayoutProps) {
           Demo Environment — Data shown is fictional and for demonstration purposes only
         </div>
       )}
-      <nav className="border-b sticky top-0 z-40 shadow-glass border-white/[0.06] safe-top" style={{ background: 'rgba(14, 14, 30, 0.8)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}>
+      <nav className="border-b sticky top-0 z-40 shadow-glass border-white/[0.06] safe-top" style={{ background: 'rgba(10, 11, 20, 0.7)', backdropFilter: 'blur(24px) saturate(1.3)', WebkitBackdropFilter: 'blur(24px) saturate(1.3)' }}>
         <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
