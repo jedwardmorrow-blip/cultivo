@@ -35,6 +35,9 @@ const GLASS_TILE = 'rounded-2xl border border-white/[0.07] backdrop-blur-xl shad
 const GLASS_HOVER = 'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
 const GLASS_EMPTY = 'rounded-2xl border border-white/[0.04] bg-white/[0.02]';
 
+// Page background gradient — gives glass something to blur against
+const PAGE_BG = 'bg-gradient-to-br from-[#0a0f0a] via-[#080a08] to-[#060808]';
+
 // Brand gold accent
 const GOLD = '#D4A843';
 
