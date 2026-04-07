@@ -12274,6 +12274,7 @@ export type Database = {
           created_by_user_id: string | null
           delivery_route_id: string | null
           id: string
+          inventory_item_id: string | null
           order_item_id: string | null
           priority: number
           processing_stage: string
@@ -12292,6 +12293,7 @@ export type Database = {
           created_by_user_id?: string | null
           delivery_route_id?: string | null
           id?: string
+          inventory_item_id?: string | null
           order_item_id?: string | null
           priority?: number
           processing_stage: string
@@ -12310,6 +12312,7 @@ export type Database = {
           created_by_user_id?: string | null
           delivery_route_id?: string | null
           id?: string
+          inventory_item_id?: string | null
           order_item_id?: string | null
           priority?: number
           processing_stage?: string

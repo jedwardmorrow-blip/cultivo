@@ -83,8 +83,8 @@ function PriorityBadge({ priority }: { priority: number }) {
     : priority <= 40
     ? { style: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', label: 'High' }
     : priority <= 60
-    ? { style: 'bg-cult-mid-gray/20 text-cult-text-muted border-cult-dark-gray/50', label: 'Normal' }
-    : { style: 'bg-cult-mid-gray/10 text-cult-text-faint border-cult-dark-gray/30', label: 'Low' };
+    ? { style: 'bg-cult-surface-overlay text-cult-text-muted border-cult-border', label: 'Normal' }
+    : { style: 'bg-cult-surface-raised text-cult-text-faint border-cult-border-subtle', label: 'Low' };
 
   return (
     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.style}`}>
@@ -106,7 +106,7 @@ function QueuedCard({
   const StageIcon = stageStyle.icon;
 
   return (
-    <div className="rounded-xl border border-cult-dark-gray/60 bg-gradient-to-r from-cult-mid-gray/[0.03] to-transparent hover:border-cult-dark-gray transition-all duration-200">
+    <div className="rounded-xl border border-cult-border bg-gradient-to-r from-cult-surface-raised to-transparent hover:border-cult-border-strong transition-all duration-200">
       <div className="px-4 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={`w-9 h-9 rounded-lg ${stageStyle.bg} border ${stageStyle.border} flex items-center justify-center shrink-0`}>
@@ -120,11 +120,11 @@ function QueuedCard({
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-cult-text-muted">
               <span className="font-mono text-cult-text-faint">{item.batch_number}</span>
-              <span className="w-px h-3 bg-cult-dark-gray/40" />
+              <span className="w-px h-3 bg-cult-border" />
               <span>{TREATMENT_TYPE_LABELS[item.treatment_type as TreatmentType]}</span>
               {item.quantity_g != null && (
                 <>
-                  <span className="w-px h-3 bg-cult-dark-gray/40" />
+                  <span className="w-px h-3 bg-cult-border" />
                   <span className="font-semibold text-cult-text-secondary">{formatG(item.quantity_g)}</span>
                 </>
               )}
@@ -177,16 +177,16 @@ function ActiveCard({
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-cult-text-muted">
               <span className="font-mono text-cult-text-faint">{session.batchNumber}</span>
-              <span className="w-px h-3 bg-cult-dark-gray/40" />
+              <span className="w-px h-3 bg-cult-border" />
               <span>{session.worker}</span>
-              <span className="w-px h-3 bg-cult-dark-gray/40" />
+              <span className="w-px h-3 bg-cult-border" />
               <span className="flex items-center gap-1 text-cult-warning">
                 <Timer className="w-3 h-3" />
                 {formatElapsedTime(session.startedAt)}
               </span>
               {session.inputWeight > 0 && (
                 <>
-                  <span className="w-px h-3 bg-cult-dark-gray/40" />
+                  <span className="w-px h-3 bg-cult-border" />
                   <span className="font-semibold text-cult-text-secondary">{formatG(session.inputWeight)}</span>
                 </>
               )}
@@ -213,7 +213,7 @@ function CompletedCard({ session }: { session: ActiveSession }) {
   const stageStyle = getStageStyle(session.stage);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-cult-dark-gray/30 bg-cult-mid-gray/[0.02]">
+    <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-cult-border-subtle bg-cult-surface-raised">
       <CheckCircle2 className="w-4 h-4 text-cult-success/60 shrink-0" />
       <span className="text-sm text-cult-text-secondary font-medium">{session.strain}</span>
       <span className={`text-[11px] ${stageStyle.color}`}>{stageStyle.label}</span>
@@ -402,7 +402,7 @@ export function ProductionHub() {
           </button>
           <button
             onClick={handleReload}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cult-dark-gray/60 text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cult-border text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -450,7 +450,7 @@ export function ProductionHub() {
       {/* ── EMPTY STATE ──────────────────────────────────────────── */}
       {activeSessions.length === 0 && queued.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-cult-text-muted">
-          <div className="w-16 h-16 rounded-2xl bg-cult-mid-gray/10 border border-cult-dark-gray/30 flex items-center justify-center mb-5">
+          <div className="w-16 h-16 rounded-2xl bg-cult-surface-raised border border-cult-border-subtle flex items-center justify-center mb-5">
             <Package className="w-8 h-8 opacity-30" />
           </div>
           <p className="text-base font-bold text-cult-text-secondary">No work in queue</p>

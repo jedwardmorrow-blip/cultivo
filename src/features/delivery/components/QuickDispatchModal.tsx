@@ -244,6 +244,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
     try {
       const { error: insertErr } = await supabase.from('production_dispatch_items').insert({
         batch_registry_id: pkg.batch_id,
+        inventory_item_id: pkg.id,
         order_item_id: null, // No order — stock build
         processing_stage: processingStage,
         treatment_type: treatments[0],

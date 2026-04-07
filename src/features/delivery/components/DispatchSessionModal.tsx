@@ -90,14 +90,19 @@ export function DispatchSessionModal({
     try {
       let sessionError: any = null;
 
+      if (!dispatchItem.package_id) {
+        setError('No package linked to this dispatch item. Re-dispatch from Order Fulfillment.');
+        return;
+      }
+
       if (stage === 'buck') {
         const { error: err } = await createBuckingSession({
           bucker_name: staffName,
           bucker_staff_id: staffId,
-          binned_package_id: '', // Will be resolved by batch context
+          binned_package_id: dispatchItem.package_id,
           binned_weight_grams: pullWeight,
           strain: dispatchItem.strain,
-          batch_id: dispatchItem.batch_number, // batch_id field stores batch_number in bucking_sessions
+          batch_id: dispatchItem.batch_number,
           notes: notes || null,
           session_status: 'active',
           dispatch_item_id: dispatchItem.id,
@@ -107,7 +112,8 @@ export function DispatchSessionModal({
         const { error: err } = await createTrimSession({
           trimmer_name: staffName,
           trimmer_staff_id: staffId,
-          pull_weight_grams: pullWeight,
+          pulled_weight: pullWeight,
+          package_id: dispatchItem.package_id,
           strain: dispatchItem.strain,
           batch_id: dispatchItem.batch_number,
           notes: notes || null,
@@ -119,7 +125,8 @@ export function DispatchSessionModal({
         const { error: err } = await createPackagingSession({
           packager_name: staffName,
           packager_staff_id: staffId,
-          source_weight_grams: pullWeight,
+          pull_weight: pullWeight,
+          package_id: dispatchItem.package_id,
           strain: dispatchItem.strain,
           batch_id: dispatchItem.batch_number,
           notes: notes || null,
@@ -192,7 +199,7 @@ export function DispatchSessionModal({
         </div>
 
         {dispatchItem.customer_name && (
-          <div className="mt-3 pt-3 border-t border-cult-dark-gray/20 text-xs text-cult-text-muted">
+          <div className="mt-3 pt-3 border-t border-cult-border-subtle text-xs text-cult-text-muted">
             For: <span className="text-cult-text-secondary font-medium">{dispatchItem.customer_name}</span>
             {dispatchItem.order_number && <span className="ml-1 font-mono">({dispatchItem.order_number})</span>}
           </div>
@@ -216,7 +223,7 @@ export function DispatchSessionModal({
             }}
             required
             disabled={staffLoading}
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-dark-gray/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
           >
             <option value="">{staffLoading ? 'Loading staff...' : `Select ${staffLabel.toLowerCase()}`}</option>
             {staff.map(member => (
@@ -238,7 +245,7 @@ export function DispatchSessionModal({
             value={pullWeight || ''}
             onChange={(e) => setPullWeight(parseFloat(e.target.value) || 0)}
             required
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-dark-gray/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 transition-colors"
           />
           <p className="text-[11px] text-cult-text-faint mt-1 tabular-nums">
             {(pullWeight / 1000).toFixed(2)} kg · {(pullWeight / 453.592).toFixed(2)} lbs
@@ -256,7 +263,7 @@ export function DispatchSessionModal({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any observations or special instructions..."
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-dark-gray/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary placeholder-cult-text-faint focus:outline-none focus:border-cult-accent/50 transition-colors resize-none"
+            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary placeholder-cult-text-faint focus:outline-none focus:border-cult-accent/50 transition-colors resize-none"
           />
         </div>
 
@@ -273,7 +280,7 @@ export function DispatchSessionModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl border border-cult-dark-gray/60 text-sm font-medium text-cult-text-muted hover:text-cult-text-primary hover:border-cult-dark-gray transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl border border-cult-border text-sm font-medium text-cult-text-muted hover:text-cult-text-primary hover:border-cult-border-strong transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -282,7 +289,7 @@ export function DispatchSessionModal({
             disabled={submitting || !staffId || pullWeight <= 0}
             className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${
               submitting
-                ? 'bg-cult-mid-gray/30 text-cult-text-muted'
+                ? 'bg-cult-surface-overlay text-cult-text-muted'
                 : 'bg-cult-accent text-cult-black hover:bg-cult-accent/90'
             }`}
           >

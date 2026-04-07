@@ -438,6 +438,7 @@ function PackageInventoryModal({
     try {
       const { error } = await supabase.from('production_dispatch_items').insert({
         batch_registry_id: pkg.batch_id,
+        inventory_item_id: pkg.id,
         order_item_id: processingStage === 'package_to_order' ? lineItem.order_item_id : null,
         processing_stage: processingStage,
         treatment_type: treatments[0],

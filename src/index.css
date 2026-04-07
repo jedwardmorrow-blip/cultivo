@@ -238,6 +238,11 @@
     color-scheme: dark;
   }
 
+  select option {
+    background-color: #111111;
+    color: #FFFFFF;
+  }
+
   input::placeholder,
   textarea::placeholder {
     @apply text-cult-silver;

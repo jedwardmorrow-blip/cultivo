@@ -19,6 +19,7 @@ export type DispatchStatus = 'pending' | 'in_progress' | 'completed' | 'cancelle
 export interface DispatchItem {
   id: string;
   batch_registry_id: string;
+  inventory_item_id: string | null;
   order_item_id: string | null;
   delivery_route_id: string | null;
   processing_stage: ProcessingStage;
@@ -38,6 +39,8 @@ export interface DispatchItem {
   strain: string;
   lifecycle_state: string;
   room: string | null;
+  // Joined from inventory_items (package identity)
+  package_id: string | null;
   // Joined from order_items (when package_to_order)
   order_number: string | null;
   customer_name: string | null;
@@ -76,6 +79,7 @@ export interface DemandLine {
 
 export interface CreateDispatchPayload {
   batch_registry_id: string;
+  inventory_item_id?: string;
   order_item_id?: string;
   processing_stage: ProcessingStage;
   treatment_type: TreatmentType;
@@ -130,12 +134,13 @@ export function useProductionDispatch() {
         supabase
           .from('production_dispatch_items')
           .select(`
-            id, batch_registry_id, order_item_id, delivery_route_id,
+            id, batch_registry_id, inventory_item_id, order_item_id, delivery_route_id,
             processing_stage, treatment_type, quantity_g,
             quantity_units_target, quantity_units_completed,
             priority, status, ready_by, assigned_staff_id,
             created_by_user_id, created_at, updated_at,
-            batch_registry!inner(batch_number, strain, lifecycle_state, room)
+            batch_registry!inner(batch_number, strain, lifecycle_state, room),
+            inventory_items(package_id)
           `)
           .in('status', ['pending', 'in_progress'])
           .order('priority', { ascending: true }),
@@ -171,6 +176,7 @@ export function useProductionDispatch() {
       const items: DispatchItem[] = (dispatchRes.data || []).map((row: any) => ({
         id: row.id,
         batch_registry_id: row.batch_registry_id,
+        inventory_item_id: row.inventory_item_id,
         order_item_id: row.order_item_id,
         delivery_route_id: row.delivery_route_id,
         processing_stage: row.processing_stage as ProcessingStage,
@@ -189,6 +195,7 @@ export function useProductionDispatch() {
         strain: row.batch_registry?.strain ?? '',
         lifecycle_state: row.batch_registry?.lifecycle_state ?? '',
         room: row.batch_registry?.room ?? null,
+        package_id: row.inventory_items?.package_id ?? null,
         order_number: null,
         customer_name: null,
       }));
@@ -262,6 +269,7 @@ export function useProductionDispatch() {
     try {
       const { error } = await supabase.from('production_dispatch_items').insert({
         batch_registry_id: payload.batch_registry_id,
+        inventory_item_id: payload.inventory_item_id ?? null,
         order_item_id: payload.order_item_id ?? null,
         processing_stage: payload.processing_stage,
         treatment_type: payload.treatment_type,
