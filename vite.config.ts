@@ -30,9 +30,10 @@ export default defineConfig({
           if (id.includes('node_modules/html2canvas')) return 'vendor-html2canvas';
           if (id.includes('node_modules/leaflet')) return 'vendor-leaflet';
           if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
-          if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
-          if (id.includes('node_modules/react-router-dom') || id.includes('node_modules/react-router')) return 'vendor-router';
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/scheduler')) return 'vendor-react';
+          if (id.includes('node_modules/react-router-dom') || id.includes('node_modules/react-router') || id.includes('node_modules/@remix-run')) return 'vendor-router';
           if (id.includes('node_modules/lucide-react')) return 'vendor-lucide';
+          if (id.includes('node_modules/framer-motion')) return 'vendor-framer';
           if (id.includes('node_modules/')) return 'vendor-misc';
         },
       },
