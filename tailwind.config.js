@@ -77,7 +77,7 @@ export default {
         'caption': ['0.75rem', { lineHeight: '1rem', fontWeight: '300' }],
       },
       borderRadius: {
-        'cult': '6px',
+        'cult': '16px',
       },
       boxShadow: {
         'glow': '0 0 20px rgba(255, 255, 255, 0.1)',
