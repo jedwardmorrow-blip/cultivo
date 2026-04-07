@@ -394,199 +394,226 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         </div>
       </div>
 
-      {/* Bento content grid — with expandable cards */}
-      <AnimatePresence mode="wait">
-        {focusedCard ? (
-          /* ── Focused card takes full width ── */
-          <motion.div
-            key={`focused-${focusedCard}`}
-            layoutId={focusedCard}
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className={`${GLASS_ELEVATED} p-5`}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
-                {focusedCard === 'room-layout' && 'Room Layout'}
-                {focusedCard === 'plant-groups' && `Plant Groups (${roomGroups.length})`}
-                {focusedCard === 'feed-recipe' && 'Feed Recipe'}
-                {focusedCard === 'room-info' && 'Room Info'}
-                {focusedCard === 'strains' && 'Strains'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setFocusedCard(null)}
-                className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+      {/* Bento content grid — cards swap into main panel on tap */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* ── Left column (3/5) — main content area ── */}
+        <div className="lg:col-span-3">
+          <AnimatePresence mode="wait">
+            {focusedCard ? (
+              <motion.div
+                key={`main-${focusedCard}`}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className={`${GLASS} p-5`}
               >
-                <ChevronLeft className="w-3 h-3" /> Back
-              </button>
-            </div>
-
-            {focusedCard === 'room-layout' && <RoomGrid roomId={state.room_id} inline />}
-            {focusedCard === 'feed-recipe' && <FeedCardContent state={state} />}
-            {focusedCard === 'room-info' && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {[
-                  { label: 'Plants', value: state.total_plants },
-                  { label: 'Groups', value: state.plant_group_count },
-                  { label: 'Day', value: dayCount ?? '—' },
-                  { label: 'Strains', value: state.strain_count },
-                  ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
-                  ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
-                ].map(({ label, value }) => (
-                  <div key={label} className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]">
-                    <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
-                    <div className="text-lg font-semibold text-white/90 mt-1">{value}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {focusedCard === 'strains' && state.strain_names && (
-              <div className="flex flex-wrap gap-2">
-                {state.strain_names.map(s => (
-                  <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
-                ))}
-              </div>
-            )}
-            {focusedCard === 'plant-groups' && (
-              <div className="space-y-2">
-                {roomGroups.map(g => {
-                  const batchNum = g.batch_registry?.batch_number;
-                  const strainName = g.strains?.name ?? 'Unknown';
-                  return (
-                    <div key={g.id} className="flex items-center justify-between py-3 px-3 rounded-xl bg-white/[0.03] group">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          {batchNum && <span className="text-sm font-mono text-white/70">{batchNum}</span>}
-                          <span className="text-xs text-white/30 uppercase">{g.growth_stage}</span>
-                        </div>
-                        <div className="text-xs text-white/40 mt-0.5">
-                          {strainName} · {g.plant_count} plants
-                          {g.room_tables && <span> · T{g.room_tables.table_number}</span>}
-                          {g.room_sections && <span> {g.room_sections.section_label}</span>}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const batchId = g.batch_registry_id;
-                          const batchGroups = batchId ? roomGroups.filter(rg => rg.batch_registry_id === batchId) : undefined;
-                          setMovingGroup(g);
-                          setMovingBatchGroups(batchGroups && batchGroups.length > 1 ? batchGroups : undefined);
-                        }}
-                        className="text-xs text-white/25 hover:text-white/50 px-3 py-1.5 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
-                      >
-                        Move
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </motion.div>
-        ) : (
-          /* ── Default two-column layout ── */
-          <motion.div
-            key="grid-default"
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-5 gap-4"
-          >
-            {/* Task checklist — takes 3/5 */}
-            <div className={`lg:col-span-3 ${GLASS} p-5`}>
-              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
-              <TaskChecklist
-                tasks={roomTasks}
-                onUpdateStatus={onUpdateTaskStatus}
-                onOpenCompletion={(task) => setCompletingTask(task)}
-              />
-            </div>
-
-            {/* Right column — 2/5, tappable cards */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Room Layout */}
-              <motion.button
-                layoutId="room-layout"
-                type="button"
-                onClick={() => setFocusedCard('room-layout')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-              >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
-                <RoomGrid roomId={state.room_id} compact />
-              </motion.button>
-
-              {/* Plant Groups */}
-              {roomGroups.length > 0 && (
-                <motion.button
-                  layoutId="plant-groups"
-                  type="button"
-                  onClick={() => setFocusedCard('plant-groups')}
-                  className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-                >
-                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
-                    Plant Groups <span className="text-white/15">({roomGroups.length})</span>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
+                    {focusedCard === 'room-layout' && 'Room Layout'}
+                    {focusedCard === 'plant-groups' && `Plant Groups (${roomGroups.length})`}
+                    {focusedCard === 'feed-recipe' && 'Feed Recipe'}
+                    {focusedCard === 'room-info' && 'Room Info'}
+                    {focusedCard === 'strains' && 'Strains'}
                   </h3>
-                  <div className="space-y-1 max-h-[100px] overflow-hidden">
-                    {roomGroups.slice(0, 3).map(g => (
-                      <div key={g.id} className="text-[10px] text-white/40">
-                        {g.batch_registry?.batch_number ?? g.strains?.name} · {g.plant_count}p
+                  <button
+                    type="button"
+                    onClick={() => setFocusedCard(null)}
+                    className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+                  >
+                    <ChevronLeft className="w-3 h-3" /> Tasks
+                  </button>
+                </div>
+
+                {focusedCard === 'room-layout' && <RoomGrid roomId={state.room_id} inline />}
+                {focusedCard === 'feed-recipe' && <FeedCardContent state={state} />}
+                {focusedCard === 'room-info' && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { label: 'Plants', value: state.total_plants },
+                      { label: 'Groups', value: state.plant_group_count },
+                      { label: 'Day', value: dayCount ?? '—' },
+                      { label: 'Strains', value: state.strain_count },
+                      ...(state.earliest_flip_date ? [{ label: 'Flipped', value: state.earliest_flip_date }] : []),
+                      ...(state.section_projected_harvest ? [{ label: 'Harvest', value: state.section_projected_harvest }] : []),
+                    ].map(({ label, value }) => (
+                      <div key={label} className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04]">
+                        <div className="text-[9px] text-white/20 uppercase tracking-wider">{label}</div>
+                        <div className="text-lg font-semibold text-white/90 mt-1">{value}</div>
                       </div>
                     ))}
-                    {roomGroups.length > 3 && <div className="text-[10px] text-white/20">+{roomGroups.length - 3} more</div>}
                   </div>
-                </motion.button>
-              )}
-
-              {/* Feed Recipe */}
-              <motion.button
-                layoutId="feed-recipe"
-                type="button"
-                onClick={() => setFocusedCard('feed-recipe')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-              >
-                <FeedCard state={state} />
-              </motion.button>
-
-              {/* Room Info */}
-              <motion.button
-                layoutId="room-info"
-                type="button"
-                onClick={() => setFocusedCard('room-info')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-              >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
-                <div className="flex gap-4 text-xs text-white/40">
-                  <span>{state.total_plants}p</span>
-                  <span>{state.plant_group_count}g</span>
-                  <span>Day {dayCount ?? '—'}</span>
-                </div>
-              </motion.button>
-
-              {/* Strains */}
-              {state.strain_names && state.strain_names.length > 0 && (
-                <motion.button
-                  layoutId="strains"
-                  type="button"
-                  onClick={() => setFocusedCard('strains')}
-                  className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
-                >
-                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
-                  <div className="flex flex-wrap gap-1">
-                    {state.strain_names.slice(0, 4).map(s => (
-                      <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
+                )}
+                {focusedCard === 'strains' && state.strain_names && (
+                  <div className="flex flex-wrap gap-2">
+                    {state.strain_names.map(s => (
+                      <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
                     ))}
-                    {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
                   </div>
-                </motion.button>
+                )}
+                {focusedCard === 'plant-groups' && (
+                  <div className="space-y-2">
+                    {roomGroups.map(g => {
+                      const batchNum = g.batch_registry?.batch_number;
+                      const strainName = g.strains?.name ?? 'Unknown';
+                      return (
+                        <div key={g.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/[0.03] group">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              {batchNum && <span className="text-sm font-mono text-white/70">{batchNum}</span>}
+                              <span className="text-xs text-white/30 uppercase">{g.growth_stage}</span>
+                            </div>
+                            <div className="text-xs text-white/40 mt-0.5">
+                              {strainName} · {g.plant_count} plants
+                              {g.room_tables && <span> · T{g.room_tables.table_number}</span>}
+                              {g.room_sections && <span> {g.room_sections.section_label}</span>}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const batchId = g.batch_registry_id;
+                              const batchGroups = batchId ? roomGroups.filter(rg => rg.batch_registry_id === batchId) : undefined;
+                              setMovingGroup(g);
+                              setMovingBatchGroups(batchGroups && batchGroups.length > 1 ? batchGroups : undefined);
+                            }}
+                            className="text-xs text-white/25 hover:text-white/50 px-3 py-1.5 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            Move
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="main-tasks"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className={`${GLASS} p-5`}
+              >
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-4">Today's Tasks</h3>
+                <TaskChecklist
+                  tasks={roomTasks}
+                  onUpdateStatus={onUpdateTaskStatus}
+                  onOpenCompletion={(task) => setCompletingTask(task)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── Right column (2/5) — info cards, always visible ── */}
+        <div className="lg:col-span-2 space-y-3">
+          {/* Tasks card (shows when a card is focused, lets you get back) */}
+          {focusedCard && (
+            <button
+              type="button"
+              onClick={() => setFocusedCard(null)}
+              className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+            >
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Today's Tasks</h3>
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <span>{roomTasks.filter(t => t.status === 'completed').length}/{roomTasks.length} done</span>
+                {roomTasks.filter(t => t.status === 'in_progress').length > 0 && (
+                  <span className="text-amber-400">{roomTasks.filter(t => t.status === 'in_progress').length} active</span>
+                )}
+              </div>
+            </button>
+          )}
+
+          {/* Room Layout */}
+          <button
+            type="button"
+            onClick={() => setFocusedCard(focusedCard === 'room-layout' ? null : 'room-layout')}
+            className={`${focusedCard === 'room-layout' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+          >
+            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
+            {focusedCard !== 'room-layout' && <RoomGrid roomId={state.room_id} compact />}
+            {focusedCard === 'room-layout' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
+          </button>
+
+          {/* Plant Groups */}
+          {roomGroups.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'plant-groups' ? null : 'plant-groups')}
+              className={`${focusedCard === 'plant-groups' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+            >
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
+                Plant Groups <span className="text-white/15">({roomGroups.length})</span>
+              </h3>
+              {focusedCard !== 'plant-groups' && (
+                <div className="space-y-1 max-h-[80px] overflow-hidden">
+                  {roomGroups.slice(0, 3).map(g => (
+                    <div key={g.id} className="text-[10px] text-white/40">
+                      {g.batch_registry?.batch_number ?? g.strains?.name} · {g.plant_count}p
+                    </div>
+                  ))}
+                  {roomGroups.length > 3 && <div className="text-[10px] text-white/20">+{roomGroups.length - 3} more</div>}
+                </div>
               )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {focusedCard === 'plant-groups' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
+            </button>
+          )}
+
+          {/* Feed Recipe */}
+          <button
+            type="button"
+            onClick={() => setFocusedCard(focusedCard === 'feed-recipe' ? null : 'feed-recipe')}
+            className={`${focusedCard === 'feed-recipe' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+          >
+            {focusedCard !== 'feed-recipe' && <FeedCard state={state} />}
+            {focusedCard === 'feed-recipe' && (
+              <>
+                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Feed Recipe</h3>
+                <div className="text-[10px] text-white/20">Viewing in main panel</div>
+              </>
+            )}
+          </button>
+
+          {/* Room Info */}
+          <button
+            type="button"
+            onClick={() => setFocusedCard(focusedCard === 'room-info' ? null : 'room-info')}
+            className={`${focusedCard === 'room-info' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+          >
+            <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
+            {focusedCard !== 'room-info' && (
+              <div className="flex gap-4 text-xs text-white/40">
+                <span>{state.total_plants}p</span>
+                <span>{state.plant_group_count}g</span>
+                <span>Day {dayCount ?? '—'}</span>
+              </div>
+            )}
+            {focusedCard === 'room-info' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
+          </button>
+
+          {/* Strains */}
+          {state.strain_names && state.strain_names.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'strains' ? null : 'strains')}
+              className={`${focusedCard === 'strains' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} p-4 w-full text-left transition-all active:scale-[0.98]`}
+            >
+              <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
+              {focusedCard !== 'strains' && (
+                <div className="flex flex-wrap gap-1">
+                  {state.strain_names.slice(0, 4).map(s => (
+                    <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
+                  ))}
+                  {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
+                </div>
+              )}
+              {focusedCard === 'strains' && <div className="text-[10px] text-white/20">Viewing in main panel</div>}
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Task Completion Form modal */}
       {completingTask && (
