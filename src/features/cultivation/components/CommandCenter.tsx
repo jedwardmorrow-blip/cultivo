@@ -11,7 +11,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
   CheckCircle2, Clock, ChevronLeft, ChevronRight, ChevronDown, X, Wheat,
-  ArrowRightLeft, Skull, Printer,
+  ArrowRightLeft, Skull, Printer, Users,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
@@ -30,6 +30,7 @@ import { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain'
 import { DeadPlantForm } from './DeadPlantForm';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
+import { useGenerateTasksFromSchedules } from '../hooks/useGenerateTasksFromSchedules';
 import { HarvestWorkflow } from './harvest';
 import { todayIso } from '../utils/dateUtils';
 
@@ -117,6 +118,197 @@ const expandVariants = {
   animate: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
   exit: { opacity: 0, scale: 0.98, transition: { duration: 0.2 } },
 };
+
+// ═══════════════════════════════════════════════════════════════
+// LABOR OVERVIEW PANEL — tappable task counter dropdown
+// ═══════════════════════════════════════════════════════════════
+
+interface LaborOverviewProps {
+  tasks: DailyTaskInstance[];
+  opsRooms: RoomOperationalState[];
+  staff: { id: string; first_name: string }[];
+  onRoomClick: (code: string) => void;
+  onClose: () => void;
+}
+
+function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: LaborOverviewProps) {
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+  const pendingTasks = tasks.length - completedTasks - inProgressTasks;
+  const assignedTasks = tasks.filter(t => t.assigned_to).length;
+  const unassignedTasks = tasks.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'skipped').length;
+
+  // Group tasks by task type for the summary strip
+  const taskTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    tasks.forEach(t => {
+      counts[t.task_type] = (counts[t.task_type] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([type, count]) => ({ type, count, config: getTaskTypeConfig(type) }));
+  }, [tasks]);
+
+  // Group by room for breakdown
+  const roomBreakdown = useMemo(() => {
+    const roomMap = new Map<string, { code: string; type: string; total: number; assigned: number; done: number }>();
+    for (const room of opsRooms) {
+      if (room.occupancy_status === 'empty') continue;
+      const roomTasks = tasks.filter(t => t.room_id === room.room_id);
+      if (roomTasks.length === 0) continue;
+      roomMap.set(room.room_code, {
+        code: room.room_code,
+        type: room.room_type,
+        total: roomTasks.length,
+        assigned: roomTasks.filter(t => t.assigned_to).length,
+        done: roomTasks.filter(t => t.status === 'completed').length,
+      });
+    }
+    return [...roomMap.values()].sort((a, b) => {
+      const urgA = (a.total - a.done) - a.assigned;
+      const urgB = (b.total - b.done) - b.assigned;
+      if (urgB !== urgA) return urgB - urgA;
+      return a.code.localeCompare(b.code);
+    });
+  }, [tasks, opsRooms]);
+
+  // Staff task counts
+  const staffBreakdown = useMemo(() => {
+    const counts = new Map<string, number>();
+    tasks.forEach(t => {
+      if (t.assigned_to) counts.set(t.assigned_to, (counts.get(t.assigned_to) ?? 0) + 1);
+    });
+    return staff
+      .filter(s => counts.has(s.id))
+      .map(s => ({ name: s.first_name, count: counts.get(s.id) ?? 0 }))
+      .sort((a, b) => b.count - a.count);
+  }, [tasks, staff]);
+
+  const progressPct = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+  const inProgressPct = tasks.length > 0 ? (inProgressTasks / tasks.length) * 100 : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      className={`${GLASS_ELEVATED} p-5 space-y-4`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-white/80">Today's Workload</h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <X className="w-4 h-4 text-white/40" />
+        </button>
+      </div>
+
+      {/* Task type summary strip */}
+      {taskTypeCounts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {taskTypeCounts.map(({ type, count, config }) => (
+            <span
+              key={type}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border"
+              style={{
+                backgroundColor: `${config.color}15`,
+                borderColor: `${config.color}20`,
+                color: `${config.color}cc`,
+              }}
+            >
+              {count} {config.label}
+            </span>
+          ))}
+          <span className="inline-flex items-center px-2.5 py-1 text-[11px] text-white/30">
+            {tasks.length} total
+          </span>
+        </div>
+      )}
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden flex">
+          <div
+            className="h-full bg-emerald-500 transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+          <div
+            className="h-full bg-sky-500/60 transition-all duration-500"
+            style={{ width: `${inProgressPct}%` }}
+          />
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-white/30">
+          <span><span className="text-emerald-400">{completedTasks}</span> done</span>
+          {inProgressTasks > 0 && <span><span className="text-sky-400">{inProgressTasks}</span> in progress</span>}
+          <span>{pendingTasks} pending</span>
+          <span className="mx-1">·</span>
+          <span>{assignedTasks} assigned</span>
+          {unassignedTasks > 0 && (
+            <span className="text-amber-300">{unassignedTasks} unassigned</span>
+          )}
+        </div>
+      </div>
+
+      {/* Room breakdown */}
+      {roomBreakdown.length > 0 && (
+        <div className="bg-white/[0.04] backdrop-blur-[8px] border border-white/[0.06] rounded-xl overflow-hidden">
+          {roomBreakdown.map((room, i) => {
+            const stage = getStageColor(room.type);
+            const open = room.total - room.done - room.assigned;
+            const allDone = room.done === room.total;
+            return (
+              <button
+                key={room.code}
+                type="button"
+                onClick={() => { onRoomClick(room.code); onClose(); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/[0.04] transition-colors active:scale-[0.99] ${
+                  i < roomBreakdown.length - 1 ? 'border-b border-white/[0.04]' : ''
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: stage.base }} />
+                <span className="font-mono text-xs text-white/70 w-16">{room.code}</span>
+                <span className="text-xs text-white/40">{room.total} task{room.total !== 1 ? 's' : ''}</span>
+                <div className="flex-1" />
+                {allDone ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                ) : open > 0 ? (
+                  <span className="text-[10px] text-amber-300 font-medium">{open} open</span>
+                ) : (
+                  <span className="text-[10px] text-white/25">{room.assigned} assigned</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Crew strip */}
+      {staffBreakdown.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Users className="w-3 h-3 text-white/20 mr-1" />
+          {staffBreakdown.map(s => (
+            <span key={s.name} className="text-[10px] text-white/40">
+              {s.name} <span className="text-white/20">({s.count})</span>
+            </span>
+          ))}
+          {unassignedTasks > 0 && (
+            <span className="text-[10px] text-amber-300/70">
+              Unassigned ({unassignedTasks})
+            </span>
+          )}
+        </div>
+      )}
+
+      {tasks.length === 0 && (
+        <p className="text-xs text-white/20 text-center py-4">No tasks scheduled for today</p>
+      )}
+    </motion.div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREEN 1: Bento Room Tile
@@ -425,22 +617,20 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         </div>
       </div>
 
-      {/* Bento content grid — spring reflow + fast crossfade */}
+      {/* Bento content grid — layoutId card swap with spring physics */}
       <LayoutGroup>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* ── Left column (3/5) — main content area ── */}
           <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
-            <AnimatePresence mode="wait">
-            {focusedCard ? (
-              <motion.div
-                key={`main-${focusedCard}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className={`${GLASS} p-5 h-full flex flex-col`}
-              >
-                <div>
+            {/* Main panel — shows focused card or tasks */}
+            <motion.div
+              layoutId={`card-${focusedCard ?? 'tasks'}`}
+              layout="position"
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              className={`${GLASS} p-5 h-full ${focusedCard ? 'flex flex-col' : ''}`}
+            >
+              {focusedCard ? (
+                <>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
                       {focusedCard === 'room-layout' && 'Room Layout'}
@@ -518,77 +708,70 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                       onSplitAndMoveMultiple={onSplitAndMoveMultiple}
                     />
                   )}
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="main-tasks"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className={`${GLASS} p-5 h-full`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">Today's Tasks</h3>
-                  {!showInlineAdd ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowInlineAdd(true)}
-                      className="flex items-center gap-1.5 text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
-                    >
-                      <Plus className="w-3 h-3" /> Add Task
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowInlineAdd(false)}
-                      className="text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">Today's Tasks</h3>
+                    {!showInlineAdd ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowInlineAdd(true)}
+                        className="flex items-center gap-1.5 text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all active:scale-95"
+                      >
+                        <Plus className="w-3 h-3" /> Add Task
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowInlineAdd(false)}
+                        className="text-[10px] text-white/25 hover:text-white/50 px-2.5 py-1.5 rounded-lg hover:bg-white/5 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
 
-                {/* Inline add task row */}
-                <AnimatePresence>
-                  {showInlineAdd && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden mb-3"
-                    >
-                      <InlineAddTask
-                        roomId={state.room_id}
-                        onAdd={async (input) => {
-                          await onCreateTask(input);
-                          setShowInlineAdd(false);
-                        }}
-                        onCancel={() => setShowInlineAdd(false)}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  {/* Inline add task row */}
+                  <AnimatePresence>
+                    {showInlineAdd && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden mb-3"
+                      >
+                        <InlineAddTask
+                          roomId={state.room_id}
+                          onAdd={async (input) => {
+                            await onCreateTask(input);
+                            setShowInlineAdd(false);
+                          }}
+                          onCancel={() => setShowInlineAdd(false)}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                <TaskChecklist
-                  tasks={roomTasks}
-                  onUpdateStatus={onUpdateTaskStatus}
-                  onOpenCompletion={(task) => setCompletingTask(task)}
-                />
-              </motion.div>
-            )}
-            </AnimatePresence>
+                  <TaskChecklist
+                    tasks={roomTasks}
+                    onUpdateStatus={onUpdateTaskStatus}
+                    onOpenCompletion={(task) => setCompletingTask(task)}
+                  />
+                </>
+              )}
+            </motion.div>
           </div>
 
-          {/* ── Right column (2/5) — info cards, always visible ── */}
+          {/* ── Right column (2/5) — all cards always rendered ── */}
           <div className="lg:col-span-2 space-y-3">
-            {/* Tasks card — shows in sidebar when another card is focused */}
+            {/* Tasks — compact sidebar version when a card is focused */}
             {focusedCard && (
               <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                layoutId="card-tasks"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                 type="button"
                 onClick={() => setFocusedCard(null)}
                 className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
@@ -603,83 +786,135 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
               </motion.button>
             )}
 
-            {/* Room Layout — hidden when focused in main panel */}
-            {focusedCard !== 'room-layout' && (
+            {/* Room Layout — always rendered, active = slim indicator */}
+            <motion.button
+              layoutId="card-room-layout"
+              layout="position"
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'room-layout' ? null : 'room-layout')}
+              className={`${focusedCard === 'room-layout' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                focusedCard === 'room-layout' ? 'py-2.5 px-4' : 'p-4'
+              }`}
+            >
+              {focusedCard === 'room-layout' ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Room Layout</h3>
+                  <span className="text-[9px] text-white/20">● active</span>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
+                  <RoomGrid roomId={state.room_id} compact />
+                </>
+              )}
+            </motion.button>
+
+            {/* Plants by Strain */}
+            {roomGroups.length > 0 && (
               <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                layoutId="card-plant-groups"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                 type="button"
-                onClick={() => setFocusedCard('room-layout')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+                onClick={() => setFocusedCard(focusedCard === 'plant-groups' ? null : 'plant-groups')}
+                className={`${focusedCard === 'plant-groups' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                  focusedCard === 'plant-groups' ? 'py-2.5 px-4' : 'p-4'
+                }`}
               >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Layout</h3>
-                <RoomGrid roomId={state.room_id} compact />
+                {focusedCard === 'plant-groups' ? (
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Plants <span className="text-white/15">({state.total_plants})</span></h3>
+                    <span className="text-[9px] text-white/20">● active</span>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
+                      Plants <span className="text-white/15">({state.total_plants})</span>
+                    </h3>
+                    <PlantsByStrainCompact groups={roomGroups} />
+                  </>
+                )}
               </motion.button>
             )}
 
-            {/* Plants by Strain — hidden when focused */}
-            {roomGroups.length > 0 && focusedCard !== 'plant-groups' && (
-              <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                type="button"
-                onClick={() => setFocusedCard('plant-groups')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
-              >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">
-                  Plants <span className="text-white/15">({state.total_plants})</span>
-                </h3>
-                <PlantsByStrainCompact groups={roomGroups} />
-              </motion.button>
-            )}
-
-            {/* Feed Recipe — hidden when focused */}
-            {focusedCard !== 'feed-recipe' && (
-              <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                type="button"
-                onClick={() => setFocusedCard('feed-recipe')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
-              >
+            {/* Feed Recipe */}
+            <motion.button
+              layoutId="card-feed-recipe"
+              layout="position"
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'feed-recipe' ? null : 'feed-recipe')}
+              className={`${focusedCard === 'feed-recipe' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                focusedCard === 'feed-recipe' ? 'py-2.5 px-4' : 'p-4'
+              }`}
+            >
+              {focusedCard === 'feed-recipe' ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Feed Recipe</h3>
+                  <span className="text-[9px] text-white/20">● active</span>
+                </div>
+              ) : (
                 <FeedCard state={state} />
-              </motion.button>
-            )}
+              )}
+            </motion.button>
 
-            {/* Room Info — hidden when focused */}
-            {focusedCard !== 'room-info' && (
-              <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                type="button"
-                onClick={() => setFocusedCard('room-info')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
-              >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
-                <div className="flex gap-4 text-xs text-white/40">
-                  <span>{state.total_plants}p</span>
-                  <span>{state.plant_group_count}g</span>
-                  <span>Day {dayCount ?? '—'}</span>
+            {/* Room Info */}
+            <motion.button
+              layoutId="card-room-info"
+              layout="position"
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'room-info' ? null : 'room-info')}
+              className={`${focusedCard === 'room-info' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                focusedCard === 'room-info' ? 'py-2.5 px-4' : 'p-4'
+              }`}
+            >
+              {focusedCard === 'room-info' ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Room Info</h3>
+                  <span className="text-[9px] text-white/20">● active</span>
                 </div>
-              </motion.button>
-            )}
+              ) : (
+                <>
+                  <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Room Info</h3>
+                  <div className="flex gap-4 text-xs text-white/40">
+                    <span>{state.total_plants}p</span>
+                    <span>{state.plant_group_count}g</span>
+                    <span>Day {dayCount ?? '—'}</span>
+                  </div>
+                </>
+              )}
+            </motion.button>
 
-            {/* Strains — hidden when focused */}
-            {state.strain_names && state.strain_names.length > 0 && focusedCard !== 'strains' && (
+            {/* Strains */}
+            {state.strain_names && state.strain_names.length > 0 && (
               <motion.button
-                layout
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                layoutId="card-strains"
+                layout="position"
+                transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                 type="button"
-                onClick={() => setFocusedCard('strains')}
-                className={`${GLASS} ${GLASS_HOVER} p-4 w-full text-left active:scale-[0.98]`}
+                onClick={() => setFocusedCard(focusedCard === 'strains' ? null : 'strains')}
+                className={`${focusedCard === 'strains' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                  focusedCard === 'strains' ? 'py-2.5 px-4' : 'p-4'
+                }`}
               >
-                <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
-                <div className="flex flex-wrap gap-1">
-                  {state.strain_names.slice(0, 4).map(s => (
-                    <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
-                  ))}
-                  {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
-                </div>
+                {focusedCard === 'strains' ? (
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Strains</h3>
+                    <span className="text-[9px] text-white/20">● active</span>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
+                    <div className="flex flex-wrap gap-1">
+                      {state.strain_names.slice(0, 4).map(s => (
+                        <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
+                      ))}
+                      {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
+                    </div>
+                  </>
+                )}
               </motion.button>
             )}
           </div>
@@ -1808,10 +2043,27 @@ export function CommandCenter() {
   const { rooms: growRooms } = useGrowRooms();
   const { groups: allGroups, moveToRoom, splitAndMoveToRoom, splitAndMoveMultipleToRoom } = usePlantGroups({ stage: 'active' });
   const today = todayIso();
-  const { tasks, updateStatus, completeWithLog, assignWorker, createTask } = useDailyTasks(today);
+  const { tasks, updateStatus, completeWithLog, assignWorker, createTask, refetch: refetchTasks } = useDailyTasks(today);
   const { staff: allStaff } = useActiveStaff();
+  const { generate: generateTasks } = useGenerateTasksFromSchedules();
   const [selectedRoomCode, setSelectedRoomCode] = useState<string | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showLaborOverview, setShowLaborOverview] = useState(false);
+  const [hasAutoGenerated, setHasAutoGenerated] = useState(false);
+
+  // Auto-generate tasks from schedules on first mount
+  useEffect(() => {
+    if (!hasAutoGenerated && !loading) {
+      generateTasks(today).then(result => {
+        setHasAutoGenerated(true);
+        if (result.created > 0) {
+          refetchTasks();
+        }
+      }).catch(() => {
+        setHasAutoGenerated(true);
+      });
+    }
+  }, [hasAutoGenerated, loading, today, generateTasks, refetchTasks]);
 
   const selectedRoom = useMemo(
     () => selectedRoomCode ? opsRooms.find(r => r.room_code === selectedRoomCode) ?? null : null,
@@ -1828,6 +2080,7 @@ export function CommandCenter() {
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const unassignedCount = tasks.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'skipped').length;
 
   const handleRoomClick = useCallback((code: string) => {
     setSelectedRoomCode(code);
@@ -1853,12 +2106,37 @@ export function CommandCenter() {
             </p>
           </div>
         </div>
-        <div className={`${GLASS} px-3 py-1.5 flex items-center gap-2`}>
-          <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
+        <button
+          type="button"
+          onClick={() => setShowLaborOverview(!showLaborOverview)}
+          className={`${showLaborOverview ? GLASS_ELEVATED : GLASS} px-3 py-1.5 flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer`}
+          style={unassignedCount > 0 ? {
+            borderColor: 'rgba(245,158,11,0.25)',
+            boxShadow: '0 0 12px rgba(245,158,11,0.15)',
+          } : completedTasks === totalTasks && totalTasks > 0 ? {
+            borderColor: 'rgba(16,185,129,0.25)',
+            boxShadow: '0 0 12px rgba(16,185,129,0.15)',
+          } : undefined}
+        >
+          <ClipboardList className={`w-3.5 h-3.5 ${unassignedCount > 0 ? 'text-amber-400' : 'text-emerald-400'}`} />
           <span className="font-mono text-sm font-semibold text-white">{completedTasks}/{totalTasks}</span>
           <span className="text-[10px] text-white/30">done</span>
-        </div>
+          <ChevronDown className={`w-3 h-3 text-white/20 transition-transform duration-200 ${showLaborOverview ? 'rotate-180' : ''}`} />
+        </button>
       </div>
+
+      {/* Labor overview panel — tappable counter dropdown */}
+      <AnimatePresence>
+        {showLaborOverview && (
+          <LaborOverviewPanel
+            tasks={tasks}
+            opsRooms={opsRooms}
+            staff={allStaff?.map(s => ({ id: s.id, first_name: s.first_name })) ?? []}
+            onRoomClick={handleRoomClick}
+            onClose={() => setShowLaborOverview(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Attention strip */}
       <AttentionStrip opsRooms={opsRooms} onRoomClick={handleRoomClick} />

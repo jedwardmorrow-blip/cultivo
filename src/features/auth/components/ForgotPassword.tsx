@@ -31,22 +31,22 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-cult-black flex items-center justify-center p-6">
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl w-full max-w-md p-8">
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="glass-card w-full max-w-md p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-cult-success-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-10 h-10 text-cult-success" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Check Your Email</h1>
-            <p className="text-cult-light-gray">
-              We've sent a password reset link to <strong className="text-white">{email}</strong>
+            <h1 className="text-2xl font-bold text-cult-text-primary mb-2">Check Your Email</h1>
+            <p className="text-cult-text-secondary">
+              We've sent a password reset link to <strong className="text-cult-text-primary">{email}</strong>
             </p>
           </div>
 
           <div className="space-y-4">
-            <div className="bg-cult-black border border-cult-medium-gray rounded p-4">
-              <p className="text-sm text-cult-light-gray mb-2">What to do next:</p>
-              <ol className="text-sm text-cult-light-gray space-y-1 list-decimal list-inside">
+            <div className="glass-input rounded-cult p-4">
+              <p className="text-sm text-cult-text-secondary mb-2">What to do next:</p>
+              <ol className="text-sm text-cult-text-secondary space-y-1 list-decimal list-inside">
                 <li>Check your email inbox</li>
                 <li>Click the password reset link</li>
                 <li>Enter your new password</li>
@@ -56,7 +56,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
             <button
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
+              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-white/[0.07] hover:border-cult-border-strong transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
@@ -68,23 +68,23 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
   }
 
   return (
-    <div className="min-h-screen bg-cult-black flex items-center justify-center p-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="glass-card w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
-          <p className="text-cult-light-gray">Enter your email to receive a password reset link</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary mb-2">Reset Password</h1>
+          <p className="text-cult-text-secondary">Enter your email to receive a password reset link</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-cult-danger-muted border border-cult-danger rounded p-3 flex items-start gap-2">
+            <div className="bg-cult-danger-muted border border-cult-danger rounded-cult p-3 flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
-              <p className="text-cult-text-primary/80 text-sm">{error}</p>
+              <p className="text-cult-text-primary text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-cult-light-gray mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-cult-text-secondary mb-2">
               Email Address
             </label>
             <div className="relative">
@@ -95,7 +95,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
+                className="glass-input w-full pl-10 pr-4 py-3 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 placeholder="you@example.com"
               />
             </div>
@@ -114,7 +114,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
             <button
               type="button"
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 bg-cult-medium-gray text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
+              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-white/[0.07] hover:border-cult-border-strong transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

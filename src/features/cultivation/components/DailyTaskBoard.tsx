@@ -24,7 +24,7 @@ import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
 import type { TaskType, RoomType } from '../types';
 import { RoomCalendar, RoomSetupPanel } from './RoomCalendar';
-import { VisualTemplateBuilder } from './VisualTemplateBuilder';
+import { ScheduleBuilder } from './VisualTemplateBuilder';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { WorkerCheckIn } from './WorkerCheckIn';
 import type { StaffMember } from './WorkerCheckIn';
@@ -48,71 +48,7 @@ const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
 const CULTIVATION_ROLES = new Set(['cultivation_manager', 'cultivation_lead', 'cultivator', 'manager', 'operations', 'operations_manager']);
 
 export function SchedulesPage() {
-  const { rooms: dbRooms } = useGrowRooms();
-  const [scheduleView, setScheduleView] = useState<'calendar' | 'setup' | 'templates'>('calendar');
-  const [setupRoomId, setSetupRoomId] = useState<string | undefined>(undefined);
-
-  const rooms = useMemo(() => {
-    return dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code }));
-  }, [dbRooms]);
-
-  function handleEditRoom(roomId: string, _roomCode: string) {
-    setSetupRoomId(roomId);
-    setScheduleView('setup');
-  }
-
-  function handleSwitchToSetup() {
-    setSetupRoomId(undefined);
-    setScheduleView('setup');
-  }
-
-  const tabs: { key: typeof scheduleView; label: string; icon: typeof Calendar }[] = [
-    { key: 'calendar', label: 'Calendar', icon: Calendar },
-    { key: 'setup', label: 'Room Setup', icon: Wrench },
-    { key: 'templates', label: 'Templates', icon: ClipboardList },
-  ];
-
-  return (
-    <div className="space-y-5 pb-8">
-      {/* Header with view toggle */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-cult-white">Schedule Builder</h1>
-          <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Create and manage recurring task schedules</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
-            {tabs.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => { if (key === 'setup') setSetupRoomId(undefined); setScheduleView(key); }}
-                className={`px-4 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-2 ${
-                  scheduleView === key
-                    ? 'bg-cult-charcoal text-cult-white'
-                    : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* View content */}
-      {scheduleView === 'calendar' && (
-        <RoomCalendar rooms={rooms} onEditRoom={handleEditRoom} onSwitchToSetup={handleSwitchToSetup} />
-      )}
-      {scheduleView === 'setup' && (
-        <RoomSetupPanel rooms={rooms} initialRoomId={setupRoomId} />
-      )}
-      {scheduleView === 'templates' && (
-        <VisualTemplateBuilder inline />
-      )}
-    </div>
-  );
+  return <ScheduleBuilder />;
 }
 
 export function DailyTaskBoard() {

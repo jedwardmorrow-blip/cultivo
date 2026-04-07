@@ -9,8 +9,8 @@ import {
 import type { PressRun, RosinDestination } from '../../types/rosin-lab.types';
 
 const inputClass =
-  'w-full bg-[#0A0A0A] border border-[#2E2E2E] rounded-md px-3 py-2 text-[#FFFFFF] text-sm focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]/20 placeholder-[#666666]';
-const labelClass = 'block text-xs text-[#A6A6A6] mb-1';
+  'w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary text-sm focus:outline-none focus:border-cult-stage-press focus:ring-1 focus:ring-cult-stage-press/20 placeholder-cult-text-muted';
+const labelClass = 'block text-xs text-cult-text-secondary mb-1';
 
 const DESTINATION_COLORS: Record<RosinDestination, string> = {
   badder: '#F59E0B',
@@ -194,11 +194,11 @@ function RunCard({ run, onPackaged }: RunCardProps) {
 
   if (packaged || cureStarted) {
     return (
-      <div className="bg-[#111111] border border-[#2E2E2E] rounded-md p-4 flex items-center gap-3">
+      <div className="bg-cult-surface-raised border border-cult-border rounded-md p-4 flex items-center gap-3">
         <CheckCircle2 className="w-5 h-5 text-cult-success flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-[#FFFFFF]">{strainName} · {batchNum}</p>
-          <p className="text-xs text-[#A6A6A6]">
+          <p className="text-sm font-medium text-cult-text-primary">{strainName} · {batchNum}</p>
+          <p className="text-xs text-cult-text-secondary">
             {cureStarted ? 'Packages created and cure session started.' : 'Packages created.'}
           </p>
         </div>
@@ -207,20 +207,20 @@ function RunCard({ run, onPackaged }: RunCardProps) {
   }
 
   return (
-    <div className="bg-[#111111] border border-[#2E2E2E] rounded-md overflow-hidden">
-      <div className="p-4 border-b border-[#2E2E2E]">
+    <div className="bg-cult-surface-raised border border-cult-border rounded-md overflow-hidden">
+      <div className="p-4 border-b border-cult-border">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-[#FFFFFF]">
+            <p className="text-sm font-semibold text-cult-text-primary">
               {strainName}
-              <span className="ml-2 text-xs font-normal text-[#A6A6A6]">{batchNum}</span>
+              <span className="ml-2 text-xs font-normal text-cult-text-secondary">{batchNum}</span>
             </p>
-            <p className="text-xs text-[#666666] mt-0.5">
+            <p className="text-xs text-cult-text-muted mt-0.5">
               Pressed {new Date(run.press_date).toLocaleDateString()}
             </p>
           </div>
           {run.input_weight_grams != null && (
-            <span className="text-xs text-[#A6A6A6] tabular-nums">
+            <span className="text-xs text-cult-text-secondary tabular-nums">
               {run.input_weight_grams.toFixed(1)}g in
             </span>
           )}
@@ -228,19 +228,19 @@ function RunCard({ run, onPackaged }: RunCardProps) {
 
         <div className="flex flex-wrap gap-3 mt-2">
           {run.temperature_f != null && (
-            <span className="text-xs text-[#666666]">
+            <span className="text-xs text-cult-text-muted">
               <Thermometer className="inline w-3 h-3 mr-0.5" />
               {run.temperature_f}°F
             </span>
           )}
           {run.pressure_psi != null && (
-            <span className="text-xs text-[#666666]">{run.pressure_psi} PSI</span>
+            <span className="text-xs text-cult-text-muted">{run.pressure_psi} PSI</span>
           )}
           {run.press_time_seconds != null && (
-            <span className="text-xs text-[#666666]">{run.press_time_seconds}s</span>
+            <span className="text-xs text-cult-text-muted">{run.press_time_seconds}s</span>
           )}
           {run.bag_micron != null && (
-            <span className="text-xs text-[#666666]">{run.bag_micron}µ</span>
+            <span className="text-xs text-cult-text-muted">{run.bag_micron}µ</span>
           )}
         </div>
       </div>
@@ -248,7 +248,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
       <div className="p-4">
         {!outputRecorded ? (
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-[#A6A6A6] uppercase tracking-wider">
+            <p className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider">
               Record Output
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -276,8 +276,8 @@ function RunCard({ run, onPackaged }: RunCardProps) {
               </div>
             </div>
             {outputGrams && yieldPct && (
-              <p className="text-xs text-[#A6A6A6]">
-                Yield: <span className="text-[#F97316] font-semibold">{yieldPct}%</span>
+              <p className="text-xs text-cult-text-secondary">
+                Yield: <span className="text-cult-stage-press font-semibold">{yieldPct}%</span>
               </p>
             )}
             <button
@@ -291,27 +291,27 @@ function RunCard({ run, onPackaged }: RunCardProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-xs text-[#A6A6A6]">
+            <div className="flex items-center gap-3 text-xs text-cult-text-secondary">
               <span>
                 Output:{' '}
-                <span className="text-[#FFFFFF] font-semibold">
+                <span className="text-cult-text-primary font-semibold">
                   {localOutput?.toFixed(1)}g
                 </span>
               </span>
               {yieldDisplay && (
                 <span>
                   Yield:{' '}
-                  <span className="text-[#F97316] font-semibold">{yieldDisplay}%</span>
+                  <span className="text-cult-stage-press font-semibold">{yieldDisplay}%</span>
                 </span>
               )}
             </div>
 
             {curePromptIds ? (
-              <div className="bg-[#0A0A0A] border border-[#2E2E2E] rounded-md p-4 space-y-3">
-                <p className="text-sm font-semibold text-[#FFFFFF]">
+              <div className="bg-cult-surface border border-cult-border rounded-md p-4 space-y-3">
+                <p className="text-sm font-semibold text-cult-text-primary">
                   Start cure session?
                 </p>
-                <p className="text-xs text-[#A6A6A6]">
+                <p className="text-xs text-cult-text-secondary">
                   {curePromptIds.length} package{curePromptIds.length > 1 ? 's' : ''} need
                   curing. Start a cure session now?
                 </p>
@@ -337,7 +337,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
                   </button>
                   <button
                     onClick={() => { setCurePromptIds(null); setPackaged(true); onPackaged(); }}
-                    className="px-4 py-2 rounded-md text-xs font-semibold text-[#A6A6A6] border border-[#2E2E2E] hover:border-[#404040]"
+                    className="px-4 py-2 rounded-md text-xs font-semibold text-cult-text-secondary border border-cult-border hover:border-cult-border-strong"
                   >
                     Skip
                   </button>
@@ -380,7 +380,7 @@ function RunCard({ run, onPackaged }: RunCardProps) {
                       {pkgRows.length > 1 && (
                         <button
                           onClick={() => removeRow(row.id)}
-                          className="text-[#666666] hover:text-cult-danger transition-colors flex-shrink-0"
+                          className="text-cult-text-muted hover:text-cult-danger transition-colors flex-shrink-0"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -391,14 +391,14 @@ function RunCard({ run, onPackaged }: RunCardProps) {
 
                 <button
                   onClick={addRow}
-                  className="flex items-center gap-1 text-xs text-[#A6A6A6] hover:text-[#FFFFFF] transition-colors"
+                  className="flex items-center gap-1 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
                 >
                   <Plus className="w-3 h-3" />
                   Add Package
                 </button>
 
                 <div
-                  className={`text-xs ${packageMismatch ? 'text-amber-400' : 'text-[#A6A6A6]'} flex items-center gap-1`}
+                  className={`text-xs ${packageMismatch ? 'text-amber-400' : 'text-cult-text-secondary'} flex items-center gap-1`}
                 >
                   {packageMismatch && <AlertTriangle className="w-3 h-3" />}
                   Packaged: {totalPackaged.toFixed(1)}g of {outputForComparison.toFixed(1)}g output
@@ -443,7 +443,7 @@ export function PackageRosinPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-cult-stage-press border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -451,11 +451,11 @@ export function PackageRosinPanel() {
   if (runs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <div className="w-10 h-10 rounded-full bg-[#1C1C1C] flex items-center justify-center">
-          <CheckCircle2 className="w-5 h-5 text-[#666666]" />
+        <div className="w-10 h-10 rounded-full bg-cult-surface-overlay flex items-center justify-center">
+          <CheckCircle2 className="w-5 h-5 text-cult-text-muted" />
         </div>
-        <p className="text-sm font-semibold text-[#A6A6A6]">No press runs ready to package</p>
-        <p className="text-xs text-[#666666]">Complete a press run first to package its output.</p>
+        <p className="text-sm font-semibold text-cult-text-secondary">No press runs ready to package</p>
+        <p className="text-xs text-cult-text-muted">Complete a press run first to package its output.</p>
       </div>
     );
   }

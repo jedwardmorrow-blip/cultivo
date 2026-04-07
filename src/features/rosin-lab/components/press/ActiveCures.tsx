@@ -9,8 +9,8 @@ import type { CureSession } from '../../types/rosin-lab.types';
 import { CURE_TIME_ESTIMATES } from '../../types/rosin-lab.types';
 
 const inputClass =
-  'w-full bg-[#0A0A0A] border border-[#2E2E2E] rounded-md px-3 py-2 text-[#FFFFFF] text-sm focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]/20 placeholder-[#666666]';
-const labelClass = 'block text-xs text-[#A6A6A6] mb-1';
+  'w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary text-sm focus:outline-none focus:border-cult-stage-cure focus:ring-1 focus:ring-cult-stage-cure/20 placeholder-cult-text-muted';
+const labelClass = 'block text-xs text-cult-text-secondary mb-1';
 
 const DEST_COLORS: Record<string, string> = {
   badder: '#F59E0B',
@@ -94,7 +94,7 @@ function CureCard({ session, onCompleted }: CureCardProps) {
   }
 
   return (
-    <div className="bg-[#111111] border border-[#2E2E2E] rounded-md overflow-hidden">
+    <div className="bg-cult-surface-raised border border-cult-border rounded-md overflow-hidden">
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -103,18 +103,18 @@ function CureCard({ session, onCompleted }: CureCardProps) {
               style={{ backgroundColor: DEST_COLORS[session.target_consistency] ?? '#8B5CF6' }}
             />
             <div>
-              <p className="text-sm font-semibold text-[#FFFFFF]">
+              <p className="text-sm font-semibold text-cult-text-primary">
                 {strainName}
-                <span className="ml-2 text-xs font-normal text-[#A6A6A6]">
+                <span className="ml-2 text-xs font-normal text-cult-text-secondary">
                   {CONSISTENCY_LABELS[session.target_consistency] ?? session.target_consistency}
                 </span>
               </p>
-              <p className="text-xs text-[#666666] mt-0.5">{batchNum}</p>
+              <p className="text-xs text-cult-text-muted mt-0.5">{batchNum}</p>
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-2xl font-bold text-[#FFFFFF] leading-none">Day {days}</p>
-            <p className="text-xs text-[#666666] mt-0.5">of ~{estimated}</p>
+            <p className="text-2xl font-bold text-cult-text-primary leading-none">Day {days}</p>
+            <p className="text-xs text-cult-text-muted mt-0.5">of ~{estimated}</p>
           </div>
         </div>
 
@@ -130,7 +130,7 @@ function CureCard({ session, onCompleted }: CureCardProps) {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-[#A6A6A6]">
+        <div className="mt-3 flex flex-wrap gap-4 text-xs text-cult-text-secondary">
           {session.cure_temp_f != null && (
             <span>{session.cure_temp_f}°F</span>
           )}
@@ -142,12 +142,12 @@ function CureCard({ session, onCompleted }: CureCardProps) {
         {session.rosin_packages && session.rosin_packages.length > 0 && (
           <div className="mt-3 space-y-1">
             {session.rosin_packages.map((pkg) => (
-              <div key={pkg.id} className="flex items-center gap-2 text-xs text-[#A6A6A6]">
+              <div key={pkg.id} className="flex items-center gap-2 text-xs text-cult-text-secondary">
                 <span
                   className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: DEST_COLORS[pkg.destination] ?? '#A6A6A6' }}
                 />
-                <span className="font-mono text-[#666666]">{pkg.package_id}</span>
+                <span className="font-mono text-cult-text-muted">{pkg.package_id}</span>
                 <span>{pkg.weight_grams.toFixed(1)}g</span>
                 <span className="capitalize">{pkg.destination.replace('_', ' ')}</span>
               </div>
@@ -156,17 +156,17 @@ function CureCard({ session, onCompleted }: CureCardProps) {
         )}
       </div>
 
-      <div className="border-t border-[#2E2E2E]">
+      <div className="border-t border-cult-border">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-[#A6A6A6] hover:text-[#FFFFFF] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-cult-text-secondary hover:text-cult-text-primary transition-colors"
         >
           Complete Cure
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
         {expanded && (
-          <div className="px-4 pb-4 space-y-3 border-t border-[#2E2E2E] pt-3">
+          <div className="px-4 pb-4 space-y-3 border-t border-cult-border pt-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Output Weight (g)</label>
@@ -204,9 +204,9 @@ function CureCard({ session, onCompleted }: CureCardProps) {
               </select>
             </div>
             {outputG && cureLoss !== null && (
-              <p className="text-xs text-[#A6A6A6]">
+              <p className="text-xs text-cult-text-secondary">
                 Cure Loss:{' '}
-                <span className="text-[#8B5CF6] font-semibold">{cureLoss}%</span>
+                <span className="text-cult-stage-cure font-semibold">{cureLoss}%</span>
               </p>
             )}
             {error && <p className="text-xs text-red-400">{error}</p>}
@@ -248,7 +248,7 @@ export function ActiveCures() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-5 h-5 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-cult-stage-cure border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -257,11 +257,11 @@ export function ActiveCures() {
     <div className="space-y-6">
       {sessions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#1C1C1C] flex items-center justify-center">
-            <FlaskConical className="w-5 h-5 text-[#666666]" />
+          <div className="w-10 h-10 rounded-full bg-cult-surface-overlay flex items-center justify-center">
+            <FlaskConical className="w-5 h-5 text-cult-text-muted" />
           </div>
-          <p className="text-sm font-semibold text-[#A6A6A6]">No active cure sessions</p>
-          <p className="text-xs text-[#666666]">Package rosin to start a cure session.</p>
+          <p className="text-sm font-semibold text-cult-text-secondary">No active cure sessions</p>
+          <p className="text-xs text-cult-text-muted">Package rosin to start a cure session.</p>
         </div>
       ) : (
         <div className="space-y-4 max-w-2xl">
@@ -273,17 +273,17 @@ export function ActiveCures() {
 
       {recent.length > 0 && (
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold text-[#A6A6A6] uppercase tracking-wider mb-3">
+          <p className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider mb-3">
             Recently Completed
           </p>
-          <div className="bg-[#111111] border border-[#2E2E2E] rounded-md overflow-hidden">
+          <div className="bg-cult-surface-raised border border-cult-border rounded-md overflow-hidden">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-[#2E2E2E]">
+                <tr className="border-b border-cult-border">
                   {['Strain', 'Target → Actual', 'Input → Output', 'Loss %', 'Days', 'Completed'].map((h) => (
                     <th
                       key={h}
-                      className="px-3 py-2 text-left font-semibold text-[#666666] whitespace-nowrap"
+                      className="px-3 py-2 text-left font-semibold text-cult-text-muted whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -301,9 +301,9 @@ export function ActiveCures() {
                     ? new Date(s.end_time).toLocaleDateString()
                     : '—';
                   return (
-                    <tr key={s.id} className="border-b border-[#1C1C1C] last:border-0">
-                      <td className="px-3 py-2 text-[#FFFFFF]">{strainName}</td>
-                      <td className="px-3 py-2 text-[#A6A6A6]">
+                    <tr key={s.id} className="border-b border-cult-surface-overlay last:border-0">
+                      <td className="px-3 py-2 text-cult-text-primary">{strainName}</td>
+                      <td className="px-3 py-2 text-cult-text-secondary">
                         <span style={{ color: DEST_COLORS[s.target_consistency] ?? '#A6A6A6' }}>
                           {CONSISTENCY_LABELS[s.target_consistency] ?? s.target_consistency}
                         </span>
@@ -316,15 +316,15 @@ export function ActiveCures() {
                           </>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-[#A6A6A6] tabular-nums">
+                      <td className="px-3 py-2 text-cult-text-secondary tabular-nums">
                         {s.input_weight_grams?.toFixed(1) ?? '—'} →{' '}
                         {s.output_weight_grams?.toFixed(1) ?? '—'}g
                       </td>
-                      <td className="px-3 py-2 text-[#A6A6A6] tabular-nums">
+                      <td className="px-3 py-2 text-cult-text-secondary tabular-nums">
                         {s.cure_loss_percentage?.toFixed(1) ?? '—'}%
                       </td>
-                      <td className="px-3 py-2 text-[#A6A6A6] tabular-nums">{days}d</td>
-                      <td className="px-3 py-2 text-[#666666]">{endDate}</td>
+                      <td className="px-3 py-2 text-cult-text-secondary tabular-nums">{days}d</td>
+                      <td className="px-3 py-2 text-cult-text-muted">{endDate}</td>
                     </tr>
                   );
                 })}

@@ -102,14 +102,14 @@ export function PressHub({ onNavigate: _onNavigate }: PressHubProps) {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-xl font-semibold text-[#FFFFFF]">Press</h1>
-        <p className="text-sm text-[#A6A6A6] mt-0.5">
+        <h1 className="text-xl font-semibold text-cult-text-primary">Press</h1>
+        <p className="text-sm text-cult-text-secondary mt-0.5">
           Press hash into rosin, package, and cure
         </p>
       </div>
 
       <div
-        className="bg-[#111111] border border-[#2E2E2E] rounded-md overflow-hidden"
+        className="bg-cult-surface-raised border border-cult-border rounded-md overflow-hidden"
         style={{ minHeight: 400 }}
       >
         <HubTabs

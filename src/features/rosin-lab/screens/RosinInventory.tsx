@@ -67,7 +67,7 @@ function getCureStatusSortValue(pkg: RosinPackage): number {
 
 function CureStatusCell({ pkg }: { pkg: RosinPackage }) {
   if (!pkg.cure_session) {
-    return <span className="text-[13px] text-[#666666]">Not started</span>;
+    return <span className="text-[13px] text-cult-text-muted">Not started</span>;
   }
 
   const { status, target_end_date } = pkg.cure_session;
@@ -104,7 +104,7 @@ function CureStatusCell({ pkg }: { pkg: RosinPackage }) {
     return <span className="text-[13px] text-cult-danger font-medium">Failed</span>;
   }
 
-  return <span className="text-[13px] text-[#666666]">—</span>;
+  return <span className="text-[13px] text-cult-text-muted">—</span>;
 }
 
 interface SortIconProps {

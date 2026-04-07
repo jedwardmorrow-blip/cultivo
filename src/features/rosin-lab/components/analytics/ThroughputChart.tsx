@@ -107,7 +107,7 @@ export const ThroughputChart: React.FC<ThroughputChartProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
-        <div className="w-6 h-6 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-cult-stage-rosin border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -115,7 +115,7 @@ export const ThroughputChart: React.FC<ThroughputChartProps> = ({
   if (buckets.length === 0) {
     return (
       <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
-        <p className="text-[#666666] text-sm">No output data for this period</p>
+        <p className="text-cult-text-muted text-sm">No output data for this period</p>
       </div>
     );
   }
@@ -202,11 +202,11 @@ export const ThroughputChart: React.FC<ThroughputChartProps> = ({
           <p className="font-semibold text-white">{tooltip.bucket.label}</p>
           <p className="mt-1">
             Output:{' '}
-            <span className="text-[#6366F1] font-semibold">
+            <span className="text-cult-stage-rosin font-semibold">
               {tooltip.bucket.totalGrams.toLocaleString()}g
             </span>
           </p>
-          <p className="text-[#A6A6A6]">{tooltip.bucket.runCount} run{tooltip.bucket.runCount !== 1 ? 's' : ''}</p>
+          <p className="text-cult-text-secondary">{tooltip.bucket.runCount} run{tooltip.bucket.runCount !== 1 ? 's' : ''}</p>
         </div>
       )}
     </div>

@@ -107,15 +107,15 @@ export function TrimSessionCompleteModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <div
-        className="bg-cult-near-black border border-cult-medium-gray shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="glass-modal rounded-cult shadow-glass-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-4 text-cult-white uppercase tracking-wide">Complete Trim Session</h2>
 
-          <div className="bg-cult-dark-gray p-4 rounded-lg mb-6 border border-cult-medium-gray">
+          <div className="bg-white/[0.06] p-4 rounded-cult mb-6 border border-white/[0.10]">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-cult-light-gray font-medium">Trimmer:</p>
@@ -145,7 +145,7 @@ export function TrimSessionCompleteModal({
                   step="0.1"
                   value={formData.big_buds_grams || ''}
                   onChange={(e) => setFormData({ ...formData, big_buds_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="0"
                 />
               </div>
@@ -156,7 +156,7 @@ export function TrimSessionCompleteModal({
                   step="0.1"
                   value={formData.small_buds_grams || ''}
                   onChange={(e) => setFormData({ ...formData, small_buds_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="0"
                 />
               </div>
@@ -167,7 +167,7 @@ export function TrimSessionCompleteModal({
                   step="0.1"
                   value={formData.trim_grams || ''}
                   onChange={(e) => setFormData({ ...formData, trim_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="0"
                 />
               </div>
@@ -178,7 +178,7 @@ export function TrimSessionCompleteModal({
                   step="0.1"
                   value={formData.waste_grams || ''}
                   onChange={(e) => setFormData({ ...formData, waste_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="0"
                 />
               </div>
@@ -190,14 +190,14 @@ export function TrimSessionCompleteModal({
                   min="0"
                   value={formData.bucked_smalls_grams || ''}
                   onChange={(e) => setFormData({ ...formData, bucked_smalls_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="Untrimmed smalls"
                 />
                 <p className="text-xs text-cult-light-gray mt-1">Smalls set aside for machine trimming</p>
               </div>
             </div>
 
-            <div className="bg-cult-dark-gray p-3 rounded-lg border border-cult-medium-gray">
+            <div className="bg-white/[0.06] p-3 rounded-cult border border-white/[0.10]">
               <p className="text-sm text-cult-light-gray font-medium">Total Output:</p>
               <p className="text-xl font-bold text-cult-white">{totalOutput.toFixed(1)}g</p>
               <p className="text-sm text-cult-light-gray font-medium mt-1">
@@ -222,7 +222,7 @@ export function TrimSessionCompleteModal({
                   <select
                     value={formData.bucked_smalls_inventory_id}
                     onChange={(e) => setFormData({ ...formData, bucked_smalls_inventory_id: e.target.value })}
-                    className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                    className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   >
                     <option value="">Select bucked smalls inventory...</option>
                     {buckedPackages
@@ -266,7 +266,7 @@ export function TrimSessionCompleteModal({
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 rows={2}
                 placeholder="Any additional notes..."
               />

@@ -1,80 +1,153 @@
 /**
- * Visual Template Builder — weekly timeline for task scheduling
+ * Schedule Builder — Command Center quality page for task template management.
  *
- * Design: Task blocks on a Mon-Sun lane grid. Tap to add/remove.
- * Stagger toggle for multi-room application.
+ * Entry: 4 glass tiles (flower/veg/clone/mother) with mini weekly previews.
+ * Expanded: Bento card swap — selected type fills main panel, others sidebar.
+ * Edit mode: add/remove tasks per day. Apply mode: push to rooms + generate.
  */
 
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Check, Layers, Shuffle, Save } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  motion,
+  AnimatePresence,
+  LayoutGroup,
+} from 'framer-motion';
+import {
+  Plus,
+  X,
+  Check,
+  Shuffle,
+  Save,
+  ChevronDown,
+  ChevronLeft,
+  Pencil,
+} from 'lucide-react';
 import { useScheduleTemplates } from '../hooks/useScheduleTemplates';
-import type { ScheduleTemplate, TemplateScheduleItem } from '../hooks/useScheduleTemplates';
+import type {
+  ScheduleTemplate,
+  TemplateScheduleItem,
+} from '../hooks/useScheduleTemplates';
 import { useGrowRooms } from '../hooks/useGrowRooms';
+import { useGenerateTasksFromSchedules } from '../hooks/useGenerateTasksFromSchedules';
 import { getTaskTypeConfig } from '../types';
 import type { TaskType } from '../types';
+import { todayIso } from '../utils/dateUtils';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_ELEVATED = 'rounded-2xl border border-white/[0.12] bg-white/[0.09] backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)]';
-const GOLD = '#D4A843';
+/* ── constants ─────────────────────────────────────────────────────── */
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-const DAY_INDEX: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 0 };
+const DAY_INDEX: Record<string, number> = {
+  Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 0,
+};
 const ROOM_TYPES = ['flower', 'veg', 'clone', 'mother'] as const;
+type RoomTypeKey = (typeof ROOM_TYPES)[number];
+
+const STAGE_COLORS: Record<RoomTypeKey, string> = {
+  flower: '#F43F5E',
+  veg: '#10B981',
+  clone: '#0EA5E9',
+  mother: '#F59E0B',
+};
 
 const AVAILABLE_TASKS: TaskType[] = [
   'batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning',
   'training', 'saturation_check', 'irrigation_audit', 'maintenance', 'custom',
 ];
 
-// Map schedule items to which days they appear on
+/* ── helpers ───────────────────────────────────────────────────────── */
+
 function getTaskDays(item: TemplateScheduleItem): string[] {
   if (item.recurrence === 'daily') return [...DAYS];
   if (item.day_of_week && item.day_of_week.length > 0) {
-    return item.day_of_week.map(d => DAYS[d === 0 ? 6 : d - 1]).filter(Boolean);
+    return item.day_of_week
+      .map((d) => DAYS[d === 0 ? 6 : d - 1])
+      .filter(Boolean);
   }
   return [];
 }
 
-interface VisualTemplateBuilderProps {
-  inline?: boolean;
+function buildDayGrid(schedules: TemplateScheduleItem[]) {
+  const grid: Record<string, Array<{ item: TemplateScheduleItem; index: number }>> = {};
+  for (const day of DAYS) grid[day] = [];
+  schedules.forEach((item, index) => {
+    getTaskDays(item).forEach((day) => {
+      grid[day]?.push({ item, index });
+    });
+  });
+  return grid;
 }
 
-export function VisualTemplateBuilder({ inline }: VisualTemplateBuilderProps) {
-  const { templates, loading, updateTemplate, createTemplate, applyTemplateToRooms } = useScheduleTemplates();
-  const { rooms } = useGrowRooms();
+function taskCountForTemplate(t: ScheduleTemplate | null): number {
+  if (!t) return 0;
+  return t.schedules.reduce((acc, s) => acc + getTaskDays(s).length, 0);
+}
 
-  const [selectedType, setSelectedType] = useState<string>('flower');
+/* ── animation variants ────────────────────────────────────────────── */
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } },
+};
+
+const springTransition = { type: 'spring' as const, stiffness: 300, damping: 28 };
+
+/* ── main component ────────────────────────────────────────────────── */
+
+export function ScheduleBuilder() {
+  const navigate = useNavigate();
+  const { templates, loading, updateTemplate, createTemplate, applyTemplateToRooms } =
+    useScheduleTemplates();
+  const { rooms } = useGrowRooms();
+  const { generate } = useGenerateTasksFromSchedules();
+
+  const [selectedType, setSelectedType] = useState<RoomTypeKey | null>(null);
   const [editingSchedules, setEditingSchedules] = useState<TemplateScheduleItem[] | null>(null);
   const [showApply, setShowApply] = useState(false);
   const [stagger, setStagger] = useState(false);
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [applySuccess, setApplySuccess] = useState<{ rooms: number; tasks: number } | null>(null);
 
-  const template = useMemo(() => {
-    return templates.find(t => t.room_type === selectedType && t.is_default) ?? templates.find(t => t.room_type === selectedType) ?? null;
-  }, [templates, selectedType]);
+  /* derived data */
+  const templateForType = useCallback(
+    (type: RoomTypeKey) =>
+      templates.find((t) => t.room_type === type && t.is_default) ??
+      templates.find((t) => t.room_type === type) ??
+      null,
+    [templates],
+  );
 
+  const template = selectedType ? templateForType(selectedType) : null;
   const schedules = editingSchedules ?? template?.schedules ?? [];
+  const dayGrid = useMemo(() => buildDayGrid(schedules), [schedules]);
 
-  // Build a grid: day → tasks on that day
-  const dayGrid = useMemo(() => {
-    const grid: Record<string, Array<{ item: TemplateScheduleItem; index: number }>> = {};
-    for (const day of DAYS) grid[day] = [];
+  const roomsOfType = useMemo(
+    () =>
+      selectedType
+        ? rooms.filter((r) => r.room_type === selectedType && r.is_active)
+        : [],
+    [rooms, selectedType],
+  );
 
-    schedules.forEach((item, index) => {
-      const days = getTaskDays(item);
-      days.forEach(day => {
-        grid[day]?.push({ item, index });
-      });
-    });
-    return grid;
-  }, [schedules]);
+  const isEditing = editingSchedules !== null;
 
-  const roomsOfType = useMemo(() => rooms.filter(r => r.room_type === selectedType && r.is_active), [rooms, selectedType]);
+  /* ── actions ─────────────────────────────────────────────────────── */
 
   function startEditing() {
     setEditingSchedules([...(template?.schedules ?? [])]);
+  }
+
+  function cancelEditing() {
+    setEditingSchedules(null);
   }
 
   function addTask(taskType: TaskType, days: number[]) {
@@ -85,12 +158,12 @@ export function VisualTemplateBuilder({ inline }: VisualTemplateBuilderProps) {
       day_of_week: days.length === 7 ? undefined : days,
       priority: 'medium',
     };
-    setEditingSchedules(prev => [...(prev ?? template?.schedules ?? []), newItem]);
+    setEditingSchedules((prev) => [...(prev ?? template?.schedules ?? []), newItem]);
   }
 
   function removeTask(index: number) {
     if (!editingSchedules) startEditing();
-    setEditingSchedules(prev => {
+    setEditingSchedules((prev) => {
       const list = [...(prev ?? template?.schedules ?? [])];
       list.splice(index, 1);
       return list;
@@ -98,7 +171,7 @@ export function VisualTemplateBuilder({ inline }: VisualTemplateBuilderProps) {
   }
 
   async function handleSave() {
-    if (!editingSchedules) return;
+    if (!editingSchedules || !selectedType) return;
     setSaving(true);
     try {
       if (template) {
@@ -121,16 +194,21 @@ export function VisualTemplateBuilder({ inline }: VisualTemplateBuilderProps) {
     if (!template || selectedRoomIds.size === 0) return;
     setSaving(true);
     try {
-      await applyTemplateToRooms(template.id, [...selectedRoomIds], stagger);
-      setShowApply(false);
-      setSelectedRoomIds(new Set());
+      const result = await applyTemplateToRooms(template.id, [...selectedRoomIds], todayIso());
+      const genResult = await generate(todayIso());
+      setApplySuccess({
+        rooms: result.appliedRoomCount,
+        tasks: genResult.created,
+      });
+    } catch {
+      // error handled by hooks
     } finally {
       setSaving(false);
     }
   }
 
   function toggleRoom(roomId: string) {
-    setSelectedRoomIds(prev => {
+    setSelectedRoomIds((prev) => {
       const next = new Set(prev);
       if (next.has(roomId)) next.delete(roomId);
       else next.add(roomId);
@@ -138,236 +216,546 @@ export function VisualTemplateBuilder({ inline }: VisualTemplateBuilderProps) {
     });
   }
 
-  if (loading) {
-    return <div className={`${GLASS} p-6 animate-pulse h-64`} />;
+  function goBack() {
+    setSelectedType(null);
+    setEditingSchedules(null);
+    setShowApply(false);
+    setApplySuccess(null);
+    setSelectedRoomIds(new Set());
   }
+
+  /* ── loading state ───────────────────────────────────────────────── */
+
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">Schedule Builder</h1>
+          <p className="text-xs text-white/40 mt-1">Task templates by room type</p>
+        </div>
+        <div className="glass-card p-6 animate-pulse h-64" />
+      </div>
+    );
+  }
+
+  /* ── entry view: 4 tiles ─────────────────────────────────────────── */
+
+  if (!selectedType) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+            Schedule Builder
+          </h1>
+          <p className="text-xs text-white/40 mt-1">Task templates by room type</p>
+        </div>
+
+        <LayoutGroup>
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {ROOM_TYPES.map((type) => {
+              const t = templateForType(type);
+              const color = STAGE_COLORS[type];
+              const count = taskCountForTemplate(t);
+              const grid = t ? buildDayGrid(t.schedules) : null;
+
+              return (
+                <motion.button
+                  key={type}
+                  layoutId={type}
+                  layout="position"
+                  variants={staggerItem}
+                  type="button"
+                  onClick={() => setSelectedType(type)}
+                  className={`p-5 rounded-2xl text-left transition-all duration-300 active:scale-[0.97] ${
+                    t
+                      ? 'glass-card hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01]'
+                      : 'bg-white/[0.03] backdrop-blur-2xl border border-dashed border-white/[0.08] rounded-2xl hover:bg-white/[0.06] hover:border-white/[0.12]'
+                  }`}
+                  style={
+                    t
+                      ? {
+                          borderColor: `${color}33`,
+                          boxShadow: `0 0 20px ${color}15`,
+                        }
+                      : undefined
+                  }
+                >
+                  <p className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3">
+                    {type}
+                  </p>
+
+                  {t && grid ? (
+                    <>
+                      {/* Mini weekly preview */}
+                      <div className="flex gap-1.5 mb-3">
+                        {DAYS.map((day) => (
+                          <div key={day} className="flex flex-col gap-0.5 items-center">
+                            {grid[day].slice(0, 4).map(({ item }, i) => {
+                              const cfg = getTaskTypeConfig(item.task_type);
+                              return (
+                                <div
+                                  key={i}
+                                  className="w-1.5 h-1.5 rounded-full"
+                                  style={{ backgroundColor: cfg.color }}
+                                />
+                              );
+                            })}
+                            {grid[day].length === 0 && (
+                              <div className="w-1.5 h-1.5 rounded-full bg-white/[0.06]" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-white/40">
+                        {t.name} &middot; {count} tasks/week
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-white/20 mt-4">
+                      No template &middot; Tap to create
+                    </p>
+                  )}
+                </motion.button>
+              );
+            })}
+          </motion.div>
+        </LayoutGroup>
+      </div>
+    );
+  }
+
+  /* ── expanded view: bento card swap ──────────────────────────────── */
+
+  const color = STAGE_COLORS[selectedType];
+  const otherTypes = ROOM_TYPES.filter((t) => t !== selectedType);
 
   return (
     <div className="space-y-5">
-      {/* Room type tabs */}
-      <div className="flex gap-2">
-        {ROOM_TYPES.map(type => (
-          <button
-            key={type}
-            type="button"
-            onClick={() => { setSelectedType(type); setEditingSchedules(null); }}
-            className={`px-4 py-2 rounded-xl text-xs font-medium uppercase tracking-wider transition-all active:scale-95 ${
-              selectedType === type
-                ? 'bg-white/10 text-white border border-white/15'
-                : 'text-white/30 hover:text-white/50 hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            {type}
-          </button>
-        ))}
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 transition-colors active:scale-95"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+          All Templates
+        </button>
+        <div className="flex-1" />
+        <h1 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+          Schedule Builder
+        </h1>
       </div>
 
-      {/* Weekly timeline */}
-      <div className={`${GLASS} p-5`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white">
-            {template?.name ?? `${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Template`}
-          </h3>
-          <div className="flex gap-2">
-            {editingSchedules && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setEditingSchedules(null)}
-                  className="text-xs px-3 py-1.5 rounded-lg text-white/40 hover:text-white/60 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors active:scale-95"
-                >
-                  <Save className="w-3 h-3" />
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
-              </>
-            )}
-            {!editingSchedules && template && (
-              <button
-                type="button"
-                onClick={() => setShowApply(true)}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 transition-colors active:scale-95"
-              >
-                <Layers className="w-3 h-3" />
-                Apply to Rooms
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Day columns */}
-        <div className="grid grid-cols-7 gap-2">
-          {DAYS.map(day => (
-            <div key={day} className="space-y-2">
-              <div className="text-center text-[10px] text-white/25 uppercase tracking-wider font-medium py-1">
-                {day}
+      <LayoutGroup>
+        <div className="grid grid-cols-5 gap-4">
+          {/* ── Main panel (3/5) ─────────────────────────────────── */}
+          <motion.div
+            layoutId={selectedType}
+            layout="position"
+            transition={springTransition}
+            className="col-span-5 lg:col-span-3 glass-card p-5 space-y-4"
+            style={{
+              borderColor: `${color}33`,
+              boxShadow: `0 0 20px ${color}15`,
+            }}
+          >
+            {/* Template header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-white/80">
+                  {template?.name ?? `${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Template`}
+                </h2>
+                <p className="text-xs text-white/40 mt-0.5">
+                  {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} room schedule
+                </p>
               </div>
-              <div className="space-y-1.5 min-h-[120px]">
-                {dayGrid[day].map(({ item, index }) => {
-                  const config = getTaskTypeConfig(item.task_type);
-                  return (
-                    <motion.div
-                      key={`${item.task_type}-${index}`}
-                      layout
-                      className="relative group"
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={cancelEditing}
+                      className="text-xs px-3 py-1.5 rounded-lg text-white/40 hover:text-white/60 transition-colors active:scale-95"
                     >
-                      <div
-                        className="px-2 py-1.5 rounded-lg text-[10px] font-medium truncate border border-white/5"
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95"
+                    >
+                      <Save className="w-3 h-3" />
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={startEditing}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit
+                    </button>
+                    {template && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowApply(!showApply);
+                          setApplySuccess(null);
+                        }}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                      >
+                        Apply
+                        <ChevronDown className={`w-3 h-3 transition-transform ${showApply ? 'rotate-180' : ''}`} />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Weekly timeline */}
+            <div className="grid grid-cols-7 gap-3">
+              {DAYS.map((day) => (
+                <div key={day} className="space-y-2">
+                  <div className="text-xs text-white/25 uppercase tracking-wider text-center font-medium py-1">
+                    {day}
+                  </div>
+                  <div className="space-y-1.5 min-h-[200px]">
+                    {dayGrid[day].map(({ item, index }) => {
+                      const config = getTaskTypeConfig(item.task_type);
+                      return (
+                        <motion.div
+                          key={`${item.task_type}-${index}`}
+                          layout
+                          className="relative group"
+                        >
+                          <div
+                            className="rounded-xl px-3 py-2.5 text-[10px] font-medium truncate"
+                            style={{
+                              backgroundColor: `${config.color}15`,
+                              borderWidth: 1,
+                              borderColor: `${config.color}20`,
+                              color: `${config.color}cc`,
+                            }}
+                          >
+                            {config.label}
+                          </div>
+                          {isEditing && (
+                            <button
+                              type="button"
+                              onClick={() => removeTask(index)}
+                              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+
+                    {/* Empty column placeholder */}
+                    {dayGrid[day].length === 0 && !isEditing && (
+                      <div className="min-h-[60px] rounded-xl border border-dashed border-white/[0.06]" />
+                    )}
+
+                    {/* Add to this day */}
+                    {isEditing && (
+                      <AddTaskPopover
+                        onAdd={(taskType) => addTask(taskType, [DAY_INDEX[day]])}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add daily task strip */}
+            {isEditing && (
+              <div className="pt-4 border-t border-white/5">
+                <p className="text-[10px] text-white/20 uppercase tracking-wider mb-2">
+                  Add daily task
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {AVAILABLE_TASKS.map((type) => {
+                    const config = getTaskTypeConfig(type);
+                    const alreadyDaily = schedules.some(
+                      (s) => s.task_type === type && s.recurrence === 'daily',
+                    );
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => addTask(type, [0, 1, 2, 3, 4, 5, 6])}
+                        disabled={alreadyDaily}
+                        className="px-2.5 py-1 rounded-lg text-[10px] border border-white/5 transition-all duration-200 active:scale-95 disabled:opacity-20"
                         style={{
-                          backgroundColor: `${config.color}15`,
-                          color: `${config.color}cc`,
+                          backgroundColor: alreadyDaily ? 'transparent' : `${config.color}10`,
+                          color: `${config.color}99`,
                         }}
                       >
                         {config.label}
-                      </div>
-                      {editingSchedules && (
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Apply panel (slide-down) */}
+            <AnimatePresence>
+              {showApply && !isEditing && template && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-4 border-t border-white/5 space-y-4">
+                    {applySuccess ? (
+                      /* ── Success state ─────────────────────────── */
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="rounded-2xl border p-5 text-center space-y-3"
+                        style={{
+                          borderColor: '#10B98133',
+                          boxShadow: '0 0 20px #10B98115',
+                          background: 'rgba(16, 185, 129, 0.05)',
+                        }}
+                      >
+                        <p className="text-sm text-emerald-300 font-semibold">
+                          Applied to {applySuccess.rooms} room{applySuccess.rooms !== 1 ? 's' : ''} &middot; {applySuccess.tasks} tasks generated
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                          <button
+                            type="button"
+                            onClick={goBack}
+                            className="text-xs px-4 py-2 rounded-xl bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                          >
+                            Back to Schedule Builder
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/cultivation-command-center')}
+                            className="text-xs px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95"
+                          >
+                            Open Command Center &rarr;
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      /* ── Room selection ─────────────────────────── */
+                      <>
+                        <h3 className="text-sm font-semibold text-white/80">
+                          Apply &ldquo;{template.name}&rdquo; to rooms
+                        </h3>
+
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {roomsOfType.map((room) => {
+                            const isSelected = selectedRoomIds.has(room.id);
+                            return (
+                              <button
+                                key={room.id}
+                                type="button"
+                                onClick={() => toggleRoom(room.id)}
+                                className={`relative p-3 rounded-xl border transition-all duration-200 active:scale-95 text-left ${
+                                  isSelected
+                                    ? 'glass-elevated'
+                                    : 'bg-white/[0.03] border-white/5 hover:bg-white/5'
+                                }`}
+                                style={
+                                  isSelected
+                                    ? { borderColor: `${color}33` }
+                                    : undefined
+                                }
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isSelected && (
+                                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                  )}
+                                  <span className="font-mono text-xs text-white/70">
+                                    {room.room_code}
+                                  </span>
+                                </div>
+                                {/* Mini 7-day strip */}
+                                <div className="flex gap-0.5 mt-2">
+                                  {DAYS.map((day, di) => {
+                                    const offset = stagger && isSelected ? di % 2 : 0;
+                                    const hasTasks = dayGrid[day].length > 0;
+                                    return (
+                                      <div
+                                        key={day}
+                                        className="w-2 h-1.5 rounded-sm transition-all duration-300"
+                                        style={{
+                                          backgroundColor:
+                                            hasTasks && !offset
+                                              ? `${color}40`
+                                              : hasTasks && offset
+                                                ? `${color}20`
+                                                : 'rgba(255,255,255,0.04)',
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              </button>
+                            );
+                          })}
+                          {roomsOfType.length === 0 && (
+                            <p className="text-xs text-white/20 col-span-full">
+                              No active {selectedType} rooms
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Stagger toggle */}
+                        <div className="flex items-center justify-between py-2">
+                          <div className="flex items-center gap-2">
+                            <Shuffle className="w-4 h-4 text-white/30" />
+                            <div>
+                              <p className="text-xs text-white/60">Stagger heavy tasks</p>
+                              <p className="text-[10px] text-white/25">
+                                Offset task days per room so no two rooms share the same heavy day
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setStagger(!stagger)}
+                            className={`w-10 h-5 rounded-full transition-colors ${
+                              stagger ? 'bg-emerald-500' : 'bg-white/10'
+                            }`}
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                                stagger ? 'translate-x-5' : 'translate-x-0.5'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Apply button */}
                         <button
                           type="button"
-                          onClick={() => removeTask(index)}
-                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={handleApply}
+                          disabled={saving || selectedRoomIds.size === 0}
+                          className="w-full rounded-xl py-3 bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-30 transition-all duration-200 active:scale-[0.98]"
                         >
-                          <X className="w-2.5 h-2.5" />
+                          {saving
+                            ? 'Applying...'
+                            : `Apply to ${selectedRoomIds.size} room${selectedRoomIds.size !== 1 ? 's' : ''}`}
                         </button>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* ── Sidebar (2/5) ──────────────────────────────────── */}
+          <div className="col-span-5 lg:col-span-2 space-y-3">
+            {otherTypes.map((type) => {
+              const t = templateForType(type);
+              const sColor = STAGE_COLORS[type];
+              const count = taskCountForTemplate(t);
+
+              return (
+                <motion.button
+                  key={type}
+                  layoutId={type}
+                  layout="position"
+                  transition={springTransition}
+                  type="button"
+                  onClick={() => {
+                    setSelectedType(type);
+                    setEditingSchedules(null);
+                    setShowApply(false);
+                    setApplySuccess(null);
+                    setSelectedRoomIds(new Set());
+                  }}
+                  className="w-full p-4 rounded-2xl glass-card text-left hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300 active:scale-[0.97]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-white/60 uppercase tracking-wider">
+                        {type}
+                      </p>
+                      {t ? (
+                        <p className="text-[10px] text-white/30 mt-0.5 truncate">
+                          {t.name} &middot; {count} tasks/week
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-white/20 mt-0.5">No template</p>
                       )}
-                    </motion.div>
-                  );
-                })}
+                    </div>
 
-                {/* Add task to this day */}
-                {editingSchedules && (
-                  <AddTaskButton
-                    day={day}
-                    onAdd={(taskType) => addTask(taskType, [DAY_INDEX[day]])}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                    {/* Mini preview dots */}
+                    {t && (
+                      <div className="flex gap-1">
+                        {DAYS.map((day) => {
+                          const grid = buildDayGrid(t.schedules);
+                          return (
+                            <div key={day} className="flex flex-col gap-0.5 items-center">
+                              {grid[day].slice(0, 3).map(({ item }, i) => {
+                                const cfg = getTaskTypeConfig(item.task_type);
+                                return (
+                                  <div
+                                    key={i}
+                                    className="w-1 h-1 rounded-full"
+                                    style={{ backgroundColor: cfg.color }}
+                                  />
+                                );
+                              })}
+                              {grid[day].length === 0 && (
+                                <div className="w-1 h-1 rounded-full bg-white/[0.06]" />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
 
-        {/* Edit mode toggle */}
-        {!editingSchedules && (
-          <button
-            type="button"
-            onClick={startEditing}
-            className="mt-4 w-full py-2.5 rounded-xl border border-dashed border-white/10 text-xs text-white/25 hover:text-white/40 hover:border-white/20 transition-colors"
-          >
-            Tap to edit template
-          </button>
-        )}
-
-        {/* Add daily task shortcut */}
-        {editingSchedules && (
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <p className="text-[10px] text-white/20 uppercase tracking-wider mb-2">Add daily task</p>
-            <div className="flex flex-wrap gap-1.5">
-              {AVAILABLE_TASKS.map(type => {
-                const config = getTaskTypeConfig(type);
-                const alreadyDaily = schedules.some(s => s.task_type === type && s.recurrence === 'daily');
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => addTask(type, [0, 1, 2, 3, 4, 5, 6])}
-                    disabled={alreadyDaily}
-                    className="px-2.5 py-1 rounded-lg text-[10px] border border-white/5 transition-all active:scale-95 disabled:opacity-20"
-                    style={{
-                      backgroundColor: alreadyDaily ? 'transparent' : `${config.color}10`,
-                      color: `${config.color}99`,
-                    }}
-                  >
-                    {config.label}
-                  </button>
-                );
-              })}
+            {/* Active indicator */}
+            <div
+              className="p-3 rounded-xl border text-center"
+              style={{
+                borderColor: `${color}33`,
+                background: `${color}08`,
+              }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color }}>
+                ● {selectedType} active
+              </p>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Apply to Rooms panel */}
-      <AnimatePresence>
-        {showApply && template && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className={`${GLASS} p-5 space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">Apply "{template.name}" to rooms</h3>
-                <button type="button" onClick={() => setShowApply(false)} className="p-1.5 hover:bg-white/10 rounded-lg">
-                  <X className="w-4 h-4 text-white/40" />
-                </button>
-              </div>
-
-              {/* Room selection */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {roomsOfType.map(room => (
-                  <button
-                    key={room.id}
-                    type="button"
-                    onClick={() => toggleRoom(room.id)}
-                    className={`flex items-center gap-2 p-3 rounded-xl border transition-all active:scale-95 ${
-                      selectedRoomIds.has(room.id)
-                        ? 'bg-white/10 border-white/20'
-                        : 'bg-white/[0.03] border-white/5 hover:bg-white/5'
-                    }`}
-                  >
-                    {selectedRoomIds.has(room.id) && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                    <span className="text-xs font-mono text-white/70">{room.room_code}</span>
-                  </button>
-                ))}
-                {roomsOfType.length === 0 && (
-                  <p className="text-xs text-white/20 col-span-full">No active {selectedType} rooms</p>
-                )}
-              </div>
-
-              {/* Stagger toggle */}
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <Shuffle className="w-4 h-4 text-white/30" />
-                  <div>
-                    <p className="text-xs text-white/60">Stagger heavy tasks</p>
-                    <p className="text-[10px] text-white/25">Offset task days per room so no two rooms share the same heavy day</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setStagger(!stagger)}
-                  className={`w-10 h-5 rounded-full transition-colors ${stagger ? 'bg-emerald-500' : 'bg-white/10'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${stagger ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </button>
-              </div>
-
-              {/* Apply button */}
-              <button
-                type="button"
-                onClick={handleApply}
-                disabled={saving || selectedRoomIds.size === 0}
-                className="w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-30 transition-colors active:scale-[0.98]"
-              >
-                {saving ? 'Applying...' : `Apply to ${selectedRoomIds.size} room${selectedRoomIds.size !== 1 ? 's' : ''}`}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      </LayoutGroup>
     </div>
   );
 }
 
-// Small popover for adding a task to a specific day
-function AddTaskButton({ day, onAdd }: { day: string; onAdd: (type: TaskType) => void }) {
+/* ── backwards compat export ───────────────────────────────────────── */
+export { ScheduleBuilder as VisualTemplateBuilder };
+
+/* ── sub-components ────────────────────────────────────────────────── */
+
+function AddTaskPopover({ onAdd }: { onAdd: (type: TaskType) => void }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -375,7 +763,7 @@ function AddTaskButton({ day, onAdd }: { day: string; onAdd: (type: TaskType) =>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full py-1 rounded-lg border border-dashed border-white/[0.06] text-white/15 hover:text-white/30 hover:border-white/15 transition-colors flex items-center justify-center"
+        className="w-full py-1.5 rounded-lg border border-dashed border-white/[0.06] text-white/15 hover:text-white/30 hover:border-white/15 transition-colors flex items-center justify-center"
       >
         <Plus className="w-3 h-3" />
       </button>
@@ -386,18 +774,24 @@ function AddTaskButton({ day, onAdd }: { day: string; onAdd: (type: TaskType) =>
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className={`absolute top-full left-0 mt-1 z-20 w-36 ${GLASS_ELEVATED} p-1.5 space-y-0.5`}
+            className="absolute top-full left-0 mt-1 z-20 w-48 glass-elevated p-2 space-y-0.5"
           >
-            {AVAILABLE_TASKS.map(type => {
+            {AVAILABLE_TASKS.map((type) => {
               const config = getTaskTypeConfig(type);
               return (
                 <button
                   key={type}
                   type="button"
-                  onClick={() => { onAdd(type); setOpen(false); }}
+                  onClick={() => {
+                    onAdd(type);
+                    setOpen(false);
+                  }}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-white/10 transition-colors text-left"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: config.color }} />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: config.color }}
+                  />
                   {config.label}
                 </button>
               );

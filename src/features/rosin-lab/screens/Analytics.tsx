@@ -23,10 +23,10 @@ interface ChartCardProps {
 
 function ChartCard({ title, subtitle, children }: ChartCardProps) {
   return (
-    <div className="bg-[#111111] border border-[#2E2E2E] rounded-[6px] overflow-hidden">
-      <div className="px-5 pt-4 pb-3 border-b border-[#2E2E2E]">
+    <div className="bg-cult-surface-raised border border-cult-border rounded-cult overflow-hidden">
+      <div className="px-5 pt-4 pb-3 border-b border-cult-border">
         <h3 className="text-base font-semibold text-white">{title}</h3>
-        <p className="text-xs text-[#666666] mt-0.5">{subtitle}</p>
+        <p className="text-xs text-cult-text-muted mt-0.5">{subtitle}</p>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -61,18 +61,18 @@ export const Analytics: React.FC = () => {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-semibold text-white">Analytics</h1>
-          <p className="text-sm text-[#A6A6A6] mt-0.5">Production performance and trends</p>
+          <p className="text-sm text-cult-text-secondary mt-0.5">Production performance and trends</p>
         </div>
 
-        <div className="flex rounded-[6px] border border-[#2E2E2E] overflow-hidden">
+        <div className="flex rounded-cult border border-cult-border overflow-hidden">
           {TIME_RANGES.map((r) => (
             <button
               key={r.value}
               onClick={() => setTimeRange(r.value)}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 timeRange === r.value
-                  ? 'bg-[#1C1C1C] text-white border-r border-[#2E2E2E] last:border-r-0'
-                  : 'text-[#A6A6A6] hover:text-white border-r border-[#2E2E2E] last:border-r-0'
+                  ? 'bg-cult-surface-overlay text-white border-r border-cult-border last:border-r-0'
+                  : 'text-cult-text-secondary hover:text-white border-r border-cult-border last:border-r-0'
               }`}
             >
               {r.label}
@@ -86,7 +86,7 @@ export const Analytics: React.FC = () => {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="flex-1 min-w-[180px] h-24 rounded-[6px] bg-[#111111] border border-[#2E2E2E] animate-pulse"
+              className="flex-1 min-w-[180px] h-24 rounded-cult bg-cult-surface-raised border border-cult-border animate-pulse"
             />
           ))}
         </div>

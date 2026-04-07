@@ -69,26 +69,26 @@ export function PinLoginPage() {
 
   if (staffName && confirming) {
     return (
-      <div className="min-h-screen bg-cult-opaque-black flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
         <div className="text-center">
-          <div className="text-3xl font-bold text-cult-whiter mb-2">
+          <div className="text-3xl font-bold text-cult-text-primary mb-2">
             Welcome, {staffName}
           </div>
-          <p className="text-cult-light-gray text-sm">Loading your tasks...</p>
+          <p className="text-cult-text-secondary text-sm">Loading your tasks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cult-opaque-black flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-xs">
         {/* Logo / title */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-cult-white uppercase tracking-widest">
+          <h1 className="text-2xl font-bold text-cult-text-primary uppercase tracking-widest">
             Cult Ops
           </h1>
-          <p className="text-cult-medium-gray text-sm mt-1 uppercase tracking-wider">
+          <p className="text-cult-text-muted text-sm mt-1 uppercase tracking-wider">
             Worker Login
           </p>
         </div>
@@ -100,10 +100,10 @@ export function PinLoginPage() {
               key={i}
               className={`w-4 h-4 rounded-full border-2 transition-all ${
                 i < pin.length
-                  ? 'bg-cult-white border-cult-white'
+                  ? 'bg-cult-accent border-cult-accent'
                   : i < PIN_LENGTH
-                    ? 'border-cult-medium-gray'
-                    : 'border-cult-dark-gray'
+                    ? 'border-cult-border-strong'
+                    : 'border-cult-border-subtle'
               }`}
             />
           ))}
@@ -125,7 +125,7 @@ export function PinLoginPage() {
                 <button
                   key={i}
                   onClick={handleBackspace}
-                  className="h-16 flex items-center justify-center text-cult-medium-gray hover:text-cult-white transition-colors text-lg"
+                  className="h-16 flex items-center justify-center text-cult-text-muted hover:text-cult-text-primary transition-colors text-lg"
                 >
                   &#9003;
                 </button>
@@ -136,7 +136,7 @@ export function PinLoginPage() {
                 key={i}
                 onClick={() => handleDigitWithAutoSubmit(d)}
                 disabled={confirming}
-                className="h-16 bg-cult-opaque-near-black border border-cult-medium-gray text-cult-white text-2xl font-bold rounded-lg hover:bg-cult-dark-gray hover:border-cult-lighter-gray active:bg-cult-medium-gray transition-all disabled:opacity-40"
+                className="h-16 glass text-cult-text-primary text-2xl font-bold rounded-cult hover:bg-white/[0.10] hover:border-cult-border-strong active:bg-white/[0.14] transition-all disabled:opacity-40"
               >
                 {d}
               </button>
@@ -148,13 +148,13 @@ export function PinLoginPage() {
         {pin.length >= PIN_LENGTH && !confirming && (
           <button
             onClick={handleSubmit}
-            className="w-full mt-4 py-3 bg-cult-white text-cult-black font-bold uppercase tracking-wider text-sm hover:bg-cult-light-gray transition-colors"
+            className="w-full mt-4 py-3 bg-cult-accent text-cult-opaque-black font-bold uppercase tracking-wider text-sm rounded-cult hover:bg-cult-accent-hover hover:shadow-glow-accent transition-all"
           >
             Sign In
           </button>
         )}
 
-        <p className="text-center text-cult-dark-gray text-xs mt-8">
+        <p className="text-center text-cult-text-faint text-xs mt-8">
           Forgot your PIN? Ask your manager.
         </p>
       </div>

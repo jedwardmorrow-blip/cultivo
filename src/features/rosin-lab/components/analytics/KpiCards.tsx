@@ -19,10 +19,10 @@ function KpiCard({ label, value, accentColor, delta, deltaLabel, invertDelta }: 
 
   return (
     <div
-      className="flex-1 min-w-[180px] rounded-[6px] border border-[#2E2E2E] bg-[#111111] p-5"
+      className="flex-1 min-w-[180px] rounded-cult border border-cult-border bg-cult-surface-raised p-5"
       style={{ borderTop: `3px solid ${accentColor}` }}
     >
-      <p className="uppercase text-xs font-semibold text-[#666666] tracking-wider mb-2">
+      <p className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider mb-2">
         {label}
       </p>
       <p className="text-2xl font-bold text-white">{value}</p>

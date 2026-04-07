@@ -26,7 +26,7 @@ export function FacilityStatus({ cultivation, dryRooms }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {activeStages.map(s => (
           <div key={s.label} className="text-center p-3.5 bg-cult-surface-overlay rounded-cult">
-            <div className={`text-[1.75rem] font-bold ${s.color}`}>{s.value.toLocaleString()}</div>
+            <div className={`text-3xl font-bold ${s.color}`}>{s.value.toLocaleString()}</div>
             <div className="text-[0.625rem] text-cult-text-muted uppercase tracking-[1px] font-semibold mt-1">
               {s.label}
             </div>

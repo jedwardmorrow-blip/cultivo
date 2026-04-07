@@ -104,35 +104,35 @@ export function PackagingSessionCompleteModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <div
-        className="bg-cult-near-black border border-cult-medium-gray shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="glass-modal rounded-cult shadow-glass-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4 text-cult-white uppercase tracking-wide">Complete Packaging Session</h2>
+          <h2 className="text-2xl font-bold mb-4 text-cult-text-primary uppercase tracking-wide">Complete Packaging Session</h2>
 
-          <div className="bg-cult-dark-gray p-4 rounded-lg mb-6 border border-cult-medium-gray">
+          <div className="bg-white/[0.06] p-4 rounded-cult mb-6 border border-white/[0.10]">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-cult-light-gray font-medium">Packager:</p>
-                <p className="font-bold text-cult-white">{session.packager_name}</p>
+                <p className="text-cult-text-secondary font-medium">Packager:</p>
+                <p className="font-bold text-cult-text-primary">{session.packager_name}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Strain:</p>
-                <p className="font-bold text-cult-white">{session.strain}</p>
+                <p className="text-cult-text-secondary font-medium">Strain:</p>
+                <p className="font-bold text-cult-text-primary">{session.strain}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Package ID:</p>
-                <p className="font-bold text-cult-white">{session.package_id}</p>
+                <p className="text-cult-text-secondary font-medium">Package ID:</p>
+                <p className="font-bold text-cult-text-primary">{session.package_id}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Pull Weight:</p>
-                <p className="font-bold text-cult-white">{session.pull_weight}g</p>
+                <p className="text-cult-text-secondary font-medium">Pull Weight:</p>
+                <p className="font-bold text-cult-text-primary">{session.pull_weight}g</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Time Elapsed:</p>
-                <p className="font-bold text-cult-white">{formatElapsedTime(session.started_at)}</p>
+                <p className="text-cult-text-secondary font-medium">Time Elapsed:</p>
+                <p className="font-bold text-cult-text-primary">{formatElapsedTime(session.started_at)}</p>
               </div>
             </div>
           </div>
@@ -140,75 +140,75 @@ export function PackagingSessionCompleteModal({
           <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">Ending Weight (g)</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">Ending Weight (g)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={formData.ending_weight || ''}
                   onChange={(e) => setFormData({ ...formData, ending_weight: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">3.5g Units</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">3.5g Units</label>
                 <input
                   type="number"
                   value={formData.units_3_5g || ''}
                   onChange={(e) => setFormData({ ...formData, units_3_5g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">14g Units</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">14g Units</label>
                 <input
                   type="number"
                   value={formData.units_14g || ''}
                   onChange={(e) => setFormData({ ...formData, units_14g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">454g Units (1 lb)</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">454g Units (1 lb)</label>
                 <input
                   type="number"
                   value={formData.units_454g || ''}
                   onChange={(e) => setFormData({ ...formData, units_454g: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">Trim (g)</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">Trim (g)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={formData.trim_grams || ''}
                   onChange={(e) => setFormData({ ...formData, trim_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-cult-white mb-1">Waste (g)</label>
+                <label className="block text-sm font-medium text-cult-text-primary mb-1">Waste (g)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={formData.waste_grams || ''}
                   onChange={(e) => setFormData({ ...formData, waste_grams: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                  className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 />
               </div>
             </div>
 
-            <div className="bg-cult-dark-gray p-3 rounded-lg border border-cult-medium-gray">
-              <p className="text-sm text-cult-light-gray font-medium">Total Output:</p>
-              <p className="text-xl font-bold text-cult-white">{totalOutput.toFixed(1)}g</p>
-              <p className="text-sm text-cult-light-gray font-medium mt-1">
+            <div className="bg-white/[0.06] p-3 rounded-cult border border-white/[0.10]">
+              <p className="text-sm text-cult-text-secondary font-medium">Total Output:</p>
+              <p className="text-xl font-bold text-cult-text-primary">{totalOutput.toFixed(1)}g</p>
+              <p className="text-sm text-cult-text-secondary font-medium mt-1">
                 Variance: {variance.toFixed(1)}g
               </p>
             </div>
 
-            <div className="border-t border-cult-medium-gray pt-4">
-              <div className="bg-cult-info-muted border border-cult-info rounded-lg p-4 mb-4">
+            <div className="border-t border-white/[0.08] pt-4">
+              <div className="bg-cult-info-muted border border-cult-info rounded-cult p-4 mb-4">
                 <p className="text-cult-info text-sm font-medium mb-2">Auto-Consolidation Notice:</p>
                 <p className="text-cult-info/80 text-sm">
                   Package IDs will be automatically generated when you complete this session.
@@ -217,7 +217,7 @@ export function PackagingSessionCompleteModal({
               </div>
 
               {Object.keys(consolidatedPackages).length > 0 && (
-                <div className="bg-cult-success-muted border border-cult-success rounded-lg p-4 mb-4">
+                <div className="bg-cult-success-muted border border-cult-success rounded-cult p-4 mb-4">
                   <p className="text-cult-success text-sm font-bold mb-2">Generated Package IDs:</p>
                   <div className="space-y-1">
                     {consolidatedPackages['3.5g'] && (
@@ -241,11 +241,11 @@ export function PackagingSessionCompleteModal({
             />
 
             <div>
-              <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>
+              <label className="block text-sm font-medium text-cult-text-primary mb-1">Notes</label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+                className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 rows={2}
                 placeholder="Any additional notes..."
               />
@@ -258,7 +258,7 @@ export function PackagingSessionCompleteModal({
               <button
                 type="button"
                 onClick={onCancel}
-                className="border border-cult-medium-gray text-cult-white px-6 py-2 font-semibold uppercase tracking-wider hover:border-cult-white transition"
+                className="border border-white/[0.15] text-cult-text-primary px-6 py-2 rounded-cult font-semibold uppercase tracking-wider hover:bg-white/[0.06] hover:border-white/[0.25] transition"
               >
                 Cancel
               </button>

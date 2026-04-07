@@ -45,7 +45,7 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="w-6 h-6 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-cult-stage-press border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -53,7 +53,7 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
   if (entries.length === 0) {
     return (
       <div className="flex items-center justify-center h-48">
-        <p className="text-[#666666] text-sm">No strain data available</p>
+        <p className="text-cult-text-muted text-sm">No strain data available</p>
       </div>
     );
   }
@@ -63,26 +63,26 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-[#1C1C1C]">
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-10">
+            <tr className="bg-cult-surface-overlay">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-left px-3 py-2 w-10">
                 #
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2 w-36">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-left px-3 py-2 w-36">
                 Strain
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-center px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-center px-3 py-2 w-16">
                 Runs
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-left px-3 py-2">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-left px-3 py-2">
                 Avg Yield
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-right px-3 py-2 w-16">
                 Best
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-16">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-right px-3 py-2 w-16">
                 Worst
               </th>
-              <th className="uppercase text-xs font-semibold text-[#666666] tracking-wider text-right px-3 py-2 w-24">
+              <th className="uppercase text-xs font-semibold text-cult-text-muted tracking-wider text-right px-3 py-2 w-24">
                 Last Pressed
               </th>
             </tr>
@@ -98,7 +98,7 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
               return (
                 <tr
                   key={entry.strain_id}
-                  className="border-b border-[#2E2E2E] hover:bg-[#1C1C1C]/50 transition-colors"
+                  className="border-b border-cult-border hover:bg-cult-surface-overlay/50 transition-colors"
                   style={
                     rankStyle
                       ? { boxShadow: `inset 3px 0 0 ${rankStyle.border}` }
@@ -115,22 +115,22 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
                   </td>
                   <td className="px-3 py-3 w-36">
                     <span
-                      className={`text-sm ${rank <= 3 ? 'font-bold text-white' : 'text-[#A6A6A6]'}`}
+                      className={`text-sm ${rank <= 3 ? 'font-bold text-white' : 'text-cult-text-secondary'}`}
                     >
                       {entry.strain_name}
                     </span>
                     {entry.strain_abbreviation && (
-                      <span className="text-[#666666] text-xs ml-1">
+                      <span className="text-cult-text-muted text-xs ml-1">
                         ({entry.strain_abbreviation})
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3 w-16 text-center text-[#A6A6A6]">
+                  <td className="px-3 py-3 w-16 text-center text-cult-text-secondary">
                     {entry.total_runs}
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-[#1C1C1C] h-2 rounded-full overflow-hidden min-w-[60px]">
+                      <div className="flex-1 bg-cult-surface-overlay h-2 rounded-full overflow-hidden min-w-[60px]">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${barWidthPct}%`, backgroundColor: barColor }}
@@ -150,7 +150,7 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
                   <td className="px-3 py-3 w-16 text-right text-red-400 text-xs font-semibold">
                     {entry.min_yield_percentage.toFixed(1)}%
                   </td>
-                  <td className="px-3 py-3 w-24 text-right text-[#666666] text-xs">
+                  <td className="px-3 py-3 w-24 text-right text-cult-text-muted text-xs">
                     {formatLeaderboardDate(entry.last_pressed)}
                   </td>
                 </tr>
@@ -161,9 +161,9 @@ export const StrainLeaderboard: React.FC<StrainLeaderboardProps> = ({ timeRange 
       </div>
 
       {hasMore && (
-        <div className="px-4 py-3 border-t border-[#2E2E2E]">
+        <div className="px-4 py-3 border-t border-cult-border">
           <button
-            className="text-xs text-[#A6A6A6] hover:text-white transition-colors"
+            className="text-xs text-cult-text-secondary hover:text-white transition-colors"
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded

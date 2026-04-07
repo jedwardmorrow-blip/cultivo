@@ -34,39 +34,39 @@ export function TrimSessionCancelModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <div
-        className="bg-cult-near-black border-2 border-cult-danger shadow-xl max-w-lg w-full"
+        className="glass-modal rounded-cult shadow-glass-lg border border-cult-danger/40 max-w-lg w-full"
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <XCircle className="w-8 h-8 text-cult-danger" />
-            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">Cancel Trim Session</h2>
+            <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">Cancel Trim Session</h2>
           </div>
 
-          <div className="bg-cult-dark-gray p-4 rounded-lg mb-6 border border-cult-medium-gray">
+          <div className="bg-white/[0.06] p-4 rounded-cult mb-6 border border-white/[0.10]">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-cult-light-gray font-medium">Trimmer:</p>
-                <p className="font-bold text-cult-white">{session.trimmer_name}</p>
+                <p className="text-cult-text-secondary font-medium">Trimmer:</p>
+                <p className="font-bold text-cult-text-primary">{session.trimmer_name}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Strain:</p>
-                <p className="font-bold text-cult-white">{session.strain}</p>
+                <p className="text-cult-text-secondary font-medium">Strain:</p>
+                <p className="font-bold text-cult-text-primary">{session.strain}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Package ID:</p>
-                <p className="font-bold text-cult-white">{session.package_id}</p>
+                <p className="text-cult-text-secondary font-medium">Package ID:</p>
+                <p className="font-bold text-cult-text-primary">{session.package_id}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray font-medium">Pulled Weight:</p>
-                <p className="font-bold text-cult-white">{session.pulled_weight}g</p>
+                <p className="text-cult-text-secondary font-medium">Pulled Weight:</p>
+                <p className="font-bold text-cult-text-primary">{session.pulled_weight}g</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-4 mb-6">
+          <div className="bg-cult-danger-muted border border-cult-danger rounded-cult p-4 mb-6">
             <p className="text-cult-danger text-sm font-medium mb-2">Warning: Cancelling this session will:</p>
             <ul className="text-cult-danger text-sm space-y-1 ml-4">
               <li>• Unlink all order allocations from this session</li>
@@ -77,11 +77,11 @@ export function TrimSessionCancelModal({
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-cult-white mb-2">Reason for Cancellation (Optional)</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-2">Reason for Cancellation (Optional)</label>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-3 py-2 bg-cult-black border border-cult-charcoal rounded-cult text-cult-off-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-danger focus:border-cult-danger transition-all duration-300"
+              className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
               rows={3}
               placeholder="e.g., Incorrect strain pulled, equipment malfunction, etc..."
             />
@@ -90,13 +90,13 @@ export function TrimSessionCancelModal({
           <div className="flex gap-3">
             <button
               onClick={handleCancel}
-              className="flex-1 bg-cult-danger text-white px-6 py-3 font-bold uppercase tracking-wider hover:bg-cult-danger/80 transition"
+              className="flex-1 bg-cult-danger text-white px-6 py-3 rounded-cult font-bold uppercase tracking-wider hover:bg-cult-danger/80 transition"
             >
               Confirm Cancellation
             </button>
             <button
               onClick={onCancel}
-              className="flex-1 border border-cult-medium-gray text-cult-white px-6 py-3 font-semibold uppercase tracking-wider hover:border-cult-white transition"
+              className="flex-1 border border-white/[0.15] text-cult-text-primary px-6 py-3 rounded-cult font-semibold uppercase tracking-wider hover:bg-white/[0.06] hover:border-white/[0.25] transition"
             >
               Keep Session
             </button>

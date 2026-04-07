@@ -86,15 +86,15 @@ export function KPIRow({ data }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6 stagger-fade-in">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6 stagger-fade-in">
       {cards.map(card => (
         <div
           key={card.label}
-          className={`glass-card p-5
+          className={`glass-card p-6
             hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300
             ${card.alert ? 'border-cult-danger/30 shadow-glow-danger' : ''}`}
         >
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex justify-between items-start mb-4">
             <div className="text-xs uppercase tracking-[1.5px] text-cult-text-muted font-semibold">
               {card.label}
             </div>
@@ -102,10 +102,10 @@ export function KPIRow({ data }: Props) {
               {ICONS[card.icon]}
             </div>
           </div>
-          <div className="text-[2rem] font-bold tracking-tight leading-none text-cult-text-primary tabular-nums">
+          <div className="text-4xl font-bold tracking-tight leading-none text-cult-text-primary tabular-nums">
             {card.value}
           </div>
-          <div className={`text-xs font-light mt-1.5 ${card.alert ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
+          <div className={`text-xs font-light mt-2.5 ${card.alert ? 'text-cult-danger' : 'text-cult-text-muted'}`}>
             {card.sub}
           </div>
         </div>

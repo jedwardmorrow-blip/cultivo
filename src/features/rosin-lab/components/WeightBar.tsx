@@ -16,7 +16,7 @@ export function WeightBar({ total, remaining, color }: WeightBarProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-[#FFFFFF] tabular-nums" style={{ minWidth: 44, textAlign: 'right' }}>
+      <span className="text-sm text-cult-text-primary tabular-nums" style={{ minWidth: 44, textAlign: 'right' }}>
         {remaining.toLocaleString()}g
       </span>
       <div

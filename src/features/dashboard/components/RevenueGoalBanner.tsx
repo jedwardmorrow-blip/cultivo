@@ -14,13 +14,13 @@ export function RevenueGoalBanner({ data }: Props) {
   const paceLabel = onPace ? 'on pace' : 'behind pace';
 
   return (
-    <div className="glass-card border-cult-stage-harvest/30 p-4 px-6 mb-6 flex items-center justify-between gap-8 shadow-glow-harvest">
+    <div className="glass-card border-cult-stage-harvest/30 p-5 px-6 mb-6 flex items-center justify-between gap-8 shadow-glow-harvest">
       {/* Left: Target */}
       <div className="flex-shrink-0">
         <div className="text-[0.6875rem] uppercase tracking-[1.5px] text-cult-text-secondary font-semibold">
           Monthly Revenue Target
         </div>
-        <div className="text-[1.75rem] font-bold text-cult-stage-harvest leading-tight">
+        <div className="text-3xl font-bold text-cult-stage-harvest leading-tight">
           {fmt(data.target)}
         </div>
       </div>

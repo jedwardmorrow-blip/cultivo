@@ -42,14 +42,14 @@ export function ResetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-cult-black flex items-center justify-center p-6">
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl w-full max-w-md p-8">
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="glass-card w-full max-w-md p-8">
           <div className="text-center">
             <div className="w-16 h-16 bg-cult-success-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-10 h-10 text-cult-success" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Password Updated</h1>
-            <p className="text-cult-light-gray mb-4">
+            <h1 className="text-2xl font-bold text-cult-text-primary mb-2">Password Updated</h1>
+            <p className="text-cult-text-secondary mb-4">
               Your password has been successfully updated
             </p>
             <p className="text-sm text-cult-text-muted">Redirecting to login...</p>
@@ -60,23 +60,23 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-cult-black flex items-center justify-center p-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="glass-card w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Set New Password</h1>
-          <p className="text-cult-light-gray">Enter your new password below</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary mb-2">Set New Password</h1>
+          <p className="text-cult-text-secondary">Enter your new password below</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-cult-danger-muted border border-cult-danger rounded p-3 flex items-start gap-2">
+            <div className="bg-cult-danger-muted border border-cult-danger rounded-cult p-3 flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-cult-danger flex-shrink-0 mt-0.5" />
-              <p className="text-cult-text-primary/80 text-sm">{error}</p>
+              <p className="text-cult-text-primary text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-cult-light-gray mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-cult-text-secondary mb-2">
               New Password
             </label>
             <div className="relative">
@@ -88,14 +88,14 @@ export function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
+                className="glass-input w-full pl-10 pr-4 py-3 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 placeholder="Min. 6 characters"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-cult-light-gray mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-cult-text-secondary mb-2">
               Confirm New Password
             </label>
             <div className="relative">
@@ -107,7 +107,7 @@ export function ResetPassword() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full pl-10 pr-4 py-3 bg-cult-black border border-cult-medium-gray rounded text-white placeholder-cult-text-muted focus:outline-none focus:border-white transition"
+                className="glass-input w-full pl-10 pr-4 py-3 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
                 placeholder="Confirm your password"
               />
             </div>

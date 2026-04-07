@@ -9,10 +9,10 @@ import {
 import type { HashPackage, RosinLabEquipment } from '../../types/rosin-lab.types';
 
 const inputClass =
-  'w-full bg-[#0A0A0A] border border-[#2E2E2E] rounded-md px-3 py-2 text-[#FFFFFF] text-sm focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]/20 placeholder-[#666666]';
-const labelClass = 'block text-sm text-[#A6A6A6] mb-1';
-const sectionClass = 'bg-[#111111] border border-[#2E2E2E] rounded-md p-5 mb-4';
-const sectionHeaderClass = 'text-xs font-semibold text-[#A6A6A6] uppercase tracking-wider mb-3';
+  'w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary text-sm focus:outline-none focus:border-cult-stage-press focus:ring-1 focus:ring-cult-stage-press/20 placeholder-cult-text-muted';
+const labelClass = 'block text-sm text-cult-text-secondary mb-1';
+const sectionClass = 'bg-cult-surface-raised border border-cult-border rounded-md p-5 mb-4';
+const sectionHeaderClass = 'text-xs font-semibold text-cult-text-secondary uppercase tracking-wider mb-3';
 
 const BAG_MICRONS = [25, 37, 73, 90, 120, 160, 190];
 
@@ -137,7 +137,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-cult-stage-press border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -145,7 +145,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
   return (
     <div className="max-w-2xl">
       {successMessage && (
-        <div className="mb-4 p-3 rounded-md bg-[#F97316]/10 border border-[#F97316]/30 text-sm text-[#F97316]">
+        <div className="mb-4 p-3 rounded-md bg-cult-stage-press/10 border border-cult-stage-press/30 text-sm text-cult-stage-press">
           {successMessage}
         </div>
       )}
@@ -160,7 +160,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
       <div className={sectionClass}>
         <p className={sectionHeaderClass}>Select Hash Packages</p>
         {packages.length === 0 ? (
-          <p className="text-sm text-[#666666] py-4 text-center">No hash packages available for pressing.</p>
+          <p className="text-sm text-cult-text-muted py-4 text-center">No hash packages available for pressing.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {packages.map((pkg) => {
@@ -171,25 +171,25 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
                   key={pkg.id}
                   className={`p-3 rounded-md border cursor-pointer transition-colors ${
                     isChecked
-                      ? 'border-[#F97316]/60 bg-[#F97316]/5'
-                      : 'border-[#2E2E2E] bg-[#0A0A0A] hover:border-[#404040]'
+                      ? 'border-cult-stage-press/60 bg-cult-stage-press/5'
+                      : 'border-cult-border bg-cult-surface hover:border-cult-border-strong'
                   }`}
                   onClick={() => togglePackage(pkg)}
                 >
                   <div className="flex items-start gap-2">
-                    <div className="mt-0.5 flex-shrink-0 text-[#F97316]">
+                    <div className="mt-0.5 flex-shrink-0 text-cult-stage-press">
                       {isChecked ? (
                         <CheckSquare className="w-4 h-4" />
                       ) : (
-                        <Square className="w-4 h-4 text-[#666666]" />
+                        <Square className="w-4 h-4 text-cult-text-muted" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#FFFFFF] truncate">{pkg.package_id}</p>
-                      <p className="text-xs text-[#A6A6A6] mt-0.5">
+                      <p className="text-xs font-medium text-cult-text-primary truncate">{pkg.package_id}</p>
+                      <p className="text-xs text-cult-text-secondary mt-0.5">
                         {pkg.strain?.name ?? 'Unknown strain'}
                       </p>
-                      <p className="text-xs text-[#666666] mt-0.5">
+                      <p className="text-xs text-cult-text-muted mt-0.5">
                         {pkg.remaining_weight_grams.toFixed(1)}g remaining
                       </p>
                       <div className="mt-2">
@@ -204,7 +204,7 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
 
                   {isChecked && isPartial && (
                     <div
-                      className="mt-3 pt-3 border-t border-[#2E2E2E]"
+                      className="mt-3 pt-3 border-t border-cult-border"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <label className={labelClass}>
@@ -228,8 +228,8 @@ export function NewPressForm({ onSuccess }: NewPressFormProps) {
         )}
 
         {selectedList.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-[#2E2E2E]">
-            <span className="text-sm font-semibold text-[#FFFFFF]">
+          <div className="mt-4 pt-3 border-t border-cult-border">
+            <span className="text-sm font-semibold text-cult-text-primary">
               {selectedList.length} package{selectedList.length > 1 ? 's' : ''} · {totalGrams.toFixed(1)}g input
             </span>
           </div>

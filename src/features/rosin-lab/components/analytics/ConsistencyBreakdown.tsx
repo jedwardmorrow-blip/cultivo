@@ -89,7 +89,7 @@ export const ConsistencyBreakdown: React.FC<ConsistencyBreakdownProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[240px]">
-        <div className="w-6 h-6 border-2 border-[#F59E0B] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-cult-stage-hash border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -97,7 +97,7 @@ export const ConsistencyBreakdown: React.FC<ConsistencyBreakdownProps> = ({
   if (items.length === 0) {
     return (
       <div className="flex items-center justify-center h-[240px]">
-        <p className="text-[#666666] text-sm">No rosin packages for this period</p>
+        <p className="text-cult-text-muted text-sm">No rosin packages for this period</p>
       </div>
     );
   }
@@ -162,7 +162,7 @@ export const ConsistencyBreakdown: React.FC<ConsistencyBreakdownProps> = ({
             <span className="text-sm text-white font-semibold ml-auto pl-4">
               {Math.round(s.totalWeight).toLocaleString()}g
             </span>
-            <span className="text-xs text-[#666666] w-10 text-right">
+            <span className="text-xs text-cult-text-muted w-10 text-right">
               {s.pct.toFixed(0)}%
             </span>
           </div>

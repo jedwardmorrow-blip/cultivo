@@ -36,70 +36,70 @@ export function BuckingSessionCancelModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-cult-near-black rounded-lg shadow-2xl max-w-md w-full border-2 border-cult-danger">
-        <div className="px-6 py-4 border-b border-cult-medium-gray">
-          <h2 className="text-xl font-bold text-cult-white uppercase tracking-wide">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="glass-modal rounded-cult shadow-glass-lg max-w-md w-full border border-cult-danger/40">
+        <div className="px-6 py-4 border-b border-white/[0.08]">
+          <h2 className="text-xl font-bold text-cult-text-primary uppercase tracking-wide">
             Cancel Bucking Session
           </h2>
         </div>
 
         <div className="p-6 space-y-4">
-          <p className="text-cult-silver">
+          <p className="text-cult-text-secondary">
             Are you sure you want to cancel this bucking session?
           </p>
 
-          <div className="bg-cult-dark-gray p-4 rounded-lg border border-cult-medium-gray space-y-2">
+          <div className="bg-white/[0.06] p-4 rounded-cult border border-white/[0.10] space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-cult-silver">Bucker:</span>
-              <span className="text-cult-white font-medium">{session.bucker_name}</span>
+              <span className="text-cult-text-secondary">Bucker:</span>
+              <span className="text-cult-text-primary font-medium">{session.bucker_name}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-cult-silver">Strain:</span>
-              <span className="text-cult-white font-medium">{session.strain}</span>
+              <span className="text-cult-text-secondary">Strain:</span>
+              <span className="text-cult-text-primary font-medium">{session.strain}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-cult-silver">Package:</span>
-              <span className="text-cult-white font-medium">{session.binned_package_id}</span>
+              <span className="text-cult-text-secondary">Package:</span>
+              <span className="text-cult-text-primary font-medium">{session.binned_package_id}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-cult-silver">Weight:</span>
-              <span className="text-cult-white font-medium">
+              <span className="text-cult-text-secondary">Weight:</span>
+              <span className="text-cult-text-primary font-medium">
                 {(session.binned_weight_grams / 1000).toFixed(2)} kg
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Cancellation Reason (Optional)
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-danger"
+              className="glass-input w-full px-3 py-2 rounded-cult text-cult-text-primary placeholder-cult-text-muted focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
               placeholder="Why is this session being cancelled?"
             />
           </div>
 
-          <p className="text-xs text-cult-silver">
+          <p className="text-xs text-cult-text-muted">
             This action cannot be undone. The session will be marked as cancelled.
           </p>
         </div>
 
-        <div className="px-6 py-4 bg-cult-dark-gray border-t border-cult-medium-gray flex gap-3 justify-end rounded-b-lg">
+        <div className="px-6 py-4 bg-white/[0.04] border-t border-white/[0.08] flex gap-3 justify-end rounded-b-cult">
           <button
             onClick={onCancel}
             disabled={submitting}
-            className="px-6 py-2 bg-cult-near-black text-cult-white rounded hover:bg-cult-medium-gray transition disabled:opacity-50"
+            className="px-6 py-2 border border-white/[0.15] text-cult-text-primary rounded-cult hover:bg-white/[0.06] hover:border-white/[0.25] transition disabled:opacity-50"
           >
             Keep Session
           </button>
           <button
             onClick={handleConfirm}
             disabled={submitting}
-            className="px-6 py-2 bg-cult-danger text-white rounded font-bold hover:bg-cult-danger/80 transition disabled:opacity-50"
+            className="px-6 py-2 bg-cult-danger text-white rounded-cult font-bold hover:bg-cult-danger/80 transition disabled:opacity-50"
           >
             {submitting ? 'Cancelling...' : 'Cancel Session'}
           </button>

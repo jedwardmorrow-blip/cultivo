@@ -64,15 +64,16 @@ export function Dashboard({
 
   if (loading) {
     return (
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-6 space-y-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-6 space-y-6">
         <div className="glass-skeleton h-20 w-full" />
-        <div className="glass-skeleton h-14 w-full" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {[...Array(5)].map((_, i) => <div key={i} className="glass-skeleton h-28" />)}
+        <div className="glass-skeleton h-16 w-full" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => <div key={i} className="glass-skeleton h-32" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="glass-skeleton h-64 lg:col-span-2 lg:row-span-2" />
-          <div className="glass-skeleton h-64 lg:col-span-2 lg:row-span-2" />
+          <div className="glass-skeleton h-72 lg:col-span-2 lg:row-span-2" />
+          <div className="glass-skeleton h-72 lg:col-span-2" />
+          <div className="glass-skeleton h-72 lg:col-span-2" />
         </div>
       </div>
     );
@@ -95,7 +96,7 @@ export function Dashboard({
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pb-8 space-y-4">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pb-12 space-y-6">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-2 pb-5 border-b border-white/[0.06] mb-4">
         <div>
@@ -166,25 +167,34 @@ export function Dashboard({
       </div>
 
       {/* ── Bento Grid: Operations ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade-in">
-        <WidgetBoundary name="ProductionSessions">
-          <ProductionSessions data={data.production} />
-        </WidgetBoundary>
-        <WidgetBoundary name="FacilityStatus">
-          <FacilityStatus
-            cultivation={data.cultivation}
-            dryRooms={data.dryRooms}
-          />
-        </WidgetBoundary>
-        <WidgetBoundary name="ActiveStrainsWidget">
-          <ActiveStrainsWidget strains={data.activeStrains} />
-        </WidgetBoundary>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 stagger-fade-in">
+        {/* Large tile: Facility Status */}
+        <div className="lg:col-span-2 lg:row-span-2">
+          <WidgetBoundary name="FacilityStatus">
+            <FacilityStatus
+              cultivation={data.cultivation}
+              dryRooms={data.dryRooms}
+            />
+          </WidgetBoundary>
+        </div>
+        {/* Medium tile: Production */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="ProductionSessions">
+            <ProductionSessions data={data.production} />
+          </WidgetBoundary>
+        </div>
+        {/* Medium tile: Active Strains */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="ActiveStrainsWidget">
+            <ActiveStrainsWidget strains={data.activeStrains} />
+          </WidgetBoundary>
+        </div>
       </div>
 
       {/* ── Bento Grid: Pipeline & Projections ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 stagger-fade-in">
         {/* Large tile: Harvest Pipeline */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 lg:row-span-2">
           <WidgetBoundary name="HarvestPipeline">
             <HarvestPipeline windows={data.harvestPipeline} />
           </WidgetBoundary>
@@ -197,17 +207,17 @@ export function Dashboard({
           </WidgetBoundary>
         </div>
 
-        {/* Medium tile: Top Customers */}
-        <div className="lg:col-span-2">
-          <WidgetBoundary name="TopCustomers">
-            <TopCustomers customers={data.customers} />
-          </WidgetBoundary>
-        </div>
-
         {/* Medium tile: Weekly Revenue */}
         <div className="lg:col-span-2">
           <WidgetBoundary name="WeeklyRevenueChart">
             <WeeklyRevenueChart data={data.weeklyRevenue} />
+          </WidgetBoundary>
+        </div>
+
+        {/* Medium tile: Top Customers (full width below) */}
+        <div className="lg:col-span-2">
+          <WidgetBoundary name="TopCustomers">
+            <TopCustomers customers={data.customers} />
           </WidgetBoundary>
         </div>
       </div>

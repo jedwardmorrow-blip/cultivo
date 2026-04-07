@@ -101,7 +101,7 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({ dateFrom, date
   if (loading) {
     return (
       <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
-        <div className="w-6 h-6 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-cult-stage-press border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({ dateFrom, date
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center" style={{ height: CHART_HEIGHT }}>
-        <p className="text-[#666666] text-sm">No press data for this period</p>
+        <p className="text-cult-text-muted text-sm">No press data for this period</p>
       </div>
     );
   }
@@ -242,11 +242,11 @@ export const YieldTrendChart: React.FC<YieldTrendChartProps> = ({ dateFrom, date
           }}
         >
           <p className="font-semibold text-white">{tooltip.point.strain_name}</p>
-          <p className="text-[#A6A6A6]">{formatAxisDate(tooltip.point.press_date)}</p>
+          <p className="text-cult-text-secondary">{formatAxisDate(tooltip.point.press_date)}</p>
           <p className="mt-1">
-            Yield: <span className="text-[#F97316] font-semibold">{tooltip.point.yield_percentage.toFixed(1)}%</span>
+            Yield: <span className="text-cult-stage-press font-semibold">{tooltip.point.yield_percentage.toFixed(1)}%</span>
           </p>
-          <p className="text-[#A6A6A6]">
+          <p className="text-cult-text-secondary">
             In: {tooltip.point.input_weight_grams.toLocaleString()}g · Out: {tooltip.point.output_weight_grams.toLocaleString()}g
           </p>
         </div>
