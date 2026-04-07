@@ -61,7 +61,7 @@ export function Layout({ children }: LayoutProps) {
           Demo Environment — Data shown is fictional and for demonstration purposes only
         </div>
       )}
-      <nav className="border-b sticky top-0 z-40 shadow-glow bg-cult-graphite border-cult-charcoal safe-top">
+      <nav className="border-b sticky top-0 z-40 shadow-glass border-white/[0.06] safe-top" style={{ background: 'rgba(12, 15, 26, 0.75)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}>
         <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -160,7 +160,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-cult-graphite border border-cult-charcoal rounded-cult shadow-glow-strong py-1 animate-slide-in z-50">
+                  <div className="absolute right-0 mt-2 w-56 glass-elevated py-1 animate-slide-in z-50">
                     <div className="px-4 py-3 border-b border-cult-charcoal">
                       <p className="text-sm font-medium text-cult-off-white">{profile?.full_name || 'User'}</p>
                       <p className="text-caption text-cult-silver">{profile?.email}</p>
