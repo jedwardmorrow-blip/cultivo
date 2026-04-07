@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Package, Check, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Package, Check, AlertCircle, Info } from 'lucide-react';
 import { BaseModal } from '@/shared/components/BaseModal';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import {
@@ -19,6 +19,7 @@ interface PackageAssignmentModalProps {
   orderItemQuantity: number;
   unit: string;
   batchId?: string | null;
+  strain?: string | null;
 }
 
 interface SelectedPackage extends AvailablePackage {
@@ -35,6 +36,7 @@ export function PackageAssignmentModal({
   orderItemQuantity,
   unit,
   batchId,
+  strain,
 }: PackageAssignmentModalProps) {
   const [selectedPackages, setSelectedPackages] = useState<Map<string, SelectedPackage>>(new Map());
   const [notes, setNotes] = useState('');
@@ -42,8 +44,15 @@ export function PackageAssignmentModal({
   const { packages, loading: loadingPackages, error: packagesError, refetch } = useAvailablePackages(
     productName,
     orderItemQuantity,
-    batchId
+    batchId,
+    strain
   );
+
+  // Detect whether results came from strain fallback (no exact product_name match)
+  const isStrainFallback = useMemo(() => {
+    if (packages.length === 0 || !strain) return false;
+    return !packages.some(pkg => pkg.product_name === productName);
+  }, [packages, productName, strain]);
   const { totalAssigned, loading: loadingTotal } = useTotalAssignedQuantity(orderItemId);
   const { assignPackage, assigning } = useAssignPackage();
 
@@ -205,6 +214,15 @@ export function PackageAssignmentModal({
                 Available Inventory Packages
               </h3>
 
+              {isStrainFallback && (
+                <div className="flex items-center gap-2 p-3 mb-4 bg-cult-info-muted border border-cult-info/20 rounded-cult">
+                  <Info className="w-4 h-4 text-cult-info flex-shrink-0" />
+                  <span className="text-sm text-cult-info">
+                    Showing all <strong>{strain}</strong> inventory — no exact match for "{productName}"
+                  </span>
+                </div>
+              )}
+
               {loadingPackages ? (
                 <LoadingSpinner message="Loading available packages..." />
               ) : packagesError ? (
@@ -218,7 +236,10 @@ export function PackageAssignmentModal({
                 <div className="p-8 text-center">
                   <Package className="w-12 h-12 text-cult-lighter-gray mx-auto mb-4" />
                   <p className="text-cult-lighter-gray">
-                    No available packages found for {productName}
+                    {strain
+                      ? `No inventory found for ${strain}. This strain may need production.`
+                      : `No available packages found for ${productName}`
+                    }
                   </p>
                 </div>
               ) : (
@@ -253,6 +274,9 @@ export function PackageAssignmentModal({
                               <p className="text-sm text-cult-lighter-gray">
                                 {pkg.strain || 'No strain'} • Batch: {pkg.batch || 'N/A'}
                               </p>
+                              {isStrainFallback && pkg.product_name && (
+                                <p className="text-xs text-cult-text-muted mt-0.5">{pkg.product_name}</p>
+                              )}
                             </div>
                           </div>
                           <div className="text-right">

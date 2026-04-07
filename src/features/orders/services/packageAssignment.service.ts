@@ -69,27 +69,36 @@ class PackageAssignmentServiceError extends Error {
 export const packageAssignmentService = {
   /**
    * Get available packages for a specific product name and batch.
-   * Always filters by product_name; when batchId is provided, also filters by batch_id
+   * Always filters by product_name first; when batchId is provided, also filters by batch_id
    * to enforce batch-level chain of custody.
+   *
+   * When strain is provided and the exact product_name match returns 0 results,
+   * falls back to strain-based matching (shows all inventory for that strain).
    */
   async getAvailablePackagesForProduct(
     productName: string,
     requiredQty: number,
-    batchId?: string | null
+    batchId?: string | null,
+    strain?: string | null
   ): Promise<AvailablePackage[]> {
     errorService.debug('[packageAssignmentService] Fetching available packages', {
       productName,
       requiredQty,
       batchId,
+      strain,
     });
 
+    const SELECT_COLS = 'id, package_id, product_name, strain, batch, batch_id, batch_number, available_qty, unit, status, room, package_date, thc_percentage, cbd_percentage';
+    const STATUS_WHITELIST = ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged'];
+
     try {
+      // Phase 1: exact product_name match
       let query = supabase
         .from('inventory_items')
-        .select('id, package_id, product_name, strain, batch, batch_id, batch_number, available_qty, unit, status, room, package_date, thc_percentage, cbd_percentage')
+        .select(SELECT_COLS)
         .eq('product_name', productName)
         .gt('available_qty', 0)
-        .in('status', ['Available', 'available', 'Reserved', 'reserved', 'Packaged', 'packaged']);
+        .in('status', STATUS_WHITELIST);
 
       if (batchId) {
         query = query.eq('batch_id', batchId);
@@ -105,15 +114,51 @@ export const packageAssignmentService = {
         );
       }
 
-      errorService.debug('[packageAssignmentService] Successfully fetched packages', {
-        count: data?.length || 0
+      if (data && data.length > 0) {
+        errorService.debug('[packageAssignmentService] Exact product_name match', {
+          count: data.length,
+        });
+        return (data as AvailablePackage[]) || [];
+      }
+
+      // Phase 2: strain-based fallback when exact match returns nothing
+      if (!strain) {
+        errorService.debug('[packageAssignmentService] No exact match, no strain for fallback');
+        return [];
+      }
+
+      errorService.debug('[packageAssignmentService] Falling back to strain-based query', { strain });
+
+      let strainQuery = supabase
+        .from('inventory_items')
+        .select(SELECT_COLS)
+        .ilike('strain', strain)
+        .gt('available_qty', 0)
+        .in('status', STATUS_WHITELIST);
+
+      if (batchId) {
+        strainQuery = strainQuery.eq('batch_id', batchId);
+      }
+
+      const { data: strainData, error: strainError } = await strainQuery.order('package_date', { ascending: false });
+
+      if (strainError) {
+        throw new PackageAssignmentServiceError(
+          'Failed to fetch strain-based packages',
+          strainError,
+          strainError.code
+        );
+      }
+
+      errorService.debug('[packageAssignmentService] Strain fallback results', {
+        count: strainData?.length || 0,
       });
 
-      return (data as AvailablePackage[]) || [];
+      return (strainData as AvailablePackage[]) || [];
     } catch (error) {
       errorService.handle(error, {
         operation: 'Get Available Packages',
-        metadata: { productName, requiredQty },
+        metadata: { productName, requiredQty, strain },
       });
       throw error;
     }

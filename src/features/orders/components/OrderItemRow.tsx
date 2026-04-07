@@ -429,6 +429,7 @@ export const OrderItemRow = memo(function OrderItemRow({
         orderItemQuantity={item.quantity}
         unit={item.pricing_unit || 'units'}
         batchId={item.batch_id}
+        strain={item.strain}
       />
 
       <OrderItemLabelPrintModal

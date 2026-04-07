@@ -501,6 +501,7 @@ export function OrderItemCard({
         orderItemQuantity={item.quantity}
         unit={item.pricing_unit || 'units'}
         batchId={item.batch_id}
+        strain={item.strain}
       />
 
       <OrderItemLabelPrintModal
