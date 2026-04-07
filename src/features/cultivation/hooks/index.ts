@@ -37,3 +37,5 @@ export { useTaskTypeSettings } from './useTaskTypeSettings';
 export type { TaskTypeSetting, CreateTaskTypeInput, UpdateTaskTypeInput } from './useTaskTypeSettings';
 export { useGenerateTasksFromSchedules } from './useGenerateTasksFromSchedules';
 export type { GenerateTasksResult, ProjectedTaskEntry } from './useGenerateTasksFromSchedules';
+export { useRoomScheduleCalendar } from './useRoomScheduleCalendar';
+export type { CalendarMilestone, UseRoomScheduleCalendarReturn } from './useRoomScheduleCalendar';

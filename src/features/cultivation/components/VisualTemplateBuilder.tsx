@@ -194,7 +194,7 @@ export function ScheduleBuilder() {
     if (!template || selectedRoomIds.size === 0) return;
     setSaving(true);
     try {
-      const result = await applyTemplateToRooms(template.id, [...selectedRoomIds], todayIso());
+      const result = await applyTemplateToRooms(template.id, [...selectedRoomIds], todayIso(), stagger);
       const genResult = await generate(todayIso());
       setApplySuccess({
         rooms: result.appliedRoomCount,
@@ -511,6 +511,32 @@ export function ScheduleBuilder() {
               </div>
             )}
 
+            {/* Phase Milestones */}
+            <PhaseMilestones
+              schedules={schedules}
+              isEditing={isEditing}
+              onAdd={(taskType, phaseDay) => {
+                if (!editingSchedules) startEditing();
+                const newItem: TemplateScheduleItem = {
+                  task_type: taskType,
+                  recurrence: 'daily',
+                  scheduling_mode: 'phase_day',
+                  phase_day_start: phaseDay,
+                  phase_day_end: phaseDay,
+                  priority: 'medium',
+                };
+                setEditingSchedules((prev) => [...(prev ?? template?.schedules ?? []), newItem]);
+              }}
+              onRemove={(index) => {
+                if (!editingSchedules) startEditing();
+                setEditingSchedules((prev) => {
+                  const list = [...(prev ?? template?.schedules ?? [])];
+                  list.splice(index, 1);
+                  return list;
+                });
+              }}
+            />
+
             {/* Apply panel (slide-down) */}
             <AnimatePresence>
               {showApply && !isEditing && template && (
@@ -799,6 +825,165 @@ function AddTaskPopover({ onAdd }: { onAdd: (type: TaskType) => void }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Phase Milestones sub-component ───────────────────────────────── */
+
+function PhaseMilestones({
+  schedules,
+  isEditing,
+  onAdd,
+  onRemove,
+}: {
+  schedules: TemplateScheduleItem[];
+  isEditing: boolean;
+  onAdd: (taskType: TaskType, phaseDay: number) => void;
+  onRemove: (index: number) => void;
+}) {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [selectedTaskType, setSelectedTaskType] = useState<TaskType | null>(null);
+  const [phaseDay, setPhaseDay] = useState(1);
+
+  const milestones = schedules
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.scheduling_mode === 'phase_day')
+    .sort((a, b) => (a.item.phase_day_start ?? 0) - (b.item.phase_day_start ?? 0));
+
+  function handleAdd() {
+    if (!selectedTaskType) return;
+    onAdd(selectedTaskType, phaseDay);
+    setSelectedTaskType(null);
+    setPhaseDay(1);
+    setPopoverOpen(false);
+  }
+
+  return (
+    <div className="pt-4 border-t border-white/5 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[10px] text-white/20 uppercase tracking-wider">Phase Milestones</h3>
+        {isEditing && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setPopoverOpen(!popoverOpen);
+                setSelectedTaskType(null);
+                setPhaseDay(1);
+              }}
+              className="flex items-center gap-1 text-[10px] text-white/30 hover:text-white/50 transition-colors active:scale-95"
+            >
+              <Plus className="w-3 h-3" />
+              Add
+            </button>
+
+            <AnimatePresence>
+              {popoverOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="absolute top-full right-0 mt-1 z-20 w-56 glass-elevated p-2 space-y-1"
+                >
+                  {!selectedTaskType ? (
+                    AVAILABLE_TASKS.map((type) => {
+                      const config = getTaskTypeConfig(type);
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setSelectedTaskType(type)}
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-white/10 transition-colors text-left"
+                        >
+                          <div
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: config.color }}
+                          />
+                          {config.label}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="p-2 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: getTaskTypeConfig(selectedTaskType).color }}
+                        />
+                        <span className="text-[10px] text-white/60">
+                          {getTaskTypeConfig(selectedTaskType).label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[10px] text-white/30">Day</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={phaseDay}
+                          onChange={(e) => setPhaseDay(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/80 font-mono focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedTaskType(null)}
+                          className="flex-1 text-[10px] px-2 py-1.5 rounded-lg text-white/40 hover:text-white/60 transition-colors"
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAdd}
+                          className="flex-1 flex items-center justify-center gap-1 text-[10px] px-2 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95"
+                        >
+                          <Check className="w-3 h-3" />
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      {milestones.length > 0 ? (
+        <div className="space-y-1.5">
+          {milestones.map(({ item, index }) => {
+            const config = getTaskTypeConfig(item.task_type);
+            return (
+              <div
+                key={`milestone-${index}`}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                style={{ backgroundColor: `${config.color}08` }}
+              >
+                <div className="w-2 h-2 rotate-45" style={{ backgroundColor: config.color }} />
+                <span className="text-xs font-medium flex-1" style={{ color: `${config.color}cc` }}>
+                  {config.label}
+                </span>
+                <span className="text-xs text-white/30 font-mono">Day {item.phase_day_start}</span>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5 text-white/20 hover:text-red-400" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        !isEditing && (
+          <p className="text-[10px] text-white/15">No milestones set</p>
+        )
+      )}
     </div>
   );
 }

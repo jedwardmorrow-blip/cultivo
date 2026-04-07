@@ -113,40 +113,53 @@ export function useScheduleTemplates(roomType?: string) {
     await load();
   }
 
+  /** Rotate day_of_week values by roomIndex, wrapping around (0-6 = Sun-Sat) */
+  function staggerDays(dayOfWeek: number[] | undefined, roomIndex: number): number[] | null {
+    if (!dayOfWeek || dayOfWeek.length === 0) return dayOfWeek ?? null;
+    return dayOfWeek.map(d => (d + roomIndex) % 7);
+  }
+
   /** Apply a template to a room — creates schedule entries from the template */
   async function applyTemplate(templateId: string, roomId: string, startDate: string): Promise<void> {
-    await applyTemplateToRooms(templateId, [roomId], startDate);
+    await applyTemplateToRooms(templateId, [roomId], startDate, false);
   }
 
   /**
    * Bulk apply: insert schedules from a single template across multiple rooms.
    * One template → one task per schedule per room. CUL-344 (R-3).
+   * When stagger is true, weekly/biweekly day_of_week values are rotated per room index.
    */
   async function applyTemplateToRooms(
     templateId: string,
     roomIds: string[],
     startDate: string,
+    stagger: boolean = false,
   ): Promise<{ appliedRoomCount: number; scheduleCount: number }> {
     const template = templates.find((t) => t.id === templateId);
     if (!template) throw new Error('Template not found');
     if (roomIds.length === 0) return { appliedRoomCount: 0, scheduleCount: 0 };
 
-    const inserts = roomIds.flatMap((roomId) =>
-      template.schedules.map((s) => ({
-        room_id: roomId,
-        task_type: s.task_type,
-        recurrence: s.recurrence,
-        day_of_week: s.day_of_week ?? null,
-        start_date: startDate,
-        priority: s.priority,
-        notes: s.notes ?? null,
-        scope: 'full_room',
-        is_active: true,
-        scheduling_mode: s.scheduling_mode ?? 'calendar',
-        interval_days: s.interval_days ?? null,
-        phase_day_start: s.phase_day_start ?? null,
-        phase_day_end: s.phase_day_end ?? null,
-      })),
+    const inserts = roomIds.flatMap((roomId, roomIndex) =>
+      template.schedules.map((s) => {
+        const shouldStagger = stagger
+          && (s.recurrence === 'weekly' || s.recurrence === 'biweekly')
+          && s.scheduling_mode !== 'phase_day';
+        return {
+          room_id: roomId,
+          task_type: s.task_type,
+          recurrence: s.recurrence,
+          day_of_week: shouldStagger ? staggerDays(s.day_of_week, roomIndex) : (s.day_of_week ?? null),
+          start_date: startDate,
+          priority: s.priority,
+          notes: s.notes ?? null,
+          scope: 'full_room',
+          is_active: true,
+          scheduling_mode: s.scheduling_mode ?? 'calendar',
+          interval_days: s.interval_days ?? null,
+          phase_day_start: s.phase_day_start ?? null,
+          phase_day_end: s.phase_day_end ?? null,
+        };
+      }),
     );
 
     const { error: err } = await supabase

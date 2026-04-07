@@ -11,7 +11,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
   CheckCircle2, Clock, ChevronLeft, ChevronRight, ChevronDown, X, Wheat,
-  ArrowRightLeft, Skull, Printer, Users,
+  ArrowRightLeft, Skull, Printer, Users, CalendarDays, GripVertical,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
@@ -31,8 +31,23 @@ import { DeadPlantForm } from './DeadPlantForm';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
 import { useGenerateTasksFromSchedules } from '../hooks/useGenerateTasksFromSchedules';
+import { useTaskSchedules } from '../hooks/useTaskSchedules';
+import { doesScheduleFireOnDate } from '../utils/scheduleResolution';
 import { HarvestWorkflow } from './harvest';
 import { todayIso } from '../utils/dateUtils';
+import {
+  DndContext,
+  DragOverlay,
+  useDraggable,
+  useDroppable,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core';
+import type { RoomTaskSchedule } from '../types';
 
 // ═══════════════════════════════════════════════════════════════
 // Design tokens — Liquid Glass
@@ -311,6 +326,410 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SCHEDULE CALENDAR — Room schedule card for bento sidebar
+// ═══════════════════════════════════════════════════════════════
+
+const CYCLE_DEFAULTS: Record<string, number> = { flower: 63, veg: 42, clone: 21, mother: 42, mixed: 42 };
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
+const ALL_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+function phaseToDate(flipDate: string, phaseDay: number): string {
+  const d = new Date(flipDate + 'T12:00:00');
+  d.setDate(d.getDate() + phaseDay - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatShortDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function phaseDayForDate(flipDate: string, dateStr: string): number {
+  const flip = new Date(flipDate + 'T00:00:00Z');
+  const target = new Date(dateStr + 'T00:00:00Z');
+  return Math.round((target.getTime() - flip.getTime()) / 86400000) + 1;
+}
+
+/** Compact schedule card for the sidebar */
+function ScheduleCardCompact({ state, tasks, schedules, flipDate }: {
+  state: RoomOperationalState;
+  tasks: DailyTaskInstance[];
+  schedules: RoomTaskSchedule[];
+  flipDate: string | null;
+}) {
+  const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
+  const totalDays = CYCLE_DEFAULTS[state.room_type] ?? 42;
+  const progressPct = dayCount != null ? Math.min((dayCount / totalDays) * 100, 100) : 0;
+  const stage = getStageColor(state.room_type);
+  const today = todayIso();
+
+  // 3-day lookahead
+  const lookahead = useMemo(() => {
+    const days: Array<{ label: string; dateStr: string; taskTypes: string[] }> = [];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(today + 'T12:00:00');
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
+
+      // Combine actual tasks + projected from schedules
+      const actualTypes = tasks.filter(t => t.task_date === dateStr).map(t => t.task_type);
+      const projectedTypes = schedules
+        .filter(s => s.scheduling_mode !== 'phase_day' && doesScheduleFireOnDate(s, dateStr, flipDate))
+        .map(s => s.task_type)
+        .filter(t => !actualTypes.includes(t));
+
+      const taskTypes = [...new Set([...actualTypes, ...projectedTypes])];
+      if (taskTypes.length > 0) days.push({ label, dateStr, taskTypes });
+    }
+    return days;
+  }, [today, tasks, schedules, flipDate]);
+
+  // Upcoming milestones
+  const milestones = useMemo(() => {
+    if (!flipDate) return [];
+    return schedules
+      .filter(s => s.scheduling_mode === 'phase_day' && s.phase_day_start != null)
+      .map(s => {
+        const phaseDay = s.phase_day_start!;
+        const realDate = phaseToDate(flipDate, phaseDay);
+        const daysAway = Math.round((new Date(realDate + 'T00:00:00Z').getTime() - new Date(today + 'T00:00:00Z').getTime()) / 86400000);
+        return { taskType: s.task_type, phaseDay, realDate, daysAway };
+      })
+      .filter(m => m.daysAway > -7) // show recent past milestones too
+      .sort((a, b) => a.phaseDay - b.phaseDay)
+      .slice(0, 2);
+  }, [schedules, flipDate, today]);
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">Schedule</h3>
+        <span className="text-[10px] text-white/25 font-mono">
+          {dayCount != null ? `Day ${dayCount}/${totalDays}` : '—'}
+        </span>
+      </div>
+
+      {/* Phase progress bar */}
+      <div className="w-full h-1 rounded-full bg-white/[0.06] mb-3">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${progressPct}%`, backgroundColor: `${stage.base}60` }}
+        />
+      </div>
+
+      {/* 3-day lookahead */}
+      {lookahead.length > 0 && (
+        <div className="space-y-1 mb-2">
+          {lookahead.map(day => (
+            <div key={day.dateStr} className="flex items-center gap-2">
+              <span className="text-[10px] text-white/25 w-16 flex-shrink-0">{day.label}</span>
+              <div className="flex flex-wrap gap-1">
+                {day.taskTypes.map(type => {
+                  const cfg = getTaskTypeConfig(type);
+                  return (
+                    <span key={type} className="text-[9px] font-medium" style={{ color: `${cfg.color}99` }}>
+                      {cfg.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Milestones */}
+      {milestones.length > 0 && (
+        <div className="space-y-1 pt-1 border-t border-white/[0.04]">
+          {milestones.map(m => {
+            const cfg = getTaskTypeConfig(m.taskType);
+            return (
+              <div key={`${m.taskType}-${m.phaseDay}`} className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rotate-45 flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                <span className="text-[10px] flex-1" style={{ color: `${cfg.color}99` }}>{cfg.label}</span>
+                <span className="text-[9px] text-white/20">
+                  {m.daysAway === 0 ? 'today' : m.daysAway > 0 ? `in ${m.daysAway}d` : `${Math.abs(m.daysAway)}d ago`}
+                  {' · '}{formatShortDate(m.realDate)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {lookahead.length === 0 && milestones.length === 0 && (
+        <p className="text-[10px] text-white/15">No schedules set</p>
+      )}
+    </>
+  );
+}
+
+/** Draggable task pill for the calendar */
+function DraggableTaskPill({ task, isDragOverlay }: { task: DailyTaskInstance; isDragOverlay?: boolean }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: task.id,
+    data: { task },
+  });
+  const config = getTaskTypeConfig(task.task_type);
+
+  return (
+    <div
+      ref={!isDragOverlay ? setNodeRef : undefined}
+      {...(!isDragOverlay ? { ...attributes, ...listeners } : {})}
+      className={`flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-[10px] font-medium cursor-grab active:cursor-grabbing transition-opacity ${
+        isDragging && !isDragOverlay ? 'opacity-30' : ''
+      }`}
+      style={{
+        backgroundColor: `${config.color}15`,
+        borderWidth: 1,
+        borderColor: `${config.color}20`,
+        color: `${config.color}cc`,
+        borderLeftWidth: 3,
+        borderLeftColor: `${config.color}50`,
+      }}
+    >
+      <span className="truncate">{config.label}</span>
+      {task.assigned_to && (
+        <span className="text-[8px] text-white/20 ml-auto flex-shrink-0">●</span>
+      )}
+    </div>
+  );
+}
+
+/** Droppable day column for the calendar */
+function DroppableDayColumn({ dateStr, phaseDay, isToday, stageColor, children }: {
+  dateStr: string;
+  phaseDay: number | null;
+  isToday: boolean;
+  stageColor: string;
+  children: React.ReactNode;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: dateStr });
+  const d = new Date(dateStr + 'T12:00:00');
+  const dayName = ALL_DAYS[d.getDay()];
+  const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex flex-col rounded-xl border transition-colors duration-200 ${
+        isWeekend ? 'min-w-[40px] max-w-[50px]' : 'flex-1 min-w-0'
+      } ${isOver ? 'bg-white/[0.06] border-white/[0.12]' : 'bg-white/[0.02] border-white/[0.04]'} ${
+        isToday ? 'border-l-2' : ''
+      }`}
+      style={isToday ? { borderLeftColor: `${stageColor}60` } : undefined}
+    >
+      {/* Day header */}
+      <div className={`px-2 py-1.5 border-b border-white/[0.04] text-center ${isToday ? 'bg-white/[0.03]' : ''}`}>
+        <div className="text-[9px] text-white/20 uppercase">{dayName}</div>
+        {phaseDay != null && (
+          <div className={`text-sm font-semibold ${isToday ? 'text-white/70' : 'text-white/50'}`}>{phaseDay}</div>
+        )}
+        <div className="text-[9px] text-white/20">{formatShortDate(dateStr)}</div>
+      </div>
+      {/* Tasks */}
+      <div className="flex-1 p-1.5 space-y-1 min-h-[100px]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Full expanded calendar for the main panel */
+function ScheduleCalendarExpanded({ state, tasks, onReschedule }: {
+  state: RoomOperationalState;
+  tasks: DailyTaskInstance[];
+  onReschedule: (taskId: string, newDate: string) => Promise<void>;
+}) {
+  const { schedules, loading: schedulesLoading } = useTaskSchedules(state.room_id);
+  const flipDate = state.earliest_flip_date;
+  const totalDays = CYCLE_DEFAULTS[state.room_type] ?? 42;
+  const currentPhaseDay = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
+  const currentWeek = Math.ceil((currentPhaseDay ?? 1) / 7);
+  const totalWeeks = Math.ceil(totalDays / 7);
+  const [viewWeek, setViewWeek] = useState(currentWeek);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const today = todayIso();
+  const stage = getStageColor(state.room_type);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  // Compute dates for the current view week
+  const weekDates = useMemo(() => {
+    if (!flipDate) {
+      // No flip date — show current calendar week
+      const d = new Date(today + 'T12:00:00');
+      const dayOfWeek = d.getDay();
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - ((dayOfWeek + 6) % 7)); // Go back to Monday
+      return Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        return {
+          dateStr: date.toISOString().slice(0, 10),
+          phaseDay: null as number | null,
+        };
+      });
+    }
+    // Phase-based week
+    const weekStartDay = (viewWeek - 1) * 7 + 1;
+    return Array.from({ length: 7 }, (_, i) => {
+      const phaseDay = weekStartDay + i;
+      return {
+        dateStr: phaseToDate(flipDate, phaseDay),
+        phaseDay,
+      };
+    });
+  }, [flipDate, viewWeek, today]);
+
+  // Get tasks for each day (actual instances)
+  const dayTasks = useMemo(() => {
+    const map = new Map<string, DailyTaskInstance[]>();
+    for (const wd of weekDates) {
+      map.set(wd.dateStr, tasks.filter(t => t.task_date === wd.dateStr));
+    }
+    return map;
+  }, [tasks, weekDates]);
+
+  // Phase milestones
+  const milestones = useMemo(() => {
+    if (!flipDate) return [];
+    return schedules
+      .filter(s => s.scheduling_mode === 'phase_day' && s.phase_day_start != null)
+      .map(s => ({
+        id: s.id,
+        taskType: s.task_type,
+        phaseDay: s.phase_day_start!,
+        realDate: phaseToDate(flipDate, s.phase_day_start!),
+        daysAway: Math.round((new Date(phaseToDate(flipDate, s.phase_day_start!) + 'T00:00:00Z').getTime() - new Date(today + 'T00:00:00Z').getTime()) / 86400000),
+      }))
+      .sort((a, b) => a.phaseDay - b.phaseDay);
+  }, [schedules, flipDate, today]);
+
+  const weekStartDate = weekDates[0]?.dateStr;
+  const weekEndDate = weekDates[6]?.dateStr;
+  const weekStartPhase = weekDates[0]?.phaseDay;
+  const weekEndPhase = weekDates[6]?.phaseDay;
+
+  const draggedTask = activeId ? tasks.find(t => t.id === activeId) : null;
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over || !active) return;
+    const taskId = active.id as string;
+    const newDate = over.id as string;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || task.task_date === newDate) return;
+    await onReschedule(taskId, newDate);
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
+  if (schedulesLoading) {
+    return <div className="glass-skeleton h-64 rounded-2xl" />;
+  }
+
+  return (
+    <div className="flex flex-col flex-1 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-white/80">{state.room_code} Schedule</h3>
+          <p className="text-xs text-white/40 mt-0.5">
+            {weekStartPhase != null && weekEndPhase != null
+              ? `Day ${weekStartPhase}–${weekEndPhase} · `
+              : ''}
+            {weekStartDate && weekEndDate
+              ? `${formatShortDate(weekStartDate)} – ${formatShortDate(weekEndDate)}`
+              : ''}
+            {flipDate ? ` · Flipped ${formatShortDate(flipDate)}` : ''}
+          </p>
+        </div>
+        {flipDate && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setViewWeek(w => Math.max(1, w - 1))}
+              disabled={viewWeek <= 1}
+              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors active:scale-95 disabled:opacity-20"
+            >
+              <ChevronLeft className="w-3.5 h-3.5 text-white/40" />
+            </button>
+            <span className="text-xs text-white/40 min-w-[80px] text-center">
+              Week {viewWeek} of {totalWeeks}
+            </span>
+            <button
+              type="button"
+              onClick={() => setViewWeek(w => Math.min(totalWeeks, w + 1))}
+              disabled={viewWeek >= totalWeeks}
+              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors active:scale-95 disabled:opacity-20"
+            >
+              <ChevronRight className="w-3.5 h-3.5 text-white/40" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Calendar grid */}
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="flex gap-1.5 flex-1">
+          {weekDates.map(wd => (
+            <DroppableDayColumn
+              key={wd.dateStr}
+              dateStr={wd.dateStr}
+              phaseDay={wd.phaseDay}
+              isToday={wd.dateStr === today}
+              stageColor={stage.base}
+            >
+              {(dayTasks.get(wd.dateStr) ?? []).map(task => (
+                <DraggableTaskPill key={task.id} task={task} />
+              ))}
+            </DroppableDayColumn>
+          ))}
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {draggedTask && <DraggableTaskPill task={draggedTask} isDragOverlay />}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Milestones strip */}
+      {milestones.length > 0 && (
+        <div className="pt-3 border-t border-white/[0.06] space-y-1.5">
+          <h4 className="text-[10px] text-white/20 uppercase tracking-wider">Phase Milestones</h4>
+          {milestones.map(m => {
+            const cfg = getTaskTypeConfig(m.taskType);
+            const isPast = m.daysAway < 0;
+            return (
+              <div
+                key={m.id}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg ${isPast ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: `${cfg.color}08` }}
+              >
+                <div className="w-2 h-2 rotate-45 flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                <span className="text-xs font-medium flex-1" style={{ color: `${cfg.color}cc` }}>
+                  {cfg.label}
+                </span>
+                <span className="text-[10px] text-white/25 font-mono">Day {m.phaseDay}</span>
+                <span className="text-[10px] text-white/25">
+                  {m.daysAway === 0 ? 'TODAY' : m.daysAway > 0 ? `in ${m.daysAway}d` : `${Math.abs(m.daysAway)}d ago`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // SCREEN 1: Bento Room Tile
 // ═══════════════════════════════════════════════════════════════
 
@@ -543,6 +962,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
     openGroupLabel: sectionOpenGroupLabel, printLabels: sectionPrintLabels, closeLabel: sectionCloseLabel,
   } = usePlantGroupLabel();
   const { staff: activeStaff } = useActiveStaff();
+  const { schedules: roomSchedules } = useTaskSchedules(state.room_id);
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
   const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
@@ -644,7 +1064,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                       {focusedCard === 'plant-groups' && `Plants (${state.total_plants})`}
                       {focusedCard === 'feed-recipe' && 'Feed Recipe'}
                       {focusedCard === 'room-info' && 'Room Info'}
-                      {focusedCard === 'strains' && 'Strains'}
+                      {focusedCard === 'schedule' && 'Schedule'}
                     </h3>
                     <button
                       type="button"
@@ -698,12 +1118,15 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                       ))}
                     </div>
                   )}
-                  {focusedCard === 'strains' && state.strain_names && (
-                    <div className="flex flex-wrap gap-2">
-                      {state.strain_names.map(s => (
-                        <span key={s} className="text-sm text-white/60 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">{s}</span>
-                      ))}
-                    </div>
+                  {focusedCard === 'schedule' && (
+                    <ScheduleCalendarExpanded
+                      state={state}
+                      tasks={roomTasks}
+                      onReschedule={async (taskId, newDate) => {
+                        const { supabase } = await import('@/lib/supabase');
+                        await supabase.from('daily_task_instances').update({ task_date: newDate }).eq('id', taskId);
+                      }}
+                    />
                   )}
                   {focusedCard === 'plant-groups' && (
                     <PlantsByStrainExpanded
@@ -900,36 +1323,31 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
               )}
             </motion.button>
 
-            {/* Strains */}
-            {state.strain_names && state.strain_names.length > 0 && (
-              <motion.button
-                layoutId="card-strains"
-                layout="position"
-                transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                type="button"
-                onClick={() => setFocusedCard(focusedCard === 'strains' ? null : 'strains')}
-                className={`${focusedCard === 'strains' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
-                  focusedCard === 'strains' ? 'py-2.5 px-4' : 'p-4'
-                }`}
-              >
-                {focusedCard === 'strains' ? (
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Strains</h3>
-                    <span className="text-[9px] text-white/20">● active</span>
-                  </div>
-                ) : (
-                  <>
-                    <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium mb-2">Strains</h3>
-                    <div className="flex flex-wrap gap-1">
-                      {state.strain_names.slice(0, 4).map(s => (
-                        <span key={s} className="text-[10px] text-white/40 px-2 py-0.5 rounded-full bg-white/5">{s}</span>
-                      ))}
-                      {state.strain_names.length > 4 && <span className="text-[10px] text-white/20">+{state.strain_names.length - 4}</span>}
-                    </div>
-                  </>
-                )}
-              </motion.button>
-            )}
+            {/* Schedule */}
+            <motion.button
+              layoutId="card-schedule"
+              layout="position"
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              type="button"
+              onClick={() => setFocusedCard(focusedCard === 'schedule' ? null : 'schedule')}
+              className={`${focusedCard === 'schedule' ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+                focusedCard === 'schedule' ? 'py-2.5 px-4' : 'p-4'
+              }`}
+            >
+              {focusedCard === 'schedule' ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[11px] text-emerald-400/60 uppercase tracking-widest font-medium">Schedule</h3>
+                  <span className="text-[9px] text-white/20">● active</span>
+                </div>
+              ) : (
+                <ScheduleCardCompact
+                  state={state}
+                  tasks={roomTasks}
+                  schedules={roomSchedules}
+                  flipDate={state.earliest_flip_date}
+                />
+              )}
+            </motion.button>
           </div>
         </div>
       </LayoutGroup>
