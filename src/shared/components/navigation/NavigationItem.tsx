@@ -13,15 +13,15 @@ interface NavigationItemProps {
 function getBadgeStyles(color?: string) {
   switch (color) {
     case 'warning':
-      return 'bg-cult-warning text-white';
+      return 'bg-cult-warning/15 text-cult-warning border border-cult-warning/30';
     case 'success':
-      return 'bg-cult-success text-white';
+      return 'bg-cult-success/15 text-cult-success border border-cult-success/30';
     case 'error':
-      return 'bg-cult-danger text-white';
+      return 'bg-cult-danger/15 text-cult-danger border border-cult-danger/30';
     case 'info':
-      return 'bg-cult-info text-white';
+      return 'bg-cult-info/15 text-cult-info border border-cult-info/30';
     default:
-      return 'bg-cult-silver text-cult-black';
+      return 'bg-white/[0.10] text-cult-text-secondary border border-white/[0.10]';
   }
 }
 

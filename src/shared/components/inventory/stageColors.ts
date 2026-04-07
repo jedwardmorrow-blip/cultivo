@@ -44,11 +44,11 @@ export const STAGE_COLORS: Record<string, string> = {
  *  rose    = Prerolls (1g pre-rolled joints)
  */
 export const SKU_COLORS = {
-  '3.5g':    { hex: '#10b981', bg: 'bg-emerald-500', text: 'text-emerald-400', label: '3.5g Jars' },
-  '14g':     { hex: '#0ea5e9', bg: 'bg-sky-500',     text: 'text-sky-400',     label: '14g Mylars' },
-  '1lb':     { hex: '#8b5cf6', bg: 'bg-violet-500',  text: 'text-violet-400',  label: '1lb Bags' },
-  'trim':    { hex: '#f59e0b', bg: 'bg-amber-500',   text: 'text-amber-400',   label: 'Trim' },
-  'preroll': { hex: '#f43f5e', bg: 'bg-rose-500',    text: 'text-rose-400',    label: '1g Prerolls' },
+  '3.5g':    { hex: '#10b981', bg: 'bg-cult-success',       text: 'text-cult-success-bright', label: '3.5g Jars' },
+  '14g':     { hex: '#0ea5e9', bg: 'bg-cult-stage-clone',   text: 'text-cult-stage-clone',    label: '14g Mylars' },
+  '1lb':     { hex: '#8b5cf6', bg: 'bg-cult-stage-cure',    text: 'text-cult-stage-cure',     label: '1lb Bags' },
+  'trim':    { hex: '#f59e0b', bg: 'bg-cult-stage-harvest',  text: 'text-cult-stage-harvest',  label: 'Trim' },
+  'preroll': { hex: '#f43f5e', bg: 'bg-cult-stage-flower',   text: 'text-cult-stage-flower',   label: '1g Prerolls' },
 } as const;
 
 /** Format grams into a compact string using kg threshold */

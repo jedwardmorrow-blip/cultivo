@@ -622,15 +622,22 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* ── Left column (3/5) — main content area ── */}
           <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
-            {/* Main panel — shows focused card or tasks */}
+            {/* Main panel — stable container, content swaps inside */}
             <motion.div
-              layoutId={`card-${focusedCard ?? 'tasks'}`}
-              layout="position"
+              layout
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
               className={`${GLASS} p-5 h-full ${focusedCard ? 'flex flex-col' : ''}`}
             >
+              <AnimatePresence mode="wait" initial={false}>
               {focusedCard ? (
-                <>
+                <motion.div
+                  key={`panel-${focusedCard}`}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col flex-1"
+                >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">
                       {focusedCard === 'room-layout' && 'Room Layout'}
@@ -708,9 +715,15 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                       onSplitAndMoveMultiple={onSplitAndMoveMultiple}
                     />
                   )}
-                </>
+                </motion.div>
               ) : (
-                <>
+                <motion.div
+                  key="panel-tasks"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[11px] text-white/30 uppercase tracking-widest font-medium">Today's Tasks</h3>
                     {!showInlineAdd ? (
@@ -759,8 +772,9 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                     onUpdateStatus={onUpdateTaskStatus}
                     onOpenCompletion={(task) => setCompletingTask(task)}
                   />
-                </>
+                </motion.div>
               )}
+              </AnimatePresence>
             </motion.div>
           </div>
 
@@ -769,8 +783,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
             {/* Tasks — compact sidebar version when a card is focused */}
             {focusedCard && (
               <motion.button
-                layoutId="card-tasks"
-                layout="position"
+                layout
                 transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                 type="button"
                 onClick={() => setFocusedCard(null)}
