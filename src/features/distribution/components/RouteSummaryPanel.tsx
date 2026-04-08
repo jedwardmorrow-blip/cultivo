@@ -4,13 +4,14 @@ import { formatDuration } from '@/features/delivery/services/routing.service';
 import { formatCurrency } from '@/lib/utils';
 import { getRouteZoneId } from '@/features/delivery/utils';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
+import type { DeliveryDriver } from '@/types';
 import type { DriverAssignment } from '../constants';
 import { GLASS, GLASS_HOVER, ZONE_HEX, ZONE_LABELS } from '../constants';
 
 interface RouteSummaryPanelProps {
   orders: CalendarOrder[];
   driversForDate: DriverAssignment[];
-  staffList: { id: string; display_name?: string; first_name?: string }[];
+  driverList: DeliveryDriver[];
   selectedDate: string | null;
   onAssignDriver: (date: string, staffId: string, zoneId: string) => void;
 }
@@ -18,7 +19,7 @@ interface RouteSummaryPanelProps {
 export function RouteSummaryPanel({
   orders,
   driversForDate,
-  staffList,
+  driverList,
   selectedDate,
   onAssignDriver,
 }: RouteSummaryPanelProps) {
@@ -80,8 +81,8 @@ export function RouteSummaryPanel({
                       className="w-full px-2 py-1 rounded-lg border border-white/[0.06] bg-white/[0.03] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12] mb-1"
                     >
                       <option value="">Assign driver...</option>
-                      {staffList.map((s) => (
-                        <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
+                      {driverList.map((d) => (
+                        <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
                       ))}
                     </select>
                   )}

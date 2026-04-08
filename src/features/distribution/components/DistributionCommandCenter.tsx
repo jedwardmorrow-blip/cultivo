@@ -303,7 +303,7 @@ export function DistributionCommandCenter() {
             <RouteSummaryPanel
               orders={routeSummaryOrders}
               driversForDate={drivers.getDriversForDate(selectedDate || data.todayStr)}
-              staffList={drivers.staff}
+              driverList={drivers.drivers}
               selectedDate={selectedDate || data.todayStr}
               onAssignDriver={drivers.assignDriver}
             />
@@ -317,7 +317,7 @@ export function DistributionCommandCenter() {
         orders={selectedDayOrders}
         readinessMap={data.readinessMap}
         driversForDate={drivers.getDriversForDate(selectedDate || '')}
-        staffList={drivers.staff}
+        driverList={drivers.drivers}
         onAssignDriver={drivers.assignDriver}
         onReload={data.reload}
         highlightedOrderId={highlightedOrderId}

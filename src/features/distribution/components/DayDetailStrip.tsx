@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/utils';
 import { formatDuration } from '@/features/delivery/services/routing.service';
 import { getRouteZoneId } from '@/features/delivery/utils';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
+import type { DeliveryDriver } from '@/types';
 import type { OrderReadiness, DriverAssignment } from '../constants';
 import { GLASS, ZONE_HEX, ZONE_LABELS, fadeInVariants } from '../constants';
 import { OrderReadinessCard } from './OrderReadinessCard';
@@ -14,7 +15,7 @@ interface DayDetailStripProps {
   orders: CalendarOrder[];
   readinessMap: Map<string, OrderReadiness>;
   driversForDate: DriverAssignment[];
-  staffList: { id: string; display_name?: string; first_name?: string }[];
+  driverList: DeliveryDriver[];
   onAssignDriver: (date: string, staffId: string, zoneId: string) => void;
   onReload: () => void;
   highlightedOrderId?: string | null;
@@ -30,7 +31,7 @@ export function DayDetailStrip({
   orders,
   readinessMap,
   driversForDate,
-  staffList,
+  driverList,
   onAssignDriver,
   onReload,
   highlightedOrderId,
@@ -159,8 +160,8 @@ export function DayDetailStrip({
                           className="px-1.5 py-0.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12]"
                         >
                           <option value="">—</option>
-                          {staffList.map((s) => (
-                            <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
+                          {driverList.map((d) => (
+                            <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
                           ))}
                         </select>
                       </div>

@@ -112,14 +112,17 @@ export function useDistributionData() {
     return map;
   }, [scheduledOrders]);
 
-  // Build dispatch lookup by order_id
+  // Build dispatch lookup by order_id — only for orders we actually have (filters out delivered/completed)
   const dispatchByOrderId = useMemo(() => {
+    const orderIdSet = new Set(allOrders.map((o) => o.id));
     const map = new Map<string, DispatchOrderRow>();
     for (const row of dispatchRows) {
-      map.set(row.order_id, row);
+      if (orderIdSet.has(row.order_id)) {
+        map.set(row.order_id, row);
+      }
     }
     return map;
-  }, [dispatchRows]);
+  }, [dispatchRows, allOrders]);
 
   // Build readiness per order
   const readinessMap = useMemo(() => {
@@ -168,14 +171,25 @@ export function useDistributionData() {
     [ordersByDate, todayStr],
   );
 
+  // Only count docs for open orders (not delivered/completed)
+  const CLOSED_STATUSES = new Set(['delivered', 'completed']);
+
   const docsPending = useMemo(
-    () => Array.from(readinessMap.values()).filter((r) => !r.allDocsSent).length,
-    [readinessMap],
+    () => allOrders.filter((o) => {
+      if (CLOSED_STATUSES.has(o.status)) return false;
+      const r = readinessMap.get(o.id);
+      return r && !r.allDocsSent;
+    }).length,
+    [allOrders, readinessMap],
   );
 
   const docsOverdue = useMemo(
-    () => Array.from(readinessMap.values()).filter((r) => r.hasOverdueDoc).length,
-    [readinessMap],
+    () => allOrders.filter((o) => {
+      if (CLOSED_STATUSES.has(o.status)) return false;
+      const r = readinessMap.get(o.id);
+      return r && r.hasOverdueDoc;
+    }).length,
+    [allOrders, readinessMap],
   );
 
   const monthRevenue = useMemo(() => {
