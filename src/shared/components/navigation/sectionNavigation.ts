@@ -94,8 +94,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     icon: Scissors,
     defaultView: 'production-overview',
     items: [
-      { id: 'production-overview', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
-      { id: 'production-queue', label: 'Queue', icon: ClipboardList, group: 'secondary' }
+      { id: 'production-overview', label: 'Command Center', icon: LayoutDashboard, group: 'primary' },
     ],
   },
   {
