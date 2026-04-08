@@ -54,10 +54,26 @@ export function CrewPanelCompact({ staff, sessions, getDisplayName, isActive, on
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       type="button"
       onClick={onClick}
-      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] relative overflow-hidden ${
         isActive ? 'py-2.5 px-4' : 'p-4'
       }`}
+      style={!isActive ? {
+        borderColor: 'rgba(14,165,233,0.10)',
+        boxShadow: '0 0 8px rgba(14,165,233,0.05), 0 4px 24px rgba(0,0,0,0.4)',
+      } : undefined}
     >
+      {/* Ambient glow */}
+      {!isActive && (
+        <div
+          className="absolute -top-8 right-8 rounded-full pointer-events-none"
+          style={{
+            width: '100px',
+            height: '100px',
+            background: `radial-gradient(circle, rgba(14,165,233,${working.length > 0 ? '0.10' : '0.05'}) 0%, transparent 70%)`,
+            filter: 'blur(12px)',
+          }}
+        />
+      )}
       {isActive ? (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

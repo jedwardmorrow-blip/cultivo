@@ -29,6 +29,8 @@ export function ConversionsPanelCompact({ pendingSessions, isActive, onClick }: 
 
   const accentColor = hasStalePending ? '#EF4444' : count > 0 ? '#F59E0B' : '#10B981';
 
+  const glowRgba = hasStalePending ? 'rgba(239,68,68,' : count > 0 ? 'rgba(245,158,11,' : 'rgba(16,185,129,';
+
   return (
     <motion.button
       layoutId="card-conversions"
@@ -36,10 +38,26 @@ export function ConversionsPanelCompact({ pendingSessions, isActive, onClick }: 
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       type="button"
       onClick={onClick}
-      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] relative overflow-hidden ${
         isActive ? 'py-2.5 px-4' : 'p-4'
       }`}
+      style={!isActive ? {
+        borderColor: `${glowRgba}0.12)`,
+        boxShadow: `0 0 8px ${glowRgba}0.06), 0 4px 24px rgba(0,0,0,0.4)`,
+      } : undefined}
     >
+      {/* Ambient glow */}
+      {!isActive && (
+        <div
+          className="absolute -top-8 right-8 rounded-full pointer-events-none"
+          style={{
+            width: '100px',
+            height: '100px',
+            background: `radial-gradient(circle, ${glowRgba}${count > 0 ? '0.12' : '0.06'}) 0%, transparent 70%)`,
+            filter: 'blur(12px)',
+          }}
+        />
+      )}
       {isActive ? (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

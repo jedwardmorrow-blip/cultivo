@@ -40,10 +40,26 @@ export function DailySummaryCompact({ trimStats, buckingStats, packagingStats, i
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       type="button"
       onClick={onClick}
-      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] ${
+      className={`${isActive ? GLASS_ELEVATED : GLASS} ${GLASS_HOVER} w-full text-left active:scale-[0.98] relative overflow-hidden ${
         isActive ? 'py-2.5 px-4' : 'p-4'
       }`}
+      style={!isActive ? {
+        borderColor: 'rgba(232,224,212,0.08)',
+        boxShadow: '0 0 8px rgba(232,224,212,0.03), 0 4px 24px rgba(0,0,0,0.4)',
+      } : undefined}
     >
+      {/* Ambient glow */}
+      {!isActive && (
+        <div
+          className="absolute -top-8 right-8 rounded-full pointer-events-none"
+          style={{
+            width: '100px',
+            height: '100px',
+            background: `radial-gradient(circle, rgba(232,224,212,${totalCompleted > 0 ? '0.08' : '0.04'}) 0%, transparent 70%)`,
+            filter: 'blur(12px)',
+          }}
+        />
+      )}
       {isActive ? (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
