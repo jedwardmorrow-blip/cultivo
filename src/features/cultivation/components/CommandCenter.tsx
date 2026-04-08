@@ -2353,23 +2353,23 @@ function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onK
       <div
         className={`grid ${expanded ? 'gap-1.5 flex-1' : 'gap-1'}`}
         style={{
-          gridTemplateColumns: `32px repeat(${sectionLabels.length}, 1fr)`,
-          ...(expanded ? { gridTemplateRows: `auto repeat(${sortedTables.length}, 1fr)` } : {}),
+          gridTemplateColumns: `32px repeat(${sortedTables.length}, 1fr)`,
+          ...(expanded ? { gridTemplateRows: `auto repeat(${sectionLabels.length}, 1fr)` } : {}),
         }}
       >
-        {/* Column headers */}
+        {/* Column headers — tables along horizontal axis */}
         <div />
-        {sectionLabels.map(label => (
-          <div key={label} className="text-center text-[9px] font-mono text-white/20 py-1">{label}</div>
+        {sortedTables.map(table => (
+          <div key={`header-${table.table_number}`} className="text-center text-[9px] font-mono text-white/20 py-1">T{table.table_number}</div>
         ))}
 
-        {/* Rows */}
-        {sortedTables.map(table => (
+        {/* Rows — sections along vertical axis */}
+        {sectionLabels.map(sLabel => (
           <>
-            <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono text-white/20">
-              T{table.table_number}
+            <div key={`label-${sLabel}`} className="flex items-center justify-center text-[9px] font-mono text-white/20">
+              {sLabel}
             </div>
-            {sectionLabels.map(sLabel => {
+            {sortedTables.map(table => {
               const section = table.sections.find(s => s.section_label === sLabel);
               if (!section) {
                 return <div key={`${table.table_number}-${sLabel}`} />;
