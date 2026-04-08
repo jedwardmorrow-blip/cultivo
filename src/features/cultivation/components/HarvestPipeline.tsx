@@ -685,6 +685,35 @@ function DryRoomHarvestCard({
     ? { strain: strainName, batchNumber, harvestDate }
     : null;
 
+  // Stable service callbacks — must not be inline arrows or BinEntryWorkspace
+  // will infinitely re-fetch (listBinEntries is a useCallback dep there).
+  const stableListBinEntries = useCallback(
+    (id: string) => binningService.listBinEntries(id),
+    []
+  );
+  const stableAddBinEntry = useCallback(
+    (input: { binning_session_id: string; bin_weight_grams: number; notes?: string }) =>
+      binningService.createBinEntry(input),
+    []
+  );
+  const stableRemoveBinEntry = useCallback(
+    (id: string) => binningService.deleteBinEntry(id),
+    []
+  );
+  const handleBinningComplete = useCallback(async () => {
+    if (!binningSessionId) return;
+    await binningService.completeBinningSession(binningSessionId);
+    setShowBinning(false);
+    await onBinningComplete();
+  }, [binningSessionId, onBinningComplete]);
+
+  const handleBinningCancel = useCallback(async () => {
+    if (!binningSessionId) return;
+    await binningService.cancelBinningSession(binningSessionId);
+    setBinningSessionId(null);
+    setShowBinning(false);
+  }, [binningSessionId]);
+
   async function handleStartBinningClick() {
     if (binningSessionId) {
       setShowBinning(true);
@@ -744,19 +773,11 @@ function DryRoomHarvestCard({
       {showBinning && binningSessionId && (
         <BinEntryWorkspace
           sessionId={binningSessionId}
-          listBinEntries={(id) => binningService.listBinEntries(id)}
-          addBinEntry={(input) => binningService.createBinEntry(input)}
-          removeBinEntry={(id) => binningService.deleteBinEntry(id)}
-          onComplete={async () => {
-            await binningService.completeBinningSession(binningSessionId);
-            setShowBinning(false);
-            await onBinningComplete();
-          }}
-          onCancel={async () => {
-            await binningService.cancelBinningSession(binningSessionId);
-            setBinningSessionId(null);
-            setShowBinning(false);
-          }}
+          listBinEntries={stableListBinEntries}
+          addBinEntry={stableAddBinEntry}
+          removeBinEntry={stableRemoveBinEntry}
+          onComplete={handleBinningComplete}
+          onCancel={handleBinningCancel}
           wetWeight={wetWeight}
           labelContext={labelContext}
         />
