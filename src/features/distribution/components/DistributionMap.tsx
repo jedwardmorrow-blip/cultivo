@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getRouteZoneId } from '@/features/delivery/utils';
+import { getOrCalculateRoute, type Coordinate } from '@/features/delivery/services/routing.service';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import {
   GLASS,
@@ -56,47 +57,133 @@ interface DistributionMapProps {
   onClick?: () => void;
 }
 
+// ─── Polyline decoder (ORS encoded polyline → [lat, lng] pairs) ────────────
+
+function decodePolyline(encoded: string): [number, number][] {
+  const coordinates: [number, number][] = [];
+  let index = 0;
+  const len = encoded.length;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < len) {
+    let b: number;
+    let shift = 0;
+    let result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    lat += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    lng += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    coordinates.push([lat / 1e5, lng / 1e5]);
+  }
+  return coordinates;
+}
+
 // ─── Route line helpers ────────────────────────────────────────────────────
+
+const FACILITY_ID = 'facility';
+const FACILITY_COORDS: Coordinate = { latitude: FACILITY_CENTER[1], longitude: FACILITY_CENTER[0] };
+
+interface RouteStop {
+  customerId: string;
+  lat: number;
+  lon: number;
+}
 
 interface RouteChain {
   zoneId: string;
   color: string;
-  coords: [number, number][]; // [lng, lat]
+  straightLineCoords: [number, number][]; // [lng, lat] — immediate fallback
+  stops: RouteStop[]; // for async route fetching
 }
 
 function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
-  // Group orders by zone
-  const zoneGroups = new Map<string, { lat: number; lon: number }[]>();
+  // Group orders by zone, deduping by customer
+  const zoneGroups = new Map<string, RouteStop[]>();
+  const seen = new Set<string>();
   for (const o of dayOrders) {
     if (!o.customer_lat || !o.customer_lon) continue;
+    if (seen.has(o.customer_id)) continue;
+    seen.add(o.customer_id);
     const zoneId = getRouteZoneId(o.customer_lat, o.customer_lon);
     if (!zoneGroups.has(zoneId)) zoneGroups.set(zoneId, []);
-    zoneGroups.get(zoneId)!.push({ lat: o.customer_lat, lon: o.customer_lon });
+    zoneGroups.get(zoneId)!.push({ customerId: o.customer_id, lat: o.customer_lat, lon: o.customer_lon });
   }
 
   const chains: RouteChain[] = [];
   for (const [zoneId, stops] of zoneGroups) {
-    // Build chain: facility → stop1 → stop2 → ...
-    // Sort stops by distance from facility (nearest first) for a reasonable route
+    // Sort by distance from facility (nearest first)
     const sorted = [...stops].sort((a, b) => {
       const distA = Math.hypot(a.lat - FACILITY_CENTER[1], a.lon - FACILITY_CENTER[0]);
       const distB = Math.hypot(b.lat - FACILITY_CENTER[1], b.lon - FACILITY_CENTER[0]);
       return distA - distB;
     });
 
-    const coords: [number, number][] = [FACILITY_CENTER];
+    // Straight-line fallback coords
+    const straightLineCoords: [number, number][] = [FACILITY_CENTER];
     for (const stop of sorted) {
-      coords.push([stop.lon, stop.lat]);
+      straightLineCoords.push([stop.lon, stop.lat]);
     }
 
     chains.push({
       zoneId,
       color: ZONE_HEX[zoneId] || '#A6A6A6',
-      coords,
+      straightLineCoords,
+      stops: sorted,
     });
   }
 
   return chains;
+}
+
+// Fetch real road geometry for a chain: facility → stop1 → stop2 → ...
+async function fetchChainGeometry(stops: RouteStop[]): Promise<[number, number][] | null> {
+  try {
+    const allCoords: [number, number][] = [];
+
+    // Segment 1: facility → first stop
+    const firstResult = await getOrCalculateRoute(
+      FACILITY_ID,
+      stops[0].customerId,
+      FACILITY_COORDS,
+      { latitude: stops[0].lat, longitude: stops[0].lon },
+    );
+    if (firstResult.geometry && typeof firstResult.geometry === 'string') {
+      const decoded = decodePolyline(firstResult.geometry);
+      for (const [lat, lng] of decoded) allCoords.push([lng, lat]); // flip to [lng, lat] for MapLibre
+    }
+
+    // Remaining segments: stop[i] → stop[i+1]
+    for (let i = 0; i < stops.length - 1; i++) {
+      const segResult = await getOrCalculateRoute(
+        stops[i].customerId,
+        stops[i + 1].customerId,
+        { latitude: stops[i].lat, longitude: stops[i].lon },
+        { latitude: stops[i + 1].lat, longitude: stops[i + 1].lon },
+      );
+      if (segResult.geometry && typeof segResult.geometry === 'string') {
+        const decoded = decodePolyline(segResult.geometry);
+        for (const [lat, lng] of decoded) allCoords.push([lng, lat]);
+      }
+    }
+
+    return allCoords.length > 2 ? allCoords : null;
+  } catch (err) {
+    console.warn('Failed to fetch route geometry, using straight line:', err);
+    return null;
+  }
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -303,78 +390,107 @@ export function DistributionMap({
     updateMarkers();
   }, [updateMarkers]);
 
-  // ─── Route lines ───────────────────────────────────────────────────────
+  // ─── Route lines (straight-line fallback → real geometry upgrade) ────────
+  const routeAbortRef = useRef(0);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    // Clean up previous route layers/sources
-    const existingLayers = map.getStyle()?.layers || [];
-    for (const layer of existingLayers) {
-      if (layer.id.startsWith('route-')) {
-        map.removeLayer(layer.id);
+    // Increment abort counter so stale fetches discard their results
+    const generation = ++routeAbortRef.current;
+
+    // Helper: clean up all route layers/sources
+    function clearRoutes() {
+      const layers = map.getStyle()?.layers || [];
+      for (const layer of layers) {
+        if (layer.id.startsWith('route-')) map.removeLayer(layer.id);
       }
-    }
-    // Remove sources after layers
-    const style = map.getStyle();
-    if (style?.sources) {
-      for (const sourceId of Object.keys(style.sources)) {
-        if (sourceId.startsWith('route-')) {
-          map.removeSource(sourceId);
+      const style = map.getStyle();
+      if (style?.sources) {
+        for (const id of Object.keys(style.sources)) {
+          if (id.startsWith('route-')) map.removeSource(id);
         }
       }
     }
 
-    // Only draw routes when a day is selected
-    if (selectedDayOrders.length === 0) return;
+    // Helper: draw a chain as a line on the map
+    function drawChain(sourceId: string, coords: [number, number][], color: string, dashed: boolean) {
+      const glowId = `${sourceId}-glow`;
+      const lineId = `${sourceId}-line`;
 
-    const chains = buildRouteChains(selectedDayOrders);
+      // Remove existing if present (for upgrades)
+      if (map.getLayer(glowId)) map.removeLayer(glowId);
+      if (map.getLayer(lineId)) map.removeLayer(lineId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
 
-    for (const chain of chains) {
-      const sourceId = `route-${chain.zoneId}`;
-      const glowLayerId = `route-glow-${chain.zoneId}`;
-      const lineLayerId = `route-line-${chain.zoneId}`;
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: coords },
+            properties: {},
+          }],
+        },
+      });
 
-      const geojson: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: chain.coords,
-          },
-          properties: {},
-        }],
-      };
-
-      map.addSource(sourceId, { type: 'geojson', data: geojson });
-
-      // Glow layer (wide, blurred)
       map.addLayer({
-        id: glowLayerId,
+        id: glowId,
         type: 'line',
         source: sourceId,
         paint: {
-          'line-color': chain.color,
+          'line-color': color,
           'line-width': 8,
           'line-opacity': 0.15,
           'line-blur': 6,
         },
       });
 
-      // Main line
+      const linePaint: maplibregl.LinePaint = {
+        'line-color': color,
+        'line-width': 2.5,
+        'line-opacity': 0.7,
+      };
+      if (dashed) {
+        linePaint['line-dasharray'] = [4, 3];
+      }
+
       map.addLayer({
-        id: lineLayerId,
+        id: lineId,
         type: 'line',
         source: sourceId,
-        paint: {
-          'line-color': chain.color,
-          'line-width': 2.5,
-          'line-opacity': 0.7,
-          'line-dasharray': [4, 3],
-        },
+        paint: linePaint,
       });
     }
+
+    clearRoutes();
+
+    if (selectedDayOrders.length === 0) return;
+
+    const chains = buildRouteChains(selectedDayOrders);
+
+    // Step 1: Draw straight-line fallbacks immediately (dashed)
+    for (const chain of chains) {
+      drawChain(`route-${chain.zoneId}`, chain.straightLineCoords, chain.color, true);
+    }
+
+    // Step 2: Fetch real road geometry in background, upgrade lines when ready
+    (async () => {
+      for (const chain of chains) {
+        if (routeAbortRef.current !== generation) return; // stale, abort
+
+        const realCoords = await fetchChainGeometry(chain.stops);
+        if (routeAbortRef.current !== generation) return; // stale, abort
+        if (!mapRef.current) return;
+
+        if (realCoords) {
+          // Upgrade: replace straight line with real road geometry (solid line)
+          drawChain(`route-${chain.zoneId}`, realCoords, chain.color, false);
+        }
+      }
+    })();
   }, [selectedDayOrders, mapReady]);
 
   // ─── Fly to selected day ───────────────────────────────────────────────
