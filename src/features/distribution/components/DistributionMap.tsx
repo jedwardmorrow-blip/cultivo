@@ -148,32 +148,45 @@ function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
   return chains;
 }
 
-// Fetch real road geometry for each stop from facility (uses cached routes)
-async function fetchRouteGeometry(
-  stop: RouteStop,
-): Promise<[number, number][] | null> {
+// Fetch real road geometry for an entire chain: facility → stop1 → stop2 → ...
+async function fetchChainGeometry(stops: RouteStop[]): Promise<[number, number][] | null> {
   try {
-    const result = await getOrCalculateRoute(
-      FACILITY_ID,
-      stop.customerId,
-      FACILITY_COORDS,
-      { latitude: stop.lat, longitude: stop.lon },
-    );
+    const allCoords: [number, number][] = [];
 
-    if (!result.geometry) return null;
+    // Build the full stop list: facility first, then all stops
+    const fullStops: { id: string; coords: Coordinate }[] = [
+      { id: FACILITY_ID, coords: FACILITY_COORDS },
+      ...stops.map((s) => ({ id: s.customerId, coords: { latitude: s.lat, longitude: s.lon } })),
+    ];
 
-    // Geometry is an encoded polyline string (may come from JSONB)
-    const geomStr = typeof result.geometry === 'string'
-      ? result.geometry
-      : String(result.geometry);
+    // Fetch geometry for each segment
+    for (let i = 0; i < fullStops.length - 1; i++) {
+      const origin = fullStops[i];
+      const dest = fullStops[i + 1];
 
-    const decoded = decodePolyline(geomStr);
-    if (decoded.length < 2) return null;
+      const result = await getOrCalculateRoute(
+        origin.id,
+        dest.id,
+        origin.coords,
+        dest.coords,
+      );
 
-    // Decoder returns [lat, lng], MapLibre needs [lng, lat]
-    return decoded.map(([lat, lng]) => [lng, lat] as [number, number]);
+      if (result.geometry) {
+        const geomStr = typeof result.geometry === 'string'
+          ? result.geometry
+          : String(result.geometry);
+
+        const decoded = decodePolyline(geomStr);
+        // Decoder returns [lat, lng], MapLibre needs [lng, lat]
+        for (const [lat, lng] of decoded) {
+          allCoords.push([lng, lat]);
+        }
+      }
+    }
+
+    return allCoords.length > 2 ? allCoords : null;
   } catch (err) {
-    console.warn(`Failed to fetch route for ${stop.customerId}:`, err);
+    console.warn('Failed to fetch chain geometry:', err);
     return null;
   }
 }
@@ -463,28 +476,23 @@ export function DistributionMap({
 
     const chains = buildRouteChains(selectedDayOrders);
 
-    // Step 1: Draw straight-line fallbacks immediately (dashed) — one line per stop from facility
+    // Step 1: Draw straight-line chain fallback immediately (dashed)
     for (const chain of chains) {
-      for (let i = 0; i < chain.stops.length; i++) {
-        const stop = chain.stops[i];
-        const straightCoords: [number, number][] = [FACILITY_CENTER, [stop.lon, stop.lat]];
-        drawChain(`route-${chain.zoneId}-${i}`, straightCoords, chain.color, true);
-      }
+      drawChain(`route-${chain.zoneId}`, chain.straightLineCoords, chain.color, true);
     }
 
-    // Step 2: Fetch real road geometry per stop, upgrade when ready
+    // Step 2: Fetch real road geometry per chain, upgrade when ready
     (async () => {
       for (const chain of chains) {
-        for (let i = 0; i < chain.stops.length; i++) {
-          if (routeAbortRef.current !== generation) return;
+        if (routeAbortRef.current !== generation) return;
 
-          const realCoords = await fetchRouteGeometry(chain.stops[i]);
-          if (routeAbortRef.current !== generation) return;
-          if (!mapRef.current) return;
+        const realCoords = await fetchChainGeometry(chain.stops);
+        if (routeAbortRef.current !== generation) return;
+        if (!mapRef.current) return;
 
-          if (realCoords) {
-            drawChain(`route-${chain.zoneId}-${i}`, realCoords, chain.color, false);
-          }
+        if (realCoords) {
+          // Upgrade: replace straight line with real road geometry (solid)
+          drawChain(`route-${chain.zoneId}`, realCoords, chain.color, false);
         }
       }
     })();
