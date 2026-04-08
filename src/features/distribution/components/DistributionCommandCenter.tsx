@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { Zap } from 'lucide-react';
 import { LayoutGroup, AnimatePresence, motion } from 'framer-motion';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import { getRouteZoneId } from '@/features/delivery/utils';
@@ -187,6 +188,20 @@ export function DistributionCommandCenter() {
         onUnscheduledClick={handleUnscheduledClick}
       />
 
+      {/* Quick Dispatch — always accessible */}
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={() => setShowQuickDispatch(true)}
+          className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-xl
+            bg-[#E8E0D4]/10 text-[#E8E0D4] border border-[#E8E0D4]/20
+            hover:bg-[#E8E0D4]/15 hover:border-[#E8E0D4]/30 transition-all
+            shadow-[0_0_12px_rgba(232,224,212,0.06)]"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          Quick Dispatch
+        </button>
+      </div>
+
       {/* Main Bento Layout */}
       <LayoutGroup>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -287,7 +302,7 @@ export function DistributionCommandCenter() {
 
             <RouteSummaryPanel
               orders={routeSummaryOrders}
-              driver={drivers.getDriverForDate(selectedDate || data.todayStr)}
+              driversForDate={drivers.getDriversForDate(selectedDate || data.todayStr)}
               staffList={drivers.staff}
               selectedDate={selectedDate || data.todayStr}
               onAssignDriver={drivers.assignDriver}
@@ -301,7 +316,7 @@ export function DistributionCommandCenter() {
         date={selectedDate}
         orders={selectedDayOrders}
         readinessMap={data.readinessMap}
-        driver={drivers.getDriverForDate(selectedDate || '')}
+        driversForDate={drivers.getDriversForDate(selectedDate || '')}
         staffList={drivers.staff}
         onAssignDriver={drivers.assignDriver}
         onReload={data.reload}

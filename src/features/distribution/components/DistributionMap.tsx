@@ -90,40 +90,55 @@ export function DistributionMap({
   const hasSelectedDay = selectedDayOrders.length > 0;
   const highlightedIds = new Set(selectedDayOrders.map((o) => o.id));
 
-  // Initialize map
+  // Initialize map — delay slightly to ensure container is laid out with proper dimensions
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: DARK_MAP_STYLE,
-      center: FACILITY_CENTER,
-      zoom: 7,
-      minZoom: 5,
-      maxZoom: 16,
-      attributionControl: false,
-    });
+    // If map already exists (e.g. re-render), just resize
+    if (mapRef.current) {
+      mapRef.current.resize();
+      return;
+    }
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    const timer = setTimeout(() => {
+      if (!containerRef.current) return;
 
-    // Facility marker
-    const facilityEl = document.createElement('div');
-    facilityEl.style.cssText = `
-      width: 20px; height: 20px; border-radius: 4px; transform: rotate(45deg);
-      background: #E8E0D4; border: 2px solid white;
-      box-shadow: 0 0 12px rgba(232,224,212,0.4), 0 2px 8px rgba(0,0,0,0.5);
-    `;
-    new maplibregl.Marker({ element: facilityEl })
-      .setLngLat(FACILITY_CENTER)
-      .addTo(map);
+      const map = new maplibregl.Map({
+        container: containerRef.current,
+        style: DARK_MAP_STYLE,
+        center: FACILITY_CENTER,
+        zoom: 7,
+        minZoom: 5,
+        maxZoom: 16,
+        attributionControl: false,
+      });
 
-    mapRef.current = map;
+      if (expanded) {
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+      }
+
+      // Facility marker
+      const facilityEl = document.createElement('div');
+      facilityEl.style.cssText = `
+        width: 20px; height: 20px; border-radius: 4px; transform: rotate(45deg);
+        background: #E8E0D4; border: 2px solid white;
+        box-shadow: 0 0 12px rgba(232,224,212,0.4), 0 2px 8px rgba(0,0,0,0.5);
+      `;
+      new maplibregl.Marker({ element: facilityEl })
+        .setLngLat(FACILITY_CENTER)
+        .addTo(map);
+
+      mapRef.current = map;
+    }, 50);
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      clearTimeout(timer);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update markers when orders or selection changes
   const updateMarkers = useCallback(() => {
@@ -201,19 +216,28 @@ export function DistributionMap({
   // Fly to selected day's stops
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.loaded()) return;
+    if (!map) return;
 
-    if (selectedDayOrders.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
-      bounds.extend(FACILITY_CENTER);
-      selectedDayOrders.forEach((o) => {
-        if (o.customer_lat && o.customer_lon) {
-          bounds.extend([o.customer_lon, o.customer_lat]);
-        }
-      });
-      map.fitBounds(bounds, { padding: 60, duration: 1200 });
+    function doFly() {
+      if (!mapRef.current) return;
+      if (selectedDayOrders.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        bounds.extend(FACILITY_CENTER);
+        selectedDayOrders.forEach((o) => {
+          if (o.customer_lat && o.customer_lon) {
+            bounds.extend([o.customer_lon, o.customer_lat]);
+          }
+        });
+        mapRef.current.fitBounds(bounds, { padding: 60, duration: 1200 });
+      } else {
+        mapRef.current.fitBounds(AZ_BOUNDS, { padding: 40, duration: 800 });
+      }
+    }
+
+    if (map.loaded()) {
+      doFly();
     } else {
-      map.fitBounds(AZ_BOUNDS, { padding: 40, duration: 800 });
+      map.once('load', doFly);
     }
   }, [selectedDayOrders]);
 
@@ -221,17 +245,18 @@ export function DistributionMap({
   useEffect(() => {
     const map = mapRef.current;
     if (map) {
-      setTimeout(() => map.resize(), 100);
+      // Multiple resize calls to handle animation timing
+      setTimeout(() => map.resize(), 50);
+      setTimeout(() => map.resize(), 200);
+      setTimeout(() => map.resize(), 500);
     }
   }, [expanded]);
-
-  const height = expanded ? '100%' : '280px';
 
   return (
     <div
       onClick={!expanded ? onClick : undefined}
       className={`relative overflow-hidden ${expanded ? GLASS_ELEVATED : `${GLASS} ${GLASS_HOVER} cursor-pointer`}`}
-      style={{ minHeight: expanded ? '500px' : '280px' }}
+      style={{ height: expanded ? 'calc(100vh - 220px)' : '280px', minHeight: expanded ? '500px' : '280px' }}
     >
       {!expanded && (
         <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
@@ -242,8 +267,7 @@ export function DistributionMap({
 
       <div
         ref={containerRef}
-        style={{ width: '100%', height }}
-        className="rounded-2xl"
+        className="absolute inset-0 rounded-2xl"
       />
 
       {!expanded && (

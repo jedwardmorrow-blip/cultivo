@@ -13,9 +13,9 @@ interface DayDetailStripProps {
   date: string | null;
   orders: CalendarOrder[];
   readinessMap: Map<string, OrderReadiness>;
-  driver: DriverAssignment | null;
+  driversForDate: DriverAssignment[];
   staffList: { id: string; display_name?: string; first_name?: string }[];
-  onAssignDriver: (date: string, staffId: string) => void;
+  onAssignDriver: (date: string, staffId: string, zoneId: string) => void;
   onReload: () => void;
   highlightedOrderId?: string | null;
   // Doc filter mode
@@ -29,7 +29,7 @@ export function DayDetailStrip({
   date,
   orders,
   readinessMap,
-  driver,
+  driversForDate,
   staffList,
   onAssignDriver,
   onReload,
@@ -121,29 +121,15 @@ export function DayDetailStrip({
             ))}
           </div>
 
-          {/* Footer: Driver + Route actions */}
+          {/* Footer: Per-zone drivers + Route actions */}
           {!docFilterMode && date && (
-            <div className={`${GLASS} mt-3 p-3 flex items-center justify-between`}>
-              <div className="flex items-center gap-3">
-                <label className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Driver</label>
-                <select
-                  value={driver?.staffId || ''}
-                  onChange={(e) => {
-                    if (e.target.value && date) onAssignDriver(date, e.target.value);
-                  }}
-                  className="px-2 py-1 rounded-lg border border-white/[0.08] bg-white/[0.06] text-xs text-white focus:outline-none focus:border-white/[0.15] min-w-[140px]"
-                >
-                  <option value="">Unassigned</option>
-                  {staffList.map((s) => (
-                    <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-3 text-[11px] text-white/40">
-                <span>{displayOrders.length} stops</span>
-                {totalDuration > 0 && <span>~{formatDuration(totalDuration)}</span>}
-                <span className="font-semibold text-white/60">{formatCurrency(totalRevenue)}</span>
+            <div className={`${GLASS} mt-3 p-3`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3 text-[11px] text-white/40">
+                  <span>{displayOrders.length} stops</span>
+                  {totalDuration > 0 && <span>~{formatDuration(totalDuration)}</span>}
+                  <span className="font-semibold text-white/60">{formatCurrency(totalRevenue)}</span>
+                </div>
                 {onGenerateTripPlan && (
                   <button
                     onClick={onGenerateTripPlan}
@@ -154,6 +140,34 @@ export function DayDetailStrip({
                   </button>
                 )}
               </div>
+
+              {/* Per-zone driver assignments */}
+              {zoneBreakdown.length > 0 && (
+                <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-white/[0.06]">
+                  <label className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Drivers</label>
+                  {zoneBreakdown.map((z) => {
+                    const zoneDriver = driversForDate.find((d) => d.zoneId === z.zoneId);
+                    return (
+                      <div key={z.zoneId} className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ background: ZONE_HEX[z.zoneId] || '#A6A6A6' }} />
+                        <span className="text-[10px] text-white/30">{ZONE_LABELS[z.zoneId]}</span>
+                        <select
+                          value={zoneDriver?.staffId || ''}
+                          onChange={(e) => {
+                            if (date) onAssignDriver(date, e.target.value, z.zoneId);
+                          }}
+                          className="px-1.5 py-0.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12]"
+                        >
+                          <option value="">—</option>
+                          {staffList.map((s) => (
+                            <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </motion.div>

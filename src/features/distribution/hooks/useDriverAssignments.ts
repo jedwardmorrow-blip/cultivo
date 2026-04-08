@@ -48,7 +48,7 @@ export function useDriverAssignments(monthStart: string, monthEnd: string) {
         .from('delivery_driver_assignments')
         .upsert(
           { delivery_date: date, staff_id: staffId, zone_id: zoneId || null },
-          { onConflict: 'delivery_date,staff_id' },
+          { onConflict: 'delivery_date,zone_id' },
         );
 
       if (error) {
@@ -68,6 +68,23 @@ export function useDriverAssignments(monthStart: string, monthEnd: string) {
     [load],
   );
 
+  // Get all drivers for a given date (one per zone)
+  const getDriversForDate = useCallback(
+    (date: string): DriverAssignment[] => {
+      return assignments.filter((a) => a.deliveryDate === date);
+    },
+    [assignments],
+  );
+
+  // Get driver for a specific date+zone
+  const getDriverForZone = useCallback(
+    (date: string, zoneId: string): DriverAssignment | null => {
+      return assignments.find((a) => a.deliveryDate === date && a.zoneId === zoneId) || null;
+    },
+    [assignments],
+  );
+
+  // Legacy: get first driver for date (for calendar day cell label)
   const getDriverForDate = useCallback(
     (date: string): DriverAssignment | null => {
       return assignments.find((a) => a.deliveryDate === date) || null;
@@ -81,6 +98,8 @@ export function useDriverAssignments(monthStart: string, monthEnd: string) {
     assignDriver,
     removeAssignment,
     getDriverForDate,
+    getDriversForDate,
+    getDriverForZone,
     staff,
     reload: load,
   };

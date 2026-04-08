@@ -9,15 +9,15 @@ import { GLASS, GLASS_HOVER, ZONE_HEX, ZONE_LABELS } from '../constants';
 
 interface RouteSummaryPanelProps {
   orders: CalendarOrder[];
-  driver: DriverAssignment | null;
+  driversForDate: DriverAssignment[];
   staffList: { id: string; display_name?: string; first_name?: string }[];
   selectedDate: string | null;
-  onAssignDriver: (date: string, staffId: string) => void;
+  onAssignDriver: (date: string, staffId: string, zoneId: string) => void;
 }
 
 export function RouteSummaryPanel({
   orders,
-  driver,
+  driversForDate,
   staffList,
   selectedDate,
   onAssignDriver,
@@ -42,6 +42,9 @@ export function RouteSummaryPanel({
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }, [selectedDate]);
 
+  // Build driver lookup by zone
+  const driverByZone = new Map(driversForDate.map((d) => [d.zoneId, d]));
+
   return (
     <div className={`${GLASS} ${GLASS_HOVER} p-3`}>
       <div className="flex items-center gap-2 mb-2">
@@ -53,43 +56,45 @@ export function RouteSummaryPanel({
         <div className="text-[10px] text-white/20 text-center py-2">No deliveries</div>
       ) : (
         <>
-          {/* Zone breakdown */}
-          <div className="space-y-1 mb-2">
-            {zoneBreakdown.map((z) => (
-              <div key={z.zoneId} className="flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ background: ZONE_HEX[z.zoneId] || '#A6A6A6' }} />
-                  <span className="text-white/50">{ZONE_LABELS[z.zoneId] || z.zoneId}</span>
+          {/* Zone breakdown with per-zone driver assignment */}
+          <div className="space-y-2 mb-2">
+            {zoneBreakdown.map((z) => {
+              const zoneDriver = driverByZone.get(z.zoneId);
+              return (
+                <div key={z.zoneId}>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{ background: ZONE_HEX[z.zoneId] || '#A6A6A6' }} />
+                      <span className="text-white/50">{ZONE_LABELS[z.zoneId] || z.zoneId}</span>
+                    </div>
+                    <span className="text-white/30">{z.count} stop{z.count !== 1 ? 's' : ''}</span>
+                  </div>
+
+                  {/* Per-zone driver dropdown */}
+                  {selectedDate && (
+                    <select
+                      value={zoneDriver?.staffId || ''}
+                      onChange={(e) => {
+                        if (selectedDate) onAssignDriver(selectedDate, e.target.value, z.zoneId);
+                      }}
+                      className="w-full px-2 py-1 rounded-lg border border-white/[0.06] bg-white/[0.03] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12] mb-1"
+                    >
+                      <option value="">Assign driver...</option>
+                      {staffList.map((s) => (
+                        <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-                <span className="text-white/30">{z.count} stop{z.count !== 1 ? 's' : ''}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Summary line */}
-          <div className="text-[10px] text-white/25 mb-2">
+          <div className="text-[10px] text-white/25 pt-1 border-t border-white/[0.06]">
             {totalDuration > 0 && <span>~{formatDuration(totalDuration)} · </span>}
             <span>{formatCurrency(totalRevenue)}</span>
           </div>
-
-          {/* Driver assignment */}
-          {selectedDate && (
-            <div className="pt-2 border-t border-white/[0.06]">
-              <label className="text-[9px] text-white/25 uppercase tracking-wider font-medium">Driver</label>
-              <select
-                value={driver?.staffId || ''}
-                onChange={(e) => {
-                  if (e.target.value && selectedDate) onAssignDriver(selectedDate, e.target.value);
-                }}
-                className="w-full mt-1 px-2 py-1 rounded-lg border border-white/[0.08] bg-white/[0.04] text-[11px] text-white focus:outline-none focus:border-white/[0.15]"
-              >
-                <option value="">Unassigned</option>
-                {staffList.map((s) => (
-                  <option key={s.id} value={s.id}>{s.display_name || s.first_name}</option>
-                ))}
-              </select>
-            </div>
-          )}
         </>
       )}
     </div>
