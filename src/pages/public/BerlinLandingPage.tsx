@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Eye, Shield, Activity, BarChart3, ArrowRight, MapPin,
   Zap, TrendingUp, Truck, Package, Brain, CheckCircle2,
@@ -6,6 +6,42 @@ import {
 } from 'lucide-react';
 
 const STAGING_URL = 'https://staging.cultops.io';
+
+/** Lazy-loaded video that only starts loading when scrolled into view */
+function LazyVideo({ src, poster, alt }: { src: string; poster: string; alt: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full overflow-hidden border border-cult-border shadow-[0_20px_50px_rgba(0,0,0,0.4)] bg-cult-opaque-black">
+      {inView ? (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster={poster}
+          className="w-full h-auto"
+          aria-label={alt}
+        >
+          <source src={src} type="video/mp4" />
+        </video>
+      ) : (
+        <img src={poster} alt={alt} className="w-full h-auto" loading="lazy" />
+      )}
+    </div>
+  );
+}
 
 export function BerlinLandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -180,33 +216,11 @@ export function BerlinLandingPage() {
             {/* Feature 1: Visual Ops & Production */}
             <div className="flex flex-col lg:flex-row lg:gap-14 items-center mb-20 md:mb-28">
               <div className="w-full lg:w-1/2 mb-8 lg:mb-0">
-                <div className="bg-cult-surface border border-cult-border p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                  {/* Simulated UI panel */}
-                  <div className="border-b border-cult-border pb-3 mb-4 flex items-center justify-between">
-                    <span className="font-mono text-xs text-cult-text-primary font-bold uppercase tracking-wider">Cultivation Command Center</span>
-                    <div className="w-2 h-2 rounded-full bg-cult-success animate-pulse" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['FLW-06', 'FLW-07', 'VEG-02'].map((room, i) => (
-                      <div key={room} className="bg-cult-surface-overlay border border-cult-border p-3 text-center">
-                        <span className="text-xs font-mono text-cult-text-secondary">{room}</span>
-                        <div className={`text-lg font-bold mt-1 ${i === 1 ? 'text-cult-danger' : 'text-cult-success'}`}>
-                          {i === 1 ? '8d' : i === 0 ? '42d' : '21d'}
-                        </div>
-                        <span className="text-[10px] text-cult-text-muted">{i === 1 ? 'OVERDUE' : 'ON TRACK'}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 bg-cult-surface-overlay border border-cult-border p-3">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-cult-text-secondary">Daily Throughput</span>
-                      <span className="text-cult-success font-bold">127 lbs</span>
-                    </div>
-                    <div className="w-full bg-cult-surface h-2">
-                      <div className="bg-cult-success h-2" style={{ width: '73%' }} />
-                    </div>
-                  </div>
-                </div>
+                <LazyVideo
+                  src="/berlin/feature-visual-ops.mp4"
+                  poster="/berlin/poster-visual-ops.jpg"
+                  alt="Visual room mapping and production tracking"
+                />
               </div>
               <div className="w-full lg:w-1/2 space-y-5">
                 <h3 className="text-xl md:text-2xl font-display font-bold text-cult-text-primary">
@@ -233,34 +247,11 @@ export function BerlinLandingPage() {
             {/* Feature 2: AI Operations */}
             <div className="flex flex-col lg:flex-row-reverse lg:gap-14 items-center mb-20 md:mb-28">
               <div className="w-full lg:w-1/2 mb-8 lg:mb-0">
-                <div className="bg-cult-surface border border-cult-border p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                  <div className="border-b border-cult-border pb-3 mb-4 flex items-center justify-between">
-                    <span className="font-mono text-xs text-cult-text-primary font-bold uppercase tracking-wider">Cult AI : Active</span>
-                    <Brain className="w-4 h-4 text-cult-success" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Users className="w-3.5 h-3.5 text-cult-text-muted shrink-0 mt-0.5" />
-                      <p className="text-xs text-cult-text-secondary">Show me rooms overdue for harvest.</p>
-                    </div>
-                    <div className="bg-cult-surface-overlay border border-cult-border p-4">
-                      <div className="font-mono text-xs text-cult-danger font-bold mb-2 pl-3 border-l-2 border-cult-danger">
-                        FLW-07 — Overdue: 8 days
-                      </div>
-                      <p className="text-xs text-cult-text-secondary">
-                        313 plants &middot; 10 strains &middot; Est. yield: 187 lbs
-                      </p>
-                    </div>
-                    <div className="bg-cult-surface-overlay border border-cult-border p-4">
-                      <p className="text-xs text-cult-text-secondary">
-                        <span className="text-cult-accent font-bold">Recommendation:</span> Prioritize FLW-07 harvest. Current throughput can absorb 187 lbs within 3 production days. Delaying risks 12% trichome degradation.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 h-9 border border-cult-border bg-cult-surface-raised flex items-center px-4 text-xs text-cult-text-muted font-mono">
-                    Ask anything about your operation...
-                  </div>
-                </div>
+                <LazyVideo
+                  src="/berlin/feature-cult-ai.mp4"
+                  poster="/berlin/poster-cult-ai.jpg"
+                  alt="Cult AI co-pilot answering operational queries"
+                />
               </div>
               <div className="w-full lg:w-1/2 space-y-5">
                 <div className="inline-flex items-center gap-2 border border-cult-border bg-cult-surface px-3 py-1 rounded-sm">
@@ -291,37 +282,11 @@ export function BerlinLandingPage() {
             {/* Feature 3: Logistics & Compliance */}
             <div className="flex flex-col lg:flex-row lg:gap-14 items-center">
               <div className="w-full lg:w-1/2 mb-8 lg:mb-0">
-                <div className="bg-cult-surface border border-cult-border p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                  <div className="border-b border-cult-border pb-3 mb-4 flex items-center justify-between">
-                    <span className="font-mono text-xs text-cult-text-primary font-bold uppercase tracking-wider">Delivery & Compliance</span>
-                    <Shield className="w-4 h-4 text-cult-info" />
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { route: 'Route A — Berlin North', stops: 4, status: 'In Transit', color: 'text-cult-info' },
-                      { route: 'Route B — Brandenburg', stops: 6, status: 'Manifest Ready', color: 'text-cult-success' },
-                      { route: 'Route C — Berlin South', stops: 3, status: 'Pending COA', color: 'text-cult-warning' },
-                    ].map(({ route, stops, status, color }) => (
-                      <div key={route} className="bg-cult-surface-overlay border border-cult-border p-3 flex items-center justify-between">
-                        <div>
-                          <span className="text-xs font-bold text-cult-text-primary">{route}</span>
-                          <span className="text-[10px] text-cult-text-muted ml-2">{stops} stops</span>
-                        </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${color}`}>{status}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex gap-3">
-                    <div className="flex-1 bg-cult-surface-overlay border border-cult-border p-3 text-center">
-                      <div className="text-lg font-bold text-cult-text-primary">98.2%</div>
-                      <div className="text-[10px] text-cult-text-muted uppercase">On-Time Rate</div>
-                    </div>
-                    <div className="flex-1 bg-cult-surface-overlay border border-cult-border p-3 text-center">
-                      <div className="text-lg font-bold text-cult-success">0</div>
-                      <div className="text-[10px] text-cult-text-muted uppercase">Compliance Flags</div>
-                    </div>
-                  </div>
-                </div>
+                <LazyVideo
+                  src="/berlin/feature-logistics.mp4"
+                  poster="/berlin/poster-logistics.jpg"
+                  alt="Automated delivery routing and logistics"
+                />
               </div>
               <div className="w-full lg:w-1/2 space-y-5">
                 <h3 className="text-xl md:text-2xl font-display font-bold text-cult-text-primary">
