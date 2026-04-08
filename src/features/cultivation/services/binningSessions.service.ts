@@ -64,21 +64,26 @@ export const binningSessionsService = {
   },
 
   async listHarvestSessionsByDryRoom(dryRoomId: string): Promise<HarvestSession[]> {
+    // Step 1: Find harvest session IDs that have flower entries routed to this dry room
+    const { data: entryRows, error: entryError } = await supabase
+      .from('harvest_weight_entries')
+      .select('harvest_session_id')
+      .eq('location_id', dryRoomId)
+      .eq('destination', 'flower');
+    if (entryError) throwError(entryError, 'listHarvestSessionsByDryRoom:entries');
+
+    const sessionIds = [...new Set((entryRows ?? []).map(r => r.harvest_session_id))];
+    if (sessionIds.length === 0) return [];
+
+    // Step 2: Load those sessions with full join data
     const { data, error } = await supabase
       .from('harvest_sessions')
       .select(HARVEST_SESSION_SELECT)
+      .in('id', sessionIds)
       .in('session_status', ['completed', 'finalized'])
       .order('harvest_date', { ascending: false });
     if (error) throwError(error, 'listHarvestSessionsByDryRoom');
-
-    // Filter to harvests that have at least one flower entry routed to this dry room
-    return (data as unknown as HarvestSession[]).filter((s) => {
-      const entries = (s as any).harvest_weight_entries as Array<{
-        destination: string | null;
-        location_id: string | null;
-      }> | undefined;
-      return entries?.some(e => e.destination === 'flower' && e.location_id === dryRoomId) ?? false;
-    });
+    return data as unknown as HarvestSession[];
   },
 
   async listDryingHarvests(): Promise<HarvestSession[]> {
