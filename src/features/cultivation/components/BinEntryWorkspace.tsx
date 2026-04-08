@@ -114,45 +114,48 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
   return (
     <div className="mt-3 space-y-3">
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-2 text-sm text-cult-danger">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl bg-cult-danger-muted border border-cult-danger/30 px-3 py-2 text-xs text-cult-danger">
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="rounded-md border border-cult-medium-gray bg-cult-black p-3 space-y-2">
+      <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-4 space-y-3">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold text-cult-light-gray uppercase tracking-wider">Bin Entries</h4>
-          <div className="text-xs text-cult-medium-gray">
-            {entries.length} bin{entries.length !== 1 ? 's' : ''} &middot; <span className="text-cult-white font-medium">{formatWeight(totalWeight)}</span>
+          <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Bin Entries</span>
+          <div className="text-[10px] text-white/30">
+            {entries.length} bin{entries.length !== 1 ? 's' : ''}&nbsp;&middot;&nbsp;
+            <span className="text-white/60 font-mono">{formatWeight(totalWeight)}</span>
             {wetWeight !== null && wetWeight > 0 && (
-              <span className="ml-2 text-cult-success">({yieldPct(wetWeight, totalWeight)} yield)</span>
+              <span className="ml-2 text-emerald-300/70">({yieldPct(wetWeight, totalWeight)} yield)</span>
             )}
           </div>
         </div>
 
+        {/* Entry list */}
         {loadingEntries ? (
-          <div className="text-xs text-cult-medium-gray py-2">Loading entries...</div>
+          <div className="text-[10px] text-white/25 py-2">Loading entries...</div>
         ) : entries.length > 0 ? (
           <div className="space-y-1">
             {entries.map((entry, i) => (
-              <div key={entry.id} className="flex items-center justify-between gap-3 rounded bg-cult-dark-gray px-3 py-1.5">
+              <div key={entry.id} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.04] px-3 py-2">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xs text-cult-medium-gray w-5 text-right flex-shrink-0">{i + 1}.</span>
-                  <span className="text-sm font-medium text-cult-white">{formatWeight(Number(entry.bin_weight_grams))}</span>
-                  {entry.notes && <span className="text-xs text-cult-medium-gray truncate">{entry.notes}</span>}
+                  <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0 tabular-nums">{i + 1}</span>
+                  <span className="text-sm font-mono font-medium text-white/70">{formatWeight(Number(entry.bin_weight_grams))}</span>
+                  {entry.notes && <span className="text-[10px] text-white/30 truncate">{entry.notes}</span>}
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => printBinLabel({ weightGrams: Number(entry.bin_weight_grams), entryOrder: entry.entry_order, notes: entry.notes ?? undefined })}
-                    className="text-cult-medium-gray hover:text-cult-white transition-colors"
+                    className="text-white/20 hover:text-white/50 transition-colors"
                     title="Reprint label"
                   >
                     <Printer className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => handleRemoveEntry(entry.id)}
-                    className="text-cult-medium-gray hover:text-cult-danger transition-colors"
+                    className="text-white/20 hover:text-rose-400/60 transition-colors"
                     title="Remove entry"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -162,12 +165,13 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
             ))}
           </div>
         ) : (
-          <p className="text-xs text-cult-medium-gray py-1">No entries yet. Add bin weights below.</p>
+          <p className="text-[10px] text-white/20 py-1">No entries yet. Add a bin weight below.</p>
         )}
 
+        {/* Add entry form */}
         <div className="flex items-end gap-2 pt-1">
           <div className="flex-1">
-            <label className="block text-xs text-cult-medium-gray mb-0.5">Weight (g)</label>
+            <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Weight (g)</label>
             <input
               type="number"
               step="0.01"
@@ -176,24 +180,26 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
               onChange={(e) => setWeight(e.target.value)}
               placeholder="e.g. 3500"
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
-              className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-1.5 focus:outline-none focus:border-cult-white"
+              className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white font-mono placeholder:text-white/15"
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs text-cult-medium-gray mb-0.5">Notes <span className="text-cult-medium-gray/60">optional</span></label>
+            <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">
+              Notes <span className="text-white/15">optional</span>
+            </label>
             <input
               type="text"
               value={entryNotes}
               onChange={(e) => setEntryNotes(e.target.value)}
               placeholder="e.g. Bin A"
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
-              className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-1.5 focus:outline-none focus:border-cult-white"
+              className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/15"
             />
           </div>
           <button
             onClick={handleAddEntry}
             disabled={adding || !parseFloat(weight)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 text-sm font-medium hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
           >
             <Plus className="h-3.5 w-3.5" />
             {adding ? 'Adding...' : 'Add'}
@@ -201,28 +207,29 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
         </div>
       </div>
 
-      <div className="flex gap-2">
+      {/* Actions */}
+      <div className="flex gap-2 flex-wrap">
         {confirmAction ? (
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-cult-light-gray">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-[10px] text-white/40">
               {confirmAction === 'complete'
-                ? `Complete session and create ${entries.length} individual package${entries.length !== 1 ? 's' : ''} totaling ${formatWeight(totalWeight)}?`
+                ? `Complete and create ${entries.length} package${entries.length !== 1 ? 's' : ''} totaling ${formatWeight(totalWeight)}?`
                 : 'Cancel this session? No inventory will be created.'}
             </span>
             <button
               onClick={confirmAction === 'complete' ? handleComplete : handleCancel}
               disabled={completing}
-              className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-50 ${
+              className={`text-[10px] px-3 py-1.5 rounded-xl font-medium transition-all active:scale-95 disabled:opacity-50 ${
                 confirmAction === 'complete'
-                  ? 'bg-cult-success-muted text-cult-success hover:bg-cult-success/20'
-                  : 'bg-cult-danger-muted text-cult-danger hover:bg-cult-danger/20'
+                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20'
+                  : 'bg-rose-500/15 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20'
               }`}
             >
               {completing ? 'Saving...' : 'Confirm'}
             </button>
             <button
               onClick={() => setConfirmAction(null)}
-              className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="text-[10px] text-white/25 hover:text-white/50 transition-colors"
             >
               Nevermind
             </button>
@@ -232,14 +239,14 @@ export function BinEntryWorkspace({ sessionId, listBinEntries, addBinEntry, remo
             <button
               onClick={() => setConfirmAction('complete')}
               disabled={entries.length === 0}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-cult-success-muted border border-cult-success text-cult-success hover:bg-cult-success/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <Package className="h-3.5 w-3.5" />
-              Complete & Create Inventory
+              Complete &amp; Create Inventory
             </button>
             <button
               onClick={() => setConfirmAction('cancel')}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-cult-danger-muted border border-cult-danger text-cult-danger hover:bg-cult-danger/20 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.03] text-white/30 border border-white/[0.06] hover:text-white/50 hover:bg-white/[0.05] active:scale-95 transition-all"
             >
               <XCircle className="h-3.5 w-3.5" />
               Cancel
@@ -312,55 +319,56 @@ export function CompletedBinEntries({ sessionId, listBinEntries, canAddMissing, 
     <div className="space-y-2">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+        className="flex items-center gap-1.5 text-[10px] text-white/25 hover:text-white/50 transition-colors"
       >
         {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
         {expanded ? 'Hide' : 'Show'} bin entries
         {entries.length > 0 && !expanded && (
-          <span className="text-cult-light-gray ml-1">({entries.length})</span>
+          <span className="text-white/20 ml-1">({entries.length})</span>
         )}
       </button>
 
       {expanded && (
-        <div className="rounded-md border border-cult-medium-gray bg-cult-black p-3 space-y-2">
+        <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 space-y-2">
           {error && (
-            <div className="flex items-center gap-2 rounded-md bg-cult-danger-muted border border-cult-danger px-3 py-1.5 text-xs text-cult-danger">
+            <div className="flex items-center gap-2 rounded-lg bg-cult-danger-muted border border-cult-danger/30 px-3 py-1.5 text-[10px] text-cult-danger">
               <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {loadingEntries ? (
-            <div className="flex items-center gap-2 text-xs text-cult-medium-gray py-2">
+            <div className="flex items-center gap-2 text-[10px] text-white/25 py-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Loading entries...
+              Loading...
             </div>
           ) : entries.length > 0 ? (
             <>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-cult-light-gray uppercase tracking-wider">Bin Entries</span>
-                <span className="text-xs text-cult-medium-gray">
-                  {entries.length} bin{entries.length !== 1 ? 's' : ''} &middot; <span className="text-cult-white font-medium">{formatWeight(totalWeight)}</span>
+                <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">Bin Entries</span>
+                <span className="text-[10px] text-white/25">
+                  {entries.length} bin{entries.length !== 1 ? 's' : ''}&nbsp;&middot;&nbsp;
+                  <span className="text-white/50 font-mono">{formatWeight(totalWeight)}</span>
                 </span>
               </div>
               <div className="space-y-1">
                 {entries.map((entry, i) => (
-                  <div key={entry.id} className="flex items-center gap-3 rounded bg-cult-dark-gray px-3 py-1.5">
-                    <span className="text-xs text-cult-medium-gray w-5 text-right flex-shrink-0">{i + 1}.</span>
-                    <span className="text-sm font-medium text-cult-white">{formatWeight(Number(entry.bin_weight_grams))}</span>
-                    {entry.notes && <span className="text-xs text-cult-medium-gray truncate">{entry.notes}</span>}
+                  <div key={entry.id} className="flex items-center gap-3 rounded-lg bg-white/[0.03] border border-white/[0.04] px-3 py-1.5">
+                    <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0 tabular-nums">{i + 1}</span>
+                    <span className="text-sm font-mono font-medium text-white/60">{formatWeight(Number(entry.bin_weight_grams))}</span>
+                    {entry.notes && <span className="text-[10px] text-white/25 truncate">{entry.notes}</span>}
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="text-xs text-cult-medium-gray py-1">No bin entries recorded.</p>
+            <p className="text-[10px] text-white/20 py-1">No bin entries recorded.</p>
           )}
 
           {canAddMissing && !showAddForm && (
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-cult-warning-muted border border-cult-warning text-cult-warning hover:bg-cult-warning/20 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-300/70 border border-amber-500/20 hover:bg-amber-500/15 active:scale-95 transition-all"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Missing Bin
@@ -368,11 +376,13 @@ export function CompletedBinEntries({ sessionId, listBinEntries, canAddMissing, 
           )}
 
           {canAddMissing && showAddForm && (
-            <div className="rounded-md border border-cult-warning bg-cult-warning-muted p-3 space-y-2">
-              <div className="text-xs text-cult-warning font-medium">Add Missing Bin (creates inventory)</div>
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.05] p-3 space-y-2">
+              <div className="text-[10px] text-amber-300/70 font-semibold uppercase tracking-wider">
+                Add Missing Bin — creates inventory
+              </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <label className="block text-xs text-cult-medium-gray mb-0.5">Weight (g)</label>
+                  <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Weight (g)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -381,24 +391,26 @@ export function CompletedBinEntries({ sessionId, listBinEntries, canAddMissing, 
                     onChange={(e) => setWeight(e.target.value)}
                     placeholder="e.g. 3500"
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddBin(); }}
-                    className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-1.5 focus:outline-none focus:border-cult-white"
+                    className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white font-mono placeholder:text-white/15"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs text-cult-medium-gray mb-0.5">Notes <span className="text-cult-medium-gray/60">optional</span></label>
+                  <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">
+                    Notes <span className="text-white/15">optional</span>
+                  </label>
                   <input
                     type="text"
                     value={entryNotes}
                     onChange={(e) => setEntryNotes(e.target.value)}
                     placeholder="e.g. Late bin"
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddBin(); }}
-                    className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-1.5 focus:outline-none focus:border-cult-white"
+                    className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/15"
                   />
                 </div>
                 <button
                   onClick={handleAddBin}
                   disabled={adding || !parseFloat(weight)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-cult-warning text-cult-black text-sm font-medium hover:bg-cult-warning/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 text-sm font-medium hover:bg-amber-500/20 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                   {adding ? 'Adding...' : 'Add & Create Inventory'}
@@ -406,7 +418,7 @@ export function CompletedBinEntries({ sessionId, listBinEntries, canAddMissing, 
               </div>
               <button
                 onClick={() => { setShowAddForm(false); setWeight(''); setEntryNotes(''); setError(null); }}
-                className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+                className="text-[10px] text-white/25 hover:text-white/50 transition-colors"
               >
                 Cancel
               </button>

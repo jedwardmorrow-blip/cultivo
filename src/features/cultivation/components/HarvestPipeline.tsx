@@ -20,7 +20,7 @@ import { BinEntryWorkspace } from './BinEntryWorkspace';
 import { useBinEntryLabel, type BinLabelContext } from '../hooks/useBinEntryLabel';
 import { supabase } from '@/lib/supabase';
 import { formatWeight } from '../utils';
-import type { HarvestSession, DryRoom, BinEntry } from '../types';
+import type { HarvestSession } from '../types';
 
 // ─── Design tokens ──────────────────────────────────────────────────
 
@@ -828,33 +828,16 @@ function DryRoomHarvestCard({
       {showBinning && binningSessionId && (
         <BinEntryWorkspace
           sessionId={binningSessionId}
-          listBinEntries={async (id) => {
-            const { data } = await supabase
-              .from('bin_entries')
-              .select('*')
-              .eq('binning_session_id', id)
-              .order('entry_order');
-            return (data ?? []) as BinEntry[];
-          }}
-          addBinEntry={async (input) => {
-            const { data, error } = await supabase
-              .from('bin_entries')
-              .insert(input)
-              .select()
-              .single();
-            if (error) throw new Error(error.message);
-            return data as BinEntry;
-          }}
-          removeBinEntry={async (id) => {
-            await supabase.from('bin_entries').delete().eq('id', id);
-          }}
+          listBinEntries={(id) => binningService.listBinEntries(id)}
+          addBinEntry={(input) => binningService.createBinEntry(input)}
+          removeBinEntry={(id) => binningService.deleteBinEntry(id)}
           onComplete={async () => {
-            await supabase.from('binning_sessions').update({ session_status: 'completed' }).eq('id', binningSessionId);
+            await binningService.completeBinningSession(binningSessionId);
             setShowBinning(false);
             await onBinningComplete();
           }}
           onCancel={async () => {
-            await supabase.from('binning_sessions').update({ session_status: 'cancelled' }).eq('id', binningSessionId);
+            await binningService.cancelBinningSession(binningSessionId);
             setBinningSessionId(null);
             setShowBinning(false);
           }}
