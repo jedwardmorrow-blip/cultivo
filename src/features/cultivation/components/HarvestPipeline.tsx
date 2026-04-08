@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronLeft, Check, Scale, Package, Printer, X } from 'lucide-react';
+import { ChevronDown, Check, Package } from 'lucide-react';
 import {
   useHarvestSessions,
   useBinningSessions,
@@ -636,7 +636,8 @@ export function HarvestPipeline() {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// DryRoomHarvestCard — Progressive states: hanging → dry weight → binning → done
+// DryRoomHarvestCard — States: hanging → binning → done
+// Dry weight is derived from bin entry totals on session completion.
 // ═════════════════════════════════════════════════════════════════════
 
 function DryRoomHarvestCard({
@@ -655,18 +656,9 @@ function DryRoomHarvestCard({
   onBinningComplete: () => Promise<void>;
 }) {
   const wetWeight = getWetWeight(harvest);
-  const dryWeight = harvest.adjusted_weight_grams ?? null;
-  const hasDryWeight = dryWeight !== null && dryWeight > 0;
   const batchNumber = harvest.batch_registry?.batch_number ?? '—';
   const harvestDate = harvest.harvest_date;
 
-  // Dry weight form state
-  const [showDryForm, setShowDryForm] = useState(false);
-  const [dryWeightInput, setDryWeightInput] = useState(dryWeight ? String(dryWeight) : '');
-  const [dryNotes, setDryNotes] = useState('');
-  const [savingDry, setSavingDry] = useState(false);
-
-  // Binning state
   const [binningSessionId, setBinningSessionId] = useState<string | null>(null);
   const [showBinning, setShowBinning] = useState(false);
   const [startingBinning, setStartingBinning] = useState(false);
@@ -688,31 +680,10 @@ function DryRoomHarvestCard({
   }, [harvest.id]);
 
   const isBinningComplete = binningSessionId !== null && !showBinning;
-  const shrinkagePct = hasDryWeight && wetWeight > 0
-    ? Math.round((1 - dryWeight / wetWeight) * 100)
-    : null;
 
-  // Label context for bin entry printing
   const labelContext: BinLabelContext | null = strainName !== 'Unknown'
     ? { strain: strainName, batchNumber, harvestDate }
     : null;
-
-  async function handleSaveDryWeight() {
-    const w = parseFloat(dryWeightInput);
-    if (!(w > 0)) return;
-    setSavingDry(true);
-    try {
-      await supabase
-        .from('harvest_sessions')
-        .update({ adjusted_weight_grams: w, notes: dryNotes.trim() || harvest.notes })
-        .eq('id', harvest.id);
-      // Update local state without full reload
-      (harvest as any).adjusted_weight_grams = w;
-      setShowDryForm(false);
-    } finally {
-      setSavingDry(false);
-    }
-  }
 
   async function handleStartBinningClick() {
     if (binningSessionId) {
@@ -722,7 +693,6 @@ function DryRoomHarvestCard({
     setStartingBinning(true);
     try {
       await onStartBinning(harvest, dryRoomId);
-      // Get the newly created session
       const { data } = await supabase
         .from('binning_sessions')
         .select('id')
@@ -738,13 +708,10 @@ function DryRoomHarvestCard({
     }
   }
 
-  // Border color based on state
   const borderColor = isBinningComplete
     ? 'rgba(16,185,129,0.25)'
     : showBinning
     ? 'rgba(139,92,246,0.3)'
-    : hasDryWeight
-    ? 'rgba(245,158,11,0.2)'
     : 'rgba(255,255,255,0.06)';
 
   return (
@@ -768,63 +735,12 @@ function DryRoomHarvestCard({
         </div>
       </div>
 
-      {/* Weight info */}
-      <div className="flex items-center gap-4 text-[10px]">
-        <span className="text-white/30">Wet: <span className="text-white/50 font-mono">{gramsToLbs(wetWeight)} lbs</span></span>
-        {hasDryWeight && (
-          <>
-            <span className="text-white/30">Dry: <span className="text-amber-300/70 font-mono">{gramsToLbs(dryWeight)} lbs</span></span>
-            {shrinkagePct !== null && (
-              <span className="text-amber-400/50">{shrinkagePct}% moisture loss</span>
-            )}
-          </>
-        )}
+      {/* Wet weight reference */}
+      <div className="text-[10px] text-white/30">
+        Wet: <span className="text-white/50 font-mono">{gramsToLbs(wetWeight)} lbs</span>
       </div>
 
-      {/* Dry weight form (inline) */}
-      {showDryForm && (
-        <div className={`${GLASS_NESTED} p-3 space-y-2`}>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Dry Weight (g)</label>
-              <input
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={dryWeightInput}
-                onChange={(e) => setDryWeightInput(e.target.value)}
-                placeholder="e.g. 6200"
-                className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white font-mono placeholder:text-white/15"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Notes <span className="text-white/10">optional</span></label>
-              <input
-                type="text"
-                value={dryNotes}
-                onChange={(e) => setDryNotes(e.target.value)}
-                placeholder="e.g. crispy, ready"
-                className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/15"
-              />
-            </div>
-            <button
-              onClick={handleSaveDryWeight}
-              disabled={savingDry || !(parseFloat(dryWeightInput) > 0)}
-              className="rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2 text-[10px] font-semibold active:scale-95 transition-all disabled:opacity-20"
-            >
-              {savingDry ? '...' : 'Save'}
-            </button>
-            <button
-              onClick={() => setShowDryForm(false)}
-              className="text-white/20 hover:text-white/40 transition-colors p-2"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Binning workspace (inline) */}
+      {/* Binning workspace */}
       {showBinning && binningSessionId && (
         <BinEntryWorkspace
           sessionId={binningSessionId}
@@ -846,39 +762,17 @@ function DryRoomHarvestCard({
         />
       )}
 
-      {/* Action buttons — progressive: show next action based on state */}
-      {!showDryForm && !showBinning && !isBinningComplete && (
-        <div className="flex gap-2">
-          {!hasDryWeight ? (
-            <button
-              type="button"
-              onClick={() => setShowDryForm(true)}
-              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.04] text-white/40 border border-white/[0.06] hover:bg-white/[0.06] active:scale-95 transition-all"
-            >
-              <Scale className="w-3 h-3" />
-              Record Dry Weight
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => { setDryWeightInput(String(dryWeight)); setShowDryForm(true); }}
-                className="text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.03] text-white/25 border border-white/[0.04] hover:text-white/40 active:scale-95 transition-all"
-              >
-                Edit Dry Weight
-              </button>
-              <button
-                type="button"
-                onClick={handleStartBinningClick}
-                disabled={startingBinning}
-                className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30"
-              >
-                <Package className="w-3 h-3" />
-                {startingBinning ? 'Starting...' : binningSessionId ? 'Continue Binning' : 'Start Binning'}
-              </button>
-            </>
-          )}
-        </div>
+      {/* Action */}
+      {!showBinning && !isBinningComplete && (
+        <button
+          type="button"
+          onClick={handleStartBinningClick}
+          disabled={startingBinning}
+          className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30"
+        >
+          <Package className="w-3 h-3" />
+          {startingBinning ? 'Starting...' : binningSessionId ? 'Continue Binning' : 'Start Binning'}
+        </button>
       )}
     </div>
   );
