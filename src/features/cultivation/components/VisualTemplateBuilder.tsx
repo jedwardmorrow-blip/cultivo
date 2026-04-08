@@ -996,6 +996,10 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
   const [icon, setIcon] = useState(taskType?.icon ?? 'Wrench');
   const [fields, setFields] = useState<string[]>(taskType?.fields ?? []);
   const [isEnabled, setIsEnabled] = useState(taskType?.is_enabled ?? true);
+  const [defaultCrewSize, setDefaultCrewSize] = useState(taskType?.default_crew_size ?? 1);
+  const [typicalDuration, setTypicalDuration] = useState<string | null>(taskType?.typical_duration ?? null);
+  const [allowMultiDay, setAllowMultiDay] = useState(taskType?.allow_multi_day ?? false);
+  const [completionMode, setCompletionMode] = useState<'manual' | 'event_driven'>(taskType?.completion_mode ?? 'manual');
   const [newField, setNewField] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -1010,6 +1014,10 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
         icon,
         fields,
         is_enabled: isEnabled,
+        default_crew_size: defaultCrewSize,
+        typical_duration: typicalDuration,
+        allow_multi_day: allowMultiDay,
+        completion_mode: completionMode,
       };
       if (isNew) {
         const key = taskKey.trim() || label.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
@@ -1217,6 +1225,92 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Team & Duration section */}
+      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] space-y-4">
+        <h3 className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Team & Duration</h3>
+
+        {/* Default Crew Size */}
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs text-white/50">Default Crew Size</span>
+            <span className="text-[10px] text-white/25 ml-2">
+              {defaultCrewSize === 1 ? 'Solo' : 'Team'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setDefaultCrewSize(Math.max(1, defaultCrewSize - 1))}
+              className="w-7 h-7 rounded-lg bg-white/[0.05] text-white/40 hover:bg-white/[0.08] flex items-center justify-center active:scale-90 transition-all"
+            >
+              −
+            </button>
+            <span className="w-8 text-center text-sm font-semibold text-white/70 tabular-nums">{defaultCrewSize}</span>
+            <button
+              type="button"
+              onClick={() => setDefaultCrewSize(Math.min(8, defaultCrewSize + 1))}
+              className="w-7 h-7 rounded-lg bg-white/[0.05] text-white/40 hover:bg-white/[0.08] flex items-center justify-center active:scale-90 transition-all"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Typical Duration */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-white/50">Typical Duration</span>
+          <div className="flex gap-1">
+            {['15m', '30m', '1h', '2h', '4h', 'full_day'].map(d => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setTypicalDuration(typicalDuration === d ? null : d)}
+                className={`px-2 py-1 text-[10px] font-medium rounded-lg transition-all active:scale-95 ${
+                  typicalDuration === d
+                    ? 'bg-white/10 text-white/70 border border-white/15'
+                    : 'text-white/25 hover:bg-white/[0.05] border border-transparent'
+                }`}
+              >
+                {d === 'full_day' ? 'Day' : d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Allow Multi-Day */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-white/50">Allow Multi-Day</span>
+          <button
+            type="button"
+            onClick={() => setAllowMultiDay(!allowMultiDay)}
+            className={`w-10 h-5 rounded-full transition-colors ${allowMultiDay ? 'bg-emerald-500' : 'bg-white/10'}`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${allowMultiDay ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </button>
+        </div>
+
+        {/* Completion Mode */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-white/50">Completion Mode</span>
+          <div className="flex rounded-xl overflow-hidden border border-white/[0.08]">
+            {(['manual', 'event_driven'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setCompletionMode(mode)}
+                className={`px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-all ${
+                  completionMode === mode
+                    ? 'bg-white/10 text-white/70'
+                    : 'text-white/25 hover:bg-white/[0.04]'
+                }`}
+              >
+                {mode === 'manual' ? 'Manual' : 'Event'}
+              </button>
+            ))}
           </div>
         </div>
       </div>

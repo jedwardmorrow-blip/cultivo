@@ -3,6 +3,7 @@ import { RouteObject } from 'react-router-dom';
 
 const Dashboard = lazy(() => import('./features/dashboard').then(m => ({ default: m.Dashboard })));
 const OrdersContainer = lazy(() => import('./features/orders').then(m => ({ default: m.OrdersContainer })));
+const ProductionCommandCenter = lazy(() => import('./features/sessions').then(m => ({ default: m.ProductionCommandCenter })));
 const SessionsUnified = lazy(() => import('./features/sessions').then(m => ({ default: m.SessionsUnified })));
 const TrimSessions = lazy(() => import('./features/sessions').then(m => ({ default: m.TrimSessionsRefactored })));
 const PackagingSessions = lazy(() => import('./features/sessions').then(m => ({ default: m.PackagingSessionsRefactored })));
@@ -56,6 +57,10 @@ export const protectedRoutes: RouteObject[] = [
   {
     path: '/orders',
     element: <OrdersContainer />,
+  },
+  {
+    path: '/production',
+    element: <ProductionCommandCenter />,
   },
   {
     path: '/sessions',

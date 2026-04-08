@@ -12,6 +12,10 @@ export interface TaskTypeSetting {
   is_enabled: boolean;
   sort_order: number;
   is_builtin: boolean;
+  default_crew_size: number;
+  typical_duration: string | null;
+  allow_multi_day: boolean;
+  completion_mode: 'manual' | 'event_driven';
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +38,10 @@ export interface UpdateTaskTypeInput {
   fields?: string[];
   is_enabled?: boolean;
   sort_order?: number;
+  default_crew_size?: number;
+  typical_duration?: string | null;
+  allow_multi_day?: boolean;
+  completion_mode?: 'manual' | 'event_driven';
 }
 
 export function useTaskTypeSettings() {

@@ -8,6 +8,7 @@ import { CoversheetLibrary } from './pages/public/CoversheetLibrary';
 import { COALibrary } from './pages/public/COALibrary';
 import { PublicMenu } from './pages/public/PublicMenu';
 import { LandingPage } from './pages/public/LandingPage';
+import { BerlinLandingPage } from './pages/public/BerlinLandingPage';
 import ProductionPlanner from './features/production-planner';
 import { StandaloneOrderFormRefactored } from './features/order-form';
 import { NewOrderForm } from './features/orders';
@@ -47,6 +48,7 @@ import { CultivationErrorBoundary } from './features/cultivation/components/Cult
 const CultivationDashboard = lazyRetry(() => import('./features/cultivation'), 'CultivationDashboard');
 const PlantGroupsList = lazyRetry(() => import('./features/cultivation'), 'PlantGroupsList');
 const HarvestSessionsList = lazyRetry(() => import('./features/cultivation'), 'HarvestSessionsList');
+const HarvestPipeline = lazyRetry(() => import('./features/cultivation'), 'HarvestPipeline');
 const BinningSessionsView = lazyRetry(() => import('./features/cultivation'), 'BinningSessionsView');
 const GrowRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'GrowRoomsManagement');
 const DryRoomsManagement = lazyRetry(() => import('./features/cultivation'), 'DryRoomsManagement');
@@ -190,8 +192,8 @@ function AuthenticatedApp() {
               <Route path="/orders" element={<OrdersContainer key={ordersRefreshKey} onCreateOrder={handleCreateOrder} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />} />
               <Route path="/cultivation-dashboard" element={<CultivationErrorBoundary><CultivationDashboard /></CultivationErrorBoundary>} />
               <Route path="/cultivation-plants" element={<CultivationErrorBoundary><PlantGroupsList /></CultivationErrorBoundary>} />
-              <Route path="/cultivation-harvest" element={<CultivationErrorBoundary><HarvestSessionsList /></CultivationErrorBoundary>} />
-              <Route path="/cultivation-binning" element={<CultivationErrorBoundary><BinningSessionsView /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-harvest" element={<CultivationErrorBoundary><HarvestPipeline /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-binning" element={<Navigate to="/cultivation-harvest" replace />} />
               <Route path="/cultivation-schedules" element={<CultivationErrorBoundary><SchedulesPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-task-settings" element={<CultivationErrorBoundary><TaskSettingsPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-taskboard" element={<CultivationErrorBoundary><DailyTaskBoard /></CultivationErrorBoundary>} />
@@ -233,8 +235,8 @@ function AuthenticatedApp() {
               <Route path="/pipeline-planner" element={<HubPipelinePlanner />} />
               <Route path="/hub-strain-analytics" element={<HubStrainYieldAnalytics />} />
               <Route path="/coa-timeline" element={<COATimelineView />} />
-              <Route path="/cultivation-hub" element={<CultivationErrorBoundary><CultivationTodayView /></CultivationErrorBoundary>} />
-              <Route path="/cultivation-analytics" element={<CultivationErrorBoundary><CultivationHub /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-hub" element={<Navigate to="/cultivation-command-center" replace />} />
+              <Route path="/cultivation-analytics" element={<Navigate to="/cultivation-command-center" replace />} />
               <Route path="/post-production-hub" element={<PostProductionHub />} />
               <Route path="/inventory-hub" element={<InventoryHub />} />
               <Route path="/sales-hub" element={<SalesHub />} />
@@ -330,6 +332,7 @@ function AppContent() {
       <Route path="/coa-library" element={<COALibrary />} />
       <Route path="/menu" element={<PublicMenu />} />
       <Route path="/landing" element={<LandingPage />} />
+      <Route path="/berlin" element={<BerlinLandingPage />} />
       <Route path="/production-planner" element={<ProductionPlanner />} />
       
       <Route path="/worker/*" element={<WorkerApp />} />

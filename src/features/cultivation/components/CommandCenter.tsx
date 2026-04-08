@@ -6,22 +6,23 @@
  * See context DB: cultops_design_philosophy, design_language_master
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   Sprout, ClipboardList, AlertTriangle, Plus,
   CheckCircle2, Clock, ChevronLeft, ChevronRight, ChevronDown, X, Wheat,
-  ArrowRightLeft, Skull, Printer, Users, CalendarDays, GripVertical,
+  ArrowRightLeft, Skull, Printer, Users, CalendarDays, GripVertical, Zap,
 } from 'lucide-react';
 import { useRoomOperationalState, type RoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../hooks/useDailyTasks';
 import { usePlantGroups } from '../hooks/usePlantGroups';
 import { useGrowRooms } from '../hooks/useGrowRooms';
 import { useFeedProgramRecipe } from '../hooks/useFeedProgramRecipe';
+import { useTaskAssignments } from '../hooks/useTaskAssignments';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { cultivationService } from '../services';
 import { getTaskTypeConfig } from '../types';
-import type { DailyTaskInstance, PlantGroup, IndividualPlant, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, StrainCount } from '../types';
+import type { DailyTaskInstance, TaskAssignment, PlantGroup, IndividualPlant, RoomTable, SplitAndMoveInput, SplitAndMoveMultiInput, StrainCount } from '../types';
 import type { SectionOccupancy } from '../types';
 import type { TaskCardData } from './TaskCard';
 import { TaskCompletionForm } from './TaskCompletionForm';
@@ -30,7 +31,7 @@ import { PlantsByStrainCompact, PlantsByStrainExpanded } from './PlantsByStrain'
 import { DeadPlantForm } from './DeadPlantForm';
 import { PlantGroupLabelPrintModal } from './PlantGroupLabelPrintModal';
 import { usePlantGroupLabel } from '../hooks/usePlantGroupLabel';
-import { useGenerateTasksFromSchedules } from '../hooks/useGenerateTasksFromSchedules';
+import { useGenerateTasksFromSchedules, type ProjectedTaskEntry } from '../hooks/useGenerateTasksFromSchedules';
 import { useTaskSchedules } from '../hooks/useTaskSchedules';
 import { doesScheduleFireOnDate } from '../utils/scheduleResolution';
 import { HarvestWorkflow } from './harvest';
@@ -147,13 +148,49 @@ interface LaborOverviewProps {
 }
 
 function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: LaborOverviewProps) {
+  const [selectedDay, setSelectedDay] = useState(0);
+  const [projectedTasks, setProjectedTasks] = useState<ProjectedTaskEntry[]>([]);
+  const { projectDays, projecting } = useGenerateTasksFromSchedules();
+  const { rooms } = useGrowRooms();
+
+  // Compute the 7 dates for the current week (Mon-Sun)
+  const weekDates = useMemo(() => {
+    const dates: Array<{ dateStr: string; label: string; isToday: boolean; fullDay: string }> = [];
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+
+    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const fullDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = d.toISOString().slice(0, 10);
+      dates.push({
+        dateStr,
+        label: dayLabels[i],
+        isToday: dateStr === todayIso(),
+        fullDay: fullDayNames[i],
+      });
+    }
+    return dates;
+  }, []);
+
+  // Find the index of today within the week
+  const todayIndex = useMemo(() => weekDates.findIndex(wd => wd.isToday), [weekDates]);
+
+  // Whether we're viewing today
+  const isViewingToday = weekDates[selectedDay]?.isToday ?? false;
+
+  // --- Today's actual task stats ---
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
   const pendingTasks = tasks.length - completedTasks - inProgressTasks;
   const assignedTasks = tasks.filter(t => t.assigned_to).length;
   const unassignedTasks = tasks.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'skipped').length;
 
-  // Group tasks by task type for the summary strip
+  // Group tasks by task type for the summary strip (today only)
   const taskTypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     tasks.forEach(t => {
@@ -164,7 +201,41 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
       .map(([type, count]) => ({ type, count, config: getTaskTypeConfig(type) }));
   }, [tasks]);
 
-  // Group by room for breakdown
+  // --- Projected task stats (non-today) ---
+  const projectedTypeCounts = useMemo(() => {
+    if (isViewingToday) return [];
+    const counts: Record<string, number> = {};
+    projectedTasks.forEach(t => {
+      counts[t.taskType] = (counts[t.taskType] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([type, count]) => ({ type, count, config: getTaskTypeConfig(type) }));
+  }, [projectedTasks, isViewingToday]);
+
+  const projectedRoomBreakdown = useMemo(() => {
+    if (isViewingToday) return [];
+    const roomMap = new Map<string, { code: string; type: string; total: number; taskTypes: string[] }>();
+    for (const pt of projectedTasks) {
+      const room = rooms.find(r => r.id === pt.roomId);
+      if (!room) continue;
+      const existing = roomMap.get(room.room_code);
+      if (existing) {
+        existing.total++;
+        if (!existing.taskTypes.includes(pt.taskType)) existing.taskTypes.push(pt.taskType);
+      } else {
+        roomMap.set(room.room_code, {
+          code: room.room_code,
+          type: room.room_type,
+          total: 1,
+          taskTypes: [pt.taskType],
+        });
+      }
+    }
+    return [...roomMap.values()].sort((a, b) => b.total - a.total || a.code.localeCompare(b.code));
+  }, [projectedTasks, rooms, isViewingToday]);
+
+  // Group by room for breakdown (today)
   const roomBreakdown = useMemo(() => {
     const roomMap = new Map<string, { code: string; type: string; total: number; assigned: number; done: number }>();
     for (const room of opsRooms) {
@@ -187,7 +258,7 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
     });
   }, [tasks, opsRooms]);
 
-  // Staff task counts
+  // Staff task counts (today only)
   const staffBreakdown = useMemo(() => {
     const counts = new Map<string, number>();
     tasks.forEach(t => {
@@ -202,6 +273,15 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
   const progressPct = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
   const inProgressPct = tasks.length > 0 ? (inProgressTasks / tasks.length) * 100 : 0;
 
+  // Dynamic header title
+  const headerTitle = isViewingToday
+    ? "Today's Workload"
+    : `${weekDates[selectedDay]?.fullDay ?? ''}'s Workload`;
+
+  // Active display counts
+  const displayTaskCount = isViewingToday ? tasks.length : projectedTasks.length;
+  const displayTypeCounts = isViewingToday ? taskTypeCounts : projectedTypeCounts;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -212,7 +292,7 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white/80">Today's Workload</h3>
+        <h3 className="text-sm font-semibold text-white/80">{headerTitle}</h3>
         <button
           type="button"
           onClick={onClose}
@@ -222,10 +302,40 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
         </button>
       </div>
 
+      {/* Week day selector */}
+      <div className="flex gap-1">
+        {weekDates.map((wd, i) => (
+          <button
+            key={wd.dateStr}
+            type="button"
+            onClick={() => {
+              setSelectedDay(i);
+              if (!wd.isToday) {
+                projectDays(wd.dateStr, 1).then(result => setProjectedTasks(result));
+              }
+            }}
+            className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-all active:scale-95 ${
+              selectedDay === i
+                ? 'bg-white/10 text-white/70 border border-white/15'
+                : 'text-white/25 hover:bg-white/5'
+            } ${wd.isToday ? 'font-semibold' : ''}`}
+          >
+            {wd.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Loading state for projections */}
+      {projecting && !isViewingToday && (
+        <div className="flex items-center justify-center py-2">
+          <span className="text-[10px] text-white/30 animate-pulse">Projecting tasks...</span>
+        </div>
+      )}
+
       {/* Task type summary strip */}
-      {taskTypeCounts.length > 0 && (
+      {displayTypeCounts.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {taskTypeCounts.map(({ type, count, config }) => (
+          {displayTypeCounts.map(({ type, count, config }) => (
             <span
               key={type}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border"
@@ -239,37 +349,40 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
             </span>
           ))}
           <span className="inline-flex items-center px-2.5 py-1 text-[11px] text-white/30">
-            {tasks.length} total
+            {displayTaskCount} total
+            {!isViewingToday && <span className="ml-1 text-white/20">(projected)</span>}
           </span>
         </div>
       )}
 
-      {/* Progress bar */}
-      <div className="space-y-1.5">
-        <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden flex">
-          <div
-            className="h-full bg-emerald-500 transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
-          />
-          <div
-            className="h-full bg-sky-500/60 transition-all duration-500"
-            style={{ width: `${inProgressPct}%` }}
-          />
+      {/* Progress bar — only for today (actual data) */}
+      {isViewingToday && (
+        <div className="space-y-1.5">
+          <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden flex">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${progressPct}%` }}
+            />
+            <div
+              className="h-full bg-sky-500/60 transition-all duration-500"
+              style={{ width: `${inProgressPct}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-white/30">
+            <span><span className="text-emerald-400">{completedTasks}</span> done</span>
+            {inProgressTasks > 0 && <span><span className="text-sky-400">{inProgressTasks}</span> in progress</span>}
+            <span>{pendingTasks} pending</span>
+            <span className="mx-1">·</span>
+            <span>{assignedTasks} assigned</span>
+            {unassignedTasks > 0 && (
+              <span className="text-amber-300">{unassignedTasks} unassigned</span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-white/30">
-          <span><span className="text-emerald-400">{completedTasks}</span> done</span>
-          {inProgressTasks > 0 && <span><span className="text-sky-400">{inProgressTasks}</span> in progress</span>}
-          <span>{pendingTasks} pending</span>
-          <span className="mx-1">·</span>
-          <span>{assignedTasks} assigned</span>
-          {unassignedTasks > 0 && (
-            <span className="text-amber-300">{unassignedTasks} unassigned</span>
-          )}
-        </div>
-      </div>
+      )}
 
-      {/* Room breakdown */}
-      {roomBreakdown.length > 0 && (
+      {/* Room breakdown — today (actual) */}
+      {isViewingToday && roomBreakdown.length > 0 && (
         <div className="bg-white/[0.04] backdrop-blur-[8px] border border-white/[0.06] rounded-xl overflow-hidden">
           {roomBreakdown.map((room, i) => {
             const stage = getStageColor(room.type);
@@ -301,8 +414,40 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
         </div>
       )}
 
-      {/* Crew strip */}
-      {staffBreakdown.length > 0 && (
+      {/* Room breakdown — projected (non-today) */}
+      {!isViewingToday && projectedRoomBreakdown.length > 0 && (
+        <div className="bg-white/[0.04] backdrop-blur-[8px] border border-white/[0.06] rounded-xl overflow-hidden">
+          {projectedRoomBreakdown.map((room, i) => {
+            const stage = getStageColor(room.type);
+            return (
+              <button
+                key={room.code}
+                type="button"
+                onClick={() => { onRoomClick(room.code); onClose(); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/[0.04] transition-colors active:scale-[0.99] ${
+                  i < projectedRoomBreakdown.length - 1 ? 'border-b border-white/[0.04]' : ''
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: stage.base }} />
+                <span className="font-mono text-xs text-white/70 w-16">{room.code}</span>
+                <span className="text-xs text-white/40">
+                  {room.total} task{room.total !== 1 ? 's' : ''}
+                </span>
+                <div className="flex-1" />
+                <span className="text-[10px] text-white/20">
+                  {room.taskTypes.map(t => getTaskTypeConfig(t).label).join(', ')}
+                </span>
+              </button>
+            );
+          })}
+          <div className="px-4 py-1.5 border-t border-white/[0.04]">
+            <span className="text-[9px] text-white/20 uppercase tracking-wider">projected</span>
+          </div>
+        </div>
+      )}
+
+      {/* Crew strip — today only */}
+      {isViewingToday && staffBreakdown.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap">
           <Users className="w-3 h-3 text-white/20 mr-1" />
           {staffBreakdown.map(s => (
@@ -318,8 +463,11 @@ function LaborOverviewPanel({ tasks, opsRooms, staff, onRoomClick, onClose }: La
         </div>
       )}
 
-      {tasks.length === 0 && (
+      {isViewingToday && tasks.length === 0 && (
         <p className="text-xs text-white/20 text-center py-4">No tasks scheduled for today</p>
+      )}
+      {!isViewingToday && !projecting && projectedTasks.length === 0 && (
+        <p className="text-xs text-white/20 text-center py-4">No tasks projected for {weekDates[selectedDay]?.fullDay ?? 'this day'}</p>
       )}
     </motion.div>
   );
@@ -929,7 +1077,7 @@ function AttentionStrip({ opsRooms, onRoomClick }: {
 // SCREEN 2: Expanded Room View
 // ═══════════════════════════════════════════════════════════════
 
-function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onCreateTask, onMoveToRoom, onSplitAndMove, onSplitAndMoveMultiple, onBack }: {
+function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onCompleteWithLog, onAssignWorker, onCreateTask, onMoveToRoom, onSplitAndMove, onSplitAndMoveMultiple, onAdvanceStage, onBack }: {
   state: RoomOperationalState;
   tasks: DailyTaskInstance[];
   groups: PlantGroup[];
@@ -941,6 +1089,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   onMoveToRoom: (groupId: string, toRoomId: string) => Promise<void>;
   onSplitAndMove: (input: SplitAndMoveInput) => Promise<void>;
   onSplitAndMoveMultiple: (input: SplitAndMoveMultiInput) => Promise<void>;
+  onAdvanceStage: (groupId: string, toStage: 'clone' | 'veg' | 'flower' | 'harvested') => Promise<void>;
   onBack: () => void;
 }) {
   const roomTasks = useMemo(() => tasks.filter(t => t.room_id === state.room_id), [tasks, state.room_id]);
@@ -956,6 +1105,8 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   const [sectionActionGroups, setSectionActionGroups] = useState<PlantGroup[] | null>(null);
   const [showSectionKill, setShowSectionKill] = useState(false);
   const [showSectionPrint, setShowSectionPrint] = useState(false);
+  const [advancingGroups, setAdvancingGroups] = useState<PlantGroup[] | null>(null);
+  const [advanceLoading, setAdvanceLoading] = useState(false);
   const {
     isOpen: sectionLabelIsOpen, isLoading: sectionLabelIsLoading, isPrinting: sectionLabelIsPrinting,
     labelData: sectionLabelData, logoDataUrl: sectionLogoDataUrl, error: sectionLabelError,
@@ -963,9 +1114,28 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   } = usePlantGroupLabel();
   const { staff: activeStaff } = useActiveStaff();
   const { schedules: roomSchedules } = useTaskSchedules(state.room_id);
+  const taskIds = useMemo(() => roomTasks.map(t => t.id), [roomTasks]);
+  const { assignments, assignToTask, promoteToLead, getForTask } = useTaskAssignments({ taskIds });
   const doneTasks = roomTasks.filter(t => t.status === 'completed').length;
   const dayCount = state.room_type === 'flower' ? state.days_since_flip : state.days_in_stage;
   const harvestDays = state.section_days_to_harvest ?? state.days_to_harvest;
+
+  const NEXT_STAGE: Record<string, 'veg' | 'flower' | null> = { clone: 'veg', veg: 'flower', flower: null };
+
+  const handleAdvance = useCallback(async () => {
+    if (!advancingGroups || advanceLoading) return;
+    setAdvanceLoading(true);
+    try {
+      for (const g of advancingGroups) {
+        const next = NEXT_STAGE[g.growth_stage];
+        if (next) await onAdvanceStage(g.id, next);
+      }
+    } finally {
+      setAdvanceLoading(false);
+      setAdvancingGroups(null);
+      setSectionActionGroups(null);
+    }
+  }, [advancingGroups, advanceLoading, onAdvanceStage]);
   const color = statusColor(state.urgency_score);
   const stage = getStageColor(state.room_type);
   const headerColor = state.urgency_score >= 2 ? color : stage.base;
@@ -1097,6 +1267,10 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                             setShowSectionPrint(true);
                           }
                         }}
+                        onAdvanceGroups={(grps) => {
+                          setSectionActionGroups(grps);
+                          setAdvancingGroups(grps);
+                        }}
                       />
                     </div>
                   )}
@@ -1192,8 +1366,13 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
 
                   <TaskChecklist
                     tasks={roomTasks}
+                    assignments={assignments}
+                    staff={activeStaff ?? []}
                     onUpdateStatus={onUpdateTaskStatus}
                     onOpenCompletion={(task) => setCompletingTask(task)}
+                    onAssignToTask={assignToTask}
+                    onPromoteToLead={promoteToLead}
+                    getForTask={getForTask}
                   />
                 </motion.div>
               )}
@@ -1488,6 +1667,57 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
           onPrint={sectionPrintLabels}
         />
       )}
+
+      {/* Advance stage confirmation dialog */}
+      <AnimatePresence>
+        {advancingGroups && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setAdvancingGroups(null)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className={`relative ${GLASS_ELEVATED} p-5 max-w-sm w-full space-y-4`}
+            >
+              <h3 className="text-sm font-semibold text-white/80">Advance Stage</h3>
+              <p className="text-xs text-white/40">
+                Advance {advancingGroups.reduce((sum, g) => sum + g.plant_count, 0)} plants to the next growth stage?
+              </p>
+              <div className="space-y-1">
+                {advancingGroups.map(g => {
+                  const next = NEXT_STAGE[g.growth_stage];
+                  return (
+                    <div key={g.id} className="flex items-center justify-between text-[11px] px-2 py-1 rounded-lg bg-white/[0.03]">
+                      <span className="text-white/40">{g.strains?.abbreviation ?? 'Unknown'} ({g.plant_count})</span>
+                      <span className="text-white/50">{g.growth_stage} <span className="text-emerald-400">&rarr;</span> {next ?? 'N/A'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {advancingGroups.some(g => !NEXT_STAGE[g.growth_stage]) && (
+                <p className="text-[10px] text-amber-400/60">Some groups are already at flower stage and cannot be advanced further.</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdvancingGroups(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/40 text-xs active:scale-95 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAdvance}
+                  disabled={advanceLoading || advancingGroups.every(g => !NEXT_STAGE[g.growth_stage])}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  {advanceLoading ? 'Advancing...' : 'Advance'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -1539,10 +1769,15 @@ function InlineAddTask({ roomId, onAdd, onCancel }: {
 // Task Checklist
 // ═══════════════════════════════════════════════════════════════
 
-function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
+function TaskChecklist({ tasks, assignments, staff, onUpdateStatus, onOpenCompletion, onAssignToTask, onPromoteToLead, getForTask }: {
   tasks: DailyTaskInstance[];
+  assignments: TaskAssignment[];
+  staff: Array<{ id: string; first_name: string; last_name?: string }>;
   onUpdateStatus: (id: string, status: string) => void;
   onOpenCompletion: (task: DailyTaskInstance) => void;
+  onAssignToTask: (taskId: string, staffId: string) => Promise<void>;
+  onPromoteToLead: (taskId: string, staffId: string) => Promise<void>;
+  getForTask: (taskId: string) => TaskAssignment[];
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -1564,6 +1799,8 @@ function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
       {sorted.map(task => {
         const config = getTaskTypeConfig(task.task_type);
         const isExpanded = expandedId === task.id;
+        const taskAssignments = getForTask(task.id);
+        const crewCount = taskAssignments.length;
 
         return (
           <motion.div key={task.id} variants={tileVariants}>
@@ -1608,9 +1845,35 @@ function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
                 {config.label}
               </span>
 
-              {/* Status hint */}
-              {task.status === 'pending' && (
-                <span className="text-[10px] text-white/15 opacity-0 group-hover:opacity-100 transition-opacity">tap to start</span>
+              {/* Crew strip — compact avatar circles */}
+              {crewCount > 0 && (
+                <div className="flex items-center -space-x-1.5 flex-shrink-0">
+                  {taskAssignments.slice(0, 3).map((a) => (
+                    <div
+                      key={a.id}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                        a.role === 'lead'
+                          ? 'border-2 border-amber-400/50 bg-amber-500/20 text-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.3)]'
+                          : 'border border-white/20 bg-white/10 text-white/60'
+                      }`}
+                      title={`${a.staff?.first_name ?? '?'} (${a.role})`}
+                    >
+                      {a.staff?.first_name?.[0] ?? '?'}
+                    </div>
+                  ))}
+                  {crewCount > 3 && (
+                    <div className="w-6 h-6 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-[9px] text-white/30">
+                      +{crewCount - 3}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Unassigned indicator */}
+              {crewCount === 0 && task.status !== 'completed' && task.status !== 'skipped' && (
+                <span className="text-[10px] text-white/15 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isExpanded ? '' : 'assign crew'}
+                </span>
               )}
             </button>
 
@@ -1624,7 +1887,15 @@ function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <TaskExpandedDetail task={task} onUpdateStatus={onUpdateStatus} onOpenCompletion={onOpenCompletion} />
+                  <TaskExpandedDetail
+                    task={task}
+                    taskAssignments={taskAssignments}
+                    staff={staff}
+                    onUpdateStatus={onUpdateStatus}
+                    onOpenCompletion={onOpenCompletion}
+                    onAssignToTask={onAssignToTask}
+                    onPromoteToLead={onPromoteToLead}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1635,12 +1906,30 @@ function TaskChecklist({ tasks, onUpdateStatus, onOpenCompletion }: {
   );
 }
 
-function TaskExpandedDetail({ task, onUpdateStatus, onOpenCompletion }: {
+function TaskExpandedDetail({ task, taskAssignments, staff, onUpdateStatus, onOpenCompletion, onAssignToTask, onPromoteToLead }: {
   task: DailyTaskInstance;
+  taskAssignments: TaskAssignment[];
+  staff: Array<{ id: string; first_name: string; last_name?: string }>;
   onUpdateStatus: (id: string, status: string) => void;
   onOpenCompletion: (task: DailyTaskInstance) => void;
+  onAssignToTask: (taskId: string, staffId: string) => Promise<void>;
+  onPromoteToLead: (taskId: string, staffId: string) => Promise<void>;
 }) {
   const hasForm = ['ipm_spray', 'batch_tank_mix', 'defoliation', 'cleaning', 'scouting', 'training', 'custom', 'saturation_check', 'irrigation_audit'].includes(task.task_type);
+  const assignedIds = new Set(taskAssignments.map(a => a.staff_id));
+  const lastClickRef = useRef<{ staffId: string; time: number }>({ staffId: '', time: 0 });
+
+  const handleStaffClick = useCallback((staffId: string) => {
+    const now = Date.now();
+    const last = lastClickRef.current;
+    // Double-click detection (within 400ms, same person)
+    if (last.staffId === staffId && now - last.time < 400 && assignedIds.has(staffId)) {
+      onPromoteToLead(task.id, staffId);
+    } else {
+      onAssignToTask(task.id, staffId);
+    }
+    lastClickRef.current = { staffId, time: now };
+  }, [task.id, assignedIds, onAssignToTask, onPromoteToLead]);
 
   return (
     <div className="ml-11 mb-2 p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
@@ -1676,6 +1965,54 @@ function TaskExpandedDetail({ task, onUpdateStatus, onOpenCompletion }: {
           )}
         </div>
       </div>
+
+      {/* Crew assignment bar */}
+      {task.status !== 'completed' && task.status !== 'skipped' && staff.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Users className="w-3.5 h-3.5 text-white/30" />
+            <span className="text-[10px] text-white/30 uppercase tracking-wider">Crew</span>
+            {taskAssignments.length > 0 && (
+              <span className="text-[10px] text-white/20">{taskAssignments.length} assigned</span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {staff.map(s => {
+              const assignment = taskAssignments.find(a => a.staff_id === s.id);
+              const isAssigned = !!assignment;
+              const isLead = assignment?.role === 'lead';
+
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleStaffClick(s.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-95 ${
+                    isLead
+                      ? 'bg-amber-500/20 border border-amber-400/30 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]'
+                      : isAssigned
+                      ? 'bg-white/10 border border-white/20 text-white/70'
+                      : 'bg-white/[0.03] border border-white/[0.06] text-white/30 hover:bg-white/[0.06] hover:text-white/50'
+                  }`}
+                  title={isAssigned ? `${s.first_name} (${assignment!.role}) — double-click to make lead` : `Click to assign ${s.first_name}`}
+                >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                    isLead
+                      ? 'bg-amber-500/30 text-amber-200'
+                      : isAssigned
+                      ? 'bg-white/15 text-white/60'
+                      : 'bg-white/5 text-white/20'
+                  }`}>
+                    {s.first_name[0]}
+                  </div>
+                  {s.first_name}
+                  {isLead && <span className="text-[8px] text-amber-400/60 ml-0.5">LEAD</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {task.notes && <p className="text-xs text-white/40">{task.notes}</p>}
 
@@ -1743,7 +2080,7 @@ function CellHoverPopover({ strainCounts, totalPlants, tableNum, sectionLabel }:
 }
 
 // Pinned cell popover — click-to-pin with plant IDs accordion + actions
-function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel, groups, onMove, onKill, onPrint, onClose }: {
+function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel, groups, onMove, onKill, onPrint, onAdvance, onClose }: {
   sectionId: string;
   strainCounts: Array<{ abbreviation: string; count: number }>;
   totalPlants: number;
@@ -1753,6 +2090,7 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
   onMove: (groups: PlantGroup[]) => void;
   onKill: (groups: PlantGroup[]) => void;
   onPrint: (groups: PlantGroup[]) => void;
+  onAdvance?: (groups: PlantGroup[]) => void;
   onClose: () => void;
 }) {
   const [expandedStrain, setExpandedStrain] = useState<string | null>(null);
@@ -1888,6 +2226,15 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
             >
               <Printer className="w-3 h-3" /> Print
             </button>
+            {onAdvance && (
+              <button
+                type="button"
+                onClick={() => onAdvance(groups)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 text-[10px] font-medium hover:bg-emerald-500/20 transition-all active:scale-95"
+              >
+                <Zap className="w-3 h-3" /> Advance
+              </button>
+            )}
           </div>
         )}
       </motion.div>
@@ -1897,7 +2244,7 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
   );
 }
 
-function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onKillGroups, onPrintGroups }: {
+function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onKillGroups, onPrintGroups, onAdvanceGroups }: {
   roomId: string;
   compact?: boolean;
   inline?: boolean;
@@ -1906,6 +2253,7 @@ function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onK
   onMoveGroups?: (groups: PlantGroup[]) => void;
   onKillGroups?: (groups: PlantGroup[]) => void;
   onPrintGroups?: (groups: PlantGroup[]) => void;
+  onAdvanceGroups?: (groups: PlantGroup[]) => void;
 }) {
   const [tables, setTables] = useState<RoomTable[]>([]);
   const [occupancy, setOccupancy] = useState<Map<string, SectionOccupancy>>(new Map());
@@ -2030,6 +2378,7 @@ function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onK
                         onMove={onMoveGroups}
                         onKill={onKillGroups}
                         onPrint={onPrintGroups}
+                        onAdvance={onAdvanceGroups}
                         onClose={() => setPinnedSectionId(null)}
                       />
                     )}
@@ -2472,7 +2821,7 @@ function QuickAddTask({ roomId, roomCode, staff, onAdd, onClose }: {
 export function CommandCenter() {
   const { rooms: opsRooms, loading } = useRoomOperationalState();
   const { rooms: growRooms } = useGrowRooms();
-  const { groups: allGroups, moveToRoom, splitAndMoveToRoom, splitAndMoveMultipleToRoom } = usePlantGroups({ stage: 'active' });
+  const { groups: allGroups, moveToRoom, splitAndMoveToRoom, splitAndMoveMultipleToRoom, advanceStage, reload: reloadGroups } = usePlantGroups({ stage: 'active' });
   const today = todayIso();
   const { tasks, updateStatus, completeWithLog, assignWorker, createTask, refetch: refetchTasks } = useDailyTasks(today);
   const { staff: allStaff } = useActiveStaff();
@@ -2588,6 +2937,7 @@ export function CommandCenter() {
             onMoveToRoom={async (groupId, toRoomId) => { await moveToRoom(groupId, toRoomId); }}
             onSplitAndMove={async (input) => { await splitAndMoveToRoom(input); }}
             onSplitAndMoveMultiple={async (input) => { await splitAndMoveMultipleToRoom(input); }}
+            onAdvanceStage={async (groupId, toStage) => { await advanceStage(groupId, toStage); await reloadGroups(); }}
             onBack={() => setSelectedRoomCode(null)}
           />
         ) : (

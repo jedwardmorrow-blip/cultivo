@@ -1,3 +1,4 @@
+export { ProductionCommandCenter } from './components/production';
 export { ProductionDashboard } from './components/ProductionDashboard';
 export { ProductionHub } from './components/ProductionHub';
 export { SessionsHub } from './components/SessionsHub';

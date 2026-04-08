@@ -259,6 +259,22 @@ export const harvestSessionsService = {
       }
     }
 
+    // C) Event-driven completion: auto-complete harvest tasks for this room
+    if (session.grow_room_id) {
+      const { error: taskError } = await supabase
+        .from('daily_task_instances')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('room_id', session.grow_room_id)
+        .eq('task_type', 'harvest')
+        .in('status', ['pending', 'in_progress']);
+      if (taskError) {
+        console.error('Failed to auto-complete harvest tasks:', taskError);
+      }
+    }
+
     return session;
   },
 

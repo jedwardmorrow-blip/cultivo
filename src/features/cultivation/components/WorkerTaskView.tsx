@@ -16,12 +16,12 @@ import {
   ArrowRightLeft, Search, Sparkles, GitBranch, Wrench, Wheat,
   CircleDot, User, Beaker, Flame, PenLine, X, Send,
 } from 'lucide-react';
-import { useDailyTasks, useGrowRooms } from '../hooks';
+import { useDailyTasks, useGrowRooms, useAttendance, useTaskAssignments } from '../hooks';
 import { useActiveStaff } from '@features/sessions/hooks/useActiveStaff';
 import { useRoomOperationalState } from '../hooks/useRoomOperationalState';
 import { useWorkerStats } from '../hooks/useWorkerStats';
 import { TASK_TYPE_CONFIG, getTaskTypeConfig } from '../types';
-import type { TaskType, TaskStatus } from '../types';
+import type { TaskType, TaskStatus, TaskAssignment } from '../types';
 import { TaskCompletionForm } from './TaskCompletionForm';
 import type { TaskCardData } from './TaskCard';
 import { todayIso } from '../utils/dateUtils';
@@ -77,7 +77,13 @@ function timeGreeting(): string {
 // Worker Selector — first screen
 // ═══════════════════════════════════════════════════════════════
 
-function WorkerSelector({ staff, onSelect }: { staff: WorkerIdentity[]; onSelect: (id: string) => void }) {
+function WorkerSelector({ staff, onSelect, attendance, taskCounts, onToggleAttendance }: {
+  staff: WorkerIdentity[];
+  onSelect: (id: string) => void;
+  attendance: { staff_id: string; is_present: boolean }[];
+  taskCounts: Map<string, { total: number; completed: number; rooms: Set<string> }>;
+  onToggleAttendance: (staffId: string, isPresent: boolean) => Promise<void>;
+}) {
   return (
     <div className={`min-h-screen ${PAGE_BG} flex flex-col`}>
       <div className="px-6 pt-12 pb-6">
@@ -85,25 +91,65 @@ function WorkerSelector({ staff, onSelect }: { staff: WorkerIdentity[]; onSelect
         <p className="text-xs text-white/40 mt-1">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
-        <p className="text-sm text-white/50 mt-3">Who's clocking in?</p>
+        <p className="text-sm text-white/50 mt-3">Who&apos;s clocking in?</p>
       </div>
       <div className="flex-1 px-4 pb-8">
         <div className="grid grid-cols-2 gap-3">
-          {staff.map((s) => (
-            <motion.button
-              key={s.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: staff.indexOf(s) * 0.05 }}
-              onClick={() => onSelect(s.id)}
-              className={`${GLASS_CARD} flex flex-col items-center justify-center gap-2.5 p-6 active:scale-[0.97] transition-all duration-200 min-h-[110px] hover:bg-white/[0.09] hover:border-white/[0.14]`}
-            >
-              <span className="w-12 h-12 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-lg font-bold text-emerald-300">
-                {s.first_name.charAt(0)}
-              </span>
-              <span className="text-sm font-medium text-white/70">{s.first_name}</span>
-            </motion.button>
-          ))}
+          {staff.map((s) => {
+            const isPresent = attendance.some(a => a.staff_id === s.id && a.is_present);
+            const tasks = taskCounts.get(s.id);
+            const roomList = tasks ? [...tasks.rooms].slice(0, 3).join(', ') : '';
+            const hasTasksButOff = !isPresent && tasks && tasks.total > 0;
+
+            return (
+              <motion.button
+                key={s.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: staff.indexOf(s) * 0.05 }}
+                onClick={() => {
+                  onSelect(s.id);
+                  if (!isPresent) onToggleAttendance(s.id, true);
+                }}
+                className={`${GLASS_CARD} relative flex flex-col items-center justify-center gap-2 p-5 active:scale-[0.97] transition-all duration-200 min-h-[130px] hover:bg-white/[0.09] hover:border-white/[0.14] ${!isPresent ? 'opacity-40' : ''} ${hasTasksButOff ? 'border-amber-500/20' : ''}`}
+              >
+                {/* Attendance toggle badge */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleAttendance(s.id, !isPresent); }}
+                  className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    isPresent
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20'
+                      : 'bg-white/5 text-white/20 border border-white/10'
+                  }`}
+                >
+                  {isPresent ? '\u2713' : '\u2717'}
+                </button>
+
+                {/* Avatar */}
+                <span className={`w-12 h-12 rounded-full ${isPresent ? 'bg-emerald-500/15 border-emerald-500/20' : 'bg-white/5 border-white/10'} border flex items-center justify-center text-lg font-bold ${isPresent ? 'text-emerald-300' : 'text-white/30'}`}>
+                  {s.first_name.charAt(0)}
+                </span>
+
+                {/* Name */}
+                <span className="text-sm font-medium text-white/70">{s.first_name}</span>
+
+                {/* Task info */}
+                {tasks && tasks.total > 0 && (
+                  <div className="text-[10px] text-white/30">
+                    {tasks.total} tasks &middot; {tasks.completed} done
+                  </div>
+                )}
+                {roomList && (
+                  <div className="text-[9px] text-white/20 font-mono truncate max-w-full px-1">{roomList}</div>
+                )}
+
+                {/* Amber dot for off-duty workers with assigned tasks */}
+                {hasTasksButOff && (
+                  <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-amber-400/60" />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -239,10 +285,14 @@ function RoomContextCard({ roomCode, roomType, dayCount, totalDays, plantCount, 
 // Task Row — glass styled with inline feed preview
 // ═══════════════════════════════════════════════════════════════
 
-function TaskRow({ task, roomName, feedPreview, onTap, onStart, onComplete }: {
+function TaskRow({ task, roomName, workerId, taskAssignments, leadAssignment, feedPreview, onToggleActivity, onTap, onStart, onComplete }: {
   task: TaskCardData;
   roomName: string;
+  workerId: string | null;
+  taskAssignments: TaskAssignment[];
+  leadAssignment: TaskAssignment | null;
   feedPreview?: { ec: number; phMin: number; phMax: number; products: string } | null;
+  onToggleActivity: (taskId: string, staffId: string) => Promise<void>;
   onTap: () => void;
   onStart: () => void;
   onComplete: () => void;
@@ -257,6 +307,16 @@ function TaskRow({ task, roomName, feedPreview, onTap, onStart, onComplete }: {
   const isInProgress = task.status === 'in_progress';
   const isDone = task.status === 'completed' || task.status === 'skipped';
   const isFeed = task.task_type === 'batch_tank_mix' || task.task_type === 'feeding';
+
+  // Multi-person crew info
+  const isSharedTask = taskAssignments.length > 1;
+  const myAssignment = workerId ? taskAssignments.find(a => a.staff_id === workerId) : null;
+  const isLead = myAssignment?.role === 'lead' || leadAssignment?.staff_id === workerId;
+  const crewNames = taskAssignments
+    .filter(a => a.staff_id !== workerId)
+    .sort((a, b) => (a.role === 'lead' ? -1 : b.role === 'lead' ? 1 : 0))
+    .map(a => a.staff?.first_name ?? '?');
+  const activeCount = taskAssignments.filter(a => a.is_active).length;
 
   return (
     <div className={`border-b border-white/[0.04] ${isDone ? 'opacity-30' : ''}`}>
@@ -279,6 +339,9 @@ function TaskRow({ task, roomName, feedPreview, onTap, onStart, onComplete }: {
             {task.status === 'carry_forward' && (
               <span className="text-[10px] text-amber-400 font-semibold">CARRIED</span>
             )}
+            {isLead && isSharedTask && (
+              <span className="text-[8px] text-amber-400/60 font-bold uppercase">Lead</span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 mt-1">
@@ -290,6 +353,18 @@ function TaskRow({ task, roomName, feedPreview, onTap, onStart, onComplete }: {
               </span>
             )}
           </div>
+
+          {/* Shared task crew line */}
+          {isSharedTask && !isDone && crewNames.length > 0 && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[10px] text-white/25">
+                with {crewNames.slice(0, 3).join(', ')}{crewNames.length > 3 ? ` +${crewNames.length - 3}` : ''}
+              </span>
+              {activeCount > 0 && (
+                <span className="text-[10px] text-emerald-400/60">{activeCount} of {taskAssignments.length} active</span>
+              )}
+            </div>
+          )}
 
           {/* Inline feed preview */}
           {isFeed && feedPreview && !isDone && (
@@ -319,13 +394,40 @@ function TaskRow({ task, roomName, feedPreview, onTap, onStart, onComplete }: {
               Start
             </button>
           )}
-          {isInProgress && (
+          {/* Complete button — lead only for shared tasks */}
+          {isInProgress && (!isSharedTask || isLead) && (
             <button
               onClick={(e) => { e.stopPropagation(); onComplete(); }}
               className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 active:scale-95 transition-all duration-200 min-h-[44px]"
             >
               <CheckCircle2 className="w-4 h-4" />
               Complete
+            </button>
+          )}
+          {/* Activity toggle — I'm In / Step Out */}
+          {isSharedTask && myAssignment && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (workerId) onToggleActivity(task.id, workerId);
+              }}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider rounded-xl active:scale-95 transition-all duration-200 min-h-[44px] ${
+                myAssignment.is_active
+                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
+                  : 'bg-white/[0.04] text-white/40 border border-white/[0.08] hover:bg-white/[0.06]'
+              }`}
+            >
+              {myAssignment.is_active ? (
+                <>
+                  <CircleDot className="w-4 h-4" />
+                  I&apos;m In
+                </>
+              ) : (
+                <>
+                  <Circle className="w-4 h-4" />
+                  Step Out
+                </>
+              )}
             </button>
           )}
         </div>
@@ -345,6 +447,9 @@ function RoomGroup({
   workerId,
   roomState,
   feedPreview,
+  getForTask,
+  getLeadForTask,
+  onToggleActivity,
   onTapTask,
   onStartTask,
   onCompleteTask,
@@ -355,6 +460,9 @@ function RoomGroup({
   workerId: string | null;
   roomState?: { dayCount: number | null; totalDays: number; plantCount: number; strainCount: number; harvestDays: number | null };
   feedPreview?: { ec: number; phMin: number; phMax: number; products: string } | null;
+  getForTask: (taskId: string) => TaskAssignment[];
+  getLeadForTask: (taskId: string) => TaskAssignment | null;
+  onToggleActivity: (taskId: string, staffId: string) => Promise<void>;
   onTapTask: (task: TaskCardData) => void;
   onStartTask: (taskId: string) => void;
   onCompleteTask: (task: TaskCardData) => void;
@@ -410,7 +518,11 @@ function RoomGroup({
               key={task.id}
               task={task}
               roomName={roomCode}
+              workerId={workerId}
+              taskAssignments={getForTask(task.id)}
+              leadAssignment={getLeadForTask(task.id)}
               feedPreview={feedPreview}
+              onToggleActivity={onToggleActivity}
               onTap={() => onTapTask(task)}
               onStart={() => onStartTask(task.id)}
               onComplete={() => onCompleteTask(task)}
@@ -557,6 +669,8 @@ export function WorkerTaskView() {
   const { tasks: dbTasks, completeWithLog, updateStatus, refetch: refetchTasks } = useDailyTasks(date);
   const { staff: activeStaff } = useActiveStaff();
   const { rooms: opsRooms } = useRoomOperationalState();
+  const { records: attendance, upsertAttendance } = useAttendance(date);
+  const { assignments, getForTask, getLeadForTask, toggleActivity } = useTaskAssignments({ taskDate: date });
 
   const rooms = useMemo(() =>
     dbRooms.map((r) => ({ id: r.id, name: r.name, room_type: r.room_type, room_code: r.room_code })),
@@ -603,12 +717,32 @@ export function WorkerTaskView() {
     [dbTasks, rooms, activeStaff]
   );
 
+  const workerTaskCounts = useMemo(() => {
+    const map = new Map<string, { total: number; completed: number; rooms: Set<string> }>();
+    for (const t of allTasks) {
+      if (!t.assigned_to) continue;
+      const entry = map.get(t.assigned_to) ?? { total: 0, completed: 0, rooms: new Set<string>() };
+      entry.total++;
+      if (t.status === 'completed') entry.completed++;
+      entry.rooms.add(t.room_name);
+      map.set(t.assigned_to, entry);
+    }
+    return map;
+  }, [allTasks]);
+
+  // Set of task IDs this worker is assigned to via task_assignments
+  const myAssignedTaskIds = useMemo(() => {
+    if (!workerId) return new Set<string>();
+    return new Set(assignments.filter(a => a.staff_id === workerId).map(a => a.task_id));
+  }, [assignments, workerId]);
+
   const visibleTasks = useMemo(() => {
     if (filter === 'mine' && workerId) {
-      return allTasks.filter((t) => t.assigned_to === workerId);
+      // Show tasks assigned via task_assignments OR legacy assigned_to
+      return allTasks.filter((t) => myAssignedTaskIds.has(t.id) || t.assigned_to === workerId);
     }
     return allTasks;
-  }, [allTasks, filter, workerId]);
+  }, [allTasks, filter, workerId, myAssignedTaskIds]);
 
   // Group by room with room metadata
   const tasksByRoom = useMemo(() => {
@@ -674,7 +808,17 @@ export function WorkerTaskView() {
 
   // Worker selector
   if (!workerId) {
-    return <WorkerSelector staff={cultStaff} onSelect={setWorkerId} />;
+    return (
+      <WorkerSelector
+        staff={cultStaff}
+        onSelect={setWorkerId}
+        attendance={attendance}
+        taskCounts={workerTaskCounts}
+        onToggleAttendance={async (staffId: string, isPresent: boolean) => {
+          await upsertAttendance({ staff_id: staffId, attendance_date: date, is_present: isPresent });
+        }}
+      />
+    );
   }
 
   // Completion form overlay
@@ -766,6 +910,9 @@ export function WorkerTaskView() {
               workerId={workerId}
               roomState={roomStateMap.get(roomCode)}
               feedPreview={null}
+              getForTask={getForTask}
+              getLeadForTask={getLeadForTask}
+              onToggleActivity={toggleActivity}
               onTapTask={handleTapTask}
               onStartTask={handleStart}
               onCompleteTask={handleOpenComplete}

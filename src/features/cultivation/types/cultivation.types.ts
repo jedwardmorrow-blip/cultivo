@@ -389,6 +389,27 @@ export type TaskType =
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'skipped' | 'carry_forward';
 
+export type TaskAssignmentRole = 'lead' | 'crew';
+export type CompletionMode = 'manual' | 'event_driven';
+export type TypicalDuration = '15m' | '30m' | '1h' | '2h' | '4h' | 'full_day';
+
+// Task Assignments — multi-person assignment tracking
+export interface TaskAssignment {
+  id: string;
+  task_id: string;
+  staff_id: string;
+  role: TaskAssignmentRole;
+  is_active: boolean;
+  joined_at: string | null;
+  left_at: string | null;
+  created_at: string;
+  // Join fields
+  staff?: { id: string; first_name: string; last_name: string };
+}
+
+export type CreateTaskAssignmentInput = Pick<TaskAssignment, 'task_id' | 'staff_id'> &
+  Partial<Pick<TaskAssignment, 'role'>>;
+
 export type AnnotationCategory = 'observation' | 'concern' | 'decision' | 'action_taken' | 'note';
 
 export type AnnotationSeverity = 'info' | 'warning' | 'critical';
