@@ -148,40 +148,32 @@ function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
   return chains;
 }
 
-// Fetch real road geometry for a chain: facility → stop1 → stop2 → ...
-async function fetchChainGeometry(stops: RouteStop[]): Promise<[number, number][] | null> {
+// Fetch real road geometry for each stop from facility (uses cached routes)
+async function fetchRouteGeometry(
+  stop: RouteStop,
+): Promise<[number, number][] | null> {
   try {
-    const allCoords: [number, number][] = [];
-
-    // Segment 1: facility → first stop
-    const firstResult = await getOrCalculateRoute(
+    const result = await getOrCalculateRoute(
       FACILITY_ID,
-      stops[0].customerId,
+      stop.customerId,
       FACILITY_COORDS,
-      { latitude: stops[0].lat, longitude: stops[0].lon },
+      { latitude: stop.lat, longitude: stop.lon },
     );
-    if (firstResult.geometry && typeof firstResult.geometry === 'string') {
-      const decoded = decodePolyline(firstResult.geometry);
-      for (const [lat, lng] of decoded) allCoords.push([lng, lat]); // flip to [lng, lat] for MapLibre
-    }
 
-    // Remaining segments: stop[i] → stop[i+1]
-    for (let i = 0; i < stops.length - 1; i++) {
-      const segResult = await getOrCalculateRoute(
-        stops[i].customerId,
-        stops[i + 1].customerId,
-        { latitude: stops[i].lat, longitude: stops[i].lon },
-        { latitude: stops[i + 1].lat, longitude: stops[i + 1].lon },
-      );
-      if (segResult.geometry && typeof segResult.geometry === 'string') {
-        const decoded = decodePolyline(segResult.geometry);
-        for (const [lat, lng] of decoded) allCoords.push([lng, lat]);
-      }
-    }
+    if (!result.geometry) return null;
 
-    return allCoords.length > 2 ? allCoords : null;
+    // Geometry is an encoded polyline string (may come from JSONB)
+    const geomStr = typeof result.geometry === 'string'
+      ? result.geometry
+      : String(result.geometry);
+
+    const decoded = decodePolyline(geomStr);
+    if (decoded.length < 2) return null;
+
+    // Decoder returns [lat, lng], MapLibre needs [lng, lat]
+    return decoded.map(([lat, lng]) => [lng, lat] as [number, number]);
   } catch (err) {
-    console.warn('Failed to fetch route geometry, using straight line:', err);
+    console.warn(`Failed to fetch route for ${stop.customerId}:`, err);
     return null;
   }
 }
@@ -471,23 +463,28 @@ export function DistributionMap({
 
     const chains = buildRouteChains(selectedDayOrders);
 
-    // Step 1: Draw straight-line fallbacks immediately (dashed)
+    // Step 1: Draw straight-line fallbacks immediately (dashed) — one line per stop from facility
     for (const chain of chains) {
-      drawChain(`route-${chain.zoneId}`, chain.straightLineCoords, chain.color, true);
+      for (let i = 0; i < chain.stops.length; i++) {
+        const stop = chain.stops[i];
+        const straightCoords: [number, number][] = [FACILITY_CENTER, [stop.lon, stop.lat]];
+        drawChain(`route-${chain.zoneId}-${i}`, straightCoords, chain.color, true);
+      }
     }
 
-    // Step 2: Fetch real road geometry in background, upgrade lines when ready
+    // Step 2: Fetch real road geometry per stop, upgrade when ready
     (async () => {
       for (const chain of chains) {
-        if (routeAbortRef.current !== generation) return; // stale, abort
+        for (let i = 0; i < chain.stops.length; i++) {
+          if (routeAbortRef.current !== generation) return;
 
-        const realCoords = await fetchChainGeometry(chain.stops);
-        if (routeAbortRef.current !== generation) return; // stale, abort
-        if (!mapRef.current) return;
+          const realCoords = await fetchRouteGeometry(chain.stops[i]);
+          if (routeAbortRef.current !== generation) return;
+          if (!mapRef.current) return;
 
-        if (realCoords) {
-          // Upgrade: replace straight line with real road geometry (solid line)
-          drawChain(`route-${chain.zoneId}`, realCoords, chain.color, false);
+          if (realCoords) {
+            drawChain(`route-${chain.zoneId}-${i}`, realCoords, chain.color, false);
+          }
         }
       }
     })();
