@@ -13,7 +13,7 @@ import {
   ZONE_LABELS,
 } from '../constants';
 
-// ─── Dark style (inline to avoid external URL failures) ────────────────────
+// ─── Dark style with brighter streets ──────────────────────────────────────
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -26,7 +26,7 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
         'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
       ],
       tileSize: 256,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      attribution: '&copy; OSM &copy; CARTO',
     },
   },
   layers: [
@@ -36,6 +36,12 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
       source: 'osm-raster',
       minzoom: 0,
       maxzoom: 19,
+      paint: {
+        'raster-brightness-min': 0.08,
+        'raster-brightness-max': 0.85,
+        'raster-contrast': 0.15,
+        'raster-saturation': -0.3,
+      },
     },
   ],
 };
@@ -48,6 +54,49 @@ interface DistributionMapProps {
   selectedDayOrders: CalendarOrder[];
   onPinClick?: (orderId: string) => void;
   onClick?: () => void;
+}
+
+// ─── Route line helpers ────────────────────────────────────────────────────
+
+interface RouteChain {
+  zoneId: string;
+  color: string;
+  coords: [number, number][]; // [lng, lat]
+}
+
+function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
+  // Group orders by zone
+  const zoneGroups = new Map<string, { lat: number; lon: number }[]>();
+  for (const o of dayOrders) {
+    if (!o.customer_lat || !o.customer_lon) continue;
+    const zoneId = getRouteZoneId(o.customer_lat, o.customer_lon);
+    if (!zoneGroups.has(zoneId)) zoneGroups.set(zoneId, []);
+    zoneGroups.get(zoneId)!.push({ lat: o.customer_lat, lon: o.customer_lon });
+  }
+
+  const chains: RouteChain[] = [];
+  for (const [zoneId, stops] of zoneGroups) {
+    // Build chain: facility → stop1 → stop2 → ...
+    // Sort stops by distance from facility (nearest first) for a reasonable route
+    const sorted = [...stops].sort((a, b) => {
+      const distA = Math.hypot(a.lat - FACILITY_CENTER[1], a.lon - FACILITY_CENTER[0]);
+      const distB = Math.hypot(b.lat - FACILITY_CENTER[1], b.lon - FACILITY_CENTER[0]);
+      return distA - distB;
+    });
+
+    const coords: [number, number][] = [FACILITY_CENTER];
+    for (const stop of sorted) {
+      coords.push([stop.lon, stop.lat]);
+    }
+
+    chains.push({
+      zoneId,
+      color: ZONE_HEX[zoneId] || '#A6A6A6',
+      coords,
+    });
+  }
+
+  return chains;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -71,7 +120,6 @@ export function DistributionMap({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Create map
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: DARK_STYLE,
@@ -84,19 +132,18 @@ export function DistributionMap({
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    // Facility marker
+    // Facility marker — diamond shape
     const facilityEl = document.createElement('div');
     facilityEl.style.cssText =
       'width:18px;height:18px;border-radius:3px;transform:rotate(45deg);' +
       'background:#E8E0D4;border:2px solid white;' +
-      'box-shadow:0 0 12px rgba(232,224,212,0.4),0 2px 8px rgba(0,0,0,0.5);';
+      'box-shadow:0 0 16px rgba(232,224,212,0.5),0 2px 8px rgba(0,0,0,0.5);';
     new maplibregl.Marker({ element: facilityEl })
       .setLngLat(FACILITY_CENTER)
       .addTo(map);
 
     map.on('load', () => {
       setMapReady(true);
-      // Ensure map fills its container after style loads
       map.resize();
     });
 
@@ -127,20 +174,31 @@ export function DistributionMap({
       popupRef.current = null;
     }
 
-    // Dedupe customers
-    const customerMap = new Map<
-      string,
-      { lat: number; lon: number; name: string; zoneId: string; orderIds: string[]; highlighted: boolean }
-    >();
+    // Dedupe customers, keeping full order details for tooltips
+    const CLOSED = new Set(['delivered', 'completed', 'cancelled']);
+    interface CustomerPin {
+      lat: number; lon: number; name: string; zoneId: string;
+      orderIds: string[]; highlighted: boolean;
+      activeOrders: { orderNumber: string; deliveryDate: string | null; status: string }[];
+    }
+    const customerMap = new Map<string, CustomerPin>();
     const highlightedIds = new Set(selectedDayOrders.map((o) => o.id));
 
     for (const o of orders) {
       if (!o.customer_lat || !o.customer_lon) continue;
       const key = o.customer_id;
       const existing = customerMap.get(key);
+      const isActive = !CLOSED.has(o.status);
       if (existing) {
         existing.orderIds.push(o.id);
         if (highlightedIds.has(o.id)) existing.highlighted = true;
+        if (isActive) {
+          existing.activeOrders.push({
+            orderNumber: o.order_number,
+            deliveryDate: o.requested_delivery_date,
+            status: o.status,
+          });
+        }
       } else {
         customerMap.set(key, {
           lat: o.customer_lat,
@@ -149,32 +207,71 @@ export function DistributionMap({
           zoneId: getRouteZoneId(o.customer_lat, o.customer_lon),
           orderIds: [o.id],
           highlighted: highlightedIds.has(o.id),
+          activeOrders: isActive ? [{
+            orderNumber: o.order_number,
+            deliveryDate: o.requested_delivery_date,
+            status: o.status,
+          }] : [],
         });
       }
     }
 
     for (const [, c] of customerMap) {
       const isHighlighted = hasSelectedDay ? c.highlighted : true;
-      const size = isHighlighted && hasSelectedDay ? 16 : 12;
       const color = ZONE_HEX[c.zoneId] || '#A6A6A6';
+
+      // Selected day pins: large, bright, glowing ring
+      // Unselected pins (no day selected): medium, visible
+      // Dimmed pins (day selected but not this pin): small, very faint
+      const size = hasSelectedDay
+        ? (isHighlighted ? 18 : 8)
+        : 14;
+      const opacity = hasSelectedDay
+        ? (isHighlighted ? 1 : 0.12)
+        : 0.85;
+      const borderWidth = isHighlighted && hasSelectedDay ? 3 : 2;
+      const glowSize = isHighlighted && hasSelectedDay ? 12 : 0;
 
       const el = document.createElement('div');
       el.style.cssText =
         `width:${size}px;height:${size}px;border-radius:50%;` +
-        `background:${color};border:2px solid white;` +
-        `opacity:${isHighlighted ? '1' : '0.15'};` +
-        `box-shadow:${isHighlighted ? `0 0 8px ${color}66,0 2px 6px rgba(0,0,0,0.4)` : 'none'};` +
+        `background:${color};border:${borderWidth}px solid rgba(255,255,255,0.9);` +
+        `opacity:${opacity};` +
+        `box-shadow:0 0 ${glowSize}px ${color},0 0 ${glowSize * 2}px ${color}44,0 2px 6px rgba(0,0,0,0.5);` +
         'cursor:pointer;';
 
       el.addEventListener('mouseenter', () => {
         if (popupRef.current) popupRef.current.remove();
-        const popup = new maplibregl.Popup({ offset: 14, closeButton: false, closeOnClick: false })
+
+        // Build order rows for tooltip
+        const orderRows = c.activeOrders.length > 0
+          ? c.activeOrders.slice(0, 5).map((ao) => {
+              const dateStr = ao.deliveryDate
+                ? new Date(ao.deliveryDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                : 'No date';
+              return `<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-top:1px solid rgba(255,255,255,0.06);">
+                <span style="font-family:monospace;color:#E8E0D4;font-size:11px;">${ao.orderNumber}</span>
+                <span style="color:#A6A6A6;font-size:11px;">${dateStr}</span>
+              </div>`;
+            }).join('')
+          : '<div style="color:#666;font-size:11px;padding-top:3px;">No active orders</div>';
+
+        const moreText = c.activeOrders.length > 5
+          ? `<div style="color:#666;font-size:10px;padding-top:2px;">+${c.activeOrders.length - 5} more</div>`
+          : '';
+
+        const popup = new maplibregl.Popup({ offset: 14, closeButton: false, closeOnClick: false, maxWidth: '240px' })
           .setLngLat([c.lon, c.lat])
           .setHTML(
-            `<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#fff;background:rgba(26,26,46,0.95);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
-              <strong>${c.name}</strong><br/>
-              <span style="color:${color};font-size:11px;">${ZONE_LABELS[c.zoneId] || c.zoneId}</span>
-              ${c.orderIds.length > 1 ? `<span style="color:#A6A6A6;font-size:11px;"> · ${c.orderIds.length} orders</span>` : ''}
+            `<div style="font-family:Montserrat,sans-serif;color:#fff;background:rgba(26,26,46,0.95);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);min-width:160px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <strong style="font-size:13px;">${c.name}</strong>
+              </div>
+              <div style="margin-bottom:4px;">
+                <span style="color:${color};font-size:11px;font-weight:600;">${ZONE_LABELS[c.zoneId] || c.zoneId}</span>
+                ${c.activeOrders.length > 0 ? `<span style="color:#666;font-size:11px;"> · ${c.activeOrders.length} active</span>` : ''}
+              </div>
+              ${orderRows}${moreText}
             </div>`,
           )
           .addTo(map);
@@ -205,6 +302,80 @@ export function DistributionMap({
   useEffect(() => {
     updateMarkers();
   }, [updateMarkers]);
+
+  // ─── Route lines ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    // Clean up previous route layers/sources
+    const existingLayers = map.getStyle()?.layers || [];
+    for (const layer of existingLayers) {
+      if (layer.id.startsWith('route-')) {
+        map.removeLayer(layer.id);
+      }
+    }
+    // Remove sources after layers
+    const style = map.getStyle();
+    if (style?.sources) {
+      for (const sourceId of Object.keys(style.sources)) {
+        if (sourceId.startsWith('route-')) {
+          map.removeSource(sourceId);
+        }
+      }
+    }
+
+    // Only draw routes when a day is selected
+    if (selectedDayOrders.length === 0) return;
+
+    const chains = buildRouteChains(selectedDayOrders);
+
+    for (const chain of chains) {
+      const sourceId = `route-${chain.zoneId}`;
+      const glowLayerId = `route-glow-${chain.zoneId}`;
+      const lineLayerId = `route-line-${chain.zoneId}`;
+
+      const geojson: GeoJSON.FeatureCollection = {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: chain.coords,
+          },
+          properties: {},
+        }],
+      };
+
+      map.addSource(sourceId, { type: 'geojson', data: geojson });
+
+      // Glow layer (wide, blurred)
+      map.addLayer({
+        id: glowLayerId,
+        type: 'line',
+        source: sourceId,
+        paint: {
+          'line-color': chain.color,
+          'line-width': 8,
+          'line-opacity': 0.15,
+          'line-blur': 6,
+        },
+      });
+
+      // Main line
+      map.addLayer({
+        id: lineLayerId,
+        type: 'line',
+        source: sourceId,
+        paint: {
+          'line-color': chain.color,
+          'line-width': 2.5,
+          'line-opacity': 0.7,
+          'line-dasharray': [4, 3],
+        },
+      });
+    }
+  }, [selectedDayOrders, mapReady]);
 
   // ─── Fly to selected day ───────────────────────────────────────────────
   useEffect(() => {

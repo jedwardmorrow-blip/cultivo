@@ -239,7 +239,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                             {pkg.reserved_qty > 0 && (
                               <span className="text-[10px] text-amber-400/60">({formatG(pkg.reserved_qty)} held)</span>
                             )}
-                            <span className="text-[9px] font-mono text-white/20">{pkg.package_id}</span>
+                            <span className="text-sm font-mono font-semibold text-white/50">{pkg.package_id}</span>
                           </div>
 
                           {action && (
