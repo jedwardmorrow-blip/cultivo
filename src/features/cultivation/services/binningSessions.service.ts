@@ -119,7 +119,27 @@ export const binningSessionsService = {
       (binnedResult.data ?? []).map((r: { harvest_session_id: string }) => r.harvest_session_id)
     );
 
-    return (sessionsResult.data as unknown as HarvestSession[]).filter((s) => !binnedIds.has(s.id));
+    return (sessionsResult.data as unknown as HarvestSession[]).filter((s) => {
+      // Already has a binning session — not incoming
+      if (binnedIds.has(s.id)) return false;
+
+      const entries = (s as any).harvest_weight_entries as Array<{
+        destination: string | null;
+        location_id: string | null;
+      }> | undefined;
+
+      if (entries && entries.length > 0) {
+        // All entries routed to a dry room — already hanging, not incoming
+        const allRoutedToDryRoom = entries.every(e => e.destination === 'flower' && e.location_id);
+        if (allRoutedToDryRoom) return false;
+
+        // All entries are fresh frozen — in the freezer, no routing needed
+        const allFreshFrozen = entries.every(e => e.destination === 'fresh_frozen');
+        if (allFreshFrozen) return false;
+      }
+
+      return true;
+    });
   },
 
   async createBinningSession(input: CreateBinningSessionInput): Promise<BinningSession> {

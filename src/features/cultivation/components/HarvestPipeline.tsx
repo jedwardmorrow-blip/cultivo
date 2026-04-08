@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronLeft, Check } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Check, Scale, Package, Printer, X } from 'lucide-react';
 import {
   useHarvestSessions,
   useBinningSessions,
@@ -16,7 +16,11 @@ import {
 } from '../hooks';
 import { HarvestWorkflow } from './harvest';
 import { binningSessionsService as binningService } from '../services/binningSessions.service';
-import type { HarvestSession, DryRoom } from '../types';
+import { BinEntryWorkspace } from './BinEntryWorkspace';
+import { useBinEntryLabel, type BinLabelContext } from '../hooks/useBinEntryLabel';
+import { supabase } from '@/lib/supabase';
+import { formatWeight } from '../utils';
+import type { HarvestSession, DryRoom, BinEntry } from '../types';
 
 // ─── Design tokens ──────────────────────────────────────────────────
 
@@ -177,7 +181,20 @@ export function HarvestPipeline() {
     setRouting(true);
     try {
       for (const harvestId of selectedHarvestIds) {
-        await finalizeHarvest(harvestId, dryRoomId);
+        const harvest = incomingHarvests.find(h => h.id === harvestId);
+        if (!harvest) continue;
+
+        if (harvest.session_status === 'active') {
+          // Active harvest — finalize it (sets weights, routes to dry room)
+          await finalizeHarvest(harvestId, dryRoomId);
+        } else {
+          // Already finalized — just route flower entries to the dry room
+          await supabase
+            .from('harvest_weight_entries')
+            .update({ location_id: dryRoomId })
+            .eq('harvest_session_id', harvestId)
+            .eq('destination', 'flower');
+        }
       }
       setSelectedHarvestIds(new Set());
       setExpandedRoomCode(null);
@@ -255,7 +272,14 @@ export function HarvestPipeline() {
       <AnimatePresence>
         {showHarvestWorkflow && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <HarvestWorkflow onClose={() => setShowHarvestWorkflow(false)} />
+            <HarvestWorkflow
+              onComplete={() => {
+                setShowHarvestWorkflow(false);
+                setReloadTrigger((t) => t + 1);
+                Promise.all([reloadHarvests(), reloadBinning()]);
+              }}
+              onCancel={() => setShowHarvestWorkflow(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -543,7 +567,7 @@ export function HarvestPipeline() {
                       )}
                     </button>
 
-                    {/* Expanded detail with actions */}
+                    {/* Expanded detail — progressive harvest cards */}
                     <AnimatePresence>
                       {isExpanded && !hasSelections && (
                         <motion.div
@@ -555,28 +579,18 @@ export function HarvestPipeline() {
                         >
                           <div className="pt-2 space-y-2">
                             {strains.map((s, j) => (
-                              <div key={j} className={`${GLASS_NESTED} p-4 space-y-2`}>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-white/70 font-medium">{s.name}</span>
-                                  <span className="text-[10px] text-white/25">Day {s.daysHanging} &middot; {gramsToLbs(getWetWeight(s.harvest))} lbs</span>
-                                </div>
-                                <div className="flex gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); alert('Dry weight recording coming soon.'); }}
-                                    className="text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.04] text-white/40 border border-white/[0.06] active:scale-95 transition-transform"
-                                  >
-                                    Record Dry Weight
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); handleStartBinning(s.harvest, room.id); }}
-                                    className="text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 active:scale-95 transition-transform"
-                                  >
-                                    Start Binning
-                                  </button>
-                                </div>
-                              </div>
+                              <DryRoomHarvestCard
+                                key={s.harvest.id}
+                                harvest={s.harvest}
+                                strainName={s.name}
+                                daysHanging={s.daysHanging}
+                                dryRoomId={room.id}
+                                onStartBinning={handleStartBinning}
+                                onBinningComplete={async () => {
+                                  setReloadTrigger((t) => t + 1);
+                                  await Promise.all([reloadHarvests(), reloadBinning()]);
+                                }}
+                              />
                             ))}
                           </div>
                         </motion.div>
@@ -617,6 +631,272 @@ export function HarvestPipeline() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// DryRoomHarvestCard — Progressive states: hanging → dry weight → binning → done
+// ═════════════════════════════════════════════════════════════════════
+
+function DryRoomHarvestCard({
+  harvest,
+  strainName,
+  daysHanging,
+  dryRoomId,
+  onStartBinning,
+  onBinningComplete,
+}: {
+  harvest: HarvestSession;
+  strainName: string;
+  daysHanging: number;
+  dryRoomId: string;
+  onStartBinning: (harvest: HarvestSession, dryRoomId: string) => Promise<void>;
+  onBinningComplete: () => Promise<void>;
+}) {
+  const wetWeight = getWetWeight(harvest);
+  const dryWeight = harvest.adjusted_weight_grams ?? null;
+  const hasDryWeight = dryWeight !== null && dryWeight > 0;
+  const batchNumber = harvest.batch_registry?.batch_number ?? '—';
+  const harvestDate = harvest.harvest_date;
+
+  // Dry weight form state
+  const [showDryForm, setShowDryForm] = useState(false);
+  const [dryWeightInput, setDryWeightInput] = useState(dryWeight ? String(dryWeight) : '');
+  const [dryNotes, setDryNotes] = useState('');
+  const [savingDry, setSavingDry] = useState(false);
+
+  // Binning state
+  const [binningSessionId, setBinningSessionId] = useState<string | null>(null);
+  const [showBinning, setShowBinning] = useState(false);
+  const [startingBinning, setStartingBinning] = useState(false);
+
+  // Check for existing binning session on mount
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('binning_sessions')
+        .select('id, session_status')
+        .eq('harvest_session_id', harvest.id)
+        .not('session_status', 'eq', 'cancelled')
+        .limit(1);
+      if (data && data.length > 0) {
+        setBinningSessionId(data[0].id);
+        if (data[0].session_status === 'active') setShowBinning(true);
+      }
+    })();
+  }, [harvest.id]);
+
+  const isBinningComplete = binningSessionId !== null && !showBinning;
+  const shrinkagePct = hasDryWeight && wetWeight > 0
+    ? Math.round((1 - dryWeight / wetWeight) * 100)
+    : null;
+
+  // Label context for bin entry printing
+  const labelContext: BinLabelContext | null = strainName !== 'Unknown'
+    ? { strain: strainName, batchNumber, harvestDate }
+    : null;
+
+  async function handleSaveDryWeight() {
+    const w = parseFloat(dryWeightInput);
+    if (!(w > 0)) return;
+    setSavingDry(true);
+    try {
+      await supabase
+        .from('harvest_sessions')
+        .update({ adjusted_weight_grams: w, notes: dryNotes.trim() || harvest.notes })
+        .eq('id', harvest.id);
+      // Update local state without full reload
+      (harvest as any).adjusted_weight_grams = w;
+      setShowDryForm(false);
+    } finally {
+      setSavingDry(false);
+    }
+  }
+
+  async function handleStartBinningClick() {
+    if (binningSessionId) {
+      setShowBinning(true);
+      return;
+    }
+    setStartingBinning(true);
+    try {
+      await onStartBinning(harvest, dryRoomId);
+      // Get the newly created session
+      const { data } = await supabase
+        .from('binning_sessions')
+        .select('id')
+        .eq('harvest_session_id', harvest.id)
+        .not('session_status', 'eq', 'cancelled')
+        .limit(1);
+      if (data && data.length > 0) {
+        setBinningSessionId(data[0].id);
+        setShowBinning(true);
+      }
+    } finally {
+      setStartingBinning(false);
+    }
+  }
+
+  // Border color based on state
+  const borderColor = isBinningComplete
+    ? 'rgba(16,185,129,0.25)'
+    : showBinning
+    ? 'rgba(139,92,246,0.3)'
+    : hasDryWeight
+    ? 'rgba(245,158,11,0.2)'
+    : 'rgba(255,255,255,0.06)';
+
+  return (
+    <div
+      className={`${GLASS_NESTED} p-4 space-y-3 transition-all duration-300`}
+      style={{ borderLeftWidth: 3, borderLeftColor: borderColor }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-sm text-white/70 font-medium">{strainName}</span>
+          <span className="text-[10px] text-white/20 ml-2 font-mono">{batchNumber}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {isBinningComplete && (
+            <span className="text-[9px] px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 uppercase tracking-wider font-bold">
+              Binned
+            </span>
+          )}
+          <span className="text-[10px] text-white/20 tabular-nums">Day {daysHanging}</span>
+        </div>
+      </div>
+
+      {/* Weight info */}
+      <div className="flex items-center gap-4 text-[10px]">
+        <span className="text-white/30">Wet: <span className="text-white/50 font-mono">{gramsToLbs(wetWeight)} lbs</span></span>
+        {hasDryWeight && (
+          <>
+            <span className="text-white/30">Dry: <span className="text-amber-300/70 font-mono">{gramsToLbs(dryWeight)} lbs</span></span>
+            {shrinkagePct !== null && (
+              <span className="text-amber-400/50">{shrinkagePct}% moisture loss</span>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Dry weight form (inline) */}
+      {showDryForm && (
+        <div className={`${GLASS_NESTED} p-3 space-y-2`}>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Dry Weight (g)</label>
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={dryWeightInput}
+                onChange={(e) => setDryWeightInput(e.target.value)}
+                placeholder="e.g. 6200"
+                className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white font-mono placeholder:text-white/15"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Notes <span className="text-white/10">optional</span></label>
+              <input
+                type="text"
+                value={dryNotes}
+                onChange={(e) => setDryNotes(e.target.value)}
+                placeholder="e.g. crispy, ready"
+                className="w-full glass-input rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/15"
+              />
+            </div>
+            <button
+              onClick={handleSaveDryWeight}
+              disabled={savingDry || !(parseFloat(dryWeightInput) > 0)}
+              className="rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2 text-[10px] font-semibold active:scale-95 transition-all disabled:opacity-20"
+            >
+              {savingDry ? '...' : 'Save'}
+            </button>
+            <button
+              onClick={() => setShowDryForm(false)}
+              className="text-white/20 hover:text-white/40 transition-colors p-2"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Binning workspace (inline) */}
+      {showBinning && binningSessionId && (
+        <BinEntryWorkspace
+          sessionId={binningSessionId}
+          listBinEntries={async (id) => {
+            const { data } = await supabase
+              .from('bin_entries')
+              .select('*')
+              .eq('binning_session_id', id)
+              .order('entry_order');
+            return (data ?? []) as BinEntry[];
+          }}
+          addBinEntry={async (input) => {
+            const { data, error } = await supabase
+              .from('bin_entries')
+              .insert(input)
+              .select()
+              .single();
+            if (error) throw new Error(error.message);
+            return data as BinEntry;
+          }}
+          removeBinEntry={async (id) => {
+            await supabase.from('bin_entries').delete().eq('id', id);
+          }}
+          onComplete={async () => {
+            await supabase.from('binning_sessions').update({ session_status: 'completed' }).eq('id', binningSessionId);
+            setShowBinning(false);
+            await onBinningComplete();
+          }}
+          onCancel={async () => {
+            await supabase.from('binning_sessions').update({ session_status: 'cancelled' }).eq('id', binningSessionId);
+            setBinningSessionId(null);
+            setShowBinning(false);
+          }}
+          wetWeight={wetWeight}
+          labelContext={labelContext}
+        />
+      )}
+
+      {/* Action buttons — progressive: show next action based on state */}
+      {!showDryForm && !showBinning && !isBinningComplete && (
+        <div className="flex gap-2">
+          {!hasDryWeight ? (
+            <button
+              type="button"
+              onClick={() => setShowDryForm(true)}
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.04] text-white/40 border border-white/[0.06] hover:bg-white/[0.06] active:scale-95 transition-all"
+            >
+              <Scale className="w-3 h-3" />
+              Record Dry Weight
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => { setDryWeightInput(String(dryWeight)); setShowDryForm(true); }}
+                className="text-[10px] px-3 py-1.5 rounded-xl bg-white/[0.03] text-white/25 border border-white/[0.04] hover:text-white/40 active:scale-95 transition-all"
+              >
+                Edit Dry Weight
+              </button>
+              <button
+                type="button"
+                onClick={handleStartBinningClick}
+                disabled={startingBinning}
+                className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30"
+              >
+                <Package className="w-3 h-3" />
+                {startingBinning ? 'Starting...' : binningSessionId ? 'Continue Binning' : 'Start Binning'}
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
