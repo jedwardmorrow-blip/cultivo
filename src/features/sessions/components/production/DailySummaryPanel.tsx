@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, CheckCircle2 } from 'lucide-react';
+import { BarChart3, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { GLASS, GLASS_ELEVATED, GLASS_HOVER, SESSION_TYPE_COLORS, formatWeight, fadeInVariants } from './constants';
 import type { TrimSessionStats, BuckingSessionStats, PackagingSessionStats, TrimSession, BuckingSession, PackagingSession } from '../../types';
 
@@ -66,7 +66,10 @@ export function DailySummaryCompact({ trimStats, buckingStats, packagingStats, i
             <BarChart3 className="w-3.5 h-3.5 text-white/40" />
             <h3 className="text-[11px] text-white/40 uppercase tracking-widest font-medium">Today</h3>
           </div>
-          <span className="text-[9px] text-white/20">● active</span>
+          <span className="text-[10px] text-white/30 flex items-center gap-1">
+              <ChevronLeft className="w-3 h-3" />
+              tap to return
+            </span>
         </div>
       ) : (
         <>

@@ -33,10 +33,6 @@ import { PackagingSessionCompleteModal } from '../PackagingSessionCompleteModal'
 import { TrimSessionCancelModal } from '../TrimSessionCancelModal';
 import { BuckingSessionCancelModal } from '../BuckingSessionCancelModal';
 import { PackagingSessionCancelModal } from '../PackagingSessionCancelModal';
-import { TrimSessionStartForm } from '../TrimSessionStartForm';
-import { BuckingSessionStartForm } from '../BuckingSessionStartForm';
-import { PackagingSessionStartForm } from '../PackagingSessionStartForm';
-
 // New components
 import { ProductionKpiStrip } from './ProductionKpiStrip';
 import { FloorView } from './FloorView';
@@ -98,7 +94,6 @@ export function ProductionCommandCenter() {
   const [completingSession, setCompletingSession] = useState<NormalizedSession | null>(null);
   const [cancellingSession, setCancellingSession] = useState<NormalizedSession | null>(null);
   const [startingDispatch, setStartingDispatch] = useState<DispatchItem | null>(null);
-  const [manualStartType, setManualStartType] = useState<'bucking' | 'trim' | 'packaging' | null>(null);
   const [buckedPackages, setBuckedPackages] = useState<InventoryItem[]>([]);
 
   // Fetch bucked packages when completing a trim session (needed for smalls selection)
@@ -136,7 +131,6 @@ export function ProductionCommandCenter() {
 
   const handleSessionStarted = () => {
     setStartingDispatch(null);
-    setManualStartType(null);
     refreshAll();
   };
 
@@ -203,7 +197,6 @@ export function ProductionCommandCenter() {
           onComplete={setCompletingSession}
           onCancel={setCancellingSession}
           onStartFromDispatch={setStartingDispatch}
-          onStartManual={setManualStartType}
           onRefreshSessions={refreshAll}
         />
       ) : (
@@ -226,29 +219,6 @@ export function ProductionCommandCenter() {
         dispatchItem={startingDispatch}
         onSessionCreated={handleSessionStarted}
       />
-
-      {/* Manual start forms */}
-      {manualStartType === 'trim' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setManualStartType(null)}>
-          <div className="bg-cult-surface-raised rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <TrimSessionStartForm onSessionStarted={handleSessionStarted} onCancel={() => setManualStartType(null)} />
-          </div>
-        </div>
-      )}
-      {manualStartType === 'bucking' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setManualStartType(null)}>
-          <div className="bg-cult-surface-raised rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <BuckingSessionStartForm onSessionStarted={handleSessionStarted} onCancel={() => setManualStartType(null)} />
-          </div>
-        </div>
-      )}
-      {manualStartType === 'packaging' && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setManualStartType(null)}>
-          <div className="bg-cult-surface-raised rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <PackagingSessionStartForm onSessionStarted={handleSessionStarted} onCancel={() => setManualStartType(null)} />
-          </div>
-        </div>
-      )}
 
       {/* Complete modals */}
       {completingSession?.type === 'bucking' && completingSession.rawBucking && (

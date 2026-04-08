@@ -3050,6 +3050,7 @@ export function CommandCenter() {
                       key={room.room_id}
                       state={room}
                       tasks={tasks}
+                      isFeatured={room.room_id === activeFeaturedId}
                       onClick={() => handleTileClick(room.room_id, room.room_code)}
                     />
                   ))}
@@ -3058,6 +3059,7 @@ export function CommandCenter() {
                       key={room.room_id}
                       state={room}
                       tasks={tasks}
+                      isFeatured={room.room_id === activeFeaturedId}
                       onClick={() => handleTileClick(room.room_id, room.room_code)}
                     />
                   ))}

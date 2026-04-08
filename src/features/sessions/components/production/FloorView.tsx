@@ -1,15 +1,15 @@
 /**
  * FloorView — The Ticket Rail + Bento Card Swap
  *
- * Design upgrade: Active sessions render in a responsive grid (like room tiles
- * in the Cultivation CommandCenter), not a vertical list. The main panel has no
- * outer glass wrapper when showing the rail — cards ARE the tiles. Secondary cards
- * get ambient glows matching their accent color.
+ * Active sessions in a responsive grid (like CommandCenter room tiles).
+ * Bento card swap: tapping a secondary card expands it into the main panel.
+ * A "Back to Floor" button in the expanded panel returns to the rail.
+ * Active bento cards show a clear "tap to return" visual cue.
  */
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { Plus, Scissors, Leaf, Box } from 'lucide-react';
+import { ChevronLeft, Scissors } from 'lucide-react';
 import { GLASS, GLASS_ELEVATED, springTransition, staggerContainer, fadeInVariants, type NormalizedSession } from './constants';
 import { SessionCard } from './SessionCard';
 import { QueuedCard } from './QueuedCard';
@@ -40,7 +40,6 @@ interface FloorViewProps {
   onComplete: (session: NormalizedSession) => void;
   onCancel: (session: NormalizedSession) => void;
   onStartFromDispatch: (item: DispatchItem) => void;
-  onStartManual: (type: 'bucking' | 'trim' | 'packaging') => void;
   onRefreshSessions: () => void;
 }
 
@@ -60,15 +59,15 @@ export function FloorView({
   onComplete,
   onCancel,
   onStartFromDispatch,
-  onStartManual,
   onRefreshSessions,
 }: FloorViewProps) {
   const [focusedCard, setFocusedCard] = useState<FocusedCard>(null);
-  const [showTypeMenu, setShowTypeMenu] = useState(false);
 
   const toggleCard = useCallback((card: FocusedCard) => {
     setFocusedCard(prev => prev === card ? null : card);
   }, []);
+
+  const backToFloor = useCallback(() => setFocusedCard(null), []);
 
   const isEmpty = activeSessions.length === 0 && queuedItems.length === 0;
 
@@ -79,13 +78,23 @@ export function FloorView({
         <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
           <AnimatePresence mode="wait">
             {focusedCard ? (
-              /* Expanded bento card gets the glass wrapper */
+              /* Expanded bento card gets the glass wrapper + back button */
               <motion.div
                 key={`focused-${focusedCard}`}
                 layout
                 transition={springTransition}
                 className={`${GLASS} p-5 h-full flex flex-col`}
               >
+                {/* Back to floor button */}
+                <button
+                  type="button"
+                  onClick={backToFloor}
+                  className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors mb-4 self-start active:scale-95"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Back to Floor
+                </button>
+
                 {focusedCard === 'conversions' && (
                   <ConversionsPanelExpanded
                     pendingSessions={pendingSessions}
@@ -108,7 +117,7 @@ export function FloorView({
                 )}
               </motion.div>
             ) : (
-              /* Default: Ticket Rail — cards ARE the grid, no outer wrapper */
+              /* Default: Ticket Rail — cards ARE the grid */
               <motion.div
                 key="panel-rail"
                 initial={fadeInVariants.initial}
@@ -175,42 +184,8 @@ export function FloorView({
                         <Scissors className="w-8 h-8 text-white/10" />
                       </div>
                       <p className="text-base font-semibold text-white/25 mb-1">All caught up</p>
-                      <p className="text-sm text-white/15 mb-6">No active sessions or queued items</p>
-                      <div className="relative inline-block">
-                        <button
-                          type="button"
-                          onClick={() => setShowTypeMenu(v => !v)}
-                          className={`${GLASS_ELEVATED} flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white/60 hover:text-white/80 transition-all active:scale-95`}
-                        >
-                          <Plus className="w-4 h-4" />
-                          Start Session
-                        </button>
-                        <AnimatePresence>
-                          {showTypeMenu && (
-                            <TypeMenu onSelect={(type) => { setShowTypeMenu(false); onStartManual(type); }} />
-                          )}
-                        </AnimatePresence>
-                      </div>
+                      <p className="text-sm text-white/15">No active sessions or queued items</p>
                     </div>
-                  </div>
-                )}
-
-                {/* Floating start button (when not empty) */}
-                {!isEmpty && (
-                  <div className="mt-auto pt-4 flex justify-end relative">
-                    <button
-                      type="button"
-                      onClick={() => setShowTypeMenu(v => !v)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white/35 hover:text-white/55 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-all active:scale-95"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Start Session
-                    </button>
-                    <AnimatePresence>
-                      {showTypeMenu && (
-                        <TypeMenu onSelect={(type) => { setShowTypeMenu(false); onStartManual(type); }} />
-                      )}
-                    </AnimatePresence>
                   </div>
                 )}
               </motion.div>
@@ -242,37 +217,5 @@ export function FloorView({
         </div>
       </div>
     </LayoutGroup>
-  );
-}
-
-// ─── Type picker menu ─────────────────────────────────────────────────────
-
-function TypeMenu({ onSelect }: { onSelect: (type: 'bucking' | 'trim' | 'packaging') => void }) {
-  const types = [
-    { key: 'bucking' as const, label: 'Bucking', icon: Scissors, color: '#F59E0B' },
-    { key: 'trim' as const, label: 'Trim', icon: Leaf, color: '#10B981' },
-    { key: 'packaging' as const, label: 'Packaging', icon: Box, color: '#6366F1' },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 4, scale: 0.96 }}
-      transition={{ duration: 0.15 }}
-      className={`${GLASS_ELEVATED} absolute bottom-full right-0 mb-2 p-1.5 min-w-[170px] z-10`}
-    >
-      {types.map(({ key, label, icon: Icon, color }) => (
-        <button
-          key={key}
-          type="button"
-          onClick={() => onSelect(key)}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-colors"
-        >
-          <Icon className="w-4 h-4" style={{ color }} />
-          {label}
-        </button>
-      ))}
-    </motion.div>
   );
 }

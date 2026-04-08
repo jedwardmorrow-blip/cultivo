@@ -21,6 +21,7 @@ import { PinLoginPage, WorkerLayout, MyTasksView } from './features/worker/compo
 
 const Dashboard = lazyRetry(() => import('./features/dashboard'), 'Dashboard');
 const OrdersContainer = lazyRetry(() => import('./features/orders'), 'OrdersContainer');
+const DistributionCommandCenter = lazyRetry(() => import('./features/distribution'), 'DistributionCommandCenter');
 const DistributionCalendar = lazyRetry(() => import('./features/delivery'), 'DistributionCalendar');
 const ProductionDispatchView = lazyRetry(() => import('./features/delivery'), 'ProductionDispatchView');
 const OrderFulfillmentView = lazyRetry(() => import('./features/delivery'), 'OrderFulfillmentView');
@@ -223,6 +224,7 @@ function AuthenticatedApp() {
               <Route path="/inventory-conversion-history" element={<ConversionHistoryViewWrapper />} />
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
               <Route path="/inventory-consolidate" element={<InventoryDataProvider><ConsolidateViewWrapper /></InventoryDataProvider>} />
+              <Route path="/distribution-command-center" element={<DistributionCommandCenter />} />
               <Route path="/delivery" element={<DistributionCalendar onSelectOrder={handleSelectOrder} />} />
               <Route path="/production-dispatch" element={<OrderFulfillmentView />} />
               <Route path="/production-dispatch-legacy" element={<ProductionDispatchView />} />

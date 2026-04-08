@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { Users } from 'lucide-react';
+import { Users, ChevronLeft } from 'lucide-react';
 import { GLASS, GLASS_ELEVATED, GLASS_HOVER, SESSION_TYPE_COLORS, fadeInVariants } from './constants';
 import type { NormalizedSession } from './constants';
 import type { ActiveStaffMember } from '../../hooks/useActiveStaff';
@@ -80,7 +80,10 @@ export function CrewPanelCompact({ staff, sessions, getDisplayName, isActive, on
             <Users className="w-3.5 h-3.5 text-sky-400/60" />
             <h3 className="text-[11px] text-sky-400/60 uppercase tracking-widest font-medium">Crew</h3>
           </div>
-          <span className="text-[9px] text-white/20">● active</span>
+          <span className="text-[10px] text-white/30 flex items-center gap-1">
+              <ChevronLeft className="w-3 h-3" />
+              tap to return
+            </span>
         </div>
       ) : (
         <>
