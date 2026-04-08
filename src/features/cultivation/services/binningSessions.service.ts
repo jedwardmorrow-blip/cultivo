@@ -66,13 +66,19 @@ export const binningSessionsService = {
   async listHarvestSessionsByDryRoom(dryRoomId: string): Promise<HarvestSession[]> {
     const { data, error } = await supabase
       .from('harvest_sessions')
-      .select(`${HARVEST_SESSION_SELECT}, harvest_weight_entries!inner(location_id, destination)`)
-      .eq('harvest_weight_entries.location_id', dryRoomId)
-      .eq('harvest_weight_entries.destination', 'flower')
+      .select(HARVEST_SESSION_SELECT)
       .in('session_status', ['completed', 'finalized'])
       .order('harvest_date', { ascending: false });
     if (error) throwError(error, 'listHarvestSessionsByDryRoom');
-    return data as unknown as HarvestSession[];
+
+    // Filter to harvests that have at least one flower entry routed to this dry room
+    return (data as unknown as HarvestSession[]).filter((s) => {
+      const entries = (s as any).harvest_weight_entries as Array<{
+        destination: string | null;
+        location_id: string | null;
+      }> | undefined;
+      return entries?.some(e => e.destination === 'flower' && e.location_id === dryRoomId) ?? false;
+    });
   },
 
   async listDryingHarvests(): Promise<HarvestSession[]> {
