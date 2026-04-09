@@ -21,6 +21,7 @@ import { DistributionMap } from './DistributionMap';
 import { DayDetailStrip } from './DayDetailStrip';
 import { UnscheduledCompact, UnscheduledExpanded } from './UnscheduledPanel';
 import { RouteSummaryPanel } from './RouteSummaryPanel';
+import { InProductionPanel } from './InProductionPanel';
 
 export function DistributionCommandCenter() {
   // ─── Data ──────────────────────────────────────────────────────────────
@@ -307,6 +308,8 @@ export function DistributionCommandCenter() {
               selectedDate={selectedDate || data.todayStr}
               onAssignDriver={drivers.assignDriver}
             />
+
+            <InProductionPanel />
           </div>
         </div>
       </LayoutGroup>

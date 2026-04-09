@@ -278,6 +278,7 @@ interface ActionPanelState {
 function ActionPanel({
   selectedTote,
   selectedDemand,
+  dispatched,
   onDispatch,
   submitting,
   onClear,
@@ -285,6 +286,7 @@ function ActionPanel({
 }: {
   selectedTote: SupplyTote | null;
   selectedDemand: DemandLine | null;
+  dispatched: DispatchItem[];
   onDispatch: (payload: CreateDispatchPayload) => void;
   submitting: boolean;
   onClear: () => void;
@@ -334,6 +336,14 @@ function ActionPanel({
   const canSubmit = !submitting && selectedTote !== null && form.stage !== null && form.treatment !== null;
   const isPackageToOrder = form.stage === 'package_to_order';
 
+  // In-flight: dispatch items already committed for the selected demand line
+  const inFlight = selectedDemand
+    ? dispatched.filter(d => d.order_item_id === selectedDemand.order_item_id)
+    : [];
+  const unitsCommitted = inFlight
+    .filter(d => d.processing_stage === 'package_to_order')
+    .reduce((sum, d) => sum + (d.quantity_units_target || 0), 0);
+
   return (
     <div className="h-full flex flex-col gap-4">
       {/* Selections summary */}
@@ -370,6 +380,40 @@ function ActionPanel({
           </div>
         </div>
       </div>
+
+      {/* In-flight commitment for selected demand line */}
+      {inFlight.length > 0 && (
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-2.5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-semibold text-amber-400/80 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+              Already Dispatched
+            </span>
+            {unitsCommitted > 0 && (
+              <span className="text-[10px] text-white/30">{unitsCommitted} units queued</span>
+            )}
+          </div>
+          <div className="space-y-1">
+            {inFlight.map(item => (
+              <div key={item.id} className="flex items-center gap-2 text-[11px]">
+                <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                  item.status === 'in_progress'
+                    ? 'bg-sky-500/10 border-sky-500/20 text-sky-400'
+                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400/80'
+                }`}>
+                  {item.status === 'in_progress' ? 'In Session' : 'Queued'}
+                </span>
+                <span className="text-white/50 truncate">{PROCESSING_STAGE_LABELS[item.processing_stage]}</span>
+                <span className="text-white/30 ml-auto shrink-0">
+                  {item.quantity_units_target
+                    ? `${item.quantity_units_target}u`
+                    : item.quantity_g ? formatG(item.quantity_g) : '—'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Processing Stage — constrained by tote lifecycle_state */}
       <div>
@@ -732,6 +776,7 @@ export function ProductionDispatchView() {
           <ActionPanel
             selectedTote={selectedTote}
             selectedDemand={selectedDemand}
+            dispatched={dispatched}
             onDispatch={handleDispatch}
             submitting={submitting}
             onClear={handleClear}
