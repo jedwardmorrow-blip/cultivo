@@ -310,25 +310,6 @@ export const packageAssignmentService = {
         assignmentId: data.id
       });
 
-      // Record FULFILLMENT movement for audit trail
-      const { data: invItem } = await supabase
-        .from('inventory_items')
-        .select('id, unit')
-        .eq('package_id', packageId)
-        .single();
-
-      if (invItem) {
-        await inventoryMovementService.recordMovement({
-          movement_kind: 'FULFILLMENT',
-          source_item_id: invItem.id,
-          qty: quantityAssigned,
-          unit: invItem.unit,
-          reference_id: orderId,
-          reference_type: 'order_assignment',
-          reason_code: null,
-        });
-      }
-
       return data as PackageAssignment;
     } catch (error) {
       errorService.handle(error, {
