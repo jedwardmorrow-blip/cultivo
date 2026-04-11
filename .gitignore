@@ -25,3 +25,8 @@ dist-ssr
 # Vite build timestamp artifacts (contain sandbox paths)
 vite.config.ts.timestamp-*
 .vercel
+
+# Lineage validator Python venv + bytecode (scripts/lineage/)
+scripts/lineage/.venv/
+scripts/lineage/**/__pycache__/
+scripts/lineage/**/*.pyc
