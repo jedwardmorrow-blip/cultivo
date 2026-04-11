@@ -42,3 +42,4 @@ export type { CalendarMilestone, UseRoomScheduleCalendarReturn } from './useRoom
 export { useWorkerStats } from './useWorkerStats';
 export type { WorkerStats } from './useWorkerStats';
 export { useTaskAssignments } from './useTaskAssignments';
+export { usePlantAudit } from './usePlantAudit';

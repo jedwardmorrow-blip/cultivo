@@ -14,7 +14,38 @@ priority: Working document - update every session
 
 ## Hand-Off from Last Session
 
-**Date:** 2026-04-08 (Dual Track: CFO Planning + QA Validation)
+**Date:** 2026-04-11 — Plant Audit UI Phase A (baseline reset tool)
+**Status:** ✅ COMPLETE — typecheck clean, build passing, ready for Sunday 2026-04-12 walk
+
+**What was done:**
+
+Shipped the full Plant Audit surface under `src/features/cultivation/components/plant-audit/`:
+
+1. **Service:** `plantAudit.service.ts` — session CRUD via `fn_generate_plant_audit_number` → insert → pre-seed one `plant_audit_counts` row per active plant_group in scope. `recordPlantAuditCount` computes variance client-side (`physical - db_snapshot`), sets cause_of_death only on negative deltas. Orphan path creates `plant_groups` row first with true count, then audit count row flagged `is_orphan=true`. `applyPlantAudit` calls `fn_apply_plant_audit` RPC.
+2. **Hook:** `usePlantAudit` — sessions list + active session with counts + all action methods. Local patch on count updates avoids full reload.
+3. **Types:** appended at `cultivation.types.ts:681` — `PlantAuditSession`, `PlantAuditCount` (with room_tables/room_sections join), `PlantAuditSummary`, `StartPlantAuditInput`, `RecordPlantAuditCountInput`, `CreateOrphanPlantGroupInput`.
+4. **UI:** `PlantAuditPage` state machine (hub ↔ counting ↔ review ↔ applied), `PlantAuditHub`, `PlantAuditSetupModal`, `PlantAuditCountScreen` (room-layout mirror: groups counts by room → table → section using the join payload, no parallel layout fetch), `AuditGroupRow` (per-count entry with live variance + cause_of_death selector + not-found form + skip/reset), `PlantAuditOrphanModal` (dedicated walk-time capture, constrained strain picker), `PlantAuditReviewScreen` (per-room breakdown + totals), `PlantAuditApplyDialog` (destructive confirm with abandon sub-flow).
+5. **Wiring:** barrel spreads `plantAuditService` into `cultivationService`; `hooks/index.ts` exports `usePlantAudit`; `components/index.ts` exports `PlantAuditPage`; `App.tsx` registers `/cultivation-plant-audit` with `lazyRetry` + `CultivationErrorBoundary`; `sectionNavigation.ts` adds `{ id: 'cultivation-plant-audit', icon: ClipboardList, group: 'secondary' }` in Cultivation section.
+
+**Design system:** liquid glass throughout (`glass-modal`, `glass-card`, `glass-input`, `rounded-cult` containers, `rounded-xl` buttons), semantic tokens only (`cult-accent`, `cult-danger`, `cult-success`, `cult-info`, `cult-warning`, `cult-pending`), status-driven shell tinting on `AuditGroupRow`.
+
+**Sunday 2026-04-12 use cases covered:**
+- Baseline reset: start audit → pre-seeded counts populated from current plant_groups → walk room by room → confirm/correct each group → review → apply (negatives become mortality log entries, positives increment plant_count, orphans are pure evidence).
+- Add plants to existing group: enter `physical_count > db_count_snapshot` → `variance_noted` with positive delta → `fn_apply_plant_audit` increments `plant_groups.plant_count`.
+- Capture plants with no system record: "Orphan" button on room panel → `PlantAuditOrphanModal` → creates plant_group + evidence audit line.
+
+**Build status:** ✅ `npx tsc --noEmit` clean, `npm run build` passing (10.36s)
+
+**Known limitations (deferred to Phase B):**
+- Quick-add list mode for orphans (batch entry)
+- `GREATEST(plant_count - x, 0)` safety net on mortality trigger
+- Inventory Audit UI rewrite
+
+**Follow-ups:** none blocking. Walk-ready for Sunday.
+
+---
+
+## Prior Hand-Off — 2026-04-08 (Dual Track: CFO Planning + QA Validation)
 **Sessions:**
 - [CUL-375](/CUL/issues/CUL-375): Arroya Cash Flow Modeling & Runway Integration (COMPLETE)
 - [CUL-372](/CUL/issues/CUL-372): Arroya Financial Contract Terms & Payment Schedule (COMPLETE)

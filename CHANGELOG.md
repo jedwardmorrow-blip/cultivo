@@ -4,6 +4,36 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-11 - Plant Audit UI (Phase A — baseline reset tool)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ COMPLETE — Ready for Sunday 2026-04-12 baseline reset walk
+
+Ships the Plant Audit surface: pre-seeded room-by-room count screen that mirrors the physical room layout, walk-time orphan group capture, variance review, and destructive apply dialog that hands off to `fn_apply_plant_audit` (negatives → mortality log, positives → direct plant_count increment, orphans → no-op evidence).
+
+**New files:**
+- `src/features/cultivation/services/plantAudit.service.ts` — session CRUD, pre-seeded count creation, variance-computed recordCount, orphan plant group creation, review/apply/abandon transitions
+- `src/features/cultivation/hooks/usePlantAudit.ts` — sessions list + active session state + action methods
+- `src/features/cultivation/components/plant-audit/` — `PlantAuditPage` (state machine), `PlantAuditHub`, `PlantAuditSetupModal`, `PlantAuditCountScreen` (room-layout mirror, per-table/per-section nesting), `AuditGroupRow` (per-count entry with live variance + cause_of_death selector), `PlantAuditOrphanModal` (dedicated walk-time capture), `PlantAuditReviewScreen` (per-room breakdown), `PlantAuditApplyDialog` (destructive confirm)
+- Appended Plant Audit types to `src/features/cultivation/types/cultivation.types.ts`
+
+**Wiring:**
+- `cultivation.service.ts` spreads `plantAuditService`
+- `hooks/index.ts` exports `usePlantAudit`
+- `components/index.ts` exports `PlantAuditPage`
+- `App.tsx` registers `/cultivation-plant-audit` with lazyRetry + CultivationErrorBoundary
+- `sectionNavigation.ts` adds Cultivation secondary nav entry (ClipboardList icon)
+
+**Design notes:**
+- Liquid glass system throughout (`glass-modal`, `glass-card`, `glass-input`, `rounded-cult`, `rounded-xl` for buttons)
+- Room-layout mirror: counts grouped by room → table → section using join data on `plant_audit_counts.plant_groups.{room_tables, room_sections}` (no parallel layout fetch)
+- Positive variance flows through `fn_apply_plant_audit` as `plant_count` increment — supports Sunday "add plants to existing group" use case without a separate add-plants UI
+- Orphan flow creates the `plant_groups` row first with its true count, then writes an audit count row with `is_orphan=true` as pure evidence (RPC no-op on apply)
+
+**Build:** ✅ typecheck clean, `npm run build` passing
+
+---
+
 ## 2026-04-04 - CUL-375, CUL-372: CFO Arroya Partnership Financial Planning (Complete)
 
 **Type:** Financial Planning — Business Development

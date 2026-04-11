@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Archive, Box, Leaf, Package, Scissors } from 'lucide-react';
+import { Archive, Box, Leaf, Package } from 'lucide-react';
 import { PageSkeleton } from '@/shared/components';
 import { useSharedInventoryData } from '../context/InventoryDataContext';
 import { useInventoryFilters } from '../hooks/useInventoryFilters';
@@ -13,7 +13,6 @@ import {
 } from './InventoryViews';
 import { ConversionsView } from './ConversionsView';
 import { ConversionHistoryView } from './ConversionHistoryView';
-import { AuditManagement } from './AuditManagement';
 import { ConsolidateView } from './ConsolidateView';
 import { SalesInventoryView } from './SalesInventoryView';
 import type { BulkSubTab } from '../types';
@@ -225,8 +224,14 @@ export function ConversionHistoryViewWrapper() {
 
 export function AuditsViewWrapper() {
   return (
-    <ViewShell title="Audit Management" subtitle="Perform inventory audits and track variances">
-      <AuditManagement />
+    <ViewShell title="Inventory Audits" subtitle="Scoped inventory audit sessions — rewriting for Sunday baseline reset">
+      <div className="rounded-2xl border border-cult-border bg-cult-surface-raised p-8 text-center">
+        <p className="text-cult-text-primary font-medium">Inventory Audit UI under reconstruction</p>
+        <p className="text-cult-text-muted text-sm mt-2">
+          Phase B rewrite in progress. The audit DB contract and RPCs are live on staging and production; this
+          screen reappears with the new scoped-session workflow.
+        </p>
+      </div>
     </ViewShell>
   );
 }

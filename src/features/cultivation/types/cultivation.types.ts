@@ -678,3 +678,109 @@ export interface DailyDigest {
   feedingLogs: FeedingLog[];
   mortalityLogs: PlantMortalityLog[];
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Plant Audit (Phase A — baseline reset tool)
+// ═══════════════════════════════════════════════════════════════════════
+
+export type PlantAuditSessionStatus = 'in_progress' | 'review' | 'applied' | 'abandoned';
+export type PlantAuditCountStatus =
+  | 'pending'
+  | 'counted'
+  | 'variance_noted'
+  | 'orphan_created'
+  | 'not_found'
+  | 'skipped';
+export type PlantAuditCauseOfDeath =
+  | 'pest'
+  | 'disease'
+  | 'nutrient'
+  | 'environmental'
+  | 'mechanical'
+  | 'unknown'
+  | 'other'
+  | 'cull_at_move';
+
+type PlantAuditSessionRow = Tables['plant_audit_sessions']['Row'];
+type PlantAuditCountRow = Tables['plant_audit_counts']['Row'];
+
+export interface PlantAuditSession extends Omit<PlantAuditSessionRow, 'status'> {
+  status: PlantAuditSessionStatus;
+}
+
+export interface PlantAuditCount
+  extends Omit<PlantAuditCountRow, 'status' | 'cause_of_death'> {
+  status: PlantAuditCountStatus;
+  cause_of_death: PlantAuditCauseOfDeath | null;
+  // Join fields populated by select
+  plant_groups?: {
+    id: string;
+    plant_count: number;
+    growth_stage: GrowthStage;
+    room_table_id: string | null;
+    room_section_id: string | null;
+    strains?: { name: string; abbreviation: string | null } | null;
+    room_tables?: { table_number: number; table_name: string | null } | null;
+    room_sections?: { section_label: string } | null;
+  } | null;
+  strains?: { name: string; abbreviation: string | null } | null;
+  grow_rooms?: { name: string; room_code: string } | null;
+}
+
+export interface PlantAuditSessionWithCounts extends PlantAuditSession {
+  counts: PlantAuditCount[];
+}
+
+export interface PlantAuditSummary {
+  rooms_audited: number;
+  groups_in_scope: number;
+  groups_counted: number;
+  groups_clean: number;
+  groups_with_neg_variance: number;
+  groups_with_pos_variance: number;
+  groups_orphan_created: number;
+  groups_not_found: number;
+  groups_skipped: number;
+  mortality_rows_written: number;
+  total_deaths_logged: number;
+  total_plants_added: number;
+  by_cause: Record<string, number>;
+  by_room: Record<
+    string,
+    {
+      total: number;
+      clean: number;
+      neg_variance: number;
+      pos_variance: number;
+      not_found: number;
+      orphan: number;
+      skipped: number;
+      deaths_logged: number;
+      plants_added: number;
+    }
+  >;
+  applied_at: string;
+  applied_by: string | null;
+}
+
+export interface StartPlantAuditInput {
+  room_scope: string[]; // grow_room ids — seeds counts for every active plant group in these rooms
+  notes?: string;
+}
+
+export interface RecordPlantAuditCountInput {
+  physical_count: number;
+  cause_of_death?: PlantAuditCauseOfDeath | null;
+  notes?: string | null;
+}
+
+export interface CreateOrphanPlantGroupInput {
+  audit_session_id: string;
+  grow_room_id: string;
+  strain_id: string;
+  plant_count: number;
+  growth_stage?: GrowthStage;
+  room_table_id?: string | null;
+  room_section_id?: string | null;
+  notes?: string | null;
+}

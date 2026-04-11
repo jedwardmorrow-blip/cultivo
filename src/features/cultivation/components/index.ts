@@ -47,3 +47,4 @@ export { WeekTaskGrid } from './WeekTaskGrid';
 export { PlantMoveSheet } from './PlantMoveSheet';
 export { RoomCapacityBar } from './RoomCapacityBar';
 export { HarvestPipeline } from './HarvestPipeline';
+export { PlantAuditPage } from './plant-audit';

@@ -12,10 +12,6 @@ export * from './useInventorySearch';
 export * from './usePackageIdGenerator';
 export * from './useBulkBagPackageId';
 
-export * from './useAudit';
-export * from './useAuditHistory';
-export * from './useVarianceLog';
 export * from './useAdjustment';
-export * from './useAuditPDF';
 export * from './useSessionContributions';
 export * from './useInventoryReview';

@@ -277,6 +277,135 @@ export type Database = {
           },
         ]
       }
+      batch_chemical_additives: {
+        Row: {
+          active_ingredient: string | null
+          additive_type: string
+          application_date: string
+          application_method: string | null
+          applicator_user_id: string | null
+          batch_id: string
+          created_at: string | null
+          epa_registration_number: string | null
+          id: string
+          ipm_spray_log_id: string | null
+          notes: string | null
+          pre_harvest_interval_days: number | null
+          product_name: string
+          rate_applied: string | null
+        }
+        Insert: {
+          active_ingredient?: string | null
+          additive_type: string
+          application_date: string
+          application_method?: string | null
+          applicator_user_id?: string | null
+          batch_id: string
+          created_at?: string | null
+          epa_registration_number?: string | null
+          id?: string
+          ipm_spray_log_id?: string | null
+          notes?: string | null
+          pre_harvest_interval_days?: number | null
+          product_name: string
+          rate_applied?: string | null
+        }
+        Update: {
+          active_ingredient?: string | null
+          additive_type?: string
+          application_date?: string
+          application_method?: string | null
+          applicator_user_id?: string | null
+          batch_id?: string
+          created_at?: string | null
+          epa_registration_number?: string | null
+          id?: string
+          ipm_spray_log_id?: string | null
+          notes?: string | null
+          pre_harvest_interval_days?: number | null
+          product_name?: string
+          rate_applied?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "batch_chemical_additives_ipm_spray_log_id_fkey"
+            columns: ["ipm_spray_log_id"]
+            isOneToOne: false
+            referencedRelation: "ipm_spray_log"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batch_id_backfill_log: {
         Row: {
           backfill_method: string | null
@@ -775,9 +904,12 @@ export type Database = {
           bucking_started_at: string | null
           clone_date: string | null
           coa_id: string | null
+          coa_status: Database["public"]["Enums"]["batch_coa_status"]
           completed_at: string | null
           created_at: string | null
           created_by: string | null
+          cure_expected_complete_date: string | null
+          cure_start_date: string | null
           depleted_at: string | null
           drying_started_at: string | null
           flower_started_at: string | null
@@ -801,6 +933,8 @@ export type Database = {
           status: string | null
           strain: string
           strain_id: string | null
+          testing_facility_id: string | null
+          testing_submitted_at: string | null
           trimming_started_at: string | null
           updated_at: string | null
           veg_started_at: string | null
@@ -811,9 +945,12 @@ export type Database = {
           bucking_started_at?: string | null
           clone_date?: string | null
           coa_id?: string | null
+          coa_status?: Database["public"]["Enums"]["batch_coa_status"]
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          cure_expected_complete_date?: string | null
+          cure_start_date?: string | null
           depleted_at?: string | null
           drying_started_at?: string | null
           flower_started_at?: string | null
@@ -837,6 +974,8 @@ export type Database = {
           status?: string | null
           strain: string
           strain_id?: string | null
+          testing_facility_id?: string | null
+          testing_submitted_at?: string | null
           trimming_started_at?: string | null
           updated_at?: string | null
           veg_started_at?: string | null
@@ -847,9 +986,12 @@ export type Database = {
           bucking_started_at?: string | null
           clone_date?: string | null
           coa_id?: string | null
+          coa_status?: Database["public"]["Enums"]["batch_coa_status"]
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          cure_expected_complete_date?: string | null
+          cure_start_date?: string | null
           depleted_at?: string | null
           drying_started_at?: string | null
           flower_started_at?: string | null
@@ -873,6 +1015,8 @@ export type Database = {
           status?: string | null
           strain?: string
           strain_id?: string | null
+          testing_facility_id?: string | null
+          testing_submitted_at?: string | null
           trimming_started_at?: string | null
           updated_at?: string | null
           veg_started_at?: string | null
@@ -1030,6 +1174,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -1396,6 +1547,7 @@ export type Database = {
           completed_by: string | null
           created_at: string
           created_by: string | null
+          dried_at: string | null
           dry_room_id: string
           dry_weight_grams: number
           harvest_session_id: string
@@ -1403,6 +1555,7 @@ export type Database = {
           notes: string | null
           session_status: string
           water_loss_grams: number | null
+          wet_to_dry_loss_pct: number | null
         }
         Insert: {
           batch_registry_id: string
@@ -1413,6 +1566,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by?: string | null
+          dried_at?: string | null
           dry_room_id: string
           dry_weight_grams: number
           harvest_session_id: string
@@ -1420,6 +1574,7 @@ export type Database = {
           notes?: string | null
           session_status?: string
           water_loss_grams?: number | null
+          wet_to_dry_loss_pct?: number | null
         }
         Update: {
           batch_registry_id?: string
@@ -1430,6 +1585,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by?: string | null
+          dried_at?: string | null
           dry_room_id?: string
           dry_weight_grams?: number
           harvest_session_id?: string
@@ -1437,6 +1593,7 @@ export type Database = {
           notes?: string | null
           session_status?: string
           water_loss_grams?: number | null
+          wet_to_dry_loss_pct?: number | null
         }
         Relationships: [
           {
@@ -1597,6 +1754,7 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           created_by: string | null
+          dispatch_item_id: string | null
           finalization_status: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bucked: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls: Database["public"]["Enums"]["finalization_status"]
@@ -1640,6 +1798,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          dispatch_item_id?: string | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bucked?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls?: Database["public"]["Enums"]["finalization_status"]
@@ -1683,6 +1842,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          dispatch_item_id?: string | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bucked?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls?: Database["public"]["Enums"]["finalization_status"]
@@ -1799,6 +1959,13 @@ export type Database = {
             referencedColumns: ["staff_id"]
           },
           {
+            foreignKeyName: "bucking_sessions_dispatch_item_id_fkey"
+            columns: ["dispatch_item_id"]
+            isOneToOne: false
+            referencedRelation: "production_dispatch_items"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bucking_sessions_strain_id_fkey"
             columns: ["strain_id"]
             isOneToOne: false
@@ -1852,6 +2019,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "bucking_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -1909,17 +2083,12 @@ export type Database = {
           batch_id: string | null
           batch_number: string
           cbd_percentage: number | null
-          cbda_percentage: number | null
           created_at: string | null
           harvest_date: string | null
-          heavy_metals_pass: boolean | null
           id: string
           is_active: boolean | null
           manufacture_date: string | null
-          microbials_pass: boolean | null
           pdf_file_path: string | null
-          pesticides_pass: boolean | null
-          residual_solvents_pass: boolean | null
           sample_date: string | null
           strain_name: string
           terpene_1_name: string | null
@@ -1940,17 +2109,12 @@ export type Database = {
           batch_id?: string | null
           batch_number: string
           cbd_percentage?: number | null
-          cbda_percentage?: number | null
           created_at?: string | null
           harvest_date?: string | null
-          heavy_metals_pass?: boolean | null
           id?: string
           is_active?: boolean | null
           manufacture_date?: string | null
-          microbials_pass?: boolean | null
           pdf_file_path?: string | null
-          pesticides_pass?: boolean | null
-          residual_solvents_pass?: boolean | null
           sample_date?: string | null
           strain_name: string
           terpene_1_name?: string | null
@@ -1971,17 +2135,12 @@ export type Database = {
           batch_id?: string | null
           batch_number?: string
           cbd_percentage?: number | null
-          cbda_percentage?: number | null
           created_at?: string | null
           harvest_date?: string | null
-          heavy_metals_pass?: boolean | null
           id?: string
           is_active?: boolean | null
           manufacture_date?: string | null
-          microbials_pass?: boolean | null
           pdf_file_path?: string | null
-          pesticides_pass?: boolean | null
-          residual_solvents_pass?: boolean | null
           sample_date?: string | null
           strain_name?: string
           terpene_1_name?: string | null
@@ -2647,6 +2806,108 @@ export type Database = {
           variance_percentage?: number | null
         }
         Relationships: []
+      }
+      conversion_locks: {
+        Row: {
+          created_at: string
+          id: string
+          source_inventory_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source_inventory_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source_inventory_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "conversion_packages_detail_view"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_discrepancies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_reservation_summary"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_details"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_with_reservations"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "v_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_balances"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversion_locks_source_inventory_id_fkey"
+            columns: ["source_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inventory_strain_data_quality"
+            referencedColumns: ["inventory_item_id"]
+          },
+        ]
       }
       conversion_packages: {
         Row: {
@@ -3878,6 +4139,148 @@ export type Database = {
           },
         ]
       }
+      customer_communication_preferences: {
+        Row: {
+          coa_send_timing: string
+          created_at: string
+          customer_id: string
+          id: string
+          invoice_lead_time_hours: number
+          label_requirements: string | null
+          manifest_method: string
+          scheduling_link: string | null
+          updated_at: string
+        }
+        Insert: {
+          coa_send_timing?: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          invoice_lead_time_hours?: number
+          label_requirements?: string | null
+          manifest_method?: string
+          scheduling_link?: string | null
+          updated_at?: string
+        }
+        Update: {
+          coa_send_timing?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          invoice_lead_time_hours?: number
+          label_requirements?: string | null
+          manifest_method?: string
+          scheduling_link?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_account_health_dashboard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_account_scores"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_chain_location_performance"
+            referencedColumns: ["child_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_customer_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_monthly_revenue_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_product_mix_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_prospect_pipeline"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_revenue_pipeline"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_store_scorecard"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "crm_visit_cadence"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "pending_invoices"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "v_ar_customer_behavior"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "v_ar_summary_by_customer"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "customer_communication_preferences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["customer_id"]
+          },
+        ]
+      }
       customer_contacts: {
         Row: {
           created_at: string
@@ -3888,6 +4291,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          role: string | null
           title: string | null
           updated_at: string
         }
@@ -3900,6 +4304,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          role?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -3912,6 +4317,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          role?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -4788,6 +5194,51 @@ export type Database = {
           },
         ]
       }
+      delivery_driver_assignments: {
+        Row: {
+          created_at: string | null
+          delivery_date: string
+          id: string
+          notes: string | null
+          staff_id: string
+          updated_at: string | null
+          zone_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_date: string
+          id?: string
+          notes?: string | null
+          staff_id: string
+          updated_at?: string | null
+          zone_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delivery_date?: string
+          id?: string
+          notes?: string | null
+          staff_id?: string
+          updated_at?: string | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_driver_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_driver_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_performance_summary"
+            referencedColumns: ["staff_id"]
+          },
+        ]
+      }
       delivery_drivers: {
         Row: {
           created_at: string | null
@@ -5397,6 +5848,7 @@ export type Database = {
       email_send_log: {
         Row: {
           created_at: string
+          document_type: string | null
           email_from: string
           email_to: string
           error_message: string | null
@@ -5409,6 +5861,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_type?: string | null
           email_from: string
           email_to: string
           error_message?: string | null
@@ -5421,6 +5874,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_type?: string | null
           email_from?: string
           email_to?: string
           error_message?: string | null
@@ -6058,6 +6512,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "fresh_frozen_packages_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       grow_rooms: {
@@ -6437,6 +6898,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "hash_packages_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "hash_packages_wash_run_id_fkey"
             columns: ["wash_run_id"]
             isOneToOne: false
@@ -6593,6 +7061,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "internal_bucked_inventory_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "internal_bucked_inventory_synced_from_snapshot_id_fkey"
             columns: ["synced_from_snapshot_id"]
             isOneToOne: false
@@ -6707,6 +7182,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "internal_bulk_inventory_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       internal_packaged_inventory: {
@@ -6786,6 +7268,138 @@ export type Database = {
           },
         ]
       }
+      inventory_audit_line_items: {
+        Row: {
+          actual_qty: number
+          audit_id: string
+          batch_id: string | null
+          corrective_action: string | null
+          created_at: string | null
+          criminal_activity_flag: boolean
+          expected_qty: number
+          explanation: string | null
+          id: string
+          product_name: string
+          resolved_at: string | null
+          resolved_by: string | null
+          updated_at: string | null
+          variance_g: number | null
+          variance_status: Database["public"]["Enums"]["audit_variance_status"]
+        }
+        Insert: {
+          actual_qty: number
+          audit_id: string
+          batch_id?: string | null
+          corrective_action?: string | null
+          created_at?: string | null
+          criminal_activity_flag?: boolean
+          expected_qty: number
+          explanation?: string | null
+          id?: string
+          product_name: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string | null
+          variance_g?: number | null
+          variance_status?: Database["public"]["Enums"]["audit_variance_status"]
+        }
+        Update: {
+          actual_qty?: number
+          audit_id?: string
+          batch_id?: string | null
+          corrective_action?: string | null
+          created_at?: string | null
+          criminal_activity_flag?: boolean
+          expected_qty?: number
+          explanation?: string | null
+          id?: string
+          product_name?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string | null
+          variance_g?: number | null
+          variance_status?: Database["public"]["Enums"]["audit_variance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_audit_line_items_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_line_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+        ]
+      }
       inventory_audit_lines: {
         Row: {
           actual_qty: number | null
@@ -6793,11 +7407,15 @@ export type Database = {
           batch: string | null
           confirmed: boolean | null
           confirmed_at: string | null
+          counted_at: string | null
+          counted_by: string | null
           created_at: string | null
           expected_qty: number
           id: string
           inventory_item_id: string | null
+          is_orphan: boolean
           line_order: number | null
+          line_status: string
           package_id: string
           product_name: string
           room: string | null
@@ -6816,11 +7434,15 @@ export type Database = {
           batch?: string | null
           confirmed?: boolean | null
           confirmed_at?: string | null
+          counted_at?: string | null
+          counted_by?: string | null
           created_at?: string | null
           expected_qty: number
           id?: string
           inventory_item_id?: string | null
+          is_orphan?: boolean
           line_order?: number | null
+          line_status?: string
           package_id: string
           product_name: string
           room?: string | null
@@ -6841,11 +7463,15 @@ export type Database = {
           batch?: string | null
           confirmed?: boolean | null
           confirmed_at?: string | null
+          counted_at?: string | null
+          counted_by?: string | null
           created_at?: string | null
           expected_qty?: number
           id?: string
           inventory_item_id?: string | null
+          is_orphan?: boolean
           line_order?: number | null
+          line_status?: string
           package_id?: string
           product_name?: string
           room?: string | null
@@ -6935,13 +7561,128 @@ export type Database = {
             foreignKeyName: "inventory_audit_lines_inventory_item_id_fkey"
             columns: ["inventory_item_id"]
             isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_audit_lines_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
             referencedRelation: "vw_inventory_strain_data_quality"
             referencedColumns: ["inventory_item_id"]
           },
         ]
       }
+      inventory_audit_notifications: {
+        Row: {
+          acknowledged_at: string | null
+          audit_line_item_id: string
+          created_at: string | null
+          id: string
+          notified_at: string
+          notified_user_id: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          audit_line_item_id: string
+          created_at?: string | null
+          id?: string
+          notified_at?: string
+          notified_user_id?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          audit_line_item_id?: string
+          created_at?: string | null
+          id?: string
+          notified_at?: string
+          notified_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_audit_notifications_audit_line_item_id_fkey"
+            columns: ["audit_line_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_audit_line_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_audit_periods: {
+        Row: {
+          acquisitions_g: number
+          audit_period_end: string
+          audit_period_start: string
+          auditor_user_id: string | null
+          beginning_inventory_g: number
+          corrective_action: string | null
+          created_at: string | null
+          disposals_g: number
+          ending_inventory_calculated_g: number | null
+          ending_inventory_physical_g: number | null
+          harvests_g: number
+          id: string
+          notes: string | null
+          sales_g: number
+          status: string
+          testing_submissions_g: number
+          transfers_g: number
+          updated_at: string | null
+          variance_explanation: string | null
+          variance_g: number | null
+        }
+        Insert: {
+          acquisitions_g?: number
+          audit_period_end: string
+          audit_period_start: string
+          auditor_user_id?: string | null
+          beginning_inventory_g?: number
+          corrective_action?: string | null
+          created_at?: string | null
+          disposals_g?: number
+          ending_inventory_calculated_g?: number | null
+          ending_inventory_physical_g?: number | null
+          harvests_g?: number
+          id?: string
+          notes?: string | null
+          sales_g?: number
+          status?: string
+          testing_submissions_g?: number
+          transfers_g?: number
+          updated_at?: string | null
+          variance_explanation?: string | null
+          variance_g?: number | null
+        }
+        Update: {
+          acquisitions_g?: number
+          audit_period_end?: string
+          audit_period_start?: string
+          auditor_user_id?: string | null
+          beginning_inventory_g?: number
+          corrective_action?: string | null
+          created_at?: string | null
+          disposals_g?: number
+          ending_inventory_calculated_g?: number | null
+          ending_inventory_physical_g?: number | null
+          harvests_g?: number
+          id?: string
+          notes?: string | null
+          sales_g?: number
+          status?: string
+          testing_submissions_g?: number
+          transfers_g?: number
+          updated_at?: string | null
+          variance_explanation?: string | null
+          variance_g?: number | null
+        }
+        Relationships: []
+      }
       inventory_audits: {
         Row: {
+          abandoned_at: string | null
+          applied_at: string | null
+          applied_by: string | null
+          archived_at: string | null
           audit_number: string
           cancellation_reason: string | null
           cancelled_at: string | null
@@ -6955,13 +7696,19 @@ export type Database = {
           is_locked: boolean | null
           notes: string | null
           packages_with_variance: number | null
+          room_scope: string[] | null
           selected_stages: string[]
           status: Database["public"]["Enums"]["audit_status"]
+          summary: Json | null
           total_packages: number | null
           total_variance_amount: number | null
           updated_at: string | null
         }
         Insert: {
+          abandoned_at?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          archived_at?: string | null
           audit_number: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -6975,13 +7722,19 @@ export type Database = {
           is_locked?: boolean | null
           notes?: string | null
           packages_with_variance?: number | null
+          room_scope?: string[] | null
           selected_stages: string[]
           status?: Database["public"]["Enums"]["audit_status"]
+          summary?: Json | null
           total_packages?: number | null
           total_variance_amount?: number | null
           updated_at?: string | null
         }
         Update: {
+          abandoned_at?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          archived_at?: string | null
           audit_number?: string
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -6995,8 +7748,10 @@ export type Database = {
           is_locked?: boolean | null
           notes?: string | null
           packages_with_variance?: number | null
+          room_scope?: string[] | null
           selected_stages?: string[]
           status?: Database["public"]["Enums"]["audit_status"]
+          summary?: Json | null
           total_packages?: number | null
           total_variance_amount?: number | null
           updated_at?: string | null
@@ -7389,6 +8144,13 @@ export type Database = {
             foreignKeyName: "inventory_items_parent_item_id_fkey"
             columns: ["parent_item_id"]
             isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
             referencedRelation: "vw_inventory_strain_data_quality"
             referencedColumns: ["inventory_item_id"]
           },
@@ -7467,6 +8229,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -7621,6 +8390,13 @@ export type Database = {
             foreignKeyName: "inventory_movements_dest_item_id_fkey"
             columns: ["dest_item_id"]
             isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_dest_item_id_fkey"
+            columns: ["dest_item_id"]
+            isOneToOne: false
             referencedRelation: "vw_inventory_strain_data_quality"
             referencedColumns: ["inventory_item_id"]
           },
@@ -7686,6 +8462,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_inventory_balances"
             referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_source_item_id_fkey"
+            columns: ["source_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "inventory_movements_source_item_id_fkey"
@@ -8466,6 +9249,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "labels_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       manifests: {
@@ -8528,6 +9318,36 @@ export type Database = {
           total_weight_grams?: number | null
           updated_at?: string | null
           vehicle_info?: string | null
+        }
+        Relationships: []
+      }
+      metrc_credentials: {
+        Row: {
+          api_base_url: string
+          created_at: string
+          facility_license: string
+          id: string
+          is_active: boolean
+          state_code: string
+          vault_secret_id: string | null
+        }
+        Insert: {
+          api_base_url: string
+          created_at?: string
+          facility_license: string
+          id?: string
+          is_active?: boolean
+          state_code: string
+          vault_secret_id?: string | null
+        }
+        Update: {
+          api_base_url?: string
+          created_at?: string
+          facility_license?: string
+          id?: string
+          is_active?: boolean
+          state_code?: string
+          vault_secret_id?: string | null
         }
         Relationships: []
       }
@@ -9034,6 +9854,129 @@ export type Database = {
           },
         ]
       }
+      order_item_soft_reservations: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          order_item_id: string
+          qty_reserved: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          order_item_id: string
+          qty_reserved: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          order_item_id?: string
+          qty_reserved?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "conversion_packages_detail_view"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_discrepancies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_reservation_summary"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_details"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_with_reservations"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_balances"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inventory_strain_data_quality"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items_with_testing_data"
+            referencedColumns: ["order_item_id"]
+          },
+          {
+            foreignKeyName: "order_item_soft_reservations_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["order_item_id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           batch_id: string | null
@@ -9046,6 +9989,7 @@ export type Database = {
           order_id: string
           product_id: string
           quantity: number
+          soft_reserved_qty: number
           status: Database["public"]["Enums"]["order_item_status"] | null
           strain: string | null
           strain_id: string | null
@@ -9065,6 +10009,7 @@ export type Database = {
           order_id: string
           product_id: string
           quantity: number
+          soft_reserved_qty?: number
           status?: Database["public"]["Enums"]["order_item_status"] | null
           strain?: string | null
           strain_id?: string | null
@@ -9084,6 +10029,7 @@ export type Database = {
           order_id?: string
           product_id?: string
           quantity?: number
+          soft_reserved_qty?: number
           status?: Database["public"]["Enums"]["order_item_status"] | null
           strain?: string | null
           strain_id?: string | null
@@ -9329,6 +10275,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "order_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -9771,6 +10724,7 @@ export type Database = {
           completed_at: string | null
           conversion_metadata: Json | null
           created_at: string | null
+          dispatch_item_id: string | null
           ending_weight: number | null
           finalization_status: Database["public"]["Enums"]["finalization_status"]
           finalization_status_14g: string
@@ -9829,6 +10783,7 @@ export type Database = {
           completed_at?: string | null
           conversion_metadata?: Json | null
           created_at?: string | null
+          dispatch_item_id?: string | null
           ending_weight?: number | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_14g?: string
@@ -9887,6 +10842,7 @@ export type Database = {
           completed_at?: string | null
           conversion_metadata?: Json | null
           created_at?: string | null
+          dispatch_item_id?: string | null
           ending_weight?: number | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_14g?: string
@@ -10010,6 +10966,13 @@ export type Database = {
             referencedColumns: ["batch_id"]
           },
           {
+            foreignKeyName: "packaging_sessions_dispatch_item_id_fkey"
+            columns: ["dispatch_item_id"]
+            isOneToOne: false
+            referencedRelation: "production_dispatch_items"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "packaging_sessions_packager_staff_id_fkey"
             columns: ["packager_staff_id"]
             isOneToOne: false
@@ -10077,6 +11040,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "packaging_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -10387,6 +11357,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "planned_cycles_target_room_id_fkey"
             columns: ["target_room_id"]
             isOneToOne: false
@@ -10415,6 +11392,239 @@ export type Database = {
             referencedColumns: ["room_id"]
           },
         ]
+      }
+      plant_audit_counts: {
+        Row: {
+          audit_session_id: string
+          cause_of_death: string | null
+          counted_at: string | null
+          counted_by: string | null
+          created_at: string
+          db_count_snapshot: number
+          grow_room_id: string
+          id: string
+          is_orphan: boolean
+          missing_plant_ids: string[] | null
+          mortality_log_id: string | null
+          notes: string | null
+          physical_count: number | null
+          plant_group_id: string | null
+          status: string
+          strain_id: string | null
+          strain_name_snapshot: string | null
+          updated_at: string
+          variance: number | null
+        }
+        Insert: {
+          audit_session_id: string
+          cause_of_death?: string | null
+          counted_at?: string | null
+          counted_by?: string | null
+          created_at?: string
+          db_count_snapshot?: number
+          grow_room_id: string
+          id?: string
+          is_orphan?: boolean
+          missing_plant_ids?: string[] | null
+          mortality_log_id?: string | null
+          notes?: string | null
+          physical_count?: number | null
+          plant_group_id?: string | null
+          status?: string
+          strain_id?: string | null
+          strain_name_snapshot?: string | null
+          updated_at?: string
+          variance?: number | null
+        }
+        Update: {
+          audit_session_id?: string
+          cause_of_death?: string | null
+          counted_at?: string | null
+          counted_by?: string | null
+          created_at?: string
+          db_count_snapshot?: number
+          grow_room_id?: string
+          id?: string
+          is_orphan?: boolean
+          missing_plant_ids?: string[] | null
+          mortality_log_id?: string | null
+          notes?: string | null
+          physical_count?: number | null
+          plant_group_id?: string | null
+          status?: string
+          strain_id?: string | null
+          strain_name_snapshot?: string | null
+          updated_at?: string
+          variance?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_audit_counts_audit_session_id_fkey"
+            columns: ["audit_session_id"]
+            isOneToOne: false
+            referencedRelation: "plant_audit_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["grow_room_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_occupancy"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_operational_state"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_mortality_log_id_fkey"
+            columns: ["mortality_log_id"]
+            isOneToOne: false
+            referencedRelation: "plant_mortality_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_plant_group_id_fkey"
+            columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "projected_inventory_requirements"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strain_metadata_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_rosin_strain_yields"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_analytics_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_basics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "plant_audit_counts_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+        ]
+      }
+      plant_audit_sessions: {
+        Row: {
+          abandoned_at: string | null
+          applied_at: string | null
+          applied_by: string | null
+          audit_number: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          initiated_by: string | null
+          notes: string | null
+          review_started_at: string | null
+          room_scope: string[] | null
+          started_at: string
+          status: string
+          summary: Json | null
+          updated_at: string
+        }
+        Insert: {
+          abandoned_at?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          audit_number: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          notes?: string | null
+          review_started_at?: string | null
+          room_scope?: string[] | null
+          started_at?: string
+          status?: string
+          summary?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          abandoned_at?: string | null
+          applied_at?: string | null
+          applied_by?: string | null
+          audit_number?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          initiated_by?: string | null
+          notes?: string | null
+          review_started_at?: string | null
+          room_scope?: string[] | null
+          started_at?: string
+          status?: string
+          summary?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       plant_group_cut_sessions: {
         Row: {
@@ -10892,6 +12102,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "plant_groups_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       plant_mortality_log: {
@@ -10980,6 +12197,47 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_room_operational_state"
             referencedColumns: ["room_id"]
+          },
+        ]
+      }
+      plant_stage_transitions: {
+        Row: {
+          created_at: string
+          from_stage: string | null
+          id: string
+          notes: string | null
+          plant_group_id: string
+          to_stage: string
+          transitioned_at: string
+          transitioned_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          notes?: string | null
+          plant_group_id: string
+          to_stage: string
+          transitioned_at?: string
+          transitioned_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          notes?: string | null
+          plant_group_id?: string
+          to_stage?: string
+          transitioned_at?: string
+          transitioned_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_stage_transitions_plant_group_id_fkey"
+            columns: ["plant_group_id"]
+            isOneToOne: false
+            referencedRelation: "plant_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -11313,6 +12571,256 @@ export type Database = {
         }
         Relationships: []
       }
+      production_dispatch_items: {
+        Row: {
+          assigned_staff_id: string | null
+          batch_registry_id: string
+          created_at: string | null
+          created_by_user_id: string | null
+          delivery_route_id: string | null
+          id: string
+          inventory_item_id: string | null
+          order_item_id: string | null
+          priority: number
+          processing_stage: string
+          quantity_g: number | null
+          quantity_units_completed: number | null
+          quantity_units_target: number | null
+          ready_by: string | null
+          status: string
+          treatment_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_staff_id?: string | null
+          batch_registry_id: string
+          created_at?: string | null
+          created_by_user_id?: string | null
+          delivery_route_id?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          order_item_id?: string | null
+          priority?: number
+          processing_stage: string
+          quantity_g?: number | null
+          quantity_units_completed?: number | null
+          quantity_units_target?: number | null
+          ready_by?: string | null
+          status?: string
+          treatment_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_staff_id?: string | null
+          batch_registry_id?: string
+          created_at?: string | null
+          created_by_user_id?: string | null
+          delivery_route_id?: string | null
+          id?: string
+          inventory_item_id?: string | null
+          order_item_id?: string | null
+          priority?: number
+          processing_stage?: string
+          quantity_g?: number | null
+          quantity_units_completed?: number | null
+          quantity_units_target?: number | null
+          ready_by?: string | null
+          status?: string
+          treatment_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_dispatch_items_assigned_staff_id_fkey"
+            columns: ["assigned_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_assigned_staff_id_fkey"
+            columns: ["assigned_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_performance_summary"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_delivery_route_id_fkey"
+            columns: ["delivery_route_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "conversion_packages_detail_view"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_discrepancies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_reservation_summary"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_details"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "package_assignments_with_reservations"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_atp"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_balances"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inventory_strain_data_quality"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items_with_testing_data"
+            referencedColumns: ["order_item_id"]
+          },
+          {
+            foreignKeyName: "production_dispatch_items_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_by_order"
+            referencedColumns: ["order_item_id"]
+          },
+        ]
+      }
       products: {
         Row: {
           allows_fractional_quantity: boolean | null
@@ -11515,6 +13023,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "products_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
           {
@@ -11782,6 +13297,81 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_feed_overrides: {
+        Row: {
+          created_at: string
+          grow_room_id: string
+          id: string
+          product_overrides: Json
+          program_week_id: string
+          target_ec: number | null
+          target_ph_max: number | null
+          target_ph_min: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          grow_room_id: string
+          id?: string
+          product_overrides?: Json
+          program_week_id: string
+          target_ec?: number | null
+          target_ph_max?: number | null
+          target_ph_min?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          grow_room_id?: string
+          id?: string
+          product_overrides?: Json
+          program_week_id?: string
+          target_ec?: number | null
+          target_ph_max?: number | null
+          target_ph_min?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_feed_overrides_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "grow_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_feed_overrides_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["grow_room_id"]
+          },
+          {
+            foreignKeyName: "room_feed_overrides_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_occupancy"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_feed_overrides_grow_room_id_fkey"
+            columns: ["grow_room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_operational_state"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_feed_overrides_program_week_id_fkey"
+            columns: ["program_week_id"]
+            isOneToOne: false
+            referencedRelation: "feed_program_weeks"
             referencedColumns: ["id"]
           },
         ]
@@ -12249,6 +13839,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "rosin_packages_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -12932,6 +14529,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "strain_aliases_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       strain_intelligence_log: {
@@ -13037,6 +14641,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "strain_intelligence_log_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       strain_metadata: {
@@ -13092,6 +14703,199 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      strain_yield_records: {
+        Row: {
+          batch_registry_id: string
+          created_at: string
+          cycle_days: number | null
+          dry_flower_g: number | null
+          harvest_date: string
+          harvest_session_id: string | null
+          id: string
+          notes: string | null
+          strain_id: string
+          trim_g: number | null
+          waste_g: number | null
+          wet_weight_g: number | null
+        }
+        Insert: {
+          batch_registry_id: string
+          created_at?: string
+          cycle_days?: number | null
+          dry_flower_g?: number | null
+          harvest_date: string
+          harvest_session_id?: string | null
+          id?: string
+          notes?: string | null
+          strain_id: string
+          trim_g?: number | null
+          waste_g?: number | null
+          wet_weight_g?: number | null
+        }
+        Update: {
+          batch_registry_id?: string
+          created_at?: string
+          cycle_days?: number | null
+          dry_flower_g?: number | null
+          harvest_date?: string
+          harvest_session_id?: string | null
+          id?: string
+          notes?: string | null
+          strain_id?: string
+          trim_g?: number | null
+          waste_g?: number | null
+          wet_weight_g?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_harvest_session_id_fkey"
+            columns: ["harvest_session_id"]
+            isOneToOne: false
+            referencedRelation: "harvest_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_harvest_session_id_fkey"
+            columns: ["harvest_session_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["harvest_session_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "projected_inventory_requirements"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strain_metadata_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_rosin_strain_yields"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_analytics_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_basics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "strain_yield_records_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+        ]
       }
       strains: {
         Row: {
@@ -13213,10 +15017,68 @@ export type Database = {
         }
         Relationships: []
       }
+      task_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          joined_at: string | null
+          left_at: string | null
+          role: string
+          staff_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string
+          staff_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string
+          staff_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_performance_summary"
+            referencedColumns: ["staff_id"]
+          },
+          {
+            foreignKeyName: "task_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "daily_task_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_type_settings: {
         Row: {
+          allow_multi_day: boolean
           color: string
+          completion_mode: string
           created_at: string
+          default_crew_size: number
           description: string
           fields: string[]
           icon: string
@@ -13226,11 +15088,15 @@ export type Database = {
           label: string
           sort_order: number
           task_key: string
+          typical_duration: string | null
           updated_at: string
         }
         Insert: {
+          allow_multi_day?: boolean
           color?: string
+          completion_mode?: string
           created_at?: string
+          default_crew_size?: number
           description?: string
           fields?: string[]
           icon?: string
@@ -13240,11 +15106,15 @@ export type Database = {
           label: string
           sort_order?: number
           task_key: string
+          typical_duration?: string | null
           updated_at?: string
         }
         Update: {
+          allow_multi_day?: boolean
           color?: string
+          completion_mode?: string
           created_at?: string
+          default_crew_size?: number
           description?: string
           fields?: string[]
           icon?: string
@@ -13254,6 +15124,7 @@ export type Database = {
           label?: string
           sort_order?: number
           task_key?: string
+          typical_duration?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -13656,6 +15527,7 @@ export type Database = {
           cancelled_at: string | null
           completed_at: string | null
           created_at: string | null
+          dispatch_item_id: string | null
           finalization_status: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bigs: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls: Database["public"]["Enums"]["finalization_status"]
@@ -13712,6 +15584,7 @@ export type Database = {
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string | null
+          dispatch_item_id?: string | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bigs?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls?: Database["public"]["Enums"]["finalization_status"]
@@ -13768,6 +15641,7 @@ export type Database = {
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string | null
+          dispatch_item_id?: string | null
           finalization_status?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_bigs?: Database["public"]["Enums"]["finalization_status"]
           finalization_status_smalls?: Database["public"]["Enums"]["finalization_status"]
@@ -13959,8 +15833,22 @@ export type Database = {
             foreignKeyName: "trim_sessions_bucked_smalls_inventory_id_fkey"
             columns: ["bucked_smalls_inventory_id"]
             isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trim_sessions_bucked_smalls_inventory_id_fkey"
+            columns: ["bucked_smalls_inventory_id"]
+            isOneToOne: false
             referencedRelation: "vw_inventory_strain_data_quality"
             referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "trim_sessions_dispatch_item_id_fkey"
+            columns: ["dispatch_item_id"]
+            isOneToOne: false
+            referencedRelation: "production_dispatch_items"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trim_sessions_strain_id_fkey"
@@ -14019,6 +15907,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "trim_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "trim_sessions_trimmer_staff_id_fkey"
             columns: ["trimmer_staff_id"]
             isOneToOne: false
@@ -14031,6 +15926,151 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "staff_performance_summary"
             referencedColumns: ["staff_id"]
+          },
+        ]
+      }
+      trip_plan_deviations: {
+        Row: {
+          description: string
+          deviation_type: string
+          id: string
+          recorded_at: string | null
+          trip_plan_id: string
+        }
+        Insert: {
+          description: string
+          deviation_type: string
+          id?: string
+          recorded_at?: string | null
+          trip_plan_id: string
+        }
+        Update: {
+          description?: string
+          deviation_type?: string
+          id?: string
+          recorded_at?: string | null
+          trip_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_plan_deviations_trip_plan_id_fkey"
+            columns: ["trip_plan_id"]
+            isOneToOne: false
+            referencedRelation: "trip_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_plan_stops: {
+        Row: {
+          actual_arrival: string | null
+          actual_departure: string | null
+          address: string
+          created_at: string | null
+          estimated_arrival: string | null
+          estimated_departure: string | null
+          id: string
+          location_name: string
+          order_ids: Json | null
+          stop_order: number
+          trip_plan_id: string
+        }
+        Insert: {
+          actual_arrival?: string | null
+          actual_departure?: string | null
+          address: string
+          created_at?: string | null
+          estimated_arrival?: string | null
+          estimated_departure?: string | null
+          id?: string
+          location_name: string
+          order_ids?: Json | null
+          stop_order: number
+          trip_plan_id: string
+        }
+        Update: {
+          actual_arrival?: string | null
+          actual_departure?: string | null
+          address?: string
+          created_at?: string | null
+          estimated_arrival?: string | null
+          estimated_departure?: string | null
+          id?: string
+          location_name?: string
+          order_ids?: Json | null
+          stop_order?: number
+          trip_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_plan_stops_trip_plan_id_fkey"
+            columns: ["trip_plan_id"]
+            isOneToOne: false
+            referencedRelation: "trip_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_plans: {
+        Row: {
+          anticipated_route: string | null
+          created_at: string | null
+          departure_time: string | null
+          driver_id: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          pdf_path: string | null
+          product_manifest: Json
+          retention_expires_at: string | null
+          status: string
+          updated_at: string | null
+          vehicle_id: string
+        }
+        Insert: {
+          anticipated_route?: string | null
+          created_at?: string | null
+          departure_time?: string | null
+          driver_id: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          pdf_path?: string | null
+          product_manifest?: Json
+          retention_expires_at?: string | null
+          status?: string
+          updated_at?: string | null
+          vehicle_id: string
+        }
+        Update: {
+          anticipated_route?: string | null
+          created_at?: string | null
+          departure_time?: string | null
+          driver_id?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          pdf_path?: string | null
+          product_manifest?: Json
+          retention_expires_at?: string | null
+          status?: string
+          updated_at?: string | null
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_plans_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_plans_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_vehicles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -14314,6 +16354,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_inventory_balances"
             referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "variance_log_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "variance_log_inventory_item_id_fkey"
@@ -14720,6 +16767,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "wash_runs_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
     }
@@ -15021,6 +17075,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       batch_availability_enriched: {
@@ -15288,6 +17349,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       batch_inventory_health: {
@@ -15478,6 +17546,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "batch_stage_tracking_batch_id_fkey"
             columns: ["batch_id"]
             isOneToOne: false
@@ -15570,10 +17645,13 @@ export type Database = {
           batch_number: string | null
           batch_status: string | null
           cbd_percentage: number | null
+          coa_document_status: string | null
           coa_id: string | null
           coa_is_active: boolean | null
-          coa_status: string | null
+          coa_status: Database["public"]["Enums"]["batch_coa_status"] | null
           created_at: string | null
+          cure_expected_complete_date: string | null
+          cure_start_date: string | null
           harvest_date: string | null
           initial_weight_grams: number | null
           lifecycle_state: string | null
@@ -15592,6 +17670,8 @@ export type Database = {
           terpene_3_name: string | null
           terpene_3_percentage: number | null
           terpene_3_value: number | null
+          testing_facility_id: string | null
+          testing_submitted_at: string | null
           thc_percentage: number | null
           total_cannabinoids_percentage: number | null
           total_terpenes_mg_g: number | null
@@ -15727,6 +17807,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
           {
@@ -17093,6 +19180,14 @@ export type Database = {
             referencedColumns: ["batch_id"]
           },
         ]
+      }
+      inventory_audit_status: {
+        Row: {
+          audit_clock_status: string | null
+          days_since_last_audit: number | null
+          last_audit_date: string | null
+        }
+        Relationships: []
       }
       inventory_discrepancies: {
         Row: {
@@ -19492,6 +21587,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_batch_lifecycle_mismatches: {
@@ -19846,6 +21948,93 @@ export type Database = {
         }
         Relationships: []
       }
+      v_dry_phase_summary: {
+        Row: {
+          batch_number: string | null
+          batch_registry_id: string | null
+          batch_wet_to_dry_loss_pct: number | null
+          first_bin_date: string | null
+          last_dried_at: string | null
+          session_count: number | null
+          strain_name: string | null
+          total_dry_weight_g: number | null
+          total_water_loss_g: number | null
+          total_wet_weight_g: number | null
+          weighed_session_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "binning_sessions_batch_registry_id_fkey"
+            columns: ["batch_registry_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+        ]
+      }
       v_forecast_summary: {
         Row: {
           committed_labor_hours: number | null
@@ -20192,6 +22381,13 @@ export type Database = {
             foreignKeyName: "inventory_items_parent_item_id_fkey"
             columns: ["parent_item_id"]
             isOneToOne: false
+            referencedRelation: "v_inventory_net_available"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
             referencedRelation: "vw_inventory_strain_data_quality"
             referencedColumns: ["inventory_item_id"]
           },
@@ -20223,6 +22419,217 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "valid_categories"
             referencedColumns: ["category"]
+          },
+        ]
+      }
+      v_inventory_net_available: {
+        Row: {
+          available_qty: number | null
+          batch_id: string | null
+          batch_number: string | null
+          category: string | null
+          created_at: string | null
+          id: string | null
+          last_updated: string | null
+          net_available: number | null
+          on_hand_qty: number | null
+          package_id: string | null
+          product_name: string | null
+          product_stage_id: string | null
+          reserved_qty: number | null
+          status: string | null
+          strain: string | null
+          strain_id: string | null
+          test_mode: boolean | null
+          unit: string | null
+        }
+        Insert: {
+          available_qty?: number | null
+          batch_id?: string | null
+          batch_number?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string | null
+          last_updated?: string | null
+          net_available?: number | null
+          on_hand_qty?: number | null
+          package_id?: string | null
+          product_name?: string | null
+          product_stage_id?: string | null
+          reserved_qty?: number | null
+          status?: string | null
+          strain?: string | null
+          strain_id?: string | null
+          test_mode?: boolean | null
+          unit?: string | null
+        }
+        Update: {
+          available_qty?: number | null
+          batch_id?: string | null
+          batch_number?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string | null
+          last_updated?: string | null
+          net_available?: number | null
+          on_hand_qty?: number | null
+          package_id?: string | null
+          product_name?: string | null
+          product_stage_id?: string | null
+          reserved_qty?: number | null
+          status?: string | null
+          strain?: string | null
+          strain_id?: string | null
+          test_mode?: boolean | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_inventory_category"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "valid_categories"
+            referencedColumns: ["category"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "backend_bulk_inventory"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_allocation_summary"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_selection_options"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_with_coa_status"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_batch_intelligence"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["batch_registry_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_production_queue_batch_planning"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_quarantined_batches"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "v_sku_yield"
+            referencedColumns: ["batch_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_product_stage_id_fkey"
+            columns: ["product_stage_id"]
+            isOneToOne: false
+            referencedRelation: "product_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "projected_inventory_requirements"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strain_metadata_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "strains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_harvest_metrics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_rosin_strain_yields"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_analytics_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_basics"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
           },
         ]
       }
@@ -20294,6 +22701,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_inventory_sales: {
@@ -20356,6 +22770,39 @@ export type Database = {
           staff_name: string | null
           strain_id: string | null
           strain_name: string | null
+        }
+        Relationships: []
+      }
+      v_labor_log_daily: {
+        Row: {
+          entry_count: number | null
+          first_entry_at: string | null
+          last_entry_at: string | null
+          log_date: string | null
+          room_id: string | null
+          staff_id: string | null
+          task_type: string | null
+        }
+        Relationships: []
+      }
+      v_labor_log_staff_weekly: {
+        Row: {
+          active_days: number | null
+          distinct_task_types: number | null
+          staff_id: string | null
+          total_entries: number | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
+      v_labor_log_weekly: {
+        Row: {
+          active_days: number | null
+          entry_count: number | null
+          rooms_worked: number | null
+          staff_id: string | null
+          task_type: string | null
+          week_start: string | null
         }
         Relationships: []
       }
@@ -20725,6 +23172,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "planned_cycles_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "planned_cycles_target_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
@@ -20928,6 +23382,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "plant_groups_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_production_queue_batch_planning: {
@@ -20958,6 +23419,8 @@ export type Database = {
       }
       v_production_queue_by_order: {
         Row: {
+          assigned_package_ids: string[] | null
+          assignment_pct: number | null
           batch_grade_code: string | null
           batch_grade_color: string | null
           batch_harvest_date: string | null
@@ -20989,6 +23452,8 @@ export type Database = {
           strain_name: string | null
           subtotal: number | null
           unit_price: number | null
+          units_assigned: number | null
+          units_remaining: number | null
           urgency: string | null
           weight_per_unit_g: number | null
         }
@@ -21047,6 +23512,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "order_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -21142,6 +23614,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "order_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_production_queue_strain_summary: {
@@ -21214,6 +23693,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "order_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -21312,12 +23798,20 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "plant_groups_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_room_operational_state: {
         Row: {
           capacity_plants: number | null
           days_in_stage: number | null
+          days_since_flip: number | null
           days_to_harvest: number | null
           dominant_stage: string | null
           earliest_flip_date: string | null
@@ -21336,6 +23830,7 @@ export type Database = {
           room_code: string | null
           room_id: string | null
           room_type: string | null
+          section_days_to_harvest: number | null
           section_projected_harvest: string | null
           strain_count: number | null
           strain_names: string[] | null
@@ -21520,6 +24015,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -21759,6 +24261,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "trim_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       v_strain_intelligence: {
@@ -21786,6 +24295,22 @@ export type Database = {
           total_session_count: number | null
           trim_session_count: number | null
           variance_event_count: number | null
+        }
+        Relationships: []
+      }
+      v_strain_performance_summary: {
+        Row: {
+          avg_cycle_days: number | null
+          avg_dry_flower_g: number | null
+          avg_dry_pct: number | null
+          avg_trim_g: number | null
+          avg_wet_weight_g: number | null
+          first_harvest_date: string | null
+          harvest_count: number | null
+          last_harvest_date: string | null
+          strain_abbr: string | null
+          strain_id: string | null
+          strain_name: string | null
         }
         Relationships: []
       }
@@ -22028,6 +24553,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["batch_strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "inventory_items_batch_id_fkey"
             columns: ["batch_id"]
             isOneToOne: false
@@ -22153,6 +24685,13 @@ export type Database = {
             referencedRelation: "v_strain_cultivation_stats"
             referencedColumns: ["strain_id"]
           },
+          {
+            foreignKeyName: "inventory_items_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
         ]
       }
       vw_manager_review_performance: {
@@ -22236,6 +24775,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["batch_strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "packaging_sessions_strain_id_fkey"
             columns: ["strain_id"]
             isOneToOne: false
@@ -22289,6 +24835,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "packaging_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -22458,6 +25011,13 @@ export type Database = {
             referencedColumns: ["strain_id"]
           },
           {
+            foreignKeyName: "batch_registry_strain_id_fkey"
+            columns: ["batch_strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
+            referencedColumns: ["strain_id"]
+          },
+          {
             foreignKeyName: "trim_sessions_strain_id_fkey"
             columns: ["strain_id"]
             isOneToOne: false
@@ -22511,6 +25071,13 @@ export type Database = {
             columns: ["strain_id"]
             isOneToOne: false
             referencedRelation: "v_strain_cultivation_stats"
+            referencedColumns: ["strain_id"]
+          },
+          {
+            foreignKeyName: "trim_sessions_strain_id_fkey"
+            columns: ["strain_id"]
+            isOneToOne: false
+            referencedRelation: "v_strain_performance_summary"
             referencedColumns: ["strain_id"]
           },
         ]
@@ -22828,13 +25395,16 @@ export type Database = {
           issue_type: string
         }[]
       }
-      fn_apply_audit_adjustments: {
-        Args: { p_audit_id: string; p_user_id: string }
-        Returns: {
-          adjustments_applied: number
-          variance_logs_created: number
-        }[]
-      }
+      fn_apply_audit_adjustments:
+        | { Args: { p_audit_id: string }; Returns: Json }
+        | {
+            Args: { p_audit_id: string; p_user_id: string }
+            Returns: {
+              adjustments_applied: number
+              variance_logs_created: number
+            }[]
+          }
+      fn_apply_plant_audit: { Args: { p_audit_id: string }; Returns: Json }
       fn_check_stage_locked: {
         Args: { stages: string[] }
         Returns: {
@@ -22854,6 +25424,7 @@ export type Database = {
         Returns: Json
       }
       fn_generate_audit_number: { Args: never; Returns: string }
+      fn_generate_plant_audit_number: { Args: never; Returns: string }
       fn_generate_plant_id: { Args: never; Returns: string }
       fn_generate_recurring_bills: { Args: never; Returns: number }
       fn_lifecycle_state_order: { Args: { state: string }; Returns: number }
@@ -22880,6 +25451,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      fn_release_soft_reserve_for_order_item: {
+        Args: { p_order_item_id: string; p_reason_code?: string }
+        Returns: undefined
       }
       fn_unlock_inventory_stages: {
         Args: { p_audit_id: string }
@@ -22987,6 +25562,20 @@ export type Database = {
           is_active: boolean
           role: string
           updated_at: string
+        }[]
+      }
+      get_audit_period_summary: {
+        Args: { period_end: string; period_start: string }
+        Returns: {
+          acquisitions_g: number
+          beginning_inventory_g: number
+          disposals_g: number
+          ending_inventory_calculated_g: number
+          harvests_g: number
+          movement_count: number
+          sales_g: number
+          testing_submissions_g: number
+          transfers_g: number
         }[]
       }
       get_batch_available_stages: {
@@ -23102,6 +25691,10 @@ export type Database = {
           license_number: string
         }[]
       }
+      get_cultivation_today_summary: {
+        Args: { p_user_id?: string }
+        Returns: Json
+      }
       get_financial_summary: { Args: never; Returns: Json }
       get_inventory_discrepancies: {
         Args: { p_limit?: number; p_min_discrepancy?: number }
@@ -23136,6 +25729,7 @@ export type Database = {
           unit: string
         }[]
       }
+      get_metrc_api_key: { Args: { p_state_code: string }; Returns: string }
       get_movement_metrics: {
         Args: { p_hours?: number }
         Returns: {
@@ -23212,6 +25806,15 @@ export type Database = {
           p_stage_name: string
         }
         Returns: string
+      }
+      get_production_pipeline_summary: {
+        Args: never
+        Returns: {
+          batch_count: number
+          item_count: number
+          stage: string
+          total_qty_g: number
+        }[]
       }
       get_projected_inventory: { Args: { batch_prefix: string }; Returns: Json }
       get_recent_movement_errors: {
@@ -23415,6 +26018,14 @@ export type Database = {
           step: string
         }[]
       }
+      store_metrc_api_key: {
+        Args: {
+          p_api_key: string
+          p_credential_id: string
+          p_state_code: string
+        }
+        Returns: undefined
+      }
       submit_chat_feedback: {
         Args: { p_message_id: string; p_score: number }
         Returns: undefined
@@ -23467,6 +26078,10 @@ export type Database = {
         }[]
       }
       text_to_bytea: { Args: { data: string }; Returns: string }
+      toggle_session_pause: {
+        Args: { p_session_id: string; p_session_type: string }
+        Returns: Json
+      }
       update_allocation_workflow_stage: {
         Args: {
           allocation_id: string
@@ -23581,7 +26196,26 @@ export type Database = {
         | "labeled"
         | "coa_attached"
         | "ready_for_delivery"
-      audit_status: "initiated" | "in_progress" | "completed" | "cancelled"
+      audit_status:
+        | "initiated"
+        | "in_progress"
+        | "review"
+        | "completed"
+        | "applied"
+        | "cancelled"
+        | "abandoned"
+      audit_variance_status:
+        | "within_scale_tolerance"
+        | "requires_explanation"
+        | "flagged"
+        | "resolved"
+      batch_coa_status:
+        | "curing"
+        | "pending_sampling"
+        | "testing_in_progress"
+        | "coa_received"
+        | "coa_failed"
+        | "available"
       finalization_status: "pending" | "finalized" | "voided"
       order_item_status:
         | "trimming"
@@ -23596,6 +26230,15 @@ export type Database = {
         | "waste"
         | "theft_loss"
         | "other"
+        | "qc_sampling"
+        | "coa_sampling"
+        | "processing_loss"
+        | "count_error"
+        | "data_entry_error"
+        | "moved_not_tracked"
+        | "damage_disposal"
+        | "not_found"
+        | "orphan_reconciled"
       variance_source:
         | "audit_reconciliation"
         | "session_conversion"
@@ -23760,7 +26403,29 @@ export const Constants = {
         "coa_attached",
         "ready_for_delivery",
       ],
-      audit_status: ["initiated", "in_progress", "completed", "cancelled"],
+      audit_status: [
+        "initiated",
+        "in_progress",
+        "review",
+        "completed",
+        "applied",
+        "cancelled",
+        "abandoned",
+      ],
+      audit_variance_status: [
+        "within_scale_tolerance",
+        "requires_explanation",
+        "flagged",
+        "resolved",
+      ],
+      batch_coa_status: [
+        "curing",
+        "pending_sampling",
+        "testing_in_progress",
+        "coa_received",
+        "coa_failed",
+        "available",
+      ],
       finalization_status: ["pending", "finalized", "voided"],
       order_item_status: [
         "trimming",
@@ -23776,6 +26441,15 @@ export const Constants = {
         "waste",
         "theft_loss",
         "other",
+        "qc_sampling",
+        "coa_sampling",
+        "processing_loss",
+        "count_error",
+        "data_entry_error",
+        "moved_not_tracked",
+        "damage_disposal",
+        "not_found",
+        "orphan_reconciled",
       ],
       variance_source: [
         "audit_reconciliation",
@@ -23788,3 +26462,4 @@ export const Constants = {
     },
   },
 } as const
+

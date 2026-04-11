@@ -8,7 +8,6 @@ export type BulkSubTab = 'flower' | 'smalls' | 'trim';
 export type StageFilter = 'all' | 'binned' | 'bucked' | 'bulk' | 'packaged';
 
 // Export audit system types
-export * from './audit.types';
 export * from './variance.types';
 export * from './adjustment.types';
 

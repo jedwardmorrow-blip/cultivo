@@ -11,6 +11,7 @@
  *   harvestSessions.service.ts — harvest session lifecycle, weight entries, fresh frozen
  *   dryRooms.service.ts        — dry room CRUD
  *   binningSessions.service.ts — binning session lifecycle, bin entries
+ *   plantAudit.service.ts      — plant audit session lifecycle, counts, orphans
  */
 import { growRoomsService } from './growRooms.service';
 import { roomLayoutService } from './roomLayout.service';
@@ -18,6 +19,7 @@ import { plantGroupsService } from './plantGroups.service';
 import { harvestSessionsService } from './harvestSessions.service';
 import { dryRoomsService } from './dryRooms.service';
 import { binningSessionsService } from './binningSessions.service';
+import { plantAuditService } from './plantAudit.service';
 
 export const cultivationService = {
   ...growRoomsService,
@@ -26,4 +28,5 @@ export const cultivationService = {
   ...harvestSessionsService,
   ...dryRoomsService,
   ...binningSessionsService,
+  ...plantAuditService,
 };
