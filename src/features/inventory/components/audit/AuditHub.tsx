@@ -40,12 +40,12 @@ const STATUS_TONE: Record<
   },
   abandoned: {
     label: 'Abandoned',
-    className: 'bg-white/[0.04] border-white/[0.10] text-cult-text-muted',
+    className: 'bg-cult-surface-inset border-cult-border text-cult-text-muted',
     Icon: XCircle,
   },
   cancelled: {
     label: 'Cancelled',
-    className: 'bg-white/[0.04] border-white/[0.10] text-cult-text-muted',
+    className: 'bg-cult-surface-inset border-cult-border text-cult-text-muted',
     Icon: Ban,
   },
 };
@@ -91,7 +91,7 @@ export function AuditHub({ sessions, loading, error, onStartNew, onResume }: Aud
 
       {/* Active audits */}
       <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
+        <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
           <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
             Active Audits
           </div>
@@ -107,7 +107,7 @@ export function AuditHub({ sessions, loading, error, onStartNew, onResume }: Aud
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-cult-border-subtle">
             {active.map((s) => {
               const tone = getTone(s.status);
               const Icon = tone.Icon;
@@ -116,7 +116,7 @@ export function AuditHub({ sessions, loading, error, onStartNew, onResume }: Aud
                   key={s.id}
                   type="button"
                   onClick={() => onResume(s.id)}
-                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-white/[0.04] transition text-left"
+                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-cult-surface-inset transition text-left"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-cult-text-primary truncate">
@@ -150,12 +150,12 @@ export function AuditHub({ sessions, loading, error, onStartNew, onResume }: Aud
       {/* Past audits */}
       {past.length > 0 && (
         <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
+          <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
             <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
               Recent
             </div>
           </div>
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-cult-border-subtle">
             {past.slice(0, 10).map((s) => {
               const tone = getTone(s.status);
               const Icon = tone.Icon;
@@ -164,7 +164,7 @@ export function AuditHub({ sessions, loading, error, onStartNew, onResume }: Aud
                   key={s.id}
                   type="button"
                   onClick={() => onResume(s.id)}
-                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-white/[0.04] transition text-left"
+                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-cult-surface-inset transition text-left"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-cult-text-primary truncate">

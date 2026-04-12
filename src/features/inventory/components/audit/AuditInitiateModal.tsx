@@ -77,7 +77,7 @@ export function AuditInitiateModal({ open, loading, onClose, onStart }: AuditIni
                   className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition ${
                     active
                       ? 'border-cult-accent bg-cult-accent/10 text-cult-accent'
-                      : 'border-white/[0.10] bg-white/[0.03] text-cult-text-secondary hover:bg-white/[0.06]'
+                      : 'border-cult-border bg-cult-surface-subtle text-cult-text-secondary hover:bg-cult-surface-raised'
                   }`}
                 >
                   {stage}
@@ -97,13 +97,13 @@ export function AuditInitiateModal({ open, loading, onClose, onStart }: AuditIni
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Sunday baseline reset…"
-            className="w-full px-3 py-2 rounded-xl border border-white/[0.10] bg-white/[0.03] text-sm text-cult-text-primary placeholder:text-cult-text-muted resize-none focus:outline-none focus:border-cult-accent/50"
+            className="w-full px-3 py-2 rounded-xl border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted resize-none focus:outline-none focus:border-cult-accent/50"
           />
         </div>
 
         {/* Scope preview */}
         {selectedStages.length > 0 && (
-          <div className="mb-5 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          <div className="mb-5 p-3 rounded-xl bg-cult-surface-subtle border border-cult-border-subtle">
             <p className="text-xs text-cult-text-secondary">
               This audit will snapshot all packages in{' '}
               <span className="text-cult-text-primary font-medium">
