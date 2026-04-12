@@ -1,5 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Calendar, FlaskConical, Layers } from 'lucide-react';
+import { Package, Calendar, FlaskConical, Layers, ExternalLink } from 'lucide-react';
 import type { StrainInventoryRow } from '../../../hooks/useStrainInventory';
 import type { BatchDetailRow } from '../../../hooks/useBatchDetail';
 import { GradeDonut, type DonutSegment } from '../GradeDonut';
@@ -49,6 +50,7 @@ interface StrainDetailPanelProps {
 }
 
 export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetailPanelProps) {
+  const navigate = useNavigate();
   const catColor = CATEGORY_COLORS[strain.strain_category ?? ''] ?? '#666';
 
   const donutSegments: DonutSegment[] = [
@@ -168,16 +170,20 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
         ) : (
           <div className="space-y-2">
             {batches.map((b, i) => (
-              <motion.div
+              <motion.button
                 key={b.batch_id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+                onClick={() => navigate('/batches')}
+                className="w-full text-left bg-white/[0.04] rounded-xl p-4 border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/[0.10] transition-all active:scale-[0.99] group"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">
-                    <span className="text-sm font-medium text-white font-mono">{b.batch_number}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-white font-mono">{b.batch_number}</span>
+                      <ExternalLink className="w-3 h-3 text-white/0 group-hover:text-white/30 transition-colors" />
+                    </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {b.lifecycle_state && (
                         <span className="text-[10px] text-white/30">
@@ -245,7 +251,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
                     </span>
                   </div>
                 )}
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         )}
