@@ -25,49 +25,50 @@ export function useBatchDetail(strainId: string | null) {
   const [batches, setBatches] = useState<BatchDetailRow[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetch = useCallback(async () => {
+  const fetchBatches = useCallback(async () => {
     if (!strainId) {
       setBatches([]);
       return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Step 1: Get batch allocation data (same pattern as batch.service.ts)
+      const { data: allocRows, error: allocError } = await supabase
         .from('batch_allocation_summary')
-        .select(`
-          batch_id,
-          batch_number,
-          strain,
-          strain_id,
-          harvest_date,
-          batch_status,
-          coa_status,
-          bucked_available,
-          flower_available,
-          smalls_available,
-          packaged_available,
-          total_weight,
-          total_allocated
-        `)
+        .select('*')
         .eq('strain_id', strainId)
         .eq('batch_status', 'active')
         .order('harvest_date', { ascending: false });
 
-      if (error) throw error;
+      if (allocError) {
+        console.error('[useBatchDetail] batch_allocation_summary query failed:', allocError);
+        throw allocError;
+      }
 
-      // Fetch lifecycle_state + grade from batch_registry for these batches
-      const batchIds = (data ?? []).map((r: any) => r.batch_id);
-      let lifecycleMap = new Map<string, { lifecycle_state: string | null; production_path: string | null; grade_label: string | null; grade_color: string | null }>();
+      if (!allocRows || allocRows.length === 0) {
+        console.warn('[useBatchDetail] No active batches found for strain_id:', strainId);
+        setBatches([]);
+        return;
+      }
 
-      if (batchIds.length > 0) {
+      // Step 2: Enrich with lifecycle_state + grade from batch_registry
+      const batchIds = allocRows.map((r: any) => r.batch_id);
+      const lifecycleMap = new Map<string, {
+        lifecycle_state: string | null;
+        production_path: string | null;
+        grade_label: string | null;
+        grade_color: string | null;
+      }>();
+
+      try {
         const { data: regRows } = await supabase
           .from('batch_registry')
           .select('id, lifecycle_state, production_path, quality_grade_id')
           .in('id', batchIds);
 
-        // Fetch grade info if any batches have grades
         const gradeIds = (regRows ?? []).map((r: any) => r.quality_grade_id).filter(Boolean);
-        let gradeMap = new Map<string, { label: string; color_class: string }>();
+        const gradeMap = new Map<string, { label: string; color_class: string }>();
+
         if (gradeIds.length > 0) {
           const { data: grades } = await supabase
             .from('quality_grades')
@@ -85,9 +86,13 @@ export function useBatchDetail(strainId: string | null) {
             grade_color: grade?.color_class ?? null,
           });
         });
+      } catch (enrichErr) {
+        // Non-fatal: we still have allocation data, just missing lifecycle/grade
+        console.warn('[useBatchDetail] batch_registry enrichment failed (non-fatal):', enrichErr);
       }
 
-      const mapped: BatchDetailRow[] = (data ?? []).map((r: any) => {
+      // Step 3: Map to BatchDetailRow
+      const mapped: BatchDetailRow[] = allocRows.map((r: any) => {
         const extra = lifecycleMap.get(r.batch_id);
         return {
           batch_id: r.batch_id,
@@ -111,7 +116,8 @@ export function useBatchDetail(strainId: string | null) {
       });
 
       setBatches(mapped);
-    } catch {
+    } catch (err) {
+      console.error('[useBatchDetail] Failed to load batches for strain', strainId, err);
       setBatches([]);
     } finally {
       setLoading(false);
@@ -119,8 +125,8 @@ export function useBatchDetail(strainId: string | null) {
   }, [strainId]);
 
   useEffect(() => {
-    fetch();
-  }, [fetch]);
+    fetchBatches();
+  }, [fetchBatches]);
 
-  return { batches, loading, refetch: fetch };
+  return { batches, loading, refetch: fetchBatches };
 }
