@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 
-const GLASS_TILE = 'rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)]';
+const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+};
 
 interface KpiTileProps {
   layoutId: string;
@@ -9,9 +14,11 @@ interface KpiTileProps {
   value: string;
   subtitle?: string;
   icon: LucideIcon;
-  iconColor?: string;
+  accent?: string;
   loading?: boolean;
   placeholder?: boolean;
+  pulse?: boolean;
+  onClick?: () => void;
 }
 
 export function KpiTile({
@@ -20,31 +27,68 @@ export function KpiTile({
   value,
   subtitle,
   icon: Icon,
-  iconColor = '#E8E0D4',
+  accent = '#E8E0D4',
   loading,
   placeholder,
+  pulse,
+  onClick,
 }: KpiTileProps) {
+  const Wrapper = onClick ? 'button' : 'div';
+
   return (
-    <motion.div
-      layoutId={layoutId}
-      className={`${GLASS_TILE} bg-white/[0.04] p-5 flex flex-col gap-2 min-h-[110px]`}
-    >
-      <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 shrink-0" style={{ color: iconColor }} />
-        <span className="text-xs font-medium text-white/50 uppercase tracking-wider">{label}</span>
-      </div>
-      {loading ? (
-        <div className="h-8 w-24 rounded-lg bg-white/[0.06] animate-pulse" />
-      ) : (
-        <div className="flex flex-col gap-0.5">
-          <span className={`text-2xl font-bold tabular-nums ${placeholder ? 'text-white/20' : 'text-white'}`}>
-            {value}
-          </span>
-          {subtitle && (
-            <span className="text-xs text-white/40">{subtitle}</span>
-          )}
+    <motion.div layoutId={layoutId} variants={staggerItem}>
+      <Wrapper
+        onClick={onClick}
+        className={`${GLASS} p-4 flex items-center gap-3 w-full text-left relative overflow-hidden transition-all min-h-[90px]
+          ${onClick ? 'cursor-pointer hover:bg-white/[0.10] hover:border-white/[0.15]' : ''}`}
+      >
+        {/* Accent glow */}
+        <div
+          className="absolute -top-6 left-4 rounded-full pointer-events-none"
+          style={{
+            width: '80px',
+            height: '80px',
+            background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`,
+            filter: 'blur(10px)',
+          }}
+        />
+
+        {/* Icon */}
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative"
+          style={{ backgroundColor: `${accent}15` }}
+        >
+          <Icon className="w-4 h-4" style={{ color: accent }} />
         </div>
-      )}
+
+        {/* Content */}
+        <div className="min-w-0 relative">
+          {loading ? (
+            <div className="h-7 w-20 rounded-lg bg-white/[0.06] animate-pulse mb-1" />
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className={`text-2xl font-bold tabular-nums ${placeholder ? 'text-white/20' : 'text-white'}`}>
+                {value}
+              </span>
+              {pulse && (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span
+                    className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                    style={{ backgroundColor: accent }}
+                  />
+                  <span
+                    className="relative inline-flex rounded-full h-2.5 w-2.5"
+                    style={{ backgroundColor: accent }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
+          <span className="text-[11px] text-white/40 uppercase tracking-wider font-medium">
+            {subtitle || label}
+          </span>
+        </div>
+      </Wrapper>
     </motion.div>
   );
 }

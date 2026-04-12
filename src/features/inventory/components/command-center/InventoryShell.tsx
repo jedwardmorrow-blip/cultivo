@@ -7,7 +7,7 @@ import { StrainsLens } from './lenses/StrainsLens';
 import type { StrainInventoryRow, StrainInventoryKpis } from '../../hooks/useStrainInventory';
 import type { InventoryKpis } from '../../hooks/useInventoryKpis';
 
-const PAGE_BG = 'bg-gradient-to-br from-[#0a0f0a] via-[#080a08] to-[#060808]';
+const PAGE_BG = 'bg-gradient-to-br from-cult-opaque-black via-[#080a08] to-[#060808]';
 
 const LENSES = [
   { id: 'strains' as LensId, label: 'Strains', icon: Dna, ready: true },
