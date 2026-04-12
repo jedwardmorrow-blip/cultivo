@@ -45,6 +45,7 @@ export function InventoryAuditView() {
         onMarkNotFound={(lineId) => audit.markNotFound(lineId)}
         onResetLine={audit.resetLine}
         onCreateOrphan={audit.createOrphanLine}
+        onDeleteOrphan={audit.deleteOrphanLine}
         onMoveToReview={audit.moveToReview}
       />
     );
@@ -70,12 +71,13 @@ export function InventoryAuditView() {
         sessions={audit.sessions}
         loading={audit.loading}
         error={audit.error}
-        onStartNew={() => setModalOpen(true)}
+        onStartNew={() => { audit.loadLockedStages(); setModalOpen(true); }}
         onResume={handleResume}
       />
       <AuditInitiateModal
         open={modalOpen}
         loading={audit.actionLoading}
+        lockedStages={audit.lockedStages}
         onClose={() => setModalOpen(false)}
         onStart={handleStartAudit}
       />

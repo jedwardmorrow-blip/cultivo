@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight, Check, AlertCircle, Plus, X, PackagePlus } from 'lucide-react';
+import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight, Check, AlertCircle, Plus, X, PackagePlus, Trash2 } from 'lucide-react';
 import type { AuditSessionWithLines, AuditLine, VarianceReason, LineStatus } from '../../services/audit.service';
 
 const VARIANCE_REASONS: { value: VarianceReason; label: string }[] = [
@@ -48,6 +48,7 @@ interface AuditCountingViewProps {
   onMarkNotFound: (lineId: string) => Promise<void>;
   onResetLine: (lineId: string) => Promise<void>;
   onCreateOrphan: (item: OrphanInput) => Promise<void>;
+  onDeleteOrphan: (lineId: string) => Promise<void>;
   onMoveToReview: () => void;
 }
 
@@ -60,6 +61,7 @@ export function AuditCountingView({
   onMarkNotFound,
   onResetLine,
   onCreateOrphan,
+  onDeleteOrphan,
   onMoveToReview,
 }: AuditCountingViewProps) {
   const [search, setSearch] = useState('');
@@ -250,6 +252,7 @@ export function AuditCountingView({
               onRecordCount={onRecordCount}
               onMarkNotFound={onMarkNotFound}
               onResetLine={onResetLine}
+              onDeleteOrphan={onDeleteOrphan}
             />
           ))
         )}
@@ -268,9 +271,10 @@ interface AuditLineRowProps {
   onRecordCount: (lineId: string, actualQty: number, opts?: { variance_reason?: VarianceReason; variance_notes?: string }) => Promise<void>;
   onMarkNotFound: (lineId: string) => Promise<void>;
   onResetLine: (lineId: string) => Promise<void>;
+  onDeleteOrphan: (lineId: string) => Promise<void>;
 }
 
-function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, onMarkNotFound, onResetLine }: AuditLineRowProps) {
+function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, onMarkNotFound, onResetLine, onDeleteOrphan }: AuditLineRowProps) {
   const [actualInput, setActualInput] = useState(
     line.actual_qty?.toString() ?? line.expected_qty.toString(),
   );
@@ -422,17 +426,30 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
                 </span>
               )}
             </div>
-            {(line.line_status === 'match' || line.line_status === 'variance' || line.line_status === 'not_found') && (
-              <button
-                type="button"
-                onClick={() => onResetLine(line.id)}
-                disabled={actionLoading}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised transition disabled:opacity-40"
-              >
-                <RotateCcw className="w-3 h-3" />
-                Reset
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {line.is_orphan && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteOrphan(line.id)}
+                  disabled={actionLoading}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-cult-danger hover:bg-cult-danger/10 transition disabled:opacity-40"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Remove
+                </button>
+              )}
+              {(line.line_status === 'match' || line.line_status === 'variance' || line.line_status === 'not_found') && (
+                <button
+                  type="button"
+                  onClick={() => onResetLine(line.id)}
+                  disabled={actionLoading}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised transition disabled:opacity-40"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

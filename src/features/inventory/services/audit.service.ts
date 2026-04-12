@@ -400,6 +400,36 @@ export const auditService = {
     return data as unknown as AuditLine;
   },
 
+  /**
+   * Deletes an orphan line. Only works on lines where is_orphan = true.
+   */
+  async deleteOrphanLine(lineId: string): Promise<void> {
+    const { error } = await supabase
+      .from('inventory_audit_lines')
+      .delete()
+      .eq('id', lineId)
+      .eq('is_orphan', true);
+    if (error) throwError(error, 'deleteOrphanLine');
+  },
+
+  /**
+   * Returns stages currently being audited by active sessions, with the audit number.
+   */
+  async getLockedStages(): Promise<Map<string, string>> {
+    const { data, error } = await supabase
+      .from('inventory_audits')
+      .select('audit_number, selected_stages')
+      .in('status', ['initiated', 'in_progress', 'review']);
+    if (error) throwError(error, 'getLockedStages');
+    const map = new Map<string, string>();
+    for (const row of (data ?? []) as { audit_number: string; selected_stages: string[] }[]) {
+      for (const stage of row.selected_stages) {
+        map.set(stage, row.audit_number);
+      }
+    }
+    return map;
+  },
+
   async moveToReview(sessionId: string): Promise<AuditSession> {
     const { data, error } = await supabase
       .from('inventory_audits')

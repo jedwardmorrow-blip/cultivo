@@ -6,11 +6,12 @@ const AVAILABLE_STAGES = ['Binned', 'Bucked', 'Trimmed', 'Packaged'];
 interface AuditInitiateModalProps {
   open: boolean;
   loading: boolean;
+  lockedStages: Map<string, string>;
   onClose: () => void;
   onStart: (selectedStages: string[], notes?: string) => void;
 }
 
-export function AuditInitiateModal({ open, loading, onClose, onStart }: AuditInitiateModalProps) {
+export function AuditInitiateModal({ open, loading, lockedStages, onClose, onStart }: AuditInitiateModalProps) {
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
 
@@ -23,7 +24,7 @@ export function AuditInitiateModal({ open, loading, onClose, onStart }: AuditIni
   }
 
   function selectAll() {
-    setSelectedStages([...AVAILABLE_STAGES]);
+    setSelectedStages(AVAILABLE_STAGES.filter((s) => !lockedStages.has(s)));
   }
 
   function handleStart() {
@@ -69,18 +70,27 @@ export function AuditInitiateModal({ open, loading, onClose, onStart }: AuditIni
           <div className="grid grid-cols-2 gap-2">
             {AVAILABLE_STAGES.map((stage) => {
               const active = selectedStages.includes(stage);
+              const lockedBy = lockedStages.get(stage);
               return (
                 <button
                   key={stage}
                   type="button"
-                  onClick={() => toggleStage(stage)}
+                  onClick={() => !lockedBy && toggleStage(stage)}
+                  disabled={!!lockedBy}
                   className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition ${
-                    active
-                      ? 'border-cult-accent bg-cult-accent/10 text-cult-accent'
-                      : 'border-cult-border bg-cult-surface-subtle text-cult-text-secondary hover:bg-cult-surface-raised'
+                    lockedBy
+                      ? 'border-cult-border bg-cult-surface-inset text-cult-text-muted cursor-not-allowed opacity-50'
+                      : active
+                        ? 'border-cult-accent bg-cult-accent/10 text-cult-accent'
+                        : 'border-cult-border bg-cult-surface-subtle text-cult-text-secondary hover:bg-cult-surface-raised'
                   }`}
                 >
                   {stage}
+                  {lockedBy && (
+                    <span className="block text-[10px] text-cult-text-muted mt-0.5">
+                      In use · {lockedBy}
+                    </span>
+                  )}
                 </button>
               );
             })}

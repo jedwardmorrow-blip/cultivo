@@ -42,6 +42,11 @@ interface UseAuditReturn {
   markNotFound: (lineId: string, opts?: { variance_notes?: string }) => Promise<void>;
   resetLine: (lineId: string) => Promise<void>;
   createOrphanLine: (item: Parameters<typeof auditService.createOrphanLine>[1]) => Promise<void>;
+  deleteOrphanLine: (lineId: string) => Promise<void>;
+
+  // Stage locks
+  lockedStages: Map<string, string>;
+  loadLockedStages: () => Promise<void>;
 }
 
 function applyLinePatch(session: AuditSessionWithLines, updated: AuditLine): AuditSessionWithLines {
@@ -53,6 +58,10 @@ function applyLinePatch(session: AuditSessionWithLines, updated: AuditLine): Aud
 
 function addLine(session: AuditSessionWithLines, line: AuditLine): AuditSessionWithLines {
   return { ...session, lines: [...session.lines, line] };
+}
+
+function removeLine(session: AuditSessionWithLines, lineId: string): AuditSessionWithLines {
+  return { ...session, lines: session.lines.filter((l) => l.id !== lineId) };
 }
 
 /**
@@ -67,6 +76,7 @@ export function useAudit(): UseAuditReturn {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lockedStages, setLockedStages] = useState<Map<string, string>>(new Map());
 
   const reloadSessions = useCallback(async () => {
     setLoading(true);
@@ -176,6 +186,27 @@ export function useAudit(): UseAuditReturn {
     }
   }, [activeSession]);
 
+  const deleteOrphanLine = useCallback(async (lineId: string) => {
+    setActionLoading(true);
+    try {
+      await auditService.deleteOrphanLine(lineId);
+      setActiveSession((prev) => prev ? removeLine(prev, lineId) : prev);
+    } catch (e: any) {
+      setError(e.message || 'Failed to delete orphan line');
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
+  const loadLockedStages = useCallback(async () => {
+    try {
+      const map = await auditService.getLockedStages();
+      setLockedStages(map);
+    } catch {
+      // Non-critical — don't block the modal
+    }
+  }, []);
+
   const moveToReview = useCallback(async () => {
     if (!activeSession) return;
     setActionLoading(true);
@@ -237,5 +268,8 @@ export function useAudit(): UseAuditReturn {
     markNotFound,
     resetLine,
     createOrphanLine,
+    deleteOrphanLine,
+    lockedStages,
+    loadLockedStages,
   };
 }
