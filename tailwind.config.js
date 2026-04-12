@@ -27,14 +27,19 @@ export default {
 
           // ── Semantic Surface Tokens (translucent — glass system) ──
           'surface': 'rgba(10, 10, 10, 0.95)',
+          'surface-inset': 'rgba(255, 255, 255, 0.02)',    // empty states, sunken containers
+          'surface-subtle': 'rgba(255, 255, 255, 0.03)',   // subtle list rows, faint cards
           'surface-raised': 'rgba(255, 255, 255, 0.06)',
           'surface-overlay': 'rgba(255, 255, 255, 0.08)',
+          'surface-active': 'rgba(255, 255, 255, 0.10)',   // active/selected states
           'surface-sunken': 'rgba(0, 0, 0, 0.2)',
 
           // ── Semantic Border Tokens (light reflections on glass) ──
-          'border': 'rgba(255, 255, 255, 0.10)',
-          'border-strong': 'rgba(255, 255, 255, 0.20)',
+          'border-faint': 'rgba(255, 255, 255, 0.04)',     // dividers, empty state borders
           'border-subtle': 'rgba(255, 255, 255, 0.06)',
+          'border': 'rgba(255, 255, 255, 0.10)',
+          'border-active': 'rgba(255, 255, 255, 0.12)',    // active tabs, selected items
+          'border-strong': 'rgba(255, 255, 255, 0.20)',
 
           // ── Semantic Text Tokens ──
           'text-primary': '#FFFFFF',

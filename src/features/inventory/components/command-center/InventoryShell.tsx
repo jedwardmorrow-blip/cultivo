@@ -4,6 +4,15 @@ import { KpiStrip } from './KpiStrip';
 import { LensPillNav, type LensId } from './LensPillNav';
 import { LensContainer } from './LensContainer';
 import { StrainsLens } from './lenses/StrainsLens';
+import { PipelineLens } from './lenses/PipelineLens';
+import { CoaDeskLens } from './lenses/CoaDeskLens';
+import { ReadyToShipLens } from './lenses/ReadyToShipLens';
+import { RawMaterialLens } from './lenses/RawMaterialLens';
+import { BatchDrawer } from './drawers/BatchDrawer';
+import { StrainDrawer } from './drawers/StrainDrawer';
+import { CoaDrawer } from './drawers/CoaDrawer';
+import { SkuDrawer } from './drawers/SkuDrawer';
+import { InventoryOmnibar } from './InventoryOmnibar';
 import type { StrainInventoryRow, StrainInventoryKpis } from '../../hooks/useStrainInventory';
 import type { InventoryKpis } from '../../hooks/useInventoryKpis';
 
@@ -11,10 +20,10 @@ const PAGE_BG = 'bg-gradient-to-br from-cult-opaque-black via-[#080a08] to-[#060
 
 const LENSES = [
   { id: 'strains' as LensId, label: 'Strains', icon: Dna, ready: true },
-  { id: 'pipeline' as LensId, label: 'Batch Pipeline', icon: GitBranch, ready: false },
-  { id: 'coa' as LensId, label: 'COA Desk', icon: FlaskConical, ready: false },
-  { id: 'ship' as LensId, label: 'Ready to Ship', icon: Package, ready: false },
-  { id: 'raw' as LensId, label: 'Raw Material', icon: Layers, ready: false },
+  { id: 'pipeline' as LensId, label: 'Batch Pipeline', icon: GitBranch, ready: true },
+  { id: 'coa' as LensId, label: 'COA Desk', icon: FlaskConical, ready: true },
+  { id: 'ship' as LensId, label: 'Ready to Ship', icon: Package, ready: true },
+  { id: 'raw' as LensId, label: 'Raw Material', icon: Layers, ready: true },
 ];
 
 interface InventoryShellProps {
@@ -25,6 +34,19 @@ interface InventoryShellProps {
   inventoryKpis: InventoryKpis;
   strainLoading: boolean;
   kpiLoading: boolean;
+  // Drawer state — URL-synced via CommandCenter
+  drawerBatchId: string | null;
+  drawerStrainId: string | null;
+  drawerCoaBatchId: string | null;
+  drawerSkuProductId: string | null;
+  openBatchDrawer: (id: string) => void;
+  closeBatchDrawer: () => void;
+  openStrainDrawer: (id: string) => void;
+  closeStrainDrawer: () => void;
+  openCoaDrawer: (id: string) => void;
+  closeCoaDrawer: () => void;
+  openSkuDrawer: (id: string) => void;
+  closeSkuDrawer: () => void;
 }
 
 export function InventoryShell({
@@ -35,16 +57,32 @@ export function InventoryShell({
   inventoryKpis,
   strainLoading,
   kpiLoading,
+  drawerBatchId,
+  drawerStrainId,
+  drawerCoaBatchId,
+  drawerSkuProductId,
+  openBatchDrawer,
+  closeBatchDrawer,
+  openStrainDrawer,
+  closeStrainDrawer,
+  openCoaDrawer,
+  closeCoaDrawer,
+  openSkuDrawer,
+  closeSkuDrawer,
 }: InventoryShellProps) {
+
   function renderLens() {
     switch (activeLens) {
       case 'strains':
-        return <StrainsLens data={strainData} loading={strainLoading} />;
+        return <StrainsLens data={strainData} loading={strainLoading} onBatchClick={openBatchDrawer} />;
       case 'pipeline':
+        return <PipelineLens onBatchClick={openBatchDrawer} />;
       case 'coa':
+        return <CoaDeskLens onBatchClick={openBatchDrawer} onCoaClick={openCoaDrawer} />;
       case 'ship':
+        return <ReadyToShipLens onSkuClick={openSkuDrawer} />;
       case 'raw':
-        return <PlaceholderLens name={LENSES.find((l) => l.id === activeLens)?.label ?? activeLens} />;
+        return <RawMaterialLens onBatchClick={openBatchDrawer} />;
       default:
         return null;
     }
@@ -68,6 +106,9 @@ export function InventoryShell({
             kpiLoading={kpiLoading}
           />
 
+          {/* Omnibar — persistent cross-entity search (Decision #23) */}
+          <InventoryOmnibar onBatchSelect={openBatchDrawer} onStrainSelect={openStrainDrawer} />
+
           {/* Lens pill nav */}
           <LensPillNav lenses={LENSES} active={activeLens} onChange={onLensChange} />
 
@@ -77,15 +118,12 @@ export function InventoryShell({
           </LensContainer>
         </div>
       </LayoutGroup>
-    </div>
-  );
-}
 
-function PlaceholderLens({ name }: { name: string }) {
-  return (
-    <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-12 text-center">
-      <p className="text-white/30 font-medium">{name}</p>
-      <p className="text-white/20 text-sm mt-1">Coming in Phase 2</p>
+      {/* Drawers — shell-level, available across all lenses */}
+      <BatchDrawer batchId={drawerBatchId} onClose={closeBatchDrawer} />
+      <StrainDrawer strainId={drawerStrainId} onClose={closeStrainDrawer} onBatchClick={openBatchDrawer} />
+      <CoaDrawer batchId={drawerCoaBatchId} onClose={closeCoaDrawer} onBatchClick={openBatchDrawer} />
+      <SkuDrawer productId={drawerSkuProductId} onClose={closeSkuDrawer} onBatchClick={openBatchDrawer} />
     </div>
   );
 }

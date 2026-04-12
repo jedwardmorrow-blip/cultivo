@@ -3,24 +3,44 @@ import { supabase } from '@/lib/supabase';
 
 export interface BatchDetailRow {
   batch_id: string;
-  batch_number: string;
-  strain: string;
+  batch_code: string;
+  strain_name: string;
   strain_id: string;
+  lifecycle_state: string;
+  stage: string;
   harvest_date: string | null;
-  batch_status: string;
-  lifecycle_state: string | null;
-  production_path: string | null;
-  coa_status: string | null;
-  bucked_available: number;
-  flower_available: number;
-  smalls_available: number;
-  packaged_available: number;
-  total_weight: number;
-  total_allocated: number;
-  grade_label: string | null;
-  grade_color: string | null;
+  age_days: number;
+  days_in_stage: number;
+  // Per-stage weights
+  binned_g: number;
+  bucked_g: number;
+  bulk_flower_g: number;
+  bulk_smalls_g: number;
+  trim_g: number;
+  packaged_g: number;
+  shipped_g: number;
+  // Derived totals
+  sellable_now_g: number;
+  pipeline_raw_g: number;
+  total_potential_g: number;
+  waste_grams: number;
+  // Allocation + sales
+  allocated_orders: number;
+  allocated_units: number;
+  allocated_revenue: number;
+  sold_value: number;
+  // Quality
+  quality_grade: string | null;
+  confidence: string;
+  // Timestamps
+  packaging_started_at: string | null;
+  completed_at: string | null;
 }
 
+/**
+ * Fetches batch-level detail from v_batch_lifecycle for a given strain.
+ * Only returns inventory-relevant batches (with sellable or pipeline weight).
+ */
 export function useBatchDetail(strainName: string | null) {
   const [batches, setBatches] = useState<BatchDetailRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,104 +52,55 @@ export function useBatchDetail(strainName: string | null) {
     }
     setLoading(true);
     try {
-      // Step 1: Get batch IDs + lifecycle data from batch_registry
-      // Only post-harvest stages belong in inventory (veg/flower/drying = Cultivation domain)
-      const INVENTORY_LIFECYCLE_STATES = ['bucked', 'bulk_available', 'packaged', 'archived'];
-
-      const { data: regRows, error: regError } = await supabase
-        .from('batch_registry')
-        .select('id, lifecycle_state, production_path, quality_grade_id')
-        .eq('strain', strainName)
-        .eq('status', 'active')
-        .in('lifecycle_state', INVENTORY_LIFECYCLE_STATES);
-
-      if (regError) {
-        console.error('[useBatchDetail] batch_registry lookup failed:', regError);
-        throw regError;
-      }
-
-      const batchIds = (regRows ?? []).map((r: any) => r.id);
-      if (batchIds.length === 0) {
-        setBatches([]);
-        return;
-      }
-
-      // Step 2: Get allocation data by batch_id (proven pattern from batch.service.ts)
-      const { data: allocRows, error: allocError } = await supabase
-        .from('batch_allocation_summary')
+      const { data, error } = await supabase
+        .from('v_batch_lifecycle')
         .select('*')
-        .in('batch_id', batchIds)
-        .gt('total_weight', 0)
-        .order('total_weight', { ascending: false });
+        .eq('strain_name', strainName)
+        .order('total_potential_g', { ascending: false });
 
-      if (allocError) {
-        console.error('[useBatchDetail] batch_allocation_summary query failed:', allocError);
-        throw allocError;
+      if (error) {
+        console.error('[useBatchDetail] v_batch_lifecycle query failed:', error);
+        throw error;
       }
 
-      if (!allocRows || allocRows.length === 0) {
-        setBatches([]);
-        return;
-      }
-
-      // Step 3: Build lifecycle + grade map from the registry rows we already fetched
-      const lifecycleMap = new Map<string, {
-        lifecycle_state: string | null;
-        production_path: string | null;
-        grade_label: string | null;
-        grade_color: string | null;
-      }>();
-
-      try {
-
-        const gradeIds = (regRows ?? []).map((r: any) => r.quality_grade_id).filter(Boolean);
-        const gradeMap = new Map<string, { label: string; color_class: string }>();
-
-        if (gradeIds.length > 0) {
-          const { data: grades } = await supabase
-            .from('quality_grades')
-            .select('id, label, color_class')
-            .in('id', gradeIds);
-          (grades ?? []).forEach((g: any) => gradeMap.set(g.id, { label: g.label, color_class: g.color_class }));
-        }
-
-        (regRows ?? []).forEach((r: any) => {
-          const grade = r.quality_grade_id ? gradeMap.get(r.quality_grade_id) : null;
-          lifecycleMap.set(r.id, {
-            lifecycle_state: r.lifecycle_state,
-            production_path: r.production_path,
-            grade_label: grade?.label ?? null,
-            grade_color: grade?.color_class ?? null,
-          });
-        });
-      } catch (enrichErr) {
-        // Non-fatal: we still have allocation data, just missing lifecycle/grade
-        console.warn('[useBatchDetail] batch_registry enrichment failed (non-fatal):', enrichErr);
-      }
-
-      // Step 4: Map to BatchDetailRow
-      const mapped: BatchDetailRow[] = allocRows.map((r: any) => {
-        const extra = lifecycleMap.get(r.batch_id);
-        return {
+      // Filter to inventory-relevant batches: has weight on the shelf or in pipeline
+      const mapped: BatchDetailRow[] = (data ?? [])
+        .filter((r: any) => {
+          const sellable = Number(r.sellable_now_g) || 0;
+          const pipeline = Number(r.pipeline_raw_g) || 0;
+          const potential = Number(r.total_potential_g) || 0;
+          return sellable > 0 || pipeline > 0 || potential > 0;
+        })
+        .map((r: any) => ({
           batch_id: r.batch_id,
-          batch_number: r.batch_number,
-          strain: r.strain,
+          batch_code: r.batch_code,
+          strain_name: r.strain_name,
           strain_id: r.strain_id,
+          lifecycle_state: r.lifecycle_state,
+          stage: r.stage,
           harvest_date: r.harvest_date,
-          batch_status: r.batch_status,
-          lifecycle_state: extra?.lifecycle_state ?? null,
-          production_path: extra?.production_path ?? null,
-          coa_status: r.coa_status,
-          bucked_available: Math.max(0, Number(r.bucked_available) || 0),
-          flower_available: Math.max(0, Number(r.flower_available) || 0),
-          smalls_available: Math.max(0, Number(r.smalls_available) || 0),
-          packaged_available: Math.max(0, Number(r.packaged_available) || 0),
-          total_weight: Math.max(0, Number(r.total_weight) || 0),
-          total_allocated: Number(r.total_allocated) || 0,
-          grade_label: extra?.grade_label ?? null,
-          grade_color: extra?.grade_color ?? null,
-        };
-      });
+          age_days: Number(r.age_days) || 0,
+          days_in_stage: Number(r.days_in_stage) || 0,
+          binned_g: Number(r.binned_g) || 0,
+          bucked_g: Number(r.bucked_g) || 0,
+          bulk_flower_g: Number(r.bulk_flower_g) || 0,
+          bulk_smalls_g: Number(r.bulk_smalls_g) || 0,
+          trim_g: Number(r.trim_g) || 0,
+          packaged_g: Number(r.packaged_g) || 0,
+          shipped_g: Number(r.shipped_g) || 0,
+          sellable_now_g: Number(r.sellable_now_g) || 0,
+          pipeline_raw_g: Number(r.pipeline_raw_g) || 0,
+          total_potential_g: Number(r.total_potential_g) || 0,
+          waste_grams: Number(r.waste_grams) || 0,
+          allocated_orders: Number(r.allocated_orders) || 0,
+          allocated_units: Number(r.allocated_units) || 0,
+          allocated_revenue: Number(r.allocated_revenue) || 0,
+          sold_value: Number(r.sold_value) || 0,
+          quality_grade: r.quality_grade ?? null,
+          confidence: r.confidence ?? 'low',
+          packaging_started_at: r.packaging_started_at ?? null,
+          completed_at: r.completed_at ?? null,
+        }));
 
       setBatches(mapped);
     } catch (err) {

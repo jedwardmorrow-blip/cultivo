@@ -17,7 +17,8 @@
     "docs:validate": "tsx scripts/validate-documentation.ts",
     "postinstall": "bash scripts/sync-pdf-worker.sh",
     "ai:init": "tsx scripts/ai-init.ts",
-    "ai:writeback": "tsx scripts/ai-writeback.ts"
+    "ai:writeback": "tsx scripts/ai-writeback.ts",
+    "lint:tokens": "bash scripts/lint-design-tokens.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

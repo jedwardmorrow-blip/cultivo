@@ -46,9 +46,10 @@ function harvestAge(dateStr: string | null): { label: string; color: string } {
 interface StrainsLensProps {
   data: StrainInventoryRow[];
   loading: boolean;
+  onBatchClick?: (batchId: string) => void;
 }
 
-export function StrainsLens({ data, loading }: StrainsLensProps) {
+export function StrainsLens({ data, loading, onBatchClick }: StrainsLensProps) {
   const [selectedStrainId, setSelectedStrainId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('weight');
   const [search, setSearch] = useState('');
@@ -144,7 +145,7 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
               onClick={() => setSortKey(key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 sortKey === key
-                  ? 'bg-white/[0.10] text-white border border-white/[0.12]'
+                  ? 'bg-cult-surface-active text-white border border-cult-border-active'
                   : 'text-white/40 hover:text-white/60 border border-transparent'
               }`}
             >
@@ -173,6 +174,7 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
                     strain={selectedStrain}
                     batches={batches}
                     batchLoading={batchLoading}
+                    onBatchClick={onBatchClick}
                   />
                 </motion.div>
               ) : (
@@ -203,8 +205,8 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
                   onClick={() => handleStrainClick(row.strain_id)}
                   className={`w-full text-left transition-all active:scale-[0.98] ${
                     isActive
-                      ? 'glass-elevated ring-1 ring-white/[0.15]'
-                      : 'glass-card hover:bg-white/[0.09] hover:border-white/[0.14]'
+                      ? 'glass-elevated ring-1 ring-cult-border-strong'
+                      : 'glass-card hover:bg-cult-surface-active hover:border-cult-border-strong'
                   } p-4`}
                 >
                   {isActive ? (
@@ -306,19 +308,19 @@ function OverviewPanel({ data }: { data: StrainInventoryRow[] }) {
 
       {/* Summary KPIs */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Total Weight</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {gramsToLbs(totalWeight)} lbs
           </p>
         </div>
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Est. Value</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {formatUsd(totalValue)}
           </p>
         </div>
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Strains</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{data.length}</p>
         </div>
@@ -327,7 +329,7 @@ function OverviewPanel({ data }: { data: StrainInventoryRow[] }) {
       {/* Category breakdown */}
       <div>
         <span className="text-xs text-white/40 uppercase tracking-wider font-medium">By Category</span>
-        <div className="flex h-3 rounded-full overflow-hidden bg-white/[0.04] mt-2">
+        <div className="flex h-3 rounded-full overflow-hidden bg-cult-near-black mt-2">
           {catBreakdown.map((c) => (
             <div
               key={c.cat}

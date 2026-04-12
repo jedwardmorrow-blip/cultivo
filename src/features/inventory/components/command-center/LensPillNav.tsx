@@ -18,7 +18,7 @@ interface LensPillNavProps {
 
 export function LensPillNav({ lenses, active, onChange }: LensPillNavProps) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] w-fit">
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-cult-near-black border border-cult-border-subtle w-fit">
       {lenses.map((lens) => {
         const isActive = lens.id === active;
         const Icon = lens.icon;
@@ -38,7 +38,7 @@ export function LensPillNav({ lenses, active, onChange }: LensPillNavProps) {
             {isActive && (
               <motion.div
                 layoutId="lens-pill-active"
-                className="absolute inset-0 rounded-lg bg-white/[0.10] border border-white/[0.12]"
+                className="absolute inset-0 rounded-lg bg-cult-surface-active border border-cult-border-active"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             )}

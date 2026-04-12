@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Award } from 'lucide-react';
 import type { GradeBucket } from '../../hooks/useInventoryKpis';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
+const GLASS = 'rounded-2xl border border-cult-border bg-cult-surface-raised backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
 
 const staggerItem = {
   hidden: { opacity: 0, y: 12 },
@@ -61,13 +61,13 @@ export function GradeMixTile({ gradeBuckets, ungradedGrams, totalGradedGrams, lo
         </div>
 
         {loading ? (
-          <div className="h-5 w-full rounded-lg bg-white/[0.06] animate-pulse" />
+          <div className="h-5 w-full rounded-lg bg-cult-surface-raised animate-pulse" />
         ) : !hasData ? (
           <span className="text-2xl font-bold text-white/20">—</span>
         ) : (
           <div className="flex flex-col gap-2 relative">
             {/* Stacked bar */}
-            <div className="flex h-3 rounded-full overflow-hidden bg-white/[0.04]">
+            <div className="flex h-3 rounded-full overflow-hidden bg-cult-near-black">
               {gradeBuckets.map((g) => (
                 <div
                   key={g.code}

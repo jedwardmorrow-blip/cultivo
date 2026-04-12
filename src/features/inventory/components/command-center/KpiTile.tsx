@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
+const GLASS = 'rounded-2xl border border-cult-border bg-cult-surface-raised backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
 
 const staggerItem = {
   hidden: { opacity: 0, y: 12 },
@@ -40,7 +40,7 @@ export function KpiTile({
       <Wrapper
         onClick={onClick}
         className={`${GLASS} p-4 flex items-center gap-3 w-full text-left relative overflow-hidden transition-all min-h-[90px]
-          ${onClick ? 'cursor-pointer hover:bg-white/[0.10] hover:border-white/[0.15]' : ''}`}
+          ${onClick ? 'cursor-pointer hover:bg-cult-surface-active hover:border-cult-border-strong' : ''}`}
       >
         {/* Accent glow */}
         <div
@@ -64,7 +64,7 @@ export function KpiTile({
         {/* Content */}
         <div className="min-w-0 relative">
           {loading ? (
-            <div className="h-7 w-20 rounded-lg bg-white/[0.06] animate-pulse mb-1" />
+            <div className="h-7 w-20 rounded-lg bg-cult-surface-raised animate-pulse mb-1" />
           ) : (
             <div className="flex items-center gap-2">
               <span className={`text-2xl font-bold tabular-nums ${placeholder ? 'text-white/20' : 'text-white'}`}>

@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Calendar, FlaskConical, Layers, ExternalLink } from 'lucide-react';
+import { Package, Calendar, Layers, ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import type { StrainInventoryRow } from '../../../hooks/useStrainInventory';
 import type { BatchDetailRow } from '../../../hooks/useBatchDetail';
 import { GradeDonut, type DonutSegment } from '../GradeDonut';
@@ -17,14 +16,22 @@ const STAGE_COLORS: Record<string, string> = {
   trim: '#10B981',
   bucked: '#0EA5E9',
   packaged: '#8B5CF6',
+  shipped: '#6366F1',
 };
 
 const LIFECYCLE_LABELS: Record<string, string> = {
+  growing: 'Growing',
+  drying: 'Drying',
+  curing: 'Curing',
   bucked: 'Bucked',
+  trimming: 'Trimming',
   trimmed: 'Trimmed',
+  bulk_available: 'Bulk Available',
+  packaging: 'Packaging',
   packaged: 'Packaged',
   completed: 'Completed',
   depleted: 'Depleted',
+  archived: 'Archived',
 };
 
 function gramsToLbs(g: number): string {
@@ -43,14 +50,34 @@ function harvestAge(dateStr: string | null): string {
   return `${days}d ago`;
 }
 
+function ageColor(days: number): string {
+  if (days < 30) return 'text-emerald-400';
+  if (days < 60) return 'text-amber-400';
+  return 'text-rose-400';
+}
+
+function confidenceBadge(confidence: string) {
+  const map: Record<string, { bg: string; text: string; label: string }> = {
+    high: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', label: 'High' },
+    medium: { bg: 'bg-amber-500/15', text: 'text-amber-300', label: 'Med' },
+    low: { bg: 'bg-rose-500/15', text: 'text-rose-300', label: 'Low' },
+  };
+  const c = map[confidence] ?? map.low;
+  return (
+    <span className={`inline-flex items-center px-1.5 py-px rounded-full text-[9px] font-medium border ${c.bg} ${c.text} border-current/20`}>
+      {c.label}
+    </span>
+  );
+}
+
 interface StrainDetailPanelProps {
   strain: StrainInventoryRow;
   batches: BatchDetailRow[];
   batchLoading: boolean;
+  onBatchClick?: (batchId: string) => void;
 }
 
-export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetailPanelProps) {
-  const navigate = useNavigate();
+export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick }: StrainDetailPanelProps) {
   const catColor = CATEGORY_COLORS[strain.strain_category ?? ''] ?? '#666';
 
   const donutSegments: DonutSegment[] = [
@@ -59,6 +86,12 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
     { code: 'trim', label: 'Trim', colorClass: 'emerald', grams: strain.bulk_trim_grams },
     { code: 'bucked', label: 'Bucked', colorClass: 'sky', grams: strain.bucked_grams },
   ].filter((s) => s.grams > 0);
+
+  // Aggregate batch-level stats
+  const totalSellable = batches.reduce((s, b) => s + b.sellable_now_g, 0);
+  const totalPipeline = batches.reduce((s, b) => s + b.pipeline_raw_g, 0);
+  const totalSoldValue = batches.reduce((s, b) => s + b.sold_value, 0);
+  const totalAllocatedOrders = batches.reduce((s, b) => s + b.allocated_orders, 0);
 
   return (
     <div className="space-y-6">
@@ -81,31 +114,36 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
-          <span className="text-xs text-white/40 uppercase tracking-wider">Weight</span>
+      <div className="grid grid-cols-4 gap-3">
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Sellable</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
-            {gramsToLbs(strain.total_available_grams)} lbs
+            {gramsToLbs(totalSellable)} lbs
           </p>
           <p className="text-[10px] text-white/30 tabular-nums">
-            {strain.total_available_grams.toLocaleString('en-US', { maximumFractionDigits: 0 })}g
+            {totalSellable.toLocaleString('en-US', { maximumFractionDigits: 0 })}g
           </p>
         </div>
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
-          <span className="text-xs text-white/40 uppercase tracking-wider">Value</span>
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Pipeline</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
-            {formatUsd(strain.estimated_value_usd)}
+            {gramsToLbs(totalPipeline)} lbs
           </p>
-          {strain.forecast_price_per_gram != null && (
-            <p className="text-[10px] text-white/30 tabular-nums">
-              ${strain.forecast_price_per_gram.toFixed(2)}/g
-            </p>
-          )}
+          <p className="text-[10px] text-white/30 tabular-nums">raw / in-process</p>
         </div>
-        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Sold</span>
+          <p className="text-xl font-bold text-white tabular-nums mt-1">
+            {formatUsd(totalSoldValue)}
+          </p>
+          <p className="text-[10px] text-white/30 tabular-nums">
+            {totalAllocatedOrders > 0 ? `${totalAllocatedOrders} orders` : 'no orders'}
+          </p>
+        </div>
+        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Batches</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
-            {strain.active_batch_count}
+            {batches.length}
           </p>
           <p className="text-[10px] text-white/30">
             {strain.packaged_units_available > 0
@@ -131,7 +169,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
                   style={{ backgroundColor: STAGE_COLORS[seg.code] ?? '#666', opacity: 0.85 }}
                 />
                 <span className="text-xs text-white/60 w-14">{seg.label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-cult-near-black overflow-hidden">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -150,7 +188,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
         </div>
       </div>
 
-      {/* Batch detail table */}
+      {/* Batch detail list */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Layers className="w-3.5 h-3.5 text-white/30" />
@@ -160,11 +198,11 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
         {batchLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-white/[0.04] animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-cult-near-black animate-pulse" />
             ))}
           </div>
         ) : batches.length === 0 ? (
-          <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-6 text-center">
+          <div className="rounded-xl bg-cult-surface-inset border border-cult-border-faint p-6 text-center">
             <p className="text-white/30 text-sm">No active batches</p>
           </div>
         ) : (
@@ -175,34 +213,30 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                onClick={() => navigate('/batches')}
-                className="w-full text-left bg-white/[0.04] rounded-xl p-4 border border-white/[0.06] hover:bg-white/[0.07] hover:border-white/[0.10] transition-all active:scale-[0.99] group"
+                onClick={() => onBatchClick?.(b.batch_id)}
+                className="w-full text-left bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle hover:bg-cult-surface-overlay hover:border-cult-border transition-all active:scale-[0.99] group"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-white font-mono">{b.batch_number}</span>
+                      <span className="text-sm font-medium text-white font-mono">{b.batch_code}</span>
                       <ExternalLink className="w-3 h-3 text-white/0 group-hover:text-white/30 transition-colors" />
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {b.lifecycle_state && (
-                        <span className="text-[10px] text-white/30">
-                          {LIFECYCLE_LABELS[b.lifecycle_state] ?? b.lifecycle_state}
+                      <span className="text-[10px] text-white/30">
+                        {LIFECYCLE_LABELS[b.lifecycle_state] ?? b.lifecycle_state}
+                      </span>
+                      {b.quality_grade && (
+                        <span className="inline-flex items-center px-1.5 py-px rounded-full text-[9px] font-medium bg-violet-500/15 text-violet-300 border border-violet-500/20">
+                          {b.quality_grade}
                         </span>
                       )}
-                      {b.coa_status && (
-                        <span className="flex items-center gap-0.5 text-[10px]">
-                          <FlaskConical className="w-2.5 h-2.5" />
-                          <span className={b.coa_status === 'passed' ? 'text-emerald-400' : 'text-white/30'}>
-                            {b.coa_status}
-                          </span>
-                        </span>
-                      )}
+                      {confidenceBadge(b.confidence)}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-sm font-bold text-white tabular-nums">
-                      {gramsToLbs(b.total_weight)} lbs
+                      {gramsToLbs(b.total_potential_g)} lbs
                     </span>
                     <div className="flex items-center gap-1 mt-0.5 justify-end">
                       <Calendar className="w-2.5 h-2.5 text-white/20" />
@@ -214,12 +248,14 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
                 </div>
 
                 {/* Stage mini-bars */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {[
-                    { key: 'flower', label: 'FL', g: b.flower_available, color: STAGE_COLORS.flower },
-                    { key: 'smalls', label: 'SM', g: b.smalls_available, color: STAGE_COLORS.smalls },
-                    { key: 'bucked', label: 'BK', g: b.bucked_available, color: STAGE_COLORS.bucked },
-                    { key: 'pkg', label: 'PK', g: b.packaged_available, color: STAGE_COLORS.packaged },
+                    { key: 'flower', label: 'FL', g: b.bulk_flower_g, color: STAGE_COLORS.flower },
+                    { key: 'smalls', label: 'SM', g: b.bulk_smalls_g, color: STAGE_COLORS.smalls },
+                    { key: 'trim', label: 'TR', g: b.trim_g, color: STAGE_COLORS.trim },
+                    { key: 'bucked', label: 'BK', g: b.bucked_g, color: STAGE_COLORS.bucked },
+                    { key: 'pkg', label: 'PK', g: b.packaged_g, color: STAGE_COLORS.packaged },
+                    { key: 'ship', label: 'SH', g: b.shipped_g, color: STAGE_COLORS.shipped },
                   ]
                     .filter((s) => s.g > 0)
                     .map((s) => (
@@ -236,21 +272,24 @@ export function StrainDetailPanel({ strain, batches, batchLoading }: StrainDetai
                     ))}
                 </div>
 
-                {/* Grade badge if present */}
-                {b.grade_label && (
-                  <div className="mt-2">
-                    <span
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border"
-                      style={{
-                        color: b.grade_color ? `var(--tw-color-${b.grade_color}-400, #8B5CF6)` : '#8B5CF6',
-                        backgroundColor: 'rgba(139,92,246,0.15)',
-                        borderColor: 'rgba(139,92,246,0.2)',
-                      }}
-                    >
-                      {b.grade_label}
+                {/* Age + allocation info */}
+                <div className="flex items-center gap-3 mt-2">
+                  {b.age_days > 0 && (
+                    <span className={`flex items-center gap-1 text-[10px] ${ageColor(b.age_days)}`}>
+                      <Clock className="w-2.5 h-2.5" />
+                      {b.age_days}d old
+                      {b.days_in_stage > 0 && (
+                        <span className="text-white/20 ml-1">({b.days_in_stage}d in stage)</span>
+                      )}
                     </span>
-                  </div>
-                )}
+                  )}
+                  {b.allocated_orders > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] text-white/30">
+                      <TrendingUp className="w-2.5 h-2.5" />
+                      {b.allocated_orders} orders · {formatUsd(b.allocated_revenue)}
+                    </span>
+                  )}
+                </div>
               </motion.button>
             ))}
           </div>
