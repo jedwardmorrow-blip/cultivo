@@ -1,17 +1,24 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Leaf, Package, ArrowUpDown, Search } from 'lucide-react';
+import { LayoutGroup, AnimatePresence, motion } from 'framer-motion';
+import { Dna, Search, ArrowUpDown } from 'lucide-react';
 import type { StrainInventoryRow } from '../../../hooks/useStrainInventory';
+import { useBatchDetail } from '../../../hooks/useBatchDetail';
 import { GradeDonut, type DonutSegment } from '../GradeDonut';
+import { StrainDetailPanel } from './StrainDetailPanel';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_HOVER = 'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
-const GLASS_EMPTY = 'rounded-2xl border border-white/[0.04] bg-white/[0.02]';
+// ─── Tokens ───────────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
   sativa: '#10B981',
   indica: '#8B5CF6',
   hybrid: '#F59E0B',
+};
+
+const fadeIn = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
 };
 
 type SortKey = 'weight' | 'value' | 'name' | 'harvest';
@@ -34,14 +41,20 @@ function harvestAge(dateStr: string | null): { label: string; color: string } {
   return { label: `${days}d`, color: 'text-rose-400' };
 }
 
+// ─── Main Component ───────────────────────────────────────────────────────
+
 interface StrainsLensProps {
   data: StrainInventoryRow[];
   loading: boolean;
 }
 
 export function StrainsLens({ data, loading }: StrainsLensProps) {
+  const [selectedStrainId, setSelectedStrainId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('weight');
   const [search, setSearch] = useState('');
+
+  // Batch data for the selected strain
+  const { batches, loading: batchLoading } = useBatchDetail(selectedStrainId);
 
   const filtered = useMemo(() => {
     let result = [...data];
@@ -72,29 +85,47 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
     });
   }, [data, sortKey, search]);
 
+  const selectedStrain = useMemo(
+    () => data.find((r) => r.strain_id === selectedStrainId) ?? null,
+    [data, selectedStrainId],
+  );
+
+  function handleStrainClick(strainId: string | null) {
+    if (!strainId) return;
+    setSelectedStrainId((prev) => (prev === strainId ? null : strainId));
+  }
+
+  // ─── Loading skeleton ─────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className={`${GLASS} p-5 h-[200px] animate-pulse`} />
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3">
+          <div className="glass-card p-6 h-[500px] animate-pulse" />
+        </div>
+        <div className="lg:col-span-2 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-card p-4 h-[88px] animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
 
+  // ─── Empty state ──────────────────────────────────────────────────────
   if (data.length === 0) {
     return (
-      <div className={`${GLASS_EMPTY} p-12 text-center`}>
-        <Leaf className="w-10 h-10 text-white/10 mx-auto mb-3" />
+      <div className="glass-card p-12 text-center">
+        <Dna className="w-10 h-10 text-white/10 mx-auto mb-3" />
         <p className="text-white/50 font-medium">No active inventory</p>
         <p className="text-white/30 text-sm mt-1">Waiting on first harvest.</p>
       </div>
     );
   }
 
+  // ─── Bento Card Swap Layout ───────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* Filter bar: search + sort */}
+      {/* Filter bar */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px] max-w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
@@ -103,7 +134,7 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search strains…"
-            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/[0.20]"
+            className="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -124,27 +155,89 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
         </div>
       </div>
 
-      {/* Strain cards — responsive bento grid per spec §5.2 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {filtered.map((row, i) => (
-          <StrainCard key={row.strain_id ?? row.strain} row={row} index={i} />
-        ))}
-      </div>
+      {/* Bento 3/5 + 2/5 grid */}
+      <LayoutGroup>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* Primary Panel (3/5) — detail or overview */}
+          <div className="lg:col-span-3" style={{ minHeight: '480px' }}>
+            <AnimatePresence mode="wait" initial={false}>
+              {selectedStrain ? (
+                <motion.div
+                  key={`detail-${selectedStrainId}`}
+                  initial={fadeIn.initial}
+                  animate={fadeIn.animate}
+                  exit={fadeIn.exit}
+                  transition={fadeIn.transition}
+                  className="glass-card p-6 h-full"
+                >
+                  <StrainDetailPanel
+                    strain={selectedStrain}
+                    batches={batches}
+                    batchLoading={batchLoading}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="overview"
+                  initial={fadeIn.initial}
+                  animate={fadeIn.animate}
+                  exit={fadeIn.exit}
+                  transition={fadeIn.transition}
+                  className="glass-card p-6 h-full"
+                >
+                  <OverviewPanel data={filtered} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-      {filtered.length === 0 && search && (
-        <div className="text-center py-8 text-white/30 text-sm">
-          No strains match "{search}"
+          {/* Secondary Panel (2/5) — strain card list */}
+          <div className="lg:col-span-2 space-y-2 max-h-[700px] overflow-y-auto pr-1 scrollbar-thin">
+            {filtered.map((row, i) => {
+              const isActive = row.strain_id === selectedStrainId;
+              return (
+                <motion.button
+                  key={row.strain_id ?? row.strain}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.025, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => handleStrainClick(row.strain_id)}
+                  className={`w-full text-left transition-all active:scale-[0.98] ${
+                    isActive
+                      ? 'glass-elevated ring-1 ring-white/[0.15]'
+                      : 'glass-card hover:bg-white/[0.09] hover:border-white/[0.14]'
+                  } p-4`}
+                >
+                  {isActive ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-white">{row.strain}</span>
+                      <span className="text-[10px] text-white/40">Viewing detail &rarr;</span>
+                    </div>
+                  ) : (
+                    <StrainCardCompact row={row} />
+                  )}
+                </motion.button>
+              );
+            })}
+
+            {filtered.length === 0 && search && (
+              <div className="text-center py-8 text-white/30 text-sm">
+                No strains match &ldquo;{search}&rdquo;
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </LayoutGroup>
     </div>
   );
 }
 
-function StrainCard({ row, index }: { row: StrainInventoryRow; index: number }) {
+// ─── Compact Strain Card (right column) ─────────────────────────────────
+
+function StrainCardCompact({ row }: { row: StrainInventoryRow }) {
   const catColor = CATEGORY_COLORS[row.strain_category ?? ''] ?? '#666';
   const age = harvestAge(row.oldest_active_harvest ?? row.most_recent_harvest);
 
-  // Build grade donut segments from weight breakdown
   const donutSegments: DonutSegment[] = [
     { code: 'flower', label: 'Flower', colorClass: 'rose', grams: row.bulk_flower_grams },
     { code: 'smalls', label: 'Smalls', colorClass: 'amber', grams: row.bulk_smalls_grams },
@@ -153,119 +246,128 @@ function StrainCard({ row, index }: { row: StrainInventoryRow; index: number }) 
   ].filter((s) => s.grams > 0);
 
   return (
-    <motion.div
-      layoutId={row.strain_id ? `strain-card-${row.strain_id}` : undefined}
-      initial={{ opacity: 0, y: 14, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.45,
-        delay: index * 0.03,
-        ease: [0.16, 1, 0.3, 1],
-      }}
-      whileHover={{ scale: 1.015, transition: { duration: 0.2 } }}
-      className={`${GLASS} ${GLASS_HOVER} p-5 cursor-pointer transition-all relative overflow-hidden`}
-    >
-      {/* Subtle accent glow based on category */}
-      <div
-        className="absolute -top-8 -right-4 rounded-full pointer-events-none"
-        style={{
-          width: '100px',
-          height: '100px',
-          background: `radial-gradient(circle, ${catColor}12 0%, transparent 70%)`,
-          filter: 'blur(16px)',
-        }}
-      />
+    <div className="flex items-center gap-3">
+      {/* Mini donut */}
+      <GradeDonut segments={donutSegments} size="sm" />
 
-      {/* Header: name + category chip */}
-      <div className="flex items-start justify-between gap-2 mb-3 relative">
-        <div className="min-w-0">
-          <h3 className="text-white font-semibold text-sm truncate">{row.strain}</h3>
-          {row.abbreviation && (
-            <span className="text-white/30 text-xs font-mono">{row.abbreviation}</span>
-          )}
-        </div>
-        <span
-          className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
-          style={{
-            color: catColor,
-            backgroundColor: `${catColor}20`,
-          }}
-        >
-          {row.strain_category ?? '—'}
-        </span>
-      </div>
-
-      {/* Weight + donut + value row */}
-      <div className="flex items-center gap-3 mb-3 relative">
-        <GradeDonut segments={donutSegments} size="sm" />
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-white tabular-nums">
-              {gramsToLbs(row.total_available_grams)} lbs
-            </span>
-            <span className="text-white/25 text-xs tabular-nums">
-              {row.total_available_grams.toLocaleString('en-US', { maximumFractionDigits: 0 })}g
-            </span>
-          </div>
-          {row.estimated_value_usd > 0 && (
-            <span className="text-xs text-white/40 tabular-nums">{formatUsd(row.estimated_value_usd)}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Breakdown bar */}
-      <WeightBreakdown row={row} />
-
-      {/* Footer chips */}
-      <div className="flex items-center gap-2 mt-3 relative">
-        <span className="flex items-center gap-1 text-xs text-white/40">
-          <Package className="w-3 h-3" />
-          {row.active_batch_count} batch{row.active_batch_count !== 1 ? 'es' : ''}
-        </span>
-        {row.packaged_units_available > 0 && (
-          <span className="text-xs text-white/40 tabular-nums">
-            {row.packaged_units_available} pkg
+      {/* Name + weight */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-white truncate">{row.strain}</h3>
+          <span
+            className="shrink-0 px-1.5 py-px rounded-full text-[9px] font-semibold uppercase tracking-wider"
+            style={{ color: catColor, backgroundColor: `${catColor}20` }}
+          >
+            {row.strain_category?.slice(0, 3) ?? '—'}
           </span>
-        )}
-        <span className={`text-xs ml-auto tabular-nums ${age.color}`}>{age.label}</span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-white/50 tabular-nums">
+            {gramsToLbs(row.total_available_grams)} lbs
+          </span>
+          {row.estimated_value_usd > 0 && (
+            <span className="text-xs text-white/30 tabular-nums">{formatUsd(row.estimated_value_usd)}</span>
+          )}
+          <span className={`text-[10px] ml-auto tabular-nums ${age.color}`}>{age.label}</span>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-function WeightBreakdown({ row }: { row: StrainInventoryRow }) {
-  const total = row.total_available_grams;
-  if (total === 0) return null;
+// ─── Overview Panel (left column, no selection) ─────────────────────────
 
-  const segments = [
-    { label: 'Flower', grams: row.bulk_flower_grams, color: '#F43F5E' },
-    { label: 'Smalls', grams: row.bulk_smalls_grams, color: '#F59E0B' },
-    { label: 'Trim', grams: row.bulk_trim_grams, color: '#10B981' },
-    { label: 'Bucked', grams: row.bucked_grams, color: '#0EA5E9' },
-  ].filter((s) => s.grams > 0);
+function OverviewPanel({ data }: { data: StrainInventoryRow[] }) {
+  const totalWeight = data.reduce((s, r) => s + r.total_available_grams, 0);
+  const totalValue = data.reduce((s, r) => s + r.estimated_value_usd, 0);
+
+  // Category breakdown
+  const catBreakdown = useMemo(() => {
+    const map = new Map<string, number>();
+    data.forEach((r) => {
+      const cat = r.strain_category ?? 'unknown';
+      map.set(cat, (map.get(cat) ?? 0) + r.total_available_grams);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, grams]) => ({ cat, grams, pct: totalWeight > 0 ? (grams / totalWeight) * 100 : 0 }));
+  }, [data, totalWeight]);
+
+  // Top 5 strains by weight
+  const top5 = data.slice(0, 5);
 
   return (
-    <div className="space-y-1.5 relative">
-      <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
-        {segments.map((seg) => (
-          <div
-            key={seg.label}
-            className="h-full first:rounded-l-full last:rounded-r-full"
-            style={{
-              width: `${(seg.grams / total) * 100}%`,
-              backgroundColor: seg.color,
-              opacity: 0.75,
-            }}
-          />
-        ))}
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-white/90">Strain Overview</h2>
+        <p className="text-xs text-white/40 mt-1">
+          Select a strain to view batch-level detail
+        </p>
       </div>
-      <div className="flex gap-3 flex-wrap">
-        {segments.map((seg) => (
-          <span key={seg.label} className="flex items-center gap-1 text-[10px] text-white/40">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: seg.color, opacity: 0.75 }} />
-            {seg.label} {gramsToLbs(seg.grams)}
-          </span>
-        ))}
+
+      {/* Summary KPIs */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Total Weight</span>
+          <p className="text-xl font-bold text-white tabular-nums mt-1">
+            {gramsToLbs(totalWeight)} lbs
+          </p>
+        </div>
+        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Est. Value</span>
+          <p className="text-xl font-bold text-white tabular-nums mt-1">
+            {formatUsd(totalValue)}
+          </p>
+        </div>
+        <div className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+          <span className="text-xs text-white/40 uppercase tracking-wider">Strains</span>
+          <p className="text-xl font-bold text-white tabular-nums mt-1">{data.length}</p>
+        </div>
+      </div>
+
+      {/* Category breakdown */}
+      <div>
+        <span className="text-xs text-white/40 uppercase tracking-wider font-medium">By Category</span>
+        <div className="flex h-3 rounded-full overflow-hidden bg-white/[0.04] mt-2">
+          {catBreakdown.map((c) => (
+            <div
+              key={c.cat}
+              className="h-full first:rounded-l-full last:rounded-r-full"
+              style={{
+                width: `${c.pct}%`,
+                backgroundColor: CATEGORY_COLORS[c.cat] ?? '#666',
+                opacity: 0.75,
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex gap-4 mt-2">
+          {catBreakdown.map((c) => (
+            <span key={c.cat} className="flex items-center gap-1.5 text-xs text-white/50">
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: CATEGORY_COLORS[c.cat] ?? '#666', opacity: 0.75 }}
+              />
+              {c.cat} — {gramsToLbs(c.grams)} lbs
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Top strains */}
+      <div>
+        <span className="text-xs text-white/40 uppercase tracking-wider font-medium">Top Strains by Weight</span>
+        <div className="space-y-2 mt-2">
+          {top5.map((row, i) => (
+            <div key={row.strain_id ?? row.strain} className="flex items-center gap-3">
+              <span className="text-xs text-white/20 w-4 tabular-nums">{i + 1}</span>
+              <span className="text-sm text-white/70 flex-1 truncate">{row.strain}</span>
+              <span className="text-sm text-white font-medium tabular-nums">
+                {gramsToLbs(row.total_available_grams)} lbs
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
