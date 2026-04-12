@@ -19,7 +19,7 @@ const VARIANCE_REASONS: { value: VarianceReason; label: string }[] = [
 ];
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-white/[0.06] text-cult-text-muted' },
+  pending: { label: 'Pending', className: 'bg-cult-surface-raised text-cult-text-muted' },
   match: { label: 'Match', className: 'bg-cult-success/10 text-cult-success' },
   variance: { label: 'Variance', className: 'bg-cult-warning/10 text-cult-warning' },
   not_found: { label: 'Not Found', className: 'bg-cult-danger/10 text-cult-danger' },
@@ -90,7 +90,7 @@ export function AuditCountingView({
           <button
             type="button"
             onClick={onBack}
-            className="p-2 rounded-xl hover:bg-white/[0.06] transition text-cult-text-muted"
+            className="p-2 rounded-xl hover:bg-cult-surface-raised transition text-cult-text-muted"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -122,7 +122,7 @@ export function AuditCountingView({
             {counts.match} match · {counts.variance} variance · {counts.not_found} not found
           </span>
         </div>
-        <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden flex">
+        <div className="h-2 rounded-full bg-cult-surface-raised overflow-hidden flex">
           {counts.match > 0 && (
             <div
               className="h-full bg-cult-success"
@@ -159,7 +159,7 @@ export function AuditCountingView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search packages…"
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-white/[0.10] bg-white/[0.03] text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
           />
         </div>
         <div className="flex gap-1">
@@ -173,7 +173,7 @@ export function AuditCountingView({
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                   filter === f
                     ? 'bg-cult-accent/15 text-cult-accent border border-cult-accent/30'
-                    : 'bg-white/[0.03] text-cult-text-muted border border-transparent hover:bg-white/[0.06]'
+                    : 'bg-cult-surface-subtle text-cult-text-muted border border-transparent hover:bg-cult-surface-raised'
                 }`}
               >
                 {f === 'all' ? 'All' : f === 'not_found' ? 'Not Found' : f.charAt(0).toUpperCase() + f.slice(1)}{' '}
@@ -185,7 +185,7 @@ export function AuditCountingView({
       </div>
 
       {/* Lines */}
-      <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden divide-y divide-white/[0.06]">
+      <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden divide-y divide-cult-border-subtle">
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-cult-text-muted text-sm">
             {search ? 'No matches for search' : 'No lines in this filter'}
@@ -242,7 +242,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-3 flex items-center gap-3 hover:bg-white/[0.03] transition text-left"
+        className="w-full p-3 flex items-center gap-3 hover:bg-cult-surface-subtle transition text-left"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -256,6 +256,9 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
           <div className="text-xs text-cult-text-secondary mt-0.5 truncate">
             {line.product_name}
             {line.strain && ` · ${line.strain}`}
+            {line.batch && (
+              <span className="font-mono text-cult-text-muted"> · {line.batch}</span>
+            )}
             {line.stage && ` · ${line.stage}`}
           </div>
         </div>
@@ -277,7 +280,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
       </button>
 
       {expanded && line.line_status === 'pending' && (
-        <div className="px-3 pb-3 space-y-2 border-t border-white/[0.04] pt-2">
+        <div className="px-3 pb-3 space-y-2 border-t border-cult-border-faint pt-2">
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <label className="text-[10px] font-bold text-cult-text-muted uppercase tracking-wider block mb-1">
@@ -289,7 +292,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
                 min="0"
                 value={actualInput}
                 onChange={(e) => setActualInput(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-white/[0.12] bg-white/[0.04] text-sm text-cult-text-primary font-mono focus:outline-none focus:border-cult-accent/50"
+                className="w-full px-3 py-2 rounded-lg border border-cult-border-active bg-cult-surface-inset text-sm text-cult-text-primary font-mono focus:outline-none focus:border-cult-accent/50"
                 placeholder={line.expected_qty.toString()}
               />
             </div>
@@ -300,7 +303,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value as VarianceReason | '')}
-                className="w-full px-3 py-2 rounded-lg border border-white/[0.12] bg-white/[0.04] text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50"
+                className="w-full px-3 py-2 rounded-lg border border-cult-border-active bg-cult-surface-inset text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50"
               >
                 <option value="">—</option>
                 {VARIANCE_REASONS.map((r) => (
@@ -314,7 +317,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes (optional)"
-            className="w-full px-3 py-2 rounded-lg border border-white/[0.12] bg-white/[0.04] text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
+            className="w-full px-3 py-2 rounded-lg border border-cult-border-active bg-cult-surface-inset text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
           />
           <div className="flex gap-2">
             <button
@@ -339,7 +342,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
       )}
 
       {expanded && line.line_status !== 'pending' && (
-        <div className="px-3 pb-3 border-t border-white/[0.04] pt-2">
+        <div className="px-3 pb-3 border-t border-cult-border-faint pt-2">
           <div className="flex items-center justify-between">
             <div className="text-xs text-cult-text-secondary">
               {line.variance_reason && <span className="capitalize">{line.variance_reason.replace(/_/g, ' ')}</span>}
@@ -355,7 +358,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
                 type="button"
                 onClick={() => onResetLine(line.id)}
                 disabled={actionLoading}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-white/[0.06] transition disabled:opacity-40"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised transition disabled:opacity-40"
               >
                 <RotateCcw className="w-3 h-3" />
                 Reset

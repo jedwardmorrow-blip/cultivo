@@ -68,7 +68,7 @@ export function AuditReviewApply({
         <button
           type="button"
           onClick={isTerminal ? onBackToHub : onBack}
-          className="p-2 rounded-xl hover:bg-white/[0.06] transition text-cult-text-muted"
+          className="p-2 rounded-xl hover:bg-cult-surface-raised transition text-cult-text-muted"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -100,7 +100,7 @@ export function AuditReviewApply({
       )}
 
       {isAbandoned && (
-        <div className="rounded-xl border border-white/[0.10] bg-white/[0.03] p-4">
+        <div className="rounded-xl border border-cult-border bg-cult-surface-subtle p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-cult-text-muted" />
             <span className="text-sm font-bold text-cult-text-muted">Audit Abandoned</span>
@@ -145,7 +145,7 @@ export function AuditReviewApply({
       {/* Variance detail table */}
       {(variances.length > 0 || notFound.length > 0) && (
         <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
+          <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
             <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
               Variance Detail
             </div>
@@ -153,8 +153,9 @@ export function AuditReviewApply({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/[0.06]">
+                <tr className="border-b border-cult-border-subtle">
                   <th className="text-left px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Package</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Batch</th>
                   <th className="text-left px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Product</th>
                   <th className="text-right px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Expected</th>
                   <th className="text-right px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Actual</th>
@@ -162,10 +163,11 @@ export function AuditReviewApply({
                   <th className="text-left px-4 py-2 text-[10px] font-bold text-cult-text-muted uppercase tracking-wider">Reason</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-cult-border-faint">
                 {[...variances, ...notFound].map((l) => (
-                  <tr key={l.id} className="hover:bg-white/[0.02]">
+                  <tr key={l.id} className="hover:bg-cult-surface-inset">
                     <td className="px-4 py-2 font-mono text-cult-text-primary">{l.package_id}</td>
+                    <td className="px-4 py-2 font-mono text-cult-text-muted text-xs">{l.batch ?? '—'}</td>
                     <td className="px-4 py-2 text-cult-text-secondary truncate max-w-[200px]">{l.product_name}</td>
                     <td className="px-4 py-2 text-right font-mono text-cult-text-secondary">{l.expected_qty}</td>
                     <td className="px-4 py-2 text-right font-mono text-cult-text-primary">{l.actual_qty ?? '—'}</td>
@@ -212,7 +214,7 @@ export function AuditReviewApply({
           <button
             type="button"
             onClick={onBackToHub}
-            className="px-5 py-2.5 rounded-xl border border-white/[0.10] text-cult-text-secondary font-medium text-sm hover:bg-white/[0.06] transition"
+            className="px-5 py-2.5 rounded-xl border border-cult-border text-cult-text-secondary font-medium text-sm hover:bg-cult-surface-raised transition"
           >
             Back to Audit Hub
           </button>
@@ -245,7 +247,7 @@ export function AuditReviewApply({
               onChange={(e) => setAbandonReason(e.target.value)}
               rows={2}
               placeholder="Reason (optional)"
-              className="w-full px-3 py-2 rounded-xl border border-white/[0.10] bg-white/[0.03] text-sm text-cult-text-primary placeholder:text-cult-text-muted resize-none focus:outline-none focus:border-cult-accent/50 mb-4"
+              className="w-full px-3 py-2 rounded-xl border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted resize-none focus:outline-none focus:border-cult-accent/50 mb-4"
             />
             <div className="flex justify-end gap-3">
               <button
