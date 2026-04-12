@@ -15,6 +15,7 @@ import { ConversionsView } from './ConversionsView';
 import { ConversionHistoryView } from './ConversionHistoryView';
 import { ConsolidateView } from './ConsolidateView';
 import { SalesInventoryView } from './SalesInventoryView';
+import { InventoryAuditView } from './audit';
 import type { BulkSubTab } from '../types';
 
 /* ── Shared layout shell ──────────────────────────────────────── */
@@ -224,14 +225,8 @@ export function ConversionHistoryViewWrapper() {
 
 export function AuditsViewWrapper() {
   return (
-    <ViewShell title="Inventory Audits" subtitle="Scoped inventory audit sessions — rewriting for Sunday baseline reset">
-      <div className="rounded-2xl border border-cult-border bg-cult-surface-raised p-8 text-center">
-        <p className="text-cult-text-primary font-medium">Inventory Audit UI under reconstruction</p>
-        <p className="text-cult-text-muted text-sm mt-2">
-          Phase B rewrite in progress. The audit DB contract and RPCs are live on staging and production; this
-          screen reappears with the new scoped-session workflow.
-        </p>
-      </div>
+    <ViewShell title="Inventory Audits" subtitle="Scoped audit sessions — count, reconcile, apply">
+      <InventoryAuditView />
     </ViewShell>
   );
 }
@@ -250,3 +245,5 @@ export function ConsolidateViewWrapper() {
 export function SalesInventoryViewWrapper() {
   return <SalesInventoryView />;
 }
+
+export { InventoryCommandCenter as InventoryCommandCenterWrapper } from './command-center';

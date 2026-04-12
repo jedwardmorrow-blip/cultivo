@@ -128,12 +128,12 @@ export const sectionDefinitions: SectionDefinition[] = [
     id: 'inventory',
     label: 'Inventory',
     icon: Archive,
-    defaultView: 'inventory-hub',
+    defaultView: 'inventory-command-center',
     items: [
-      { id: 'inventory-hub', label: 'HUB', icon: LayoutDashboard, group: 'primary' },
-      { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'primary' },
-      { id: 'batches', label: 'Batches', icon: Layers, group: 'primary' },
-      { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'primary' },
+      { id: 'inventory-command-center', label: 'Command Center', icon: LayoutDashboard, group: 'primary', badge: 'new', badgeColor: 'info' as const },
+      { id: 'inventory-all', label: 'Inventory', icon: Archive, group: 'secondary' },
+      { id: 'batches', label: 'Batches', icon: Layers, group: 'secondary' },
+      { id: 'inventory-conversions', label: 'Conversions', icon: RefreshCw, group: 'secondary' },
       { id: 'inventory-conversion-history', label: 'Conversion History', icon: History, group: 'secondary' },
       { id: 'inventory-consolidate', label: 'Consolidate', icon: Combine, group: 'secondary' },
       { id: 'inventory-audits', label: 'Audits', icon: FileCheck, group: 'secondary' }

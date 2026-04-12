@@ -15,4 +15,5 @@ export {
   AuditsViewWrapper,
   ConsolidateViewWrapper,
   SalesInventoryViewWrapper,
+  InventoryCommandCenterWrapper,
 } from './components/InventoryViewsSimplified';

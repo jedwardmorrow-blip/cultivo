@@ -90,6 +90,7 @@ const CultivationHub = lazyRetry(() => import('./features/cultivation'), 'Cultiv
 const CultivationTodayView = lazyRetry(() => import('./features/cultivation'), 'CultivationTodayView');
 const PostProductionHub = lazyRetry(() => import('./features/hub'), 'PostProductionHub');
 const InventoryHub = lazyRetry(() => import('./features/inventory'), 'InventoryHub');
+const InventoryCommandCenterWrapper = lazyRetry(() => import('./features/inventory'), 'InventoryCommandCenterWrapper');
 const SalesHub = lazyRetry(() => import('./features/crm'), 'SalesHub');
 const OperationsHub = lazyRetry(() => import('./features/financial'), 'OperationsHub');
 const ExecutiveHub = lazyRetry(() => import('./features/executive'), 'ExecutiveHub');
@@ -243,7 +244,8 @@ function AuthenticatedApp() {
               <Route path="/cultivation-hub" element={<Navigate to="/cultivation-command-center" replace />} />
               <Route path="/cultivation-analytics" element={<Navigate to="/cultivation-command-center" replace />} />
               <Route path="/post-production-hub" element={<PostProductionHub />} />
-              <Route path="/inventory-hub" element={<InventoryHub />} />
+              <Route path="/inventory-command-center" element={<InventoryCommandCenterWrapper />} />
+              <Route path="/inventory-hub" element={<Navigate to="/inventory-command-center" replace />} />
               <Route path="/sales-hub" element={<SalesHub />} />
               <Route path="/operations-hub" element={<OperationsHub />} />
               <Route path="/executive-hub" element={<ExecutiveHub />} />

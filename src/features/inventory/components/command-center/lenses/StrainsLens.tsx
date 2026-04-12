@@ -1,0 +1,205 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Leaf, Package, ArrowUpDown } from 'lucide-react';
+import type { StrainInventoryRow } from '../../../hooks/useStrainInventory';
+
+const GLASS_TILE = 'rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)]';
+const GLASS_HOVER = 'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
+const GLASS_EMPTY = 'rounded-2xl border border-white/[0.04] bg-white/[0.02]';
+
+const CATEGORY_COLORS: Record<string, string> = {
+  sativa: '#10B981',
+  indica: '#8B5CF6',
+  hybrid: '#F59E0B',
+};
+
+type SortKey = 'weight' | 'value' | 'name' | 'harvest';
+
+function gramsToLbs(g: number): string {
+  return (g / 453.592).toFixed(1);
+}
+
+function harvestAge(dateStr: string | null): { label: string; color: string } {
+  if (!dateStr) return { label: '—', color: 'text-white/30' };
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  if (days < 30) return { label: `${days}d`, color: 'text-emerald-400' };
+  if (days < 60) return { label: `${days}d`, color: 'text-amber-400' };
+  return { label: `${days}d`, color: 'text-rose-400' };
+}
+
+interface StrainsLensProps {
+  data: StrainInventoryRow[];
+  loading: boolean;
+}
+
+export function StrainsLens({ data, loading }: StrainsLensProps) {
+  const [sortKey, setSortKey] = useState<SortKey>('weight');
+
+  const sorted = [...data].sort((a, b) => {
+    switch (sortKey) {
+      case 'weight':
+        return b.total_available_grams - a.total_available_grams;
+      case 'value':
+        return b.estimated_value_usd - a.estimated_value_usd;
+      case 'name':
+        return a.strain.localeCompare(b.strain);
+      case 'harvest':
+        return (a.most_recent_harvest ?? '').localeCompare(b.most_recent_harvest ?? '');
+      default:
+        return 0;
+    }
+  });
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className={`${GLASS_TILE} bg-white/[0.04] p-5 h-[180px] animate-pulse`} />
+        ))}
+      </div>
+    );
+  }
+
+  if (sorted.length === 0) {
+    return (
+      <div className={`${GLASS_EMPTY} p-12 text-center`}>
+        <Leaf className="w-10 h-10 text-white/10 mx-auto mb-3" />
+        <p className="text-white/50 font-medium">No active inventory</p>
+        <p className="text-white/30 text-sm mt-1">Waiting on first harvest.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Sort bar */}
+      <div className="flex items-center gap-2">
+        <ArrowUpDown className="w-3.5 h-3.5 text-white/30" />
+        {(['weight', 'value', 'name', 'harvest'] as SortKey[]).map((key) => (
+          <button
+            key={key}
+            onClick={() => setSortKey(key)}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              sortKey === key
+                ? 'bg-white/[0.10] text-white'
+                : 'text-white/40 hover:text-white/60'
+            }`}
+          >
+            {key === 'weight' ? 'Weight' : key === 'value' ? 'Value' : key === 'name' ? 'Name' : 'Harvest'}
+          </button>
+        ))}
+      </div>
+
+      {/* Strain cards grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        {sorted.map((row, i) => (
+          <StrainCard key={row.strain_id ?? row.strain} row={row} index={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StrainCard({ row, index }: { row: StrainInventoryRow; index: number }) {
+  const catColor = CATEGORY_COLORS[row.strain_category ?? ''] ?? '#666';
+  const age = harvestAge(row.most_recent_harvest);
+
+  return (
+    <motion.div
+      layoutId={row.strain_id ? `strain-card-${row.strain_id}` : undefined}
+      initial={{ opacity: 0, y: 14, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        duration: 0.45,
+        delay: index * 0.03,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+      className={`${GLASS_TILE} ${GLASS_HOVER} bg-white/[0.04] p-5 cursor-pointer transition-all`}
+    >
+      {/* Header: name + category chip */}
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="min-w-0">
+          <h3 className="text-white font-semibold text-sm truncate">{row.strain}</h3>
+          {row.abbreviation && (
+            <span className="text-white/30 text-xs font-mono">{row.abbreviation}</span>
+          )}
+        </div>
+        <span
+          className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+          style={{
+            color: catColor,
+            backgroundColor: `${catColor}20`,
+          }}
+        >
+          {row.strain_category ?? '—'}
+        </span>
+      </div>
+
+      {/* Weight headline */}
+      <div className="mb-3">
+        <span className="text-xl font-bold text-white tabular-nums">
+          {gramsToLbs(row.total_available_grams)} lbs
+        </span>
+        <span className="text-white/30 text-xs ml-2">
+          {row.total_available_grams.toLocaleString('en-US', { maximumFractionDigits: 0 })}g
+        </span>
+      </div>
+
+      {/* Breakdown bar */}
+      <WeightBreakdown row={row} />
+
+      {/* Footer chips */}
+      <div className="flex items-center gap-2 mt-3">
+        <span className="flex items-center gap-1 text-xs text-white/40">
+          <Package className="w-3 h-3" />
+          {row.active_batch_count} batch{row.active_batch_count !== 1 ? 'es' : ''}
+        </span>
+        {row.packaged_units_available > 0 && (
+          <span className="text-xs text-white/40">
+            {row.packaged_units_available} pkg
+          </span>
+        )}
+        <span className={`text-xs ml-auto ${age.color}`}>{age.label}</span>
+      </div>
+    </motion.div>
+  );
+}
+
+function WeightBreakdown({ row }: { row: StrainInventoryRow }) {
+  const total = row.total_available_grams;
+  if (total === 0) return null;
+
+  const segments = [
+    { label: 'Flower', grams: row.bulk_flower_grams, color: '#F43F5E' },
+    { label: 'Smalls', grams: row.bulk_smalls_grams, color: '#F59E0B' },
+    { label: 'Trim', grams: row.bulk_trim_grams, color: '#10B981' },
+    { label: 'Bucked', grams: row.bucked_grams, color: '#0EA5E9' },
+  ].filter((s) => s.grams > 0);
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+        {segments.map((seg) => (
+          <div
+            key={seg.label}
+            className="h-full first:rounded-l-full last:rounded-r-full"
+            style={{
+              width: `${(seg.grams / total) * 100}%`,
+              backgroundColor: seg.color,
+              opacity: 0.7,
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex gap-3 flex-wrap">
+        {segments.map((seg) => (
+          <span key={seg.label} className="flex items-center gap-1 text-[10px] text-white/40">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: seg.color, opacity: 0.7 }} />
+            {seg.label} {gramsToLbs(seg.grams)}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
