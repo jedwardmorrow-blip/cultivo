@@ -21,23 +21,40 @@ export interface BatchDetailRow {
   grade_color: string | null;
 }
 
-export function useBatchDetail(strainId: string | null) {
+export function useBatchDetail(strainName: string | null) {
   const [batches, setBatches] = useState<BatchDetailRow[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchBatches = useCallback(async () => {
-    if (!strainId) {
+    if (!strainName) {
       setBatches([]);
       return;
     }
     setLoading(true);
     try {
-      // Step 1: Get batch allocation data (same pattern as batch.service.ts)
+      // Step 1: Get batch IDs from batch_registry (PostgREST allows text filters reliably)
+      const { data: regIds, error: regError } = await supabase
+        .from('batch_registry')
+        .select('id')
+        .eq('strain', strainName)
+        .eq('status', 'active');
+
+      if (regError) {
+        console.error('[useBatchDetail] batch_registry lookup failed:', regError);
+        throw regError;
+      }
+
+      const batchIds = (regIds ?? []).map((r: any) => r.id);
+      if (batchIds.length === 0) {
+        setBatches([]);
+        return;
+      }
+
+      // Step 2: Get allocation data by batch_id (proven pattern from batch.service.ts)
       const { data: allocRows, error: allocError } = await supabase
         .from('batch_allocation_summary')
         .select('*')
-        .eq('strain_id', strainId)
-        .eq('batch_status', 'active')
+        .in('batch_id', batchIds)
         .order('harvest_date', { ascending: false });
 
       if (allocError) {
@@ -46,13 +63,11 @@ export function useBatchDetail(strainId: string | null) {
       }
 
       if (!allocRows || allocRows.length === 0) {
-        console.warn('[useBatchDetail] No active batches found for strain_id:', strainId);
         setBatches([]);
         return;
       }
 
-      // Step 2: Enrich with lifecycle_state + grade from batch_registry
-      const batchIds = allocRows.map((r: any) => r.batch_id);
+      // Step 3: Enrich with lifecycle_state + grade from batch_registry
       const lifecycleMap = new Map<string, {
         lifecycle_state: string | null;
         production_path: string | null;
@@ -91,7 +106,7 @@ export function useBatchDetail(strainId: string | null) {
         console.warn('[useBatchDetail] batch_registry enrichment failed (non-fatal):', enrichErr);
       }
 
-      // Step 3: Map to BatchDetailRow
+      // Step 4: Map to BatchDetailRow
       const mapped: BatchDetailRow[] = allocRows.map((r: any) => {
         const extra = lifecycleMap.get(r.batch_id);
         return {
@@ -117,12 +132,12 @@ export function useBatchDetail(strainId: string | null) {
 
       setBatches(mapped);
     } catch (err) {
-      console.error('[useBatchDetail] Failed to load batches for strain', strainId, err);
+      console.error('[useBatchDetail] Failed to load batches for strain', strainName, err);
       setBatches([]);
     } finally {
       setLoading(false);
     }
-  }, [strainId]);
+  }, [strainName]);
 
   useEffect(() => {
     fetchBatches();

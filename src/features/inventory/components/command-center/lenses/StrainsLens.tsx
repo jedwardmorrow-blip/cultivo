@@ -53,8 +53,12 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
   const [sortKey, setSortKey] = useState<SortKey>('weight');
   const [search, setSearch] = useState('');
 
-  // Batch data for the selected strain
-  const { batches, loading: batchLoading } = useBatchDetail(selectedStrainId);
+  // Batch data for the selected strain (filter by name — PostgREST rejects UUID filters on this view)
+  const selectedStrain = useMemo(
+    () => data.find((r) => r.strain_id === selectedStrainId) ?? null,
+    [data, selectedStrainId],
+  );
+  const { batches, loading: batchLoading } = useBatchDetail(selectedStrain?.strain ?? null);
 
   const filtered = useMemo(() => {
     let result = [...data];
@@ -84,11 +88,6 @@ export function StrainsLens({ data, loading }: StrainsLensProps) {
       }
     });
   }, [data, sortKey, search]);
-
-  const selectedStrain = useMemo(
-    () => data.find((r) => r.strain_id === selectedStrainId) ?? null,
-    [data, selectedStrainId],
-  );
 
   function handleStrainClick(strainId: string | null) {
     if (!strainId) return;
