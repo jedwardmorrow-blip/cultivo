@@ -306,14 +306,14 @@ function PackagesSection({
   const handlePrintLabel = (pkg: PackageRow) => {
     labelHook.openLabel({
       id: pkg.id,
-      package_id: pkg.package_id,
-      product_id: pkg.product_id,
-      product_name: pkg.product_name,
+      package_id: pkg.id,
+      product_id: '',
+      product_name: `${pkg.product_type} ${pkg.unit_size}`,
       strain: strainName,
       batch: batchCode,
       batch_id: '',
       batch_number: batchCode,
-      on_hand_qty: pkg.on_hand_qty,
+      on_hand_qty: pkg.units_available,
       category: 'packaged',
       room: null,
     } as any);
@@ -372,9 +372,10 @@ function PackagesSection({
                     <Square className="w-3.5 h-3.5" />
                   )}
                 </button>
-                <span className="text-[10px] text-white/30 uppercase tracking-wider flex-1">Package ID</span>
-                <span className="text-[10px] text-white/30 uppercase tracking-wider w-24 text-right">Qty</span>
-                <span className="text-[10px] text-white/30 uppercase tracking-wider w-20 text-right">Packed</span>
+                <span className="text-[10px] text-white/30 uppercase tracking-wider flex-1">Product</span>
+                <span className="text-[10px] text-white/30 uppercase tracking-wider w-20 text-right">Count</span>
+                <span className="text-[10px] text-white/30 uppercase tracking-wider w-20 text-right">Avail</span>
+                <span className="text-[10px] text-white/30 uppercase tracking-wider w-20 text-right">Date</span>
                 <span className="w-8" />
               </div>
 
@@ -389,7 +390,7 @@ function PackagesSection({
                 >
                   <button
                     onClick={() => toggleSelect(pkg.id)}
-                    aria-label={`${selectedIds.has(pkg.id) ? 'Deselect' : 'Select'} package ${pkg.package_id}`}
+                    aria-label={`${selectedIds.has(pkg.id) ? 'Deselect' : 'Select'} package`}
                     className="text-white/30 hover:text-white/60 transition-colors"
                   >
                     {selectedIds.has(pkg.id) ? (
@@ -399,26 +400,30 @@ function PackagesSection({
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium text-white font-mono truncate block">
-                      {pkg.package_id}
+                    <span className="text-xs font-medium text-white capitalize">
+                      {pkg.product_type}
                     </span>
-                    <span className="text-[10px] text-white/30">
-                      {pkg.product_name}
-                      {pkg.sku && <span className="ml-1 text-white/20">· {pkg.sku}</span>}
-                    </span>
+                    <span className="text-[10px] text-white/30 ml-1.5">{pkg.unit_size}</span>
                   </div>
-                  <span className="text-xs text-white tabular-nums w-24 text-right">
-                    {pkg.on_hand_qty} units
-                    {pkg.unit_weight_grams > 0 && (
-                      <span className="text-white/30 ml-1">({pkg.unit_weight_grams}g)</span>
+                  <span className="text-xs text-white tabular-nums w-20 text-right">
+                    {pkg.units_count}
+                  </span>
+                  <span className="text-xs tabular-nums w-20 text-right">
+                    <span className={pkg.units_available > 0 ? 'text-emerald-400' : 'text-white/30'}>
+                      {pkg.units_available}
+                    </span>
+                    {pkg.units_allocated > 0 && (
+                      <span className="text-amber-400/70 text-[10px] ml-1">({pkg.units_allocated} rsv)</span>
                     )}
                   </span>
                   <span className="text-[10px] text-white/30 tabular-nums w-20 text-right">
-                    {new Date(pkg.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {pkg.package_date
+                      ? new Date(pkg.package_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : new Date(pkg.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                   <button
                     onClick={() => handlePrintLabel(pkg)}
-                    aria-label={`Print label for ${pkg.package_id}`}
+                    aria-label="Print label"
                     className="p-1.5 rounded-lg hover:bg-cult-surface-overlay transition-colors text-white/30 hover:text-white/60"
                   >
                     <Printer className="w-3.5 h-3.5" />
@@ -447,7 +452,7 @@ function PackagesSection({
 
 // ─── Allocations Section ─────────────────────────────────────────────────
 
-function AllocationsSection({ allocations }: { allocations: { id: string; order_number: string; allocated_weight_grams: number; fulfilled_at: string | null }[] }) {
+function AllocationsSection({ allocations }: { allocations: BatchAllocation[] }) {
   if (allocations.length === 0) return null;
 
   return (
@@ -463,13 +468,18 @@ function AllocationsSection({ allocations }: { allocations: { id: string; order_
           <div key={a.id} className="flex items-center justify-between px-4 py-2.5">
             <div className="flex items-center gap-2">
               <span className="text-xs text-white font-mono">{a.order_number}</span>
+              <span className="text-[9px] text-white/30 capitalize">{a.allocation_stage}</span>
               {a.fulfilled_at ? (
                 <span className="text-[9px] px-1.5 py-px rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">
                   Fulfilled
                 </span>
-              ) : (
+              ) : a.status === 'active' ? (
                 <span className="text-[9px] px-1.5 py-px rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20">
-                  Pending
+                  Active
+                </span>
+              ) : (
+                <span className="text-[9px] px-1.5 py-px rounded-full bg-white/10 text-white/40 border border-white/10">
+                  {a.status}
                 </span>
               )}
             </div>

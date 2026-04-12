@@ -4,21 +4,23 @@ import type { BatchDetailRow } from './useBatchDetail';
 
 export interface PackageRow {
   id: string;
-  package_id: string;
-  product_id: string;
-  product_name: string;
-  sku: string | null;
-  unit_weight_grams: number;
-  on_hand_qty: number;
-  reserved_qty: number;
+  product_type: string;
+  unit_size: string;
+  units_count: number;
+  units_allocated: number;
+  units_available: number;
+  packaging_session_id: string | null;
+  package_date: string | null;
   created_at: string;
 }
 
 export interface BatchAllocation {
   id: string;
-  order_id: string;
+  order_item_id: string;
   order_number: string;
+  allocation_stage: string;
   allocated_weight_grams: number;
+  status: string;
   fulfilled_at: string | null;
 }
 
@@ -31,9 +33,9 @@ export interface BatchDrawerData {
 
 /**
  * Fetches all data needed for the Batch Drawer:
- * - Batch detail from v_batch_lifecycle
- * - Packages from internal_packaged_inventory
- * - Allocations from batch_allocations + orders
+ * - Batch detail from v_batch_lifecycle (by UUID)
+ * - Packages from internal_packaged_inventory (by batch_code TEXT — not UUID)
+ * - Allocations from batch_allocations → order_items → orders (by UUID)
  */
 export function useBatchDrawerData(batchId: string | null) {
   const [data, setData] = useState<BatchDrawerData>({
@@ -52,28 +54,13 @@ export function useBatchDrawerData(batchId: string | null) {
     setData((prev) => ({ ...prev, loading: true }));
 
     try {
-      // Parallel fetch: batch detail, packages, allocations
-      const [batchRes, pkgRes, allocRes] = await Promise.all([
-        supabase
-          .from('v_batch_lifecycle')
-          .select('*')
-          .eq('batch_id', batchId)
-          .maybeSingle(),
-        supabase
-          .from('internal_packaged_inventory')
-          .select('id, package_id, product_id, on_hand_qty, reserved_qty, created_at, products(name, sku, unit_weight_grams)')
-          .eq('batch_id', batchId)
-          .gt('on_hand_qty', 0)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('batch_allocations')
-          .select('id, order_id, allocated_weight_grams, fulfilled_at, orders(order_number)')
-          .eq('batch_id', batchId)
-          .order('created_at', { ascending: false })
-          .limit(20),
-      ]);
+      // Phase 1: Fetch batch detail (we need batch_code for the packages query)
+      const batchRes = await supabase
+        .from('v_batch_lifecycle')
+        .select('*')
+        .eq('batch_id', batchId)
+        .maybeSingle();
 
-      // Map batch
       const r = batchRes.data;
       const batch: BatchDetailRow | null = r
         ? {
@@ -108,25 +95,54 @@ export function useBatchDrawerData(batchId: string | null) {
           }
         : null;
 
+      if (!batch) {
+        setData({ batch: null, packages: [], allocations: [], loading: false });
+        return;
+      }
+
+      // Phase 2: Fetch packages (by batch_code TEXT) and allocations (by batch_id UUID) in parallel
+      const [pkgRes, allocRes] = await Promise.all([
+        supabase
+          .from('internal_packaged_inventory')
+          .select('id, batch_id, product_type, unit_size, units_count, units_allocated, units_available, packaging_session_id, package_date, created_at')
+          .eq('batch_id', batch.batch_code)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('batch_allocations')
+          .select('id, order_item_id, allocation_stage, allocated_weight_grams, status, fulfilled_at, order_items(order_id, orders(order_number))')
+          .eq('batch_id', batchId)
+          .order('created_at', { ascending: false })
+          .limit(20),
+      ]);
+
+      if (pkgRes.error) {
+        console.error('[useBatchDrawerData] packages query failed:', pkgRes.error);
+      }
+      if (allocRes.error) {
+        console.error('[useBatchDrawerData] allocations query failed:', allocRes.error);
+      }
+
       // Map packages
       const packages: PackageRow[] = (pkgRes.data ?? []).map((p: any) => ({
         id: p.id,
-        package_id: p.package_id,
-        product_id: p.product_id,
-        product_name: p.products?.name ?? 'Unknown',
-        sku: p.products?.sku ?? null,
-        unit_weight_grams: Number(p.products?.unit_weight_grams) || 0,
-        on_hand_qty: Number(p.on_hand_qty) || 0,
-        reserved_qty: Number(p.reserved_qty) || 0,
+        product_type: p.product_type ?? 'unknown',
+        unit_size: p.unit_size ?? '—',
+        units_count: Number(p.units_count) || 0,
+        units_allocated: Number(p.units_allocated) || 0,
+        units_available: Number(p.units_available) || 0,
+        packaging_session_id: p.packaging_session_id ?? null,
+        package_date: p.package_date ?? null,
         created_at: p.created_at,
       }));
 
       // Map allocations
       const allocations: BatchAllocation[] = (allocRes.data ?? []).map((a: any) => ({
         id: a.id,
-        order_id: a.order_id,
-        order_number: a.orders?.order_number ?? '—',
+        order_item_id: a.order_item_id,
+        order_number: a.order_items?.orders?.order_number ?? '—',
+        allocation_stage: a.allocation_stage ?? '—',
         allocated_weight_grams: Number(a.allocated_weight_grams) || 0,
+        status: a.status ?? 'pending',
         fulfilled_at: a.fulfilled_at,
       }));
 
