@@ -39,6 +39,7 @@ export function InventoryAuditView() {
       <AuditCountingView
         session={audit.activeSession}
         actionLoading={audit.actionLoading}
+        error={audit.error}
         onBack={handleBackToHub}
         onRecordCount={audit.recordCount}
         onMarkNotFound={(lineId) => audit.markNotFound(lineId)}

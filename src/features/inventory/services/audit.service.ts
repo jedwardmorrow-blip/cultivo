@@ -286,16 +286,14 @@ export const auditService = {
     if (readErr) throwError(readErr, 'recordCount:read');
 
     const expected = Number((existing as { expected_qty: number }).expected_qty);
-    const varianceQty = actualQty - expected;
-    const variancePct = expected !== 0 ? (varianceQty / expected) * 100 : 0;
-    const lineStatus: LineStatus = varianceQty === 0 ? 'match' : 'variance';
+    const lineStatus: LineStatus = actualQty === expected ? 'match' : 'variance';
 
+    // variance_qty and variance_percentage are GENERATED ALWAYS columns —
+    // Postgres computes them from actual_qty and expected_qty automatically.
     const { data, error } = await supabase
       .from('inventory_audit_lines')
       .update({
         actual_qty: actualQty,
-        variance_qty: varianceQty,
-        variance_percentage: Math.round(variancePct * 100) / 100,
         line_status: lineStatus,
         variance_reason: lineStatus === 'variance' ? (opts?.variance_reason ?? null) : null,
         variance_notes: opts?.variance_notes ?? null,
@@ -333,12 +331,12 @@ export const auditService = {
   },
 
   async resetLine(lineId: string): Promise<AuditLine> {
+    // variance_qty and variance_percentage are GENERATED ALWAYS columns —
+    // they reset automatically when actual_qty is set to null.
     const { data, error } = await supabase
       .from('inventory_audit_lines')
       .update({
         actual_qty: null,
-        variance_qty: null,
-        variance_percentage: null,
         variance_reason: null,
         variance_notes: null,
         line_status: 'pending',
@@ -388,8 +386,6 @@ export const auditService = {
         stage: item.stage,
         expected_qty: 0,
         actual_qty: item.actual_qty,
-        variance_qty: item.actual_qty,
-        variance_percentage: 0,
         variance_reason: 'orphan_reconciled' as VarianceReason,
         variance_notes: item.notes ?? null,
         unit: item.unit,

@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight, Check, AlertCircle } from 'lucide-react';
 import type { AuditSessionWithLines, AuditLine, VarianceReason, LineStatus } from '../../services/audit.service';
 
 const VARIANCE_REASONS: { value: VarianceReason; label: string }[] = [
@@ -31,6 +31,7 @@ type FilterKey = 'all' | LineStatus;
 interface AuditCountingViewProps {
   session: AuditSessionWithLines;
   actionLoading: boolean;
+  error: string | null;
   onBack: () => void;
   onRecordCount: (lineId: string, actualQty: number, opts?: { variance_reason?: VarianceReason; variance_notes?: string }) => Promise<void>;
   onMarkNotFound: (lineId: string) => Promise<void>;
@@ -41,6 +42,7 @@ interface AuditCountingViewProps {
 export function AuditCountingView({
   session,
   actionLoading,
+  error,
   onBack,
   onRecordCount,
   onMarkNotFound,
@@ -150,6 +152,14 @@ export function AuditCountingView({
         </div>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="rounded-xl p-3 border border-cult-danger/30 bg-cult-danger/10 text-sm text-cult-danger flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
       {/* Search + filter */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
@@ -222,9 +232,26 @@ interface AuditLineRowProps {
 }
 
 function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, onMarkNotFound, onResetLine }: AuditLineRowProps) {
-  const [actualInput, setActualInput] = useState(line.actual_qty?.toString() ?? '');
+  const [actualInput, setActualInput] = useState(
+    line.actual_qty?.toString() ?? line.expected_qty.toString(),
+  );
   const [reason, setReason] = useState<VarianceReason | ''>(line.variance_reason ?? '');
   const [notes, setNotes] = useState(line.variance_notes ?? '');
+  const [justConfirmed, setJustConfirmed] = useState(false);
+  const prevStatusRef = useRef(line.line_status);
+
+  // Flash success when line transitions from pending to match/variance
+  useEffect(() => {
+    if (
+      prevStatusRef.current === 'pending' &&
+      (line.line_status === 'match' || line.line_status === 'variance' || line.line_status === 'not_found')
+    ) {
+      setJustConfirmed(true);
+      const timer = setTimeout(() => setJustConfirmed(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevStatusRef.current = line.line_status;
+  }, [line.line_status]);
 
   const badge = STATUS_BADGE[line.line_status] ?? STATUS_BADGE.pending;
 
@@ -238,18 +265,21 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
   }
 
   return (
-    <div>
+    <div className={justConfirmed ? 'animate-pulse-once' : ''}>
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-3 flex items-center gap-3 hover:bg-cult-surface-subtle transition text-left"
+        className={`w-full p-3 flex items-center gap-3 hover:bg-cult-surface-subtle transition text-left ${
+          justConfirmed ? 'bg-cult-success/5' : ''
+        }`}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-cult-text-primary truncate">
               {line.package_id}
             </span>
-            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase ${badge.className}`}>
+            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 ${badge.className}`}>
+              {justConfirmed && <Check className="w-3 h-3" />}
               {badge.label}
             </span>
           </div>
