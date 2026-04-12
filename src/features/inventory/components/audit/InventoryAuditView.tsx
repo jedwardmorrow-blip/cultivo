@@ -44,6 +44,7 @@ export function InventoryAuditView() {
         onRecordCount={audit.recordCount}
         onMarkNotFound={(lineId) => audit.markNotFound(lineId)}
         onResetLine={audit.resetLine}
+        onCreateOrphan={audit.createOrphanLine}
         onMoveToReview={audit.moveToReview}
       />
     );

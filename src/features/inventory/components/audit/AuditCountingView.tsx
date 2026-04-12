@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight, Check, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Search, RotateCcw, EyeOff, ChevronRight, Check, AlertCircle, Plus, X, PackagePlus } from 'lucide-react';
 import type { AuditSessionWithLines, AuditLine, VarianceReason, LineStatus } from '../../services/audit.service';
 
 const VARIANCE_REASONS: { value: VarianceReason; label: string }[] = [
@@ -28,6 +28,17 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
 
 type FilterKey = 'all' | LineStatus;
 
+interface OrphanInput {
+  package_id: string;
+  product_name: string;
+  strain?: string;
+  batch?: string;
+  stage: string;
+  actual_qty: number;
+  unit: string;
+  notes?: string;
+}
+
 interface AuditCountingViewProps {
   session: AuditSessionWithLines;
   actionLoading: boolean;
@@ -36,6 +47,7 @@ interface AuditCountingViewProps {
   onRecordCount: (lineId: string, actualQty: number, opts?: { variance_reason?: VarianceReason; variance_notes?: string }) => Promise<void>;
   onMarkNotFound: (lineId: string) => Promise<void>;
   onResetLine: (lineId: string) => Promise<void>;
+  onCreateOrphan: (item: OrphanInput) => Promise<void>;
   onMoveToReview: () => void;
 }
 
@@ -47,11 +59,13 @@ export function AuditCountingView({
   onRecordCount,
   onMarkNotFound,
   onResetLine,
+  onCreateOrphan,
   onMoveToReview,
 }: AuditCountingViewProps) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterKey>('all');
   const [expandedLine, setExpandedLine] = useState<string | null>(null);
+  const [showOrphanForm, setShowOrphanForm] = useState(false);
 
   const lines = session.lines;
 
@@ -160,7 +174,7 @@ export function AuditCountingView({
         </div>
       )}
 
-      {/* Search + filter */}
+      {/* Search + filter + add found */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-muted" />
@@ -172,27 +186,52 @@ export function AuditCountingView({
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
           />
         </div>
-        <div className="flex gap-1">
-          {(['all', 'pending', 'match', 'variance', 'not_found', 'orphan'] as FilterKey[]).map((f) => {
-            const count = f === 'all' ? counts.total : (counts as any)[f] ?? 0;
-            return (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                  filter === f
-                    ? 'bg-cult-accent/15 text-cult-accent border border-cult-accent/30'
-                    : 'bg-cult-surface-subtle text-cult-text-muted border border-transparent hover:bg-cult-surface-raised'
-                }`}
-              >
-                {f === 'all' ? 'All' : f === 'not_found' ? 'Not Found' : f.charAt(0).toUpperCase() + f.slice(1)}{' '}
-                <span className="opacity-60">{count}</span>
-              </button>
-            );
-          })}
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowOrphanForm(!showOrphanForm)}
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+            showOrphanForm
+              ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
+              : 'bg-cult-surface-raised text-cult-text-secondary border border-cult-border hover:bg-cult-surface-subtle hover:text-cult-text-primary'
+          }`}
+        >
+          {showOrphanForm ? <X className="w-3.5 h-3.5" /> : <PackagePlus className="w-3.5 h-3.5" />}
+          {showOrphanForm ? 'Cancel' : 'Add Found Package'}
+        </button>
       </div>
+      <div className="flex gap-1 flex-wrap">
+        {(['all', 'pending', 'match', 'variance', 'not_found', 'orphan'] as FilterKey[]).map((f) => {
+          const count = f === 'all' ? counts.total : (counts as any)[f] ?? 0;
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                filter === f
+                  ? 'bg-cult-accent/15 text-cult-accent border border-cult-accent/30'
+                  : 'bg-cult-surface-subtle text-cult-text-muted border border-transparent hover:bg-cult-surface-raised'
+              }`}
+            >
+              {f === 'all' ? 'All' : f === 'not_found' ? 'Not Found' : f.charAt(0).toUpperCase() + f.slice(1)}{' '}
+              <span className="opacity-60">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Orphan form */}
+      {showOrphanForm && (
+        <OrphanForm
+          defaultStage={session.selected_stages[0] ?? 'Packaged'}
+          actionLoading={actionLoading}
+          onSubmit={async (item) => {
+            await onCreateOrphan(item);
+            setShowOrphanForm(false);
+          }}
+          onCancel={() => setShowOrphanForm(false)}
+        />
+      )}
 
       {/* Lines */}
       <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden divide-y divide-cult-border-subtle">
@@ -397,6 +436,155 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Orphan Form ────────────────────────────────────────────────────
+
+interface OrphanFormProps {
+  defaultStage: string;
+  actionLoading: boolean;
+  onSubmit: (item: OrphanInput) => Promise<void>;
+  onCancel: () => void;
+}
+
+function OrphanForm({ defaultStage, actionLoading, onSubmit, onCancel }: OrphanFormProps) {
+  const [packageId, setPackageId] = useState('');
+  const [productName, setProductName] = useState('');
+  const [strain, setStrain] = useState('');
+  const [batch, setBatch] = useState('');
+  const [qty, setQty] = useState('');
+  const [unit, setUnit] = useState('unit');
+  const [notes, setNotes] = useState('');
+
+  const canSubmit = packageId.trim() && productName.trim() && qty && !isNaN(parseFloat(qty)) && parseFloat(qty) > 0;
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
+    await onSubmit({
+      package_id: packageId.trim(),
+      product_name: productName.trim(),
+      strain: strain.trim() || undefined,
+      batch: batch.trim() || undefined,
+      stage: defaultStage,
+      actual_qty: parseFloat(qty),
+      unit,
+      notes: notes.trim() || undefined,
+    });
+  }
+
+  const inputClass = 'w-full px-3 py-2 rounded-lg border border-cult-border-active bg-cult-surface-inset text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50';
+  const labelClass = 'text-[10px] font-bold text-cult-text-muted uppercase tracking-wider block mb-1';
+
+  return (
+    <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <PackagePlus className="w-4 h-4 text-purple-400" />
+          <span className="text-sm font-bold text-purple-400">Add Found Package</span>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1 rounded-lg text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised transition"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      <p className="text-xs text-cult-text-secondary">
+        Found a package during the audit that isn't in the system? Enter it here.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelClass}>Package ID *</label>
+          <input
+            type="text"
+            value={packageId}
+            onChange={(e) => setPackageId(e.target.value)}
+            placeholder="e.g. 260410-SWF-004"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Product Name *</label>
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="e.g. Packaged - Swamp Water Fumez - 3.5g Flower"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Strain</label>
+          <input
+            type="text"
+            value={strain}
+            onChange={(e) => setStrain(e.target.value)}
+            placeholder="e.g. Swamp Water Fumez"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Batch</label>
+          <input
+            type="text"
+            value={batch}
+            onChange={(e) => setBatch(e.target.value)}
+            placeholder="e.g. 260218-SWF"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Qty Found *</label>
+          <input
+            type="number"
+            step="any"
+            min="0"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            placeholder="0"
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Unit</label>
+          <select
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className={inputClass}
+          >
+            <option value="unit">unit</option>
+            <option value="g">g</option>
+          </select>
+        </div>
+      </div>
+      <input
+        type="text"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes (optional) — where was it found?"
+        className={inputClass}
+      />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!canSubmit || actionLoading}
+          className="px-4 py-2 rounded-lg bg-purple-500 text-white font-bold text-xs hover:bg-purple-400 transition disabled:opacity-40"
+        >
+          <Plus className="w-3 h-3 inline mr-1" />
+          Add to Audit
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg border border-cult-border text-cult-text-muted text-xs font-bold hover:bg-cult-surface-raised transition"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
