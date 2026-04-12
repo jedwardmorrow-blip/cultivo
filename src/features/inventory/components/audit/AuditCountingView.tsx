@@ -103,6 +103,10 @@ export function AuditCountingView({
   }, [lines]);
 
   const pendingCount = counts.pending;
+  const missingReasonCount = useMemo(
+    () => lines.filter((l) => (l.line_status === 'variance' || l.line_status === 'not_found') && !l.variance_reason).length,
+    [lines],
+  );
   const canReview = pendingCount === 0 && lines.length > 0;
 
   return (
@@ -178,6 +182,14 @@ export function AuditCountingView({
         <div className="rounded-xl p-3 border border-cult-danger/30 bg-cult-danger/10 text-sm text-cult-danger flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
+        </div>
+      )}
+
+      {/* Missing reason warning */}
+      {missingReasonCount > 0 && pendingCount === 0 && (
+        <div className="rounded-xl p-3 border border-cult-warning/30 bg-cult-warning/10 text-sm text-cult-warning flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          {missingReasonCount} variance line{missingReasonCount > 1 ? 's' : ''} missing a reason — expand to assign before moving to review.
         </div>
       )}
 
@@ -340,20 +352,26 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
             {line.stage && ` · ${line.stage}`}
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-sm font-mono text-cult-text-primary">
-            {line.expected_qty} {line.unit}
-          </div>
-          {line.actual_qty != null && (
-            <div className={`text-xs font-mono ${line.variance_qty === 0 ? 'text-cult-success' : 'text-cult-warning'}`}>
-              → {line.actual_qty} {line.unit}
-              {line.variance_qty != null && line.variance_qty !== 0 && (
-                <span className="ml-1">
-                  ({line.variance_qty > 0 ? '+' : ''}{line.variance_qty})
-                </span>
-              )}
-            </div>
+        <div className="text-right shrink-0 flex items-center gap-2">
+          {/* Missing reason indicator */}
+          {(line.line_status === 'variance' || line.line_status === 'not_found') && !line.variance_reason && (
+            <AlertTriangle className="w-3.5 h-3.5 text-cult-warning shrink-0" title="Missing variance reason" />
           )}
+          <div>
+            <div className="text-sm font-mono text-cult-text-primary">
+              {line.expected_qty} {line.unit}
+            </div>
+            {line.actual_qty != null && (
+              <div className={`text-xs font-mono ${line.variance_qty === 0 ? 'text-cult-success' : 'text-cult-warning'}`}>
+                → {line.actual_qty} {line.unit}
+                {line.variance_qty != null && line.variance_qty !== 0 && (
+                  <span className="ml-1">
+                    ({line.variance_qty > 0 ? '+' : ''}{line.variance_qty})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </button>
 

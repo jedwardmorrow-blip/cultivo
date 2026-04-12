@@ -29,7 +29,7 @@ export function AuditReviewApply({
   const [applySummary, setApplySummary] = useState<AuditApplySummary | null>(null);
 
   const lines = session.lines;
-  const isApplied = session.status === 'applied';
+  const isApplied = session.status === 'applied' || session.status === 'completed';
   const isAbandoned = session.status === 'abandoned';
   const isTerminal = isApplied || isAbandoned;
 
