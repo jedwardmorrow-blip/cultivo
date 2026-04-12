@@ -32,19 +32,23 @@ export function useBatchDetail(strainName: string | null) {
     }
     setLoading(true);
     try {
-      // Step 1: Get batch IDs from batch_registry (PostgREST allows text filters reliably)
-      const { data: regIds, error: regError } = await supabase
+      // Step 1: Get batch IDs + lifecycle data from batch_registry
+      // Only post-harvest stages belong in inventory (veg/flower/drying = Cultivation domain)
+      const INVENTORY_LIFECYCLE_STATES = ['bucked', 'bulk_available', 'packaged', 'archived'];
+
+      const { data: regRows, error: regError } = await supabase
         .from('batch_registry')
-        .select('id')
+        .select('id, lifecycle_state, production_path, quality_grade_id')
         .eq('strain', strainName)
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .in('lifecycle_state', INVENTORY_LIFECYCLE_STATES);
 
       if (regError) {
         console.error('[useBatchDetail] batch_registry lookup failed:', regError);
         throw regError;
       }
 
-      const batchIds = (regIds ?? []).map((r: any) => r.id);
+      const batchIds = (regRows ?? []).map((r: any) => r.id);
       if (batchIds.length === 0) {
         setBatches([]);
         return;
@@ -55,7 +59,8 @@ export function useBatchDetail(strainName: string | null) {
         .from('batch_allocation_summary')
         .select('*')
         .in('batch_id', batchIds)
-        .order('harvest_date', { ascending: false });
+        .gt('total_weight', 0)
+        .order('total_weight', { ascending: false });
 
       if (allocError) {
         console.error('[useBatchDetail] batch_allocation_summary query failed:', allocError);
@@ -67,7 +72,7 @@ export function useBatchDetail(strainName: string | null) {
         return;
       }
 
-      // Step 3: Enrich with lifecycle_state + grade from batch_registry
+      // Step 3: Build lifecycle + grade map from the registry rows we already fetched
       const lifecycleMap = new Map<string, {
         lifecycle_state: string | null;
         production_path: string | null;
@@ -76,10 +81,6 @@ export function useBatchDetail(strainName: string | null) {
       }>();
 
       try {
-        const { data: regRows } = await supabase
-          .from('batch_registry')
-          .select('id, lifecycle_state, production_path, quality_grade_id')
-          .in('id', batchIds);
 
         const gradeIds = (regRows ?? []).map((r: any) => r.quality_grade_id).filter(Boolean);
         const gradeMap = new Map<string, { label: string; color_class: string }>();
