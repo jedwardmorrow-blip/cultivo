@@ -54,7 +54,8 @@ export function AuditReviewApply({
       setApplySummary(summary);
       setConfirmOpen(false);
     } catch {
-      // error handled by hook
+      // Close modal so the error banner behind it becomes visible
+      setConfirmOpen(false);
     }
   }
 

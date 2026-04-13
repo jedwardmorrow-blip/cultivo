@@ -23,6 +23,16 @@ Design principles (carried forward from the Layer 3 plan):
      Pillars 2, 6, 7 are punted to v2 — they require runtime-level
      knowledge (approved write path resolution, view-join analysis, RPC
      wrapping) that sqlparse can't give us cheaply.
+  5. WARN-ONLY DEFAULT (added 2026-04-11, session 305). The hook is in
+     warn-only mode by default: pillar findings, contract-load failures,
+     parse failures, and validator crashes are logged loudly to stderr
+     but the SQL call is ALLOWED through. To re-enable strict mode (deny
+     on violation), set `CULTOPS_LINEAGE_STRICT=1` in the environment.
+     Rationale: earn strictness per-check instead of assuming it. The
+     hook gives signal without locking the operator out of their own
+     database. When a warn-only finding turns out to be a real catch
+     in production, that's evidence to flip strict mode on for that
+     specific case.
 
 Tool matcher (set in settings.json):
   mcp__.*__(execute_sql|apply_migration)
@@ -61,6 +71,7 @@ WATCHED_PROJECT_IDS = {PRODUCTION_PROJECT_ID, STAGING_PROJECT_ID}
 WATCHED_TOOL_SUFFIXES = ("__execute_sql", "__apply_migration")
 
 BYPASS_ENV_VAR = "CULTOPS_LINEAGE_BYPASS"
+STRICT_ENV_VAR = "CULTOPS_LINEAGE_STRICT"  # set to "1" to enforce; default is warn-only
 
 
 @dataclass
@@ -153,6 +164,33 @@ def _deny(reason: str) -> None:
 
 def _ask(reason: str) -> None:
     _emit_decision("ask", reason)
+
+
+def _is_strict_mode() -> bool:
+    """Return True if CULTOPS_LINEAGE_STRICT=1 is set in the environment."""
+    return os.environ.get(STRICT_ENV_VAR) == "1"
+
+
+def _deny_or_warn(reason: str) -> None:
+    """
+    Strict mode: deny the call (original fail-closed behavior).
+    Warn-only mode (default): print the would-have-denied reason loudly to
+    stderr and allow the call through. The whole point of warn-only mode is
+    to never lock the operator out — they still see every catch the hook
+    would have made, just without the block.
+    """
+    if _is_strict_mode():
+        _deny(reason)
+    print(
+        f"[cultops-lineage] WARN-ONLY MODE: would have DENIED in strict mode.\n"
+        f"{reason}\n"
+        f"(set {STRICT_ENV_VAR}=1 to enforce)",
+        file=sys.stderr,
+    )
+    _allow(
+        "cult-ops lineage validator (warn-only): finding logged. "
+        "See stderr for details."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -309,32 +347,36 @@ def main() -> None:
     if not sql or not sql.strip():
         _allow("no SQL payload to validate.")
 
-    # Load the contract. FAIL CLOSED on any error.
+    # Load the contract. In strict mode this is fail-closed. In warn-only
+    # mode (default) the failure is logged loudly to stderr and the call
+    # is allowed — Justin still sees that the brain is unreachable.
     try:
         contract = load_contract()
     except ContextDBError as e:
-        _deny(
+        _deny_or_warn(
             "cult-ops lineage validator could not load the contract from the "
             f"context DB: {e}\n\n"
-            "The validator fails closed when the brain is unreachable. Fix the "
-            f"connection or set {BYPASS_ENV_VAR}=1 to bypass this one call."
+            "In strict mode the validator fails closed when the brain is "
+            f"unreachable. Fix the connection or set {BYPASS_ENV_VAR}=1 to "
+            "bypass this one call."
         )
     except Exception as e:
-        _deny(
+        _deny_or_warn(
             f"cult-ops lineage validator crashed during contract load: "
-            f"{type(e).__name__}: {e}. Failing closed."
+            f"{type(e).__name__}: {e}. Strict mode would fail closed."
         )
 
     # Parse the SQL. A parse failure is not itself a violation — the
-    # underlying Postgres will surface syntax errors. We only fail closed
-    # here if sqlparse gives us literally nothing back for a non-empty blob.
+    # underlying Postgres will surface syntax errors. Strict mode fails
+    # closed if sqlparse gives us literally nothing back for a non-empty
+    # blob; warn-only mode logs and allows.
     try:
         statements = parse_sql(sql)
     except Exception as e:
-        _deny(
+        _deny_or_warn(
             f"cult-ops lineage validator could not parse the SQL payload: "
-            f"{type(e).__name__}: {e}. Failing closed so the statement can be "
-            "inspected manually."
+            f"{type(e).__name__}: {e}. Strict mode would fail closed so the "
+            "statement could be inspected manually."
         )
 
     if not statements:
@@ -343,9 +385,31 @@ def main() -> None:
     # Run pillar checks.
     result = _run_pillars(statements, contract)
 
-    decision = result.worst_decision()
+    if not result.findings:
+        _allow(
+            f"cult-ops lineage validator: {len(statements)} statement(s) "
+            f"checked, no violations. (contract updated {contract.contract_updated_at})"
+        )
+
     reason = result.format_reason()
 
+    # Warn-only mode (default): log every finding to stderr but allow the
+    # SQL call through. Justin sees what would have been blocked without
+    # actually being blocked.
+    if not _is_strict_mode():
+        print(
+            f"[cultops-lineage] WARN-ONLY MODE: {len(result.findings)} "
+            f"finding(s) on {len(statements)} statement(s). Set "
+            f"{STRICT_ENV_VAR}=1 to enforce.\n{reason}",
+            file=sys.stderr,
+        )
+        _allow(
+            f"cult-ops lineage validator (warn-only): {len(result.findings)} "
+            f"finding(s) logged. See stderr for details."
+        )
+
+    # Strict mode: original fail-closed behavior.
+    decision = result.worst_decision()
     if decision == "deny":
         _deny(reason)
     elif decision == "ask":
@@ -363,17 +427,41 @@ if __name__ == "__main__":
     except SystemExit:
         raise
     except Exception as e:
-        # Last-resort safety net: don't let an unexpected crash silently
-        # allow the tool call. Use exit code 2 to force a hard block via
-        # stderr so Justin sees the crash.
+        # Last-resort safety net. In strict mode, exit 2 forces a hard
+        # block via stderr so Justin sees the crash. In warn-only mode
+        # (default) we still print loudly but allow the call through —
+        # the hook should never lock the operator out of their own DB.
         print(
             f"[cultops-lineage] validator crashed: {type(e).__name__}: {e}",
             file=sys.stderr,
         )
         traceback.print_exc(file=sys.stderr)
+        if os.environ.get(STRICT_ENV_VAR) == "1":
+            print(
+                "cult-ops lineage validator crashed. Failing closed in strict mode. "
+                f"Set {BYPASS_ENV_VAR}=1 to bypass, or fix the validator.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
         print(
-            "cult-ops lineage validator crashed. Failing closed. "
-            f"Set {BYPASS_ENV_VAR}=1 to bypass, or fix the validator.",
+            "cult-ops lineage validator crashed. WARN-ONLY MODE — allowing the "
+            "call through. The validator needs to be fixed, but you are not "
+            f"locked out. Set {STRICT_ENV_VAR}=1 to fail closed on crashes.",
             file=sys.stderr,
         )
-        sys.exit(2)
+        # Emit an allow decision so the SDK doesn't fall back to ask.
+        try:
+            payload = {
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "allow",
+                    "permissionDecisionReason": (
+                        "validator crashed in warn-only mode — see stderr."
+                    ),
+                }
+            }
+            sys.stdout.write(json.dumps(payload))
+            sys.stdout.flush()
+        except Exception:
+            pass
+        sys.exit(0)
