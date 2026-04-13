@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Loader2, AlertTriangle } from 'lucide-react';
+import { auditService } from '../../services/audit.service';
 
 const AVAILABLE_STAGES = ['Binned', 'Bucked', 'Trimmed', 'Packaged'];
 
@@ -14,6 +15,17 @@ interface AuditInitiateModalProps {
 export function AuditInitiateModal({ open, loading, lockedStages, onClose, onStart }: AuditInitiateModalProps) {
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [pendingConversions, setPendingConversions] = useState<{ blocked: boolean; message: string | null; details: { batch_name: string; count: number }[] }>({ blocked: false, message: null, details: [] });
+  const [checkingConversions, setCheckingConversions] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setCheckingConversions(true);
+    auditService.checkPendingConversions()
+      .then(setPendingConversions)
+      .catch(() => setPendingConversions({ blocked: false, message: null, details: [] }))
+      .finally(() => setCheckingConversions(false));
+  }, [open]);
 
   if (!open) return null;
 
@@ -52,6 +64,36 @@ export function AuditInitiateModal({ open, loading, lockedStages, onClose, onSta
           Select which pipeline stages to count. All packages with on-hand quantity in
           those stages will be snapshotted into the audit.
         </p>
+
+        {/* Pending conversions blocker */}
+        {checkingConversions && (
+          <div className="mb-5 p-3 rounded-xl bg-cult-surface-subtle border border-cult-border-subtle flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-cult-text-muted" />
+            <p className="text-xs text-cult-text-muted">Checking for pending conversions…</p>
+          </div>
+        )}
+        {pendingConversions.blocked && (
+          <div className="mb-5 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-300">Pending Conversions</p>
+                <p className="text-xs text-cult-text-secondary mt-1">
+                  All pending conversions must be finalized or voided before starting an audit.
+                  Auditing while conversions are pending leads to inventory mismatches.
+                </p>
+                <ul className="mt-2 space-y-0.5">
+                  {pendingConversions.details.map((d) => (
+                    <li key={d.batch_name} className="text-xs text-cult-text-secondary">
+                      <span className="text-cult-text-primary font-medium">{d.batch_name}</span>
+                      {' — '}{d.count} pending
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stage picker */}
         <div className="space-y-2 mb-4">
@@ -136,7 +178,7 @@ export function AuditInitiateModal({ open, loading, lockedStages, onClose, onSta
           <button
             type="button"
             onClick={handleStart}
-            disabled={selectedStages.length === 0 || loading}
+            disabled={selectedStages.length === 0 || loading || pendingConversions.blocked || checkingConversions}
             className="px-5 py-2.5 rounded-xl bg-cult-accent text-cult-opaque-black font-bold text-sm hover:bg-cult-accent-hover transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}

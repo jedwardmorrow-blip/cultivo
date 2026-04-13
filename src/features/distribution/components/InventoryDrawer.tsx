@@ -53,6 +53,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignBatchId, setAssignBatchId] = useState<string | null>(null);
+  const [dispatchedItemIds, setDispatchedItemIds] = useState<Set<string>>(new Set());
 
   const loadPackages = useCallback(async () => {
     if (!lineItem) return;
@@ -61,6 +62,16 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
     try {
       const data = await fetchStrainInventory(lineItem.strain_name, lineItem.batch_id);
       setPackages(data);
+
+      // Check which items already have an active dispatch
+      if (data.length > 0) {
+        const { data: dispatched } = await supabase
+          .from('production_dispatch_items')
+          .select('inventory_item_id')
+          .in('inventory_item_id', data.map(p => p.id))
+          .in('status', ['pending', 'in_progress']);
+        setDispatchedItemIds(new Set((dispatched ?? []).map(d => d.inventory_item_id)));
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load inventory');
     } finally {
@@ -100,8 +111,12 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
         priority: 50,
         status: 'pending',
       });
-      if (insertErr) throw insertErr;
+      if (insertErr) {
+        if (insertErr.code === '23505') throw new Error('This package is already in the production queue');
+        throw insertErr;
+      }
 
+      setDispatchedItemIds(prev => new Set(prev).add(pkg.id));
       setSendSuccess(pkg.id);
       setTimeout(() => setSendSuccess(null), 2000);
       await loadPackages();
@@ -226,6 +241,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                       const action = getNextAction(pkg.category);
                       const isSending = sendingId === pkg.id;
                       const justSent = sendSuccess === pkg.id;
+                      const alreadyDispatched = dispatchedItemIds.has(pkg.id);
 
                       return (
                         <div
@@ -246,10 +262,12 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                             <button
                               type="button"
                               onClick={() => handleSendToProcessing(pkg)}
-                              disabled={isSending || pkg.available_qty <= 0}
+                              disabled={isSending || pkg.available_qty <= 0 || alreadyDispatched}
                               className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all
                                 ${justSent
                                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
+                                  : alreadyDispatched
+                                  ? 'bg-amber-500/10 text-amber-400/60 border border-amber-500/15 cursor-not-allowed'
                                   : isSending
                                   ? 'bg-white/[0.04] text-white/30 cursor-wait'
                                   : pkg.available_qty <= 0
@@ -259,6 +277,8 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                             >
                               {justSent ? (
                                 <><CheckCircle2 className="w-3 h-3" /> Sent</>
+                              ) : alreadyDispatched ? (
+                                <>In Queue</>
                               ) : isSending ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
                               ) : (

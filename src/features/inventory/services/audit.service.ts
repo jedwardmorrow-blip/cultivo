@@ -177,29 +177,47 @@ export const auditService = {
   },
 
   /**
+   * Checks for pending conversion sessions that would block an audit.
+   * Returns null if clear, or a descriptive message if blocked.
+   */
+  async checkPendingConversions(): Promise<{ blocked: boolean; message: string | null; details: { batch_name: string; count: number }[] }> {
+    const { data, error } = await supabase
+      .from('pending_conversion_sessions')
+      .select('batch_name');
+    if (error) throwError(error, 'checkPendingConversions');
+
+    const rows = (data ?? []) as { batch_name: string }[];
+    if (rows.length === 0) return { blocked: false, message: null, details: [] };
+
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      counts.set(row.batch_name, (counts.get(row.batch_name) ?? 0) + 1);
+    }
+    const details = Array.from(counts.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([batch_name, count]) => ({ batch_name, count }));
+    const summary = details.map(d => `${d.batch_name}: ${d.count}`).join(', ');
+
+    return {
+      blocked: true,
+      message: `${rows.length} pending conversion(s) must be finalized or voided before starting an audit (${summary}).`,
+      details,
+    };
+  },
+
+  /**
    * Creates an audit session and pre-seeds lines by snapshotting every
    * inventory_item that matches the selected stages (and optional room scope).
+   * Uses fn_start_audit RPC which enforces the pending-conversion guard at the DB level.
    */
   async startAudit(input: StartAuditInput): Promise<AuditSessionWithLines> {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const { data: numberResult, error: numberErr } = await supabase.rpc('fn_generate_audit_number');
-    if (numberErr) throwError(numberErr, 'startAudit:generateNumber');
-    const auditNumber = numberResult as string;
-
-    const { data: sessionRow, error: sessErr } = await supabase
-      .from('inventory_audits')
-      .insert({
-        audit_number: auditNumber,
-        selected_stages: input.selected_stages,
-        room_scope: input.room_scope?.length ? input.room_scope : null,
-        initiated_by: user?.id ?? null,
-        notes: input.notes ?? null,
-        status: 'in_progress',
-      })
-      .select(SESSION_SELECT)
-      .single();
-    if (sessErr) throwError(sessErr, 'startAudit:insertSession');
+    // DB-level guard: fn_start_audit checks for pending conversions and raises if any exist
+    const { data: sessionRow, error: sessErr } = await supabase.rpc('fn_start_audit', {
+      p_selected_stages: input.selected_stages,
+      p_room_scope: input.room_scope?.length ? input.room_scope : null,
+      p_notes: input.notes ?? null,
+    });
+    if (sessErr) throwError(sessErr, 'startAudit:fnStartAudit');
     const session = sessionRow as unknown as AuditSession;
 
     // Snapshot inventory_items matching selected stages + optional room scope.
