@@ -514,18 +514,25 @@ function OrphanForm({ defaultStage, actionLoading, onSubmit, onCancel }: OrphanF
   // Batch filter for search
   const [batchSearch, setBatchSearch] = useState('');
 
+  // Stage name → id map for filtering products by stage FK
+  const [stageMap, setStageMap] = useState<Record<string, string>>({});
+
   // Load reference data on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [batchData, productData] = await Promise.all([
+        const [batchData, productData, stageData] = await Promise.all([
           fetchActiveBatches(),
           productsService.fetchProducts(),
+          supabase.from('product_stages').select('id, name').then(({ data }) => data ?? []),
         ]);
         if (!cancelled) {
           setBatches(batchData);
           setProducts(productData);
+          const map: Record<string, string> = {};
+          for (const s of stageData) map[s.name.toLowerCase()] = s.id;
+          setStageMap(map);
         }
       } catch {
         // Non-critical — form still usable in manual mode
@@ -548,15 +555,17 @@ function OrphanForm({ defaultStage, actionLoading, onSubmit, onCancel }: OrphanF
   // Derived: products filtered to match the batch's strain + audit stage
   const filteredProducts = useMemo(() => {
     if (!selectedBatch) return [];
-    const strainLower = (selectedBatch.strain ?? '').toLowerCase();
-    const stageLower = defaultStage.toLowerCase();
+    const targetStageId = stageMap[defaultStage.toLowerCase()];
     return products.filter((p) => {
-      const nameL = p.name.toLowerCase();
-      const matchesStrain = strainLower && nameL.includes(strainLower);
-      const matchesStage = nameL.includes(stageLower);
+      const matchesStrain = selectedBatch.strain_id
+        ? p.strain_id === selectedBatch.strain_id
+        : (selectedBatch.strain ?? '').toLowerCase() === (p.strain ?? '').toLowerCase();
+      const matchesStage = targetStageId
+        ? p.stage_id === targetStageId
+        : p.name.toLowerCase().includes(defaultStage.toLowerCase());
       return matchesStrain && matchesStage;
     });
-  }, [products, selectedBatch, defaultStage]);
+  }, [products, selectedBatch, defaultStage, stageMap]);
 
   // Derived: selected product object
   const selectedProduct = useMemo(

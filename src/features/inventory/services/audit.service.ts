@@ -445,11 +445,8 @@ export const auditService = {
   },
 
   async applyAudit(sessionId: string): Promise<AuditApplySummary> {
-    const { data: { user } } = await supabase.auth.getUser();
-
     const { data, error } = await supabase.rpc('fn_apply_audit_adjustments', {
       p_audit_id: sessionId,
-      p_user_id: user?.id ?? null,
     });
     if (error) throwError(error, 'applyAudit');
     return data as unknown as AuditApplySummary;
