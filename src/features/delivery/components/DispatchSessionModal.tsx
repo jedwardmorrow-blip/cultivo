@@ -141,11 +141,29 @@ export function DispatchSessionModal({
         return;
       }
 
-      // Update dispatch item status to in_progress
-      await supabase
-        .from('production_dispatch_items')
-        .update({ status: 'in_progress', updated_at: new Date().toISOString() })
-        .eq('id', dispatchItem.id);
+      // Check if the tote still has remaining available qty after this pull
+      // If yes, keep dispatch as 'pending' so more sessions can be started
+      // If no (tote fully consumed), move to 'in_progress'
+      const { data: updatedItem } = await supabase
+        .from('inventory_items')
+        .select('available_qty')
+        .eq('id', dispatchItem.inventory_item_id)
+        .single();
+
+      const remainingQty = (updatedItem?.available_qty ?? 0) as number;
+
+      if (remainingQty <= 0) {
+        await supabase
+          .from('production_dispatch_items')
+          .update({ status: 'in_progress', updated_at: new Date().toISOString() })
+          .eq('id', dispatchItem.id);
+      } else {
+        // Update the dispatch item's quantity_g to reflect remaining weight
+        await supabase
+          .from('production_dispatch_items')
+          .update({ quantity_g: remainingQty, updated_at: new Date().toISOString() })
+          .eq('id', dispatchItem.id);
+      }
 
       notificationService.success(`${PROCESSING_STAGE_LABELS[stage]} session started for ${dispatchItem.strain}`);
       onSessionCreated();
