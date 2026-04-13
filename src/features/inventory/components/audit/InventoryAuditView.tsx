@@ -56,6 +56,7 @@ export function InventoryAuditView() {
       <AuditReviewApply
         session={audit.activeSession}
         actionLoading={audit.actionLoading}
+        error={audit.error}
         onBack={() => audit.setScreen('counting')}
         onApply={audit.applyAudit}
         onAbandon={audit.abandonAudit}

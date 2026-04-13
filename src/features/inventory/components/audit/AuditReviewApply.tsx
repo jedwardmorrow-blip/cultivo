@@ -5,6 +5,7 @@ import type { AuditSessionWithLines, AuditLine, AuditApplySummary } from '../../
 interface AuditReviewApplyProps {
   session: AuditSessionWithLines;
   actionLoading: boolean;
+  error: string | null;
   onBack: () => void;
   onApply: () => Promise<AuditApplySummary>;
   onAbandon: (reason?: string) => Promise<void>;
@@ -18,6 +19,7 @@ function gramsToLbs(g: number): string {
 export function AuditReviewApply({
   session,
   actionLoading,
+  error,
   onBack,
   onApply,
   onAbandon,
@@ -108,6 +110,17 @@ export function AuditReviewApply({
           {session.notes && (
             <p className="text-xs text-cult-text-muted mt-1">{session.notes}</p>
           )}
+        </div>
+      )}
+
+      {/* Error banner */}
+      {error && !isTerminal && (
+        <div className="rounded-xl border border-cult-danger/30 bg-cult-danger/10 p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-cult-danger" />
+            <span className="text-sm font-bold text-cult-danger">Failed to apply audit</span>
+          </div>
+          <p className="text-xs text-cult-text-secondary mt-1">{error}</p>
         </div>
       )}
 

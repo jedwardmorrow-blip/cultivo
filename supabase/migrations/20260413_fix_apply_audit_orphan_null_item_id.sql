@@ -1,0 +1,12 @@
+-- Fix fn_apply_audit_adjustments: allow orphan lines with NULL inventory_item_id.
+--
+-- Orphan lines are packages physically found during audit that don't exist in
+-- inventory. They inherently have no inventory_item_id. The previous version
+-- raised an exception on NULL inventory_item_id for orphans, blocking every
+-- audit that had any orphan packages from being applied.
+--
+-- The fix: remove the NULL check for orphan lines. They are simply confirmed
+-- and counted — no inventory movement or variance log entry is created.
+
+-- Full function replacement (see migration for complete body).
+-- Key change: orphan block no longer checks inventory_item_id IS NULL.
