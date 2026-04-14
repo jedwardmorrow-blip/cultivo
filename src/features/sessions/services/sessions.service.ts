@@ -395,12 +395,12 @@ export async function pauseSession(
   try {
     const tableName = `${sessionType}_sessions`;
 
-    // Insert pause record
+    // Insert pause record using the correct FK column for this session type
+    const fkColumn = `${sessionType}_session_id`;
     const { error: pauseError } = await supabase
       .from('session_pauses')
       .insert({
-        session_type: sessionType,
-        session_id: sessionId,
+        [fkColumn]: sessionId,
         paused_at: new Date().toISOString(),
       });
 
@@ -439,12 +439,12 @@ export async function resumeSession(
     const tableName = `${sessionType}_sessions`;
     const now = new Date().toISOString();
 
-    // Find the open pause record
+    // Find the open pause record using the correct FK column
+    const fkColumn = `${sessionType}_session_id`;
     const { data: openPause, error: fetchError } = await supabase
       .from('session_pauses')
       .select('*')
-      .eq('session_id', sessionId)
-      .eq('session_type', sessionType)
+      .eq(fkColumn, sessionId)
       .is('resumed_at', null)
       .order('paused_at', { ascending: false })
       .limit(1)
