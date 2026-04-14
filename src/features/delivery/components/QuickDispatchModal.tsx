@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Zap, Package, Send, Loader2, CheckCircle2, AlertTriangle,
-  ChevronRight, Boxes, ShieldCheck, FlaskConical, Award,
+  ChevronRight, Boxes, ShieldCheck, FlaskConical, Award, Clock,
 } from 'lucide-react';
 import { BaseModal } from '@/shared/components/BaseModal';
 import { supabase } from '@/lib/supabase';
@@ -115,6 +115,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
 
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+  const [dispatchedItemIds, setDispatchedItemIds] = useState<Set<string>>(new Set());
 
   // Reset on open
   useEffect(() => {
@@ -222,6 +223,18 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
       try {
         const data = await fetchStrainInventory(selectedStrain, selectedBatchId);
         setPackages(data);
+
+        // Check which packages are already dispatched
+        if (data.length > 0) {
+          const { data: dispatched } = await supabase
+            .from('production_dispatch_items')
+            .select('inventory_item_id')
+            .in('inventory_item_id', data.map((p: InventoryPackage) => p.id))
+            .in('status', ['pending', 'in_progress']);
+          setDispatchedItemIds(new Set((dispatched ?? []).map((d: { inventory_item_id: string }) => d.inventory_item_id)));
+        } else {
+          setDispatchedItemIds(new Set());
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load packages');
       } finally {
@@ -252,8 +265,13 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
         priority: 50,
         status: 'pending',
       });
-      if (insertErr) throw insertErr;
+      if (insertErr) {
+        if (insertErr.code === '23505') throw new Error('This package is already in the production queue');
+        throw insertErr;
+      }
 
+      // Track locally so button updates immediately
+      setDispatchedItemIds(prev => new Set(prev).add(pkg.id));
       setSendSuccess(pkg.id);
       setTimeout(() => setSendSuccess(null), 2000);
 
@@ -373,6 +391,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
                     const action = getNextAction(pkg.category);
                     const isSending = sendingId === pkg.id;
                     const justSent = sendSuccess === pkg.id;
+                    const alreadyDispatched = dispatchedItemIds.has(pkg.id);
 
                     return (
                       <div
@@ -396,10 +415,12 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
                         {action && (
                           <button
                             type="button"
-                            onClick={() => handleSend(pkg)}
-                            disabled={isSending || pkg.available_qty <= 0}
+                            onClick={() => !alreadyDispatched && handleSend(pkg)}
+                            disabled={isSending || pkg.available_qty <= 0 || alreadyDispatched}
                             className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150 ${
-                              justSent
+                              alreadyDispatched
+                                ? 'bg-cult-warning/10 text-cult-warning/70 border border-cult-warning/20 cursor-default'
+                                : justSent
                                 ? 'bg-cult-success/20 text-cult-success border border-cult-success/30 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
                                 : isSending
                                 ? 'bg-cult-mid-gray/30 text-cult-text-muted cursor-wait'
@@ -408,7 +429,9 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
                                 : 'bg-cult-accent/10 text-cult-accent border border-cult-accent/25 hover:bg-cult-accent/20 hover:border-cult-accent/40'
                             }`}
                           >
-                            {justSent ? (
+                            {alreadyDispatched ? (
+                              <><Clock className="w-3.5 h-3.5" /> In Queue</>
+                            ) : justSent ? (
                               <><CheckCircle2 className="w-3.5 h-3.5" /> Sent</>
                             ) : isSending ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />

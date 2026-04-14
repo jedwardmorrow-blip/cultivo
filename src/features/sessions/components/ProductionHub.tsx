@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Zap, RefreshCw, AlertTriangle, Play, CheckCircle2, Clock, Package,
   Filter, Scissors, Box, Loader2, ArrowUpDown, ChevronDown, ChevronRight,
-  Pause, Timer,
+  Pause, Timer, Undo2,
 } from 'lucide-react';
 import { HubShell } from '@/features/hub/components/HubShell';
 import { supabase } from '@/lib/supabase';
@@ -98,9 +98,13 @@ function PriorityBadge({ priority }: { priority: number }) {
 function QueuedCard({
   item,
   onStartSession,
+  onReturn,
+  returning,
 }: {
   item: DispatchItem;
   onStartSession: (item: DispatchItem) => void;
+  onReturn: (item: DispatchItem) => void;
+  returning: boolean;
 }) {
   const stageStyle = getStageStyle(item.processing_stage);
   const StageIcon = stageStyle.icon;
@@ -137,14 +141,25 @@ function QueuedCard({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onStartSession(item)}
-          className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
-        >
-          <Play className="w-3.5 h-3.5" />
-          Start Session
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => onReturn(item)}
+            disabled={returning}
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-cult-border text-cult-text-muted text-xs font-medium hover:text-cult-warning hover:border-cult-warning/30 hover:bg-cult-warning/5 transition-all disabled:opacity-50 disabled:cursor-wait"
+          >
+            {returning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
+            Return
+          </button>
+          <button
+            type="button"
+            onClick={() => onStartSession(item)}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
+          >
+            <Play className="w-3.5 h-3.5" />
+            Start Session
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -237,6 +252,7 @@ export function ProductionHub() {
   const [completingSession, setCompletingSession] = useState<ActiveSession | null>(null);
   const [showQuickDispatch, setShowQuickDispatch] = useState(false);
   const [buckedPackages, setBuckedPackages] = useState<InventoryItem[]>([]);
+  const [returningId, setReturningId] = useState<string | null>(null);
 
   const fetchActiveSessions = useCallback(async () => {
     setLoadingSessions(true);
@@ -351,6 +367,44 @@ export function ProductionHub() {
     handleReload();
   }
 
+  async function handleReturnToInventory(item: DispatchItem) {
+    if (!confirm(`Return ${item.strain} (${formatG(item.quantity_g)}) to inventory? It will be removed from the production queue.`)) return;
+
+    setReturningId(item.id);
+    try {
+      // Check for active sessions linked to this dispatch item
+      const [buckCheck, trimCheck, packCheck] = await Promise.all([
+        supabase.from('bucking_sessions').select('id').eq('dispatch_item_id', item.id).eq('session_status', 'active').limit(1),
+        supabase.from('trim_sessions').select('id').eq('dispatch_item_id', item.id).eq('session_status', 'active').limit(1),
+        supabase.from('packaging_sessions').select('id').eq('dispatch_item_id', item.id).eq('session_status', 'active').limit(1),
+      ]);
+
+      const hasActive = (buckCheck.data?.length ?? 0) > 0
+        || (trimCheck.data?.length ?? 0) > 0
+        || (packCheck.data?.length ?? 0) > 0;
+
+      if (hasActive) {
+        alert("Can't return — there's an active session using this tote. Complete or cancel the session first.");
+        return;
+      }
+
+      // Cancel the dispatch item
+      const { error: updateErr } = await supabase
+        .from('production_dispatch_items')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', item.id);
+
+      if (updateErr) throw updateErr;
+
+      handleReload();
+    } catch (err: any) {
+      console.error('Return to inventory failed:', err);
+      alert(err.message || 'Failed to return item to inventory');
+    } finally {
+      setReturningId(null);
+    }
+  }
+
   // Fetch bucked packages for trim completion modal (needs them for smalls inventory selection)
   useEffect(() => {
     if (completingSession?.type === 'trim') {
@@ -441,6 +495,8 @@ export function ProductionHub() {
                 key={item.id}
                 item={item}
                 onStartSession={setStartingItem}
+                onReturn={handleReturnToInventory}
+                returning={returningId === item.id}
               />
             ))}
           </div>
