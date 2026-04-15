@@ -182,7 +182,6 @@ export const plantAuditService = {
       .from('plant_audit_counts')
       .update({
         physical_count: input.physical_count,
-        variance,
         status,
         counted_by: user?.id ?? null,
         counted_at: new Date().toISOString(),
@@ -206,7 +205,6 @@ export const plantAuditService = {
       .update({
         status: 'not_found',
         physical_count: 0,
-        variance: null,
         counted_by: user?.id ?? null,
         counted_at: new Date().toISOString(),
         cause_of_death: opts.cause_of_death,
@@ -242,7 +240,6 @@ export const plantAuditService = {
       .update({
         status: 'pending',
         physical_count: null,
-        variance: null,
         counted_by: null,
         counted_at: null,
         cause_of_death: null,
@@ -299,7 +296,6 @@ export const plantAuditService = {
         strain_name_snapshot: group.strains?.name ?? null,
         db_count_snapshot: 0,
         physical_count: input.plant_count,
-        variance: input.plant_count,
         status: 'orphan_created',
         is_orphan: true,
         counted_by: user?.id ?? null,
