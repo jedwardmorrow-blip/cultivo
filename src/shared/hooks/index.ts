@@ -1,4 +1,5 @@
 export { useDataTable } from './useDataTable';
+export { useDispatchStatus } from './useDispatchStatus';
 export { useTableSubscription } from './useTableSubscription';
 export { useShiftSelect } from './useShiftSelect';
 export { useUnsavedChanges } from './useUnsavedChanges';

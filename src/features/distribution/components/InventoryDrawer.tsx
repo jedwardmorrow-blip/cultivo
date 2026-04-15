@@ -3,6 +3,7 @@ import { Package, Send, Loader2, CheckCircle2, AlertTriangle, ShieldCheck, Flask
 import { BaseModal } from '@/shared/components/BaseModal';
 import { PackageAssignmentModal } from '@/features/orders/components/PackageAssignmentModal';
 import { supabase } from '@/lib/supabase';
+import { useDispatchStatus } from '@/shared/hooks';
 import {
   fetchStrainInventory,
   getNextAction,
@@ -53,7 +54,14 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignBatchId, setAssignBatchId] = useState<string | null>(null);
-  const [dispatchedItemIds, setDispatchedItemIds] = useState<Set<string>>(new Set());
+
+  // Watch dispatch status for the currently-visible packages. The hook
+  // subscribes to realtime updates on production_dispatch_items so the
+  // "In Queue" badge clears automatically when an item is cancelled on
+  // another screen (e.g. ProductionHub).
+  const packageIds = useMemo(() => packages.map((p) => p.id), [packages]);
+  const { dispatchedIds: dispatchedItemIds, refetch: refetchDispatchStatus, markDispatched } =
+    useDispatchStatus(packageIds);
 
   const loadPackages = useCallback(async () => {
     if (!lineItem) return;
@@ -62,16 +70,6 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
     try {
       const data = await fetchStrainInventory(lineItem.strain_name, lineItem.batch_id);
       setPackages(data);
-
-      // Check which items already have an active dispatch
-      if (data.length > 0) {
-        const { data: dispatched } = await supabase
-          .from('production_dispatch_items')
-          .select('inventory_item_id')
-          .in('inventory_item_id', data.map(p => p.id))
-          .in('status', ['pending', 'in_progress']);
-        setDispatchedItemIds(new Set((dispatched ?? []).map(d => d.inventory_item_id)));
-      }
     } catch (err: any) {
       setError(err.message || 'Failed to load inventory');
     } finally {
@@ -116,10 +114,11 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
         throw insertErr;
       }
 
-      setDispatchedItemIds(prev => new Set(prev).add(pkg.id));
+      markDispatched(pkg.id);
       setSendSuccess(pkg.id);
       setTimeout(() => setSendSuccess(null), 2000);
       await loadPackages();
+      await refetchDispatchStatus();
       onReload();
     } catch (err: any) {
       setError(err.message || 'Failed to dispatch');

@@ -5,13 +5,14 @@
  * Creates production_dispatch_items with order_item_id = null (stock build).
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Zap, Package, Send, Loader2, CheckCircle2, AlertTriangle,
   ChevronRight, Boxes, ShieldCheck, FlaskConical, Award, Clock,
 } from 'lucide-react';
 import { BaseModal } from '@/shared/components/BaseModal';
 import { supabase } from '@/lib/supabase';
+import { useDispatchStatus } from '@/shared/hooks';
 import {
   fetchStrainInventory,
   getNextAction,
@@ -115,7 +116,13 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
 
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
-  const [dispatchedItemIds, setDispatchedItemIds] = useState<Set<string>>(new Set());
+
+  // Watch dispatch status via shared hook — keeps the "In Queue" badge in
+  // sync with production_dispatch_items changes made on other screens
+  // (e.g. ProductionHub cancel).
+  const packageIds = useMemo(() => packages.map((p) => p.id), [packages]);
+  const { dispatchedIds: dispatchedItemIds, refetch: refetchDispatchStatus, markDispatched } =
+    useDispatchStatus(packageIds);
 
   // Reset on open
   useEffect(() => {
@@ -223,18 +230,9 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
       try {
         const data = await fetchStrainInventory(selectedStrain, selectedBatchId);
         setPackages(data);
-
-        // Check which packages are already dispatched
-        if (data.length > 0) {
-          const { data: dispatched } = await supabase
-            .from('production_dispatch_items')
-            .select('inventory_item_id')
-            .in('inventory_item_id', data.map((p: InventoryPackage) => p.id))
-            .in('status', ['pending', 'in_progress']);
-          setDispatchedItemIds(new Set((dispatched ?? []).map((d: { inventory_item_id: string }) => d.inventory_item_id)));
-        } else {
-          setDispatchedItemIds(new Set());
-        }
+        // Dispatch status is tracked by useDispatchStatus(packageIds) above —
+        // it refetches automatically when packages change and stays in sync
+        // via realtime subscription.
       } catch (err: any) {
         setError(err.message || 'Failed to load packages');
       } finally {
@@ -270,14 +268,15 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
         throw insertErr;
       }
 
-      // Track locally so button updates immediately
-      setDispatchedItemIds(prev => new Set(prev).add(pkg.id));
+      // Track locally so button updates immediately (realtime will confirm)
+      markDispatched(pkg.id);
       setSendSuccess(pkg.id);
       setTimeout(() => setSendSuccess(null), 2000);
 
-      // Refresh packages
+      // Refresh packages + dispatch status
       const data = await fetchStrainInventory(selectedStrain, selectedBatchId);
       setPackages(data);
+      await refetchDispatchStatus();
       onDispatched();
     } catch (err: any) {
       setError(err.message || 'Failed to dispatch');
