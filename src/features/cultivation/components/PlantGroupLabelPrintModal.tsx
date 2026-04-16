@@ -19,20 +19,20 @@ function formatDateShort(iso: string): string {
   });
 }
 
-function BarcodeImg({ value, id }: { value: string; id: string }) {
+function BarcodeImg({ value, id, width = 1.4, height = 28 }: { value: string; id: string; width?: number; height?: number }) {
   useEffect(() => {
     try {
       JsBarcode(`#${id}`, value, {
         format: 'CODE128',
-        width: 1.4,
-        height: 28,
+        width,
+        height,
         displayValue: false,
         margin: 0,
       });
     } catch {
       // barcode generation failed
     }
-  }, [value, id]);
+  }, [value, id, width, height]);
   return <svg id={id} />;
 }
 
@@ -181,11 +181,11 @@ function IndividualLabelCard({
       }}
     >
       {/* Row 1: Logo left, strain abbreviation right */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: `${0.03 * scale}in` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: `${0.02 * scale}in` }}>
         {logoDataUrl ? (
-          <img src={logoDataUrl} alt="Logo" style={{ height: `${0.2 * scale}in`, objectFit: 'contain' }} />
+          <img src={logoDataUrl} alt="Logo" style={{ height: `${0.18 * scale}in`, objectFit: 'contain' }} />
         ) : (
-          <div style={{ height: `${0.2 * scale}in` }} />
+          <div style={{ height: `${0.18 * scale}in` }} />
         )}
         <span style={{ fontSize: `${7 * scale}px`, fontWeight: 'bold', color: '#6b7280', fontFamily: 'monospace' }}>
           [{strainAbbreviation}]
@@ -193,22 +193,22 @@ function IndividualLabelCard({
       </div>
 
       {/* Divider */}
-      <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, marginBottom: `${0.03 * scale}in` }} />
+      <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, marginBottom: `${0.02 * scale}in` }} />
 
       {/* Row 2: Strain + batch */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: `${0.03 * scale}in` }}>
-        <span style={{ fontSize: `${8.5 * scale}px`, fontWeight: 'bold', color: '#111', lineHeight: 1.1 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: `${0.02 * scale}in` }}>
+        <span style={{ fontSize: `${12 * scale}px`, fontWeight: 'bold', color: '#111', lineHeight: 1.1 }}>
           {strainName}
         </span>
-        <span style={{ fontSize: `${7 * scale}px`, fontWeight: 'bold', color: '#374151', fontFamily: 'monospace', marginLeft: `${4 * scale}px`, flexShrink: 0 }}>
+        <span style={{ fontSize: `${8.5 * scale}px`, fontWeight: 'bold', color: '#374151', fontFamily: 'monospace', marginLeft: `${4 * scale}px`, flexShrink: 0 }}>
           {batchNumber}
         </span>
       </div>
 
       {/* Row 3: Barcode + Plant ID (fills remaining space) */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <BarcodeImg value={statePlantId} id={barcodeId} />
-        <span style={{ fontSize: `${8 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${2 * scale}px`, letterSpacing: '0.05em' }}>
+        <BarcodeImg value={statePlantId} id={barcodeId} width={1.8 * scale} height={36 * scale} />
+        <span style={{ fontSize: `${9.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${1.5 * scale}px`, letterSpacing: '0.05em' }}>
           {statePlantId}
         </span>
         <span style={{ fontSize: `${5 * scale}px`, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: `${0.5 * scale}px` }}>
