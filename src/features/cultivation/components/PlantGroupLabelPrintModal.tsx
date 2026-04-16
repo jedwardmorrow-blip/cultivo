@@ -172,44 +172,46 @@ function IndividualLabelCard({
         height: `${1.5 * scale}in`,
         backgroundColor: '#ffffff',
         display: 'flex',
-        flexDirection: 'row',
-        padding: `${0.07 * scale}in`,
+        flexDirection: 'column',
+        padding: `${0.06 * scale}in`,
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
         pageBreakAfter: 'always',
         overflow: 'hidden',
       }}
     >
-      {/* Left column: logo + text info */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: `${0.06 * scale}in` }}>
+      {/* Row 1: Logo left, strain abbreviation right */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: `${0.03 * scale}in` }}>
         {logoDataUrl ? (
-          <div style={{ height: `${0.22 * scale}in`, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-            <img src={logoDataUrl} alt="Logo" style={{ maxHeight: `${0.22 * scale}in`, maxWidth: '100%', objectFit: 'contain' }} />
-          </div>
+          <img src={logoDataUrl} alt="Logo" style={{ height: `${0.2 * scale}in`, objectFit: 'contain' }} />
         ) : (
-          <div style={{ height: `${0.22 * scale}in` }} />
+          <div style={{ height: `${0.2 * scale}in` }} />
         )}
-
-        <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, paddingTop: `${0.03 * scale}in`, display: 'flex', flexDirection: 'column', gap: `${0.02 * scale}in` }}>
-          <span style={{ fontSize: `${9 * scale}px`, fontWeight: 'bold', color: '#111', display: 'block', lineHeight: 1.2 }}>
-            {strainName}
-          </span>
-          <span style={{ fontSize: `${7 * scale}px`, color: '#6b7280', fontFamily: 'monospace' }}>
-            [{strainAbbreviation}]
-          </span>
-          <span style={{ fontSize: `${7.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace' }}>
-            {batchNumber}
-          </span>
-        </div>
+        <span style={{ fontSize: `${7 * scale}px`, fontWeight: 'bold', color: '#6b7280', fontFamily: 'monospace' }}>
+          [{strainAbbreviation}]
+        </span>
       </div>
 
-      {/* Right column: barcode + plant ID */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: `${1.5 * scale}px solid #e5e7eb`, paddingLeft: `${0.06 * scale}in` }}>
+      {/* Divider */}
+      <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, marginBottom: `${0.03 * scale}in` }} />
+
+      {/* Row 2: Strain + batch */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: `${0.03 * scale}in` }}>
+        <span style={{ fontSize: `${8.5 * scale}px`, fontWeight: 'bold', color: '#111', lineHeight: 1.1 }}>
+          {strainName}
+        </span>
+        <span style={{ fontSize: `${7 * scale}px`, fontWeight: 'bold', color: '#374151', fontFamily: 'monospace', marginLeft: `${4 * scale}px`, flexShrink: 0 }}>
+          {batchNumber}
+        </span>
+      </div>
+
+      {/* Row 3: Barcode + Plant ID (fills remaining space) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <BarcodeImg value={statePlantId} id={barcodeId} />
-        <span style={{ fontSize: `${7.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${2 * scale}px`, letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: `${8 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${2 * scale}px`, letterSpacing: '0.05em' }}>
           {statePlantId}
         </span>
-        <span style={{ fontSize: `${5 * scale}px`, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: `${1 * scale}px` }}>
+        <span style={{ fontSize: `${5 * scale}px`, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: `${0.5 * scale}px` }}>
           Plant ID
         </span>
       </div>
@@ -312,7 +314,7 @@ export function PlantGroupLabelPrintModal({
                       strainAbbreviation={labelData.strainAbbreviation}
                       growthStage={labelData.growthStage}
                       roomCode={labelData.roomCode}
-                      scale={3}
+                      scale={2}
                       labelIndex={0}
                     />
                   </div>
