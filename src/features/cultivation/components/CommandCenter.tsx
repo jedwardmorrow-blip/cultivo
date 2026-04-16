@@ -1151,7 +1151,7 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
   const {
     isOpen: sectionLabelIsOpen, isLoading: sectionLabelIsLoading, isPrinting: sectionLabelIsPrinting,
     labelData: sectionLabelData, logoDataUrl: sectionLogoDataUrl, error: sectionLabelError,
-    openGroupLabel: sectionOpenGroupLabel, printLabels: sectionPrintLabels, closeLabel: sectionCloseLabel,
+    openGroupLabel: sectionOpenGroupLabel, openPlantLabels: sectionOpenPlantLabels, printLabels: sectionPrintLabels, closeLabel: sectionCloseLabel,
   } = usePlantGroupLabel();
   const { staff: activeStaff } = useActiveStaff();
   const { schedules: roomSchedules } = useTaskSchedules(state.room_id);
@@ -1305,6 +1305,12 @@ function ExpandedRoomView({ state, tasks, groups, rooms, onUpdateTaskStatus, onC
                         onPrintGroups={async (grps) => {
                           if (grps.length > 0) {
                             await sectionOpenGroupLabel(grps[0]);
+                            setShowSectionPrint(true);
+                          }
+                        }}
+                        onPrintPlants={async (grps) => {
+                          if (grps.length > 0) {
+                            await sectionOpenPlantLabels(grps[0]);
                             setShowSectionPrint(true);
                           }
                         }}
@@ -2121,7 +2127,7 @@ function CellHoverPopover({ strainCounts, totalPlants, tableNum, sectionLabel }:
 }
 
 // Pinned cell popover — click-to-pin with plant IDs accordion + actions
-function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel, groups, onMove, onKill, onPrint, onAdvance, onClose }: {
+function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sectionLabel, groups, onMove, onKill, onPrint, onPrintPlants, onAdvance, onClose }: {
   sectionId: string;
   strainCounts: Array<{ abbreviation: string; count: number }>;
   totalPlants: number;
@@ -2131,6 +2137,7 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
   onMove: (groups: PlantGroup[]) => void;
   onKill: (groups: PlantGroup[]) => void;
   onPrint: (groups: PlantGroup[]) => void;
+  onPrintPlants?: (groups: PlantGroup[]) => void;
   onAdvance?: (groups: PlantGroup[]) => void;
   onClose: () => void;
 }) {
@@ -2264,9 +2271,20 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
               type="button"
               onClick={() => onPrint(groups)}
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/[0.05] text-white/50 text-[10px] font-medium hover:bg-white/[0.08] transition-all active:scale-95"
+              title="Print group label"
             >
-              <Printer className="w-3 h-3" /> Print
+              <Printer className="w-3 h-3" /> Group
             </button>
+            {onPrintPlants && (
+              <button
+                type="button"
+                onClick={() => onPrintPlants(groups)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-white/[0.05] text-white/50 text-[10px] font-medium hover:bg-white/[0.08] transition-all active:scale-95"
+                title="Print individual plant tags"
+              >
+                <Printer className="w-3 h-3" /> Tags
+              </button>
+            )}
             {onAdvance && (
               <button
                 type="button"
@@ -2285,7 +2303,7 @@ function PinnedCellPopover({ sectionId, strainCounts, totalPlants, tableNum, sec
   );
 }
 
-function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onKillGroups, onPrintGroups, onAdvanceGroups }: {
+function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onKillGroups, onPrintGroups, onPrintPlants, onAdvanceGroups }: {
   roomId: string;
   compact?: boolean;
   inline?: boolean;
@@ -2294,6 +2312,7 @@ function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onK
   onMoveGroups?: (groups: PlantGroup[]) => void;
   onKillGroups?: (groups: PlantGroup[]) => void;
   onPrintGroups?: (groups: PlantGroup[]) => void;
+  onPrintPlants?: (groups: PlantGroup[]) => void;
   onAdvanceGroups?: (groups: PlantGroup[]) => void;
 }) {
   const [tables, setTables] = useState<RoomTable[]>([]);
@@ -2419,6 +2438,7 @@ function RoomGrid({ roomId, compact, inline, expanded, groups, onMoveGroups, onK
                         onMove={onMoveGroups}
                         onKill={onKillGroups}
                         onPrint={onPrintGroups}
+                        onPrintPlants={onPrintPlants}
                         onAdvance={onAdvanceGroups}
                         onClose={() => setPinnedSectionId(null)}
                       />

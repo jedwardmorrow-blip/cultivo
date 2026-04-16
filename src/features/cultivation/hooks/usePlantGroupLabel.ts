@@ -182,6 +182,10 @@ export function usePlantGroupLabel() {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!iframeDoc) throw new Error('Could not access iframe document');
 
+      const isLandscape = labelData.mode === 'individual';
+      const pageW = isLandscape ? '2in' : '1.5in';
+      const pageH = isLandscape ? '1.5in' : '2in';
+
       iframeDoc.open();
       iframeDoc.write(`<!DOCTYPE html>
 <html>
@@ -189,9 +193,9 @@ export function usePlantGroupLabel() {
 <meta charset="utf-8">
 <title>Print Plant Labels</title>
 <style>
-@page { size: 1.5in 2in; margin: 0; }
+@page { size: ${pageW} ${pageH}; margin: 0; }
 * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-html, body { margin: 0; padding: 0; width: 1.5in; height: 2in; font-family: Arial, sans-serif; }
+html, body { margin: 0; padding: 0; width: ${pageW}; height: ${pageH}; font-family: Arial, sans-serif; }
 </style>
 </head>
 <body>

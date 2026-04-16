@@ -163,17 +163,16 @@ function IndividualLabelCard({
   scale = 1,
   labelIndex = 0,
 }: IndividualLabelCardProps) {
-  const stageColor = STAGE_COLOR[growthStage] ?? '#9ca3af';
   const barcodeId = `barcode-plant-${labelIndex}-${scale > 1 ? 'preview' : 'print'}`;
 
   return (
     <div
       style={{
-        width: `${1.5 * scale}in`,
-        height: `${2 * scale}in`,
+        width: `${2 * scale}in`,
+        height: `${1.5 * scale}in`,
         backgroundColor: '#ffffff',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         padding: `${0.07 * scale}in`,
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
@@ -181,42 +180,38 @@ function IndividualLabelCard({
         overflow: 'hidden',
       }}
     >
-      {logoDataUrl ? (
-        <div style={{ height: `${0.22 * scale}in`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: `${0.04 * scale}in` }}>
-          <img src={logoDataUrl} alt="Logo" style={{ maxHeight: `${0.22 * scale}in`, maxWidth: '100%', objectFit: 'contain' }} />
-        </div>
-      ) : (
-        <div style={{ height: `${0.22 * scale}in`, marginBottom: `${0.04 * scale}in` }} />
-      )}
+      {/* Left column: logo + text info */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: `${0.06 * scale}in` }}>
+        {logoDataUrl ? (
+          <div style={{ height: `${0.22 * scale}in`, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <img src={logoDataUrl} alt="Logo" style={{ maxHeight: `${0.22 * scale}in`, maxWidth: '100%', objectFit: 'contain' }} />
+          </div>
+        ) : (
+          <div style={{ height: `${0.22 * scale}in` }} />
+        )}
 
-      <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, paddingTop: `${0.04 * scale}in`, flex: 1, display: 'flex', flexDirection: 'column', gap: `${0.025 * scale}in` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: `${7.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace' }}>
-            {batchNumber}
-          </span>
-          <span style={{ fontSize: `${6.5 * scale}px`, fontWeight: 'bold', color: stageColor, textTransform: 'uppercase', border: `${scale}px solid ${stageColor}`, padding: `0 ${2 * scale}px` }}>
-            {growthStage}
-          </span>
-        </div>
-
-        <div>
-          <span style={{ fontSize: `${9.5 * scale}px`, fontWeight: 'bold', color: '#111', display: 'block', lineHeight: 1.2 }}>
+        <div style={{ borderTop: `${1.5 * scale}px solid #e5e7eb`, paddingTop: `${0.03 * scale}in`, display: 'flex', flexDirection: 'column', gap: `${0.02 * scale}in` }}>
+          <span style={{ fontSize: `${9 * scale}px`, fontWeight: 'bold', color: '#111', display: 'block', lineHeight: 1.2 }}>
             {strainName}
           </span>
           <span style={{ fontSize: `${7 * scale}px`, color: '#6b7280', fontFamily: 'monospace' }}>
-            [{strainAbbreviation}] · {roomCode}
+            [{strainAbbreviation}]
+          </span>
+          <span style={{ fontSize: `${7.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace' }}>
+            {batchNumber}
           </span>
         </div>
+      </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <BarcodeImg value={statePlantId} id={barcodeId} />
-          <span style={{ fontSize: `${8 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${2 * scale}px`, letterSpacing: '0.1em' }}>
-            {statePlantId}
-          </span>
-          <span style={{ fontSize: `${5.5 * scale}px`, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: `${1 * scale}px` }}>
-            State Plant ID
-          </span>
-        </div>
+      {/* Right column: barcode + plant ID */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderLeft: `${1.5 * scale}px solid #e5e7eb`, paddingLeft: `${0.06 * scale}in` }}>
+        <BarcodeImg value={statePlantId} id={barcodeId} />
+        <span style={{ fontSize: `${7.5 * scale}px`, fontWeight: 'bold', color: '#111', fontFamily: 'monospace', marginTop: `${2 * scale}px`, letterSpacing: '0.08em' }}>
+          {statePlantId}
+        </span>
+        <span style={{ fontSize: `${5 * scale}px`, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: `${1 * scale}px` }}>
+          Plant ID
+        </span>
       </div>
     </div>
   );
