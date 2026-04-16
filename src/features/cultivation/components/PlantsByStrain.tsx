@@ -121,7 +121,7 @@ export function PlantsByStrainExpanded({
   const {
     isOpen: labelIsOpen, isLoading: labelIsLoading, isPrinting: labelIsPrinting,
     labelData, logoDataUrl, error: labelError,
-    openGroupLabel, openPlantLabels, printLabels, closeLabel,
+    openGroupLabel, openPlantLabels, openSelectedPlantLabels, printLabels, closeLabel,
   } = usePlantGroupLabel();
 
   // Get selected groups for actions
@@ -164,8 +164,30 @@ export function PlantsByStrainExpanded({
   }
 
   async function handlePrintSelected() {
+    // If individual plants are selected, print those as plant tags
+    if (selectedPlantIds.size > 0) {
+      // Find the plants and their parent group
+      const allActivePlants: IndividualPlant[] = [];
+      let parentGroup: PlantGroup | null = null;
+      for (const sg of strainGroups) {
+        for (const g of sg.groups) {
+          const plants = await cultivationService.listIndividualPlants(g.id);
+          const matched = plants.filter(p => p.is_active && selectedPlantIds.has(p.id));
+          if (matched.length > 0) {
+            allActivePlants.push(...matched);
+            if (!parentGroup) parentGroup = g;
+          }
+        }
+      }
+      if (parentGroup && allActivePlants.length > 0) {
+        await openSelectedPlantLabels(allActivePlants, parentGroup);
+        setShowPrint(true);
+      }
+      return;
+    }
+    // If strains selected but no individual plants, print all plant tags for that strain group
     if (selectedGroups.length > 0) {
-      await openGroupLabel(selectedGroups[0]);
+      await openPlantLabels(selectedGroups[0]);
       setShowPrint(true);
     }
   }
@@ -325,18 +347,16 @@ export function PlantsByStrainExpanded({
       )}
 
       {/* Print Modal */}
-      {showPrint && labelData && (
-        <PlantGroupLabelPrintModal
-          isOpen={showPrint}
-          isLoading={labelIsLoading}
-          isPrinting={labelIsPrinting}
-          labelData={labelData}
-          logoDataUrl={logoDataUrl}
-          error={labelError}
-          onClose={() => { setShowPrint(false); closeLabel(); }}
-          onPrint={printLabels}
-        />
-      )}
+      <PlantGroupLabelPrintModal
+        isOpen={labelIsOpen}
+        isLoading={labelIsLoading}
+        isPrinting={labelIsPrinting}
+        labelData={labelData}
+        logoDataUrl={logoDataUrl}
+        error={labelError}
+        onClose={() => { setShowPrint(false); closeLabel(); }}
+        onPrint={printLabels}
+      />
     </div>
   );
 }
