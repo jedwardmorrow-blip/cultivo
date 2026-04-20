@@ -25,12 +25,14 @@ const STAGE_ICON: Record<string, typeof Scissors> = {
   buck: Scissors,
   trim_to_stock: Box,
   package_to_order: Package,
+  pack_to_stock: Package,
 };
 
 const STAGE_COLOR: Record<string, { bg: string; border: string; text: string; accent: string }> = {
   buck:             { bg: 'bg-amber-500/[0.06]', border: 'border-amber-500/20', text: 'text-amber-400', accent: 'bg-amber-500' },
   trim_to_stock:    { bg: 'bg-emerald-500/[0.06]', border: 'border-emerald-500/20', text: 'text-emerald-400', accent: 'bg-emerald-500' },
   package_to_order: { bg: 'bg-sky-500/[0.06]', border: 'border-sky-500/20', text: 'text-sky-400', accent: 'bg-sky-500' },
+  pack_to_stock:    { bg: 'bg-violet-500/[0.06]', border: 'border-violet-500/20', text: 'text-violet-400', accent: 'bg-violet-500' },
 };
 
 function formatG(g: number): string {
@@ -121,7 +123,7 @@ export function DispatchSessionModal({
           dispatch_item_id: dispatchItem.id,
         });
         sessionError = err;
-      } else if (stage === 'package_to_order') {
+      } else if (stage === 'package_to_order' || stage === 'pack_to_stock') {
         const { error: err } = await createPackagingSession({
           packager_name: staffName,
           packager_staff_id: staffId,

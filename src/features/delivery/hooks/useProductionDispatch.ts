@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type ProcessingStage = 'buck' | 'trim_to_stock' | 'package_to_order';
+export type ProcessingStage = 'buck' | 'trim_to_stock' | 'package_to_order' | 'pack_to_stock';
 export type TreatmentType =
   | 'hand_trim_jars'
   | 'machine_trim_flower'
@@ -95,6 +95,7 @@ export const PROCESSING_STAGE_LABELS: Record<ProcessingStage, string> = {
   buck: 'Buck',
   trim_to_stock: 'Trim to Stock',
   package_to_order: 'Package to Order',
+  pack_to_stock: 'Pack to Stock',
 };
 
 export const TREATMENT_TYPE_LABELS: Record<TreatmentType, string> = {
@@ -113,6 +114,7 @@ export const STAGE_TREATMENTS: Record<ProcessingStage, TreatmentType[]> = {
   buck: ['hand_spin_solid_spinner', 'machine_smalls_drum'],
   trim_to_stock: ['hand_trim_jars', 'machine_trim_flower', 'machine_trim_bulk'],
   package_to_order: ['jar_pack', 'mylar_pack', 'bulk_wholesale'],
+  pack_to_stock: ['jar_pack', 'mylar_pack', 'bulk_wholesale'],
 };
 
 // ─── Hook ───────────────────────────────────────────────────────────────────

@@ -245,7 +245,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
     // Packaged items don't make sense for stock build dispatch
     if (pkg.category.includes('packaged')) return;
 
-    const processingStage = getProcessingStageForCategory(pkg.category);
+    const processingStage = getProcessingStageForCategory(pkg.category, 'stock_build');
     if (!processingStage) return;
 
     const treatments = STAGE_TREATMENTS[processingStage as ProcessingStage];

@@ -17,6 +17,7 @@ const STAGE_STYLE: Record<string, { icon: typeof Scissors; color: string; bg: st
   buck:             { icon: Scissors, color: 'text-amber-400',   bg: 'bg-amber-500/[0.06]',   border: 'border-amber-500/20',   gradient: 'from-amber-500/10 to-transparent' },
   trim_to_stock:    { icon: Box,      color: 'text-emerald-400', bg: 'bg-emerald-500/[0.06]', border: 'border-emerald-500/20', gradient: 'from-emerald-500/10 to-transparent' },
   package_to_order: { icon: Package,  color: 'text-sky-400',     bg: 'bg-sky-500/[0.06]',     border: 'border-sky-500/20',     gradient: 'from-sky-500/10 to-transparent' },
+  pack_to_stock:    { icon: Package,  color: 'text-violet-400',  bg: 'bg-violet-500/[0.06]',  border: 'border-violet-500/20',  gradient: 'from-violet-500/10 to-transparent' },
 };
 
 function getStageStyle(stage: string) {
@@ -244,7 +245,7 @@ export function DispatchExecutionQueue() {
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <div className="flex items-center gap-1 border border-cult-dark-gray/60 rounded-xl p-1">
-          {(['all', 'buck', 'trim_to_stock', 'package_to_order'] as StageFilter[]).map((f) => (
+          {(['all', 'buck', 'trim_to_stock', 'package_to_order', 'pack_to_stock'] as StageFilter[]).map((f) => (
             <button
               key={f}
               type="button"

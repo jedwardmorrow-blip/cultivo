@@ -113,10 +113,15 @@ export function getNextAction(category: string): string | null {
   return null;
 }
 
-export function getProcessingStageForCategory(category: string): string | null {
+export type DispatchContext = 'order' | 'stock_build';
+
+export function getProcessingStageForCategory(
+  category: string,
+  context: DispatchContext = 'order',
+): string | null {
   if (category.includes('binned')) return 'buck';
   if (category.includes('bucked')) return 'trim_to_stock';
-  if (category.includes('bulk')) return 'package_to_order';
+  if (category.includes('bulk')) return context === 'stock_build' ? 'pack_to_stock' : 'package_to_order';
   return null;
 }
 
