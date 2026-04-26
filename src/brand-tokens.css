@@ -1,0 +1,224 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Cult Ops — Brand Direction (Counter-mockup)
+   Earned. Used. Quiet.
+   Working-instrument aesthetic — not "Tesla touchscreen", not "premium SaaS".
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&display=swap');
+
+:root {
+  /* ── Operator surface ────────────────────────────────────────── */
+  --op-canvas:      #0A0A0A;   /* near-black, locked */
+  --op-surface:     #111111;   /* one stop up from canvas */
+  --op-surface-2:   #161616;   /* two stops — for nested */
+  --op-line:        rgba(255,255,255,0.06);
+  --op-line-strong: rgba(255,255,255,0.12);
+
+  --op-ink:        #F5F4F1;    /* primary text — slightly warm white */
+  --op-ink-2:      rgba(245,244,241,0.62);
+  --op-ink-3:      rgba(245,244,241,0.40);
+  --op-ink-4:      rgba(245,244,241,0.22);
+
+  /* ── Brand accent — the only one ─────────────────────────────── */
+  --accent:        #E8E0D4;
+  --accent-press:  #D8CFC0;
+
+  /* ── Public surface ──────────────────────────────────────────── */
+  --pub-canvas:    #F4EFE6;     /* warm cream */
+  --pub-canvas-2:  #ECE5D7;     /* deeper cream for blocks */
+  --pub-ink:       #14141C;     /* navy ink */
+  --pub-ink-2:     rgba(20,20,28,0.62);
+  --pub-ink-3:     rgba(20,20,28,0.38);
+  --pub-line:      rgba(20,20,28,0.10);
+  --pub-line-strong: rgba(20,20,28,0.22);
+
+  /* ── Stage colors — functional markers only, never decoration ── */
+  --stage-clone:   #0EA5E9;
+  --stage-veg:     #10B981;
+  --stage-flower:  #F43F5E;
+  --stage-harvest: #F59E0B;
+  --stage-cure:    #8B5CF6;
+  --stage-package: #6366F1;
+  --stage-mother:  #D97706;
+
+  /* ── Status — semantic only ──────────────────────────────────── */
+  --status-ok:     #6EAA8D;
+  --status-warn:   #C8943A;
+  --status-bad:    #C56A6A;
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  --font-sans:    'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-serif:   'IBM Plex Serif', 'Iowan Old Style', Georgia, serif;
+
+  /* ── Radius — small, intentional ─────────────────────────────── */
+  --r-xs: 3px;
+  --r-sm: 5px;
+  --r-md: 8px;
+  --r-lg: 12px;
+}
+
+/* ═════════ Reset & base ═════════ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #1B1A18;       /* the meta-canvas — slight warmth, neither op nor pub */
+  color: var(--op-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═════════ Meta-document chrome ═════════
+   The wrapper around the artboards is itself part of the brief —
+   restrained, paper-like, evidence-of-thought. */
+
+.brief {
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 80px 56px 160px;
+  color: #E8E5DD;
+}
+
+.brief-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(232,229,221,0.55);
+  margin-bottom: 14px;
+}
+
+.brief-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: 0 0 24px;
+  color: #F5F2EA;
+  max-width: 22ch;
+}
+
+.brief-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.brief-standfirst {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.55;
+  color: rgba(232,229,221,0.78);
+  max-width: 68ch;
+  margin: 0 0 48px;
+}
+
+.brief-meta {
+  display: flex;
+  gap: 32px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(232,229,221,0.4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(232,229,221,0.1);
+  border-bottom: 1px solid rgba(232,229,221,0.1);
+  padding: 14px 0;
+  margin-bottom: 80px;
+}
+.brief-meta span strong {
+  color: rgba(232,229,221,0.7);
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+/* ═════════ Section labels (between artboards) ═════════ */
+
+.sect {
+  margin: 96px 0 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+}
+.sect-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(232,229,221,0.4);
+  text-transform: uppercase;
+  width: 80px;
+  flex-shrink: 0;
+}
+.sect-title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: #F5F2EA;
+  flex: 1;
+}
+.sect-title em { font-style: italic; color: var(--accent); }
+.sect-note {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(232,229,221,0.55);
+  max-width: 40ch;
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* ═════════ Artboard wrapper ═════════ */
+
+.artboard {
+  background: var(--op-canvas);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+  position: relative;
+}
+.artboard.is-public {
+  background: var(--pub-canvas);
+  color: var(--pub-ink);
+}
+.artboard-tag {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  z-index: 5;
+}
+.artboard.is-public .artboard-tag {
+  color: rgba(20,20,28,0.32);
+}
+
+/* ═════════ Closing section ═════════ */
+.brief-close {
+  margin: 120px 0 0;
+  padding: 56px 0 0;
+  border-top: 1px solid rgba(232,229,221,0.12);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 48px;
+}
+.brief-close-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(232,229,221,0.4);
+}
+.brief-close-body {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(232,229,221,0.82);
+  max-width: 68ch;
+}
+.brief-close-body em { font-style: italic; color: var(--accent); }
+.brief-close-body p + p { margin-top: 18px; }
