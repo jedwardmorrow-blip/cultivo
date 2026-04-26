@@ -231,7 +231,7 @@ export function Dashboard({
 
       {/* ── Footer ── */}
       <div className="text-center py-6 text-cult-text-faint text-xs font-light tracking-[1px] uppercase">
-        CULT OPS — Built by the operator, for operators · Syn-Ag Inc.
+        CULTIVO · Built by the operator, for operators · Syn-Ag Inc.
       </div>
     </div>
   );

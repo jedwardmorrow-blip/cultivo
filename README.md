@@ -1,6 +1,12 @@
-# Cult Cannabis Post-Production Management System
+# Cultivo
 
-A comprehensive post-production management system for cannabis cultivation and distribution operations.
+Cultivo is a closed-loop cultivation operations platform for cannabis. Operator-built, quietly designed.
+
+**Aesthetic.** Working-instrument: IBM Plex Sans + IBM Plex Mono on near-black, single warm-white accent, hairlines not glass, no editorial UI in product (the AI chat owns narrative).
+
+**First tenant.** Cult Cannabis. Operator name preserved across user-facing surfaces.
+
+**Architecture.** Parallel-frontend, shared-backend with cult-ops at Supabase project `fonreynkfeqywshijqpi`. See `CLAUDE.md` for the full contract: design system rules, persona contracts, session-start protocol, and bridge contracts to Claude Design.
 
 ## Quick Start
 

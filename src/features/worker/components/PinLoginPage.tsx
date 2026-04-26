@@ -83,12 +83,23 @@ export function PinLoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-xs">
-        {/* Logo / title */}
+        {/* Wordmark / title */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-cult-text-primary uppercase tracking-widest">
-            Cult Ops
+          <h1
+            className="text-cult-text-primary uppercase"
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+              fontSize: '24px',
+              letterSpacing: '0.16em',
+            }}
+          >
+            CULTIVO
           </h1>
-          <p className="text-cult-text-muted text-sm mt-1 uppercase tracking-wider">
+          <p
+            className="text-cult-text-muted mt-2 font-mono uppercase"
+            style={{ fontSize: '10px', letterSpacing: '0.18em' }}
+          >
             Worker Login
           </p>
         </div>

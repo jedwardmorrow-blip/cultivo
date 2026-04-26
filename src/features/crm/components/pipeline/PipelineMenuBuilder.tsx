@@ -83,7 +83,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
 
   const buildPlainText = useCallback(() => {
     const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const lines = [`CULT OPS \u2014 Order Menu`, `Date: ${today}`, ''];
+    const lines = [`CULTIVO \u00b7 Order Menu`, `Date: ${today}`, ''];
     activeItems.forEach(item => {
       const gs = GRADE_STYLES[item.grade];
       lines.push(`${item.strain} [${gs.label}]`);
@@ -107,7 +107,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
     const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const w = window.open('', '_blank');
     if (!w) return;
-    w.document.write(`<html><head><title>Cult Ops Menu</title>
+    w.document.write(`<html><head><title>Cultivo Menu</title>
       <style>
         body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }
         h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
@@ -117,7 +117,7 @@ export function PipelineMenuBuilder({ strains, onClose }: MenuBuilderProps) {
         .line { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
         .total { font-size: 20px; font-weight: 800; margin-top: 20px; padding-top: 16px; border-top: 2px solid #1a1a1a; display: flex; justify-content: space-between; }
       </style></head><body>`);
-    w.document.write(`<h1>CULT OPS</h1><h2>ORDER MENU \u00b7 ${today}</h2>`);
+    w.document.write(`<h1>CULTIVO</h1><h2>ORDER MENU \u00b7 ${today}</h2>`);
     activeItems.forEach(item => {
       w.document.write(`<div class="item"><div class="strain">${item.strain} (${GRADE_STYLES[item.grade].label})</div>`);
       PRODUCT_FORMATS.forEach(f => {

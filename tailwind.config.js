@@ -5,113 +5,123 @@ export default {
     extend: {
       colors: {
         cult: {
-          // ── Raw palette (aliased to semantic values — glass system) ──
-          black: 'rgba(10, 10, 10, 0.95)',
+          // ── Raw palette (kept for legacy usage; semantic tokens preferred) ──
+          black: 'var(--op-canvas)',
           white: '#FFFFFF',
           'off-white': '#F8F8F8',
-          'near-black': 'rgba(255, 255, 255, 0.04)',
-          graphite: 'rgba(255, 255, 255, 0.06)',
-          charcoal: 'rgba(255, 255, 255, 0.10)',
+          'near-black': 'var(--op-surface)',
+          graphite: 'var(--op-surface)',
+          charcoal: 'var(--op-surface-2)',
           'medium-gray': '#404040',
           'light-gray': '#999999',
           'lighter-gray': '#666666',
-          'dark-gray': 'rgba(255, 255, 255, 0.06)',
+          'dark-gray': 'var(--op-surface)',
           silver: '#A6A6A6',
-          red: '#DC4545',
-          green: '#10B981',
+          red: 'var(--status-bad)',
+          green: 'var(--status-ok)',
           'green-bright': '#34D399',
-          // ── Opaque palette (for modals, drawers, print, overlays that MUST block content behind) ──
+
+          // ── Opaque palette (kept for modal/print/overlay surfaces) ──
           'opaque-black': '#0A0A0A',
           'opaque-near-black': '#111111',
-          'opaque-graphite': '#1C1C1C',
+          'opaque-graphite': '#161616',
 
-          // ── Semantic Surface Tokens (translucent — glass system) ──
-          'surface': 'rgba(10, 10, 10, 0.95)',
-          'surface-inset': 'rgba(255, 255, 255, 0.02)',    // empty states, sunken containers
-          'surface-subtle': 'rgba(255, 255, 255, 0.03)',   // subtle list rows, faint cards
-          'surface-raised': 'rgba(255, 255, 255, 0.06)',
-          'surface-overlay': 'rgba(255, 255, 255, 0.08)',
-          'surface-active': 'rgba(255, 255, 255, 0.10)',   // active/selected states
-          'surface-sunken': 'rgba(0, 0, 0, 0.2)',
+          // ── Semantic Surface Tokens (now opaque, instrument-grade) ──
+          'surface': 'var(--op-surface)',
+          'surface-inset': 'var(--op-canvas)',
+          'surface-subtle': 'var(--op-surface)',
+          'surface-raised': 'var(--op-surface-2)',
+          'surface-overlay': 'var(--op-surface-2)',
+          'surface-active': 'var(--op-surface-2)',
+          'surface-sunken': 'var(--op-canvas)',
 
-          // ── Semantic Border Tokens (light reflections on glass) ──
-          'border-faint': 'rgba(255, 255, 255, 0.04)',     // dividers, empty state borders
-          'border-subtle': 'rgba(255, 255, 255, 0.06)',
-          'border': 'rgba(255, 255, 255, 0.10)',
-          'border-active': 'rgba(255, 255, 255, 0.12)',    // active tabs, selected items
-          'border-strong': 'rgba(255, 255, 255, 0.20)',
+          // ── Semantic Border Tokens (hairlines) ──
+          'border-faint': 'var(--op-line)',
+          'border-subtle': 'var(--op-line)',
+          'border': 'var(--op-line-strong)',
+          'border-active': 'var(--op-line-strong)',
+          'border-strong': 'var(--op-line-strong)',
 
-          // ── Semantic Text Tokens ──
-          'text-primary': '#FFFFFF',
-          'text-secondary': '#A6A6A6',
-          'text-muted': '#666666',
-          'text-faint': '#404040',
+          // ── Semantic Text Tokens (warm-white scale) ──
+          'text-primary': 'var(--op-ink)',
+          'text-secondary': 'var(--op-ink-2)',
+          'text-muted': 'var(--op-ink-3)',
+          'text-faint': 'var(--op-ink-4)',
 
-          // ── Interactive / Brand Tokens (warm white) ──
-          'accent': '#E8E0D4',
-          'accent-hover': '#F5EDE0',
+          // ── Interactive / Brand Tokens (warm white, single accent) ──
+          'accent': 'var(--accent)',
+          'accent-hover': 'var(--accent-press)',
           'accent-subtle': 'rgba(232, 224, 212, 0.6)',
-                      // Status Tokens
-                      'success': '#10B981',
-                      'success-bright': '#34D399',
-                      'success-muted': 'rgba(16, 185, 129, 0.12)',
-                      'danger': '#DC4545',
-                      'danger-muted': 'rgba(220, 69, 69, 0.12)',
-                      'warning': '#F59E0B',
-                      'warning-muted': 'rgba(245, 158, 11, 0.12)',
-                      'info': '#3B82F6',
-                      'info-muted': 'rgba(59, 130, 246, 0.12)',
-                      'pending': '#A78BFA',
-                      'pending-muted': 'rgba(167, 139, 250, 0.12)',
-                      // Cannabis Stage Colors
-                      'stage-clone': '#0EA5E9',
-                      'stage-veg': '#10B981',
-                      'stage-flower': '#F43F5E',
-                      'stage-harvest': '#F59E0B',
-                      'stage-cure': '#8B5CF6',
-                      'stage-package': '#6366F1',
-                      // Rosin Lab Stage Colors
-                      'stage-ff': '#06B6D4',
-                      'stage-wash': '#3B82F6',
-                      'stage-fd': '#94A3B8',
-                      'stage-hash': '#F59E0B',
-                      'stage-press': '#F97316',
-                      'stage-rosin': '#6366F1',
+
+          // ── Status Tokens (desaturated, instrument-grade) ──
+          'success': 'var(--status-ok)',
+          'success-bright': '#34D399',
+          'success-muted': 'rgba(110, 170, 141, 0.12)',
+          'danger': 'var(--status-bad)',
+          'danger-muted': 'rgba(197, 106, 106, 0.12)',
+          'warning': 'var(--status-warn)',
+          'warning-muted': 'rgba(200, 148, 58, 0.12)',
+          'info': '#3B82F6',
+          'info-muted': 'rgba(59, 130, 246, 0.12)',
+          'pending': '#A78BFA',
+          'pending-muted': 'rgba(167, 139, 250, 0.12)',
+
+          // ── Cannabis Stage Colors (functional markers only, never decoration) ──
+          'stage-clone': 'var(--stage-clone)',
+          'stage-veg': 'var(--stage-veg)',
+          'stage-flower': 'var(--stage-flower)',
+          'stage-harvest': 'var(--stage-harvest)',
+          'stage-cure': 'var(--stage-cure)',
+          'stage-package': 'var(--stage-package)',
+          'stage-mother': 'var(--stage-mother)',
+
+          // ── Rosin Lab Stage Colors (kept; aesthetic decision pending review) ──
+          'stage-ff': '#06B6D4',
+          'stage-wash': '#3B82F6',
+          'stage-fd': '#94A3B8',
+          'stage-hash': '#F59E0B',
+          'stage-press': '#F97316',
+          'stage-rosin': '#6366F1',
         },
       },
       fontFamily: {
-        sans: ['Montserrat', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Montserrat', 'Inter', 'sans-serif'],
+        sans: ['IBM Plex Sans', '-apple-system', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SF Mono', 'Menlo', 'monospace'],
+        display: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'h1': ['2.25rem', { lineHeight: '2.5rem', fontWeight: '700' }],
+        'h1': ['2.25rem', { lineHeight: '2.5rem', fontWeight: '600' }],
         'h2': ['1.5rem', { lineHeight: '2rem', fontWeight: '500' }],
         'h3': ['1.125rem', { lineHeight: '1.75rem', fontWeight: '500' }],
         'body': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '400' }],
-        'caption': ['0.75rem', { lineHeight: '1rem', fontWeight: '300' }],
+        'caption': ['0.75rem', { lineHeight: '1rem', fontWeight: '400' }],
       },
       borderRadius: {
-        'cult': '16px',
+        'cult': '12px',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(255, 255, 255, 0.1)',
-        'glow-strong': '0 0 30px rgba(255, 255, 255, 0.2)',
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
-        'glass-lg': '0 16px 48px rgba(0, 0, 0, 0.4)',
-        'glow-success': '0 0 20px rgba(16, 185, 129, 0.2)',
-        'glow-danger': '0 0 20px rgba(220, 69, 69, 0.2)',
-        'glow-warning': '0 0 20px rgba(245, 158, 11, 0.2)',
-        'glow-info': '0 0 20px rgba(59, 130, 246, 0.2)',
-        'glow-clone': '0 0 20px rgba(14, 165, 233, 0.15)',
-        'glow-veg': '0 0 20px rgba(16, 185, 129, 0.15)',
-        'glow-flower': '0 0 20px rgba(244, 63, 94, 0.15)',
-        'glow-harvest': '0 0 20px rgba(245, 158, 11, 0.15)',
-        'glow-accent': '0 0 12px rgba(232, 224, 212, 0.15)',
+        // Glass/glow shadows neutralized for working-instrument aesthetic.
+        // Components still using these classes render flat. Migrate to
+        // hairline borders (cult-border, cult-border-strong) over time.
+        'glow': 'none',
+        'glow-strong': 'none',
+        'glass': 'none',
+        'glass-lg': 'none',
+        'glow-success': 'none',
+        'glow-danger': 'none',
+        'glow-warning': 'none',
+        'glow-info': 'none',
+        'glow-clone': 'none',
+        'glow-veg': 'none',
+        'glow-flower': 'none',
+        'glow-harvest': 'none',
+        'glow-accent': 'none',
       },
       backdropBlur: {
-        'glass': '16px',
-        'glass-lg': '24px',
-        'glass-xl': '40px',
+        // Backdrop blur neutralized; surfaces are opaque.
+        'glass': '0',
+        'glass-lg': '0',
+        'glass-xl': '0',
       },
       animation: {
         'glitch': 'glitch 1s infinite',
@@ -132,12 +142,12 @@ export default {
       },
       keyframes: {
         pulseUrgentRed: {
-          '0%, 100%': { boxShadow: '0 0 5px rgba(220, 69, 69, 0.3)' },
-          '50%': { boxShadow: '0 0 20px rgba(220, 69, 69, 0.6)' }
+          '0%, 100%': { boxShadow: '0 0 5px rgba(197, 106, 106, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(197, 106, 106, 0.6)' }
         },
         pulseUrgentAmber: {
-          '0%, 100%': { boxShadow: '0 0 5px rgba(245, 158, 11, 0.3)' },
-          '50%': { boxShadow: '0 0 20px rgba(245, 158, 11, 0.6)' }
+          '0%, 100%': { boxShadow: '0 0 5px rgba(200, 148, 58, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(200, 148, 58, 0.6)' }
         },
         glitch: {
           '0%, 100%': { transform: 'translate(0)' },
@@ -166,7 +176,7 @@ export default {
         },
         statEmphasize: {
           '0%': { transform: 'scale(1)', boxShadow: 'none' },
-          '100%': { transform: 'scale(1.03)', boxShadow: '0 0 24px rgba(245, 158, 11, 0.15)' },
+          '100%': { transform: 'scale(1.03)', boxShadow: 'none' },
         },
         statRecede: {
           '0%': { opacity: '1' },
@@ -181,17 +191,17 @@ export default {
           '50%': { opacity: '0.6' },
         },
         glassShimmer: {
-          '0%': { backgroundPosition: '200% 0' },
-          '100%': { backgroundPosition: '-200% 0' },
+          '0%': { opacity: '1' },
+          '100%': { opacity: '1' },
         },
         numberRoll: {
           '0%': { transform: 'translateY(-8px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
         successPulse: {
-          '0%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)' },
-          '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 8px rgba(16, 185, 129, 0)' },
-          '100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)' },
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.02)' },
+          '100%': { transform: 'scale(1)' },
         },
       },
       transitionTimingFunction: {

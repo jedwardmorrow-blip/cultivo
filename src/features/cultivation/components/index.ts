@@ -48,3 +48,4 @@ export { PlantMoveSheet } from './PlantMoveSheet';
 export { RoomCapacityBar } from './RoomCapacityBar';
 export { HarvestPipeline } from './HarvestPipeline';
 export { PlantAuditPage } from './plant-audit';
+export { PerformanceLoop } from './performance-loop';
