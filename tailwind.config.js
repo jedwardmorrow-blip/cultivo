@@ -66,6 +66,13 @@ export default {
           'pending': '#A78BFA',
           'pending-muted': 'rgba(167, 139, 250, 0.12)',
 
+          // ── Distribution Zone Colors (functional markers only, never decoration) ──
+          'zone-local':        'var(--zone-local)',
+          'zone-east-valley':  'var(--zone-east-valley)',
+          'zone-west-valley':  'var(--zone-west-valley)',
+          'zone-north-valley': 'var(--zone-north-valley)',
+          'zone-other':        'var(--zone-other)',
+
           // ── Cannabis Stage Colors (functional markers only, never decoration) ──
           'stage-clone': 'var(--stage-clone)',
           'stage-veg': 'var(--stage-veg)',

@@ -31,22 +31,37 @@ export const staggerItem = {
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// ─── Zone Colors (hex for MapLibre) ────────────────────────────────────────
+// ─── Zone Colors ───────────────────────────────────────────────────────────
+// Hex values resolve --zone-* tokens (kept duplicated here only for MapLibre,
+// SVG, and other surfaces that cannot read CSS variables. See brand-tokens.css
+// for the canonical palette and usage rules.)
 
 export const ZONE_HEX: Record<string, string> = {
-  local: '#A6A6A6',
-  east_valley: '#2DD4BF',
-  west_valley: '#FBBF24',
-  tucson: '#38BDF8',
-  northern_az: '#FB7185',
+  local: '#B5A88B',
+  east_valley: '#B07670',
+  west_valley: '#5F7385',
+  northern_az: '#7A9678',
+  tucson: '#6B6B70',
+  other: '#6B6B70',
 };
 
 export const ZONE_LABELS: Record<string, string> = {
   local: 'Local',
   east_valley: 'East Valley',
   west_valley: 'West Valley',
-  tucson: 'Tucson',
-  northern_az: 'Northern AZ',
+  northern_az: 'North Valley',
+  tucson: 'Other',
+  other: 'Other',
+};
+
+// Token name (used as a class suffix on .zone-dot, etc.)
+export const ZONE_TOKEN: Record<string, string> = {
+  local: 'local',
+  east_valley: 'east-valley',
+  west_valley: 'west-valley',
+  northern_az: 'north-valley',
+  tucson: 'other',
+  other: 'other',
 };
 
 // ─── Facility ──────────────────────────────────────────────────────────────
