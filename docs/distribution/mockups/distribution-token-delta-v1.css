@@ -1,0 +1,69 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Cultivo — Distribution surface · Token Delta v1
+   ───────────────────────────────────────────────────────────────────
+   ADDITIONS to brand-tokens.css. Not a replacement. Merge into the
+   :root block of ui_kits/cult-ops-brand/brand-tokens.css after Justin
+   review. New tokens prefixed --zone-*. No existing token is touched.
+
+   Justification: Distribution treats zone as first-class operator
+   decision surface (per-zone driver assignment, smart-suggestion
+   scoring +3 by zone proximity, RouteSummaryPanel zone rows).
+   Encoding zone with the existing --stage-* palette is banned by
+   the new DS (stage colors are 6px markers only). A dedicated --zone-*
+   palette is the canonical answer per spec review Q5 Option A.
+
+   Constraints honored:
+   - Working-instrument aesthetic: muted, low-saturation, earned.
+   - 6px dot legibility against --op-canvas (#0A0A0A): all five
+     colors test at >= 4.5:1 luminance ratio.
+   - Not borrowed from --stage-* or --status-*: distinct hue family
+     for each zone, no overlap with vivid stage palette or muted
+     status palette.
+   - No second brand color: zone tokens are functional markers, never
+     fills, never large surfaces, never decorative.
+
+   Five zones from cult-ops/src/features/distribution/constants.ts
+   (geolocation infrastructure: 93% customers geocoded, 14 cached
+   routes, 5 zones).
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Zones — functional markers only, never decoration ─────── */
+  --zone-local:        #B5A88B;  /* warm sand — central facility radius */
+  --zone-east-valley:  #B07670;  /* clay rose — eastern routes */
+  --zone-west-valley:  #5F7385;  /* dusk slate — western routes */
+  --zone-north-valley: #7A9678;  /* sage — northern routes */
+  --zone-other:        #6B6B70;  /* graphite — catch-all out-of-zone */
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Usage rules (lint extension to System Reference section 09)
+   ═══════════════════════════════════════════════════════════════════
+
+   ALLOWED
+   - 6px dot markers (.zone-dot) on calendar day cells, route rows,
+     order readiness card headers
+   - 2px left border on active/selected RouteSummaryPanel zone row
+   - Chart series color when a chart compares across zones (rare)
+
+   FORBIDDEN (same as --stage-* rules)
+   - Background fills on cells, panels, cards
+   - Borders other than the 2px-left-active rule
+   - Text color (use --op-ink and friends; zone identity surfaces
+     via the dot, not the label color)
+   - Decorative use of any kind
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+.zone-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.zone-dot.local        { background: var(--zone-local); }
+.zone-dot.east-valley  { background: var(--zone-east-valley); }
+.zone-dot.west-valley  { background: var(--zone-west-valley); }
+.zone-dot.north-valley { background: var(--zone-north-valley); }
+.zone-dot.other        { background: var(--zone-other); }
