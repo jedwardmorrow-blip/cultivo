@@ -1,5 +1,22 @@
+/**
+ * DistributionCommandCenter — v2 container.
+ *
+ * Layout (1366 landscape):
+ *   - Header: title + OverdueChip + KpiStrip (A Hairline)
+ *   - Bento (3fr / 2fr):
+ *       primary  → calendar | map | unscheduled (view-switch driven)
+ *       secondary → mini-cal · routes · upstream readiness · in-production
+ *                   When primary = map, mini-cal moves to secondary head
+ *                   and ViewSwitch lives there as a tile.
+ *                   When primary = calendar, ViewSwitch lives in the
+ *                   calendar header (next to month label).
+ *   - DayDetailStrip below (B Gapped card list, auto-fill columns)
+ *
+ * Portrait collapse: under 1100px wide the bento collapses to single column
+ * (primary above secondary). The DayDetailStrip stays one column.
+ */
+
 import { useState, useCallback, useMemo } from 'react';
-import { Zap } from 'lucide-react';
 import { LayoutGroup, AnimatePresence, motion } from 'framer-motion';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import { getRouteZoneId } from '@/features/delivery/utils';
@@ -7,12 +24,7 @@ import { QuickDispatchModal } from '@/features/delivery/components/QuickDispatch
 import { PageSkeleton } from '@/shared/components';
 import { useDistributionData } from '../hooks/useDistributionData';
 import { useDriverAssignments } from '../hooks/useDriverAssignments';
-import {
-  type FocusedCard,
-  springTransition,
-  fadeInVariants,
-  formatDateToLocal,
-} from '../constants';
+import { type FocusedCard, formatDateToLocal } from '../constants';
 
 import { DistributionKpiStrip } from './DistributionKpiStrip';
 import { DeliveryCalendarGrid } from './DeliveryCalendarGrid';
@@ -22,15 +34,23 @@ import { DayDetailStrip } from './DayDetailStrip';
 import { UnscheduledCompact, UnscheduledExpanded } from './UnscheduledPanel';
 import { RouteSummaryPanel } from './RouteSummaryPanel';
 import { InProductionPanel } from './InProductionPanel';
+import { UpstreamReadinessPanel } from './UpstreamReadinessPanel';
+import { OverdueChip } from './OverdueChip';
+import { ViewSwitch, type PrimaryView } from './ViewSwitch';
+
+const fadeIn = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+};
 
 export function DistributionCommandCenter() {
-  // ─── Data ──────────────────────────────────────────────────────────────
   const data = useDistributionData();
 
-  // ─── UI State ──────────────────────────────────────────────────────────
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [focusedCard, setFocusedCard] = useState<FocusedCard>(null);
+  const [primaryView, setPrimaryView] = useState<PrimaryView>('calendar');
   const [docFilterActive, setDocFilterActive] = useState(false);
   const [showQuickDispatch, setShowQuickDispatch] = useState(false);
   const [highlightedOrderId, setHighlightedOrderId] = useState<string | null>(null);
@@ -39,7 +59,7 @@ export function DistributionCommandCenter() {
   const [draggedOrder, setDraggedOrder] = useState<CalendarOrder | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
 
-  // Month range for driver assignments
+  // Month range
   const monthStart = useMemo(() => {
     const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     return formatDateToLocal(d);
@@ -51,13 +71,22 @@ export function DistributionCommandCenter() {
 
   const drivers = useDriverAssignments(monthStart, monthEnd);
 
-  // ─── Derived ───────────────────────────────────────────────────────────
+  // Dates with overdue documents — surfaces calendar/mini-cal --status-bad rule
+  const overdueDates = useMemo(() => {
+    const set = new Set<string>();
+    for (const o of data.ordersWithOverdueDocs) {
+      if (o.requested_delivery_date) set.add(o.requested_delivery_date);
+    }
+    return set;
+  }, [data.ordersWithOverdueDocs]);
 
+  // Selected day orders (drives strip + map highlight)
   const selectedDayOrders = useMemo(
     () => (selectedDate ? data.ordersByDate.get(selectedDate) || [] : []),
     [selectedDate, data.ordersByDate],
   );
 
+  // RouteSummaryPanel orders fall back to today when no date selected
   const routeSummaryOrders = useMemo(() => {
     if (selectedDate) return selectedDayOrders;
     return data.ordersByDate.get(data.todayStr) || [];
@@ -68,10 +97,10 @@ export function DistributionCommandCenter() {
     if (!draggedOrder) return new Set<string>();
     const suggestions = new Set<string>();
     const draggedZoneId = getRouteZoneId(draggedOrder.customer_lat, draggedOrder.customer_lon);
-
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    const { year, month } = { year: currentDate.getFullYear(), month: currentDate.getMonth() };
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const scored: Array<{ dateStr: string; score: number }> = [];
@@ -81,40 +110,39 @@ export function DistributionCommandCenter() {
       const dateStr = formatDateToLocal(d);
       const dayOrders = data.ordersByDate.get(dateStr) || [];
       let score = 0;
-
       const dayZoneIds = new Set(dayOrders.map((o) => getRouteZoneId(o.customer_lat, o.customer_lon)));
       if (dayZoneIds.has(draggedZoneId) && dayOrders.length > 0) score += 3;
       if (draggedOrder.preferred_delivery_day) {
-        const dow = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][d.getDay()];
+        const dow = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][d.getDay()];
         if (dow === draggedOrder.preferred_delivery_day.toLowerCase()) score += 2;
       }
       if (dayOrders.length === 0) score += 1;
       else if (dayOrders.length <= 3) score += 0.5;
-
       if (score >= 2) scored.push({ dateStr, score });
     }
-
     scored.sort((a, b) => b.score - a.score);
     scored.slice(0, 3).forEach((s) => suggestions.add(s.dateStr));
     return suggestions;
   }, [draggedOrder, currentDate, data.ordersByDate]);
 
-  // ─── Handlers ──────────────────────────────────────────────────────────
-
-  const toggleCard = useCallback((card: FocusedCard) => {
-    setFocusedCard((prev) => (prev === card ? null : card));
-  }, []);
-
+  // ─── Handlers ─────────────────────────────────────────────────────────
   const handleSelectDate = useCallback((date: string | null) => {
     setSelectedDate(date);
     setDocFilterActive(false);
     setHighlightedOrderId(null);
+    if (date) setPrimaryView('calendar'); // mini-cal click swaps back
   }, []);
 
   const handleShippingTodayClick = useCallback(() => {
     setSelectedDate(data.todayStr);
     setDocFilterActive(false);
+    setPrimaryView('calendar');
   }, [data.todayStr]);
+
+  const handleOverdueChipClick = useCallback(() => {
+    setDocFilterActive((v) => !v);
+    setSelectedDate(null);
+  }, []);
 
   const handleDocsPendingClick = useCallback(() => {
     setDocFilterActive((prev) => !prev);
@@ -122,8 +150,8 @@ export function DistributionCommandCenter() {
   }, [docFilterActive]);
 
   const handleUnscheduledClick = useCallback(() => {
-    toggleCard('unscheduled');
-  }, [toggleCard]);
+    setPrimaryView((v) => (v === 'unscheduled' ? 'calendar' : 'unscheduled'));
+  }, []);
 
   const handlePinClick = useCallback((orderId: string) => {
     setHighlightedOrderId(orderId);
@@ -167,57 +195,91 @@ export function DistributionCommandCenter() {
     setDragOverDate(null);
   }, []);
 
-  // ─── Render ────────────────────────────────────────────────────────────
+  const _focusedCard: FocusedCard = useMemo(() => {
+    if (primaryView === 'map') return 'map';
+    if (primaryView === 'unscheduled') return 'unscheduled';
+    return null;
+  }, [primaryView]);
 
-  if (data.loading) {
-    return <PageSkeleton variant="table" />;
-  }
+  if (data.loading) return <PageSkeleton variant="table" />;
 
+  // ─── Render ───────────────────────────────────────────────────────────
   return (
-    <div onDragEnd={handleDragEnd}>
-      {/* KPI Strip */}
-      <DistributionKpiStrip
-        shippingToday={data.shippingToday}
-        docsPending={data.docsPending}
-        docsOverdue={data.docsOverdue}
-        unscheduledCount={data.unscheduledCount}
-        monthRevenue={data.monthRevenue}
-        todayZones={data.todayZones}
-        docFilterActive={docFilterActive}
-        onShippingTodayClick={handleShippingTodayClick}
-        onDocsPendingClick={handleDocsPendingClick}
-        onUnscheduledClick={handleUnscheduledClick}
-      />
+    <div onDragEnd={handleDragEnd} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Header: title (left) + overdue chip + kpi strip (right) */}
+      <header
+        className="distribution-header"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '240px 1fr',
+          gap: 24,
+          alignItems: 'center',
+        }}
+      >
+        <div>
+          <div
+            className="font-mono uppercase"
+            style={{
+              fontSize: 10,
+              letterSpacing: '0.18em',
+              color: 'var(--op-ink-3)',
+              marginBottom: 4,
+            }}
+          >
+            Cultivo · Operations
+          </div>
+          <h1
+            className="font-sans"
+            style={{
+              fontSize: 18,
+              fontWeight: 500,
+              letterSpacing: '-0.005em',
+              color: 'var(--op-ink)',
+              margin: 0,
+            }}
+          >
+            Distribution
+          </h1>
+        </div>
 
-      {/* Quick Dispatch — always accessible */}
-      <div className="flex justify-end mb-3">
-        <button
-          onClick={() => setShowQuickDispatch(true)}
-          className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-xl
-            bg-[#E8E0D4]/10 text-[#E8E0D4] border border-[#E8E0D4]/20
-            hover:bg-[#E8E0D4]/15 hover:border-[#E8E0D4]/30 transition-all
-            shadow-[0_0_12px_rgba(232,224,212,0.06)]"
+        <div
+          className="distribution-header-right"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr',
+            gap: 24,
+            alignItems: 'center',
+          }}
         >
-          <Zap className="w-3.5 h-3.5" />
-          Quick Dispatch
-        </button>
-      </div>
+          <OverdueChip
+            count={data.docsOverdue}
+            active={docFilterActive}
+            onClick={handleOverdueChipClick}
+          />
+          <DistributionKpiStrip
+            shippingToday={data.shippingToday}
+            docsPending={data.docsPending}
+            docsOverdue={data.docsOverdue}
+            unscheduledCount={data.unscheduledCount}
+            monthRevenue={data.monthRevenue}
+            todayZones={data.todayZones}
+            docFilterActive={docFilterActive}
+            shippingTodayActive={selectedDate === data.todayStr}
+            onShippingTodayClick={handleShippingTodayClick}
+            onDocsPendingClick={handleDocsPendingClick}
+            onUnscheduledClick={handleUnscheduledClick}
+          />
+        </div>
+      </header>
 
-      {/* Main Bento Layout */}
+      {/* Bento (3fr / 2fr) */}
       <LayoutGroup>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          {/* Primary Panel (3/5) */}
-          <div className="lg:col-span-3" style={{ minHeight: '500px' }}>
+        <div className="distribution-bento">
+          {/* Primary panel */}
+          <div className="distribution-primary">
             <AnimatePresence mode="wait" initial={false}>
-              {focusedCard === 'map' ? (
-                <motion.div
-                  key="panel-map"
-                  initial={fadeInVariants.initial}
-                  animate={fadeInVariants.animate}
-                  exit={fadeInVariants.exit}
-                  transition={fadeInVariants.transition}
-                  className="h-full"
-                >
+              {primaryView === 'map' ? (
+                <motion.div key="panel-map" {...fadeIn} style={{ height: '100%' }}>
                   <DistributionMap
                     expanded
                     orders={data.allOrders}
@@ -225,29 +287,15 @@ export function DistributionCommandCenter() {
                     onPinClick={handlePinClick}
                   />
                 </motion.div>
-              ) : focusedCard === 'unscheduled' ? (
-                <motion.div
-                  key="panel-unscheduled"
-                  initial={fadeInVariants.initial}
-                  animate={fadeInVariants.animate}
-                  exit={fadeInVariants.exit}
-                  transition={fadeInVariants.transition}
-                  className="h-full"
-                >
+              ) : primaryView === 'unscheduled' ? (
+                <motion.div key="panel-unscheduled" {...fadeIn} style={{ height: '100%' }}>
                   <UnscheduledExpanded
                     orders={data.unscheduledOrders}
                     onDragStart={handleDragStart}
                   />
                 </motion.div>
               ) : (
-                <motion.div
-                  key="panel-calendar"
-                  initial={fadeInVariants.initial}
-                  animate={fadeInVariants.animate}
-                  exit={fadeInVariants.exit}
-                  transition={fadeInVariants.transition}
-                  className="h-full"
-                >
+                <motion.div key="panel-calendar" {...fadeIn} style={{ height: '100%' }}>
                   <DeliveryCalendarGrid
                     currentDate={currentDate}
                     onMonthChange={setCurrentDate}
@@ -258,45 +306,82 @@ export function DistributionCommandCenter() {
                     draggedOrder={draggedOrder}
                     dragOverDate={dragOverDate}
                     suggestedDates={suggestedDates}
+                    overdueDates={overdueDates}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     dimmed={docFilterActive}
                     getDriverName={(date) => drivers.getDriverForDate(date)?.staffName || null}
+                    headerExtras={
+                      <ViewSwitch active={primaryView} onChange={setPrimaryView} compact />
+                    }
                   />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Secondary Panel (2/5) */}
-          <div className="lg:col-span-2 space-y-3">
-            {focusedCard === 'map' ? (
-              // Calendar mini when map is expanded
+          {/* Secondary panel */}
+          <aside className="distribution-secondary">
+            {primaryView === 'map' && (
+              <>
+                <DeliveryCalendarMini
+                  currentDate={currentDate}
+                  onMonthChange={setCurrentDate}
+                  ordersByDate={data.ordersByDate}
+                  selectedDate={selectedDate}
+                  onSelectDate={handleSelectDate}
+                  overdueDates={overdueDates}
+                />
+                {/* ViewSwitch tile: present in map mode */}
+                <div
+                  style={{
+                    background: 'var(--op-surface)',
+                    border: '1px solid var(--op-line)',
+                    borderRadius: 'var(--r-md)',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span
+                    className="font-mono uppercase"
+                    style={{ fontSize: 9, letterSpacing: '0.16em', color: 'var(--op-ink-3)' }}
+                  >
+                    Primary view
+                  </span>
+                  <ViewSwitch active={primaryView} onChange={setPrimaryView} compact />
+                </div>
+              </>
+            )}
+
+            {primaryView === 'unscheduled' && (
               <DeliveryCalendarMini
                 currentDate={currentDate}
                 onMonthChange={setCurrentDate}
                 ordersByDate={data.ordersByDate}
                 selectedDate={selectedDate}
                 onSelectDate={handleSelectDate}
-                onClick={() => toggleCard('map')}
+                overdueDates={overdueDates}
               />
-            ) : (
-              // Map compact when calendar is primary
+            )}
+
+            {primaryView === 'calendar' && (
               <DistributionMap
                 expanded={false}
                 orders={data.allOrders}
                 selectedDayOrders={selectedDayOrders}
                 onPinClick={handlePinClick}
-                onClick={() => toggleCard('map')}
+                onClick={() => setPrimaryView('map')}
               />
             )}
 
-            {focusedCard !== 'unscheduled' && (
+            {primaryView !== 'unscheduled' && (
               <UnscheduledCompact
                 orders={data.unscheduledOrders}
                 isActive={false}
-                onClick={() => toggleCard('unscheduled')}
+                onClick={() => setPrimaryView('unscheduled')}
                 onDragStart={handleDragStart}
               />
             )}
@@ -309,8 +394,10 @@ export function DistributionCommandCenter() {
               onAssignDriver={drivers.assignDriver}
             />
 
+            <UpstreamReadinessPanel />
+
             <InProductionPanel />
-          </div>
+          </aside>
         </div>
       </LayoutGroup>
 
@@ -325,7 +412,7 @@ export function DistributionCommandCenter() {
         onReload={data.reload}
         highlightedOrderId={highlightedOrderId}
         docFilterMode={docFilterActive}
-        docFilterOrders={docFilterActive ? data.ordersNeedingDocs : undefined}
+        docFilterOrders={docFilterActive ? data.ordersWithOverdueDocs : undefined}
       />
 
       {/* Quick Dispatch Modal */}
@@ -334,6 +421,34 @@ export function DistributionCommandCenter() {
         onClose={() => setShowQuickDispatch(false)}
         onDispatched={data.reload}
       />
+
+      {/* Container layout + portrait collapse */}
+      <style>{`
+        .distribution-bento {
+          display: grid;
+          grid-template-columns: 3fr 2fr;
+          gap: 16px;
+        }
+        .distribution-primary,
+        .distribution-secondary {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        @media (max-width: 1100px) {
+          .distribution-bento {
+            grid-template-columns: 1fr;
+          }
+          .distribution-header {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .distribution-header-right {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

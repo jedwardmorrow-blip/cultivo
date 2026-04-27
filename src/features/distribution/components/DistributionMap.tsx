@@ -1,3 +1,11 @@
+/**
+ * DistributionMap — B Gapped media container with hairline interior
+ * overlays. CartoDB dark raster tiles. Active route polyline in --accent
+ * solid; inactive routes in --op-line dashed. Customer pins use the
+ * --zone-* palette and are sized by total order amount. Facility marker
+ * is a rotated diamond in --accent. No fills, no glass, no glow shadows.
+ */
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -5,16 +13,14 @@ import { getRouteZoneId } from '@/features/delivery/utils';
 import { getOrCalculateRoute, type Coordinate } from '@/features/delivery/services/routing.service';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import {
-  GLASS,
-  GLASS_ELEVATED,
-  GLASS_HOVER,
   FACILITY_CENTER,
   AZ_BOUNDS,
   ZONE_HEX,
   ZONE_LABELS,
 } from '../constants';
 
-// ─── Dark style with brighter streets ──────────────────────────────────────
+const ACCENT_HEX = '#E8E0D4';
+const OP_LINE_RGBA = 'rgba(255,255,255,0.16)';
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -38,16 +44,14 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
       minzoom: 0,
       maxzoom: 19,
       paint: {
-        'raster-brightness-min': 0.08,
-        'raster-brightness-max': 0.85,
-        'raster-contrast': 0.15,
-        'raster-saturation': -0.3,
+        'raster-brightness-min': 0.06,
+        'raster-brightness-max': 0.7,
+        'raster-contrast': 0.1,
+        'raster-saturation': -0.5,
       },
     },
   ],
 };
-
-// ─── Types ─────────────────────────────────────────────────────────────────
 
 interface DistributionMapProps {
   expanded: boolean;
@@ -57,7 +61,7 @@ interface DistributionMapProps {
   onClick?: () => void;
 }
 
-// ─── Polyline decoder (ORS encoded polyline → [lat, lng] pairs) ────────────
+// ─── Polyline decoder ──────────────────────────────────────────────────────
 
 function decodePolyline(encoded: string): [number, number][] {
   const coordinates: [number, number][] = [];
@@ -65,7 +69,6 @@ function decodePolyline(encoded: string): [number, number][] {
   const len = encoded.length;
   let lat = 0;
   let lng = 0;
-
   while (index < len) {
     let b: number;
     let shift = 0;
@@ -76,7 +79,6 @@ function decodePolyline(encoded: string): [number, number][] {
       shift += 5;
     } while (b >= 0x20);
     lat += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-
     shift = 0;
     result = 0;
     do {
@@ -85,13 +87,12 @@ function decodePolyline(encoded: string): [number, number][] {
       shift += 5;
     } while (b >= 0x20);
     lng += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-
     coordinates.push([lat / 1e5, lng / 1e5]);
   }
   return coordinates;
 }
 
-// ─── Route line helpers ────────────────────────────────────────────────────
+// ─── Route chains ──────────────────────────────────────────────────────────
 
 const FACILITY_ID = 'facility';
 const FACILITY_COORDS: Coordinate = { latitude: FACILITY_CENTER[1], longitude: FACILITY_CENTER[0] };
@@ -101,16 +102,13 @@ interface RouteStop {
   lat: number;
   lon: number;
 }
-
 interface RouteChain {
   zoneId: string;
-  color: string;
-  straightLineCoords: [number, number][]; // [lng, lat] — immediate fallback
-  stops: RouteStop[]; // for async route fetching
+  straightLineCoords: [number, number][];
+  stops: RouteStop[];
 }
 
 function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
-  // Group orders by zone, deduping by customer
   const zoneGroups = new Map<string, RouteStop[]>();
   const seen = new Set<string>();
   for (const o of dayOrders) {
@@ -121,69 +119,37 @@ function buildRouteChains(dayOrders: CalendarOrder[]): RouteChain[] {
     if (!zoneGroups.has(zoneId)) zoneGroups.set(zoneId, []);
     zoneGroups.get(zoneId)!.push({ customerId: o.customer_id, lat: o.customer_lat, lon: o.customer_lon });
   }
-
   const chains: RouteChain[] = [];
   for (const [zoneId, stops] of zoneGroups) {
-    // Sort by distance from facility (nearest first)
     const sorted = [...stops].sort((a, b) => {
       const distA = Math.hypot(a.lat - FACILITY_CENTER[1], a.lon - FACILITY_CENTER[0]);
       const distB = Math.hypot(b.lat - FACILITY_CENTER[1], b.lon - FACILITY_CENTER[0]);
       return distA - distB;
     });
-
-    // Straight-line fallback coords
     const straightLineCoords: [number, number][] = [FACILITY_CENTER];
-    for (const stop of sorted) {
-      straightLineCoords.push([stop.lon, stop.lat]);
-    }
-
-    chains.push({
-      zoneId,
-      color: ZONE_HEX[zoneId] || '#A6A6A6',
-      straightLineCoords,
-      stops: sorted,
-    });
+    for (const stop of sorted) straightLineCoords.push([stop.lon, stop.lat]);
+    chains.push({ zoneId, straightLineCoords, stops: sorted });
   }
-
   return chains;
 }
 
-// Fetch real road geometry for an entire chain: facility → stop1 → stop2 → ...
 async function fetchChainGeometry(stops: RouteStop[]): Promise<[number, number][] | null> {
   try {
     const allCoords: [number, number][] = [];
-
-    // Build the full stop list: facility first, then all stops
     const fullStops: { id: string; coords: Coordinate }[] = [
       { id: FACILITY_ID, coords: FACILITY_COORDS },
       ...stops.map((s) => ({ id: s.customerId, coords: { latitude: s.lat, longitude: s.lon } })),
     ];
-
-    // Fetch geometry for each segment
     for (let i = 0; i < fullStops.length - 1; i++) {
       const origin = fullStops[i];
       const dest = fullStops[i + 1];
-
-      const result = await getOrCalculateRoute(
-        origin.id,
-        dest.id,
-        origin.coords,
-        dest.coords,
-      );
-
+      const result = await getOrCalculateRoute(origin.id, dest.id, origin.coords, dest.coords);
       if (result.geometry) {
-        const geomStr = typeof result.geometry === 'string'
-          ? result.geometry
-          : String(result.geometry);
-
+        const geomStr = typeof result.geometry === 'string' ? result.geometry : String(result.geometry);
         const decoded = decodePolyline(geomStr);
-        // Decoder returns [lat, lng], MapLibre needs [lng, lat]
-        for (const [lat, lng] of decoded) {
-          allCoords.push([lng, lat]);
-        }
+        for (const [lat, lng] of decoded) allCoords.push([lng, lat]);
       }
     }
-
     return allCoords.length > 2 ? allCoords : null;
   } catch (err) {
     console.warn('Failed to fetch chain geometry:', err);
@@ -208,6 +174,16 @@ export function DistributionMap({
 
   const hasSelectedDay = selectedDayOrders.length > 0;
 
+  // ─── Pin sizing helper: customer's total amount across all orders → radius
+  const customerAmounts = useRef<Map<string, number>>(new Map());
+  customerAmounts.current = (() => {
+    const m = new Map<string, number>();
+    for (const o of orders) {
+      m.set(o.customer_id, (m.get(o.customer_id) || 0) + o.total_amount);
+    }
+    return m;
+  })();
+
   // ─── Initialize map ────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return;
@@ -224,27 +200,21 @@ export function DistributionMap({
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    // Facility marker — diamond shape
+    // Facility marker — rotated diamond, --accent
     const facilityEl = document.createElement('div');
     facilityEl.style.cssText =
-      'width:18px;height:18px;border-radius:3px;transform:rotate(45deg);' +
-      'background:#E8E0D4;border:2px solid white;' +
-      'box-shadow:0 0 16px rgba(232,224,212,0.5),0 2px 8px rgba(0,0,0,0.5);';
-    new maplibregl.Marker({ element: facilityEl })
-      .setLngLat(FACILITY_CENTER)
-      .addTo(map);
+      'width:18px;height:18px;transform:rotate(45deg);' +
+      `background:${ACCENT_HEX};` +
+      'box-shadow: inset 0 0 0 4px #0A0A0A;';
+    new maplibregl.Marker({ element: facilityEl }).setLngLat(FACILITY_CENTER).addTo(map);
 
     map.on('load', () => {
       setMapReady(true);
       map.resize();
     });
-
-    map.on('error', (e) => {
-      console.error('MapLibre error:', e.error);
-    });
+    map.on('error', (e) => console.error('MapLibre error:', e.error));
 
     mapRef.current = map;
-
     return () => {
       setMapReady(false);
       map.remove();
@@ -258,7 +228,6 @@ export function DistributionMap({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
     if (popupRef.current) {
@@ -266,12 +235,12 @@ export function DistributionMap({
       popupRef.current = null;
     }
 
-    // Dedupe customers, keeping full order details for tooltips
     const CLOSED = new Set(['delivered', 'completed', 'cancelled']);
     interface CustomerPin {
       lat: number; lon: number; name: string; zoneId: string;
       orderIds: string[]; highlighted: boolean;
       activeOrders: { orderNumber: string; deliveryDate: string | null; status: string }[];
+      totalAmount: number;
     }
     const customerMap = new Map<string, CustomerPin>();
     const highlightedIds = new Set(selectedDayOrders.map((o) => o.id));
@@ -283,85 +252,72 @@ export function DistributionMap({
       const isActive = !CLOSED.has(o.status);
       if (existing) {
         existing.orderIds.push(o.id);
+        existing.totalAmount += o.total_amount;
         if (highlightedIds.has(o.id)) existing.highlighted = true;
         if (isActive) {
-          existing.activeOrders.push({
-            orderNumber: o.order_number,
-            deliveryDate: o.requested_delivery_date,
-            status: o.status,
-          });
+          existing.activeOrders.push({ orderNumber: o.order_number, deliveryDate: o.requested_delivery_date, status: o.status });
         }
       } else {
         customerMap.set(key, {
-          lat: o.customer_lat,
-          lon: o.customer_lon,
-          name: o.customer_name,
+          lat: o.customer_lat, lon: o.customer_lon, name: o.customer_name,
           zoneId: getRouteZoneId(o.customer_lat, o.customer_lon),
-          orderIds: [o.id],
-          highlighted: highlightedIds.has(o.id),
-          activeOrders: isActive ? [{
-            orderNumber: o.order_number,
-            deliveryDate: o.requested_delivery_date,
-            status: o.status,
-          }] : [],
+          orderIds: [o.id], highlighted: highlightedIds.has(o.id),
+          activeOrders: isActive ? [{ orderNumber: o.order_number, deliveryDate: o.requested_delivery_date, status: o.status }] : [],
+          totalAmount: o.total_amount,
         });
       }
     }
 
+    // Compute amount range for sizing
+    const amounts = Array.from(customerMap.values()).map((c) => c.totalAmount);
+    const maxAmount = Math.max(1, ...amounts);
+
     for (const [, c] of customerMap) {
       const isHighlighted = hasSelectedDay ? c.highlighted : true;
-      const color = ZONE_HEX[c.zoneId] || '#A6A6A6';
+      const color = ZONE_HEX[c.zoneId] || ZONE_HEX.other;
 
-      // Selected day pins: large, bright, glowing ring
-      // Unselected pins (no day selected): medium, visible
-      // Dimmed pins (day selected but not this pin): small, very faint
+      // Size proportional to amount, 5–14px
+      const baseSize = Math.max(5, Math.min(14, 5 + Math.round((c.totalAmount / maxAmount) * 9)));
       const size = hasSelectedDay
-        ? (isHighlighted ? 18 : 8)
-        : 14;
-      const opacity = hasSelectedDay
-        ? (isHighlighted ? 1 : 0.12)
-        : 0.85;
-      const borderWidth = isHighlighted && hasSelectedDay ? 3 : 2;
-      const glowSize = isHighlighted && hasSelectedDay ? 12 : 0;
+        ? (isHighlighted ? Math.max(10, baseSize) : Math.max(4, Math.round(baseSize * 0.6)))
+        : baseSize;
+      const opacity = hasSelectedDay ? (isHighlighted ? 1 : 0.4) : 0.85;
 
       const el = document.createElement('div');
       el.style.cssText =
         `width:${size}px;height:${size}px;border-radius:50%;` +
-        `background:${color};border:${borderWidth}px solid rgba(255,255,255,0.9);` +
+        `background:${color};` +
         `opacity:${opacity};` +
-        `box-shadow:0 0 ${glowSize}px ${color},0 0 ${glowSize * 2}px ${color}44,0 2px 6px rgba(0,0,0,0.5);` +
+        (isHighlighted && hasSelectedDay
+          ? `box-shadow: 0 0 0 1.5px ${ACCENT_HEX};`
+          : '') +
         'cursor:pointer;';
 
       el.addEventListener('mouseenter', () => {
         if (popupRef.current) popupRef.current.remove();
-
-        // Build order rows for tooltip
         const orderRows = c.activeOrders.length > 0
           ? c.activeOrders.slice(0, 5).map((ao) => {
               const dateStr = ao.deliveryDate
                 ? new Date(ao.deliveryDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                 : 'No date';
               return `<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-top:1px solid rgba(255,255,255,0.06);">
-                <span style="font-family:monospace;color:#E8E0D4;font-size:11px;">${ao.orderNumber}</span>
-                <span style="color:#A6A6A6;font-size:11px;">${dateStr}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;color:${ACCENT_HEX};font-size:11px;">${ao.orderNumber}</span>
+                <span style="color:rgba(245,244,241,0.40);font-size:11px;font-family:'IBM Plex Mono',monospace;">${dateStr}</span>
               </div>`;
             }).join('')
-          : '<div style="color:#666;font-size:11px;padding-top:3px;">No active orders</div>';
+          : '<div style="color:rgba(245,244,241,0.40);font-size:11px;padding-top:3px;font-family:\'IBM Plex Mono\',monospace;">No active orders</div>';
 
         const moreText = c.activeOrders.length > 5
-          ? `<div style="color:#666;font-size:10px;padding-top:2px;">+${c.activeOrders.length - 5} more</div>`
+          ? `<div style="color:rgba(245,244,241,0.40);font-size:10px;padding-top:2px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.04em;">and ${c.activeOrders.length - 5} more</div>`
           : '';
 
         const popup = new maplibregl.Popup({ offset: 14, closeButton: false, closeOnClick: false, maxWidth: '240px' })
           .setLngLat([c.lon, c.lat])
           .setHTML(
-            `<div style="font-family:Montserrat,sans-serif;color:#fff;background:rgba(26,26,46,0.95);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);min-width:160px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                <strong style="font-size:13px;">${c.name}</strong>
-              </div>
-              <div style="margin-bottom:4px;">
-                <span style="color:${color};font-size:11px;font-weight:600;">${ZONE_LABELS[c.zoneId] || c.zoneId}</span>
-                ${c.activeOrders.length > 0 ? `<span style="color:#666;font-size:11px;"> · ${c.activeOrders.length} active</span>` : ''}
+            `<div style="font-family:'IBM Plex Sans',sans-serif;color:#F5F4F1;background:#0A0A0A;padding:10px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:5px;min-width:180px;box-shadow:inset 2px 0 0 ${ACCENT_HEX};">
+              <div style="font-size:12px;font-weight:500;margin-bottom:4px;">${c.name}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(245,244,241,0.40);text-transform:uppercase;letter-spacing:0.04em;">
+                ${ZONE_LABELS[c.zoneId] || c.zoneId} · ${c.activeOrders.length} active
               </div>
               ${orderRows}${moreText}
             </div>`,
@@ -379,14 +335,10 @@ export function DistributionMap({
 
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (onPinClick && c.orderIds.length > 0) {
-          onPinClick(c.orderIds[0]);
-        }
+        if (onPinClick && c.orderIds.length > 0) onPinClick(c.orderIds[0]);
       });
 
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([c.lon, c.lat])
-        .addTo(map);
+      const marker = new maplibregl.Marker({ element: el }).setLngLat([c.lon, c.lat]).addTo(map);
       markersRef.current.push(marker);
     }
   }, [orders, selectedDayOrders, hasSelectedDay, onPinClick, mapReady]);
@@ -395,17 +347,13 @@ export function DistributionMap({
     updateMarkers();
   }, [updateMarkers]);
 
-  // ─── Route lines (straight-line fallback → real geometry upgrade) ────────
+  // ─── Route lines ────────────────────────────────────────────────────────
   const routeAbortRef = useRef(0);
-
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
-
-    // Increment abort counter so stale fetches discard their results
     const generation = ++routeAbortRef.current;
 
-    // Helper: clean up all route layers/sources
     function clearRoutes() {
       const layers = map.getStyle()?.layers || [];
       for (const layer of layers) {
@@ -419,13 +367,8 @@ export function DistributionMap({
       }
     }
 
-    // Helper: draw a chain as a line on the map
     function drawChain(sourceId: string, coords: [number, number][], color: string, dashed: boolean) {
-      const glowId = `${sourceId}-glow`;
       const lineId = `${sourceId}-line`;
-
-      // Remove existing if present (for upgrades)
-      if (map.getLayer(glowId)) map.removeLayer(glowId);
       if (map.getLayer(lineId)) map.removeLayer(lineId);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
 
@@ -433,83 +376,51 @@ export function DistributionMap({
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            geometry: { type: 'LineString', coordinates: coords },
-            properties: {},
-          }],
-        },
-      });
-
-      map.addLayer({
-        id: glowId,
-        type: 'line',
-        source: sourceId,
-        paint: {
-          'line-color': color,
-          'line-width': 8,
-          'line-opacity': 0.15,
-          'line-blur': 6,
+          features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} }],
         },
       });
 
       const linePaint: maplibregl.LinePaint = {
         'line-color': color,
-        'line-width': 2.5,
-        'line-opacity': 0.7,
+        'line-width': dashed ? 1 : 2,
+        'line-opacity': dashed ? 0.6 : 0.9,
       };
-      if (dashed) {
-        linePaint['line-dasharray'] = [4, 3];
-      }
+      if (dashed) linePaint['line-dasharray'] = [3, 4];
 
-      map.addLayer({
-        id: lineId,
-        type: 'line',
-        source: sourceId,
-        paint: linePaint,
-      });
+      map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: linePaint });
     }
 
     clearRoutes();
-
     if (selectedDayOrders.length === 0) return;
 
     const chains = buildRouteChains(selectedDayOrders);
-
-    // Step 1: Draw straight-line chain fallback immediately (dashed)
+    // Step 1: dashed straight-line --op-line preview
     for (const chain of chains) {
-      drawChain(`route-${chain.zoneId}`, chain.straightLineCoords, chain.color, true);
+      drawChain(`route-${chain.zoneId}`, chain.straightLineCoords, OP_LINE_RGBA, true);
     }
-
-    // Step 2: Fetch real road geometry per chain, upgrade when ready
+    // Step 2: real road geometry → upgrade selected chain to --accent solid
     (async () => {
       for (const chain of chains) {
         if (routeAbortRef.current !== generation) return;
-
         const realCoords = await fetchChainGeometry(chain.stops);
         if (routeAbortRef.current !== generation) return;
         if (!mapRef.current) return;
-
         if (realCoords) {
-          // Upgrade: replace straight line with real road geometry (solid)
-          drawChain(`route-${chain.zoneId}`, realCoords, chain.color, false);
+          drawChain(`route-${chain.zoneId}`, realCoords, ACCENT_HEX, false);
         }
       }
     })();
   }, [selectedDayOrders, mapReady]);
 
-  // ─── Fly to selected day ───────────────────────────────────────────────
+  // ─── Fly to selected day ────────────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
-
     if (selectedDayOrders.length > 0) {
       const bounds = new maplibregl.LngLatBounds();
       bounds.extend(FACILITY_CENTER);
       selectedDayOrders.forEach((o) => {
-        if (o.customer_lat && o.customer_lon) {
-          bounds.extend([o.customer_lon, o.customer_lat]);
-        }
+        if (o.customer_lat && o.customer_lon) bounds.extend([o.customer_lon, o.customer_lat]);
       });
       map.fitBounds(bounds, { padding: 60, duration: 1200 });
     } else {
@@ -517,7 +428,7 @@ export function DistributionMap({
     }
   }, [selectedDayOrders, mapReady]);
 
-  // ─── Resize on expand toggle ───────────────────────────────────────────
+  // ─── Resize on expand toggle ────────────────────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
     if (map) {
@@ -527,38 +438,111 @@ export function DistributionMap({
     }
   }, [expanded]);
 
-  // ─── Render ────────────────────────────────────────────────────────────
+  // ─── Render — B Gapped media container ───────────────────────────────────
   return (
     <div
       onClick={!expanded ? onClick : undefined}
-      className={`relative overflow-hidden ${expanded ? GLASS_ELEVATED : `${GLASS} ${GLASS_HOVER} cursor-pointer`}`}
-      style={{ height: expanded ? 'calc(100vh - 220px)' : '280px', minHeight: expanded ? '500px' : '280px' }}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'var(--op-surface)',
+        border: '1px solid var(--op-line)',
+        borderRadius: 'var(--r-md)',
+        cursor: !expanded ? 'pointer' : 'default',
+        height: expanded ? 'calc(100vh - 240px)' : 280,
+        minHeight: expanded ? 460 : 280,
+      }}
     >
-      {!expanded && (
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 pointer-events-none">
-          <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Route Map</span>
-          <span className="text-[10px] text-white/30">Click to expand</span>
+      {/* Map head overlay (top) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          padding: '12px 14px',
+          zIndex: 2,
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span
+          className="font-mono uppercase"
+          style={{ fontSize: 9, letterSpacing: '0.16em', color: 'var(--op-ink)' }}
+        >
+          Routes · {hasSelectedDay ? `${selectedDayOrders.length} stops` : 'all locations'}
+        </span>
+        {!expanded && (
+          <span
+            className="font-mono uppercase"
+            style={{ fontSize: 9, letterSpacing: '0.1em', color: 'var(--op-ink-3)' }}
+          >
+            click to expand
+          </span>
+        )}
+      </div>
+
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
+
+      {/* Map legend overlay (bottom-left) */}
+      {expanded && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 12,
+            left: 12,
+            padding: '10px 12px',
+            background: 'var(--op-surface)',
+            border: '1px solid var(--op-line)',
+            borderRadius: 'var(--r-sm)',
+            zIndex: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }}
+        >
+          {Object.entries(ZONE_HEX).slice(0, 5).map(([id, color]) => (
+            <div
+              key={id}
+              className="flex items-center font-sans"
+              style={{ gap: 8, fontSize: 11, color: 'var(--op-ink-2)' }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: color,
+                  display: 'inline-block',
+                }}
+              />
+              <span>{ZONE_LABELS[id]}</span>
+            </div>
+          ))}
         </div>
       )}
 
-      <div
-        ref={containerRef}
-        className="absolute inset-0 rounded-2xl"
-      />
-
-      {!expanded && (
-        <div className="absolute bottom-3 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-2">
-            {Object.entries(ZONE_HEX).slice(0, 4).map(([id, color]) => (
-              <div key={id} className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                <span className="text-[9px] text-white/40">{ZONE_LABELS[id]}</span>
-              </div>
-            ))}
-          </div>
-          <span className="text-[10px] text-white/30">
-            {orders.filter((o) => o.customer_lat).length} locations
-          </span>
+      {/* Map status (bottom-right) */}
+      {expanded && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 12,
+            right: 12,
+            padding: '8px 10px',
+            background: 'var(--op-surface)',
+            border: '1px solid var(--op-line)',
+            borderRadius: 'var(--r-sm)',
+            zIndex: 3,
+            fontSize: 10,
+            color: 'var(--op-ink-3)',
+            letterSpacing: '0.06em',
+          }}
+          className="font-mono"
+        >
+          CartoDB dark · {orders.filter((o) => o.customer_lat).length} locations
         </div>
       )}
     </div>
