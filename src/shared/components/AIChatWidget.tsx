@@ -171,60 +171,10 @@ export default function AIChatWidget() {
   }, [isOpen]);
 
   // ─── PROACTIVE GREETING on widget open ───
-  const greetingFetched = useRef(false);
-  useEffect(() => {
-    if (!isOpen || messages.length > 0 || greetingFetched.current) return;
-    greetingFetched.current = true;
-
-    (async () => {
-      try {
-        const token = await getAccessToken();
-        if (!token) return;
-
-        const response = await fetch(CHAT_FUNCTION_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ greeting: true, current_page: window.location.pathname }),
-        });
-
-        if (!response.ok) return;
-
-        const reader = response.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let greetingText = "";
-        const greetingId = crypto.randomUUID();
-
-        setMessages([{ id: greetingId, role: "assistant", content: "" }]);
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            try {
-              const event = JSON.parse(line.slice(6));
-              if (event.type === "text") {
-                greetingText += event.text;
-                setMessages([{ id: greetingId, role: "assistant", content: greetingText }]);
-              } else if (event.type === "done") {
-                if (event.session_id) setSessionId(event.session_id);
-              }
-            } catch { /* SSE parse skip */ }
-          }
-        }
-      } catch (e) {
-        console.error("[AIChatWidget] Greeting error:", e);
-      }
-    })();
-  }, [isOpen, messages.length, getAccessToken]);
+  // Greeting on mount removed: the chat panel opens silent and the user's
+  // first message is what initiates the session. The session_id is captured
+  // from the first response's done event in the main message handler below.
+  const greetingFetched = useRef(true);
 
   // ─── FILE HANDLING ───
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
