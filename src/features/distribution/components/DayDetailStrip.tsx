@@ -1,13 +1,24 @@
+/**
+ * DayDetailStrip — B Gapped card list below the bento. Three columns
+ * on desktop (1.4fr 1fr 1fr in the mockup; we render auto-fit grid). Each
+ * card is an OrderReadinessCard. The first card (or highlighted card)
+ * auto-expands; the rest collapse.
+ *
+ * Header: "Today · weekday · N orders" or "Filtered · N orders with
+ * overdue documents" when docFilterMode is active. Filter tag chip in
+ * --status-bad signals the active filter; click chip to clear (handled
+ * by parent OverdueChip).
+ */
+
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Route, FileText } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { formatDuration } from '@/features/delivery/services/routing.service';
 import { getRouteZoneId } from '@/features/delivery/utils';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import type { DeliveryDriver } from '@/types';
 import type { OrderReadiness, DriverAssignment } from '../constants';
-import { GLASS, ZONE_HEX, ZONE_LABELS, fadeInVariants } from '../constants';
+import { ZONE_HEX } from '../constants';
 import { OrderReadinessCard } from './OrderReadinessCard';
 
 interface DayDetailStripProps {
@@ -19,35 +30,29 @@ interface DayDetailStripProps {
   onAssignDriver: (date: string, staffId: string, zoneId: string) => void;
   onReload: () => void;
   highlightedOrderId?: string | null;
-  // Doc filter mode
   docFilterMode?: boolean;
   docFilterOrders?: CalendarOrder[];
-  // Trip plan
-  onGenerateTripPlan?: () => void;
 }
 
 export function DayDetailStrip({
   date,
   orders,
   readinessMap,
-  driversForDate,
-  driverList,
-  onAssignDriver,
   onReload,
   highlightedOrderId,
   docFilterMode,
   docFilterOrders,
-  onGenerateTripPlan,
 }: DayDetailStripProps) {
   const displayOrders = docFilterMode ? (docFilterOrders || []) : orders;
   const isVisible = docFilterMode || (date && orders.length > 0);
 
   const dateLabel = useMemo(() => {
-    if (docFilterMode) return 'Documents Needing Attention';
+    if (docFilterMode) return `Filtered · ${displayOrders.length} order${displayOrders.length !== 1 ? 's' : ''} with overdue documents`;
     if (!date) return '';
     const d = new Date(date + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  }, [date, docFilterMode]);
+    const wk = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return `Today · ${wk} · ${displayOrders.length} order${displayOrders.length !== 1 ? 's' : ''}`;
+  }, [date, docFilterMode, displayOrders.length]);
 
   const totalRevenue = useMemo(() => displayOrders.reduce((s, o) => s + o.total_amount, 0), [displayOrders]);
   const totalDuration = useMemo(() => displayOrders.reduce((s, o) => s + (o.cached_duration_seconds || 0), 0), [displayOrders]);
@@ -64,114 +69,112 @@ export function DayDetailStrip({
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
+        <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-4"
+          style={{ marginTop: 16 }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-white">{dateLabel}</h3>
-              <span className="text-[11px] text-white/30">
-                {displayOrders.length} order{displayOrders.length !== 1 ? 's' : ''}
-              </span>
+          {/* Strip head */}
+          <div
+            className="flex items-baseline justify-between"
+            style={{ marginBottom: 8 }}
+          >
+            <h2
+              className="font-sans"
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: docFilterMode ? 'var(--op-ink)' : 'var(--op-ink)',
+                margin: 0,
+                letterSpacing: '-0.005em',
+              }}
+            >
+              {dateLabel}
+            </h2>
+
+            <div className="flex items-center" style={{ gap: 12 }}>
               {!docFilterMode && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center" style={{ gap: 8 }}>
                   {zoneBreakdown.map((z) => (
-                    <div key={z.zoneId} className="flex items-center gap-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: ZONE_HEX[z.zoneId] || '#A6A6A6' }} />
-                      <span className="text-[9px] text-white/30">{z.count}</span>
-                    </div>
+                    <span key={z.zoneId} className="flex items-center" style={{ gap: 4 }}>
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          background: ZONE_HEX[z.zoneId],
+                          display: 'inline-block',
+                        }}
+                      />
+                      <span
+                        className="font-mono tabular-nums"
+                        style={{ fontSize: 10, color: 'var(--op-ink-3)' }}
+                      >
+                        {z.count}
+                      </span>
+                    </span>
                   ))}
                 </div>
               )}
+              {!docFilterMode && totalDuration > 0 && (
+                <span
+                  className="font-mono tabular-nums"
+                  style={{ fontSize: 10, color: 'var(--op-ink-3)' }}
+                >
+                  ~{formatDuration(totalDuration)} · {formatCurrency(totalRevenue)}
+                </span>
+              )}
+              {docFilterMode && (
+                <span
+                  className="font-mono uppercase"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: '0.12em',
+                    color: 'var(--status-bad)',
+                    padding: '3px 8px',
+                    border: '1px solid var(--status-bad)',
+                    borderRadius: 'var(--r-xs)',
+                    background: 'var(--op-canvas)',
+                  }}
+                >
+                  Overdue chip filter active
+                </span>
+              )}
             </div>
-
-            {!docFilterMode && totalDuration > 0 && (
-              <div className="flex items-center gap-2 text-[11px] text-white/40">
-                <Route className="w-3 h-3" />
-                <span>~{formatDuration(totalDuration)}</span>
-                <span className="text-white/20">·</span>
-                <span className="font-semibold text-white/60">{formatCurrency(totalRevenue)}</span>
-              </div>
-            )}
           </div>
 
-          {/* Order cards grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* B Gapped card list */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 12,
+            }}
+          >
             {displayOrders.map((order) => (
               <OrderReadinessCard
                 key={order.id}
                 order={order}
-                readiness={readinessMap.get(order.id) || {
-                  orderId: order.id,
-                  itemsTotal: order.item_count,
-                  itemsAllocated: 0,
-                  invoiceSent: false,
-                  coaSent: false,
-                  manifestSent: false,
-                  hasOverdueDoc: false,
-                  allDocsSent: false,
-                }}
+                readiness={
+                  readinessMap.get(order.id) || {
+                    orderId: order.id,
+                    itemsTotal: order.item_count,
+                    itemsAllocated: 0,
+                    invoiceSent: false,
+                    coaSent: false,
+                    manifestSent: false,
+                    hasOverdueDoc: false,
+                    allDocsSent: false,
+                  }
+                }
                 highlighted={highlightedOrderId === order.id}
                 onSendDoc={onReload}
               />
             ))}
           </div>
-
-          {/* Footer: Per-zone drivers + Route actions */}
-          {!docFilterMode && date && (
-            <div className={`${GLASS} mt-3 p-3`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3 text-[11px] text-white/40">
-                  <span>{displayOrders.length} stops</span>
-                  {totalDuration > 0 && <span>~{formatDuration(totalDuration)}</span>}
-                  <span className="font-semibold text-white/60">{formatCurrency(totalRevenue)}</span>
-                </div>
-                {onGenerateTripPlan && (
-                  <button
-                    onClick={onGenerateTripPlan}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[10px] font-bold text-white/60 uppercase tracking-wider hover:bg-white/[0.10] hover:border-white/[0.15] transition-all"
-                  >
-                    <FileText className="w-3 h-3" />
-                    Trip Plan
-                  </button>
-                )}
-              </div>
-
-              {/* Per-zone driver assignments */}
-              {zoneBreakdown.length > 0 && (
-                <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-white/[0.06]">
-                  <label className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Drivers</label>
-                  {zoneBreakdown.map((z) => {
-                    const zoneDriver = driversForDate.find((d) => d.zoneId === z.zoneId);
-                    return (
-                      <div key={z.zoneId} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: ZONE_HEX[z.zoneId] || '#A6A6A6' }} />
-                        <span className="text-[10px] text-white/30">{ZONE_LABELS[z.zoneId]}</span>
-                        <select
-                          value={zoneDriver?.staffId || ''}
-                          onChange={(e) => {
-                            if (date) onAssignDriver(date, e.target.value, z.zoneId);
-                          }}
-                          className="px-1.5 py-0.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12]"
-                        >
-                          <option value="">—</option>
-                          {driverList.map((d) => (
-                            <option key={d.id} value={d.id}>{d.first_name} {d.last_name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </motion.div>
+        </motion.section>
       )}
     </AnimatePresence>
   );
