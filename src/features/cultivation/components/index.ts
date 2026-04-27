@@ -1,4 +1,5 @@
 export { CultivationDashboard } from './CultivationDashboard';
+export { CultivationCommand, ClaudeDesignCanvas, FloorPlanLive } from './command';
 export { PlantGroupsList } from './PlantGroupsList';
 export { HarvestSessionsList } from './HarvestSessionsList';
 export { GrowRoomsManagement } from './GrowRoomsManagement';

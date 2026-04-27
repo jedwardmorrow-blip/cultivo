@@ -31,6 +31,20 @@ The aesthetic is **working-instrument**: earned, used, quiet. Rejects "Tesla tou
 
 **Login is the canonical example** of the new aesthetic at `src/features/auth/components/Login.tsx`. Reference it when building new instrument-grade screens.
 
+## Surface treatment contract (Phase 1)
+
+Every operator surface uses one of three treatments. **Density follows the persona's task, not a global toggle.**
+
+- **A · Hairline grid** — cells share an outer container with `1px` `--op-line` dividers. No per-cell radius, no per-cell background. Use for KPI strips, env rails, lifecycle ribbons, analytics, order/inventory lists, activity logs. 5+ data groups, comparison matters.
+- **B · Gapped cards** — each card has its own border, radius (`--r-md`), background (`--op-surface`). 12–16px gap between cards. Use for room tiles, dashboard bento tiles, worker surfaces, production tickets, auth, forms.
+- **C · Hybrid** — outer gapped card, hairline-divided interior rows. No nested cards. Use for alert panels, room detail expanded view, order detail, batch detail body, modals.
+
+**Worker module is always B.** Workers are on tablets with gloves; 44px minimum hit targets, clear card boundaries.
+
+**Canonical surface treatment guide is `docs/design-system/PHASE-1-SURFACE-GUIDE.md`** (Cultivo Design System v7, lifted from Claude Design). It contains the per-surface assignment for every module, the migration priority, and the CSS implementation patterns. Read it before designing or modifying any operator surface. The Phase 0 rebrand reference is at `docs/design-system/PHASE-0-REBRAND.md`.
+
+**Reference port:** `/cultivation-floor-plan` (DEV-only) is the gold-standard cultivation surface — A in the top state strip and timeline, gapped outer canvas, hairline rooms, C in the side rail. Source: `src/features/cultivation/components/command/floor-plan/`.
+
 ## Instrument vs interpretation principle
 
 The product is the **instrument**. The dashboard, floor plan, room board, alerts panel, env rail must always be true and unmediated. **The AI chat widget is the only narrative surface.** All synthesis, story, interpretation, summary, and pattern-matching belongs in the chat.
