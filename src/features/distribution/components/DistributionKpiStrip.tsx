@@ -1,7 +1,13 @@
-import { motion } from 'framer-motion';
-import { Truck, FileText, CalendarOff, DollarSign, MapPin } from 'lucide-react';
+/**
+ * DistributionKpiStrip — A Hairline grid (5 KPI tiles divided by 1px
+ * --op-line hairlines, single rounded outer container).
+ *
+ * Per the working-instrument doctrine, KPIs lean toward absence: no fills,
+ * no shadows, no glow. Active state is a 2px-left --accent rule (not a
+ * background fill). Bad-status values switch to --status-bad ink only.
+ */
+
 import { formatCurrencyShort } from '@/shared/utils/format';
-import { GLASS, staggerContainer, staggerItem, ZONE_HEX } from '../constants';
 
 interface DistributionKpiStripProps {
   shippingToday: number;
@@ -11,76 +17,65 @@ interface DistributionKpiStripProps {
   monthRevenue: number;
   todayZones: Set<string>;
   docFilterActive: boolean;
+  shippingTodayActive?: boolean;
   onShippingTodayClick: () => void;
   onDocsPendingClick: () => void;
   onUnscheduledClick: () => void;
 }
 
-function KpiTile({
-  label,
-  value,
-  icon,
-  accent,
-  pulse,
-  active,
-  onClick,
-}: {
+interface KpiTileProps {
   label: string;
   value: string;
-  icon: React.ReactNode;
-  accent?: string;
-  pulse?: boolean;
+  meta: string;
   active?: boolean;
+  badValue?: boolean;
+  badMeta?: boolean;
   onClick?: () => void;
-}) {
+}
+
+function KpiTile({ label, value, meta, active, badValue, badMeta, onClick }: KpiTileProps) {
   const Wrapper = onClick ? 'button' : 'div';
   return (
-    <motion.div variants={staggerItem}>
-      <Wrapper
-        onClick={onClick}
-        className={`${GLASS} p-4 flex items-center gap-3 w-full text-left relative overflow-hidden transition-all
-          ${onClick ? 'cursor-pointer hover:bg-white/[0.10] hover:border-white/[0.15]' : ''}
-          ${active ? 'border-white/[0.20] bg-white/[0.10] shadow-[0_0_20px_rgba(232,224,212,0.08)]' : ''}`}
+    <Wrapper
+      onClick={onClick}
+      style={{
+        background: 'var(--op-canvas)',
+        padding: '14px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        textAlign: 'left',
+        boxShadow: active ? 'inset 2px 0 0 var(--accent)' : undefined,
+        cursor: onClick ? 'pointer' : 'default',
+        border: 'none',
+        width: '100%',
+        font: 'inherit',
+      }}
+    >
+      <span
+        className="font-mono uppercase"
+        style={{ fontSize: 9, letterSpacing: '0.14em', color: 'var(--op-ink-3)' }}
       >
-        {accent && (
-          <div
-            className="absolute -top-6 left-4 rounded-full pointer-events-none"
-            style={{
-              width: '80px',
-              height: '80px',
-              background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`,
-              filter: 'blur(10px)',
-            }}
-          />
-        )}
-
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative"
-          style={{ backgroundColor: accent ? `${accent}15` : 'rgba(255,255,255,0.06)' }}
-        >
-          <div style={{ color: accent || 'rgba(255,255,255,0.5)' }}>{icon}</div>
-        </div>
-
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white tabular-nums">{value}</span>
-            {pulse && (
-              <span className="relative flex h-2.5 w-2.5">
-                <span
-                  className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                  style={{ backgroundColor: accent || '#10B981' }}
-                />
-                <span
-                  className="relative inline-flex rounded-full h-2.5 w-2.5"
-                  style={{ backgroundColor: accent || '#10B981' }}
-                />
-              </span>
-            )}
-          </div>
-          <span className="text-[11px] text-white/40 uppercase tracking-wider font-medium">{label}</span>
-        </div>
-      </Wrapper>
-    </motion.div>
+        {label}
+      </span>
+      <span
+        className="font-mono tabular-nums"
+        style={{
+          fontSize: 20,
+          fontWeight: 500,
+          color: badValue ? 'var(--status-bad)' : 'var(--op-ink)',
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </span>
+      <span
+        className="font-sans"
+        style={{ fontSize: 11, color: badMeta ? 'var(--status-bad)' : 'var(--op-ink-3)' }}
+      >
+        {meta}
+      </span>
+    </Wrapper>
   );
 }
 
@@ -92,56 +87,66 @@ export function DistributionKpiStrip({
   monthRevenue,
   todayZones,
   docFilterActive,
+  shippingTodayActive,
   onShippingTodayClick,
   onDocsPendingClick,
   onUnscheduledClick,
 }: DistributionKpiStripProps) {
-  const docsAccent = docsOverdue > 0 ? '#EF4444' : docsPending > 0 ? '#F59E0B' : '#10B981';
+  const docsBad = docsOverdue > 0;
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4"
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(5, 1fr)',
+        gap: 1,
+        background: 'var(--op-line)',
+        border: '1px solid var(--op-line)',
+        borderRadius: 'var(--r-md)',
+        overflow: 'hidden',
+      }}
     >
       <KpiTile
-        label="Shipping Today"
+        label="Shipping today"
         value={String(shippingToday)}
-        icon={<Truck className="w-4 h-4" />}
-        accent="#10B981"
-        pulse={shippingToday > 0}
+        meta={
+          shippingToday === 0
+            ? 'none scheduled'
+            : `${todayZones.size} zone${todayZones.size !== 1 ? 's' : ''}`
+        }
+        active={shippingTodayActive}
         onClick={onShippingTodayClick}
       />
       <KpiTile
-        label="Docs Pending"
+        label="Docs pending"
         value={String(docsPending)}
-        icon={<FileText className="w-4 h-4" />}
-        accent={docsAccent}
-        pulse={docsOverdue > 0}
+        meta={docsOverdue > 0 ? `${docsOverdue} overdue` : 'none overdue'}
         active={docFilterActive}
+        badValue={docsBad}
+        badMeta={docsBad}
         onClick={onDocsPendingClick}
       />
       <KpiTile
         label="Unscheduled"
         value={String(unscheduledCount)}
-        icon={<CalendarOff className="w-4 h-4" />}
-        accent={unscheduledCount > 0 ? '#F59E0B' : undefined}
+        meta={unscheduledCount === 0 ? 'all scheduled' : 'unrouted'}
         onClick={onUnscheduledClick}
       />
       <KpiTile
-        label="Revenue (Month)"
+        label="Month revenue"
         value={formatCurrencyShort(monthRevenue)}
-        icon={<DollarSign className="w-4 h-4" />}
-        accent="#E8E0D4"
+        meta="month-to-date"
       />
       <KpiTile
-        label="Routes Today"
+        label="Routes today"
         value={String(todayZones.size)}
-        icon={<MapPin className="w-4 h-4" />}
-        accent={todayZones.size > 0 ? '#2DD4BF' : undefined}
+        meta={
+          todayZones.size === 0
+            ? 'none active'
+            : Array.from(todayZones).slice(0, 2).join(' · ').replace(/_/g, '-')
+        }
         onClick={onShippingTodayClick}
       />
-    </motion.div>
+    </div>
   );
 }

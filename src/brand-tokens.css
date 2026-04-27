@@ -54,6 +54,18 @@
   --status-warn:   #C8943A;
   --status-bad:    #C56A6A;
 
+  /* ── Zones, distribution functional markers only ──────────────────
+     Used for 6px dot markers on calendar cells, route rows, order
+     readiness card headers, map customer pins. Sized by amount on the
+     map. Same usage rules as --stage-*: never as background fills,
+     never as borders other than the 2px-left-active rule, never as
+     text color. Zone identity surfaces via the dot, not the label. */
+  --zone-local:        #B5A88B;
+  --zone-east-valley:  #B07670;
+  --zone-west-valley:  #5F7385;
+  --zone-north-valley: #7A9678;
+  --zone-other:        #6B6B70;
+
   /* ── Typography ──────────────────────────────────────────────────
      Product surfaces use sans for everything that is not a number,
      code, ID, or timestamp; mono for those. No serif in product. */

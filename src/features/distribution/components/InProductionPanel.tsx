@@ -1,17 +1,12 @@
 /**
- * InProductionPanel — Bento card showing inventory currently in the production dispatch queue.
- *
- * Compact: count + top items list
- * No expanded mode — this is a read-only status card.
- * Data fetched here to keep DistributionCommandCenter clean.
+ * InProductionPanel — C Hybrid (gapped outer card, hairline interior rows).
+ * Read-only status card showing inventory currently in the production
+ * dispatch queue. No pulse glow border; no fills.
  */
 
 import { useState, useEffect } from 'react';
-import { Zap, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { GLASS, GLASS_HOVER } from '../constants';
-
-// ─── Types ─────────────────────────────────────────────────────────────────
 
 interface InFlightItem {
   id: string;
@@ -25,9 +20,10 @@ interface InFlightItem {
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  buck: 'Bucking',
-  trim_to_stock: 'Trimming',
-  package_to_order: 'Packaging',
+  buck: 'bucking',
+  trim_to_stock: 'trim',
+  package_to_order: 'packaging',
+  pack_to_stock: 'pack',
 };
 
 function formatQty(item: InFlightItem): string {
@@ -40,11 +36,11 @@ function formatQty(item: InFlightItem): string {
   return '—';
 }
 
-// ─── Component ─────────────────────────────────────────────────────────────
-
 interface InProductionPanelProps {
   onNavigateToDispatch?: () => void;
 }
+
+const VISIBLE_LIMIT = 4;
 
 export function InProductionPanel({ onNavigateToDispatch }: InProductionPanelProps) {
   const [items, setItems] = useState<InFlightItem[]>([]);
@@ -52,110 +48,168 @@ export function InProductionPanel({ onNavigateToDispatch }: InProductionPanelPro
 
   useEffect(() => {
     let mounted = true;
-
     async function load() {
       const { data } = await supabase
         .from('production_dispatch_items')
-        .select(`
-          id, processing_stage, status, quantity_units_target, quantity_g,
-          batch_registry!inner(strain),
-          order_items(orders(order_number, customer_name))
-        `)
+        .select(
+          `id, processing_stage, status, quantity_units_target, quantity_g,
+           batch_registry!inner(strain),
+           order_items(orders(order_number, customer_name))`,
+        )
         .in('status', ['pending', 'in_progress'])
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (!mounted) return;
       setLoading(false);
-
       if (!data) return;
-      setItems(data.map((row: any) => ({
-        id: row.id,
-        strain: row.batch_registry?.strain ?? '—',
-        processing_stage: row.processing_stage,
-        status: row.status,
-        quantity_units_target: row.quantity_units_target,
-        quantity_g: row.quantity_g,
-        customer_name: row.order_items?.orders?.customer_name ?? null,
-        order_number: row.order_items?.orders?.order_number ?? null,
-      })));
-    }
 
+      setItems(
+        data.map((row: any) => ({
+          id: row.id,
+          strain: row.batch_registry?.strain ?? '—',
+          processing_stage: row.processing_stage,
+          status: row.status,
+          quantity_units_target: row.quantity_units_target,
+          quantity_g: row.quantity_g,
+          customer_name: row.order_items?.orders?.customer_name ?? null,
+          order_number: row.order_items?.orders?.order_number ?? null,
+        })),
+      );
+    }
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const inProgress = items.filter(i => i.status === 'in_progress').length;
-  const pending = items.filter(i => i.status === 'pending').length;
-  const hasItems = items.length > 0;
-
   if (loading) return null;
+
+  const visible = items.slice(0, VISIBLE_LIMIT);
+  const overflow = items.length - visible.length;
 
   return (
     <div
       onClick={onNavigateToDispatch}
-      className={`${GLASS} ${onNavigateToDispatch ? `${GLASS_HOVER} cursor-pointer` : ''} p-3`}
-      style={hasItems ? {
-        borderColor: 'rgba(245,158,11,0.15)',
-        boxShadow: '0 0 8px rgba(245,158,11,0.06), 0 4px 24px rgba(0,0,0,0.4)',
-      } : undefined}
+      style={{
+        background: 'var(--op-surface)',
+        border: '1px solid var(--op-line)',
+        borderRadius: 'var(--r-md)',
+        cursor: onNavigateToDispatch ? 'pointer' : 'default',
+      }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Zap className="w-3.5 h-3.5 text-amber-400/60" />
-          <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">In Production</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {inProgress > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-400">
-              {inProgress} active
-            </span>
-          )}
-          <span className={`text-sm font-bold ${hasItems ? 'text-amber-400' : 'text-white/20'}`}>
-            {items.length}
-          </span>
-        </div>
+      {/* Panel head */}
+      <div
+        className="flex items-baseline justify-between"
+        style={{ padding: '12px 14px 10px' }}
+      >
+        <span
+          className="font-mono uppercase"
+          style={{ fontSize: 9, letterSpacing: '0.16em', color: 'var(--op-ink-3)' }}
+        >
+          In production
+        </span>
+        <span
+          className="font-mono tabular-nums"
+          style={{ fontSize: 10, color: 'var(--op-ink-3)' }}
+        >
+          {items.length === 0 ? 'none queued' : `${items.length} active`}
+        </span>
       </div>
 
-      {/* Content */}
-      {!hasItems ? (
-        <p className="text-[11px] text-white/20">Nothing queued for production</p>
+      {visible.length === 0 ? (
+        <div
+          className="text-center"
+          style={{
+            padding: 14,
+            fontSize: 11,
+            color: 'var(--op-ink-3)',
+            borderTop: '1px solid var(--op-line)',
+          }}
+        >
+          Nothing in production queue
+        </div>
       ) : (
-        <>
-          <div className="space-y-1.5">
-            {items.slice(0, 4).map(item => (
-              <div key={item.id} className="flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                    item.status === 'in_progress' ? 'bg-sky-400' : 'bg-amber-400/60'
-                  }`} />
-                  <span className="text-white/60 truncate">{item.strain}</span>
-                  <span className="text-white/25 shrink-0">· {STAGE_LABELS[item.processing_stage] ?? item.processing_stage}</span>
+        visible.map((item, i) => {
+          const isLast = i === visible.length - 1 && overflow <= 0;
+          return (
+            <div
+              key={item.id}
+              style={{
+                padding: '10px 14px',
+                borderTop: i === 0 ? '1px solid var(--op-line)' : undefined,
+                borderBottom: isLast ? 'none' : '1px solid var(--op-line)',
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr auto',
+                gap: 10,
+                alignItems: 'center',
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background:
+                    item.status === 'in_progress'
+                      ? 'var(--accent)'
+                      : 'var(--op-ink-3)',
+                  flexShrink: 0,
+                }}
+              />
+              <div className="min-w-0">
+                <div className="font-sans truncate" style={{ fontSize: 11, color: 'var(--op-ink)' }}>
+                  {item.strain}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                  {item.customer_name && (
-                    <span className="text-white/25 truncate max-w-[60px]">{item.customer_name}</span>
-                  )}
-                  <span className="text-white/40 font-medium tabular-nums">{formatQty(item)}</span>
+                <div
+                  className="font-mono tabular-nums truncate"
+                  style={{ fontSize: 10, color: 'var(--op-ink-3)' }}
+                >
+                  {STAGE_LABELS[item.processing_stage] ?? item.processing_stage}
+                  {item.order_number ? ` · ${item.order_number}` : ''}
                 </div>
               </div>
-            ))}
-          </div>
-          {items.length > 4 && (
-            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/[0.05]">
-              <span className="text-[10px] text-white/20">+{items.length - 4} more items</span>
-              {onNavigateToDispatch && (
-                <span className="text-[10px] text-amber-400/50 flex items-center gap-0.5">
-                  View all <ChevronRight className="w-2.5 h-2.5" />
-                </span>
-              )}
+              <span
+                className="font-mono tabular-nums"
+                style={{ fontSize: 11, color: 'var(--op-ink)' }}
+              >
+                {formatQty(item)}
+              </span>
             </div>
+          );
+        })
+      )}
+
+      {overflow > 0 && (
+        <div
+          style={{
+            padding: '8px 14px',
+            borderTop: '1px solid var(--op-line)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            className="font-mono"
+            style={{ fontSize: 10, color: 'var(--op-ink-3)', letterSpacing: '0.04em' }}
+          >
+            and {overflow} more
+          </span>
+          {onNavigateToDispatch && (
+            <span
+              className="font-mono uppercase flex items-center"
+              style={{
+                fontSize: 9,
+                letterSpacing: '0.1em',
+                color: 'var(--op-ink-2)',
+                gap: 2,
+              }}
+            >
+              View all <ChevronRight className="w-2.5 h-2.5" />
+            </span>
           )}
-          {pending > 0 && inProgress === 0 && (
-            <p className="text-[10px] text-white/20 mt-1.5">{pending} item{pending !== 1 ? 's' : ''} queued, waiting for session</p>
-          )}
-        </>
+        </div>
       )}
     </div>
   );

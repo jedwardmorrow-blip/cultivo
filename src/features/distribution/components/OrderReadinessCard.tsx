@@ -1,5 +1,16 @@
+/**
+ * OrderReadinessCard — collapsed state is B Gapped (single card with
+ * customer name, zone dot + meta row, and a docs pill row). Expanded
+ * state is C Hybrid: header summary line ("60 / 60 · ready to load"),
+ * doc chips ABOVE the line list, two-column hairline line list (no
+ * per-line bars, no per-line stage dots).
+ *
+ * Per-zone left rule (2px) replaces the legacy thick zone-tinted border;
+ * --status-bad rule replaces it when overdue.
+ */
+
 import { useState, useEffect, useCallback } from 'react';
-import { CheckCircle2, AlertTriangle, Circle, Send, ChevronDown } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import { getRouteZone } from '@/features/delivery/utils';
@@ -12,57 +23,95 @@ import {
 import { supabase } from '@/lib/supabase';
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 import type { OrderReadiness } from '../constants';
-import { GLASS, ZONE_HEX } from '../constants';
+import { ZONE_HEX, ZONE_TOKEN } from '../constants';
 import { FulfillmentLineItem } from './FulfillmentLineItem';
 import { InventoryDrawer } from './InventoryDrawer';
 
-// ─── Sub-components ────────────────────────────────────────────────────────
+// ─── Doc pill ─────────────────────────────────────────────────────────────
 
-function ReadinessChip({ label, status }: { label: string; status: 'good' | 'warning' | 'pending' }) {
-  return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold
-      ${status === 'good' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-white/30'}`}>
-      {status === 'good' ? <CheckCircle2 className="w-3 h-3" /> : status === 'warning' ? <AlertTriangle className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
-      {label}
-    </span>
-  );
-}
-
-function DocPill({ label, sent, overdue, orderId, orderNumber, docType, onSent }: {
-  label: string; sent: boolean; overdue?: boolean;
-  orderId: string; orderNumber: string; docType: 'invoice' | 'coa' | 'manifest';
+function DocPill({
+  label,
+  state,
+  orderId,
+  orderNumber,
+  docType,
+  onSent,
+}: {
+  label: string;
+  state: 'sent' | 'pending' | 'overdue';
+  orderId: string;
+  orderNumber: string;
+  docType: 'invoice' | 'coa' | 'manifest';
   onSent?: () => void;
 }) {
   const [sending, setSending] = useState(false);
 
-  async function handleSend() {
+  async function handleSend(e: React.MouseEvent) {
+    e.stopPropagation();
     setSending(true);
     await sendDocument(orderId, orderNumber, docType);
     setSending(false);
     onSent?.();
   }
 
-  if (sent) {
+  const color =
+    state === 'sent'
+      ? 'var(--status-ok)'
+      : state === 'overdue'
+      ? 'var(--status-bad)'
+      : 'var(--op-ink-3)';
+  const borderColor =
+    state === 'sent'
+      ? 'rgba(110,170,141,0.4)'
+      : state === 'overdue'
+      ? 'rgba(197,106,106,0.5)'
+      : 'var(--op-line)';
+
+  if (state === 'sent') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-        <CheckCircle2 className="w-2.5 h-2.5" />{label}
+      <span
+        className="font-mono uppercase"
+        style={{
+          padding: '3px 8px',
+          border: `1px solid ${borderColor}`,
+          borderRadius: 'var(--r-xs)',
+          fontSize: 9,
+          letterSpacing: '0.1em',
+          color,
+          background: 'var(--op-canvas)',
+        }}
+      >
+        {label}
       </span>
     );
   }
 
   return (
     <button
-      onClick={(e) => { e.stopPropagation(); handleSend(); }}
+      type="button"
+      onClick={handleSend}
       disabled={sending}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-semibold transition-all
-        ${overdue ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'} disabled:opacity-50`}
+      className={`font-mono uppercase inline-flex items-center ${state === 'overdue' ? 'animate-pulse' : ''}`}
+      style={{
+        gap: 4,
+        padding: '3px 8px',
+        border: `1px solid ${borderColor}`,
+        borderRadius: 'var(--r-xs)',
+        fontSize: 9,
+        letterSpacing: '0.1em',
+        color,
+        background: 'var(--op-canvas)',
+        cursor: 'pointer',
+        opacity: sending ? 0.5 : 1,
+      }}
     >
-      <Send className={`w-2.5 h-2.5 ${sending ? 'animate-spin' : ''}`} />{label}
+      <Send className={`w-2.5 h-2.5 ${sending ? 'animate-spin' : ''}`} />
+      {label}
     </button>
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────
 
 interface OrderReadinessCardProps {
   order: CalendarOrder;
@@ -79,43 +128,67 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
   const [selectedLineItem, setSelectedLineItem] = useState<OrderLineItem | null>(null);
 
   const zone = getRouteZone(order.customer_lat, order.customer_lon);
-  const zoneColor = ZONE_HEX[zone.id] || '#A6A6A6';
+  const tokenName = ZONE_TOKEN[zone.id] || 'other';
 
-  const allocStatus = readiness.itemsAllocated >= readiness.itemsTotal ? 'good'
-    : readiness.itemsAllocated > 0 ? 'warning' : 'pending';
-  const docStatus = readiness.allDocsSent ? 'good'
-    : readiness.hasOverdueDoc ? 'warning' : 'pending';
-  const allReady = allocStatus === 'good' && readiness.allDocsSent;
+  // Aggregate progress (single mono summary line)
+  const allReady = readiness.itemsAllocated >= readiness.itemsTotal && readiness.allDocsSent;
+  const progressState: 'full' | 'partial' | 'empty' | 'blocked' = readiness.hasOverdueDoc
+    ? 'blocked'
+    : readiness.itemsAllocated >= readiness.itemsTotal
+    ? 'full'
+    : readiness.itemsAllocated > 0
+    ? 'partial'
+    : 'empty';
+  const progressColor =
+    progressState === 'full'
+      ? 'var(--status-ok)'
+      : progressState === 'partial'
+      ? 'var(--accent)'
+      : progressState === 'blocked'
+      ? 'var(--status-bad)'
+      : 'var(--op-ink-3)';
+  const progressLabel =
+    progressState === 'full'
+      ? `${readiness.itemsAllocated} / ${readiness.itemsTotal} · ready to load`
+      : progressState === 'blocked'
+      ? `${readiness.itemsAllocated} / ${readiness.itemsTotal} · cannot dispatch`
+      : `${readiness.itemsAllocated} / ${readiness.itemsTotal}`;
 
-  // Load line items when card expands
+  // Card state: overdue dominates highlighted/expanded for left-rule color
+  const cardLeftRule = readiness.hasOverdueDoc
+    ? 'inset 2px 0 0 var(--status-bad)'
+    : highlighted
+    ? 'inset 2px 0 0 var(--accent)'
+    : undefined;
+
+  // Load line items when expanded
   const loadLineItems = useCallback(async () => {
     setLoadingLineItems(true);
     try {
       const { data, error } = await supabase
         .from('v_production_queue_by_order')
-        .select(`
+        .select(
+          `
           order_id, order_number, order_item_id, customer_name,
           strain_name, format_label, quantity,
           units_assigned, units_remaining, urgency,
           requested_delivery_date, scheduled_delivery_date,
           unit_price, subtotal, weight_per_unit_g, line_demand_g, is_sample,
           batch_number, batch_quality_grade, batch_grade_code, batch_grade_color
-        `)
+          `,
+        )
         .eq('order_id', order.id)
         .order('units_remaining', { ascending: false });
 
       if (error) throw error;
 
-      // Also fetch items that are fully assigned (the view only has units_remaining > 0)
       const { data: allItems } = await supabase
         .from('order_items')
-        .select(`
-          id, order_id, quantity, strain, status,
-          products!inner(name, net_weight)
-        `)
+        .select(
+          `id, order_id, quantity, strain, status, products!inner(name, net_weight)`,
+        )
         .eq('order_id', order.id);
 
-      // Merge: view data for unfulfilled items, basic data for fulfilled items
       const viewMap = new Map((data || []).map((d: any) => [d.order_item_id, d]));
 
       const items: OrderLineItem[] = (allItems || []).map((item: any) => {
@@ -148,8 +221,6 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
             thc_percentage: null,
           } as OrderLineItem;
         }
-
-        // Fully assigned item — not in the view
         return {
           order_id: item.order_id,
           order_number: order.order_number,
@@ -178,11 +249,9 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
         } as OrderLineItem;
       });
 
-      // Sort: unfulfilled first (by units_remaining desc), then fulfilled
       items.sort((a, b) => b.units_remaining - a.units_remaining);
       setLineItems(items);
 
-      // Fetch dispatch items for these line items
       const itemIds = items.map((i) => i.order_item_id);
       if (itemIds.length > 0) {
         const dispatched = await fetchOrderDispatchItems(itemIds);
@@ -201,109 +270,187 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
 
   function handleInventoryClose() {
     setSelectedLineItem(null);
-    loadLineItems(); // Refresh after any actions taken
+    loadLineItems();
   }
 
   return (
     <>
-      <motion.div
+      <motion.article
         layout
-        className={`${GLASS} overflow-hidden transition-all duration-200
-          ${highlighted ? 'ring-1 ring-white/20 shadow-[0_0_16px_rgba(232,224,212,0.08)]' : ''}`}
-        style={{ borderLeftWidth: '3px', borderLeftColor: zoneColor }}
         id={`order-${order.id}`}
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          background: 'var(--op-surface)',
+          border: `1px solid ${expanded ? 'var(--op-line-strong)' : 'var(--op-line)'}`,
+          borderRadius: 'var(--r-md)',
+          padding: 14,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          cursor: 'pointer',
+          boxShadow: cardLeftRule,
+        }}
       >
-        {/* Header — always visible */}
-        <div
-          className="p-3 cursor-pointer hover:bg-white/[0.04] transition-colors"
-          onClick={() => setExpanded(!expanded)}
-        >
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: zoneColor }} />
-              <span className="text-sm font-semibold text-white truncate">{order.customer_name}</span>
-              <span className="text-[10px] text-white/30 font-mono flex-shrink-0">{order.order_number}</span>
+        {/* Order head */}
+        <div className="flex items-baseline justify-between" style={{ gap: 10 }}>
+          <div className="min-w-0">
+            <div
+              className="font-sans truncate"
+              style={{ fontSize: 13, fontWeight: 500, color: 'var(--op-ink)' }}
+            >
+              {order.customer_name}
             </div>
-            {allReady && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
-                <CheckCircle2 className="w-3 h-3" />Ready
-              </span>
-            )}
-          </div>
-
-          <div className="text-[10px] text-white/30 mb-2">
-            {zone.label}{order.customer_city ? ` · ${order.customer_city}` : ''}
-          </div>
-
-          <div className="flex items-center gap-3 mb-1.5">
-            <ReadinessChip label={`${readiness.itemsAllocated}/${readiness.itemsTotal}`} status={allocStatus} />
-            <ReadinessChip
-              label={readiness.allDocsSent ? 'Docs sent' : readiness.hasOverdueDoc ? 'Docs overdue' : 'Docs pending'}
-              status={docStatus}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-[11px] text-white/40">
-              <span className="font-semibold text-white/60">{formatCurrency(order.total_amount)}</span>
-              <span>{order.item_count} items</span>
+            <div
+              className="font-mono tabular-nums truncate"
+              style={{ fontSize: 10, color: 'var(--op-ink-3)' }}
+            >
+              {order.order_number}
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-white/20 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          </div>
+          <div
+            className="font-mono tabular-nums"
+            style={{ fontSize: 13, color: 'var(--op-ink)' }}
+          >
+            {formatCurrency(order.total_amount)}
           </div>
         </div>
 
-        {/* Expanded: Line items + Documents */}
-        <AnimatePresence>
+        {/* Order meta row */}
+        <div
+          className="flex items-center font-sans"
+          style={{ gap: 8, fontSize: 11, color: 'var(--op-ink-2)' }}
+        >
+          <span
+            className={`zone-dot ${tokenName}`}
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: ZONE_HEX[zone.id],
+              flexShrink: 0,
+              display: 'inline-block',
+            }}
+          />
+          <span className="truncate">
+            {zone.label} · {order.item_count} line items
+          </span>
+        </div>
+
+        {/* Doc pills row (always visible) */}
+        <div className="flex flex-wrap items-center" style={{ gap: 6 }}>
+          <DocPill
+            label={readiness.invoiceSent ? 'Invoice sent' : readiness.hasOverdueDoc && !readiness.invoiceSent ? 'Invoice overdue' : 'Invoice'}
+            state={readiness.invoiceSent ? 'sent' : readiness.hasOverdueDoc && !readiness.invoiceSent ? 'overdue' : 'pending'}
+            orderId={order.id}
+            orderNumber={order.order_number}
+            docType="invoice"
+            onSent={onSendDoc}
+          />
+          <DocPill
+            label={readiness.coaSent ? 'COA sent' : readiness.hasOverdueDoc && !readiness.coaSent ? 'COA overdue' : 'COA'}
+            state={readiness.coaSent ? 'sent' : readiness.hasOverdueDoc && !readiness.coaSent ? 'overdue' : 'pending'}
+            orderId={order.id}
+            orderNumber={order.order_number}
+            docType="coa"
+            onSent={onSendDoc}
+          />
+          <DocPill
+            label={readiness.manifestSent ? 'Manifest sent' : readiness.hasOverdueDoc && !readiness.manifestSent ? 'Manifest overdue' : 'Manifest'}
+            state={readiness.manifestSent ? 'sent' : readiness.hasOverdueDoc && !readiness.manifestSent ? 'overdue' : 'pending'}
+            orderId={order.id}
+            orderNumber={order.order_number}
+            docType="manifest"
+            onSent={onSendDoc}
+          />
+          {allReady && (
+            <span
+              className="font-mono uppercase"
+              style={{
+                marginLeft: 'auto',
+                fontSize: 9,
+                letterSpacing: '0.1em',
+                color: 'var(--status-ok)',
+              }}
+            >
+              Ready
+            </span>
+          )}
+        </div>
+
+        {/* Expanded: aggregate summary line + hairline line list */}
+        <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="overflow-hidden"
+              style={{ overflow: 'hidden' }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="px-3 pb-3 pt-1 border-t border-white/[0.06]">
-                {/* Line Items */}
-                <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">Line Items</div>
+              <div
+                className="flex items-baseline justify-between"
+                style={{
+                  padding: '8px 0',
+                  borderTop: '1px solid var(--op-line)',
+                  borderBottom: '1px solid var(--op-line)',
+                  marginTop: 4,
+                }}
+              >
+                <span
+                  className="font-mono uppercase"
+                  style={{ fontSize: 9, letterSpacing: '0.14em', color: 'var(--op-ink-3)' }}
+                >
+                  Items packed
+                  {progressState === 'blocked' ? ' · blocked by docs' : ''}
+                </span>
+                <span
+                  className="font-mono tabular-nums"
+                  style={{ fontSize: 13, color: progressColor, fontWeight: 500 }}
+                >
+                  {progressLabel}
+                </span>
+              </div>
 
+              <div style={{ display: 'flex', flexDirection: 'column', paddingTop: 4 }}>
                 {loadingLineItems ? (
-                  <div className="text-[10px] text-white/20 text-center py-3">Loading items...</div>
-                ) : lineItems.length === 0 ? (
-                  <div className="text-[10px] text-white/20 text-center py-3">No line items found</div>
-                ) : (
-                  <div className="space-y-1.5 mb-3">
-                    {lineItems.map((item) => (
-                      <FulfillmentLineItem
-                        key={item.order_item_id}
-                        item={item}
-                        dispatchItems={dispatchItems}
-                        onTap={() => setSelectedLineItem(item)}
-                      />
-                    ))}
+                  <div
+                    className="text-center"
+                    style={{ padding: 12, fontSize: 10, color: 'var(--op-ink-3)' }}
+                  >
+                    Loading items…
                   </div>
+                ) : lineItems.length === 0 ? (
+                  <div
+                    className="text-center"
+                    style={{ padding: 12, fontSize: 10, color: 'var(--op-ink-3)' }}
+                  >
+                    No line items
+                  </div>
+                ) : (
+                  lineItems.map((item, i) => (
+                    <FulfillmentLineItem
+                      key={item.order_item_id}
+                      item={item}
+                      dispatchItems={dispatchItems}
+                      onTap={() => setSelectedLineItem(item)}
+                      isLast={i === lineItems.length - 1}
+                    />
+                  ))
                 )}
-
-                {/* Documents */}
-                <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">Documents</div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <DocPill label="Invoice" sent={readiness.invoiceSent} overdue={readiness.hasOverdueDoc && !readiness.invoiceSent} orderId={order.id} orderNumber={order.order_number} docType="invoice" onSent={onSendDoc} />
-                  <DocPill label="COA" sent={readiness.coaSent} overdue={readiness.hasOverdueDoc && !readiness.coaSent} orderId={order.id} orderNumber={order.order_number} docType="coa" onSent={onSendDoc} />
-                  <DocPill label="Manifest" sent={readiness.manifestSent} overdue={readiness.hasOverdueDoc && !readiness.manifestSent} orderId={order.id} orderNumber={order.order_number} docType="manifest" onSent={onSendDoc} />
-                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </motion.article>
 
-      {/* Inventory Drawer (opened when tapping an unfulfilled line item) */}
       <InventoryDrawer
         isOpen={!!selectedLineItem}
         onClose={handleInventoryClose}
         lineItem={selectedLineItem}
         onReload={() => {
           loadLineItems();
-          onSendDoc?.(); // Trigger parent reload too
+          onSendDoc?.();
         }}
       />
     </>
