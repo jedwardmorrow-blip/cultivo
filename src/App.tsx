@@ -61,9 +61,7 @@ const DailyDigestView = lazyRetry(() => import('./features/cultivation'), 'Daily
 const WorkerTaskView = lazyRetry(() => import('./features/cultivation'), 'WorkerTaskView');
 const CultivationMapPage = lazyRetry(() => import('./features/cultivation'), 'CultivationMapPage');
 const CommandCenter = lazyRetry(() => import('./features/cultivation'), 'CommandCenter');
-const CultivationCommand = lazyRetry(() => import('./features/cultivation'), 'CultivationCommand');
 const ClaudeDesignCanvas = lazyRetry(() => import('./features/cultivation'), 'ClaudeDesignCanvas');
-const FloorPlanLive = lazyRetry(() => import('./features/cultivation'), 'FloorPlanLive');
 const PlantAuditPage = lazyRetry(() => import('./features/cultivation'), 'PlantAuditPage');
 const PerformanceLoop = lazyRetry(() => import('./features/cultivation'), 'PerformanceLoop');
 const CRMDashboard = lazyRetry(() => import('./features/crm'), 'CRMDashboard');
@@ -351,11 +349,7 @@ function AppContent() {
       <Route path="/worker/*" element={<WorkerApp />} />
 
       {import.meta.env.DEV && (
-        <>
-          <Route path="/cultivation-command-preview" element={<Suspense fallback={<ViewFallback />}><CultivationCommand /></Suspense>} />
-          <Route path="/claude-design-canvas" element={<Suspense fallback={<ViewFallback />}><ClaudeDesignCanvas /></Suspense>} />
-          <Route path="/cultivation-floor-plan" element={<Suspense fallback={<ViewFallback />}><FloorPlanLive /></Suspense>} />
-        </>
+        <Route path="/claude-design-canvas" element={<Suspense fallback={<ViewFallback />}><ClaudeDesignCanvas /></Suspense>} />
       )}
 
       <Route path="/*" element={<AuthenticatedApp />} />

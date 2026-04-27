@@ -1,5 +1,3 @@
-import { SeedGlyph } from './SeedGlyph';
-
 function FplSpark({ d, color = 'var(--accent)', target }: { d: string; color?: string; target?: number }) {
   return (
     <svg viewBox="0 0 200 22" preserveAspectRatio="none" width="100%" height="22" fill="none" className="fpl-env-row-spark">
@@ -84,23 +82,10 @@ export function SideRail() {
         </div>
       </div>
 
-      <div className="fpl-rail-seed">
-        <div className="fpl-rail-seed-eyebrow">
-          <SeedGlyph size={12} />
-          THE SEED · PATTERN NOTICED
-        </div>
-        <div className="fpl-rail-seed-says">
-          This room is tracing the <strong>same RH curve as FLW-04 last cycle</strong> — which finished 11% under yield.
-        </div>
-        <div className="fpl-rail-seed-detail">
-          Same strain, same stage day, same lights-off window. Diego corrected it last time on day 44.
-        </div>
-        <div className="fpl-rail-seed-prov">
-          <span><strong>obs</strong> 14d</span>
-          <span><strong>basis</strong> 12 rooms</span>
-          <span><strong>confidence</strong> high</span>
-        </div>
-      </div>
+      <button type="button" className="fpl-rail-chat-trigger">
+        <span className="fpl-rail-chat-eyebrow">OPEN IN SEED →</span>
+        <span className="fpl-rail-chat-prompt">FLW-02 pattern history across cycles</span>
+      </button>
 
       <div className="fpl-rail-actions">
         <button type="button" className="fpl-rail-btn primary">Open dehumid program</button>

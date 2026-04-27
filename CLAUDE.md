@@ -43,17 +43,19 @@ Every operator surface uses one of three treatments. **Density follows the perso
 
 **Canonical surface treatment guide is `docs/design-system/PHASE-1-SURFACE-GUIDE.md`** (Cultivo Design System v7, lifted from Claude Design). It contains the per-surface assignment for every module, the migration priority, and the CSS implementation patterns. Read it before designing or modifying any operator surface. The Phase 0 rebrand reference is at `docs/design-system/PHASE-0-REBRAND.md`.
 
-**Reference port:** `/cultivation-floor-plan` (DEV-only) is the gold-standard cultivation surface — A in the top state strip and timeline, gapped outer canvas, hairline rooms, C in the side rail. Source: `src/features/cultivation/components/command/floor-plan/`.
+**Reference port:** `/executive-hub` (Hub section "Overview" tab) is the gold-standard cultivation surface — Floor Plan Live mounted inside HubShell. A in the top state strip and timeline, gapped outer canvas, hairline rooms, C in the side rail. Source: `src/features/cultivation/components/command/floor-plan/`. Legacy executive panels live in a "Details" accordion below the floor plan on the same route.
 
 ## Instrument vs interpretation principle
 
-The product is the **instrument**. The dashboard, floor plan, room board, alerts panel, env rail must always be true and unmediated. **The AI chat widget is the only narrative surface.** All synthesis, story, interpretation, summary, and pattern-matching belongs in the chat.
+The product is the **instrument**. The dashboard, floor plan, room board, alerts panel, env rail must always be true and unmediated. **The Seed is the only narrative surface.** All synthesis, story, interpretation, summary, and pattern-matching belongs to The Seed. See `cultivo_seed_surface_contract` (brain id `257b7034`) for the full visual + voice contract.
 
 - No editorial UI in product. No data-driven hero headlines. No story-of-the-day baked into screens.
-- The Seed (cross-cycle pattern matching) is a chat behavior, not a separate alert tone with bespoke UI.
-- Story-of-the-day for the COO opens via the chat, not via the dashboard.
+- The Seed is the named synthesis surface (formerly "AI chat widget"). Pattern recall, daily digest, real-time observation, reactive query response all live here. One surface, one organism, one voice.
+- Story-of-the-day for the COO surfaces in The Seed, not on the dashboard.
+- Voice contract: observational, never editorial. Subject-verb-object, no first person, no value judgment, no conversational warmth, no apology. Periods are legal only inside The Seed.
+- Naming grammar: "The Seed" in narrative documentation; "Seed" (bare) in operator UI strings (`SEED · sales`, `seed thinking 3s`, `OPEN IN SEED →`).
 
-This separation keeps the failure modes of mediated content local to the chat. The dashboard stays cold and trustworthy.
+This separation keeps the failure modes of mediated content local to The Seed. The dashboard stays cold and trustworthy.
 
 ## Persona contracts
 
@@ -126,7 +128,7 @@ src/features/auth/         # Login.tsx is the canonical aesthetic example
 src/features/worker/       # Cultivation Worker persona (PIN auth, mobile-first)
 src/types/                 # Centralized domain types
 src/shared/                # Shared components, hooks
-src/shared/components/     # AIChatWidget.tsx (the narrative surface)
+src/shared/components/     # AIChatWidget.tsx (The Seed surface; rename pending per cultivo_seed_surface_contract)
 src/services/              # Global services (inventoryMovement, error, notification)
 src/lib/                   # Core utilities (supabase client, auth)
 docs/                      # Documentation

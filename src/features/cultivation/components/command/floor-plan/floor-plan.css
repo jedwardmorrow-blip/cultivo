@@ -466,6 +466,33 @@
   font-size: 8.5px;
 }
 
+.fpl-rail-chat-trigger {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px solid var(--op-line);
+  cursor: pointer;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 4px;
+  width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+.fpl-rail-chat-trigger:hover {
+  border-color: var(--accent);
+  background: rgba(232,224,212,0.03);
+}
+.fpl-rail-chat-eyebrow {
+  font: 500 9px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.fpl-rail-chat-prompt {
+  font: 400 12px/1.4 'IBM Plex Sans', sans-serif;
+  color: var(--op-ink-2);
+  letter-spacing: -0.005em;
+}
+
 .fpl-rail-actions {
   display: flex; flex-direction: column; gap: 6px;
   margin-top: 14px;

@@ -4,17 +4,30 @@ import { FloorPlanSVG } from './FloorPlanSVG';
 import { SideRail } from './SideRail';
 import { FacilityStateStrip } from './FacilityStateStrip';
 import { BottomTimeline } from './BottomTimeline';
+import { useFloorPlanData } from './useFloorPlanData';
 import './floor-plan.css';
 
-export function FloorPlanLive() {
+interface FloorPlanLiveProps {
+  /** Hide the section chrome when mounted inside HubShell. Default false. */
+  embedded?: boolean;
+}
+
+export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
   const [anchorIdx, setAnchorIdx] = useState(0);
   const anchor = TIME_ANCHORS[anchorIdx];
   const isLive = !!anchor.isLive;
+  // Live data merges into FACILITY.rooms inside FloorPlanSVG via context-free
+  // pattern: the bridge hook is called here to trigger fetches; rooms aren't
+  // yet threaded through the SVG (Phase 2 wire). For now this keeps the data
+  // pipe warm so caching is cold-loaded by the time we thread it through.
+  useFloorPlanData();
 
   return (
-    <div className={`fpl-root product`}>
+    <div className={`fpl-root ${embedded ? 'is-embedded' : ''} product`}>
       <div className={`fpl artb ${isLive ? '' : 'is-scrubbed'}`}>
-        {/* Top nav (shared chrome from coo-desk) */}
+        {/* Top nav (shared chrome from coo-desk) — hidden when embedded inside HubShell */}
+        {embedded ? null : (
+        <>
         <div className="coo-nav">
           <div className="coo-nav-l">
             <span className="coo-nav-word">CULTIVO</span>
@@ -43,6 +56,8 @@ export function FloorPlanLive() {
           <span className="coo-subtab">Inputs</span>
           <span className="coo-subtab">Reports</span>
         </div>
+        </>
+        )}
 
         <FacilityStateStrip anchor={anchor} onReturnLive={() => setAnchorIdx(0)} />
 
