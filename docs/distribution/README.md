@@ -13,6 +13,7 @@ Canonical brain rows (query Supabase `uayyhluztelnfxfvdhyt`)
 - `cultops_feature_spec` row id `06f02652-7f7d-4fa9-8e5e-fb68f6545253` — reviewed Distribution data + behavior contract. Source SHA cult-ops `5dc4940`. Status `reviewed`, reviewed_by `justin`, reviewed_at 2026-04-26.
 - `business_context` row `cultops_distribution_philosophy` (2026-04-07) — the historical Cult Ops Step 1 Philosophy that drove the existing surface. Carries forward the Calendar + Map metaphor and adjacency rules.
 - `business_context` row `cultops_distribution_philosophy_v2_supersedes` id `5a16cd72-5925-453d-8569-fb3e2608f3c1` (2026-04-26) — the supersession addendum. Maps what carries forward verbatim, what's superseded by the new DS, what's added.
+- `business_context` row `cultivo_surface_treatments_v1` id `c03fafb7-4e41-4007-85ad-821568eacba7` (2026-04-26, distilled from DS v7) — the Three Surface Treatments doctrine (A Hairline / B Gapped / C Hybrid) plus per-surface treatment map across all modules including a Distribution per-region map. Read this before designing any new Cultivo surface.
 - `business_context` row `cultivo_persona_distribution_coordinator` — persona contract.
 - `business_context` row `cultivo_design_process_v1` — current process doctrine (Steps 0-6, lane assignment, scorecards, kill list, supersession of dual-track default).
 - `business_context` row `cultivo_lint_baseline_2026_04_26` — migration backlog the redesign feeds into.
@@ -21,7 +22,8 @@ Canonical brain rows (query Supabase `uayyhluztelnfxfvdhyt`)
 
 Companion artifacts elsewhere on disk
 
-- `/Users/justinmorrow/Desktop/Claude/_inbound/cultivo-ds-2026-04-26/` — canonical DS package (CLAUDE.md, brand-tokens.css, System Reference HTML, mockups, pr-package).
+- `/Users/justinmorrow/Desktop/Claude/_inbound/cultivo-ds-7-2026-04-26/` — current canonical DS v7 package (CLAUDE.md, brand-tokens.css, System Reference HTML with surface-treatments section, mockups, pr-package, and `phase-0-rebrand/` with the token-swap drop-ins and the Phase 1 surface guide).
+- `/Users/justinmorrow/Desktop/Claude/_inbound/cultivo-ds-2026-04-26/` — DS v5 package, retained as historical. Tokens are byte-identical to v7; the doctrine layer is absent. Reference v7 first; reference v5 only for the older mockups workspace state.
 - `/Users/justinmorrow/Desktop/Claude/_inbound/cultivo-app-ref-2026-04-26/reference/` — `DistributionCommandCenter.tsx`, `DistributionKpiStrip.tsx`, `distribution-constants.ts` copied for design reference. Do not port styles; understand the surface.
 
 Lane and next step

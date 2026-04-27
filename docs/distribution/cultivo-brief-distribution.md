@@ -59,6 +59,30 @@ Constraints
 - All numeric data uses `.tnum` for tabular numerals.
 - Real-data fixture required at Step 2 (see companions).
 
+Surface treatment map (per Phase 1 guide, DS v7)
+The new DS doctrine specifies three treatments and tells you which region uses which. For Distribution, all three appear:
+
+- Header KpiStrip (5 KPI cells): A · Hairline. Comparison across cells is the job.
+- Header overdue chip: atom-level, no A/B/C classification. Stand-alone chip pattern.
+- DeliveryCalendarGrid (primary, 30+ day cells): A · Hairline. Matches the Production Planner precedent for dense scheduling data. Drag-target affordance handled with hover row highlight + 2px left accent rule, not card identity.
+- DeliveryCalendarMini (secondary): A · Hairline.
+- DistributionMap (primary or expanded): media surface inside a B · Gapped container.
+- UnscheduledPanel expanded (primary swap): B · Gapped. Draggable cards need card identity.
+- UnscheduledPanel compact (sidebar, top-3): B · Gapped.
+- RouteSummaryPanel (per-zone driver rows): C · Hybrid. Outer panel gapped; per-zone rows hairline.
+- Upstream Readiness cell (NEW): C · Hybrid. Outer panel gapped; cohort rows (room/stage/days-to-ready) hairline.
+- InProductionPanel: C · Hybrid.
+- DayDetailStrip (horizontal OrderReadinessCard list): B · Gapped. Cards expand individually.
+- OrderReadinessCard expanded: card flips from B to C when expanded. Outer card gapped; FulfillmentLineItem rows + document pills inside use hairline.
+- InventoryDrawer modal: C · Hybrid (modals are explicitly C per the doctrine).
+
+The marquee call: the calendar is HAIRLINE, not bento-of-cards. This kills the v5-era assumption of "hairline everywhere" and prevents the alternate failure mode of "gapped cards everywhere" which would destroy scan speed on the calendar and the KpiStrip. Hover affordance, drag-target highlight, and selection state on hairline cells use a 2px left accent (`--op-line-strong` then `--accent` on engaged), not background fills or scale transforms.
+
+DS v7 doctrine source
+- Brain row `cultivo_surface_treatments_v1` — canonical doctrine row, distilled from v7
+- `_inbound/cultivo-ds-7-2026-04-26/CLAUDE.md` "Three surface treatments" section
+- `_inbound/cultivo-ds-7-2026-04-26/phase-0-rebrand/PHASE-1-SURFACE-GUIDE.md` — full per-surface migration guide
+
 Out of scope (queue separately)
 - Partial-return flow (decision 2; data-integrity bug, addressed as backend-first work item)
 - Multi-facility staff_id scoping (defer to mockup)
