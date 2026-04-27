@@ -8,7 +8,16 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── CONFIGURATION ───
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/cultops-ai-chat-v2`;
+// eye-harness-v1 is the production default. v99 (cultops-ai-chat-v2) is kept
+// as an emergency rollback path. To force a browser back to v99 set
+//   localStorage.setItem("eye_harness_v99_fallback", "true")
+// in devtools and reload. Anyone without the fallback flag (everyone by
+// default) routes to eye-harness-v1.
+const EYE_FN = (typeof window !== "undefined" &&
+  window.localStorage?.getItem("eye_harness_v99_fallback") === "true")
+  ? "cultops-ai-chat-v2"
+  : "eye-harness-v1";
+const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/${EYE_FN}`;
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
   "image/png", "image/jpeg", "image/gif", "image/webp",

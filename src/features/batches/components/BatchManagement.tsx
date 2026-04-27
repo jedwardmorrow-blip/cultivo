@@ -21,6 +21,8 @@ const LIFECYCLE_DISPLAY: Record<string, { label: string; color: string }> = {
   flower: { label: 'Flower', color: 'text-pink-400 bg-pink-900/20 border-pink-700' },
   // Flower production path
   drying: { label: 'Drying', color: 'text-yellow-400 bg-yellow-900/20 border-yellow-700' },
+  binned: { label: 'Binned', color: 'text-indigo-400 bg-indigo-900/20 border-indigo-700' },
+  bucked: { label: 'Bucked', color: 'text-sky-400 bg-sky-900/20 border-sky-700' },
   bucking: { label: 'Bucking', color: 'text-teal-400 bg-teal-900/20 border-teal-700' },
   trimming: { label: 'Trimming', color: 'text-cyan-400 bg-cyan-900/20 border-cyan-700' },
   bulk: { label: 'Bulk', color: 'text-green-400 bg-green-900/20 border-green-700' },

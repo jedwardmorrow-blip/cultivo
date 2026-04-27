@@ -44,6 +44,7 @@ function getStageWeight(batch: BatchDetailRow, stage: PipelineStage): number {
 const LIFECYCLE_LABELS: Record<string, string> = {
   growing: 'Growing',
   drying: 'Drying',
+  binned: 'Binned',
   curing: 'Curing',
   bucked: 'Bucked',
   trimming: 'Trimming',
