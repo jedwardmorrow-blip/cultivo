@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cultivo · Distribution · Crisis state v2</title>
+<meta name="viewport" content="width=1366,initial-scale=1">
+<link rel="stylesheet" href="../../ui_kits/cult-ops-brand/brand-tokens.css">
+<link rel="stylesheet" href="distribution-token-delta-v1.css">
+<style>
+  body { margin: 0; background: #050505; color: var(--op-ink); font-family: var(--font-sans); }
+  .artboard { width: 1366px; margin: 32px auto; background: var(--op-canvas); }
+  .artboard-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--op-ink-3); padding: 16px 24px 0; text-transform: uppercase; }
+  .artboard-state { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--status-bad); padding: 0 24px 16px; text-transform: uppercase; }
+
+  .hairline-grid { display: grid; gap: 1px; background: var(--op-line); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+  .hairline-grid > * { background: var(--op-canvas); }
+  .gapped-card { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); }
+  .gapped-card .inner-row { padding: 10px 14px; border-bottom: 1px solid var(--op-line); }
+  .gapped-card .inner-row:last-child { border-bottom: none; }
+
+  .cc { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .cc-header { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: center; }
+  .cc-title { font-family: var(--font-sans); font-size: 18px; font-weight: 500; letter-spacing: -0.005em; color: var(--op-ink); }
+  .cc-title .crumb { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; color: var(--op-ink-3); text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .cc-header-right { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+
+  .overdue-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px; border: 1px solid var(--status-bad); border-radius: var(--r-sm); background: var(--op-surface); font-family: var(--font-sans); font-size: 12px; color: var(--op-ink); cursor: pointer; }
+  .overdue-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--status-bad); animation: pulse 1.6s ease-in-out infinite; }
+  .overdue-chip .count { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-weight: 500; color: var(--status-bad); }
+  .overdue-chip[data-state="engaged"] { box-shadow: inset 2px 0 0 var(--accent); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .kpi-strip { grid-template-columns: repeat(5, 1fr); }
+  .kpi-tile { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .kpi-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--op-ink-3); text-transform: uppercase; }
+  .kpi-value { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 20px; font-weight: 500; color: var(--op-ink); }
+  .kpi-value[data-status="bad"] { color: var(--status-bad); }
+  .kpi-meta { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-3); }
+  .kpi-meta[data-status="bad"] { color: var(--status-bad); }
+  .kpi-tile[data-active="true"] { box-shadow: inset 2px 0 0 var(--accent); }
+
+  .bento { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+  .primary, .secondary { display: flex; flex-direction: column; gap: 16px; }
+
+  .calendar { display: flex; flex-direction: column; }
+  .cal-header { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 0 4px 12px; }
+  .cal-month { font-family: var(--font-sans); font-size: 14px; font-weight: 500; color: var(--op-ink); letter-spacing: -0.005em; }
+  .cal-nav { display: flex; gap: 4px; }
+  .cal-nav button { background: transparent; border: 1px solid var(--op-line); color: var(--op-ink-2); font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: var(--r-xs); cursor: default; }
+  .cal-grid { grid-template-columns: repeat(7, 1fr); }
+  .cal-dow { padding: 8px 10px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--op-ink-3); text-transform: uppercase; }
+  .cal-day { min-height: 86px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+  .cal-day .num { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 12px; color: var(--op-ink-2); }
+  .cal-day .stops { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 11px; color: var(--op-ink); margin-top: auto; }
+  .cal-day .rev { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 10px; color: var(--op-ink-3); }
+  .cal-day .zones { display: flex; gap: 3px; }
+  .cal-day[data-state="today"] { box-shadow: inset 2px 0 0 var(--accent); }
+  .cal-day[data-state="today"] .num { color: var(--op-ink); }
+  .cal-day[data-state="other-month"] .num { color: var(--op-ink-4); }
+  .cal-day[data-state="dragover"] { box-shadow: inset 2px 0 0 var(--accent), inset 0 0 0 1px var(--op-line-strong); }
+  .cal-day[data-state="dragover"] .num { color: var(--accent); }
+  .cal-day[data-state="dragover"]::after { content: 'drop here'; position: absolute; bottom: 6px; right: 8px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; }
+  .cal-day[data-state="overdue"] { box-shadow: inset 2px 0 0 var(--status-bad); }
+
+  .mini-cal-grid { grid-template-columns: repeat(7, 1fr); }
+  .mini-cal-cell { padding: 5px 0; text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-2); font-feature-settings: 'tnum'; }
+  .mini-cal-cell[data-state="today"] { color: var(--accent); }
+  .mini-cal-cell[data-state="other-month"] { color: var(--op-ink-4); }
+  .mini-cal-cell[data-state="overdue"] { color: var(--status-bad); }
+  .mini-cal-cell[data-state="dow"] { color: var(--op-ink-3); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .panel-head { padding: 12px 14px 10px; display: flex; align-items: baseline; justify-content: space-between; }
+  .panel-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--op-ink-3); text-transform: uppercase; }
+  .panel-meta { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .panel-meta[data-status="bad"] { color: var(--status-bad); }
+
+  .zone-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; }
+  .zone-row .name { font-family: var(--font-sans); font-size: 12px; color: var(--op-ink); }
+  .zone-row .stops { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .zone-row .driver { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); }
+  .zone-row .driver-empty { font-family: var(--font-sans); font-size: 11px; color: var(--status-warn); font-style: italic; }
+  .zone-row[data-state="active"] { box-shadow: inset 2px 0 0 var(--accent); }
+
+  .upstream-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; }
+  .upstream-row .room { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink); font-feature-settings: 'tnum'; }
+  .upstream-row .stage { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); }
+  .upstream-row .ready { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 11px; color: var(--op-ink); }
+  .upstream-row .ready-meta { font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-3); letter-spacing: 0.1em; text-transform: uppercase; }
+  .upstream-row[data-state="stuck"] { box-shadow: inset 2px 0 0 var(--status-warn); }
+  .upstream-row[data-state="stuck"] .ready { color: var(--status-warn); }
+  .upstream-row[data-state="stuck"] .ready-meta { color: var(--status-warn); }
+  .upstream-row[data-state="landing"] { box-shadow: inset 2px 0 0 var(--accent); }
+  .upstream-row[data-state="landing"] .ready { color: var(--accent); }
+  .stage-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+  .stage-dot.cure { background: var(--stage-cure); }
+  .stage-dot.harvest { background: var(--stage-harvest); }
+
+  .prod-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+  .prod-row .strain { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink); }
+  .prod-row .meta { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .prod-row .qty { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink); font-feature-settings: 'tnum'; }
+
+  .strip-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .strip-head h2 { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--op-ink); margin: 0; letter-spacing: -0.005em; }
+  .strip-filter-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--status-bad); text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--status-bad); border-radius: var(--r-xs); background: var(--op-canvas); }
+  .strip { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+  .order-card { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .order-card[data-state="expanded"] { border-color: var(--op-line-strong); }
+  .order-card[data-state="overdue"] { box-shadow: inset 2px 0 0 var(--status-bad); }
+  .order-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .order-customer { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--op-ink); }
+  .order-id { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .order-meta { display: flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); }
+  .order-amount { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 13px; color: var(--op-ink); margin-left: auto; }
+  .order-pills { display: flex; gap: 6px; }
+  .pill { padding: 3px 8px; border: 1px solid var(--op-line); border-radius: var(--r-xs); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--op-ink-2); text-transform: uppercase; background: var(--op-canvas); }
+  .pill[data-state="sent"] { color: var(--status-ok); border-color: rgba(110,170,141,0.4); }
+  .pill[data-state="pending"] { color: var(--op-ink-3); }
+  .pill[data-state="overdue"] { color: var(--status-bad); border-color: rgba(197,106,106,0.5); animation: pulse 1.6s ease-in-out infinite; }
+
+  /* V2 expanded card hierarchy — same as default-v2 */
+  .order-summary-row { display: flex; align-items: baseline; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--op-line); border-bottom: 1px solid var(--op-line); margin-top: 4px; }
+  .order-summary-row .label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--op-ink-3); text-transform: uppercase; }
+  .order-summary-row .progress-num { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 13px; color: var(--status-ok); font-weight: 500; }
+  .order-summary-row .progress-num[data-state="partial"] { color: var(--accent); }
+  .order-summary-row .progress-num[data-state="empty"] { color: var(--op-ink-3); }
+  .order-summary-row .progress-num[data-state="blocked"] { color: var(--status-bad); }
+
+  .line-list { display: flex; flex-direction: column; padding-top: 4px; }
+  .line-row-v2 { padding: 7px 0; border-bottom: 1px solid var(--op-line); display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: baseline; }
+  .line-row-v2:last-child { border-bottom: none; }
+  .line-row-v2 .strain-cell { display: flex; flex-direction: column; gap: 2px; }
+  .line-row-v2 .strain { font-family: var(--font-sans); font-size: 12px; color: var(--op-ink); }
+  .line-row-v2 .meta { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .line-row-v2 .qty { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); font-feature-settings: 'tnum'; }
+  .line-row-v2 .qty[data-state="full"] { color: var(--status-ok); }
+
+  .sidebar-unsched-card { padding: 10px 12px; cursor: grab; display: flex; flex-direction: column; gap: 4px; opacity: 0.55; box-shadow: inset 2px 0 0 var(--accent); }
+  .sidebar-unsched-card .head { display: flex; justify-content: space-between; align-items: baseline; }
+  .sidebar-unsched-card .name { font-family: var(--font-sans); font-size: 12px; color: var(--op-ink); }
+  .sidebar-unsched-card .amount { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 11px; color: var(--op-ink-2); }
+  .sidebar-unsched-card .meta { font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .legend { padding: 16px 24px 24px; display: flex; gap: 24px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--op-ink-3); text-transform: uppercase; border-top: 1px dashed var(--op-line); margin-top: 8px; flex-wrap: wrap; }
+  .legend span { color: var(--op-ink-2); }
+</style>
+</head>
+<body class="product">
+<div class="artboard">
+  <div class="artboard-tag">Distribution · CRISIS · v2 · 1366 landscape · tightened expanded card</div>
+  <div class="artboard-state">Friday afternoon · 3 overdue docs · stuck cure cohort · drag in flight · doc-filter active · v2 hierarchy</div>
+
+  <main class="cc">
+
+    <header class="cc-header">
+      <div class="cc-title">
+        <span class="crumb">Cultivo · Operations</span>
+        Distribution
+      </div>
+      <div class="cc-header-right">
+        <div class="overdue-chip" data-state="engaged" title="3 overdue documents · click to filter strip">
+          <span class="dot"></span><span>Overdue</span><span class="count">3</span>
+        </div>
+        <div class="kpi-strip hairline-grid">
+          <div class="kpi-tile" data-active="true"><div class="kpi-label">Shipping today</div><div class="kpi-value">4</div><div class="kpi-meta">1 ready · 3 docs blocked</div></div>
+          <div class="kpi-tile"><div class="kpi-label">Docs pending</div><div class="kpi-value" data-status="bad">3</div><div class="kpi-meta" data-status="bad">3 overdue</div></div>
+          <div class="kpi-tile"><div class="kpi-label">Unscheduled</div><div class="kpi-value">1</div><div class="kpi-meta">$3,950 unrouted</div></div>
+          <div class="kpi-tile"><div class="kpi-label">Month revenue</div><div class="kpi-value">$240,180</div><div class="kpi-meta">81% of forecast</div></div>
+          <div class="kpi-tile"><div class="kpi-label">Routes today</div><div class="kpi-value">3</div><div class="kpi-meta">e-valley · w-valley · n-valley</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="bento">
+
+      <section class="primary">
+        <div class="calendar">
+          <div class="cal-header">
+            <div class="cal-month">April 2026 · Week 18</div>
+            <div class="cal-nav">
+              <button>‹</button><button>Today</button><button>›</button>
+            </div>
+          </div>
+          <div class="cal-grid hairline-grid">
+            <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+            <div class="cal-day" data-state="other-month"><div class="num">29</div></div>
+            <div class="cal-day" data-state="other-month"><div class="num">30</div></div>
+            <div class="cal-day" data-state="other-month"><div class="num">31</div></div>
+            <div class="cal-day"><div class="num">1</div></div><div class="cal-day"><div class="num">2</div></div><div class="cal-day"><div class="num">3</div></div><div class="cal-day"><div class="num">4</div></div>
+            <div class="cal-day"><div class="num">5</div></div><div class="cal-day"><div class="num">6</div></div><div class="cal-day"><div class="num">7</div></div><div class="cal-day"><div class="num">8</div></div><div class="cal-day"><div class="num">9</div></div><div class="cal-day"><div class="num">10</div></div><div class="cal-day"><div class="num">11</div></div>
+            <div class="cal-day"><div class="num">12</div></div><div class="cal-day"><div class="num">13</div></div><div class="cal-day"><div class="num">14</div></div><div class="cal-day"><div class="num">15</div></div><div class="cal-day"><div class="num">16</div></div><div class="cal-day"><div class="num">17</div></div><div class="cal-day"><div class="num">18</div></div>
+            <div class="cal-day"><div class="num">19</div></div><div class="cal-day"><div class="num">20</div></div><div class="cal-day"><div class="num">21</div></div><div class="cal-day"><div class="num">22</div></div><div class="cal-day"><div class="num">23</div></div><div class="cal-day"><div class="num">24</div></div><div class="cal-day"><div class="num">25</div></div>
+            <div class="cal-day"><div class="num">26</div></div>
+            <div class="cal-day"><div class="num">27</div><div class="zones"><span class="zone-dot local"></span></div><div class="stops">2 stops</div><div class="rev">$3.3k</div></div>
+            <div class="cal-day"><div class="num">28</div></div>
+            <div class="cal-day"><div class="num">29</div><div class="zones"><span class="zone-dot east-valley"></span><span class="zone-dot north-valley"></span></div><div class="stops">5 stops</div><div class="rev">$8.9k</div></div>
+            <div class="cal-day" data-state="overdue"><div class="num">30</div><div class="zones"><span class="zone-dot east-valley"></span><span class="zone-dot west-valley"></span><span class="zone-dot north-valley"></span></div><div class="stops">4 stops</div><div class="rev">$7.4k</div></div>
+            <div class="cal-day" data-state="today"><div class="num">30</div><div class="zones"><span class="zone-dot east-valley"></span><span class="zone-dot west-valley"></span><span class="zone-dot north-valley"></span></div><div class="stops">4 stops</div><div class="rev">$7.4k</div></div>
+            <div class="cal-day" data-state="dragover"><div class="num">1</div><div class="zones"><span class="zone-dot local"></span></div><div class="stops">+1 stop</div><div class="rev">+$3.9k</div></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="secondary">
+
+        <div class="gapped-card">
+          <div class="panel-head"><span class="panel-title">Month nav</span><span class="panel-meta" data-status="bad">3 overdue</span></div>
+          <div class="mini-cal-grid hairline-grid" style="margin: 0 12px 12px; border-radius: var(--r-sm);">
+            <div class="mini-cal-cell" data-state="dow">S</div><div class="mini-cal-cell" data-state="dow">M</div><div class="mini-cal-cell" data-state="dow">T</div><div class="mini-cal-cell" data-state="dow">W</div><div class="mini-cal-cell" data-state="dow">T</div><div class="mini-cal-cell" data-state="dow">F</div><div class="mini-cal-cell" data-state="dow">S</div>
+            <div class="mini-cal-cell" data-state="other-month">29</div><div class="mini-cal-cell" data-state="other-month">30</div><div class="mini-cal-cell" data-state="other-month">31</div><div class="mini-cal-cell">1</div><div class="mini-cal-cell">2</div><div class="mini-cal-cell">3</div><div class="mini-cal-cell">4</div>
+            <div class="mini-cal-cell">5</div><div class="mini-cal-cell">6</div><div class="mini-cal-cell">7</div><div class="mini-cal-cell">8</div><div class="mini-cal-cell">9</div><div class="mini-cal-cell">10</div><div class="mini-cal-cell">11</div>
+            <div class="mini-cal-cell">12</div><div class="mini-cal-cell">13</div><div class="mini-cal-cell">14</div><div class="mini-cal-cell">15</div><div class="mini-cal-cell">16</div><div class="mini-cal-cell">17</div><div class="mini-cal-cell">18</div>
+            <div class="mini-cal-cell">19</div><div class="mini-cal-cell">20</div><div class="mini-cal-cell">21</div><div class="mini-cal-cell">22</div><div class="mini-cal-cell">23</div><div class="mini-cal-cell">24</div><div class="mini-cal-cell">25</div>
+            <div class="mini-cal-cell">26</div><div class="mini-cal-cell">27</div><div class="mini-cal-cell">28</div><div class="mini-cal-cell">29</div><div class="mini-cal-cell" data-state="overdue">30</div><div class="mini-cal-cell" data-state="today">30</div><div class="mini-cal-cell" data-state="other-month">1</div>
+          </div>
+        </div>
+
+        <div class="gapped-card">
+          <div class="panel-head"><span class="panel-title">Unscheduled · drag in flight</span><span class="panel-meta">1 of 1</span></div>
+          <div class="inner-row">
+            <div class="sidebar-unsched-card" draggable="true">
+              <div class="head"><span class="name">Mile-High Cannabis Co.</span><span class="amount">$3,950</span></div>
+              <div class="meta">Local · 5 line items · drop on day to schedule</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gapped-card">
+          <div class="panel-head"><span class="panel-title">Routes · Fri Apr 30</span><span class="panel-meta" data-status="bad">4 stops · 2 zones unassigned</span></div>
+          <div class="inner-row">
+            <div class="zone-row" data-state="active"><span class="zone-dot east-valley"></span><div><div class="name">East Valley</div><div class="stops">2 stops · 38 mi</div></div><div class="driver">M. Reyes</div><span style="font-family:var(--font-mono); font-size:10px; color:var(--op-ink-3);">07:00 · 11:00</span></div>
+          </div>
+          <div class="inner-row">
+            <div class="zone-row"><span class="zone-dot west-valley"></span><div><div class="name">West Valley</div><div class="stops">1 stop · 22 mi</div></div><div class="driver-empty">unassigned</div><span style="font-family:var(--font-mono); font-size:10px; color:var(--op-ink-4);">—</span></div>
+          </div>
+          <div class="inner-row">
+            <div class="zone-row"><span class="zone-dot north-valley"></span><div><div class="name">North Valley</div><div class="stops">1 stop · 31 mi</div></div><div class="driver-empty">unassigned</div><span style="font-family:var(--font-mono); font-size:10px; color:var(--op-ink-4);">—</span></div>
+          </div>
+        </div>
+
+        <div class="gapped-card">
+          <div class="panel-head"><span class="panel-title">Upstream readiness · 7d</span><span class="panel-meta">2 landing · 1 stuck</span></div>
+          <div class="inner-row"><div class="upstream-row" data-state="landing"><span class="stage-dot cure"></span><div><div class="room">FLR-02 · 26041801-OG</div><div class="stage">Cure · OG Kush · 18 lb</div></div><div><div class="ready">tomorrow</div></div><div class="ready-meta">to packaging</div></div></div>
+          <div class="inner-row"><div class="upstream-row" data-state="landing"><span class="stage-dot cure"></span><div><div class="room">FLR-04 · 26041201-AF</div><div class="stage">Cure · Apple Fritter · 12 lb</div></div><div><div class="ready">tomorrow</div></div><div class="ready-meta">to packaging</div></div></div>
+          <div class="inner-row"><div class="upstream-row" data-state="stuck"><span class="stage-dot harvest"></span><div><div class="room">FLR-06 · 26040501-WG</div><div class="stage">Harvest · Wedding Cake · 9 days in</div></div><div><div class="ready">+2 days</div></div><div class="ready-meta">over expected</div></div></div>
+        </div>
+
+        <div class="gapped-card">
+          <div class="panel-head"><span class="panel-title">In production</span><span class="panel-meta">3 active</span></div>
+          <div class="inner-row"><div class="prod-row"><span class="zone-dot east-valley"></span><div><div class="strain">Apple Fritter · 3.5g</div><div class="meta">B-2046 · packaging · 22m</div></div><div class="qty">14 / 24</div></div></div>
+          <div class="inner-row"><div class="prod-row"><span class="zone-dot west-valley"></span><div><div class="strain">OG Kush · 1g pre-roll</div><div class="meta">B-2042 · trim · 1h 12m</div></div><div class="qty">10 / 18</div></div></div>
+          <div class="inner-row"><div class="prod-row"><span class="zone-dot north-valley"></span><div><div class="strain">Wedding Cake · 7g</div><div class="meta">B-2038 · package · 5m</div></div><div class="qty">2 / 6</div></div></div>
+        </div>
+
+      </aside>
+    </div>
+
+    <section>
+      <div class="strip-head">
+        <h2>Filtered · 3 orders with overdue documents</h2>
+        <span class="strip-filter-tag">Overdue chip filter active · click chip to clear</span>
+      </div>
+      <div class="strip">
+
+        <!-- ═══════ V2 EXPANDED CARD with overdue COA ═══════
+             Same hierarchy as default-v2 but in crisis: blocked status uses --status-bad on summary number.
+             Overdue pill stays pulsing in the doc chip row.
+        -->
+        <article class="gapped-card order-card" data-state="expanded overdue">
+          <div class="order-head">
+            <div>
+              <div class="order-customer">High Desert Wellness</div>
+              <div class="order-id">PO-2604-141 · today 14:30 ETA</div>
+            </div>
+            <div class="order-amount">$1,840</div>
+          </div>
+          <div class="order-meta">
+            <span class="zone-dot east-valley"></span>East Valley · 3 line items · M. Reyes
+          </div>
+          <div class="order-pills">
+            <span class="pill" data-state="sent">Invoice sent</span>
+            <span class="pill" data-state="overdue">COA overdue 4h</span>
+            <span class="pill" data-state="sent">Manifest sent</span>
+          </div>
+          <div class="order-summary-row">
+            <span class="label">Items packed · blocked by COA</span>
+            <span class="progress-num" data-state="blocked">24 / 24 · cannot dispatch</span>
+          </div>
+          <div class="line-list">
+            <div class="line-row-v2"><div class="strain-cell"><div class="strain">Apple Fritter · 3.5g</div><div class="meta">B-2046 · 8 sleeves</div></div><div class="qty" data-state="full">8 / 8</div></div>
+            <div class="line-row-v2"><div class="strain-cell"><div class="strain">OG Kush · 1g pre-roll</div><div class="meta">B-2042 · 12 packs</div></div><div class="qty" data-state="full">12 / 12</div></div>
+            <div class="line-row-v2"><div class="strain-cell"><div class="strain">Wedding Cake · 7g</div><div class="meta">B-2038 · 4 jars</div></div><div class="qty" data-state="full">4 / 4</div></div>
+          </div>
+        </article>
+
+        <article class="gapped-card order-card" data-state="overdue">
+          <div class="order-head">
+            <div><div class="order-customer">Verdant Provisions</div><div class="order-id">PO-2604-142 · today 16:00 ETA</div></div>
+            <div class="order-amount">$2,210</div>
+          </div>
+          <div class="order-meta"><span class="zone-dot west-valley"></span>West Valley · 4 line items · unassigned driver</div>
+          <div class="order-pills"><span class="pill" data-state="overdue">Invoice overdue 2h</span><span class="pill" data-state="sent">COA</span><span class="pill" data-state="pending">Manifest</span></div>
+        </article>
+
+        <article class="gapped-card order-card" data-state="overdue">
+          <div class="order-head">
+            <div><div class="order-customer">Greenhouse Co-op</div><div class="order-id">PO-2604-143 · today 17:30 ETA</div></div>
+            <div class="order-amount">$3,340</div>
+          </div>
+          <div class="order-meta"><span class="zone-dot north-valley"></span>North Valley · 5 line items · unassigned driver</div>
+          <div class="order-pills"><span class="pill" data-state="sent">Invoice</span><span class="pill" data-state="sent">COA</span><span class="pill" data-state="overdue">Manifest overdue 1h</span></div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="legend">
+    <span>v2 changes:</span>
+    expanded card hierarchy revised (single aggregate progress, no per-line bars)
+    blocked summary uses --status-bad
+    drag-target unchanged (--accent left rule, no fill)
+  </div>
+</div>
+</body>
+</html>

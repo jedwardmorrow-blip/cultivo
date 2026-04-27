@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cultivo · Distribution · Portrait 1024 collapse</title>
+<meta name="viewport" content="width=1024,initial-scale=1">
+<link rel="stylesheet" href="../../ui_kits/cult-ops-brand/brand-tokens.css">
+<link rel="stylesheet" href="distribution-token-delta-v1.css">
+<style>
+  body { margin: 0; background: #050505; color: var(--op-ink); font-family: var(--font-sans); }
+  .artboard { width: 1024px; margin: 32px auto; background: var(--op-canvas); }
+  .artboard-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--op-ink-3); padding: 16px 20px 0; text-transform: uppercase; }
+  .artboard-state { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--accent); padding: 0 20px 16px; text-transform: uppercase; }
+
+  .hairline-grid { display: grid; gap: 1px; background: var(--op-line); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+  .hairline-grid > * { background: var(--op-canvas); }
+  .gapped-card { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); }
+  .gapped-card .inner-row { padding: 10px 14px; border-bottom: 1px solid var(--op-line); }
+  .gapped-card .inner-row:last-child { border-bottom: none; }
+
+  .cc { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ═══════ COLLAPSE RULE 1: header stacks ═══════ */
+  .cc-header { display: flex; flex-direction: column; gap: 12px; }
+  .cc-title-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .cc-title { font-family: var(--font-sans); font-size: 17px; font-weight: 500; letter-spacing: -0.005em; color: var(--op-ink); }
+  .cc-title .crumb { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; color: var(--op-ink-3); text-transform: uppercase; display: block; margin-bottom: 4px; }
+
+  .overdue-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 8px; border: 1px solid var(--op-line); border-radius: var(--r-sm); background: var(--op-surface); font-family: var(--font-sans); font-size: 12px; color: var(--op-ink-2); }
+  .overdue-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--op-ink-4); }
+  .overdue-chip .count { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-weight: 500; color: var(--op-ink-3); }
+  .overdue-chip[data-state="zero"] { opacity: 0.5; }
+
+  /* ═══════ COLLAPSE RULE 2: KPI strip stays 5-cell hairline (still fits at 1024) ═══════ */
+  .kpi-strip { grid-template-columns: repeat(5, 1fr); }
+  .kpi-tile { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--op-ink-3); text-transform: uppercase; }
+  .kpi-value { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 18px; font-weight: 500; color: var(--op-ink); }
+  .kpi-meta { font-family: var(--font-sans); font-size: 10px; color: var(--op-ink-3); }
+  .kpi-tile[data-active="true"] { box-shadow: inset 2px 0 0 var(--accent); }
+
+  /* ═══════ COLLAPSE RULE 3: bento becomes single column, calendar primary, secondary stack horizontal ═══════
+     - Primary panel (calendar OR map OR unscheduled) takes full width
+     - Secondary panels collapse to a 2-up grid below primary, hairline-divided
+     - Mini-cal moves to header-right area as a chip-or-trigger; full mini-cal hidden
+     - DayDetailStrip becomes vertical card list
+  */
+  .primary-full { width: 100%; }
+  .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .calendar { display: flex; flex-direction: column; }
+  .cal-header { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 0 4px 10px; }
+  .cal-month { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--op-ink); letter-spacing: -0.005em; }
+  .cal-nav { display: flex; gap: 4px; }
+  .cal-nav button { background: transparent; border: 1px solid var(--op-line); color: var(--op-ink-2); font-family: var(--font-mono); font-size: 11px; padding: 3px 8px; border-radius: var(--r-xs); cursor: default; }
+  .view-switch { display: flex; gap: 4px; }
+  .view-switch button { background: transparent; border: 1px solid var(--op-line); color: var(--op-ink-3); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; padding: 4px 8px; border-radius: var(--r-xs); cursor: default; text-transform: uppercase; }
+  .view-switch button[data-active="true"] { color: var(--accent); border-color: var(--accent); }
+  .cal-grid { grid-template-columns: repeat(7, 1fr); }
+  .cal-dow { padding: 6px 8px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--op-ink-3); text-transform: uppercase; }
+  /* COLLAPSE RULE: cal-day height tightens at 1024 */
+  .cal-day { min-height: 64px; padding: 6px 8px; display: flex; flex-direction: column; gap: 3px; }
+  .cal-day .num { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 11px; color: var(--op-ink-2); }
+  .cal-day .stops { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 10px; color: var(--op-ink); margin-top: auto; }
+  .cal-day .rev { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 9px; color: var(--op-ink-3); }
+  .cal-day .zones { display: flex; gap: 3px; }
+  .cal-day[data-state="today"] { box-shadow: inset 2px 0 0 var(--accent); }
+  .cal-day[data-state="other-month"] .num { color: var(--op-ink-4); }
+
+  .panel-head { padding: 10px 12px 8px; display: flex; align-items: baseline; justify-content: space-between; }
+  .panel-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--op-ink-3); text-transform: uppercase; }
+  .panel-meta { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+
+  .zone-row, .upstream-row, .prod-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
+  .zone-row .name, .upstream-row .stage, .prod-row .strain { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink); }
+  .zone-row .meta, .upstream-row .room, .prod-row .meta { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .zone-row .driver-empty { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-4); font-style: italic; text-align: right; }
+  .zone-row .driver { font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); text-align: right; }
+  .upstream-row .ready { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 11px; color: var(--op-ink); text-align: right; }
+  .prod-row .qty { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink); font-feature-settings: 'tnum'; text-align: right; }
+  .stage-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+  .stage-dot.cure { background: var(--stage-cure); }
+  .stage-dot.harvest { background: var(--stage-harvest); }
+
+  /* ═══════ COLLAPSE RULE 4: DayDetailStrip becomes vertical (1 card per row) ═══════ */
+  .strip-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .strip-head h2 { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--op-ink); margin: 0; letter-spacing: -0.005em; }
+  .strip-vertical { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .order-card { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .order-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .order-customer { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--op-ink); }
+  .order-id { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); font-feature-settings: 'tnum'; }
+  .order-meta { display: flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); }
+  .order-amount { font-family: var(--font-mono); font-feature-settings: 'tnum'; font-size: 13px; color: var(--op-ink); margin-left: auto; }
+  .pill-row { display: flex; gap: 6px; }
+  .pill { padding: 3px 8px; border: 1px solid var(--op-line); border-radius: var(--r-xs); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--op-ink-2); text-transform: uppercase; background: var(--op-canvas); }
+  .pill[data-state="sent"] { color: var(--status-ok); border-color: rgba(110,170,141,0.4); }
+  .pill[data-state="pending"] { color: var(--op-ink-3); }
+
+  .legend { padding: 14px 20px 20px; display: flex; gap: 18px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--op-ink-3); text-transform: uppercase; border-top: 1px dashed var(--op-line); margin-top: 6px; flex-wrap: wrap; }
+  .legend span { color: var(--op-ink-2); }
+
+  /* ═══════ Collapse rules summary annotation (for the artboard reader) ═══════ */
+  .collapse-rules { padding: 12px 16px; background: var(--op-surface); border: 1px dashed var(--op-line-strong); border-radius: var(--r-md); margin: 0 20px 16px; font-family: var(--font-sans); font-size: 11px; color: var(--op-ink-2); line-height: 1.5; }
+  .collapse-rules strong { color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; }
+</style>
+</head>
+<body class="product">
+<div class="artboard">
+  <div class="artboard-tag">Distribution · PORTRAIT-1024 · v1 · responsive collapse</div>
+  <div class="artboard-state">Tuesday morning · single-column primary · secondary 2-up grid · day strip vertical</div>
+
+  <div class="collapse-rules">
+    <strong>Collapse rules at 1024 width</strong><br>
+    1. Header KPI strip stays 5-cell hairline (still fits, tile padding tightens 14→12 vertical, 16→14 horizontal).<br>
+    2. Bento goes single-column. Primary panel takes full width. Secondary panels collapse to a 2-up grid below.<br>
+    3. Calendar day cells tighten 86→64px height. Mini-cal moves into the panel-head as month-meta only; full mini-cal hidden (use month nav arrows).<br>
+    4. DayDetailStrip becomes a single-column vertical list. Cards stretch to full width.<br>
+    5. Map mode at 1024 fills the full width with reduced height (380px instead of 460px); map controls and legend stay overlaid.<br>
+    6. Drag-and-drop affordance unchanged (still --accent left rule, no scale, no fill).
+  </div>
+
+  <main class="cc">
+
+    <header class="cc-header">
+      <div class="cc-title-row">
+        <div class="cc-title">
+          <span class="crumb">Cultivo · Operations</span>
+          Distribution
+        </div>
+        <div class="overdue-chip" data-state="zero" title="No overdue documents">
+          <span class="dot"></span><span>Overdue</span><span class="count">0</span>
+        </div>
+      </div>
+      <div class="kpi-strip hairline-grid">
+        <div class="kpi-tile" data-active="true"><div class="kpi-label">Shipping</div><div class="kpi-value">3</div><div class="kpi-meta">today</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Docs pend</div><div class="kpi-value">0</div><div class="kpi-meta">none over</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Unsched</div><div class="kpi-value">2</div><div class="kpi-meta">$8.4k</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Mo. revenue</div><div class="kpi-value">$184k</div><div class="kpi-meta">62%</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Routes</div><div class="kpi-value">1</div><div class="kpi-meta">east valley</div></div>
+      </div>
+    </header>
+
+    <!-- ═══════ Primary takes full width ═══════ -->
+    <section class="primary-full">
+      <div class="calendar">
+        <div class="cal-header">
+          <div class="cal-month">April 2026 · Week 18</div>
+          <div class="view-switch">
+            <button data-active="true">Calendar</button>
+            <button>Map</button>
+            <button>Unsched</button>
+          </div>
+          <div class="cal-nav">
+            <button>‹</button>
+            <button>Today</button>
+            <button>›</button>
+          </div>
+        </div>
+        <div class="cal-grid hairline-grid">
+          <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+          <div class="cal-day" data-state="other-month"><div class="num">29</div></div>
+          <div class="cal-day" data-state="other-month"><div class="num">30</div></div>
+          <div class="cal-day" data-state="other-month"><div class="num">31</div></div>
+          <div class="cal-day"><div class="num">1</div><div class="zones"><span class="zone-dot local"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">2</div><div class="zones"><span class="zone-dot east-valley"></span></div><div class="stops">1</div></div>
+          <div class="cal-day"><div class="num">3</div></div>
+          <div class="cal-day"><div class="num">4</div></div>
+          <div class="cal-day"><div class="num">5</div></div>
+          <div class="cal-day"><div class="num">6</div><div class="zones"><span class="zone-dot west-valley"></span></div><div class="stops">3</div></div>
+          <div class="cal-day"><div class="num">7</div><div class="zones"><span class="zone-dot east-valley"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">8</div></div>
+          <div class="cal-day"><div class="num">9</div><div class="zones"><span class="zone-dot north-valley"></span></div><div class="stops">1</div></div>
+          <div class="cal-day"><div class="num">10</div><div class="zones"><span class="zone-dot local"></span><span class="zone-dot east-valley"></span></div><div class="stops">4</div></div>
+          <div class="cal-day"><div class="num">11</div></div>
+          <div class="cal-day"><div class="num">12</div></div>
+          <div class="cal-day"><div class="num">13</div><div class="zones"><span class="zone-dot west-valley"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">14</div></div>
+          <div class="cal-day"><div class="num">15</div><div class="zones"><span class="zone-dot east-valley"></span></div><div class="stops">3</div></div>
+          <div class="cal-day"><div class="num">16</div></div>
+          <div class="cal-day"><div class="num">17</div><div class="zones"><span class="zone-dot local"></span></div><div class="stops">1</div></div>
+          <div class="cal-day"><div class="num">18</div></div>
+          <div class="cal-day"><div class="num">19</div></div>
+          <div class="cal-day"><div class="num">20</div><div class="zones"><span class="zone-dot north-valley"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">21</div></div>
+          <div class="cal-day" data-state="today"><div class="num">22</div><div class="zones"><span class="zone-dot east-valley"></span></div><div class="stops">3</div></div>
+          <div class="cal-day"><div class="num">23</div><div class="zones"><span class="zone-dot east-valley"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">24</div><div class="zones"><span class="zone-dot west-valley"></span></div><div class="stops">1</div></div>
+          <div class="cal-day"><div class="num">25</div></div>
+          <div class="cal-day"><div class="num">26</div></div>
+          <div class="cal-day"><div class="num">27</div><div class="zones"><span class="zone-dot local"></span></div><div class="stops">2</div></div>
+          <div class="cal-day"><div class="num">28</div></div>
+          <div class="cal-day"><div class="num">29</div><div class="zones"><span class="zone-dot east-valley"></span><span class="zone-dot north-valley"></span></div><div class="stops">5</div></div>
+          <div class="cal-day"><div class="num">30</div></div>
+          <div class="cal-day" data-state="other-month"><div class="num">1</div></div>
+          <div class="cal-day" data-state="other-month"><div class="num">2</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ Secondary becomes 2-up grid ═══════ -->
+    <section class="secondary-grid">
+
+      <div class="gapped-card">
+        <div class="panel-head"><span class="panel-title">Routes · Tue Apr 22</span><span class="panel-meta">3 stops</span></div>
+        <div class="inner-row">
+          <div class="zone-row"><span class="zone-dot east-valley"></span><div><div class="name">East Valley</div><div class="meta">3 stops · 47 mi</div></div><div class="driver">M. Reyes</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="zone-row"><span class="zone-dot local"></span><div><div class="name">Local</div><div class="meta">no stops</div></div><div class="driver-empty">unassigned</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="zone-row"><span class="zone-dot west-valley"></span><div><div class="name">West Valley</div><div class="meta">no stops</div></div><div class="driver-empty">unassigned</div></div>
+        </div>
+      </div>
+
+      <div class="gapped-card">
+        <div class="panel-head"><span class="panel-title">Upstream readiness · 7d</span><span class="panel-meta">3 cohorts</span></div>
+        <div class="inner-row">
+          <div class="upstream-row"><span class="stage-dot cure"></span><div><div class="room">FLR-02 · 26041801-OG</div><div class="stage">Cure · OG Kush</div></div><div class="ready">3d</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="upstream-row"><span class="stage-dot cure"></span><div><div class="room">FLR-04 · 26041201-AF</div><div class="stage">Cure · Apple Fritter</div></div><div class="ready">5d</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="upstream-row"><span class="stage-dot harvest"></span><div><div class="room">FLR-06 · 26040501-WG</div><div class="stage">Harvest · Wedding Cake</div></div><div class="ready">7d</div></div>
+        </div>
+      </div>
+
+      <div class="gapped-card">
+        <div class="panel-head"><span class="panel-title">In production</span><span class="panel-meta">2 active</span></div>
+        <div class="inner-row">
+          <div class="prod-row"><span class="zone-dot east-valley"></span><div><div class="strain">Apple Fritter · 3.5g</div><div class="meta">B-2046 · packaging · 18m</div></div><div class="qty">12 / 24</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="prod-row"><span class="zone-dot local"></span><div><div class="strain">OG Kush · 1g pre-roll</div><div class="meta">B-2042 · trim · 41m</div></div><div class="qty">8 / 18</div></div>
+        </div>
+      </div>
+
+      <div class="gapped-card">
+        <div class="panel-head"><span class="panel-title">Unscheduled · 2</span><span class="panel-meta">$8,420</span></div>
+        <div class="inner-row">
+          <div class="zone-row"><span class="zone-dot local"></span><div><div class="name">Mile-High Cannabis Co.</div><div class="meta">Local · 5 items</div></div><div class="driver">$3,950</div></div>
+        </div>
+        <div class="inner-row">
+          <div class="zone-row"><span class="zone-dot west-valley"></span><div><div class="name">Sunrise Provisions</div><div class="meta">W. Valley · 4 items</div></div><div class="driver">$4,470</div></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════ DayDetailStrip vertical ═══════ -->
+    <section>
+      <div class="strip-head">
+        <h2>Today · Tue Apr 22 · 3 orders</h2>
+        <span style="font-family:var(--font-mono); font-size:10px; color:var(--op-ink-3); letter-spacing:0.1em; text-transform:uppercase;">Tap to expand</span>
+      </div>
+      <div class="strip-vertical">
+
+        <article class="gapped-card order-card">
+          <div class="order-head">
+            <div><div class="order-customer">Greenhouse Co-op</div><div class="order-id">PO-2604-118 · 07:30 ETA</div></div>
+            <div class="order-amount">$2,140</div>
+          </div>
+          <div class="order-meta"><span class="zone-dot east-valley"></span>East Valley · 4 items · M. Reyes</div>
+          <div class="pill-row"><span class="pill" data-state="sent">Invoice</span><span class="pill" data-state="sent">COA</span><span class="pill" data-state="sent">Manifest</span></div>
+        </article>
+
+        <article class="gapped-card order-card">
+          <div class="order-head">
+            <div><div class="order-customer">Verdant Provisions</div><div class="order-id">PO-2604-119 · 09:45 ETA</div></div>
+            <div class="order-amount">$1,680</div>
+          </div>
+          <div class="order-meta"><span class="zone-dot east-valley"></span>East Valley · 3 items · M. Reyes</div>
+          <div class="pill-row"><span class="pill" data-state="sent">Invoice</span><span class="pill" data-state="sent">COA</span><span class="pill" data-state="sent">Manifest</span></div>
+        </article>
+
+        <article class="gapped-card order-card">
+          <div class="order-head">
+            <div><div class="order-customer">High Desert Wellness</div><div class="order-id">PO-2604-120 · 11:30 ETA</div></div>
+            <div class="order-amount">$1,280</div>
+          </div>
+          <div class="order-meta"><span class="zone-dot east-valley"></span>East Valley · 2 items · M. Reyes</div>
+          <div class="pill-row"><span class="pill" data-state="sent">Invoice</span><span class="pill" data-state="pending">COA</span><span class="pill" data-state="sent">Manifest</span></div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="legend">
+    <span>Treatments at 1024 portrait:</span>
+    A · Hairline (KPIs, calendar)
+    B · Gapped (panels, day cards)
+    C · Hybrid (panel interiors)
+    <span style="margin-left:auto;">All v7 violation lint rules unchanged. No glass, no shadows, hairlines only.</span>
+  </div>
+</div>
+</body>
+</html>
