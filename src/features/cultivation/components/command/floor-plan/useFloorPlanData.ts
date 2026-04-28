@@ -12,57 +12,75 @@ import { FACILITY, type FacilityRoom, type RoomState } from './data';
 export function useFloorPlanData() {
   const { rooms: liveRooms, loading, error } = useRoomOperationalState();
 
+  const isLive = !loading && (liveRooms?.length ?? 0) > 0;
+
   const rooms: FacilityRoom[] = useMemo(() => {
-    if (!liveRooms?.length) return FACILITY.rooms;
+    if (!isLive) return FACILITY.rooms;
 
     const liveByCode = new Map(liveRooms.map((r) => [r.room_code, r]));
 
     return FACILITY.rooms.map((fixture) => {
       const live = liveByCode.get(fixture.code);
-      if (!live) return fixture;
+      if (!live) {
+        // No live row for this code (off-cycle: CLN/MOM/CURE/LAB/WATER).
+        // Strip the fixture's `focused` flag so it doesn't override live focus.
+        return { ...fixture, focused: false };
+      }
 
-      // urgency_score → state bucket (mirrors FloorPlanSVG derivation)
       const urgencyState: RoomState =
         live.urgency_score >= 3 ? 'urgent'
         : live.urgency_score >= 1 ? 'attention'
         : 'active';
 
-      // Set focused on the highest-urgency in-cycle room dynamically
-      // (fixture marks FLW-02 focused; we let live data override below).
+      // Empty rooms (between cycles): zero out cycle metrics that fixture would
+      // otherwise leak through (days_in_stage 42, days_to_harvest 21, etc.).
+      const isEmpty = (live.total_plants ?? 0) === 0;
+
       return {
         ...fixture,
-        // Preserve fixture geometry, override ops fields with live values
-        dominant_stage: (live.dominant_stage as FacilityRoom['dominant_stage']) ?? fixture.dominant_stage,
-        days_in_stage: live.days_in_stage ?? fixture.days_in_stage,
-        days_to_harvest: live.days_to_harvest ?? fixture.days_to_harvest,
-        total_plants: live.total_plants ?? fixture.total_plants,
+        // Strip fixture-level `focused` — live data drives focus selection now.
+        focused: false,
+        // Live data wins on every ops field; null lives produce null cells (no
+        // fixture leak). For empty rooms we explicitly null cycle metrics.
+        dominant_stage: (live.dominant_stage as FacilityRoom['dominant_stage']) ?? null,
+        days_in_stage: isEmpty ? null : live.days_in_stage,
+        days_to_harvest: isEmpty ? null : live.days_to_harvest,
+        total_plants: live.total_plants ?? 0,
         capacity_plants: live.capacity_plants ?? fixture.capacity_plants,
-        occupancy_status: (live.occupancy_status as FacilityRoom['occupancy_status']) ?? fixture.occupancy_status,
-        strain_count: live.strain_count ?? fixture.strain_count,
+        occupancy_status: (live.occupancy_status as FacilityRoom['occupancy_status']) ?? 'empty',
+        strain_count: live.strain_count ?? 0,
         urgency_score: live.urgency_score,
         tasks_today: live.tasks_today,
         tasks_completed_today: live.tasks_completed_today,
-        // Keep fixture flag if live doesn't synthesize one — flags are derived
-        // narrative bits ("RH 64.2%") not present in the view today.
-        flag: fixture.flag,
-        // urgency_score derived state is ignored at render-time (FloorPlanSVG
-        // recomputes it), but we expose it for downstream consumers.
-        // @ts-expect-error: not on FacilityRoom interface, attached for debug
+        // Drop fixture flags ("RH 64.2%") — they were synthetic narrative.
+        flag: undefined,
+        // @ts-expect-error: extension fields for downstream side-rail use
+        section_projected_harvest: live.section_projected_harvest,
+        // @ts-expect-error: extension field — primary factual time-to-harvest signal
+        section_days_to_harvest: live.section_days_to_harvest,
+        // @ts-expect-error: extension field
+        last_harvest_date: live.last_harvest_date,
+        // @ts-expect-error: extension field
+        last_harvest_wet_grams: live.last_harvest_wet_grams,
+        // @ts-expect-error: debug attachment (kept for cross-tool queries; UI no longer uses)
         _liveState: urgencyState,
       };
     });
-  }, [liveRooms]);
+  }, [isLive, liveRooms]);
 
-  // Pick the focused room dynamically: highest urgency, in-cycle, falls back
-  // to fixture-marked focused if no live urgency exists.
+  // Live focus pick: highest-urgency in-cycle room. No fixture fallback once
+  // live data is present; pre-live we deliberately return null so the rail
+  // shows its empty-state placeholder until rooms load.
   const focusedCode = useMemo(() => {
+    if (!isLive) return null;
     const inCycleUrgent = rooms
       .filter((r) => r.inCycle && (r.urgency_score ?? 0) > 0)
       .sort((a, b) => (b.urgency_score ?? 0) - (a.urgency_score ?? 0))[0];
     if (inCycleUrgent) return inCycleUrgent.code;
-    const fixtureFocused = FACILITY.rooms.find((r) => r.focused);
-    return fixtureFocused?.code ?? null;
-  }, [rooms]);
+    // No urgent rooms: pick the first in-cycle room with plants.
+    const firstActive = rooms.find((r) => r.inCycle && (r.total_plants ?? 0) > 0);
+    return firstActive?.code ?? null;
+  }, [isLive, rooms]);
 
-  return { rooms, focusedCode, loading, error };
+  return { rooms, focusedCode, loading, error, isLive };
 }

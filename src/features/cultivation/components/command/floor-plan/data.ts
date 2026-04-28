@@ -30,7 +30,12 @@ export interface FacilityRoom {
   focused?: boolean;
 }
 
-export const PHASE_DIVIDER_X = 968;
+/* Phase divider sits between LAB (Phase I) and VEG-02 (Phase II).
+   Shifted from 968 → 775 → 805 (2026-04-28) after widening Phase I FLW
+   rooms (40→50px) so room codes "FLW-01..04" no longer overflow. The
+   widening also closed the 76px right-side gap that previously sat
+   past FLW-11 by widening Phase II FLW rooms (60→67px). */
+export const PHASE_DIVIDER_X = 805;
 
 export const FACILITY = {
   building: { x: 20, y: 20, w: 1264, h: 280 },
@@ -42,25 +47,36 @@ export const FACILITY = {
     { id: 'mom', code: 'MOM', name: 'Mother', layoutType: 'mother', inCycle: false, phase: 1, x: 30, y: 122, w: 70, h: 116, total_plants: 18, strain_count: 12, caption: 'genetic library' },
     { id: 'veg-01', code: 'VEG-01', name: 'Veg Room 1', layoutType: 'veg', inCycle: true, phase: 1, x: 102, y: 30, w: 280, h: 208, dominant_stage: 'veg', days_in_stage: 18, days_to_harvest: null, total_plants: 1840, capacity_plants: 2000, occupancy_status: 'occupied', strain_count: 14, urgency_score: 0, tasks_today: 8, tasks_completed_today: 5 },
     { id: 'water', code: 'WATER', name: 'Water Room', layoutType: 'water', inCycle: false, phase: 1, x: 384, y: 30, w: 50, h: 208 },
-    { id: 'flw-01', code: 'FLW-01', name: 'Flower 1', layoutType: 'flower', inCycle: true, phase: 1, x: 436, y: 30, w: 84, h: 208, dominant_stage: 'flower', days_in_stage: 49, days_to_harvest: 14, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 7, urgency_score: 2, tasks_today: 14, tasks_completed_today: 6, flag: 'VPD 1.32' },
-    { id: 'flw-02', code: 'FLW-02', name: 'Flower 2', layoutType: 'flower', inCycle: true, phase: 1, x: 522, y: 30, w: 84, h: 208, dominant_stage: 'flower', days_in_stage: 42, days_to_harvest: 21, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 8, urgency_score: 3, focused: true, tasks_today: 11, tasks_completed_today: 4, flag: 'RH 64.2%' },
-    { id: 'flw-03', code: 'FLW-03', name: 'Flower 3', layoutType: 'flower', inCycle: true, phase: 1, x: 608, y: 30, w: 84, h: 208, dominant_stage: 'flower', days_in_stage: 35, days_to_harvest: 28, total_plants: 590, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 9, tasks_completed_today: 9 },
-    { id: 'flw-04', code: 'FLW-04', name: 'Flower 4', layoutType: 'flower', inCycle: true, phase: 1, x: 694, y: 30, w: 84, h: 208, dominant_stage: 'flower', days_in_stage: 28, days_to_harvest: 35, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 9, urgency_score: 2, tasks_today: 12, tasks_completed_today: 5, flag: 'CO₂ 1180' },
-    { id: 'dry-03', code: 'DRY-03', name: 'Dry Room 3', layoutType: 'dry', inCycle: true, phase: 1, x: 780, y: 30, w: 50, h: 65, dominant_stage: 'dry', days_in_stage: 9, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 3, urgency_score: 0, tasks_today: 2, tasks_completed_today: 1 },
-    { id: 'dry-02', code: 'DRY-02', name: 'Dry Room 2', layoutType: 'dry', inCycle: true, phase: 1, x: 780, y: 99, w: 50, h: 65, dominant_stage: 'dry', days_in_stage: 4, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 2, urgency_score: 0, tasks_today: 1, tasks_completed_today: 1 },
-    { id: 'dry-01', code: 'DRY-01', name: 'Dry Room 1', layoutType: 'dry', inCycle: true, phase: 1, x: 780, y: 168, w: 50, h: 70, dominant_stage: 'dry', days_in_stage: 1, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 1, urgency_score: 0, tasks_today: 0, tasks_completed_today: 0 },
-    { id: 'veg-05', code: 'VEG-05', name: 'Veg Room 5', layoutType: 'veg', inCycle: true, phase: 1, x: 832, y: 30, w: 50, h: 208, dominant_stage: 'veg', days_in_stage: 21, days_to_harvest: null, total_plants: 320, capacity_plants: 400, occupancy_status: 'occupied', strain_count: 8, urgency_score: 0, tasks_today: 4, tasks_completed_today: 2 },
-    { id: 'cure', code: 'CURE', name: 'Cure', layoutType: 'cure', inCycle: false, phase: 1, x: 884, y: 30, w: 38, h: 208, total_plants: 0, strain_count: 4, caption: '14 batches' },
-    { id: 'lab', code: 'LAB', name: 'Lab / Processing', layoutType: 'lab', inCycle: false, phase: 1, x: 924, y: 30, w: 42, h: 208 },
+    /* FLW 01-04 = 16' × 42'. Width widened 40→50px (2026-04-28) so room
+       codes fit without overflow. Downstream Phase I rooms shift +40px. */
+    { id: 'flw-01', code: 'FLW-01', name: 'Flower 1', layoutType: 'flower', inCycle: true, phase: 1, x: 436, y: 30, w: 50, h: 208, dominant_stage: 'flower', days_in_stage: 49, days_to_harvest: 14, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 7, urgency_score: 2, tasks_today: 14, tasks_completed_today: 6, flag: 'VPD 1.32' },
+    { id: 'flw-02', code: 'FLW-02', name: 'Flower 2', layoutType: 'flower', inCycle: true, phase: 1, x: 488, y: 30, w: 50, h: 208, dominant_stage: 'flower', days_in_stage: 42, days_to_harvest: 21, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 8, urgency_score: 3, focused: true, tasks_today: 11, tasks_completed_today: 4, flag: 'RH 64.2%' },
+    { id: 'flw-03', code: 'FLW-03', name: 'Flower 3', layoutType: 'flower', inCycle: true, phase: 1, x: 540, y: 30, w: 50, h: 208, dominant_stage: 'flower', days_in_stage: 35, days_to_harvest: 28, total_plants: 590, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 9, tasks_completed_today: 9 },
+    { id: 'flw-04', code: 'FLW-04', name: 'Flower 4', layoutType: 'flower', inCycle: true, phase: 1, x: 592, y: 30, w: 50, h: 208, dominant_stage: 'flower', days_in_stage: 28, days_to_harvest: 35, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 9, urgency_score: 2, tasks_today: 12, tasks_completed_today: 5, flag: 'CO₂ 1180' },
+    /* DRY stack shifts +40px (2026-04-28) to follow widened FLW 01-04. */
+    { id: 'dry-03', code: 'DRY-03', name: 'Dry Room 3', layoutType: 'dry', inCycle: true, phase: 1, x: 644, y: 30, w: 50, h: 65, dominant_stage: 'dry', days_in_stage: 9, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 3, urgency_score: 0, tasks_today: 2, tasks_completed_today: 1 },
+    { id: 'dry-02', code: 'DRY-02', name: 'Dry Room 2', layoutType: 'dry', inCycle: true, phase: 1, x: 644, y: 99, w: 50, h: 65, dominant_stage: 'dry', days_in_stage: 4, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 2, urgency_score: 0, tasks_today: 1, tasks_completed_today: 1 },
+    { id: 'dry-01', code: 'DRY-01', name: 'Dry Room 1', layoutType: 'dry', inCycle: true, phase: 1, x: 644, y: 168, w: 50, h: 70, dominant_stage: 'dry', days_in_stage: 1, days_to_harvest: null, total_plants: 0, occupancy_status: 'occupied', strain_count: 1, urgency_score: 0, tasks_today: 0, tasks_completed_today: 0 },
+    /* VEG-05 = 22' × 42' → w: 55, shifted +40 (2026-04-28). */
+    { id: 'veg-05', code: 'VEG-05', name: 'Veg Room 5', layoutType: 'veg', inCycle: true, phase: 1, x: 696, y: 30, w: 55, h: 208, dominant_stage: 'veg', days_in_stage: 21, days_to_harvest: null, total_plants: 320, capacity_plants: 400, occupancy_status: 'occupied', strain_count: 8, urgency_score: 0, tasks_today: 4, tasks_completed_today: 2 },
+    /* CURE removed — does not exist in the real 40th St facility (Justin 2026-04-27). */
+    { id: 'lab', code: 'LAB', name: 'Lab / Processing', layoutType: 'lab', inCycle: false, phase: 1, x: 753, y: 30, w: 42, h: 208 },
 
     // ── PHASE II — East Wing ─────────────────────────────────────────
-    { id: 'veg-02', code: 'VEG-02', name: 'Veg Room 2', layoutType: 'veg', inCycle: true, phase: 2, x: 974, y: 30, w: 56, h: 208, dominant_stage: 'veg', days_in_stage: 5, days_to_harvest: null, total_plants: 480, capacity_plants: 520, occupancy_status: 'occupied', strain_count: 14, urgency_score: 1, tasks_today: 6, tasks_completed_today: 1, flag: 'EC drift' },
-    { id: 'flw-06', code: 'FLW-06', name: 'Flower 6', layoutType: 'flower', inCycle: true, phase: 2, x: 1032, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 63, days_to_harvest: 0, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 7, urgency_score: 0, tasks_today: 18, tasks_completed_today: 12, flag: 'harvest Tue' },
-    { id: 'flw-07', code: 'FLW-07', name: 'Flower 7', layoutType: 'flower', inCycle: true, phase: 2, x: 1074, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 14, days_to_harvest: 49, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 5, tasks_completed_today: 4 },
-    { id: 'flw-08', code: 'FLW-08', name: 'Flower 8', layoutType: 'flower', inCycle: true, phase: 2, x: 1116, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 7, days_to_harvest: 56, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 8, urgency_score: 0, tasks_today: 4, tasks_completed_today: 4 },
-    { id: 'flw-09', code: 'FLW-09', name: 'Flower 9', layoutType: 'flower', inCycle: true, phase: 2, x: 1158, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 56, days_to_harvest: 7, total_plants: 596, capacity_plants: 640, occupancy_status: 'full', strain_count: 9, urgency_score: 1, tasks_today: 11, tasks_completed_today: 7 },
-    { id: 'flw-10', code: 'FLW-10', name: 'Flower 10', layoutType: 'flower', inCycle: true, phase: 2, x: 1200, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 49, days_to_harvest: 14, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 9, tasks_completed_today: 6 },
-    { id: 'flw-11', code: 'FLW-11', name: 'Flower 11', layoutType: 'flower', inCycle: true, phase: 2, x: 1242, y: 30, w: 40, h: 208, dominant_stage: 'flower', days_in_stage: 35, days_to_harvest: 28, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 5, urgency_score: 0, tasks_today: 7, tasks_completed_today: 7 },
+    /* VEG-02 = 22' × 42' → w: 55 (matches VEG-05). Shifted +30 (2026-04-28)
+       to follow the new phase divider at x=805. */
+    { id: 'veg-02', code: 'VEG-02', name: 'Veg Room 2', layoutType: 'veg', inCycle: true, phase: 2, x: 811, y: 30, w: 55, h: 208, dominant_stage: 'veg', days_in_stage: 5, days_to_harvest: null, total_plants: 480, capacity_plants: 520, occupancy_status: 'occupied', strain_count: 14, urgency_score: 1, tasks_today: 6, tasks_completed_today: 1, flag: 'EC drift' },
+    /* FLW 06-11 = 24' × 42' → widened 60→67 (2026-04-28) to consume the
+       76px right-side gap that previously sat past FLW-11. Each room
+       picks up +7px and the chain shifts right by +30 to match the
+       new phase divider position. FLW-11 now ends at x=1280, leaving
+       4px of margin to the building edge at x=1284. */
+    { id: 'flw-06', code: 'FLW-06', name: 'Flower 6', layoutType: 'flower', inCycle: true, phase: 2, x: 868, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 63, days_to_harvest: 0, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 7, urgency_score: 0, tasks_today: 18, tasks_completed_today: 12, flag: 'harvest Tue' },
+    { id: 'flw-07', code: 'FLW-07', name: 'Flower 7', layoutType: 'flower', inCycle: true, phase: 2, x: 937, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 14, days_to_harvest: 49, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 5, tasks_completed_today: 4 },
+    { id: 'flw-08', code: 'FLW-08', name: 'Flower 8', layoutType: 'flower', inCycle: true, phase: 2, x: 1006, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 7, days_to_harvest: 56, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 8, urgency_score: 0, tasks_today: 4, tasks_completed_today: 4 },
+    { id: 'flw-09', code: 'FLW-09', name: 'Flower 9', layoutType: 'flower', inCycle: true, phase: 2, x: 1075, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 56, days_to_harvest: 7, total_plants: 596, capacity_plants: 640, occupancy_status: 'full', strain_count: 9, urgency_score: 1, tasks_today: 11, tasks_completed_today: 7 },
+    { id: 'flw-10', code: 'FLW-10', name: 'Flower 10', layoutType: 'flower', inCycle: true, phase: 2, x: 1144, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 49, days_to_harvest: 14, total_plants: 612, capacity_plants: 640, occupancy_status: 'full', strain_count: 6, urgency_score: 0, tasks_today: 9, tasks_completed_today: 6 },
+    { id: 'flw-11', code: 'FLW-11', name: 'Flower 11', layoutType: 'flower', inCycle: true, phase: 2, x: 1213, y: 30, w: 67, h: 208, dominant_stage: 'flower', days_in_stage: 35, days_to_harvest: 28, total_plants: 624, capacity_plants: 640, occupancy_status: 'full', strain_count: 5, urgency_score: 0, tasks_today: 7, tasks_completed_today: 7 },
   ] as FacilityRoom[],
 };
 

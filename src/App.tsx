@@ -208,7 +208,7 @@ function AuthenticatedApp() {
               <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-map" element={<CultivationErrorBoundary><CultivationMapPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-command-center" element={<CultivationErrorBoundary><CommandCenter /></CultivationErrorBoundary>} />
-              <Route path="/cultivation-command" element={<CultivationErrorBoundary><CultivationCommand /></CultivationErrorBoundary>} />
+              <Route path="/cultivation-command" element={<Navigate to="/cultivation-command-center" replace />} />
               <Route path="/worker-tasks" element={<CultivationErrorBoundary><WorkerTaskView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
               <Route path="/cultivation-dry-rooms" element={<CultivationErrorBoundary><DryRoomsManagement /></CultivationErrorBoundary>} />

@@ -78,7 +78,9 @@
   border-bottom: 1px solid var(--op-line);
 }
 .fpl-state-cell {
-  padding: 14px 18px;
+  /* Tightened vertical padding to claw back vertical real estate
+     for the map card below (Path A compromise). */
+  padding: 11px 18px;
   border-right: 1px solid var(--op-line);
 }
 .fpl-state-cell:last-child { border-right: none; }
@@ -143,6 +145,10 @@
   letter-spacing: 0.04em;
 }
 .fpl-state-val.warn { color: var(--status-warn); }
+
+/* Variable type sizing per cell priority (Tier B fix #3) */
+.fpl-state-val.lg { font-size: 28px; letter-spacing: -0.015em; }
+.fpl-state-val.sm { font-size: 17px; letter-spacing: -0.005em; }
 .fpl-state-sub {
   font-size: 10.5px;
   color: var(--op-ink-3);
@@ -160,15 +166,43 @@
 .fpl-alerts-line .dot { width: 6px; height: 6px; border-radius: 50%; }
 .fpl-alerts-line strong { color: var(--op-ink); font-weight: 500; }
 
+/* Urgent alert line pulses opacity-only (Tier B fix #4) */
+.fpl-alerts-line.urgent {
+  animation: fpl-alert-pulse 2.4s ease-in-out infinite;
+}
+@keyframes fpl-alert-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
+}
+
 .fpl-main {
   display: grid;
-  grid-template-columns: 1fr 380px;
   flex: 1;
+  /* Tier B fix #1+#2: gapped card treatment for the hero plan section.
+     Outer breathing room separates it from the state strip and ribbon;
+     the plan now reads as the unmissable hero of the surface. */
+  gap: 16px;
+  padding: 18px 20px 16px;
+  background: var(--op-canvas);
+  transition: grid-template-columns 220ms ease-out;
+}
+/* Collapsible rail — collapsed by default, opens on room click, X closes.
+   Operator decides what's urgent; the dashboard never auto-opens the rail. */
+.fpl-main.rail-closed {
+  grid-template-columns: 1fr;
+}
+.fpl-main.rail-open {
+  grid-template-columns: 1fr 320px;
 }
 
 .fpl-canvas {
-  border-right: 1px solid var(--op-line);
-  padding: 24px 28px 20px 28px;
+  /* Treatment B card per Phase-1 surface guide (gapped card, hairline border,
+     half-stop lighter surface, internal padding). The canvas earns hero
+     elevation without shadows or glass — purely through border + surface. */
+  background: var(--op-surface);
+  border: 1px solid var(--op-line-strong);
+  border-radius: var(--r-md);
+  padding: 24px 28px 22px 28px;
   display: flex; flex-direction: column;
 }
 .fpl-canvas-cap {
@@ -214,11 +248,17 @@
 .fpl-svg-wrap {
   flex: 1;
   position: relative;
+  /* Lighter surface inside the card creates a subtle elevation step:
+     canvas (--op-canvas) → card (--op-surface) → plan-frame (--op-canvas).
+     This is hairline elevation, not shadow elevation. */
   background:
-    radial-gradient(ellipse at center, rgba(245,244,241,0.02) 0%, transparent 70%),
+    radial-gradient(ellipse at center, rgba(245,244,241,0.025) 0%, transparent 70%),
     var(--op-canvas);
   border: 1px solid var(--op-line);
-  padding: 12px;
+  border-radius: var(--r-sm);
+  padding: 14px;
+  /* min-height removed 2026-04-27 — was creating a dark band below the SVG
+     content. Now the SVG drives height via its 1300:320 aspect ratio. */
 }
 .fpl-svg { width: 100%; height: auto; display: block; }
 
@@ -262,11 +302,15 @@
 
 /* ── Side rail ───────────────────────────────────────────────────── */
 .fpl-rail {
+  /* Treatment B card mirrors the floor plan canvas — same elevation step,
+     same border and radius — so the two-up grid reads as a paired surface. */
   padding: 22px 22px;
   display: flex; flex-direction: column;
   background:
     linear-gradient(180deg, rgba(197,106,106,0.04) 0%, transparent 30%),
-    var(--op-canvas);
+    var(--op-surface);
+  border: 1px solid var(--op-line-strong);
+  border-radius: var(--r-md);
   overflow-y: auto;
 }
 .fpl-rail-head {
@@ -605,3 +649,185 @@
   letter-spacing: 0;
   line-height: 1.3;
 }
+
+/* ── Inventory Ribbon (Tier 1) — hairline grid Treatment A ───────── */
+.fpl-inv-ribbon {
+  border-top: 1px solid var(--op-line);
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.fpl-inv-ribbon-cap {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 28px 12px;
+  border-bottom: 1px solid var(--op-line);
+}
+.fpl-inv-eyebrow {
+  font: 500 9.5px/1 var(--font-mono);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--op-ink-3);
+}
+.fpl-inv-totals {
+  display: flex; align-items: baseline; gap: 12px;
+  font: 400 11px/1 var(--font-sans);
+  color: var(--op-ink-2);
+}
+.fpl-inv-totals .unit {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--op-ink-3);
+  letter-spacing: 0.04em;
+  margin-left: 3px;
+}
+.fpl-inv-totals .arrow { color: var(--op-ink-3); }
+.fpl-inv-totals .rev {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  margin-left: 6px;
+}
+.fpl-inv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.fpl-inv-cell {
+  padding: 14px 18px 16px;
+  border-right: 1px solid var(--op-line);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.fpl-inv-cell:last-child { border-right: none; }
+.fpl-inv-cell-eyebrow {
+  font: 500 9px/1 var(--font-mono);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--op-ink-3);
+  display: flex; align-items: center; gap: 8px;
+}
+.fpl-inv-cell-eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 1px;
+}
+.fpl-inv-cell-val {
+  font: 400 22px/1 var(--font-sans);
+  color: var(--op-ink);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.fpl-inv-cell-val .unit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-2);
+  letter-spacing: 0.04em;
+  margin-left: 4px;
+}
+.fpl-inv-cell-sub {
+  font: 400 10.5px/1.3 var(--font-mono);
+  color: var(--op-ink-3);
+  letter-spacing: 0.02em;
+}
+.fpl-inv-cell-rev {
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+/* ── Off-cycle micro-stats (Tier 1) ───────────────────────────────── */
+.fpl-offcycle {
+  display: flex; gap: 18px;
+  font: 400 10px/1 var(--font-mono);
+  color: var(--op-ink-3);
+  letter-spacing: 0.04em;
+  padding-top: 10px;
+}
+.fpl-offcycle span strong {
+  color: var(--op-ink);
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+/* ── Refresh affordance (Tier 1) ──────────────────────────────────── */
+.fpl-state-refresh {
+  background: transparent;
+  border: 1px solid var(--op-line-strong);
+  color: var(--op-ink-2);
+  font: 500 9px/1 var(--font-mono);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  margin-left: 6px;
+  cursor: pointer;
+  border-radius: var(--r-xs);
+}
+.fpl-state-refresh:hover {
+  color: var(--op-ink);
+  border-color: var(--accent);
+}
+.fpl-state-refresh.is-stale {
+  color: var(--status-warn);
+  border-color: var(--status-warn);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   Tier C polish — proportional stage stripe, urgency rail accent, Seed pulse
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* C #B: proportional stage-color stripe above inventory cells. 6px tall. */
+.fpl-inv-stripe {
+  display: flex;
+  height: 6px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.fpl-inv-stripe-seg {
+  height: 100%;
+  transition: width 600ms ease-out;
+}
+
+/* C #C: side rail urgency accent — 3px left edge keyed to focused room status. */
+.fpl-rail.urgency-bad   { border-left-color: var(--status-bad); border-left-width: 3px; }
+.fpl-rail.urgency-warn  { border-left-color: var(--status-warn); border-left-width: 3px; }
+.fpl-rail.urgency-ok    { border-left-color: var(--status-ok); border-left-width: 2px; }
+.fpl-rail.urgency-empty { border-left-color: var(--op-line-strong); border-left-width: 1px; }
+
+/* C #D: Seed glyph subtle thinking pulse — opacity-only, slow. */
+.fpl-seed-pulse {
+  animation: fpl-seed-pulse 4s ease-in-out infinite;
+}
+@keyframes fpl-seed-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
+}
+
+
+/* Rail close button (X) — small, hairline border on hover, never decorative. */
+.fpl-rail { position: relative; }
+.fpl-rail-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--op-line-strong);
+  border-radius: var(--r-xs);
+  color: var(--op-ink-2);
+  font: 400 16px/1 var(--font-sans);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+  padding: 0; line-height: 1;
+  z-index: 2;
+}
+.fpl-rail-close:hover {
+  color: var(--op-ink);
+  border-color: var(--accent);
+  background: rgba(232,224,212,0.06);
+}
+
+/* Rail entrance animation when it opens (subtle slide-from-right). */
+.fpl-main.rail-open .fpl-rail {
+  animation: fpl-rail-in 220ms ease-out;
+}
+@keyframes fpl-rail-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+

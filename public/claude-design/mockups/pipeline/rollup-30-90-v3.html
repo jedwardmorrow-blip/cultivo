@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pipeline · Room Roll Strip · v3 — inline stuck-stage callouts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../tokens/brand-tokens.css">
+<link rel="stylesheet" href="_shared/variant-chrome.css">
+</head>
+<body class="sysref-variant product">
+<div class="variant-doc">
+
+  <header class="variant-header">
+    <p class="variant-eyebrow">Cultivo · Pipeline · COO · Rollup row · Room Roll Strip · v3 of 3</p>
+    <h1 class="variant-title">Room Roll Strip — inline stuck-stage callouts</h1>
+    <p class="variant-sub">Same room rows as v1, but each row that has a stuck or overdue cohort gets a second line below: a one-sentence inline callout in mono caps with a status-color leading dot. Rooms running on time get a single-line row. The strip self-modulates — calm rooms stay quiet, problem rooms announce themselves without needing a separate at-risk panel.</p>
+  </header>
+
+  <section class="rollup-row" aria-label="COO Pipeline rollup">
+
+    <div class="rollup-tile">
+      <p class="tile-eyebrow">Batches in flight</p>
+      <p class="tile-num">12</p>
+      <p class="tile-sub">3 cultivation · 2 drying · 2 process · 5 inv</p>
+    </div>
+
+    <div class="rollup-tile room-roll">
+      <p class="tile-eyebrow">
+        <span class="dot" style="background: var(--stage-flower)"></span>
+        Next room cohorts
+      </p>
+
+      <div class="room-rows">
+        <div class="room-row head v3">
+          <span class="r-room">Room</span>
+          <span class="r-days">Days</span>
+          <span class="r-grams">Proj. g</span>
+          <span class="r-strains">Strains</span>
+          <span class="r-alloc">Alc</span>
+        </div>
+
+        <!-- FLW-06: overdue, single-strain, KMS -->
+        <div class="room-row v3">
+          <span class="room-code">FLW-06</span>
+          <span class="room-days overdue">+5d</span>
+          <span class="room-grams">tbd</span>
+          <span class="room-strains">1</span>
+          <span class="room-alloc unalloc"><span class="a-dot"></span>none</span>
+          <span class="room-callout bad">Harvest 5d overdue · 141 plants · KMS</span>
+        </div>
+
+        <!-- FLW-08: drying day 17, two strains -->
+        <div class="room-row v3">
+          <span class="room-code">FLW-08</span>
+          <span class="room-days stuck">d17</span>
+          <span class="room-grams">5,799 g</span>
+          <span class="room-strains">2</span>
+          <span class="room-alloc unalloc"><span class="a-dot"></span>none</span>
+          <span class="room-callout">Drying d17 · target d10–14 · binning behind</span>
+        </div>
+
+        <!-- FLW-10: 18d to harvest, on track -->
+        <div class="room-row v3">
+          <span class="room-code">FLW-10</span>
+          <span class="room-days">18d</span>
+          <span class="room-grams">818 g</span>
+          <span class="room-strains">1</span>
+          <span class="room-alloc unalloc"><span class="a-dot"></span>none</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rollup-tile">
+      <p class="tile-eyebrow">Projected revenue · 30d</p>
+      <p class="tile-num estimate">$2,747</p>
+      <p class="tile-sub">gross · derived 90d price</p>
+      <span class="tile-flag">est</span>
+    </div>
+
+    <div class="rollup-tile">
+      <p class="tile-eyebrow">Allocated to orders</p>
+      <p class="tile-num">$14,240</p>
+      <p class="tile-sub">6 orders · 9 lines</p>
+    </div>
+
+    <div class="rollup-tile">
+      <p class="tile-eyebrow">At-risk count</p>
+      <p class="tile-num">3</p>
+      <p class="tile-sub">2 ops · 1 revenue</p>
+    </div>
+  </section>
+
+  <section class="fixture-context">
+    <h3>Callout rules — when a room earns a second line</h3>
+    <table>
+      <thead>
+        <tr><th>Trigger</th><th>Callout color</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>days_in_stage past expected window</td><td class="italic">status-warn</td><td class="italic">"Drying d17 · target d10–14 · binning behind"</td></tr>
+        <tr><td>next_harvest_date in past</td><td class="italic">status-bad</td><td class="italic">"Harvest 5d overdue · 141 plants · KMS"</td></tr>
+        <tr><td>processing_pending &gt; 14d</td><td class="italic">status-bad</td><td class="italic">"Pending session start · d108 · severe"</td></tr>
+        <tr><td>cohort allocation &lt; 30% with &lt; 14d to harvest</td><td class="italic">op-ink-3</td><td class="italic">"Unallocated · 818g · sales follow-up"</td></tr>
+        <tr><td>nothing wrong</td><td class="italic">—</td><td class="italic">single-line row, no callout</td></tr>
+      </tbody>
+    </table>
+    <p class="fixture-note">Self-modulating density: the strip is tallest when there are problems and tightest when everything is on track. Single-line rooms compress to ~36px each; two-line rooms expand to ~58px. Caps total tile height — if all 3 rows have callouts the tile grows ~22px taller than v1, still within the 200px ceiling. If 4+ rooms qualify, drop the bottom one to "+N more" and surface only the highest-priority callouts.</p>
+  </section>
+
+</div>
+</body>
+</html>

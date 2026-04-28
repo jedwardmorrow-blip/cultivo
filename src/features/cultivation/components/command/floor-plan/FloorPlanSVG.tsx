@@ -40,19 +40,41 @@ interface FloorPlanSVGProps {
   anchor: TimeAnchor;
   anchorIdx: number;
   onScrub: (idx: number) => void;
+  /** Live-merged rooms from useFloorPlanData. Falls back to fixture when omitted. */
+  liveRooms?: FacilityRoom[];
+  /** Selected room code for focus highlight. */
+  selectedCode?: string | null;
+  /** Click handler fired with the room code (in-cycle rooms only). */
+  onRoomClick?: (code: string) => void;
 }
 
-export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onScrub }: FloorPlanSVGProps) {
+export const FloorPlanSVG = memo(function FloorPlanSVG({
+  anchor, anchorIdx, onScrub,
+  liveRooms, selectedCode, onRoomClick,
+}: FloorPlanSVGProps) {
   const W = 1300, H = 320;
   const corridorY = 250;
   const corridorH = 22;
 
-  const rooms: DerivedRoom[] = FACILITY.rooms.map((r) => {
+  const sourceRooms = liveRooms?.length ? liveRooms : FACILITY.rooms;
+
+  const rooms: DerivedRoom[] = sourceRooms.map((r) => {
+    // Factual time-based state, not derived urgency_score.
+    // Color encodes hard facts the operator cannot dispute:
+    //   overdue (harvest date in the past) → urgent
+    //   imminent (harvest within 7 days)   → attention
+    //   everything else                    → active
+    // Threshold (7d) is hardcoded for now; will move to a strain/room
+    // operator-configurable setting when that surface lands.
+    const sectionDays = (r as FacilityRoom & { section_days_to_harvest?: number | null })
+      .section_days_to_harvest;
     const baseState: RoomStateKind = !r.inCycle
       ? (r.layoutType === 'water' || r.layoutType === 'lab' ? 'nominal' : 'active')
-      : (r.urgency_score ?? 0) >= 3 ? 'urgent'
-      : (r.urgency_score ?? 0) >= 1 ? 'attention'
-      : 'active';
+      : typeof sectionDays === 'number' && sectionDays < 0
+        ? 'urgent'
+        : typeof sectionDays === 'number' && sectionDays >= 0 && sectionDays <= 7
+          ? 'attention'
+          : 'active';
 
     const dayStr = r.inCycle && typeof r.days_in_stage === 'number'
       ? 'D' + r.days_in_stage
@@ -72,8 +94,10 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
       strain: strainCaption ?? null,
     };
 
+    // selectedCode (live click) takes precedence over fixture `focused` flag
+    const isSelected = selectedCode != null && r.code === selectedCode;
     const o = anchor.overrides[r.id];
-    if (!o) return { ...derived, focused: anchor.isLive ? r.focused : false };
+    if (!o) return { ...derived, focused: isSelected || (anchor.isLive ? r.focused : false) };
     return {
       ...derived,
       ...(o.state ? { state: o.state } : {}),
@@ -81,7 +105,7 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
       ...(o.flag !== undefined ? { flag: o.flag ?? undefined } : {}),
       ...(o.dim ? { dim: true } : {}),
       ...(o.isPattern ? { isPattern: true } : {}),
-      focused: o.focused !== undefined ? o.focused : (anchor.isLive ? r.focused : false),
+      focused: isSelected || (o.focused !== undefined ? o.focused : (anchor.isLive ? r.focused : false)),
     };
   });
 
@@ -164,13 +188,23 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
 
       {rooms.map((r) => {
         const s = STATE_FILL[r.state];
-        const dimOpacity = r.dim ? 0.32 : 1;
         const isFocus = !!r.focused;
+        // Dim non-focused in-cycle rooms when a selection is active (Tier C #A).
+        // Off-cycle rooms (CLN/MOM/CURE/LAB/WATER) and the focused room itself
+        // stay at full opacity. Replay-mode `dim` overrides this.
+        const dimByFocus =
+          selectedCode != null && r.inCycle && r.code !== selectedCode
+            ? 0.62
+            : 1;
+        const dimOpacity = r.dim ? 0.32 : dimByFocus;
         const narrow = r.w < 70;
         const tall = r.h > 100;
+        const clickable = r.inCycle && !!onRoomClick;
 
         return (
-          <g key={r.id} opacity={dimOpacity}>
+          <g key={r.id} opacity={dimOpacity}
+             onClick={clickable ? () => onRoomClick!(r.code) : undefined}
+             style={clickable ? { cursor: 'pointer' } : undefined}>
             {isFocus ? (
               <ellipse cx={r.x + r.w / 2} cy={r.y + r.h / 2}
                 rx={r.w * 0.85} ry={r.h * 0.65}
@@ -184,90 +218,88 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
             ) : null}
 
             {r.code && narrow && tall ? (
+              /* Horizontal stacked labels for narrow flower rooms (40-60px wide).
+                 Replaces the prior 4-column vertical-text layout. Room code on
+                 top line, day count on bottom. Strain count and flags moved to
+                 the side rail (visible when room is focused). */
               <>
-                <VLabel x={r.x + r.w / 2 + 4} y={r.y + r.h - 8}
-                        text={r.label} fill={s.text} weight={500}
-                        letterSpacing="0.10em" size={9.5} />
+                <text
+                  x={r.x + r.w / 2}
+                  y={r.y + 14}
+                  fontFamily="IBM Plex Mono"
+                  fontSize="11"
+                  letterSpacing="0.06em"
+                  fill="var(--op-ink)"
+                  textAnchor="middle"
+                  style={{ fontWeight: 500 }}
+                >
+                  {r.label}
+                </text>
                 {r.day && r.day !== '—' ? (
-                  <VLabel x={r.x + r.w / 2 - 8} y={r.y + r.h - 8}
-                          text={r.day} fill={s.text} weight={400}
-                          letterSpacing="0.06em" size={9} />
-                ) : null}
-                {r.strain ? (
-                  <VLabel x={r.x + r.w / 2 - 20} y={r.y + r.h - 8}
-                          text={r.strain.length > 22 ? r.strain.slice(0, 20) + '…' : r.strain}
-                          fill={s.text} opacity={0.65}
-                          letterSpacing="0" size={8.5} mono={false} />
-                ) : null}
-                {r.flag ? (
-                  <VLabel x={r.x + r.w - 6} y={r.y + r.h - 8}
-                          text={r.flag} fill={s.text} weight={500}
-                          letterSpacing="0.14em" size={7.5} />
+                  <text
+                    x={r.x + r.w / 2}
+                    y={r.y + 28}
+                    fontFamily="IBM Plex Mono"
+                    fontSize="10"
+                    letterSpacing="0.04em"
+                    fill={s.text}
+                    textAnchor="middle"
+                    opacity={0.78}
+                  >
+                    {r.day}
+                  </text>
                 ) : null}
               </>
             ) : r.code && narrow && !tall ? (
+              /* Narrow short rooms (DRY 01-03): horizontal centered label + day. */
               <>
                 <text x={r.x + r.w / 2} y={r.y + r.h / 2 - 4}
-                      fontFamily="IBM Plex Mono" fontSize="9"
-                      letterSpacing="0.10em" fill={s.text}
+                      fontFamily="IBM Plex Mono" fontSize="10"
+                      letterSpacing="0.06em" fill="var(--op-ink)"
                       textAnchor="middle" style={{ fontWeight: 500 }}>
                   {r.label}
                 </text>
                 {r.day && r.day !== '—' ? (
-                  <text x={r.x + r.w / 2} y={r.y + r.h / 2 + 8}
-                        fontFamily="IBM Plex Mono" fontSize="8.5"
+                  <text x={r.x + r.w / 2} y={r.y + r.h / 2 + 9}
+                        fontFamily="IBM Plex Mono" fontSize="9.5"
                         letterSpacing="0.04em" fill={s.text}
-                        textAnchor="middle" opacity="0.75">
+                        textAnchor="middle" opacity="0.78">
                     {r.day}
                   </text>
                 ) : null}
               </>
             ) : r.code ? (
+              /* Wider rooms (VEG-01, VEG-02, VEG-05, off-cycle MOM/CLN/LAB/WATER):
+                 horizontal label top-left + day top-right. Strain/flag chrome
+                 dropped 2026-04-27 — moved to the side rail when room is focused. */
               <>
-                <text x={r.x + 13} y={r.y + 11}
-                      fontFamily="IBM Plex Mono" fontSize="9.5"
-                      letterSpacing="0.08em" fill={s.text}
+                <text x={r.x + 14} y={r.y + 14}
+                      fontFamily="IBM Plex Mono" fontSize="11"
+                      letterSpacing="0.06em" fill="var(--op-ink)"
                       style={{ fontWeight: 500 }}>
                   {r.label}
                 </text>
                 {r.day && r.day !== '—' ? (
-                  <text x={r.x + r.w - 6} y={r.y + 11}
-                        fontFamily="IBM Plex Mono" fontSize="9"
+                  <text x={r.x + r.w - 8} y={r.y + 14}
+                        fontFamily="IBM Plex Mono" fontSize="10"
                         letterSpacing="0.04em" fill={s.text}
-                        textAnchor="end" style={{ fontWeight: 500 }}>
+                        textAnchor="end" opacity={0.78}>
                     {r.day}
                   </text>
                 ) : null}
-                {r.strain && r.w > 70 ? (
-                  r.h > r.w
-                    ? <VLabel x={r.x + r.w / 2 + 5} y={r.y + r.h - 8}
-                              text={r.strain.length > 26 ? r.strain.slice(0, 24) + '…' : r.strain}
-                              fill={s.text} opacity={0.62}
-                              letterSpacing="0" size={9} mono={false} />
-                    : <text x={r.x + 6} y={r.y + 26}
-                            fontFamily="IBM Plex Sans" fontSize="9.5"
-                            fill={s.text} opacity="0.70"
-                            style={{ fontStyle: 'italic' }}>
-                        {r.strain.length > 38 ? r.strain.slice(0, 36) + '…' : r.strain}
-                      </text>
-                ) : null}
-                {r.flag ? (
-                  r.h > r.w
-                    ? <VLabel x={r.x + r.w - 6} y={r.y + r.h - 8}
-                              text={r.flag} fill={s.text} weight={500}
-                              letterSpacing="0.14em" size={7.5} />
-                    : <text x={r.x + 6} y={r.y + r.h - 8}
-                            fontFamily="IBM Plex Mono" fontSize="8"
-                            letterSpacing="0.14em" fill={s.text}
-                            style={{ textTransform: 'uppercase', fontWeight: 500 }}>
-                        {r.flag}
-                      </text>
+                {/* Strain caption only on the very wide veg rooms (VEG-01 ≥ 200px). */}
+                {r.strain && r.w >= 200 ? (
+                  <text x={r.x + 14} y={r.y + 30}
+                        fontFamily="IBM Plex Sans" fontSize="10"
+                        fill={s.text} opacity="0.62">
+                    {r.strain.length > 50 ? r.strain.slice(0, 48) + '…' : r.strain}
+                  </text>
                 ) : null}
               </>
             ) : (
               <text x={r.x + r.w / 2} y={r.y + r.h / 2 + 3}
-                    fontFamily="IBM Plex Mono" fontSize="9"
-                    letterSpacing="0.18em" fill={s.text}
+                    fontFamily="IBM Plex Mono" fontSize="10"
+                    letterSpacing="0.16em" fill="var(--op-ink-2)"
                     textAnchor="middle"
                     style={{ textTransform: 'uppercase' }}>
                 {r.label}
@@ -292,7 +324,11 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
         );
       })}
 
-      {/* Corridor — time scrubber */}
+      {/* South wall corridor (architectural). The time-scrubber controls were
+          retired 2026-04-27 — the home dashboard doesn't have a time-replay
+          backend, so the anchors / "earlier · drag to scrub" label / playhead
+          were dead chrome eating vertical space. The corridor itself stays as
+          the building's south egress wall + corridor centerline. */}
       <rect x={FACILITY.building.x} y={corridorY}
             width={FACILITY.building.w} height={corridorH}
             fill="rgba(245,244,241,0.022)"
@@ -300,62 +336,6 @@ export const FloorPlanSVG = memo(function FloorPlanSVG({ anchor, anchorIdx, onSc
       <line x1={FACILITY.building.x + 12} y1={corridorY + corridorH / 2}
             x2={FACILITY.building.x + FACILITY.building.w - 12} y2={corridorY + corridorH / 2}
             stroke="rgba(245,244,241,0.14)" strokeWidth="0.6" strokeDasharray="2 4" />
-      <text x={FACILITY.building.x + 18} y={corridorY + corridorH + 14}
-            fontFamily="IBM Plex Mono" fontSize="7"
-            letterSpacing="0.30em" fill="rgba(245,244,241,0.30)"
-            style={{ textTransform: 'uppercase' }}>
-        ◀  earlier · drag to scrub time
-      </text>
-      <text x={FACILITY.building.x + FACILITY.building.w - 18} y={corridorY + corridorH + 14}
-            fontFamily="IBM Plex Mono" fontSize="7"
-            letterSpacing="0.30em" fill="rgba(245,244,241,0.30)"
-            textAnchor="end" style={{ textTransform: 'uppercase' }}>
-        now  ▶
-      </text>
-
-      {TIME_ANCHORS.map((a, i) => {
-        const isActive = i === anchorIdx;
-        return (
-          <g key={a.id} style={{ cursor: 'pointer' }} onClick={() => onScrub(i)}>
-            <rect x={a.x - 22} y={corridorY - 4}
-                  width="44" height={corridorH + 22}
-                  fill="transparent" />
-            <line x1={a.x} y1={corridorY + 2} x2={a.x} y2={corridorY + corridorH - 2}
-                  stroke={isActive ? 'var(--accent)' : 'rgba(245,244,241,0.30)'}
-                  strokeWidth={isActive ? 1.4 : 0.8} />
-            <text x={a.x} y={corridorY - 4}
-                  fontFamily="IBM Plex Mono" fontSize="7.5"
-                  letterSpacing="0.16em"
-                  fill={isActive ? 'var(--accent)' : 'rgba(245,244,241,0.42)'}
-                  textAnchor="middle"
-                  style={{ textTransform: 'uppercase', fontWeight: isActive ? 600 : 400 }}>
-              {a.label}
-            </text>
-          </g>
-        );
-      })}
-
-      {(() => {
-        const a = TIME_ANCHORS[anchorIdx];
-        return (
-          <g style={{ pointerEvents: 'none' }}>
-            <line x1={a.x} y1={20} x2={a.x} y2={corridorY}
-                  stroke="rgba(168,184,154,0.22)" strokeWidth="0.6"
-                  strokeDasharray="2 4" />
-            <rect x={a.x - 7} y={corridorY - 1}
-                  width="14" height={corridorH + 2}
-                  fill="rgba(168,184,154,0.18)"
-                  stroke="var(--accent)" strokeWidth="1" />
-            <line x1={a.x} y1={corridorY + 3} x2={a.x} y2={corridorY + corridorH - 3}
-                  stroke="var(--accent)" strokeWidth="0.6" />
-            {a.isLive ? (
-              <circle cx={a.x} cy={corridorY + corridorH / 2} r="2.5"
-                      fill="var(--status-ok)"
-                      style={{ animation: 'fpl-blink 2s ease-in-out infinite' }} />
-            ) : null}
-          </g>
-        );
-      })()}
 
       <g transform="translate(1280, 6)">
         <path d="M0 12 L0 0 M0 0 L-3 4 M0 0 L3 4"

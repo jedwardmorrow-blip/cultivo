@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TIME_ANCHORS } from './data';
 import { FloorPlanSVG } from './FloorPlanSVG';
 import { SideRail } from './SideRail';
 import { FacilityStateStrip } from './FacilityStateStrip';
 import { BottomTimeline } from './BottomTimeline';
+import { InventoryRibbon } from './InventoryRibbon';
 import { useFloorPlanData } from './useFloorPlanData';
 import './floor-plan.css';
 
 interface FloorPlanLiveProps {
-  /** Hide the section chrome when mounted inside HubShell. Default false. */
+  /** Hide the section chrome when mounted inside HubShell or the home dashboard. */
   embedded?: boolean;
 }
 
@@ -16,16 +17,44 @@ export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
   const [anchorIdx, setAnchorIdx] = useState(0);
   const anchor = TIME_ANCHORS[anchorIdx];
   const isLive = !!anchor.isLive;
-  // Live data merges into FACILITY.rooms inside FloorPlanSVG via context-free
-  // pattern: the bridge hook is called here to trigger fetches; rooms aren't
-  // yet threaded through the SVG (Phase 2 wire). For now this keeps the data
-  // pipe warm so caching is cold-loaded by the time we thread it through.
-  useFloorPlanData();
+
+  const { rooms } = useFloorPlanData();
+  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [isRailOpen, setIsRailOpen] = useState(false);
+
+  // Collapsed by default. The dashboard does NOT decide what's urgent for the
+  // operator — they pick the focus by clicking. X dismisses. Click a different
+  // room while closed: rail re-opens with the new room.
+  const handleRoomClick = (code: string) => {
+    setSelectedCode(code);
+    setIsRailOpen(true);
+  };
+  const handleRailClose = () => {
+    setIsRailOpen(false);
+  };
+
+  // Off-cycle micro-stats: pull plant/strain counts from FACILITY fixture
+  // for rooms not in v_room_operational_state (CLN/MOM/LAB/WATER).
+  // CURE removed 2026-04-27 — does not exist in the real 40th St facility.
+  const offCycleStats = useMemo(() => {
+    const mom = rooms.find((r) => r.code === 'MOM');
+    const cln = rooms.find((r) => r.code === 'CLN');
+    return [
+      mom && {
+        label: 'MOM',
+        value: `${mom.total_plants ?? 0} mothers · ${mom.strain_count ?? 0} strains`,
+      },
+      cln && {
+        label: 'CLN',
+        value: `${cln.total_plants ?? 0} cuttings`,
+      },
+    ].filter(Boolean) as Array<{ label: string; value: string }>;
+  }, [rooms]);
 
   return (
     <div className={`fpl-root ${embedded ? 'is-embedded' : ''} product`}>
       <div className={`fpl artb ${isLive ? '' : 'is-scrubbed'}`}>
-        {/* Top nav (shared chrome from coo-desk) — hidden when embedded inside HubShell */}
+        {/* Internal coo-nav suppressed when embedded inside the cultivo TopNav. */}
         {embedded ? null : (
         <>
         <div className="coo-nav">
@@ -59,9 +88,9 @@ export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
         </>
         )}
 
-        <FacilityStateStrip anchor={anchor} onReturnLive={() => setAnchorIdx(0)} />
+        <FacilityStateStrip rooms={rooms} />
 
-        <div className="fpl-main">
+        <div className={`fpl-main ${isRailOpen ? 'rail-open' : 'rail-closed'}`}>
           <div className="fpl-canvas">
             <div className="fpl-canvas-cap">
               <div>
@@ -70,12 +99,8 @@ export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
                   {!isLive && <span className="fpl-canvas-replay">  —  replaying · {anchor.label}</span>}
                 </div>
                 <h1 className="fpl-canvas-h">
-                  {isLive ? 'Floor plan, live' : 'Floor plan, replayed'}
-                  <em>{isLive ? 'state at 10:42:18' : `state at ${anchor.stamp.split(' · ')[1] || anchor.stamp}`}</em>
+                  Floor plan, live
                 </h1>
-                {anchor.headline ? (
-                  <div className="fpl-canvas-headline">◇ {anchor.headline}</div>
-                ) : null}
               </div>
               <div className="fpl-canvas-legend">
                 <span><span className="swatch" style={{ background: 'rgba(255,255,255,0.04)' }} />nominal</span>
@@ -85,7 +110,14 @@ export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
               </div>
             </div>
             <div className="fpl-svg-wrap">
-              <FloorPlanSVG anchor={anchor} anchorIdx={anchorIdx} onScrub={setAnchorIdx} />
+              <FloorPlanSVG
+                anchor={anchor}
+                anchorIdx={anchorIdx}
+                onScrub={setAnchorIdx}
+                liveRooms={rooms}
+                selectedCode={selectedCode}
+                onRoomClick={handleRoomClick}
+              />
               <div className="fpl-compass">
                 <span style={{ fontSize: 11, color: 'var(--op-ink-2)' }}>N</span>
                 <svg width="18" height="22" viewBox="0 0 18 22">
@@ -98,10 +130,29 @@ export function FloorPlanLive({ embedded = false }: FloorPlanLiveProps) {
                 <span>50 FT</span>
               </div>
             </div>
+
+            {offCycleStats.length > 0 && (
+              <div className="fpl-offcycle">
+                {offCycleStats.map((s) => (
+                  <span key={s.label}>
+                    <strong>{s.label}</strong>
+                    {s.value}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          <SideRail />
+          {isRailOpen && (
+            <SideRail
+              rooms={rooms}
+              selectedCode={selectedCode}
+              onClose={handleRailClose}
+            />
+          )}
         </div>
+
+        <InventoryRibbon />
 
         <BottomTimeline />
       </div>
