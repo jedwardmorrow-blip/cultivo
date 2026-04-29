@@ -41,10 +41,10 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-cult-near-black border border-cult-danger shadow-xl max-w-md w-full">
+      <div className="bg-cult-surface border border-cult-danger max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-cult-danger/50">
           <h2 className="text-xl font-bold text-cult-danger uppercase tracking-wide">Delete Session</h2>
-          <button onClick={onClose} className="p-1 text-cult-light-gray hover:text-cult-white transition">
+          <button onClick={onClose} className="p-1 text-cult-text-muted hover:text-cult-text-primary transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -72,23 +72,23 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
             </div>
           )}
 
-          <div className="bg-cult-dark-gray p-4 rounded-lg border border-cult-medium-gray">
+          <div className="bg-cult-surface p-4 rounded-lg border border-cult-border">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-cult-light-gray">Trimmer</p>
-                <p className="font-bold text-cult-white">{session.trimmer_name}</p>
+                <p className="text-cult-text-muted">Trimmer</p>
+                <p className="font-bold text-cult-text-primary">{session.trimmer_name}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray">Strain</p>
-                <p className="font-bold text-cult-white">{session.strain}</p>
+                <p className="text-cult-text-muted">Strain</p>
+                <p className="font-bold text-cult-text-primary">{session.strain}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray">Date</p>
-                <p className="font-bold text-cult-white">{new Date(session.session_date).toLocaleDateString()}</p>
+                <p className="text-cult-text-muted">Date</p>
+                <p className="font-bold text-cult-text-primary">{new Date(session.session_date).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-cult-light-gray">Pulled Weight</p>
-                <p className="font-bold text-cult-white">{session.pulled_weight}g</p>
+                <p className="text-cult-text-muted">Pulled Weight</p>
+                <p className="font-bold text-cult-text-primary">{session.pulled_weight}g</p>
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ export function AdminSessionDeleteModal({ session, onClose, onDelete }: AdminSes
             </button>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 border border-cult-medium-gray text-cult-white hover:border-cult-white transition font-semibold uppercase tracking-wider text-sm"
+              className="px-6 py-2.5 border border-cult-border text-cult-text-primary hover:border-cult-accent transition font-semibold uppercase tracking-wider text-sm"
             >
               Cancel
             </button>

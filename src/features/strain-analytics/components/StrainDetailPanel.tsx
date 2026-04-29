@@ -19,11 +19,11 @@ function Stat({ label, value, unit, awaiting }: { label: string; value: string |
     <div className="flex flex-col">
       <span className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">{label}</span>
       {showAwaiting ? (
-        <span className="text-sm text-cult-charcoal italic">Awaiting data</span>
+        <span className="text-sm text-cult-surface-raised italic">Awaiting data</span>
       ) : isEmpty ? (
         <span className="text-sm text-cult-text-muted">—</span>
       ) : (
-        <span className="text-sm text-cult-white font-medium">
+        <span className="text-sm text-cult-text-primary font-medium">
           {typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : value}
           {unit && <span className="text-cult-text-muted ml-1">{unit}</span>}
         </span>
@@ -35,8 +35,8 @@ function Stat({ label, value, unit, awaiting }: { label: string; value: string |
 function SectionHeader({ icon: Icon, label }: { icon: typeof Dna; label: string }) {
   return (
     <div className="flex items-center gap-2 mb-3 pt-4 first:pt-0">
-      <Icon className="w-4 h-4 text-cult-silver" />
-      <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">{label}</h3>
+      <Icon className="w-4 h-4 text-cult-text-secondary" />
+      <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">{label}</h3>
     </div>
   );
 }
@@ -53,7 +53,7 @@ function gradeBadgeLg(grade: string | null, confidence: string | null) {
     C: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     D: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
   };
-  const classes = map[grade] || 'bg-cult-charcoal text-cult-silver border-cult-charcoal';
+  const classes = map[grade] || 'bg-cult-surface-raised text-cult-text-secondary border-cult-surface-raised';
   return (
     <div className="flex items-center gap-2">
       <span className={`inline-flex items-center px-3 py-1 rounded-cult text-sm font-bold border ${classes}`}>
@@ -72,7 +72,7 @@ function runwayStatusBadge(status: string | null, days: number | null) {
     tight: { label: 'Tight', classes: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
     healthy: { label: 'Healthy', classes: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
     surplus: { label: 'Surplus', classes: 'bg-cult-info-muted text-cult-info border-cult-info/30' },
-    no_demand: { label: 'No Demand', classes: 'bg-cult-charcoal text-cult-silver border-cult-charcoal' },
+    no_demand: { label: 'No Demand', classes: 'bg-cult-surface-raised text-cult-text-secondary border-cult-surface-raised' },
     no_stock: { label: 'No Stock', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
   };
   if (!status || !map[status]) return <span className="text-cult-text-muted text-sm">—</span>;
@@ -83,7 +83,7 @@ function runwayStatusBadge(status: string | null, days: number | null) {
         {label}
       </span>
       {days !== null && (
-        <span className="text-sm text-cult-silver">{days} days</span>
+        <span className="text-sm text-cult-text-secondary">{days} days</span>
       )}
     </div>
   );
@@ -93,16 +93,16 @@ function completenessBar(pct: number) {
   const color = pct >= 70 ? 'bg-cult-success' : pct >= 40 ? 'bg-cult-warning' : 'bg-cult-danger';
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-1 h-2 bg-cult-charcoal rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-cult-surface-raised rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-sm text-cult-silver font-medium">{pct}%</span>
+      <span className="text-sm text-cult-text-secondary font-medium">{pct}%</span>
     </div>
   );
 }
 
 function Divider() {
-  return <div className="border-t border-cult-charcoal/50 my-2" />;
+  return <div className="border-t border-cult-surface-raised/50 my-2" />;
 }
 
 // ── Main Panel ───────────────────────────────────────────────────────────────
@@ -122,22 +122,22 @@ export function StrainDetailPanel({ profile, onClose }: StrainDetailPanelProps) 
       />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-cult-graphite border-l border-cult-charcoal z-50 overflow-y-auto shadow-2xl">
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-cult-surface border-l border-cult-surface-raised z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-cult-graphite border-b border-cult-charcoal px-6 py-4 z-10">
+        <div className="sticky top-0 bg-cult-surface border-b border-cult-surface-raised px-6 py-4 z-10">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold text-cult-white">{profile.display_name}</h2>
+              <h2 className="text-xl font-bold text-cult-text-primary">{profile.display_name}</h2>
               <div className="flex items-center gap-3 mt-1">
                 {profile.dominance_type && (
-                  <span className="text-sm text-cult-silver">{profile.dominance_type}</span>
+                  <span className="text-sm text-cult-text-secondary">{profile.dominance_type}</span>
                 )}
                 {gradeBadgeLg(profile.suggested_grade, profile.grade_confidence)}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-cult-text-muted hover:text-cult-white transition-colors rounded-cult hover:bg-cult-charcoal/50"
+              className="p-2 text-cult-text-muted hover:text-cult-text-primary transition-colors rounded-cult hover:bg-cult-surface-raised/50"
             >
               <X className="w-5 h-5" />
             </button>
@@ -262,7 +262,7 @@ export function StrainDetailPanel({ profile, onClose }: StrainDetailPanelProps) 
 
           {/* ── Future: Room Suitability ── */}
           <SectionHeader icon={TrendingUp} label="Room Suitability" />
-          <div className="text-sm text-cult-charcoal italic py-2">
+          <div className="text-sm text-cult-surface-raised italic py-2">
             Coming soon — strain performance will be mapped to specific grow rooms as batch history accumulates
           </div>
         </div>

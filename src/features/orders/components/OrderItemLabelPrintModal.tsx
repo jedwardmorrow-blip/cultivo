@@ -112,15 +112,15 @@ export function OrderItemLabelPrintModal({
   return createPortal(
     <>
       <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
-        <div className="bg-cult-dark-gray rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col border-2 border-cult-medium-gray">
-          <div className="p-4 border-b border-cult-medium-gray flex items-center justify-between bg-cult-opaque-near-black">
+        <div className="bg-cult-surface rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col border-2 border-cult-border">
+          <div className="p-4 border-b border-cult-border flex items-center justify-between bg-cult-surface">
             <div>
-              <h3 className="text-xl font-bold text-cult-white">Print Labels</h3>
-              <p className="text-sm text-cult-lighter-gray mt-1">{productName}</p>
+              <h3 className="text-xl font-bold text-cult-text-primary">Print Labels</h3>
+              <p className="text-sm text-cult-text-muted mt-1">{productName}</p>
             </div>
             <button
               onClick={onClose}
-              className="text-cult-lighter-gray hover:text-cult-white transition-colors"
+              className="text-cult-text-muted hover:text-cult-text-primary transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -128,18 +128,18 @@ export function OrderItemLabelPrintModal({
 
           {loading ? (
             <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-cult-lighter-gray">Loading labels...</div>
+              <div className="text-cult-text-muted">Loading labels...</div>
             </div>
           ) : labels.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8">
-              <div className="text-cult-lighter-gray text-center">
+              <div className="text-cult-text-muted text-center">
                 <p className="text-lg mb-2">No labels generated yet</p>
                 <p className="text-sm">Labels are automatically generated when packages are assigned to this order item.</p>
               </div>
             </div>
           ) : (
             <>
-              <div className="p-4 border-b border-cult-medium-gray bg-cult-opaque-near-black">
+              <div className="p-4 border-b border-cult-border bg-cult-surface">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="flex gap-2">
@@ -147,8 +147,8 @@ export function OrderItemLabelPrintModal({
                         onClick={() => setActiveFilter('all')}
                         className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
                           activeFilter === 'all'
-                            ? 'bg-cult-white text-cult-near-black'
-                            : 'bg-cult-medium-gray text-cult-lighter-gray hover:bg-cult-lighter-gray'
+                            ? 'bg-cult-accent text-cult-opaque-black'
+                            : 'bg-cult-border text-cult-text-muted hover:bg-cult-text-muted'
                         }`}
                       >
                         All ({stats.total - stats.voided})
@@ -157,8 +157,8 @@ export function OrderItemLabelPrintModal({
                         onClick={() => setActiveFilter('pending')}
                         className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
                           activeFilter === 'pending'
-                            ? 'bg-cult-white text-cult-near-black'
-                            : 'bg-cult-medium-gray text-cult-lighter-gray hover:bg-cult-lighter-gray'
+                            ? 'bg-cult-accent text-cult-opaque-black'
+                            : 'bg-cult-border text-cult-text-muted hover:bg-cult-text-muted'
                         }`}
                       >
                         Pending ({stats.pending})
@@ -167,8 +167,8 @@ export function OrderItemLabelPrintModal({
                         onClick={() => setActiveFilter('printed')}
                         className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
                           activeFilter === 'printed'
-                            ? 'bg-cult-white text-cult-near-black'
-                            : 'bg-cult-medium-gray text-cult-lighter-gray hover:bg-cult-lighter-gray'
+                            ? 'bg-cult-accent text-cult-opaque-black'
+                            : 'bg-cult-border text-cult-text-muted hover:bg-cult-text-muted'
                         }`}
                       >
                         Printed ({stats.printed})
@@ -191,12 +191,12 @@ export function OrderItemLabelPrintModal({
                   {filteredLabels.map(label => (
                     <div
                       key={label.id}
-                      className="bg-cult-opaque-near-black border border-cult-medium-gray rounded-lg p-4 hover:border-cult-lighter-gray transition-colors"
+                      className="bg-cult-surface border border-cult-border rounded-lg p-4 hover:border-cult-text-muted transition-colors"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
-                            <span className="text-lg font-bold text-cult-white">
+                            <span className="text-lg font-bold text-cult-text-primary">
                               {label.label_number}
                             </span>
                             {getStatusBadge(label)}
@@ -204,41 +204,41 @@ export function OrderItemLabelPrintModal({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                             <div>
-                              <span className="text-cult-lighter-gray">Package ID:</span>
-                              <span className="ml-2 text-cult-white font-medium">{label.package_id}</span>
+                              <span className="text-cult-text-muted">Package ID:</span>
+                              <span className="ml-2 text-cult-text-primary font-medium">{label.package_id}</span>
                             </div>
                             <div>
-                              <span className="text-cult-lighter-gray">Weight:</span>
-                              <span className="ml-2 text-cult-white font-medium">{label.net_weight_grams}g</span>
+                              <span className="text-cult-text-muted">Weight:</span>
+                              <span className="ml-2 text-cult-text-primary font-medium">{label.net_weight_grams}g</span>
                             </div>
                             {label.strain && (
                               <div>
-                                <span className="text-cult-lighter-gray">Strain:</span>
-                                <span className="ml-2 text-cult-white font-medium">{label.strain}</span>
+                                <span className="text-cult-text-muted">Strain:</span>
+                                <span className="ml-2 text-cult-text-primary font-medium">{label.strain}</span>
                               </div>
                             )}
                             {label.batch_number && (
                               <div>
-                                <span className="text-cult-lighter-gray">Batch:</span>
-                                <span className="ml-2 text-cult-white font-medium">{label.batch_number}</span>
+                                <span className="text-cult-text-muted">Batch:</span>
+                                <span className="ml-2 text-cult-text-primary font-medium">{label.batch_number}</span>
                               </div>
                             )}
                             {label.thc_percentage !== null && (
                               <div>
-                                <span className="text-cult-lighter-gray">THC:</span>
-                                <span className="ml-2 text-cult-white font-medium">{label.thc_percentage}%</span>
+                                <span className="text-cult-text-muted">THC:</span>
+                                <span className="ml-2 text-cult-text-primary font-medium">{label.thc_percentage}%</span>
                               </div>
                             )}
                             {label.cbd_percentage !== null && label.cbd_percentage > 0 && (
                               <div>
-                                <span className="text-cult-lighter-gray">CBD:</span>
-                                <span className="ml-2 text-cult-white font-medium">{label.cbd_percentage}%</span>
+                                <span className="text-cult-text-muted">CBD:</span>
+                                <span className="ml-2 text-cult-text-primary font-medium">{label.cbd_percentage}%</span>
                               </div>
                             )}
                           </div>
 
                           {label.printed_at && (
-                            <div className="mt-2 text-xs text-cult-lighter-gray">
+                            <div className="mt-2 text-xs text-cult-text-muted">
                               Last printed: {formatDate(label.last_printed_at || label.printed_at)}
                               {label.print_count && label.print_count > 1 && (
                                 <span className="ml-2">({label.print_count} times)</span>
@@ -264,7 +264,7 @@ export function OrderItemLabelPrintModal({
                 </div>
 
                 {filteredLabels.length === 0 && (
-                  <div className="text-center text-cult-lighter-gray py-8">
+                  <div className="text-center text-cult-text-muted py-8">
                     {activeFilter === 'pending' && 'No pending labels'}
                     {activeFilter === 'printed' && 'No printed labels'}
                   </div>

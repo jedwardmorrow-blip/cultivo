@@ -84,14 +84,14 @@ function OrderTimeline({ currentStatus }: { currentStatus: string }) {
               isCurrent
                 ? 'bg-cult-green/20 text-cult-green border border-cult-green/40'
                 : isComplete
-                  ? 'bg-cult-charcoal text-cult-silver'
-                  : 'bg-transparent text-cult-lighter-gray/50'
+                  ? 'bg-cult-surface-raised text-cult-text-secondary'
+                  : 'bg-transparent text-cult-text-muted/50'
             }`}>
               {STATUS_LABELS[step]?.replace('for Delivery', '') || step}
             </div>
             {index < TIMELINE_STEPS.length - 1 && (
               <ChevronRight className={`w-3 h-3 flex-shrink-0 ${
-                isComplete ? 'text-cult-silver' : 'text-cult-charcoal'
+                isComplete ? 'text-cult-text-secondary' : 'text-cult-surface-raised'
               }`} />
             )}
           </div>
@@ -110,41 +110,41 @@ function CustomerCard({ customer }: { customer: CustomerInfo }) {
   ].filter(Boolean).join(', ') || customer.address || 'No address';
 
   return (
-    <div className="bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-4">
+    <div className="bg-cult-surface border border-cult-surface-raised rounded-cult p-4">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-cult-silver" />
-          <h4 className="text-sm font-bold text-cult-off-white">{customer.name}</h4>
+          <Building2 className="w-4 h-4 text-cult-text-secondary" />
+          <h4 className="text-sm font-bold text-cult-text-primary">{customer.name}</h4>
         </div>
         {customer.order_count !== undefined && (
-          <span className="text-xs text-cult-silver bg-cult-charcoal px-2 py-0.5 rounded">
+          <span className="text-xs text-cult-text-secondary bg-cult-surface-raised px-2 py-0.5 rounded">
             {customer.order_count} orders
           </span>
         )}
       </div>
       <div className="space-y-2 text-xs">
         {customer.contact_name && (
-          <div className="text-cult-silver">{customer.contact_name}</div>
+          <div className="text-cult-text-secondary">{customer.contact_name}</div>
         )}
-        <div className="flex items-start gap-2 text-cult-silver">
-          <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0 text-cult-lighter-gray" />
+        <div className="flex items-start gap-2 text-cult-text-secondary">
+          <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0 text-cult-text-muted" />
           <span>{deliveryAddr}</span>
         </div>
         {customer.phone && (
-          <a href={`tel:${customer.phone}`} className="flex items-center gap-2 text-cult-silver hover:text-cult-green transition-colors">
-            <Phone className="w-3 h-3 text-cult-lighter-gray" />
+          <a href={`tel:${customer.phone}`} className="flex items-center gap-2 text-cult-text-secondary hover:text-cult-green transition-colors">
+            <Phone className="w-3 h-3 text-cult-text-muted" />
             {customer.phone}
           </a>
         )}
         {customer.email && (
-          <a href={`mailto:${customer.email}`} className="flex items-center gap-2 text-cult-silver hover:text-cult-green transition-colors">
-            <Mail className="w-3 h-3 text-cult-lighter-gray" />
+          <a href={`mailto:${customer.email}`} className="flex items-center gap-2 text-cult-text-secondary hover:text-cult-green transition-colors">
+            <Mail className="w-3 h-3 text-cult-text-muted" />
             {customer.email}
           </a>
         )}
         {customer.license_number && (
-          <div className="flex items-center gap-2 text-cult-silver">
-            <Shield className="w-3 h-3 text-cult-lighter-gray" />
+          <div className="flex items-center gap-2 text-cult-text-secondary">
+            <Shield className="w-3 h-3 text-cult-text-muted" />
             License: {customer.license_number}
           </div>
         )}
@@ -152,7 +152,7 @@ function CustomerCard({ customer }: { customer: CustomerInfo }) {
           <div className={`flex items-center gap-2 font-semibold ${
             customer.account_credit_balance > 0 ? 'text-cult-success' : 'text-cult-danger'
           }`}>
-            <span className="text-cult-lighter-gray">Credit:</span>
+            <span className="text-cult-text-muted">Credit:</span>
             {formatCurrency(customer.account_credit_balance)}
           </div>
         )}
@@ -256,11 +256,11 @@ export function OrderDrawer({
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-opaque-black border-l border-cult-charcoal z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-opaque-black border-l border-cult-surface-raised z-50 flex flex-col animate-slide-in-right">
 
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-charcoal bg-cult-opaque-near-black">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-surface-raised bg-cult-surface">
           <div className="flex items-center gap-3 min-w-0">
-            <h2 className="text-lg font-bold text-cult-off-white tracking-wide truncate">
+            <h2 className="text-lg font-bold text-cult-text-primary tracking-wide truncate">
               {order.order_number}
             </h2>
             <span className={`px-2.5 py-1 text-xs font-bold border rounded uppercase tracking-wider select-none ${statusColors}`}>
@@ -283,7 +283,7 @@ export function OrderDrawer({
               </span>
             )}
           </div>
-          <button onClick={onClose} className="p-1.5 text-cult-silver hover:text-cult-white hover:bg-cult-charcoal rounded transition-colors">
+          <button onClick={onClose} className="p-1.5 text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface-raised rounded transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -291,7 +291,7 @@ export function OrderDrawer({
         <div className="flex-1 overflow-y-auto">
           <div className="px-5 py-4 space-y-4">
 
-            <div className="flex items-center justify-between text-xs text-cult-silver">
+            <div className="flex items-center justify-between text-xs text-cult-text-secondary">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
@@ -315,7 +315,7 @@ export function OrderDrawer({
                         }
                       }}
                       autoFocus
-                      className="bg-cult-charcoal border border-cult-silver/30 rounded px-1.5 py-0.5 text-xs text-cult-off-white outline-none focus:border-cult-green transition-colors"
+                      className="bg-cult-surface-raised border border-cult-text-secondary/30 rounded px-1.5 py-0.5 text-xs text-cult-text-primary outline-none focus:border-cult-green transition-colors"
                       style={{ colorScheme: 'dark' }}
                     />
                   </span>
@@ -338,7 +338,7 @@ export function OrderDrawer({
                           }) ?? 'No date'}
                           {dateSaved && <span className="ml-1.5 text-cult-green font-semibold animate-pulse">Saved</span>}
                         </span>
-                      : <span className="text-cult-lighter-gray group-hover/date:text-cult-green">Set delivery date</span>
+                      : <span className="text-cult-text-muted group-hover/date:text-cult-green">Set delivery date</span>
                     }
                   </button>
                 )}
@@ -377,16 +377,16 @@ export function OrderDrawer({
               <div className="space-y-3 pt-2">
                 {order.delivery_notes && (
                   <div>
-                    <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Delivery Notes</h4>
-                    <p className="text-xs text-cult-silver bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-3">
+                    <h4 className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider mb-1.5">Delivery Notes</h4>
+                    <p className="text-xs text-cult-text-secondary bg-cult-surface border border-cult-surface-raised rounded-cult p-3">
                       {order.delivery_notes}
                     </p>
                   </div>
                 )}
                 {order.internal_notes && (
                   <div>
-                    <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider mb-1.5">Internal Notes</h4>
-                    <p className="text-xs text-cult-silver bg-cult-opaque-near-black border border-cult-charcoal rounded-cult p-3">
+                    <h4 className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider mb-1.5">Internal Notes</h4>
+                    <p className="text-xs text-cult-text-secondary bg-cult-surface border border-cult-surface-raised rounded-cult p-3">
                       {order.internal_notes}
                     </p>
                   </div>
@@ -397,10 +397,10 @@ export function OrderDrawer({
           </div>
         </div>
 
-        <div className="px-5 py-3 border-t border-cult-charcoal bg-cult-opaque-near-black flex items-center gap-2">
+        <div className="px-5 py-3 border-t border-cult-surface-raised bg-cult-surface flex items-center gap-2">
           <button
             onClick={() => onCloneOrder(order)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cult-silver hover:text-cult-white bg-cult-charcoal hover:bg-cult-medium-gray rounded transition-all uppercase tracking-wider"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cult-text-secondary hover:text-cult-text-primary bg-cult-surface-raised hover:bg-cult-border rounded transition-all uppercase tracking-wider"
           >
             <Copy className="w-3.5 h-3.5" />
             Clone

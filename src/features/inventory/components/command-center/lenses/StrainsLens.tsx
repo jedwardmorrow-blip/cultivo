@@ -134,7 +134,7 @@ export function StrainsLens({ data, loading, onBatchClick }: StrainsLensProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search strains…"
-            className="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none"
+            className="glass-input w-full pl-8 pr-3 py-1.5 rounded-cult text-sm text-white placeholder:text-white/30 focus:outline-none"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -308,19 +308,19 @@ function OverviewPanel({ data }: { data: StrainInventoryRow[] }) {
 
       {/* Summary KPIs */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Total Weight</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {gramsToLbs(totalWeight)} lbs
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Est. Value</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {formatUsd(totalValue)}
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Strains</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{data.length}</p>
         </div>
@@ -329,7 +329,7 @@ function OverviewPanel({ data }: { data: StrainInventoryRow[] }) {
       {/* Category breakdown */}
       <div>
         <span className="text-xs text-white/40 uppercase tracking-wider font-medium">By Category</span>
-        <div className="flex h-3 rounded-full overflow-hidden bg-cult-near-black mt-2">
+        <div className="flex h-3 rounded-full overflow-hidden bg-cult-surface mt-2">
           {catBreakdown.map((c) => (
             <div
               key={c.cat}

@@ -45,7 +45,7 @@ export function DateRangeFilter({
     : DATE_PRESETS;
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${compact ? '' : 'bg-cult-near-black border border-cult-medium-gray/50 rounded-lg px-3 py-2'}`}>
+    <div className={`flex flex-wrap items-center gap-2 ${compact ? '' : 'bg-cult-surface border border-cult-border/50 rounded-lg px-3 py-2'}`}>
       <div className="flex items-center gap-1 flex-wrap">
         {presets.map((preset) => (
           <button
@@ -54,7 +54,7 @@ export function DateRangeFilter({
             className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 ${
               activePreset === preset.key && !showCustom
                 ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
-                : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
+                : 'text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface border border-transparent'
             }`}
           >
             {compact ? preset.shortLabel : preset.label}
@@ -66,7 +66,7 @@ export function DateRangeFilter({
           className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 flex items-center gap-1 ${
             showCustom || (!activePreset && value.label === 'Custom')
               ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
-              : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
+              : 'text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface border border-transparent'
           }`}
         >
           <Calendar className="w-3 h-3" />
@@ -80,14 +80,14 @@ export function DateRangeFilter({
             type="date"
             value={value.start}
             onChange={(e) => handleCustomDateChange('start', e.target.value)}
-            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-cult-success/50 focus:outline-none"
+            className="bg-cult-surface border border-cult-border rounded px-2 py-1 text-xs text-cult-text-primary focus:border-cult-success/50 focus:outline-none"
           />
-          <span className="text-xs text-cult-silver">to</span>
+          <span className="text-xs text-cult-text-secondary">to</span>
           <input
             type="date"
             value={value.end}
             onChange={(e) => handleCustomDateChange('end', e.target.value)}
-            className="bg-cult-dark-gray border border-cult-medium-gray rounded px-2 py-1 text-xs text-cult-white focus:border-cult-success/50 focus:outline-none"
+            className="bg-cult-surface border border-cult-border rounded px-2 py-1 text-xs text-cult-text-primary focus:border-cult-success/50 focus:outline-none"
           />
         </div>
       )}
@@ -98,7 +98,7 @@ export function DateRangeFilter({
           className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-150 ${
             compareEnabled
               ? 'bg-cult-info-muted text-cult-info border border-cult-info/30'
-              : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray border border-transparent'
+              : 'text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface border border-transparent'
           }`}
         >
           <GitCompareArrows className="w-3 h-3" />

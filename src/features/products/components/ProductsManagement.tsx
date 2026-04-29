@@ -101,14 +101,14 @@ export function ProductsManagement() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide flex items-center gap-2">
               <Package className="w-6 h-6" />
               Products Management
             </h2>
-            <p className="text-cult-light-gray mt-1">
+            <p className="text-cult-text-muted mt-1">
               {stats.total} total products ({stats.bulk} bulk, {stats.packaged} packaged, {stats.preroll} preroll)
             </p>
-            <p className="text-cult-lighter-gray text-sm mt-1">
+            <p className="text-cult-text-muted text-sm mt-1">
               Products are automatically generated for all strains when they are added or activated
             </p>
           </div>
@@ -118,11 +118,11 @@ export function ProductsManagement() {
       <>
           <div className="mb-6 flex gap-4 flex-wrap items-center">
             <div className="flex gap-2 items-center">
-              <Filter className="w-4 h-4 text-cult-light-gray" />
+              <Filter className="w-4 h-4 text-cult-text-muted" />
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white"
+                className="px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary"
               >
                 <option value="all">All Categories</option>
                 <option value="bulk">Bulk</option>
@@ -133,7 +133,7 @@ export function ProductsManagement() {
               <select
                 value={stageFilter}
                 onChange={(e) => setStageFilter(e.target.value)}
-                className="px-4 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white"
+                className="px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary"
               >
                 <option value="all">All Stages</option>
                 <option value="Bulk">Bulk</option>
@@ -148,39 +148,39 @@ export function ProductsManagement() {
               placeholder="Search by name, strain, or SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white placeholder-cult-medium-gray"
+              className="flex-1 px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary placeholder-cult-border"
             />
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full border border-cult-medium-gray">
-              <thead className="bg-cult-near-black">
+            <table className="w-full border border-cult-border">
+              <thead className="bg-cult-surface">
                 <tr>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Name</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Stage</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Type</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Strain</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Category</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Price</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">SKU</th>
-                  <th className="px-4 py-3 text-left text-cult-white font-semibold border-b border-cult-medium-gray">Weights</th>
-                  <th className="px-4 py-3 text-right text-cult-white font-semibold border-b border-cult-medium-gray">Actions</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Name</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Stage</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Type</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Strain</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Category</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Price</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">SKU</th>
+                  <th className="px-4 py-3 text-left text-cult-text-primary font-semibold border-b border-cult-border">Weights</th>
+                  <th className="px-4 py-3 text-right text-cult-text-primary font-semibold border-b border-cult-border">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="border-b border-cult-medium-gray hover:bg-cult-near-black">
+                  <tr key={product.id} className="border-b border-cult-border hover:bg-cult-surface">
                     {editingId === product.id ? (
                       <>
-                        <td className="px-4 py-3 text-cult-white">{product.name}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).stage?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).product_type?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).strain_info?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-primary">{product.name}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">{(product as ProductWithRelations).stage?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">{(product as ProductWithRelations).product_type?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">{(product as ProductWithRelations).strain_info?.name || '-'}</td>
                         <td className="px-4 py-3">
                           <select
                             value={editForm.product_category || product.product_category}
                             onChange={(e) => setEditForm({ ...editForm, product_category: e.target.value })}
-                            className="px-2 py-1 bg-cult-near-black border border-cult-medium-gray text-cult-white text-sm"
+                            className="px-2 py-1 bg-cult-surface border border-cult-border text-cult-text-primary text-sm"
                           >
                             <option value="bulk">Bulk</option>
                             <option value="packaged">Packaged</option>
@@ -189,40 +189,40 @@ export function ProductsManagement() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1">
-                            <span className="text-cult-light-gray">$</span>
+                            <span className="text-cult-text-muted">$</span>
                             <input
                               type="number"
                               value={editForm.price_per_unit ?? product.price_per_unit ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, price_per_unit: parseFloat(e.target.value) })}
-                              className="w-24 px-2 py-1 bg-cult-near-black border border-cult-medium-gray text-cult-white text-sm"
+                              className="w-24 px-2 py-1 bg-cult-surface border border-cult-border text-cult-text-primary text-sm"
                               step="0.01"
                             />
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-cult-light-gray text-sm">{product.sku || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted text-sm">{product.sku || '-'}</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1 text-sm">
                             <div className="flex gap-1 items-center">
-                              <span className="text-cult-light-gray text-xs">Gross:</span>
+                              <span className="text-cult-text-muted text-xs">Gross:</span>
                               <input
                                 type="number"
                                 value={editForm.gross_weight ?? product.gross_weight ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, gross_weight: parseFloat(e.target.value) || null })}
-                                className="w-16 px-1 py-0.5 bg-cult-near-black border border-cult-medium-gray text-cult-white text-xs"
+                                className="w-16 px-1 py-0.5 bg-cult-surface border border-cult-border text-cult-text-primary text-xs"
                                 step="0.01"
                               />
-                              <span className="text-cult-light-gray text-xs">g</span>
+                              <span className="text-cult-text-muted text-xs">g</span>
                             </div>
                             <div className="flex gap-1 items-center">
-                              <span className="text-cult-light-gray text-xs">Net:</span>
+                              <span className="text-cult-text-muted text-xs">Net:</span>
                               <input
                                 type="number"
                                 value={editForm.net_weight ?? product.net_weight ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, net_weight: parseFloat(e.target.value) || null })}
-                                className="w-16 px-1 py-0.5 bg-cult-near-black border border-cult-medium-gray text-cult-white text-xs"
+                                className="w-16 px-1 py-0.5 bg-cult-surface border border-cult-border text-cult-text-primary text-xs"
                                 step="0.01"
                               />
-                              <span className="text-cult-light-gray text-xs">g</span>
+                              <span className="text-cult-text-muted text-xs">g</span>
                             </div>
                           </div>
                         </td>
@@ -230,14 +230,14 @@ export function ProductsManagement() {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={saveProduct}
-                              className="p-1.5 text-cult-success hover:text-cult-success/80 hover:bg-cult-near-black"
+                              className="p-1.5 text-cult-success hover:text-cult-success/80 hover:bg-cult-surface"
                               title="Save"
                             >
                               <Save className="w-4 h-4" />
                             </button>
                             <button
                               onClick={cancelEditing}
-                              className="p-1.5 text-cult-light-gray hover:text-cult-white hover:bg-cult-near-black"
+                              className="p-1.5 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface"
                               title="Cancel"
                             >
                               <X className="w-4 h-4" />
@@ -247,15 +247,15 @@ export function ProductsManagement() {
                       </>
                     ) : (
                       <>
-                        <td className="px-4 py-3 text-cult-white">{product.name}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).stage?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">{(product as ProductWithRelations).product_type?.name || '-'}</td>
-                        <td className="px-4 py-3 text-cult-light-gray">
+                        <td className="px-4 py-3 text-cult-text-primary">{product.name}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">{(product as ProductWithRelations).stage?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">{(product as ProductWithRelations).product_type?.name || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted">
                           {(product as ProductWithRelations).strain_info?.name ? (
                             <span>
                               {(product as ProductWithRelations).strain_info.name}
                               {(product as ProductWithRelations).strain_info.abbreviation && (
-                                <span className="text-cult-medium-gray text-xs ml-1">
+                                <span className="text-cult-border text-xs ml-1">
                                   ({(product as ProductWithRelations).strain_info.abbreviation})
                                 </span>
                               )}
@@ -271,12 +271,12 @@ export function ProductsManagement() {
                             {product.product_category}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-cult-light-gray">
+                        <td className="px-4 py-3 text-cult-text-muted">
                           {product.price_per_unit ? `$${product.price_per_unit.toFixed(2)}` : '-'}
                         </td>
-                        <td className="px-4 py-3 text-cult-light-gray text-sm">{product.sku || '-'}</td>
+                        <td className="px-4 py-3 text-cult-text-muted text-sm">{product.sku || '-'}</td>
                         <td className="px-4 py-3">
-                          <div className="flex flex-col gap-0.5 text-xs text-cult-light-gray">
+                          <div className="flex flex-col gap-0.5 text-xs text-cult-text-muted">
                             {product.gross_weight && <div>Gross: {product.gross_weight}g</div>}
                             {product.net_weight && <div>Net: {product.net_weight}g</div>}
                             {!product.gross_weight && !product.net_weight && <div>-</div>}
@@ -286,7 +286,7 @@ export function ProductsManagement() {
                           <div className="flex gap-2 justify-end">
                             <button
                               onClick={() => startEditing(product)}
-                              className="p-1.5 text-cult-gold hover:text-cult-white hover:bg-cult-near-black"
+                              className="p-1.5 text-cult-gold hover:text-cult-text-primary hover:bg-cult-surface"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -302,7 +302,7 @@ export function ProductsManagement() {
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-12 text-cult-light-gray">
+            <div className="text-center py-12 text-cult-text-muted">
               No products found matching your filters.
             </div>
           )}

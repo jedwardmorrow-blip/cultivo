@@ -27,8 +27,8 @@ export function SectionMultiSelect({ label, sections, selected, onChange }: Sect
   if (sections.length === 0) {
     return (
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">{label}</label>
-        <p className="text-xs text-cult-medium-gray">No sections configured for this room</p>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">{label}</label>
+        <p className="text-xs text-cult-border">No sections configured for this room</p>
       </div>
     );
   }
@@ -36,7 +36,7 @@ export function SectionMultiSelect({ label, sections, selected, onChange }: Sect
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-xs text-cult-light-gray uppercase tracking-wider">{label}</label>
+        <label className="text-xs text-cult-text-muted uppercase tracking-wider">{label}</label>
         <button
           type="button"
           onClick={toggleAll}
@@ -56,7 +56,7 @@ export function SectionMultiSelect({ label, sections, selected, onChange }: Sect
               className={`px-2.5 py-1.5 text-xs font-mono rounded-sm border transition-colors ${
                 isActive
                   ? 'bg-cult-accent/20 border-cult-accent text-cult-accent'
-                  : 'bg-cult-charcoal border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray'
+                  : 'bg-cult-surface-raised border-cult-surface text-cult-text-muted hover:border-cult-border'
               }`}
             >
               {s.section_label}

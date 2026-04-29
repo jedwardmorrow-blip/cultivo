@@ -57,7 +57,7 @@ export function TrimSessionsRefactored() {
     <div className="p-6 max-w-[1800px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Trim Sessions</h1>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Trim Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Start bins and log completions</p>
         </div>
         <Button

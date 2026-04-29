@@ -40,8 +40,8 @@ export function COAReviewWizard({
 
   if (!currentItem || !parsedData) {
     return (
-      <div className="p-6 bg-cult-near-black border border-cult-medium-gray">
-        <p className="text-cult-light-gray text-center">No COA data available</p>
+      <div className="p-6 bg-cult-surface border border-cult-border">
+        <p className="text-cult-text-muted text-center">No COA data available</p>
       </div>
     );
   }
@@ -79,18 +79,18 @@ export function COAReviewWizard({
 
   return (
     <div className="space-y-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface border border-cult-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-xl font-bold text-cult-white uppercase tracking-wide">
+            <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wide">
               Review COA {currentIndex + 1} of {queue.length}
             </h3>
-            <p className="text-sm text-cult-light-gray mt-1">
+            <p className="text-sm text-cult-text-muted mt-1">
               {currentItem.fileName}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm text-cult-light-gray">
+            <div className="text-sm text-cult-text-muted">
               {queue.filter(q => q.status === 'reviewed').length} of {queue.length} reviewed
             </div>
           </div>
@@ -119,52 +119,52 @@ export function COAReviewWizard({
 
         <div className="space-y-6">
           <div>
-            <h4 className="text-lg font-bold text-cult-white uppercase tracking-wide mb-4">
+            <h4 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide mb-4">
               Parsed COA Details
             </h4>
-            <div className="mb-4 p-4 bg-cult-black border border-cult-medium-gray">
-              <p className="text-sm text-cult-light-gray mb-2">
-                <span className="font-medium text-cult-white uppercase">Parsed Strain:</span> {parsedData.strain_name || 'Not detected'}
+            <div className="mb-4 p-4 bg-cult-black border border-cult-border">
+              <p className="text-sm text-cult-text-muted mb-2">
+                <span className="font-medium text-cult-text-primary uppercase">Parsed Strain:</span> {parsedData.strain_name || 'Not detected'}
               </p>
-              <p className="text-sm text-cult-light-gray">
-                <span className="font-medium text-cult-white uppercase">Parsed Batch:</span> {parsedData.batch_number || 'Not detected'}
+              <p className="text-sm text-cult-text-muted">
+                <span className="font-medium text-cult-text-primary uppercase">Parsed Batch:</span> {parsedData.batch_number || 'Not detected'}
               </p>
-              <p className="text-xs text-cult-light-gray mt-3 italic">
+              <p className="text-xs text-cult-text-muted mt-3 italic">
                 Use the dropdowns above to select the actual strain and batch to link this COA to.
               </p>
             </div>
 
-            <h4 className="text-lg font-bold text-cult-white uppercase tracking-wide mb-4 mt-6">
+            <h4 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide mb-4 mt-6">
               Test Results
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Harvest Date
                 </label>
                 <input
                   type="date"
                   value={parsedData.harvest_date || ''}
                   onChange={(e) => setParsedData({ ...parsedData, harvest_date: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Sample Date
                 </label>
                 <input
                   type="date"
                   value={parsedData.sample_date || ''}
                   onChange={(e) => setParsedData({ ...parsedData, sample_date: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   THC %
                 </label>
                 <input
@@ -172,12 +172,12 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.thc_percentage || ''}
                   onChange={(e) => setParsedData({ ...parsedData, thc_percentage: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   THCa %
                 </label>
                 <input
@@ -185,12 +185,12 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.thca_percentage || ''}
                   onChange={(e) => setParsedData({ ...parsedData, thca_percentage: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Δ8-THC %
                 </label>
                 <input
@@ -198,12 +198,12 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.delta8_thc_percentage || ''}
                   onChange={(e) => setParsedData({ ...parsedData, delta8_thc_percentage: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Δ10-THC %
                 </label>
                 <input
@@ -211,12 +211,12 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.delta10_thc_percentage || ''}
                   onChange={(e) => setParsedData({ ...parsedData, delta10_thc_percentage: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   CBD %
                 </label>
                 <input
@@ -224,12 +224,12 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.cbd_percentage ?? 0}
                   onChange={(e) => setParsedData({ ...parsedData, cbd_percentage: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Total Terpenes (mg/g)
                 </label>
                 <input
@@ -237,21 +237,21 @@ export function COAReviewWizard({
                   step="0.01"
                   value={parsedData.total_terpenes_mg_g || ''}
                   onChange={(e) => setParsedData({ ...parsedData, total_terpenes_mg_g: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <h4 className="text-lg font-bold text-cult-white uppercase tracking-wide mb-4">
+            <h4 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide mb-4">
               Top 3 Terpenes
             </h4>
             <div className="space-y-4">
               {[0, 1, 2].map((index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-cult-black border border-cult-medium-gray">
+                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-cult-black border border-cult-border">
                   <div>
-                    <label className="block text-xs text-cult-light-gray mb-1 uppercase">
+                    <label className="block text-xs text-cult-text-muted mb-1 uppercase">
                       Terpene {index + 1} Name
                     </label>
                     <input
@@ -263,11 +263,11 @@ export function COAReviewWizard({
                         newTerpenes[index].name = e.target.value;
                         setParsedData({ ...parsedData, terpenes: newTerpenes });
                       }}
-                      className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white text-sm focus:outline-none focus:border-cult-white"
+                      className="w-full px-3 py-2 bg-cult-surface border border-cult-border text-cult-text-primary text-sm focus:outline-none focus:border-cult-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-cult-light-gray mb-1 uppercase">
+                    <label className="block text-xs text-cult-text-muted mb-1 uppercase">
                       Value (mg/g)
                     </label>
                     <input
@@ -280,11 +280,11 @@ export function COAReviewWizard({
                         newTerpenes[index].value = parseFloat(e.target.value) || 0;
                         setParsedData({ ...parsedData, terpenes: newTerpenes });
                       }}
-                      className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white text-sm focus:outline-none focus:border-cult-white"
+                      className="w-full px-3 py-2 bg-cult-surface border border-cult-border text-cult-text-primary text-sm focus:outline-none focus:border-cult-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-cult-light-gray mb-1 uppercase">
+                    <label className="block text-xs text-cult-text-muted mb-1 uppercase">
                       Percentage (%)
                     </label>
                     <input
@@ -297,7 +297,7 @@ export function COAReviewWizard({
                         newTerpenes[index].percentage = parseFloat(e.target.value) || 0;
                         setParsedData({ ...parsedData, terpenes: newTerpenes });
                       }}
-                      className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray text-cult-white text-sm focus:outline-none focus:border-cult-white"
+                      className="w-full px-3 py-2 bg-cult-surface border border-cult-border text-cult-text-primary text-sm focus:outline-none focus:border-cult-accent"
                     />
                   </div>
                 </div>
@@ -306,10 +306,10 @@ export function COAReviewWizard({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4 pt-6 border-t border-cult-medium-gray">
+        <div className="mt-6 flex items-center justify-between gap-4 pt-6 border-t border-cult-border">
           <button
             onClick={onCancel}
-            className="px-6 py-3 border border-cult-medium-gray text-cult-white font-medium uppercase tracking-wider hover:border-cult-white transition-all"
+            className="px-6 py-3 border border-cult-border text-cult-text-primary font-medium uppercase tracking-wider hover:border-cult-accent transition-all"
           >
             Cancel
           </button>
@@ -318,7 +318,7 @@ export function COAReviewWizard({
             {!isFirst && (
               <button
                 onClick={handlePrevious}
-                className="flex items-center gap-2 px-6 py-3 border border-cult-medium-gray text-cult-white font-medium uppercase tracking-wider hover:border-cult-white transition-all"
+                className="flex items-center gap-2 px-6 py-3 border border-cult-border text-cult-text-primary font-medium uppercase tracking-wider hover:border-cult-accent transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -329,7 +329,7 @@ export function COAReviewWizard({
               <button
                 onClick={handleNext}
                 disabled={!canProceed}
-                className="flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black font-medium uppercase tracking-wider hover:bg-cult-off-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black font-medium uppercase tracking-wider hover:bg-cult-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
                 <ChevronRight className="w-4 h-4" />

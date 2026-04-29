@@ -47,7 +47,7 @@ function CostBreakdownGrid({ costRows, loading }: { costRows: CostRow[]; loading
   if (loading) {
     return (
       <div className="animate-pulse grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -94,7 +94,7 @@ function WeeklyRevenueChart({ buckets, loading }: { buckets: { label: string; re
     return (
       <div className="animate-pulse flex items-end gap-2" style={{ height: '96px' }}>
         {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-          <div key={i} className="flex-1 bg-cult-graphite rounded-t-sm" style={{ height: `${20 + i * 8}px` }} />
+          <div key={i} className="flex-1 bg-cult-surface rounded-t-sm" style={{ height: `${20 + i * 8}px` }} />
         ))}
       </div>
     );
@@ -132,7 +132,7 @@ function BatchMarginTable({ rows, loading }: { rows: MarginRow[]; loading: boole
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -151,7 +151,7 @@ function BatchMarginTable({ rows, loading }: { rows: MarginRow[]; loading: boole
     <div className="overflow-x-auto">
       <table className="w-full text-[12px]">
         <thead>
-          <tr className="border-b border-cult-charcoal/60">
+          <tr className="border-b border-cult-surface-raised/60">
             <th className="text-left text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">Batch</th>
             <th className="text-left text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">Strain</th>
             <th className="text-left text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">Month</th>
@@ -162,8 +162,8 @@ function BatchMarginTable({ rows, loading }: { rows: MarginRow[]; loading: boole
         </thead>
         <tbody>
           {rows.slice(0, 10).map(row => (
-            <tr key={row.batch_id} className="border-b border-cult-charcoal/30 last:border-b-0">
-              <td className="py-2 pr-3 text-cult-off-white font-mono text-[11px]">{row.batch_id}</td>
+            <tr key={row.batch_id} className="border-b border-cult-surface-raised/30 last:border-b-0">
+              <td className="py-2 pr-3 text-cult-text-primary font-mono text-[11px]">{row.batch_id}</td>
               <td className="py-2 pr-3 text-cult-text-muted truncate max-w-[120px]">{row.strain_name}</td>
               <td className="py-2 pr-3 text-cult-text-faint">
                 {row.harvest_month
@@ -226,7 +226,7 @@ function OperationalKPIChips({
   if (loading) {
     return (
       <div className="flex gap-3 flex-wrap animate-pulse">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-16 w-32 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-16 w-32 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -236,7 +236,7 @@ function OperationalKPIChips({
       {chips.map(chip => (
         <div
           key={chip.label}
-          className="flex flex-col items-start px-3 py-2 rounded-cult bg-cult-charcoal/40 border border-cult-charcoal/60 min-w-[120px]"
+          className="flex flex-col items-start px-3 py-2 rounded-cult bg-cult-surface-raised/40 border border-cult-surface-raised/60 min-w-[120px]"
         >
           <span className="text-[10px] text-cult-text-muted uppercase tracking-wider">{chip.label}</span>
           <span
@@ -431,7 +431,7 @@ export function OperationsHub() {
       <div className="space-y-6">
 
         {/* Cost / Gram by Strain */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             Cost / Gram by Strain (Top 5)
@@ -441,7 +441,7 @@ export function OperationsHub() {
         </div>
 
         {/* Weekly Revenue Bar Chart */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <BarChart2 className="w-4 h-4" />
             Revenue Recognized — Last 8 Weeks
@@ -450,7 +450,7 @@ export function OperationsHub() {
         </div>
 
         {/* Batch Margin Table */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
             Batch Margin Table
           </h2>
@@ -458,7 +458,7 @@ export function OperationsHub() {
         </div>
 
         {/* Operational KPI Chips */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Activity className="w-4 h-4" />
             Operational KPIs

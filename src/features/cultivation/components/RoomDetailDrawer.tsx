@@ -35,21 +35,21 @@ interface DrawerGridCellProps {
 function DrawerGridCell({ groups, onGroupAction, onRefresh }: DrawerGridCellProps) {
   if (groups.length === 0) {
     return (
-      <div className="border border-cult-dark-gray bg-cult-black/30 h-16 flex items-center justify-center">
-        <span className="text-xs text-cult-dark-gray">—</span>
+      <div className="border border-cult-surface bg-cult-black/30 h-16 flex items-center justify-center">
+        <span className="text-xs text-cult-surface">—</span>
       </div>
     );
   }
 
   return (
-    <div className="border border-cult-medium-gray bg-cult-black h-16 p-1.5 overflow-hidden">
+    <div className="border border-cult-border bg-cult-black h-16 p-1.5 overflow-hidden">
       {groups.map((g) => (
         <div key={g.id} className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1 min-w-0">
-            <span className="text-xs font-bold text-cult-white font-mono truncate">
+            <span className="text-xs font-bold text-cult-text-primary font-mono truncate">
               {g.strains?.abbreviation ?? '???'}
             </span>
-            <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
+            <span className="text-xs text-cult-border">{g.plant_count}p</span>
           </div>
           <PlantGroupActionsMenu
             group={g}
@@ -81,7 +81,7 @@ function DrawerGrid({ tables, groups, onGroupAction, onRefresh }: DrawerGridProp
 
   if (tables.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-xs text-cult-medium-gray italic py-4 border border-cult-dark-gray px-3">
+      <div className="flex items-center gap-2 text-xs text-cult-border italic py-4 border border-cult-surface px-3">
         <Settings className="w-3.5 h-3.5" />
         No tables configured. Configure the layout in Settings &rarr; Grow Rooms.
       </div>
@@ -96,14 +96,14 @@ function DrawerGrid({ tables, groups, onGroupAction, onRefresh }: DrawerGridProp
       <table className="w-full text-xs border-collapse">
         <thead>
           <tr>
-            <th className="text-left text-cult-medium-gray uppercase tracking-wider font-normal py-1 pr-3 w-16">
+            <th className="text-left text-cult-border uppercase tracking-wider font-normal py-1 pr-3 w-16">
               Section
             </th>
             {tables.map((t) => (
-              <th key={t.id} className="text-center text-cult-medium-gray font-mono font-normal py-1 px-1 min-w-24">
+              <th key={t.id} className="text-center text-cult-border font-mono font-normal py-1 px-1 min-w-24">
                 T{t.table_number}
                 {t.table_name && (
-                  <span className="block text-cult-dark-gray normal-case font-normal">{t.table_name}</span>
+                  <span className="block text-cult-surface normal-case font-normal">{t.table_name}</span>
                 )}
               </th>
             ))}
@@ -113,14 +113,14 @@ function DrawerGrid({ tables, groups, onGroupAction, onRefresh }: DrawerGridProp
           {uniqueLabels.map((label) => (
             <tr key={label}>
               <td className="pr-3 py-0.5">
-                <span className="font-mono text-cult-light-gray font-bold">{label}</span>
+                <span className="font-mono text-cult-text-muted font-bold">{label}</span>
               </td>
               {tables.map((t) => {
                 const section = t.sections.find((s) => s.section_label === label);
                 if (!section) {
                   return (
                     <td key={t.id} className="py-0.5 px-1">
-                      <div className="border border-cult-dark-gray/30 bg-cult-black/10 h-16" />
+                      <div className="border border-cult-surface/30 bg-cult-black/10 h-16" />
                     </td>
                   );
                 }
@@ -188,7 +188,7 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
 
   return (
     <div className="mt-4">
-      <p className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
+      <p className="text-xs text-cult-border uppercase tracking-wider mb-2 flex items-center gap-1.5">
         <MapPin className="w-3 h-3" />
         {groups.length} group{groups.length !== 1 ? 's' : ''} not placed on map
       </p>
@@ -203,15 +203,15 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
             return (
               <div
                 key={g.id}
-                className="flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
+                className="flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-surface bg-cult-black hover:border-cult-border transition-colors"
               >
-                <span className="font-mono text-xs font-bold text-cult-white">
+                <span className="font-mono text-xs font-bold text-cult-text-primary">
                   {batch.batchNumber}
                 </span>
-                <span className="text-xs text-cult-light-gray truncate flex-1">
+                <span className="text-xs text-cult-text-muted truncate flex-1">
                   {batch.strainName}
                 </span>
-                <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
+                <span className="text-xs text-cult-border">{g.plant_count}p</span>
                 <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
                   {g.growth_stage}
                 </span>
@@ -238,25 +238,25 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
             <div key={batch.batchNumber}>
               {/* Batch header row */}
               <div
-                className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-dark-gray bg-cult-black hover:border-cult-medium-gray transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 min-h-[44px] border border-cult-surface bg-cult-black hover:border-cult-border transition-colors"
               >
                 <button
                   onClick={() => setExpandedBatch(isExpanded ? null : batch.batchNumber)}
                   className="flex items-center gap-3 flex-1 min-w-0 text-left"
                 >
                   {isExpanded
-                    ? <ChevronDown className="w-3.5 h-3.5 text-cult-light-gray flex-shrink-0" />
-                    : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray flex-shrink-0" />
+                    ? <ChevronDown className="w-3.5 h-3.5 text-cult-text-muted flex-shrink-0" />
+                    : <ChevronRight className="w-3.5 h-3.5 text-cult-border flex-shrink-0" />
                   }
-                  <span className="font-mono text-xs font-bold text-cult-white">
+                  <span className="font-mono text-xs font-bold text-cult-text-primary">
                     {batch.batchNumber}
                   </span>
-                  <span className="text-xs text-cult-light-gray truncate flex-1">
+                  <span className="text-xs text-cult-text-muted truncate flex-1">
                     {batch.strainName}
                   </span>
-                  <span className="text-xs text-cult-medium-gray">
+                  <span className="text-xs text-cult-border">
                     {batch.totalPlants}p
-                    <span className="text-cult-dark-gray ml-1">({batch.groups.length} groups)</span>
+                    <span className="text-cult-surface ml-1">({batch.groups.length} groups)</span>
                   </span>
                   <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[batch.stage] ?? STAGE_BADGE.clone}`}>
                     {batch.stage}
@@ -278,16 +278,16 @@ function UnplacedGroupsDrawer({ groups, onGroupAction, onRefresh }: UnplacedGrou
 
               {/* Expanded child rows */}
               {isExpanded && (
-                <div className="ml-5 border-l border-cult-dark-gray">
+                <div className="ml-5 border-l border-cult-surface">
                   {batch.groups.map((g) => (
                     <div
                       key={g.id}
-                      className="flex items-center gap-3 px-3 py-1.5 min-h-[36px] border-b border-cult-dark-gray/50 bg-cult-near-black hover:bg-cult-black/80 transition-colors"
+                      className="flex items-center gap-3 px-3 py-1.5 min-h-[36px] border-b border-cult-surface/50 bg-cult-surface hover:bg-cult-black/80 transition-colors"
                     >
-                      <span className="text-[10px] text-cult-medium-gray font-mono truncate flex-1">
+                      <span className="text-[10px] text-cult-border font-mono truncate flex-1">
                         {g.room_table_id ? `T${g.room_table_id.slice(0, 4)}` : 'Unplaced'}
                       </span>
-                      <span className="text-xs text-cult-light-gray font-mono font-bold">{g.plant_count}p</span>
+                      <span className="text-xs text-cult-text-muted font-mono font-bold">{g.plant_count}p</span>
                       <PlantGroupActionsMenu
                         group={g}
                         onDetail={() => onGroupAction(g, 'detail')}
@@ -410,29 +410,29 @@ export function RoomDetailDrawer({
         className="fixed inset-0 z-50 flex items-stretch bg-black/70 animate-fade-in"
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
-        <div className={`relative ml-auto bg-cult-near-black border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden animate-slide-in-right md:rounded-none`}>
-          <div className="flex flex-col md:flex-row md:items-start justify-between px-4 md:px-6 py-4 md:py-5 border-b border-cult-medium-gray flex-shrink-0 gap-3">
+        <div className={`relative ml-auto bg-cult-surface border-l-4 ${typeBorderCls} w-full max-w-4xl h-full flex flex-col overflow-hidden animate-slide-in-right md:rounded-none`}>
+          <div className="flex flex-col md:flex-row md:items-start justify-between px-4 md:px-6 py-4 md:py-5 border-b border-cult-border flex-shrink-0 gap-3">
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-mono text-xl font-bold text-cult-white tracking-wider">
+                <span className="font-mono text-xl font-bold text-cult-text-primary tracking-wider">
                   {room.room_code}
                 </span>
-                <span className="text-xs border border-cult-medium-gray text-cult-medium-gray px-2 py-0.5 uppercase tracking-wider">
+                <span className="text-xs border border-cult-border text-cult-border px-2 py-0.5 uppercase tracking-wider">
                   {room.room_type}
                 </span>
-                <span className="text-xs text-cult-medium-gray">
+                <span className="text-xs text-cult-border">
                   {groups.length} group{groups.length !== 1 ? 's' : ''}
                   {room.capacity_plants ? ` · ${groups.reduce((s, g) => s + g.plant_count, 0)}/${room.capacity_plants} plants` : ''}
                 </span>
               </div>
-              <span className="text-cult-light-gray text-sm">{room.name}</span>
+              <span className="text-cult-text-muted text-sm">{room.name}</span>
 
               {isFlower && (
                 <div className="flex items-center gap-3 flex-wrap mt-1">
                   {earliestFlipDate ? (
                     <>
-                      <span className="text-xs text-cult-medium-gray">
-                        Flip: <span className="text-cult-light-gray">{formatDate(earliestFlipDate)}</span>
+                      <span className="text-xs text-cult-border">
+                        Flip: <span className="text-cult-text-muted">{formatDate(earliestFlipDate)}</span>
                       </span>
                       {dayOfRun !== null && (
                         <span className="text-xs font-bold text-rose-400 border border-rose-800 bg-rose-950 px-1.5 py-0.5">
@@ -441,8 +441,8 @@ export function RoomDetailDrawer({
                       )}
                       {earliestHarvestDate && (
                         <>
-                          <span className="text-xs text-cult-medium-gray">
-                            Proj. harvest: <span className="text-cult-light-gray">{formatDate(earliestHarvestDate)}</span>
+                          <span className="text-xs text-cult-border">
+                            Proj. harvest: <span className="text-cult-text-muted">{formatDate(earliestHarvestDate)}</span>
                           </span>
                           <span className={`text-xs font-semibold ${countdownColor()}`}>
                             {countdownText()}
@@ -451,7 +451,7 @@ export function RoomDetailDrawer({
                       )}
                     </>
                   ) : (
-                    <span className="text-xs text-cult-medium-gray italic">No flip date set</span>
+                    <span className="text-xs text-cult-border italic">No flip date set</span>
                   )}
                 </div>
               )}
@@ -460,7 +460,7 @@ export function RoomDetailDrawer({
             <div className="flex items-center gap-2 md:ml-4 flex-shrink-0">
               <button
                 onClick={() => { onClose(); navigate('/cultivation-schedules'); }}
-                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-dark-gray text-cult-light-gray px-3 py-2 min-h-[44px] hover:border-cult-medium-gray hover:text-cult-white transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider border border-cult-surface text-cult-text-muted px-3 py-2 min-h-[44px] hover:border-cult-border hover:text-cult-text-primary transition-colors"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Schedule
@@ -476,7 +476,7 @@ export function RoomDetailDrawer({
               )}
               <button
                 onClick={onClose}
-                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-medium-gray hover:text-cult-white transition-colors"
+                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-border hover:text-cult-text-primary transition-colors"
                 title="Close"
               >
                 <X className="w-5 h-5" />
@@ -486,17 +486,17 @@ export function RoomDetailDrawer({
 
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5 space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs text-cult-light-gray uppercase tracking-wider">Room Map</h3>
+              <h3 className="text-xs text-cult-text-muted uppercase tracking-wider">Room Map</h3>
               <a
                 href="/settings"
-                className="text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors underline underline-offset-2"
+                className="text-xs text-cult-border hover:text-cult-text-muted transition-colors underline underline-offset-2"
               >
                 Configure in Settings
               </a>
             </div>
 
             {tablesLoading || loadingGroups ? (
-              <p className="text-xs text-cult-medium-gray">Loading...</p>
+              <p className="text-xs text-cult-border">Loading...</p>
             ) : (
               <>
                 <DrawerGrid
@@ -511,7 +511,7 @@ export function RoomDetailDrawer({
                   onRefresh={handleRefresh}
                 />
                 {groups.length === 0 && (
-                  <p className="text-xs text-cult-medium-gray italic">
+                  <p className="text-xs text-cult-border italic">
                     No active plant groups in this room.
                   </p>
                 )}
@@ -530,10 +530,10 @@ export function RoomDetailDrawer({
 
               return (
                 <div>
-                  <h3 className="text-xs text-cult-light-gray uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h3 className="text-xs text-cult-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Layers className="w-3.5 h-3.5" />
                     Batches in Room
-                    <span className="text-cult-medium-gray font-mono">({batchEntries.length})</span>
+                    <span className="text-cult-border font-mono">({batchEntries.length})</span>
                   </h3>
                   <div className="space-y-1">
                     {batchEntries.map(([batchNumber, batchGroups]) => {
@@ -548,17 +548,17 @@ export function RoomDetailDrawer({
                       return (
                         <div
                           key={batchNumber}
-                          className="border border-cult-dark-gray bg-cult-black overflow-hidden"
+                          className="border border-cult-surface bg-cult-black overflow-hidden"
                         >
                           {/* ── Batch-level row ── */}
                           <div
-                            className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer select-none hover:bg-cult-near-black transition-colors"
+                            className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer select-none hover:bg-cult-surface transition-colors"
                             onClick={() => {
                               setExpandedBatchId(isBatchExpanded ? null : batchNumber);
                               if (isBatchExpanded) setExpandedGroupId(null);
                             }}
                           >
-                            <div className="flex-shrink-0 text-cult-medium-gray">
+                            <div className="flex-shrink-0 text-cult-border">
                               {isBatchExpanded
                                 ? <ChevronDown className="w-4 h-4" />
                                 : <ChevronRight className="w-4 h-4" />
@@ -566,7 +566,7 @@ export function RoomDetailDrawer({
                             </div>
                             <div className="flex flex-col min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-mono text-sm font-bold text-cult-white">
+                                <span className="font-mono text-sm font-bold text-cult-text-primary">
                                   {displayBatch}
                                 </span>
                                 <span className="font-mono text-xs font-bold text-rose-300">
@@ -577,13 +577,13 @@ export function RoomDetailDrawer({
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                <span className="text-xs text-cult-light-gray">{strainName}</span>
-                                <span className="text-cult-medium-gray text-xs">·</span>
-                                <span className="text-xs text-cult-medium-gray">{totalPlants} plants</span>
+                                <span className="text-xs text-cult-text-muted">{strainName}</span>
+                                <span className="text-cult-border text-xs">·</span>
+                                <span className="text-xs text-cult-border">{totalPlants} plants</span>
                                 {batchGroups.length > 1 && (
                                   <>
-                                    <span className="text-cult-medium-gray text-xs">·</span>
-                                    <span className="text-xs text-cult-medium-gray">{batchGroups.length} groups</span>
+                                    <span className="text-cult-border text-xs">·</span>
+                                    <span className="text-xs text-cult-border">{batchGroups.length} groups</span>
                                   </>
                                 )}
                               </div>
@@ -606,7 +606,7 @@ export function RoomDetailDrawer({
 
                           {/* ── Expanded: group rows within this batch ── */}
                           {isBatchExpanded && (
-                            <div className="border-t border-cult-dark-gray bg-cult-near-black">
+                            <div className="border-t border-cult-surface bg-cult-surface">
                               {batchGroups.map((g) => {
                                 const daysInStage = Math.floor(
                                   (Date.now() - new Date(g.stage_entered_at).getTime()) / (1000 * 60 * 60 * 24)
@@ -621,30 +621,30 @@ export function RoomDetailDrawer({
                                   : null;
 
                                 return (
-                                  <div key={g.id} className="border-t border-cult-dark-gray/50 overflow-hidden">
+                                  <div key={g.id} className="border-t border-cult-surface/50 overflow-hidden">
                                     <div
                                       className="flex items-center gap-3 pl-10 pr-4 py-2.5 min-h-[44px] cursor-pointer select-none hover:bg-cult-black/60 transition-colors"
                                       onClick={() => setExpandedGroupId(isGroupExpanded ? null : g.id)}
                                     >
-                                      <div className="flex-shrink-0 text-cult-dark-gray">
+                                      <div className="flex-shrink-0 text-cult-surface">
                                         {isGroupExpanded
                                           ? <ChevronDown className="w-3.5 h-3.5" />
                                           : <ChevronRight className="w-3.5 h-3.5" />
                                         }
                                       </div>
                                       <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-                                        <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
+                                        <span className="text-xs text-cult-border">{g.plant_count} plants</span>
                                         {g.is_mother && (
                                           <span className="text-xs border border-cult-warning/40 text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
                                             Mother
                                           </span>
                                         )}
                                         {placement && (
-                                          <span className="text-xs font-mono text-cult-medium-gray">
+                                          <span className="text-xs font-mono text-cult-border">
                                             {placement}
                                           </span>
                                         )}
-                                        <span className="text-xs text-cult-dark-gray">{daysInStage}d in stage</span>
+                                        <span className="text-xs text-cult-surface">{daysInStage}d in stage</span>
                                       </div>
                                       <div onClick={(e) => e.stopPropagation()}>
                                         <PlantGroupActionsMenu

@@ -134,7 +134,7 @@ export function AnnotationInput({ date, rooms, onSubmit }: AnnotationInputProps)
       <button
         onClick={handleSubmit}
         disabled={!canSubmit}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-cult bg-cult-accent text-cult-white hover:bg-cult-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-cult bg-cult-accent text-cult-text-primary hover:bg-cult-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         Add Annotation

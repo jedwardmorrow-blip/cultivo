@@ -121,7 +121,7 @@ export function InventoryOmnibar({ onBatchSelect, onStrainSelect }: InventoryOmn
           onFocus={() => { if (query.trim().length >= 2) setIsOpen(true); }}
           onKeyDown={handleKeyDown}
           placeholder="Search packages, batches, strains, SKUs…"
-          className="glass-input w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none"
+          className="glass-input w-full pl-10 pr-10 py-2.5 rounded-cult text-sm text-white placeholder:text-white/30 focus:outline-none"
           role="combobox"
           aria-label="Search inventory"
           aria-expanded={showDropdown}
@@ -154,14 +154,14 @@ export function InventoryOmnibar({ onBatchSelect, onStrainSelect }: InventoryOmn
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-1 glass-modal rounded-xl border border-cult-border shadow-glass-lg overflow-hidden z-50"
+            className="absolute top-full left-0 right-0 mt-1 glass-modal rounded-cult border border-cult-border shadow-glass-lg overflow-hidden z-50"
             id="omnibar-listbox"
             role="listbox"
           >
             {loading ? (
               <div className="p-3 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-8 rounded-lg bg-cult-near-black animate-pulse" />
+                  <div key={i} className="h-8 rounded-lg bg-cult-surface animate-pulse" />
                 ))}
               </div>
             ) : flatResults.length === 0 ? (
@@ -199,7 +199,7 @@ export function InventoryOmnibar({ onBatchSelect, onStrainSelect }: InventoryOmn
                             onClick={() => handleSelect(result)}
                             onMouseEnter={() => setSelectedIndex(globalIdx)}
                             className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                              isSelected ? 'bg-cult-surface-overlay' : 'hover:bg-cult-near-black'
+                              isSelected ? 'bg-cult-surface-overlay' : 'hover:bg-cult-surface'
                             }`}
                           >
                             <Icon className={`w-3.5 h-3.5 shrink-0 ${config.color} opacity-60`} />

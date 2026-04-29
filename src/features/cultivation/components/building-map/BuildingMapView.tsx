@@ -145,10 +145,10 @@ export function BuildingMapView({ opsRooms, rooms, onRoomSelect }: BuildingMapVi
                 {s.label}
               </div>
               <div className={`text-xl font-extrabold font-mono ${
-                emphasize ? 'text-cult-warning' : s.warn ? 'text-cult-warning' : recede ? 'text-cult-text-secondary' : 'text-cult-white'
+                emphasize ? 'text-cult-warning' : s.warn ? 'text-cult-warning' : recede ? 'text-cult-text-secondary' : 'text-cult-text-primary'
               }`}>
                 {s.value}
-                {s.sub && <span className="text-sm font-normal text-cult-light-gray ml-0.5">{s.sub}</span>}
+                {s.sub && <span className="text-sm font-normal text-cult-text-muted ml-0.5">{s.sub}</span>}
               </div>
             </div>
           );

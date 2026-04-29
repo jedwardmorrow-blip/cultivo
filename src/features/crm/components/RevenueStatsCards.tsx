@@ -1,4 +1,3 @@
-import { DollarSign, ShoppingCart, Users, TrendingUp, AlertTriangle, UserPlus, CalendarRange } from 'lucide-react';
 import { StatsCard } from '@/features/inventory/components/StatsCard';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import type { CRMDashboardStats } from '../types';
@@ -36,9 +35,7 @@ export function RevenueStatsCards({ stats, periodLabel, compareEnabled = false }
       <StatsCard
         label="Revenue"
         value={formatCurrencyShort(stats.periodRevenue)}
-        icon={<DollarSign className="w-5 h-5" />}
         subtitle={periodLabel}
-        accentColor="border-cult-success/40"
         trend={revTrend?.trend}
         trendValue={revTrend?.value}
       />
@@ -46,49 +43,38 @@ export function RevenueStatsCards({ stats, periodLabel, compareEnabled = false }
         <StatsCard
           label="Month Projected"
           value={formatCurrencyShort(stats.projectedMonthRevenue)}
-          icon={<CalendarRange className="w-5 h-5" />}
           subtitle={`${stats.projectedMonthOrders} orders scheduled`}
-          accentColor="border-cult-success/20"
         />
       )}
       <StatsCard
         label="Orders"
         value={stats.periodOrders}
-        icon={<TrendingUp className="w-5 h-5" />}
         subtitle={`${stats.uniqueCustomersInPeriod} customers`}
-        accentColor="border-cult-success/40"
         trend={orderTrend?.trend}
         trendValue={orderTrend?.value}
       />
       <StatsCard
         label="Avg Order"
         value={formatCurrencyShort(stats.periodAvgOrder)}
-        icon={<ShoppingCart className="w-5 h-5" />}
         subtitle={periodLabel}
-        accentColor="border-cult-info/40"
         trend={avgTrend?.trend}
         trendValue={avgTrend?.value}
       />
       <StatsCard
         label="Active Accounts"
         value={stats.activeAccounts}
-        icon={<Users className="w-5 h-5" />}
         subtitle={`${stats.totalAccounts} total`}
-        accentColor="border-cult-info/40"
       />
       <StatsCard
         label="At Risk"
         value={stats.atRiskCount}
-        icon={<AlertTriangle className="w-5 h-5" />}
         subtitle="30+ days silent"
-        accentColor={stats.atRiskCount > 0 ? 'border-cult-warning/40' : 'border-cult-medium-gray'}
+        accentColor={stats.atRiskCount > 0 ? 'border-cult-warning/40' : 'border-cult-border'}
       />
       <StatsCard
         label="Prospects"
         value={stats.prospectCount}
-        icon={<UserPlus className="w-5 h-5" />}
         subtitle="No orders yet"
-        accentColor="border-cult-info/40"
       />
     </div>
   );

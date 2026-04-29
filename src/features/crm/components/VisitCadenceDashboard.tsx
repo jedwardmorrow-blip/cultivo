@@ -31,7 +31,7 @@ const COMPLIANCE_CONFIG: Record<ComplianceStatus, { label: string; color: string
 const TIER_CONFIG: Record<AccountTier, { label: string; freq: string; color: string }> = {
   top_10:   { label: 'Top 10',   freq: 'Weekly',    color: 'text-cult-warning' },
   mid_tier: { label: 'Mid Tier', freq: 'Bi-Weekly', color: 'text-cult-info' },
-  tail:     { label: 'Tail',     freq: 'Monthly',   color: 'text-cult-silver' },
+  tail:     { label: 'Tail',     freq: 'Monthly',   color: 'text-cult-text-secondary' },
   prospect: { label: 'Prospect', freq: 'Bi-Weekly', color: 'text-violet-400' },
 };
 
@@ -142,13 +142,13 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
             <CalendarClock className="w-5 h-5 text-violet-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-cult-white">Visit Cadence</h1>
-            <p className="text-xs text-cult-silver">{accounts.length} accounts tracked · {visitsThisWeek} visits this week</p>
+            <h1 className="text-xl font-bold text-cult-text-primary">Visit Cadence</h1>
+            <p className="text-xs text-cult-text-secondary">{accounts.length} accounts tracked · {visitsThisWeek} visits this week</p>
           </div>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
@@ -157,12 +157,12 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
         {/* Avg Compliance */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Compliance</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Compliance</p>
           <p className={`text-2xl font-bold ${avgCompliance >= 70 ? 'text-cult-success' : avgCompliance >= 40 ? 'text-cult-warning' : 'text-cult-danger'}`}>
             {avgCompliance}%
           </p>
-          <p className="text-xs text-cult-silver">30-day avg</p>
+          <p className="text-xs text-cult-text-secondary">30-day avg</p>
         </div>
         {/* Status buckets */}
         {(['overdue', 'never_visited', 'due_soon', 'scheduled', 'on_track'] as const).map((status) => {
@@ -175,33 +175,33 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
               className={`rounded-lg px-4 py-3 text-left border transition-colors ${
                 filter === status
                   ? `${cfg.bg} ${cfg.border} ring-1 ring-white/10`
-                  : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
+                  : 'bg-cult-surface border-cult-border hover:bg-cult-surface'
               }`}
             >
-              <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">{cfg.label}</p>
+              <p className="text-xs uppercase tracking-wider text-cult-border mb-1">{cfg.label}</p>
               <p className={`text-2xl font-bold ${cfg.color}`}>{count}</p>
-              <p className="text-xs text-cult-silver">accounts</p>
+              <p className="text-xs text-cult-text-secondary">accounts</p>
             </button>
           );
         })}
         {/* At-risk Revenue */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Overdue Rev</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Overdue Rev</p>
           <p className="text-2xl font-bold text-cult-danger">{fmt$(overdueRevenue)}</p>
-          <p className="text-xs text-cult-silver">lifetime total</p>
+          <p className="text-xs text-cult-text-secondary">lifetime total</p>
         </div>
       </div>
 
       {/* Tier Breakdown */}
       <div className="flex items-center gap-4 px-1">
-        <p className="text-xs uppercase tracking-wider text-cult-medium-gray">Tiers:</p>
+        <p className="text-xs uppercase tracking-wider text-cult-border">Tiers:</p>
         {(['top_10', 'mid_tier', 'tail', 'prospect'] as const).map((tier) => {
           const tc = TIER_CONFIG[tier];
           return (
             <div key={tier} className="flex items-center gap-1.5">
               <span className={`text-xs font-medium ${tc.color}`}>{tierCounts[tier] || 0}</span>
-              <span className="text-xs text-cult-light-gray">{tc.label}</span>
-              <span className="text-xs text-cult-medium-gray">({tc.freq})</span>
+              <span className="text-xs text-cult-text-muted">{tc.label}</span>
+              <span className="text-xs text-cult-border">({tc.freq})</span>
             </div>
           );
         })}
@@ -246,59 +246,59 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
       {/* Search + Filter Bar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
           <input
             type="text"
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-border focus:outline-none focus:border-cult-info/50"
           />
         </div>
         {filter !== 'all' && (
           <button
             onClick={() => setFilter('all')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
           >
             <Filter className="w-3 h-3" /> Clear filter
           </button>
         )}
-        <p className="text-xs text-cult-medium-gray ml-auto">{sorted.length} accounts</p>
+        <p className="text-xs text-cult-border ml-auto">{sorted.length} accounts</p>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-surface-raised text-xs uppercase tracking-wider text-cult-border">
               <th className="text-left py-2 px-3 font-medium">
-                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-text-secondary transition-colors">
                   Account <SortArrow field="customer_name" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">Tier / Freq</th>
               <th className="text-center py-2 px-2 font-medium">
-                <button onClick={() => toggleSort('compliance_status')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('compliance_status')} className="hover:text-cult-text-secondary transition-colors">
                   Status <SortArrow field="compliance_status" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">
-                <button onClick={() => toggleSort('days_until_due')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('days_until_due')} className="hover:text-cult-text-secondary transition-colors">
                   Next Due <SortArrow field="days_until_due" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden md:table-cell">
-                <button onClick={() => toggleSort('compliance_pct_30d')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('compliance_pct_30d')} className="hover:text-cult-text-secondary transition-colors">
                   Compliance <SortArrow field="compliance_pct_30d" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden md:table-cell">
-                <button onClick={() => toggleSort('visits_completed_30d')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('visits_completed_30d')} className="hover:text-cult-text-secondary transition-colors">
                   Visits (30d) <SortArrow field="visits_completed_30d" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden lg:table-cell">
-                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-text-secondary transition-colors">
                   Revenue <SortArrow field="lifetime_revenue" />
                 </button>
               </th>
@@ -306,14 +306,14 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
               <th className="py-2 px-2 w-8"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/50">
+          <tbody className="divide-y divide-cult-surface-raised/50">
             {sorted.map((a) => {
               const cfg = COMPLIANCE_CONFIG[a.compliance_status] || COMPLIANCE_CONFIG.overdue;
               const tier = TIER_CONFIG[a.account_tier] || TIER_CONFIG.tail;
               return (
                 <tr
                   key={a.customer_id}
-                  className="hover:bg-cult-dark-gray/40 transition-colors group"
+                  className="hover:bg-cult-surface/40 transition-colors group"
                 >
                   {/* Account */}
                   <td className="py-2.5 px-3">
@@ -321,10 +321,10 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
-                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-text-primary font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-xs text-cult-light-gray">
+                      <p className="text-xs text-cult-text-muted">
                         {a.dispensary_code}{a.city ? ` · ${a.city}` : ''}
                       </p>
                     </button>
@@ -332,7 +332,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   {/* Tier / Freq */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     <span className={`text-xs font-medium ${tier.color}`}>{tier.label}</span>
-                    <p className="text-xs text-cult-medium-gray">{a.frequency_label}</p>
+                    <p className="text-xs text-cult-border">{a.frequency_label}</p>
                   </td>
                   {/* Status */}
                   <td className="py-2.5 px-2 text-center">
@@ -346,7 +346,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       a.days_until_due === -999 ? 'text-cult-warning' :
                       a.days_until_due < 0 ? 'text-cult-danger' :
                       a.days_until_due <= 2 ? 'text-cult-warning' :
-                      'text-cult-silver'
+                      'text-cult-text-secondary'
                     }`}>
                       {daysLabel(a.days_until_due)}
                     </span>
@@ -354,23 +354,23 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   {/* Compliance % */}
                   <td className="py-2.5 px-2 text-center hidden md:table-cell">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-12 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
+                      <div className="w-12 h-1.5 bg-cult-surface-raised rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             a.compliance_pct_30d >= 80 ? 'bg-cult-success' :
                             a.compliance_pct_30d >= 50 ? 'bg-cult-warning' :
                             a.compliance_pct_30d > 0 ? 'bg-cult-danger' :
-                            'bg-cult-charcoal'
+                            'bg-cult-surface-raised'
                           }`}
                           style={{ width: `${a.compliance_pct_30d}%` }}
                         />
                       </div>
-                      <span className="text-xs text-cult-light-gray w-7">{a.compliance_pct_30d}%</span>
+                      <span className="text-xs text-cult-text-muted w-7">{a.compliance_pct_30d}%</span>
                     </div>
                   </td>
                   {/* Visits (30d) */}
                   <td className="py-2.5 px-2 text-center hidden md:table-cell">
-                    <span className="text-xs text-cult-silver">{a.visits_completed_30d}</span>
+                    <span className="text-xs text-cult-text-secondary">{a.visits_completed_30d}</span>
                     {a.upcoming_scheduled > 0 && (
                       <span className="text-xs text-cult-info ml-1" title="Upcoming scheduled">
                         +{a.upcoming_scheduled}
@@ -379,7 +379,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                   </td>
                   {/* Revenue */}
                   <td className="py-2.5 px-2 text-right hidden lg:table-cell">
-                    <span className="text-xs text-cult-silver">{fmt$(a.lifetime_revenue)}</span>
+                    <span className="text-xs text-cult-text-secondary">{fmt$(a.lifetime_revenue)}</span>
                   </td>
                   {/* Last Visit */}
                   <td className="py-2.5 px-2 text-center hidden xl:table-cell">
@@ -387,17 +387,17 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
                       <span className={`text-xs ${
                         a.days_since_last_visit > 30 ? 'text-cult-danger' :
                         a.days_since_last_visit > 14 ? 'text-cult-warning' :
-                        'text-cult-silver'
+                        'text-cult-text-secondary'
                       }`}>
                         {a.days_since_last_visit}d ago
                       </span>
                     ) : (
-                      <span className="text-xs text-cult-medium-gray">Never</span>
+                      <span className="text-xs text-cult-border">Never</span>
                     )}
                   </td>
                   {/* Arrow */}
                   <td className="py-2.5 px-2">
-                    <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors" />
+                    <ChevronRight className="w-3.5 h-3.5 text-cult-border group-hover:text-cult-text-secondary transition-colors" />
                   </td>
                 </tr>
               );
@@ -405,7 +405,7 @@ export function VisitCadenceDashboard({}: VisitCadenceDashboardProps) {
           </tbody>
         </table>
         {sorted.length === 0 && (
-          <div className="py-10 text-center text-sm text-cult-medium-gray border border-dashed border-cult-charcoal rounded-lg mt-2">
+          <div className="py-10 text-center text-sm text-cult-border border border-dashed border-cult-surface-raised rounded-lg mt-2">
             {search || filter !== 'all' ? 'No accounts match your filters' : 'No visit cadence data available'}
           </div>
         )}

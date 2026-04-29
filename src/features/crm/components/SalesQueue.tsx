@@ -48,7 +48,7 @@ const priorityColors: Record<string, string> = {
   urgent: 'text-cult-danger bg-cult-danger/15',
   high: 'text-cult-warning bg-cult-warning/15',
   medium: 'text-cult-warning bg-cult-warning/15',
-  low: 'text-cult-silver bg-cult-dark-gray',
+  low: 'text-cult-text-secondary bg-cult-surface',
 };
 
 const visitTypeColors: Record<VisitType, string> = {
@@ -136,13 +136,13 @@ function TaskRow({
 
   return (
     <div className={`transition-colors ${task.focus_today ? 'border-l-2 border-l-cult-warning' : ''}`}>
-      <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
+      <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-surface/40 transition-colors group">
         <button
           onClick={onToggleFocus}
           className={`p-0.5 flex-shrink-0 transition-colors ${
             task.focus_today
               ? 'text-cult-warning hover:text-cult-warning/80'
-              : 'text-cult-charcoal hover:text-cult-warning/60'
+              : 'text-cult-surface-raised hover:text-cult-warning/60'
           }`}
           title={task.focus_today ? 'Remove from Today focus' : 'Focus Today'}
         >
@@ -156,11 +156,11 @@ function TaskRow({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={onNavigate}
-              className="text-sm font-medium text-cult-white hover:text-cult-info transition-colors truncate"
+              className="text-sm font-medium text-cult-text-primary hover:text-cult-info transition-colors truncate"
             >
               {task.title}
             </button>
-            <span className="text-xs text-cult-silver">{taskTypeLabels[task.task_type]}</span>
+            <span className="text-xs text-cult-text-secondary">{taskTypeLabels[task.task_type]}</span>
             {task.trigger_source === 'auto' && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-purple-400 bg-purple-500/10 px-1 py-0.5 rounded">
                 <Zap className="w-2.5 h-2.5" /> auto
@@ -170,10 +170,10 @@ function TaskRow({
               <span className="text-xs text-cult-warning font-medium">★ Focus</span>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-silver">
-            <span className="text-cult-light-gray">{task.customer_name}</span>
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-text-secondary">
+            <span className="text-cult-text-muted">{task.customer_name}</span>
             {task.dispensary_code && (
-              <span className="font-mono text-cult-medium-gray">{task.dispensary_code}</span>
+              <span className="font-mono text-cult-border">{task.dispensary_code}</span>
             )}
             {isOverdue && (
               <span className="text-cult-danger font-medium">{overdueDays}d overdue</span>
@@ -183,14 +183,14 @@ function TaskRow({
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={onToggleExpand}
-            className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+            className="p-1.5 text-cult-border hover:text-cult-text-primary transition-colors"
             title="Edit task"
           >
             <ExpandIcon className="w-4 h-4" />
           </button>
           <button
             onClick={onComplete}
-            className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors"
+            className="p-1.5 text-cult-border hover:text-cult-success transition-colors"
             title="Complete"
           >
             <CheckCircle2 className="w-4 h-4" />
@@ -198,34 +198,34 @@ function TaskRow({
           <div className="relative">
             <button
               onClick={() => setShowActions(!showActions)}
-              className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="p-1.5 text-cult-border hover:text-cult-text-primary transition-colors"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
             {showActions && (
-              <div className="absolute right-0 top-8 z-20 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl py-1 w-40">
+              <div className="absolute right-0 top-8 z-20 bg-cult-surface border border-cult-border rounded-lg py-1 w-40">
                 <button
                   onClick={() => { onSnooze(1); setShowActions(false); }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface transition-colors"
                 >
                   Snooze 1 day
                 </button>
                 <button
                   onClick={() => { onSnooze(3); setShowActions(false); }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface transition-colors"
                 >
                   Snooze 3 days
                 </button>
                 <button
                   onClick={() => { onSnooze(7); setShowActions(false); }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-cult-light-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface transition-colors"
                 >
                   Snooze 1 week
                 </button>
-                <div className="border-t border-cult-charcoal my-1" />
+                <div className="border-t border-cult-surface-raised my-1" />
                 <button
                   onClick={() => { onDismiss(); setShowActions(false); }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                  className="w-full text-left px-3 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface transition-colors"
                 >
                   Dismiss
                 </button>
@@ -242,24 +242,24 @@ function TaskRow({
       </div>
 
       {isExpanded && (
-        <div className="px-4 pb-4 pt-1 bg-cult-dark-gray/30 border-t border-cult-charcoal/50 space-y-3">
+        <div className="px-4 pb-4 pt-1 bg-cult-surface/30 border-t border-cult-surface-raised/50 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Title</label>
+              <label className="block text-xs uppercase tracking-wider text-cult-text-secondary mb-1">Title</label>
               <input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray"
+                className="w-full px-3 py-1.5 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Priority</label>
+                <label className="block text-xs uppercase tracking-wider text-cult-text-secondary mb-1">Priority</label>
                 <select
                   value={editPriority}
                   onChange={(e) => setEditPriority(e.target.value as CRMTask['priority'])}
-                  className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full px-3 py-1.5 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-muted"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -268,37 +268,37 @@ function TaskRow({
                 </select>
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Due Date</label>
+                <label className="block text-xs uppercase tracking-wider text-cult-text-secondary mb-1">Due Date</label>
                 <input
                   type="date"
                   value={editDueDate}
                   onChange={(e) => setEditDueDate(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full px-3 py-1.5 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-muted"
                 />
               </div>
             </div>
           </div>
           <div>
-            <label className="block text-xs uppercase tracking-wider text-cult-silver mb-1">Notes / Description</label>
+            <label className="block text-xs uppercase tracking-wider text-cult-text-secondary mb-1">Notes / Description</label>
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
               rows={2}
               placeholder="Add notes about this task..."
-              className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted resize-none"
             />
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleSaveEdit}
               disabled={saving}
-              className="px-3 py-1.5 text-xs font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 text-xs font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
             <button
               onClick={handleCancelEdit}
-              className="px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+              className="px-3 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -321,7 +321,7 @@ function VisitRow({
   onNavigate: () => void;
 }) {
   return (
-    <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-dark-gray/40 transition-colors group">
+    <div className="px-4 py-3 flex items-center gap-3 hover:bg-cult-surface/40 transition-colors group">
       <div className={`p-1.5 rounded flex-shrink-0 ${visitTypeColors[visit.visit_type]}`}>
         <MapPin className="w-3.5 h-3.5" />
       </div>
@@ -329,7 +329,7 @@ function VisitRow({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={onNavigate}
-            className="text-sm font-medium text-cult-white hover:text-cult-info transition-colors truncate"
+            className="text-sm font-medium text-cult-text-primary hover:text-cult-info transition-colors truncate"
           >
             {visit.customer_name}
           </button>
@@ -337,14 +337,14 @@ function VisitRow({
             {visitTypeLabels[visit.visit_type]}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-silver">
+        <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-text-secondary">
           {visit.visit_time_window && <span>{visit.visit_time_window}</span>}
           {visit.location_notes && <span className="truncate max-w-[200px]">{visit.location_notes}</span>}
         </div>
       </div>
       <button
         onClick={onComplete}
-        className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors flex-shrink-0"
+        className="p-1.5 text-cult-border hover:text-cult-success transition-colors flex-shrink-0"
         title="Complete visit"
       >
         <CheckCircle2 className="w-4 h-4" />
@@ -497,8 +497,8 @@ export function SalesQueue() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">My Queue</h1>
-          <p className="text-cult-light-gray mt-2">Tasks and visits requiring your attention</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary">My Queue</h1>
+          <p className="text-cult-text-muted mt-2">Tasks and visits requiring your attention</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -512,13 +512,13 @@ export function SalesQueue() {
           </button>
           <button
             onClick={() => setShowCreateTask(true)}
-            className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded-lg hover:bg-cult-off-white transition-colors"
+            className="px-4 py-2 text-sm font-medium text-cult-opaque-black bg-cult-accent rounded-lg hover:bg-cult-accent-hover transition-colors"
           >
             New Task
           </button>
           <button
             onClick={reload}
-            className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+            className="p-2 text-cult-text-secondary hover:text-cult-text-primary bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-raised transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -536,19 +536,19 @@ export function SalesQueue() {
       {/* Filter bar — compact, always visible */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tasks or customers..."
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder:text-cult-medium-gray focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder:text-cult-border focus:outline-none focus:border-cult-text-muted"
           />
         </div>
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-          className="px-2.5 py-1.5 text-xs bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-light-gray focus:outline-none focus:border-cult-lighter-gray"
+          className="px-2.5 py-1.5 text-xs bg-cult-surface border border-cult-border rounded-lg text-cult-text-muted focus:outline-none focus:border-cult-text-muted"
         >
           <option value="all">All Types</option>
           {Object.entries(taskTypeLabels).map(([key, label]) => (
@@ -558,7 +558,7 @@ export function SalesQueue() {
         <select
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value as SourceFilter)}
-          className="px-2.5 py-1.5 text-xs bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-light-gray focus:outline-none focus:border-cult-lighter-gray"
+          className="px-2.5 py-1.5 text-xs bg-cult-surface border border-cult-border rounded-lg text-cult-text-muted focus:outline-none focus:border-cult-text-muted"
         >
           <option value="all">All Sources</option>
           <option value="auto">Auto-Generated</option>
@@ -567,7 +567,7 @@ export function SalesQueue() {
         {hasFilters && (
           <button
             onClick={() => { setSearch(''); setTypeFilter('all'); setSourceFilter('all'); }}
-            className="px-2 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+            className="px-2 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
           >
             Clear
           </button>
@@ -603,7 +603,7 @@ export function SalesQueue() {
           />
         ))}
         {totalToday === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-cult-light-gray">
+          <div className="px-4 py-8 text-center text-sm text-cult-text-muted">
             {hasFilters ? 'No items match your filters.' : 'No tasks or visits scheduled for today.'}
           </div>
         )}
@@ -612,7 +612,7 @@ export function SalesQueue() {
       <QueueSection
         title="This Week"
         icon={Timer}
-        iconColor="text-cult-silver"
+        iconColor="text-cult-text-secondary"
         count={fUpcoming.length + fWeekVisits.length}
       >
         {fUpcoming.map((task) => renderTaskRow(task, false))}
@@ -625,7 +625,7 @@ export function SalesQueue() {
           />
         ))}
         {fUpcoming.length + fWeekVisits.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-cult-light-gray">
+          <div className="px-4 py-8 text-center text-sm text-cult-text-muted">
             {hasFilters ? 'No items match your filters.' : 'No upcoming tasks or visits this week.'}
           </div>
         )}
@@ -634,12 +634,12 @@ export function SalesQueue() {
       {/* Task completion notes modal */}
       {completingTaskId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-cult-surface border border-cult-border rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-cult-white">Complete Task</h3>
+              <h3 className="text-lg font-semibold text-cult-text-primary">Complete Task</h3>
               <button
                 onClick={() => { setCompletingTaskId(null); setTaskNotes(''); }}
-                className="p-1 text-cult-silver hover:text-cult-white transition-colors"
+                className="p-1 text-cult-text-secondary hover:text-cult-text-primary transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -650,18 +650,18 @@ export function SalesQueue() {
               placeholder="What happened? Any notes? (optional)"
               rows={4}
               autoFocus
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted resize-none"
             />
             <div className="flex items-center gap-2 mt-4">
               <button
                 onClick={handleCompleteTask}
-                className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors"
+                className="px-4 py-2 text-sm font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors"
               >
                 Complete with Notes
               </button>
               <button
                 onClick={handleSkipCompleteTask}
-                className="px-4 py-2 text-sm text-cult-silver hover:text-cult-white transition-colors"
+                className="px-4 py-2 text-sm text-cult-text-secondary hover:text-cult-text-primary transition-colors"
               >
                 Skip &amp; Complete
               </button>
@@ -673,25 +673,25 @@ export function SalesQueue() {
       {/* Visit completion notes modal */}
       {completingVisitId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-cult-white mb-4">Complete Visit</h3>
+          <div className="bg-cult-surface border border-cult-border rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-cult-text-primary mb-4">Complete Visit</h3>
             <textarea
               value={visitNotes}
               onChange={(e) => setVisitNotes(e.target.value)}
               placeholder="Outcome notes (optional)"
               rows={4}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted resize-none"
             />
             <div className="flex items-center gap-2 mt-4">
               <button
                 onClick={handleCompleteVisit}
-                className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors"
+                className="px-4 py-2 text-sm font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors"
               >
                 Complete
               </button>
               <button
                 onClick={() => { setCompletingVisitId(null); setVisitNotes(''); }}
-                className="px-4 py-2 text-sm text-cult-silver hover:text-cult-white transition-colors"
+                className="px-4 py-2 text-sm text-cult-text-secondary hover:text-cult-text-primary transition-colors"
               >
                 Cancel
               </button>
@@ -728,15 +728,15 @@ function QueueSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`bg-cult-near-black border rounded-lg overflow-hidden ${accentBorder || 'border-cult-medium-gray'}`}>
-      <div className="px-4 py-3 border-b border-cult-charcoal flex items-center justify-between">
+    <div className={`bg-cult-surface border rounded-lg overflow-hidden ${accentBorder || 'border-cult-border'}`}>
+      <div className="px-4 py-3 border-b border-cult-surface-raised flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className={`w-4 h-4 ${iconColor}`} />
-          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">{title}</h3>
+          <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">{title}</h3>
         </div>
-        <span className="text-xs text-cult-light-gray">{count} items</span>
+        <span className="text-xs text-cult-text-muted">{count} items</span>
       </div>
-      <div className="divide-y divide-cult-charcoal/50">{children}</div>
+      <div className="divide-y divide-cult-surface-raised/50">{children}</div>
     </div>
   );
 }
@@ -744,10 +744,10 @@ function QueueSection({
 /* ── Stat block ────────────────────────────────────────────────── */
 
 function StatBlock({ label, value, accent, sub }: { label: string; value: number; accent?: 'red' | 'amber'; sub?: string }) {
-  const valueColor = accent === 'red' ? 'text-cult-danger' : accent === 'amber' ? 'text-cult-warning' : 'text-cult-white';
+  const valueColor = accent === 'red' ? 'text-cult-danger' : accent === 'amber' ? 'text-cult-warning' : 'text-cult-text-primary';
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
-      <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
+    <div className="bg-cult-surface border border-cult-border rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]">
+      <p className="text-xs font-medium uppercase tracking-wider text-cult-text-secondary mb-1">{label}</p>
       <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
       {sub && <p className="text-[10px] text-purple-400 mt-0.5">{sub}</p>}
     </div>

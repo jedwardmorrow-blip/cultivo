@@ -36,7 +36,7 @@ export function CoversheetSidePanel({ accessToken, onClose }: CoversheetSidePane
       onClick={handleBackdropClick}
     >
       <div
-        className={`absolute inset-y-0 right-0 w-full max-w-[70vw] bg-white shadow-2xl transition-transform duration-200 ease-out ${
+        className={`absolute inset-y-0 right-0 w-full max-w-[70vw] bg-white transition-transform duration-200 ease-out ${
           isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

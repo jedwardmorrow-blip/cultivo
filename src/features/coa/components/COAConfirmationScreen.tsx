@@ -22,13 +22,13 @@ export function COAConfirmationScreen({
 
   return (
     <div className="space-y-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface border border-cult-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+            <h3 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
               Confirm COA Uploads
             </h3>
-            <p className="text-sm text-cult-light-gray mt-2">
+            <p className="text-sm text-cult-text-muted mt-2">
               Review all COAs before saving to the database
             </p>
           </div>
@@ -96,7 +96,7 @@ export function COAConfirmationScreen({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-cult-white font-medium">
+                      <h4 className="text-cult-text-primary font-medium">
                         {item.fileName}
                       </h4>
                       {item.status === 'reviewed' && (
@@ -108,11 +108,11 @@ export function COAConfirmationScreen({
 
                     {item.parsedData && (
                       <div className="space-y-1 text-sm">
-                        <div className="flex items-center gap-2 text-cult-light-gray">
+                        <div className="flex items-center gap-2 text-cult-text-muted">
                           <span className="font-medium">Strain:</span>
                           <span>{item.parsedData.strain_name}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-cult-light-gray">
+                        <div className="flex items-center gap-2 text-cult-text-muted">
                           <span className="font-medium">Batch Number:</span>
                           <span>{item.parsedData.batch_number}</span>
                         </div>
@@ -123,7 +123,7 @@ export function COAConfirmationScreen({
                           </div>
                         )}
                         {item.parsedData.thc_percentage !== null && (
-                          <div className="flex items-center gap-2 text-cult-lighter-gray flex-wrap">
+                          <div className="flex items-center gap-2 text-cult-text-muted flex-wrap">
                             <span>THC: {item.parsedData.thc_percentage.toFixed(2)}%</span>
                             {item.parsedData.thca_percentage != null && (
                               <span>• THCa: {item.parsedData.thca_percentage.toFixed(2)}%</span>
@@ -157,7 +157,7 @@ export function COAConfirmationScreen({
                 <button
                   onClick={() => onEdit(index)}
                   disabled={isUploading}
-                  className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white text-sm font-medium uppercase tracking-wider hover:border-cult-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-3 py-2 border border-cult-border text-cult-text-primary text-sm font-medium uppercase tracking-wider hover:border-cult-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
@@ -167,11 +167,11 @@ export function COAConfirmationScreen({
           ))}
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4 pt-6 border-t border-cult-medium-gray">
+        <div className="mt-6 flex items-center justify-between gap-4 pt-6 border-t border-cult-border">
           <button
             onClick={onCancel}
             disabled={isUploading}
-            className="px-6 py-3 border border-cult-medium-gray text-cult-white font-medium uppercase tracking-wider hover:border-cult-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 border border-cult-border text-cult-text-primary font-medium uppercase tracking-wider hover:border-cult-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -187,7 +187,7 @@ export function COAConfirmationScreen({
 
         {(!allReviewed || hasErrors) && (
           <div className="mt-4 text-center">
-            <p className="text-sm text-cult-light-gray">
+            <p className="text-sm text-cult-text-muted">
               Click "Edit" on any COA to make changes or complete missing reviews
             </p>
           </div>

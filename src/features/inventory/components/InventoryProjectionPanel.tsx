@@ -43,7 +43,7 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
     high:   { label: 'High',    cls: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
     medium: { label: 'Medium',  cls: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
     low:    { label: 'Low',     cls: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
-    none:   { label: 'No data', cls: 'bg-cult-graphite text-cult-text-faint border-cult-dark-gray' },
+    none:   { label: 'No data', cls: 'bg-cult-surface text-cult-text-faint border-cult-surface' },
   };
   const { label, cls } = map[confidence] ?? map.none;
   return (
@@ -91,13 +91,13 @@ function SkeletonRows() {
     <>
       {[1, 2, 3, 4].map(i => (
         <tr key={i} className="animate-pulse">
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-28" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-14" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-28" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-14" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
         </tr>
       ))}
     </>
@@ -138,7 +138,7 @@ export function InventoryProjectionPanel() {
   const strainsAtRisk = rows.filter(r => r.order_count > 0 && r.demand_g > r.total_projected_bulk_g).length;
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+    <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider flex items-center gap-2">
@@ -150,7 +150,7 @@ export function InventoryProjectionPanel() {
           <button
             onClick={() => setOnlyWithDemand(v => !v)}
             className={`relative w-8 h-4 rounded-full transition-colors ${
-              onlyWithDemand ? 'bg-cult-success' : 'bg-cult-graphite'
+              onlyWithDemand ? 'bg-cult-success' : 'bg-cult-surface'
             }`}
           >
             <span
@@ -180,7 +180,7 @@ export function InventoryProjectionPanel() {
             className={`rounded-cult border p-3 ${
               kpi.alert
                 ? 'bg-cult-danger-muted border-cult-danger/30'
-                : 'bg-cult-graphite/40 border-cult-charcoal/50'
+                : 'bg-cult-surface/40 border-cult-surface-raised/50'
             }`}
           >
             <p className="text-[10px] text-cult-text-faint uppercase tracking-wider">{kpi.label}</p>
@@ -196,7 +196,7 @@ export function InventoryProjectionPanel() {
       <div className="overflow-x-auto">
         <table className="w-full text-[12px]">
           <thead>
-            <tr className="border-b border-cult-charcoal/60">
+            <tr className="border-b border-cult-surface-raised/60">
               {['Strain', 'Pipeline', 'Projected', 'Demand', 'Gap / Surplus', 'Confidence', 'Next Harvest'].map(h => (
                 <th key={h} className="px-3 py-2 text-left text-[10px] font-semibold text-cult-text-faint uppercase tracking-wider whitespace-nowrap">
                   {h}
@@ -204,7 +204,7 @@ export function InventoryProjectionPanel() {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/30">
+          <tbody className="divide-y divide-cult-surface-raised/30">
             {loading ? (
               <SkeletonRows />
             ) : displayed.length === 0 ? (
@@ -221,7 +221,7 @@ export function InventoryProjectionPanel() {
                   <tr
                     key={row.strain_id}
                     className={`transition-colors ${
-                      hasRisk ? 'bg-cult-danger/10 hover:bg-cult-danger/15' : 'hover:bg-cult-graphite/20'
+                      hasRisk ? 'bg-cult-danger/10 hover:bg-cult-danger/15' : 'hover:bg-cult-surface/20'
                     }`}
                   >
                     <td className="px-3 py-2.5">
@@ -279,7 +279,7 @@ export function InventoryProjectionPanel() {
       </div>
 
       {!loading && displayed.length > 0 && (
-        <p className="text-[10px] text-cult-text-faint mt-3 pt-3 border-t border-cult-charcoal/40">
+        <p className="text-[10px] text-cult-text-faint mt-3 pt-3 border-t border-cult-surface-raised/40">
           Projection uses strain-specific conversion rates where available (≥3 sessions).
           Global defaults used for new strains — confidence shown above.
           Gap = Projected Yield − Open Order Demand.

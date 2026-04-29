@@ -70,7 +70,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
+      <div className="rounded-cult p-4 border border-cult-border/40 bg-cult-black">
         <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">INVENTORY BREAKDOWN</div>
         <div className="flex items-center gap-4">
           <DonutChart
@@ -90,7 +90,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
         </div>
       </div>
 
-      <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
+      <div className="rounded-cult p-4 border border-cult-border/40 bg-cult-black">
         <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">PIPELINE BY STAGE</div>
         <div className="flex flex-col gap-[10px]">
           {pipelineStages.map((s, i) => {
@@ -113,7 +113,7 @@ export function PipelineCharts({ summary }: PipelineChartsProps) {
         </div>
       </div>
 
-      <div className="rounded-xl p-4 border border-cult-medium-gray/40 bg-cult-black">
+      <div className="rounded-cult p-4 border border-cult-border/40 bg-cult-black">
         <div className="text-xs font-bold text-neutral-500 tracking-[0.1em] mb-3">SUPPLY HEALTH</div>
         {healthTotal > 0 && (
           <div className="flex gap-[2px] h-5 rounded-lg overflow-hidden mb-3">

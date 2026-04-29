@@ -7,13 +7,12 @@
 
 import type { BuckingSession, TrimSession, PackagingSession, SessionType } from '../../types';
 
-// ═══════════════════════════════════════════════════════════════
-// Glass tokens — matches CommandCenter pattern
-// ═══════════════════════════════════════════════════════════════
-
-export const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-export const GLASS_ELEVATED = 'rounded-2xl border border-white/[0.12] bg-white/[0.09] backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)]';
-export const GLASS_HOVER = 'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
+// Surface tokens (working-instrument). Names retained so callers don't need
+// updates; the underlying styling is now opaque hairline cards, no glass, no
+// shadow, no blur. See docs/design-system/PHASE-1-SURFACE-GUIDE.md.
+export const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
+export const GLASS_ELEVATED = 'rounded-cult border border-cult-border-strong bg-cult-surface-raised';
+export const GLASS_HOVER = 'hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors';
 
 // ═══════════════════════════════════════════════════════════════
 // Session type colors

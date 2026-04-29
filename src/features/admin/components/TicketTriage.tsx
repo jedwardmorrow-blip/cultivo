@@ -85,7 +85,7 @@ export function TicketTriage() {
   if (!isAdmin) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-cult-medium-gray">Admin access required.</p>
+        <p className="text-cult-border">Admin access required.</p>
       </div>
     );
   }
@@ -97,8 +97,8 @@ export function TicketTriage() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-cult-white">Ticket Triage</h1>
-          <p className="text-sm text-cult-medium-gray mt-1">
+          <h1 className="text-xl font-bold text-cult-text-primary">Ticket Triage</h1>
+          <p className="text-sm text-cult-border mt-1">
             {openCount} open{inProgressCount > 0 ? ` · ${inProgressCount} in progress` : ''}
           </p>
         </div>
@@ -109,8 +109,8 @@ export function TicketTriage() {
               onClick={() => setStatusFilter(f)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 statusFilter === f
-                  ? 'bg-cult-white text-cult-dark'
-                  : 'bg-cult-graphite text-cult-silver hover:bg-cult-dark-gray'
+                  ? 'bg-cult-accent text-cult-opaque-black'
+                  : 'bg-cult-surface text-cult-text-secondary hover:bg-cult-surface'
               }`}
             >
               {f === 'all' ? 'All' : f.replace(/_/g, ' ')}
@@ -121,10 +121,10 @@ export function TicketTriage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cult-white" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cult-accent" />
         </div>
       ) : tickets.length === 0 ? (
-        <div className="text-center py-12 text-cult-medium-gray">No tickets found.</div>
+        <div className="text-center py-12 text-cult-border">No tickets found.</div>
       ) : (
         <div className="space-y-3">
           {tickets.map(ticket => {
@@ -135,57 +135,57 @@ export function TicketTriage() {
             return (
               <div
                 key={ticket.id}
-                className="bg-cult-graphite border border-cult-dark-gray rounded-lg overflow-hidden"
+                className="bg-cult-surface border border-cult-surface rounded-lg overflow-hidden"
               >
                 <div
-                  className="px-4 py-3 cursor-pointer hover:bg-cult-dark-gray/50 transition-colors"
+                  className="px-4 py-3 cursor-pointer hover:bg-cult-surface/50 transition-colors"
                   onClick={() => setExpandedId(isExpanded ? null : ticket.id)}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <code className="text-xs text-cult-medium-gray">{ticket.id.slice(0, 8)}</code>
+                        <code className="text-xs text-cult-border">{ticket.id.slice(0, 8)}</code>
                         <span className={`px-2 py-0.5 text-xs font-medium rounded border ${sevClass}`}>
                           {(ticket.severity || 'medium').toUpperCase()}
                         </span>
                         <span className={`px-2 py-0.5 text-xs font-medium rounded ${statClass}`}>
                           {ticket.status.replace(/_/g, ' ')}
                         </span>
-                        <span className="px-2 py-0.5 text-xs text-cult-medium-gray bg-cult-dark rounded">
+                        <span className="px-2 py-0.5 text-xs text-cult-border bg-cult-dark rounded">
                           {ticket.type}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-cult-white truncate">{ticket.title}</h3>
-                      <p className="text-xs text-cult-silver mt-1">
+                      <h3 className="text-base font-bold text-cult-text-primary truncate">{ticket.title}</h3>
+                      <p className="text-xs text-cult-text-secondary mt-1">
                         {ticket.reported_by_name || 'Unknown'} · {ticket.affected_area || 'general'} · {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    <svg className={`w-5 h-5 text-cult-medium-gray transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-5 h-5 text-cult-border transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-cult-dark-gray">
+                  <div className="px-4 pb-4 border-t border-cult-surface">
                     {ticket.ai_analysis && (
                       <div className="mt-3 p-3 bg-cult-dark rounded-md">
-                        <p className="text-xs font-medium text-cult-medium-gray mb-1">AI Analysis</p>
-                        <p className="text-sm text-cult-silver">{ticket.ai_analysis}</p>
+                        <p className="text-xs font-medium text-cult-border mb-1">AI Analysis</p>
+                        <p className="text-sm text-cult-text-secondary">{ticket.ai_analysis}</p>
                       </div>
                     )}
                     {ticket.description && (
                       <div className="mt-3">
-                        <p className="text-xs font-medium text-cult-medium-gray mb-1">Original Report</p>
-                        <p className="text-sm text-cult-silver whitespace-pre-wrap">{ticket.description}</p>
+                        <p className="text-xs font-medium text-cult-border mb-1">Original Report</p>
+                        <p className="text-sm text-cult-text-secondary whitespace-pre-wrap">{ticket.description}</p>
                       </div>
                     )}
 
                     <div className="mt-4 flex items-start gap-4">
                       <div className="flex-1">
-                        <label className="text-xs font-medium text-cult-medium-gray block mb-1">Notes</label>
+                        <label className="text-xs font-medium text-cult-border block mb-1">Notes</label>
                         <textarea
-                          className="w-full bg-cult-dark border border-cult-dark-gray rounded-md px-3 py-2 text-sm text-cult-white placeholder-cult-medium-gray focus:border-cult-white focus:outline-none resize-none"
+                          className="w-full bg-cult-dark border border-cult-surface rounded-md px-3 py-2 text-sm text-cult-text-primary placeholder-cult-border focus:border-cult-accent focus:outline-none resize-none"
                           rows={2}
                           placeholder="Resolution notes..."
                           value={editingNotes[ticket.id] ?? ticket.resolution_notes ?? ''}
@@ -195,7 +195,7 @@ export function TicketTriage() {
                           <button
                             onClick={() => saveNotes(ticket.id)}
                             disabled={saving === ticket.id}
-                            className="mt-1 px-3 py-1 text-xs bg-cult-dark-gray text-cult-silver rounded hover:bg-cult-medium-gray/20 transition-colors disabled:opacity-50"
+                            className="mt-1 px-3 py-1 text-xs bg-cult-surface text-cult-text-secondary rounded hover:bg-cult-border/20 transition-colors disabled:opacity-50"
                           >
                             {saving === ticket.id ? 'Saving...' : 'Save Notes'}
                           </button>
@@ -203,7 +203,7 @@ export function TicketTriage() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-medium text-cult-medium-gray block mb-1">Status</label>
+                        <label className="text-xs font-medium text-cult-border block mb-1">Status</label>
                         <div className="flex gap-1">
                           {STATUS_OPTIONS.map(s => (
                             <button
@@ -212,8 +212,8 @@ export function TicketTriage() {
                               disabled={saving === ticket.id || ticket.status === s}
                               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors disabled:opacity-30 ${
                                 ticket.status === s
-                                  ? 'bg-cult-white text-cult-dark'
-                                  : 'bg-cult-dark-gray text-cult-silver hover:bg-cult-medium-gray/30'
+                                  ? 'bg-cult-accent text-cult-opaque-black'
+                                  : 'bg-cult-surface text-cult-text-secondary hover:bg-cult-border/30'
                               }`}
                             >
                               {s.replace(/_/g, ' ')}

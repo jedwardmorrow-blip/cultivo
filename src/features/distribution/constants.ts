@@ -1,14 +1,13 @@
 import type { CalendarOrder } from '@/features/delivery/services/delivery.service';
 
-// ─── Glass Tokens ──────────────────────────────────────────────────────────
-// Matches Cultivation/Production CommandCenter patterns
+// ─── Surface tokens (working-instrument) ──────────────────────────────────
+// Names retained for callers; styling is now opaque hairline cards.
 
-export const GLASS =
-  'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
+export const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
 export const GLASS_ELEVATED =
-  'rounded-2xl border border-white/[0.12] bg-white/[0.09] backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.6)]';
+  'rounded-cult border border-cult-border-strong bg-cult-surface-raised';
 export const GLASS_HOVER =
-  'hover:bg-white/[0.10] hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]';
+  'hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors';
 
 // ─── Animation ─────────────────────────────────────────────────────────────
 

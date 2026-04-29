@@ -13,9 +13,9 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
   const getStatusIcon = (status: COAUploadQueueItem['status']) => {
     switch (status) {
       case 'pending':
-        return <FileText className="w-4 h-4 text-cult-light-gray" />;
+        return <FileText className="w-4 h-4 text-cult-text-muted" />;
       case 'parsing':
-        return <Loader className="w-4 h-4 text-cult-white animate-spin" />;
+        return <Loader className="w-4 h-4 text-cult-text-primary animate-spin" />;
       case 'parsed':
         return <CheckCircle className="w-4 h-4 text-cult-info" />;
       case 'reviewed':
@@ -23,7 +23,7 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
       case 'error':
         return <AlertCircle className="w-4 h-4 text-cult-danger" />;
       default:
-        return <FileText className="w-4 h-4 text-cult-light-gray" />;
+        return <FileText className="w-4 h-4 text-cult-text-muted" />;
     }
   };
 
@@ -45,8 +45,8 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
   };
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray p-4">
-      <h3 className="text-sm font-medium text-cult-white uppercase tracking-wider mb-3">
+    <div className="bg-cult-surface border border-cult-border p-4">
+      <h3 className="text-sm font-medium text-cult-text-primary uppercase tracking-wider mb-3">
         Upload Queue ({queue.length} COA{queue.length !== 1 ? 's' : ''})
       </h3>
 
@@ -56,32 +56,32 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
             key={item.id}
             className={`flex items-center justify-between p-3 border transition-all ${
               index === currentIndex
-                ? 'border-cult-white bg-cult-black'
+                ? 'border-cult-accent bg-cult-black'
                 : item.status === 'reviewed'
                 ? 'border-cult-success/50 bg-cult-success-muted'
                 : item.status === 'error'
                 ? 'border-cult-danger/50 bg-cult-danger-muted'
-                : 'border-cult-medium-gray bg-cult-black/50'
+                : 'border-cult-border bg-cult-black/50'
             }`}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {getStatusIcon(item.status)}
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-cult-white truncate font-medium">
+                <p className="text-sm text-cult-text-primary truncate font-medium">
                   {item.fileName}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-cult-light-gray">
+                  <span className="text-xs text-cult-text-muted">
                     {getStatusLabel(item.status)}
                   </span>
                   {item.parsedData && (
-                    <span className="text-xs text-cult-lighter-gray">
+                    <span className="text-xs text-cult-text-muted">
                       • {item.parsedData.strain_name}
                     </span>
                   )}
                   {index === currentIndex && (
-                    <span className="text-xs text-cult-white font-medium">
+                    <span className="text-xs text-cult-text-primary font-medium">
                       • Current
                     </span>
                   )}
@@ -95,10 +95,10 @@ export function COAUploadQueue({ queue, onRemove, currentIndex }: COAUploadQueue
             {item.status !== 'parsing' && index !== currentIndex && (
               <button
                 onClick={() => onRemove(item.id)}
-                className="p-1 hover:bg-cult-medium-gray transition-colors ml-2"
+                className="p-1 hover:bg-cult-border transition-colors ml-2"
                 title="Remove from queue"
               >
-                <X className="w-4 h-4 text-cult-light-gray hover:text-cult-white" />
+                <X className="w-4 h-4 text-cult-text-muted hover:text-cult-text-primary" />
               </button>
             )}
           </div>

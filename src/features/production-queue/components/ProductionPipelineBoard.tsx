@@ -36,8 +36,8 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
 
   return (
     <div
-      className={`bg-cult-near-black border rounded p-2.5 cursor-pointer transition-colors ${
-        hasOrders ? 'border-cult-warning/30 hover:border-cult-warning/50' : 'border-cult-dark-gray hover:border-cult-medium-gray'
+      className={`bg-cult-surface border rounded p-2.5 cursor-pointer transition-colors ${
+        hasOrders ? 'border-cult-warning/30 hover:border-cult-warning/50' : 'border-cult-surface hover:border-cult-border'
       }`}
       onClick={() => setExpanded(e => !e)}
     >
@@ -45,13 +45,13 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             {expanded ? <ChevronDown className="w-3 h-3 text-cult-text-muted flex-shrink-0" /> : <ChevronRight className="w-3 h-3 text-cult-text-muted flex-shrink-0" />}
-            <span className="text-[12px] font-semibold text-cult-white truncate">{batch.strain_name}</span>
+            <span className="text-[12px] font-semibold text-cult-text-primary truncate">{batch.strain_name}</span>
           </div>
           <div className="text-[10px] text-cult-text-muted mt-0.5 ml-[18px] font-mono">{batch.batch_number}</div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {urgency && <span className={`w-1.5 h-1.5 rounded-full ${URGENCY_DOT[urgency] ?? URGENCY_DOT.no_date}`} />}
-          <span className="text-[11px] font-medium text-cult-white tabular-nums">{formatWeight(stageWeight)}</span>
+          <span className="text-[11px] font-medium text-cult-text-primary tabular-nums">{formatWeight(stageWeight)}</span>
         </div>
       </div>
 
@@ -63,10 +63,10 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
       )}
 
       {expanded && (
-        <div className="mt-2 ml-[18px] pt-2 border-t border-cult-charcoal/40 space-y-1 text-[10px]">
+        <div className="mt-2 ml-[18px] pt-2 border-t border-cult-surface-raised/40 space-y-1 text-[10px]">
           <div className="flex justify-between text-cult-text-muted">
             <span>Total inventory</span>
-            <span className="text-cult-lighter-gray tabular-nums">{formatWeight(batch.total_available_g)}</span>
+            <span className="text-cult-text-muted tabular-nums">{formatWeight(batch.total_available_g)}</span>
           </div>
           {batch.binned_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Binned</span><span className="tabular-nums">{formatWeight(batch.binned_g)}</span></div>}
           {batch.bucked_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Bucked</span><span className="tabular-nums">{formatWeight(batch.bucked_g)}</span></div>}
@@ -74,7 +74,7 @@ function PipelineItemCard({ batch, stageKey }: { batch: BatchPlanData; stageKey:
           {batch.trim_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Trim</span><span className="tabular-nums">{formatWeight(batch.trim_g)}</span></div>}
           {batch.packaged_g > 0 && <div className="flex justify-between text-cult-text-muted"><span>Packaged</span><span className="tabular-nums">{formatWeight(batch.packaged_g)}</span></div>}
           {batch.total_allocated_g > 0 && (
-            <div className="flex justify-between text-cult-warning pt-1 border-t border-cult-charcoal/30">
+            <div className="flex justify-between text-cult-warning pt-1 border-t border-cult-surface-raised/30">
               <span>Allocated to orders</span>
               <span className="tabular-nums">{formatWeight(batch.total_allocated_g)}</span>
             </div>
@@ -112,7 +112,7 @@ function PipelineStageColumn({ column }: { column: PipelineColumnData }) {
   return (
     <div className={`flex flex-col min-w-[220px] max-w-[280px] flex-1 rounded border ${colors.border} ${colors.bg}`}>
       {/* Column header */}
-      <div className="px-3 py-2.5 border-b border-cult-charcoal/30">
+      <div className="px-3 py-2.5 border-b border-cult-surface-raised/30">
         <div className="flex items-center justify-between">
           <span className={`text-[12px] font-semibold uppercase tracking-wider ${colors.header}`}>
             {column.label}
@@ -150,14 +150,14 @@ export function ProductionPipelineBoard() {
         <div className="flex items-center gap-3">
           <Layers className="w-6 h-6 text-cult-accent" />
           <div>
-            <h1 className="text-[18px] font-semibold text-cult-white font-montserrat">Production Pipeline</h1>
+            <h1 className="text-[18px] font-semibold text-cult-text-primary font-sans">Production Pipeline</h1>
             <p className="text-[12px] text-cult-text-muted">{totalBatches} active batches across {columns.filter(c => c.batchCount > 0).length} stages</p>
           </div>
         </div>
         <button
           onClick={() => refresh()}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-medium-gray text-cult-lighter-gray rounded hover:bg-cult-charcoal disabled:opacity-40 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-border text-cult-text-muted rounded hover:bg-cult-surface-raised disabled:opacity-40 transition-colors"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -177,9 +177,9 @@ export function ProductionPipelineBoard() {
         <div className="flex gap-3 overflow-x-auto">
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="min-w-[220px] flex-1 animate-pulse">
-              <div className="h-16 bg-cult-charcoal rounded mb-2" />
+              <div className="h-16 bg-cult-surface-raised rounded mb-2" />
               <div className="space-y-2">
-                {[1, 2, 3].map(j => <div key={j} className="h-16 bg-cult-charcoal/60 rounded" />)}
+                {[1, 2, 3].map(j => <div key={j} className="h-16 bg-cult-surface-raised/60 rounded" />)}
               </div>
             </div>
           ))}

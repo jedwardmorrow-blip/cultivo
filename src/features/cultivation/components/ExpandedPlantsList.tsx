@@ -91,7 +91,7 @@ export function ExpandedPlantsList({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 text-xs text-cult-medium-gray">
+      <div className="flex items-center gap-2 px-4 py-3 text-xs text-cult-border">
         <Loader2 className="w-3 h-3 animate-spin" />
         Loading plants...
       </div>
@@ -100,7 +100,7 @@ export function ExpandedPlantsList({
 
   if (plants.length === 0) {
     return (
-      <div className="px-4 py-3 text-xs text-cult-medium-gray italic">
+      <div className="px-4 py-3 text-xs text-cult-border italic">
         No plant IDs registered yet.
       </div>
     );
@@ -110,48 +110,48 @@ export function ExpandedPlantsList({
   const someSelected = selectedIds.size > 0;
 
   return (
-    <div className="border-t border-cult-dark-gray bg-cult-near-black/50">
+    <div className="border-t border-cult-surface bg-cult-surface/50">
       <div className="px-4 py-2.5 space-y-2">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1">
           {motherPlantId && (
             <div className="flex flex-col">
-              <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Mother ID</span>
-              <span className="text-xs text-cult-white font-mono">{motherPlantId}</span>
+              <span className="text-xs text-cult-border uppercase tracking-wider">Mother ID</span>
+              <span className="text-xs text-cult-text-primary font-mono">{motherPlantId}</span>
             </div>
           )}
           {cloneDate && (
             <div className="flex flex-col">
-              <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Clone Date</span>
-              <span className="text-xs text-cult-light-gray">{formatDate(cloneDate)}</span>
+              <span className="text-xs text-cult-border uppercase tracking-wider">Clone Date</span>
+              <span className="text-xs text-cult-text-muted">{formatDate(cloneDate)}</span>
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Stage Entered</span>
-            <span className="text-xs text-cult-light-gray">{formatDate(group.stage_entered_at)}</span>
+            <span className="text-xs text-cult-border uppercase tracking-wider">Stage Entered</span>
+            <span className="text-xs text-cult-text-muted">{formatDate(group.stage_entered_at)}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Days in Stage</span>
-            <span className="text-xs text-cult-white font-semibold">{daysInStage}d</span>
+            <span className="text-xs text-cult-border uppercase tracking-wider">Days in Stage</span>
+            <span className="text-xs text-cult-text-primary font-semibold">{daysInStage}d</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-2 border-t border-cult-dark-gray/50">
+      <div className="flex items-center justify-between px-4 py-2 border-t border-cult-surface/50">
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSelectAll}
-            className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors uppercase tracking-wider"
+            className="flex items-center gap-1.5 text-xs text-cult-border hover:text-cult-text-muted transition-colors uppercase tracking-wider"
           >
             {allSelected
-              ? <CheckSquare className="w-3.5 h-3.5 text-cult-white" />
+              ? <CheckSquare className="w-3.5 h-3.5 text-cult-text-primary" />
               : <Square className="w-3.5 h-3.5" />
             }
             {allSelected ? 'Deselect All' : 'Select All'}
           </button>
-          <span className="text-xs text-cult-light-gray">
-            <span className="text-cult-white font-semibold">{activePlants.length}</span> active
+          <span className="text-xs text-cult-text-muted">
+            <span className="text-cult-text-primary font-semibold">{activePlants.length}</span> active
             {inactivePlants.length > 0 && (
-              <span className="text-cult-medium-gray ml-1">/ {inactivePlants.length} inactive</span>
+              <span className="text-cult-border ml-1">/ {inactivePlants.length} inactive</span>
             )}
           </span>
         </div>
@@ -178,7 +178,7 @@ export function ExpandedPlantsList({
                   </button>
                   <button
                     onClick={() => setConfirmDeactivate(false)}
-                    className="text-xs text-cult-medium-gray hover:text-cult-white px-1 py-0.5 uppercase tracking-wider transition-colors"
+                    className="text-xs text-cult-border hover:text-cult-text-primary px-1 py-0.5 uppercase tracking-wider transition-colors"
                   >
                     Cancel
                   </button>
@@ -189,7 +189,7 @@ export function ExpandedPlantsList({
           <button
             onClick={handlePrint}
             disabled={activePlants.length === 0}
-            className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-2 py-0.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-xs border border-cult-border text-cult-text-muted px-2 py-0.5 hover:border-cult-text-muted hover:text-cult-text-primary transition-all uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Printer className="w-3 h-3" />
             {someSelected && selectedIds.size < activePlants.length
@@ -212,25 +212,25 @@ export function ExpandedPlantsList({
             key={p.id}
             className={`flex items-center gap-2 px-2.5 py-1.5 border text-xs transition-all ${
               selectedIds.has(p.id)
-                ? 'border-cult-lighter-gray bg-cult-black/80'
-                : 'border-cult-dark-gray bg-cult-black'
+                ? 'border-cult-text-muted bg-cult-black/80'
+                : 'border-cult-surface bg-cult-black'
             }`}
           >
             <button
               onClick={() => toggleSelect(p.id)}
-              className="flex-shrink-0 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="flex-shrink-0 text-cult-border hover:text-cult-text-primary transition-colors"
             >
               {selectedIds.has(p.id)
-                ? <CheckSquare className="w-3.5 h-3.5 text-cult-white" />
+                ? <CheckSquare className="w-3.5 h-3.5 text-cult-text-primary" />
                 : <Square className="w-3.5 h-3.5" />
               }
             </button>
-            <span className="font-mono text-cult-white flex-1 min-w-0 truncate">{p.state_plant_id}</span>
-            {p.notes && <span className="text-cult-medium-gray truncate max-w-[120px]">{p.notes}</span>}
+            <span className="font-mono text-cult-text-primary flex-1 min-w-0 truncate">{p.state_plant_id}</span>
+            {p.notes && <span className="text-cult-border truncate max-w-[120px]">{p.notes}</span>}
             <button
               onClick={(e) => { e.stopPropagation(); onPrintSinglePlant(p); }}
               title="Print label for this plant"
-              className="flex-shrink-0 p-0.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="flex-shrink-0 p-0.5 text-cult-border hover:text-cult-text-primary transition-colors"
             >
               <Printer className="w-3 h-3" />
             </button>
@@ -239,11 +239,11 @@ export function ExpandedPlantsList({
         {inactivePlants.map((p) => (
           <div
             key={p.id}
-            className="flex items-center gap-2 px-2.5 py-1.5 border border-cult-near-black bg-black text-xs opacity-40"
+            className="flex items-center gap-2 px-2.5 py-1.5 border border-cult-surface bg-black text-xs opacity-40"
           >
             <div className="w-3.5 flex-shrink-0" />
-            <span className="font-mono text-cult-medium-gray line-through flex-1">{p.state_plant_id}</span>
-            <CircleOff className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
+            <span className="font-mono text-cult-border line-through flex-1">{p.state_plant_id}</span>
+            <CircleOff className="w-3 h-3 text-cult-surface flex-shrink-0" />
           </div>
         ))}
       </div>

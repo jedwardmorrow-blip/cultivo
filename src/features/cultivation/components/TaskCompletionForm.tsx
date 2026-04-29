@@ -343,7 +343,7 @@ export function TaskCompletionForm({
       {/* ── Assigned Worker Picker ──────────────────────────── */}
       {staffOptions && staffOptions.length > 0 && !isRouter && (
         <div className="relative" ref={staffDropdownRef}>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+          <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
             Assigned To
           </label>
           <button
@@ -352,14 +352,14 @@ export function TaskCompletionForm({
             disabled={assigning}
             className={`w-full flex items-center justify-between gap-2 px-3 py-3 min-h-[44px] text-xs border rounded-sm transition-colors ${
               selectedStaff
-                ? 'bg-cult-charcoal border-cult-medium-gray text-cult-white'
-                : 'bg-cult-charcoal/60 border-cult-warning/30 text-cult-warning'
-            } hover:border-cult-light-gray disabled:opacity-50`}
+                ? 'bg-cult-surface-raised border-cult-border text-cult-text-primary'
+                : 'bg-cult-surface-raised/60 border-cult-warning/30 text-cult-warning'
+            } hover:border-cult-text-muted disabled:opacity-50`}
           >
             <div className="flex items-center gap-2">
               {selectedStaff ? (
                 <>
-                  <span className="w-5 h-5 rounded-full bg-cult-near-black flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-cult-surface flex items-center justify-center text-xs font-bold text-cult-text-primary flex-shrink-0">
                     {selectedStaff.first_name.charAt(0)}
                   </span>
                   <span className="font-medium">{selectedStaff.first_name}</span>
@@ -371,16 +371,16 @@ export function TaskCompletionForm({
                 </>
               )}
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${showStaffDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-cult-border transition-transform ${showStaffDropdown ? 'rotate-180' : ''}`} />
           </button>
 
           {showStaffDropdown && (
-            <div className="absolute z-20 mt-1 w-full bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-xl max-h-48 overflow-y-auto">
+            <div className="absolute z-20 mt-1 w-full bg-cult-surface border border-cult-border rounded-sm max-h-48 overflow-y-auto">
               {selectedStaff && (
                 <button
                   type="button"
                   onClick={() => handleAssign(null)}
-                  className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs text-cult-warning hover:bg-cult-warning-muted transition-colors border-b border-cult-dark-gray/50"
+                  className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs text-cult-warning hover:bg-cult-warning-muted transition-colors border-b border-cult-surface/50"
                 >
                   <UserX className="w-3.5 h-3.5" />
                   Unassign
@@ -393,16 +393,16 @@ export function TaskCompletionForm({
                   onClick={() => handleAssign(s.id)}
                   className={`w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs transition-colors ${
                     s.id === assignedStaffId
-                      ? 'bg-cult-charcoal text-cult-white font-semibold'
-                      : 'text-cult-light-gray hover:bg-cult-charcoal/60 hover:text-cult-white'
+                      ? 'bg-cult-surface-raised text-cult-text-primary font-semibold'
+                      : 'text-cult-text-muted hover:bg-cult-surface-raised/60 hover:text-cult-text-primary'
                   }`}
                 >
-                  <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-cult-surface-raised flex items-center justify-center text-xs font-bold text-cult-text-primary flex-shrink-0">
                     {s.first_name.charAt(0)}
                   </span>
                   {s.first_name}
                   {s.id === assignedStaffId && (
-                    <span className="ml-auto text-xs text-cult-medium-gray uppercase">Current</span>
+                    <span className="ml-auto text-xs text-cult-border uppercase">Current</span>
                   )}
                 </button>
               ))}
@@ -472,7 +472,7 @@ export function TaskCompletionForm({
         className="fixed inset-0 z-50 flex items-end bg-black/60"
         onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
       >
-        <div className="w-full bg-cult-surface-overlay border-t border-cult-medium-gray rounded-t-xl p-5 max-h-[90vh] overflow-y-auto animate-slide-in">
+        <div className="w-full bg-cult-surface-overlay border-t border-cult-border rounded-t-xl p-5 max-h-[90vh] overflow-y-auto animate-slide-in">
           {formContent}
         </div>
       </div>
@@ -485,7 +485,7 @@ export function TaskCompletionForm({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
     >
-      <div className="bg-cult-surface-overlay border border-cult-medium-gray w-full max-w-md p-5 max-h-[85vh] overflow-y-auto animate-fade-in">
+      <div className="bg-cult-surface-overlay border border-cult-border w-full max-w-md p-5 max-h-[85vh] overflow-y-auto animate-fade-in">
         {formContent}
       </div>
     </div>
@@ -509,23 +509,23 @@ function FormHeader({ task, config, onClose }: {
         >
           {config.label}
         </span>
-        <div className="flex items-center gap-3 text-xs text-cult-light-gray">
-          <span className="font-mono font-bold text-cult-white">{task.room_name}</span>
+        <div className="flex items-center gap-3 text-xs text-cult-text-muted">
+          <span className="font-mono font-bold text-cult-text-primary">{task.room_name}</span>
           {task.assigned_to_name && (
             <span className="flex items-center gap-1">
-              <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white">
+              <span className="w-4 h-4 rounded-full bg-cult-surface-raised flex items-center justify-center text-xs font-bold text-cult-text-primary">
                 {task.assigned_to_name.charAt(0)}
               </span>
               {task.assigned_to_name}
             </span>
           )}
-          <span className="flex items-center gap-1 text-cult-medium-gray">
+          <span className="flex items-center gap-1 text-cult-border">
             <Clock className="w-3 h-3" />
             {timeStr}
           </span>
         </div>
       </div>
-      <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-medium-gray hover:text-cult-light-gray active:bg-cult-charcoal/40 rounded-lg transition-colors">
+      <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-cult-border hover:text-cult-text-muted active:bg-cult-surface-raised/40 rounded-lg transition-colors">
         <X className="w-4 h-4" />
       </button>
     </div>
@@ -550,7 +550,7 @@ function RouterCard({ task, config, onNavigateHarvest, onNavigateClone, onClose 
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-4 space-y-4">
+    <div className="bg-cult-surface border border-cult-surface rounded-sm p-4 space-y-4">
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0"
@@ -559,10 +559,10 @@ function RouterCard({ task, config, onNavigateHarvest, onNavigateClone, onClose 
           <Icon className="w-5 h-5" style={{ color: config.color }} />
         </div>
         <div>
-          <p className="text-sm text-cult-white font-medium">
+          <p className="text-sm text-cult-text-primary font-medium">
             {isHarvest ? 'Harvest Workflow' : 'Clone Cutting Flow'}
           </p>
-          <p className="text-xs text-cult-medium-gray mt-0.5">
+          <p className="text-xs text-cult-border mt-0.5">
             {isHarvest
               ? 'This task uses the dedicated harvest workflow with room selection, weight recording, and batch creation.'
               : 'This task uses the clone cutting flow with mother selection, cut counts, and tray assignment.'}
@@ -586,9 +586,9 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
   onSubmit: () => void;
 }) {
   return (
-    <div className="space-y-3 pt-2 border-t border-cult-dark-gray">
+    <div className="space-y-3 pt-2 border-t border-cult-surface">
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5">Duration</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5">Duration</label>
         <div className="flex flex-wrap gap-1.5">
           {DURATION_OPTIONS.map((opt) => (
             <button
@@ -598,7 +598,7 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
               className={`px-3 py-2.5 min-h-[44px] text-xs rounded-sm border transition-colors flex items-center ${
                 duration === opt
                   ? 'bg-cult-accent/20 border-cult-accent text-cult-accent'
-                  : 'bg-cult-charcoal border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray'
+                  : 'bg-cult-surface-raised border-cult-surface text-cult-text-muted hover:border-cult-border'
               }`}
             >
               {opt}
@@ -608,12 +608,12 @@ function FormFooter({ duration, setDuration, notes, setNotes, saving, error, onS
       </div>
 
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-xs py-2.5 px-3 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
+          className="w-full bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-xs py-2.5 px-3 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
           placeholder="Optional notes..."
         />
       </div>

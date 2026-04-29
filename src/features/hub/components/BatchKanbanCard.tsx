@@ -56,7 +56,7 @@ const CONFIDENCE_DOT: Record<string, string> = {
   high: 'bg-cult-success',
   medium: 'bg-cult-warning',
   low: 'bg-cult-warning',
-  fallback: 'bg-cult-charcoal',
+  fallback: 'bg-cult-surface-raised',
 };
 
 export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction, onClick }: BatchKanbanCardProps) {
@@ -66,7 +66,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
 
   // Grade color for left border accent
   const gradeKey = batch.quality_grade_id ? 'cult' : '';
-  const borderColor = GRADE_COLORS[gradeKey] || 'border-l-cult-charcoal';
+  const borderColor = GRADE_COLORS[gradeKey] || 'border-l-cult-surface-raised';
 
   // Prediction display
   const predWeight = getNextPredictedWeight(prediction, batch.lifecycle_state);
@@ -77,8 +77,8 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
       onClick={() => onClick?.(batch)}
       className={`
         w-full text-left p-3 rounded-cult
-        bg-cult-graphite/80 hover:bg-cult-graphite
-        border border-cult-charcoal/60 hover:border-cult-silver/40
+        bg-cult-surface/80 hover:bg-cult-surface
+        border border-cult-surface-raised/60 hover:border-cult-text-secondary/40
         border-l-[3px] ${borderColor}
         transition-all duration-150 group
         ${batch.is_quarantined ? 'ring-1 ring-red-500/40' : ''}
@@ -86,7 +86,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
     >
       {/* Top row: batch number + indicators */}
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[13px] font-semibold text-cult-off-white tracking-wide truncate font-montserrat">
+        <span className="text-[13px] font-semibold text-cult-text-primary tracking-wide truncate font-mono">
           {batch.batch_number}
         </span>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -108,15 +108,15 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
       </div>
 
       {/* Strain */}
-      <div className="text-[11px] text-cult-silver truncate mb-1.5">
+      <div className="text-[11px] text-cult-text-secondary truncate mb-1.5">
         {batch.strain}
       </div>
 
       {/* Yield prediction bar — only if we have a prediction */}
       {predWeight != null && predWeight > 0 && (
         <div className="flex items-center gap-1.5 mb-1.5 text-[10px]">
-          <span className="text-cult-lighter-gray">est</span>
-          <span className="text-cult-silver font-medium">{formatWeight(predWeight)}</span>
+          <span className="text-cult-text-muted">est</span>
+          <span className="text-cult-text-secondary font-medium">{formatWeight(predWeight)}</span>
           {primaryVariance != null && (
             <span className={`flex items-center gap-0.5 ml-auto ${
               primaryVariance >= 0 ? 'text-cult-success' : 'text-cult-warning'
@@ -132,7 +132,7 @@ export const BatchKanbanCard = memo(function BatchKanbanCard({ batch, prediction
       )}
 
       {/* Bottom row: metrics */}
-      <div className="flex items-center gap-3 text-[10px] text-cult-lighter-gray">
+      <div className="flex items-center gap-3 text-[10px] text-cult-text-muted">
         <span className={`flex items-center gap-1 ${
           daysInStage > 14 ? 'text-cult-warning' : ''
         }`}>

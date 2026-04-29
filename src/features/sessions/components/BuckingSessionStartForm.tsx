@@ -168,14 +168,14 @@ export function BuckingSessionStartForm({
   };
 
   return (
-    <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
-      <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">
+    <div className="bg-cult-surface p-6 rounded-lg border-2 border-cult-green mb-6">
+      <h2 className="text-2xl font-bold mb-6 text-cult-text-primary uppercase tracking-wide">
         Start New Bucking Session
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Bucker*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Bucker*</label>
             <select
               value={form.bucker_staff_id || ''}
               onChange={(e) => {
@@ -190,7 +190,7 @@ export function BuckingSessionStartForm({
               }}
               required
               disabled={staffLoading}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">{staffLoading ? 'Loading staff...' : 'Select bucker'}</option>
               {staff.map(member => (
@@ -200,7 +200,7 @@ export function BuckingSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Strain*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Strain*</label>
             <select
               value={form.strain || ''}
               onChange={(e) => {
@@ -209,7 +209,7 @@ export function BuckingSessionStartForm({
                 onChange('binned_package_id', '');
               }}
               required
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green"
             >
               <option value="">Select strain</option>
               {availableStrains.map(strain => (
@@ -219,7 +219,7 @@ export function BuckingSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Batch ID*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Batch ID*</label>
             <select
               value={form.batch_id || ''}
               onChange={(e) => {
@@ -228,7 +228,7 @@ export function BuckingSessionStartForm({
               }}
               required
               disabled={!form.strain}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">Select batch</option>
               {batches.map(batch => (
@@ -240,7 +240,7 @@ export function BuckingSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Binned Package ID*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Binned Package ID*</label>
             <select
               value={form.binned_package_id || ''}
               onChange={(e) => {
@@ -252,7 +252,7 @@ export function BuckingSessionStartForm({
               }}
               required
               disabled={!form.batch_id}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">Select package</option>
               {packages.map(pkg => (
@@ -264,7 +264,7 @@ export function BuckingSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Binned Weight (g)*
               {form.binned_weight_grams > 0 && form.binned_package_id && (
                 <span className={`ml-2 text-xs font-bold ${
@@ -286,9 +286,9 @@ export function BuckingSessionStartForm({
               required
               min="0.01"
               max={binnedPackages.find(p => p.package_id === form.binned_package_id)?.available_qty || undefined}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green"
             />
-            <p className="text-xs text-cult-silver mt-1">
+            <p className="text-xs text-cult-text-secondary mt-1">
               {((form.binned_weight_grams || 0) / 1000).toFixed(2)} kg
               {form.binned_package_id && (
                 <span className="ml-2">
@@ -300,12 +300,12 @@ export function BuckingSessionStartForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>
+          <label className="block text-sm font-medium text-cult-text-primary mb-1">Notes</label>
           <textarea
             value={form.notes || ''}
             onChange={(e) => onChange('notes', e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green"
             placeholder="Any special notes or observations..."
           />
         </div>
@@ -315,7 +315,7 @@ export function BuckingSessionStartForm({
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            className="px-6 py-2 bg-cult-dark-gray text-white rounded hover:bg-cult-medium-gray transition disabled:opacity-50"
+            className="px-6 py-2 bg-cult-surface text-white rounded hover:bg-cult-border transition disabled:opacity-50"
           >
             Cancel
           </button>

@@ -74,7 +74,7 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
         <button
           onClick={() => setExpandedView(true)}
           disabled={loading}
-          className="px-4 py-2 bg-cult-medium-gray text-cult-white hover:bg-cult-light-gray transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 bg-cult-border text-cult-text-primary hover:bg-cult-text-muted transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           <Tag className="w-4 h-4" />
           Manage Labels
@@ -101,18 +101,18 @@ export function OrderLabelGenerator({ orderId }: OrderLabelGeneratorProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-cult-surface-raised rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-cult-surface-raised rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-cult-black text-cult-white p-6 flex items-center justify-between">
+        <div className="bg-cult-black text-cult-text-primary p-6 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold uppercase tracking-wider">Label Management</h2>
-            <p className="text-cult-light-gray text-sm mt-1">
+            <p className="text-cult-text-muted text-sm mt-1">
               Generate and manage product labels for this order
             </p>
           </div>
           <button
             onClick={() => setExpandedView(false)}
-            className="p-2 hover:bg-cult-medium-gray rounded transition-colors"
+            className="p-2 hover:bg-cult-border rounded transition-colors"
           >
             <X className="w-6 h-6" />
           </button>

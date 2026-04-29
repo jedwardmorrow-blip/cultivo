@@ -133,7 +133,7 @@ export function DriversManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading drivers...</div>
+        <div className="text-cult-text-muted">Loading drivers...</div>
       </div>
     );
   }
@@ -142,8 +142,8 @@ export function DriversManagement() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Truck className="w-6 h-6 text-cult-white" />
-          <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+          <Truck className="w-6 h-6 text-cult-text-primary" />
+          <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
             Delivery Drivers
           </h2>
         </div>
@@ -162,38 +162,38 @@ export function DriversManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray overflow-hidden">
+      <div className="bg-cult-surface border border-cult-border overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-cult-black border-b border-cult-medium-gray">
+          <thead className="bg-cult-black border-b border-cult-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 FA Number
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray">
+          <tbody className="divide-y divide-cult-border">
             {drivers.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-cult-light-gray">
+                <td colSpan={4} className="px-4 py-8 text-center text-cult-text-muted">
                   No drivers found. Add your first driver to get started.
                 </td>
               </tr>
             ) : (
               drivers.map((driver) => (
                 <tr key={driver.id} className="hover:bg-cult-black transition-colors">
-                  <td className="px-4 py-3 text-cult-white">
+                  <td className="px-4 py-3 text-cult-text-primary">
                     {driver.first_name} {driver.last_name}
                   </td>
-                  <td className="px-4 py-3 text-cult-light-gray font-mono">
+                  <td className="px-4 py-3 text-cult-text-muted font-mono">
                     {driver.fa_number}
                   </td>
                   <td className="px-4 py-3">
@@ -222,14 +222,14 @@ export function DriversManagement() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openEditModal(driver)}
-                        className="p-2 text-cult-light-gray hover:text-cult-white hover:bg-cult-black transition-all"
+                        className="p-2 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-black transition-all"
                         title="Edit driver"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(driver.id)}
-                        className="p-2 text-cult-light-gray hover:text-cult-danger hover:bg-cult-black transition-all"
+                        className="p-2 text-cult-text-muted hover:text-cult-danger hover:bg-cult-black transition-all"
                         title="Delete driver"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -248,53 +248,53 @@ export function DriversManagement() {
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
         >
           <div
-            className="bg-cult-near-black border-2 border-cult-medium-gray max-w-md w-full"
+            className="bg-cult-surface border-2 border-cult-border max-w-md w-full"
           >
-            <div className="p-6 border-b border-cult-medium-gray">
-              <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+            <div className="p-6 border-b border-cult-border">
+              <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
                 {editingDriver ? 'Edit Driver' : 'Add Driver'}
               </h3>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   First Name
                 </label>
                 <input
                   type="text"
                   value={formData.first_name}
                   onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Last Name
                 </label>
                 <input
                   type="text"
                   value={formData.last_name}
                   onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   FA Number
                 </label>
                 <input
                   type="text"
                   value={formData.fa_number}
                   onChange={(e) => setFormData({ ...formData, fa_number: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 />
-                <p className="mt-1 text-xs text-cult-lighter-gray">
+                <p className="mt-1 text-xs text-cult-text-muted">
                   Facility Agent card number
                 </p>
               </div>

@@ -52,7 +52,7 @@ function pillStyles(state: DocStatusPill['state']): string {
     case 'sent':     return 'bg-cult-success/15 text-cult-success border-cult-success/40';
     case 'overdue':  return 'bg-cult-danger/15 text-cult-danger border-cult-danger/40';
     case 'due_soon': return 'bg-cult-warning/10 text-cult-warning border-cult-warning/30';
-    default:         return 'bg-cult-charcoal text-cult-light-gray border-cult-medium-gray/40';
+    default:         return 'bg-cult-surface-raised text-cult-text-muted border-cult-border/40';
   }
 }
 
@@ -113,7 +113,7 @@ function SendButton({ docType: _docType, label, sent, sending, onSend }: SendBut
     <button
       onClick={onSend}
       disabled={sending}
-      className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-cult-surface-raised text-cult-text-muted border border-cult-border hover:border-cult-text-muted hover:text-cult-text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {sending ? (
         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -174,17 +174,17 @@ function OrderRow({ row, onSent }: OrderRowProps) {
   };
 
   return (
-    <div className={`border-b border-cult-medium-gray/30 transition-colors ${
+    <div className={`border-b border-cult-border/30 transition-colors ${
       hasOverdue ? 'bg-cult-danger/5' : ''
     }`}>
       <div
-        className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-3 cursor-pointer hover:bg-cult-charcoal/30 transition-colors"
+        className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-3 cursor-pointer hover:bg-cult-surface-raised/30 transition-colors"
         onClick={() => setExpanded(e => !e)}
       >
         {/* Left: order + customer info */}
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-cult-white font-mono">
+            <span className="text-sm font-semibold text-cult-text-primary font-mono">
               {row.order_number}
             </span>
             {hasOverdue && (
@@ -200,15 +200,15 @@ function OrderRow({ row, onSent }: OrderRowProps) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-light-gray flex-wrap">
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-cult-text-muted flex-wrap">
             <span className="truncate">{row.customer_name}</span>
             {row.delivery_date && (
               <>
-                <span className="text-cult-medium-gray">·</span>
+                <span className="text-cult-border">·</span>
                 <span>Delivery {formatDeliveryDate(row.delivery_date)}</span>
               </>
             )}
-            <span className="text-cult-medium-gray">·</span>
+            <span className="text-cult-border">·</span>
             <span>{formatCurrency(row.total_amount)}</span>
           </div>
         </div>
@@ -221,7 +221,7 @@ function OrderRow({ row, onSent }: OrderRowProps) {
         </div>
 
         {/* Right: expand chevron */}
-        <ChevronDown className={`w-4 h-4 text-cult-medium-gray transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-cult-border transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </div>
 
       {/* Expanded: action buttons + error */}
@@ -233,7 +233,7 @@ function OrderRow({ row, onSent }: OrderRowProps) {
             </div>
           )}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-cult-silver mr-1">Send:</span>
+            <span className="text-xs text-cult-text-secondary mr-1">Send:</span>
             <SendButton
               docType="invoice"
               label="Invoice"
@@ -256,7 +256,7 @@ function OrderRow({ row, onSent }: OrderRowProps) {
               onSend={() => handleSend('manifest')}
             />
           </div>
-          <p className="mt-2 text-[11px] text-cult-silver/60">
+          <p className="mt-2 text-[11px] text-cult-text-secondary/60">
             Note: email delivery requires the send-document edge function (CUL-351). Send actions currently log to email_send_log only.
           </p>
         </div>
@@ -353,28 +353,28 @@ export function DocumentDispatchQueue() {
     <div>
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-cult-white">Document Dispatch Queue</h2>
-        <p className="text-sm text-cult-light-gray mt-1">
+        <h2 className="text-xl font-bold text-cult-text-primary">Document Dispatch Queue</h2>
+        <p className="text-sm text-cult-text-muted mt-1">
           Send invoices, COAs, and manifests to dispensary partners. R9-18-310(B)(5) · R9-18-312.
         </p>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-cult-near-black border border-cult-medium-gray p-3">
-          <div className="text-xs text-cult-light-gray uppercase tracking-wider">Active Orders</div>
-          <div className="text-2xl font-bold text-cult-white mt-1">{rows.length}</div>
+        <div className="bg-cult-surface border border-cult-border p-3">
+          <div className="text-xs text-cult-text-muted uppercase tracking-wider">Active Orders</div>
+          <div className="text-2xl font-bold text-cult-text-primary mt-1">{rows.length}</div>
         </div>
-        <div className={`bg-cult-near-black border p-3 ${
-          overdueCount > 0 ? 'border-cult-danger/40' : 'border-cult-medium-gray'
+        <div className={`bg-cult-surface border p-3 ${
+          overdueCount > 0 ? 'border-cult-danger/40' : 'border-cult-border'
         }`}>
-          <div className="text-xs text-cult-light-gray uppercase tracking-wider">Docs Overdue</div>
+          <div className="text-xs text-cult-text-muted uppercase tracking-wider">Docs Overdue</div>
           <div className={`text-2xl font-bold mt-1 ${
-            overdueCount > 0 ? 'text-cult-danger' : 'text-cult-white'
+            overdueCount > 0 ? 'text-cult-danger' : 'text-cult-text-primary'
           }`}>{overdueCount}</div>
         </div>
-        <div className="bg-cult-near-black border border-cult-medium-gray p-3">
-          <div className="text-xs text-cult-light-gray uppercase tracking-wider">All Docs Sent</div>
+        <div className="bg-cult-surface border border-cult-border p-3">
+          <div className="text-xs text-cult-text-muted uppercase tracking-wider">All Docs Sent</div>
           <div className="text-2xl font-bold text-cult-success mt-1">{allSentCount}</div>
         </div>
       </div>
@@ -382,13 +382,13 @@ export function DocumentDispatchQueue() {
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-silver" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-secondary" />
           <input
             type="text"
             placeholder="Search order or customer..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-cult-near-black border border-cult-medium-gray text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray rounded"
+            className="w-full pl-9 pr-3 py-2 bg-cult-surface border border-cult-border text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted rounded"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -398,8 +398,8 @@ export function DocumentDispatchQueue() {
               onClick={() => setFilterMode(mode)}
               className={`px-3 py-2 text-xs font-medium uppercase tracking-wider rounded transition-all ${
                 filterMode === mode
-                  ? 'bg-cult-charcoal text-cult-white border border-cult-lighter-gray'
-                  : 'text-cult-light-gray border border-cult-medium-gray hover:border-cult-lighter-gray hover:text-cult-white'
+                  ? 'bg-cult-surface-raised text-cult-text-primary border border-cult-text-muted'
+                  : 'text-cult-text-muted border border-cult-border hover:border-cult-text-muted hover:text-cult-text-primary'
               }`}
             >
               {mode === 'all' ? 'All' : mode === 'overdue' ? `Overdue${overdueCount > 0 ? ` (${overdueCount})` : ''}` : 'Unsent'}
@@ -409,7 +409,7 @@ export function DocumentDispatchQueue() {
         <button
           onClick={load}
           disabled={loading}
-          className="p-2 border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white rounded transition-all disabled:opacity-50"
+          className="p-2 border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary rounded transition-all disabled:opacity-50"
           title="Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -417,21 +417,21 @@ export function DocumentDispatchQueue() {
       </div>
 
       {/* Table */}
-      <div className="bg-cult-near-black border border-cult-medium-gray overflow-hidden rounded">
+      <div className="bg-cult-surface border border-cult-border overflow-hidden rounded">
         {/* Column header */}
-        <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-2 bg-cult-black border-b border-cult-medium-gray">
-          <div className="text-xs font-semibold text-cult-silver uppercase tracking-wider">Order / Customer</div>
-          <div className="text-xs font-semibold text-cult-silver uppercase tracking-wider">Doc Status</div>
+        <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-2 bg-cult-black border-b border-cult-border">
+          <div className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider">Order / Customer</div>
+          <div className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider">Doc Status</div>
           <div className="w-4" />
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-cult-light-gray text-sm">
+          <div className="flex items-center justify-center py-16 text-cult-text-muted text-sm">
             <RefreshCw className="w-4 h-4 animate-spin mr-2" />
             Loading dispatch queue...
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-cult-light-gray">
+          <div className="flex flex-col items-center justify-center py-16 text-cult-text-muted">
             <CheckCircle2 className="w-8 h-8 text-cult-success/40 mb-2" />
             <p className="text-sm">
               {rows.length === 0
@@ -454,7 +454,7 @@ export function DocumentDispatchQueue() {
 
       {/* Footer note */}
       {rows.length > 0 && (
-        <p className="mt-3 text-[11px] text-cult-silver/50 text-right">
+        <p className="mt-3 text-[11px] text-cult-text-secondary/50 text-right">
           {filtered.length} of {rows.length} orders shown
         </p>
       )}

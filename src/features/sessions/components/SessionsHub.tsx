@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Scissors, Leaf, Box } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { BuckingSessionsRefactored } from './BuckingSessionsRefactored';
@@ -13,8 +13,17 @@ const SESSION_TABS: { key: SessionTab; label: string; icon: LucideIcon; accent: 
   { key: 'packaging', label: 'Packaging', icon: Box, accent: '#F59E0B' },
 ];
 
+const TAB_KEYS: SessionTab[] = ['bucking', 'trim', 'packaging'];
+
 export function SessionsHub() {
-  const [activeTab, setActiveTab] = useState<SessionTab>('bucking');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as SessionTab | null;
+  const activeTab: SessionTab = tabParam && TAB_KEYS.includes(tabParam) ? tabParam : 'bucking';
+  const setActiveTab = (tab: SessionTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', tab);
+    setSearchParams(next, { replace: true });
+  };
 
   const activeDef = SESSION_TABS.find((t) => t.key === activeTab)!;
 

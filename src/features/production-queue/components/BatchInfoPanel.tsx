@@ -19,7 +19,7 @@ export function BatchInfoPanel({ strainId, strainName }: BatchInfoPanelProps) {
   const { batches, loading, error } = useBatchStages(strainName);
 
   return (
-    <div className="p-4 bg-cult-black/60 border-t border-cult-medium-gray/20">
+    <div className="p-4 bg-cult-black/60 border-t border-cult-border/20">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xs uppercase tracking-wider text-gray-500">
           Batch Inventory — {strainName}

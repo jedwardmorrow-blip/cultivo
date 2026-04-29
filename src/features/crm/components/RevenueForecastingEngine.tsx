@@ -167,7 +167,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-cult-white">Revenue Forecasting Engine</h2>
+          <h2 className="text-lg font-semibold text-cult-text-primary">Revenue Forecasting Engine</h2>
           <p className="text-sm text-cult-ash mt-0.5">Projected revenue from reorder patterns &amp; pipeline</p>
         </div>
         <button onClick={load} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cult-dark hover:bg-cult-dark/80 text-cult-ash text-sm transition-colors">
@@ -176,11 +176,11 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
       </div>
 
       {/* Target Progress Bar */}
-      <div className="bg-cult-dark rounded-xl p-4 border border-cult-dark/50">
+      <div className="bg-cult-dark rounded-cult p-4 border border-cult-dark/50">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-cult-warning" />
-            <span className="text-sm font-medium text-cult-white">Monthly Target: {fmt$(agg.target)}</span>
+            <span className="text-sm font-medium text-cult-text-primary">Monthly Target: {fmt$(agg.target)}</span>
           </div>
           <span className={`text-sm font-semibold ${agg.forecastGap <= 0 ? 'text-cult-success' : 'text-cult-warning'}`}>
             {agg.forecastGap <= 0 ? 'On Track' : `Gap: ${fmt$(agg.forecastGap)}`}
@@ -203,32 +203,32 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><DollarSign className="w-3 h-3" /> Reorder Forecast</div>
-          <div className="text-lg font-bold text-cult-white">{fmt$(agg.reorderForecast)}</div>
+          <div className="text-lg font-bold text-cult-text-primary">{fmt$(agg.reorderForecast)}</div>
           <div className="text-xs text-cult-ash">{agg.reorderCount} accounts</div>
         </div>
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><TrendingUp className="w-3 h-3" /> Pipeline Weighted</div>
           <div className="text-lg font-bold text-cult-info">{fmt$(agg.pipelineWeighted)}</div>
           <div className="text-xs text-cult-ash">{agg.prospectCount} prospects</div>
         </div>
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><DollarSign className="w-3 h-3" /> Realized MTD</div>
           <div className="text-lg font-bold text-cult-success">{fmt$(agg.totalRealized)}</div>
           <div className="text-xs text-cult-ash">Completed orders</div>
         </div>
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><Zap className="w-3 h-3" /> Expected Add'l</div>
           <div className="text-lg font-bold text-cult-warning">{fmt$(agg.totalExpectedAdditional)}</div>
           <div className="text-xs text-cult-ash">Based on patterns</div>
         </div>
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><ArrowUpRight className="w-3 h-3" /> High Confidence</div>
           <div className="text-lg font-bold text-cult-success">{agg.highConfCount}</div>
           <div className="text-xs text-cult-ash">Reliable reorders</div>
         </div>
-        <div className="bg-cult-dark rounded-xl p-3 border border-cult-dark/50">
+        <div className="bg-cult-dark rounded-cult p-3 border border-cult-dark/50">
           <div className="flex items-center gap-1.5 text-cult-ash text-xs mb-1"><AlertTriangle className="w-3 h-3" /> At Risk</div>
           <div className="text-lg font-bold text-cult-danger">{agg.atRiskCount}</div>
           <div className="text-xs text-cult-ash">Low/no confidence</div>
@@ -237,7 +237,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
 
       {/* Gap Alert */}
       {agg.forecastGap > 0 && (
-        <div className="flex items-start gap-3 bg-cult-warning/10 border border-cult-warning/20 rounded-xl p-3">
+        <div className="flex items-start gap-3 bg-cult-warning/10 border border-cult-warning/20 rounded-cult p-3">
           <AlertTriangle className="w-5 h-5 text-cult-warning flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-cult-warning">Revenue Gap: {fmt$(agg.forecastGap)} below {fmt$(agg.target)} target</p>
@@ -258,7 +258,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search accounts..."
-            className="w-full pl-9 pr-3 py-2 rounded-lg bg-cult-dark border border-cult-dark/50 text-cult-white text-sm placeholder-cult-ash focus:outline-none focus:border-cult-ash/30"
+            className="w-full pl-9 pr-3 py-2 rounded-lg bg-cult-dark border border-cult-dark/50 text-cult-text-primary text-sm placeholder-cult-ash focus:outline-none focus:border-cult-ash/30"
           />
         </div>
         <div className="flex items-center gap-1.5">
@@ -270,7 +270,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 filter === fb.key
                   ? 'bg-cult-success/20 text-cult-success'
-                  : 'bg-cult-dark text-cult-ash hover:text-cult-white'
+                  : 'bg-cult-dark text-cult-ash hover:text-cult-text-primary'
               }`}
             >
               {fb.label}
@@ -280,28 +280,28 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
       </div>
 
       {/* Forecast Table */}
-      <div className="bg-cult-dark rounded-xl border border-cult-dark/50 overflow-x-auto">
+      <div className="bg-cult-dark rounded-cult border border-cult-dark/50 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-cult-dark/50 text-cult-ash text-xs">
-              <th className="text-left px-4 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('customer_name')}>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('customer_name')}>
                 Account <SortArrow field="customer_name" current={sortField} dir={sortDir} />
               </th>
               <th className="text-center px-3 py-3 font-medium">Type</th>
               <th className="text-center px-3 py-3 font-medium">Confidence</th>
-              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('avg_monthly_revenue')}>
+              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('avg_monthly_revenue')}>
                 Avg Monthly <SortArrow field="avg_monthly_revenue" current={sortField} dir={sortDir} />
               </th>
-              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('reorder_probability')}>
+              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('reorder_probability')}>
                 Probability <SortArrow field="reorder_probability" current={sortField} dir={sortDir} />
               </th>
-              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('monthly_forecast')}>
+              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('monthly_forecast')}>
                 Forecast <SortArrow field="monthly_forecast" current={sortField} dir={sortDir} />
               </th>
-              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('current_month_realized')}>
+              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('current_month_realized')}>
                 Realized <SortArrow field="current_month_realized" current={sortField} dir={sortDir} />
               </th>
-              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-white" onClick={() => toggleSort('current_month_expected_additional')}>
+              <th className="text-right px-3 py-3 font-medium cursor-pointer hover:text-cult-text-primary" onClick={() => toggleSort('current_month_expected_additional')}>
                 Expected <SortArrow field="current_month_expected_additional" current={sortField} dir={sortDir} />
               </th>
               <th className="w-8" />
@@ -315,7 +315,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                 onClick={() => navigate(`/crm-account-detail/${item.customer_id}`)}
               >
                 <td className="px-4 py-3">
-                  <div className="font-medium text-cult-white">{item.customer_name}</div>
+                  <div className="font-medium text-cult-text-primary">{item.customer_name}</div>
                   {item.dispensary_code && (
                     <div className="text-xs text-cult-ash">{item.dispensary_code}</div>
                   )}
@@ -332,7 +332,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                 <td className="text-center px-3 py-3">
                   {confidenceBadge(item.confidence)}
                 </td>
-                <td className="text-right px-3 py-3 text-cult-white tabular-nums">
+                <td className="text-right px-3 py-3 text-cult-text-primary tabular-nums">
                   {item.forecast_type === 'reorder' ? fmt$(item.avg_monthly_revenue) : '—'}
                 </td>
                 <td className="text-right px-3 py-3 tabular-nums">
@@ -344,7 +344,7 @@ export function RevenueForecastingEngine({}: RevenueForecastingEngineProps) {
                     {fmtPct(item.reorder_probability)}
                   </span>
                 </td>
-                <td className="text-right px-3 py-3 font-semibold text-cult-white tabular-nums">
+                <td className="text-right px-3 py-3 font-semibold text-cult-text-primary tabular-nums">
                   {fmt$(item.monthly_forecast)}
                 </td>
                 <td className="text-right px-3 py-3 text-cult-success tabular-nums">

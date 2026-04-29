@@ -101,7 +101,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
               background: white !important;
             }
             body {
-              font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
               line-height: 1.5;
               color: #000000;
             }
@@ -492,15 +492,15 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
       onClick={onClose}
     >
       <div
-        className="bg-cult-dark-gray border-2 border-cult-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-cult-surface border-2 border-cult-accent rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b-2 border-cult-medium-gray bg-cult-opaque-near-black">
+        <div className="flex items-center justify-between p-6 border-b-2 border-cult-border bg-cult-surface">
           <div>
-            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+            <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
               Invoice Preview
             </h2>
-            <p className="text-cult-light-gray text-sm mt-1">
+            <p className="text-cult-text-muted text-sm mt-1">
               Order: {orderNumber}
             </p>
           </div>
@@ -511,7 +511,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
                 <button
                   onClick={handlePrint}
                   disabled={!imagesLoaded || loadingPrint}
-                  className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Print Invoice"
                 >
                   <Printer className="w-4 h-4" />
@@ -521,7 +521,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
                 <button
                   onClick={handleDownloadPDF}
                   disabled={!imagesLoaded || loadingDownload}
-                  className="flex items-center gap-2 px-4 py-2 border-2 border-cult-white text-cult-white hover:bg-cult-white hover:text-cult-black transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-cult-accent text-cult-text-primary hover:bg-cult-accent hover:text-cult-opaque-black transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Download PDF"
                 >
                   {loadingDownload ? (
@@ -541,7 +541,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
 
             <button
               onClick={onClose}
-              className="p-2 text-cult-light-gray hover:text-cult-white hover:bg-cult-medium-gray transition-all"
+              className="p-2 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-border transition-all"
               title="Close"
             >
               <X className="w-6 h-6" />
@@ -553,8 +553,8 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
           {loading && (
             <div className="flex items-center justify-center h-64">
               <div className="flex flex-col items-center gap-3">
-                <Loader2 className="w-8 h-8 text-cult-white animate-spin" />
-                <p className="text-cult-light-gray">Generating invoice...</p>
+                <Loader2 className="w-8 h-8 text-cult-text-primary animate-spin" />
+                <p className="text-cult-text-muted">Generating invoice...</p>
               </div>
             </div>
           )}
@@ -577,7 +577,7 @@ export function InvoiceModal({ orderId, orderNumber, onClose }: InvoiceModalProp
           {!loading && !error && invoiceData && (
             <>
               <div className="flex justify-center">
-                <div className="shadow-2xl">
+                <div className="">
                   <InvoiceTemplate ref={invoiceRef} invoiceData={invoiceData} onImagesLoaded={() => setImagesLoaded(true)} />
                 </div>
               </div>

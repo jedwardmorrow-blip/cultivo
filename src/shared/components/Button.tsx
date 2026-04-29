@@ -16,15 +16,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-cult-white text-cult-black hover:bg-cult-off-white active:scale-95 shadow-glass',
+    'border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black',
   secondary:
-    'border border-white/[0.1] text-cult-white hover:bg-white/[0.08] hover:border-white/[0.15] active:scale-95',
+    'border border-cult-border text-cult-text-primary hover:border-cult-border-strong hover:bg-cult-surface-raised',
   success:
-    'bg-cult-success/80 text-cult-black hover:bg-cult-success border border-cult-success/30 active:scale-95 shadow-glow-success',
+    'border border-cult-success text-cult-success hover:bg-cult-success hover:text-cult-opaque-black',
   danger:
-    'bg-cult-danger/80 text-white hover:bg-cult-danger border border-cult-danger/30 active:scale-95 shadow-glow-danger',
+    'border border-cult-danger text-cult-danger hover:bg-cult-danger hover:text-cult-opaque-black',
   ghost:
-    'text-cult-silver hover:text-cult-white hover:bg-white/[0.06] active:scale-95',
+    'text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-subtle',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -61,7 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const base =
-      'inline-flex items-center justify-center gap-2 font-medium tracking-wider rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+      'inline-flex items-center justify-center gap-2 font-mono tracking-[0.16em] rounded transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const classes = [
       base,

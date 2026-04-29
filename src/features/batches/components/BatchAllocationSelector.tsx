@@ -126,7 +126,7 @@ export function BatchAllocationSelector({
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-cult-light-gray">
+      <div className="p-6 text-center text-cult-text-muted">
         Loading batch information...
       </div>
     );
@@ -135,9 +135,9 @@ export function BatchAllocationSelector({
   if (batches.length === 0) {
     return (
       <div className="p-6 text-center">
-        <Package className="w-12 h-12 text-cult-medium-gray mx-auto mb-3" />
-        <p className="text-cult-light-gray">No batches available for strain: {strain}</p>
-        <p className="text-cult-lighter-gray text-sm mt-2">
+        <Package className="w-12 h-12 text-cult-border mx-auto mb-3" />
+        <p className="text-cult-text-muted">No batches available for strain: {strain}</p>
+        <p className="text-cult-text-muted text-sm mt-2">
           Create a batch in Batch Management to allocate inventory
         </p>
       </div>
@@ -147,29 +147,29 @@ export function BatchAllocationSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-lg font-bold text-cult-white uppercase tracking-wider">
+        <h4 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">
           Select Batch for {strain}
         </h4>
-        <span className="text-sm text-cult-light-gray">
-          Stage: <span className="font-medium text-cult-white">{stage}</span>
+        <span className="text-sm text-cult-text-muted">
+          Stage: <span className="font-medium text-cult-text-primary">{stage}</span>
         </span>
       </div>
 
-      <div className="bg-cult-black border border-cult-medium-gray p-4 mb-4">
+      <div className="bg-cult-black border border-cult-border p-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <TrendingUp className="w-4 h-4 text-cult-light-gray" />
-          <span className="text-sm font-medium text-cult-white uppercase tracking-wider">
+          <TrendingUp className="w-4 h-4 text-cult-text-muted" />
+          <span className="text-sm font-medium text-cult-text-primary uppercase tracking-wider">
             Allocation Helper
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
-            <span className="text-cult-lighter-gray">Required Weight:</span>
-            <span className="ml-2 text-cult-white font-medium">{requiredWeight.toFixed(1)}g</span>
+            <span className="text-cult-text-muted">Required Weight:</span>
+            <span className="ml-2 text-cult-text-primary font-medium">{requiredWeight.toFixed(1)}g</span>
           </div>
           <div>
-            <span className="text-cult-lighter-gray">Selected Weight:</span>
-            <span className="ml-2 text-cult-white font-medium">{allocationWeight.toFixed(1)}g</span>
+            <span className="text-cult-text-muted">Selected Weight:</span>
+            <span className="ml-2 text-cult-text-primary font-medium">{allocationWeight.toFixed(1)}g</span>
           </div>
         </div>
       </div>
@@ -185,17 +185,17 @@ export function BatchAllocationSelector({
               key={batch.batch_id}
               className={`border transition-all ${
                 isSelected
-                  ? 'border-cult-white bg-cult-near-black'
+                  ? 'border-cult-accent bg-cult-surface'
                   : isAlreadySelected
                   ? 'border-cult-success bg-cult-success-muted'
-                  : 'border-cult-medium-gray bg-cult-black hover:border-cult-light-gray'
+                  : 'border-cult-border bg-cult-black hover:border-cult-text-muted'
               } p-4 cursor-pointer`}
               onClick={() => !isAlreadySelected && setSelectedBatch(batch.batch_id)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h5 className="text-cult-white font-bold">{batch.batch_number}</h5>
+                    <h5 className="text-cult-text-primary font-bold">{batch.batch_number}</h5>
                     {getCOABadge(batch)}
                     {stageStatus && getWarningLevelBadge(stageStatus.allocation_warning_level)}
                     {isAlreadySelected && (
@@ -206,7 +206,7 @@ export function BatchAllocationSelector({
                   </div>
 
                   {batch.harvest_date && (
-                    <div className="text-xs text-cult-lighter-gray">
+                    <div className="text-xs text-cult-text-muted">
                       Harvest: {new Date(batch.harvest_date).toLocaleDateString()}
                     </div>
                   )}
@@ -214,14 +214,14 @@ export function BatchAllocationSelector({
                   {batch.coa_status === 'active' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-xs">
                       <div>
-                        <span className="text-cult-lighter-gray">THC: </span>
-                        <span className="text-cult-white font-medium">
+                        <span className="text-cult-text-muted">THC: </span>
+                        <span className="text-cult-text-primary font-medium">
                           {batch.thc_percentage?.toFixed(2)}%
                         </span>
                       </div>
                       <div>
-                        <span className="text-cult-lighter-gray">CBD: </span>
-                        <span className="text-cult-white font-medium">
+                        <span className="text-cult-text-muted">CBD: </span>
+                        <span className="text-cult-text-primary font-medium">
                           {batch.cbd_percentage?.toFixed(2)}%
                         </span>
                       </div>
@@ -234,31 +234,31 @@ export function BatchAllocationSelector({
                     href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/coa-pdfs/${batch.pdf_file_path}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 hover:bg-cult-medium-gray transition-colors"
+                    className="p-2 hover:bg-cult-border transition-colors"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <FileText className="w-4 h-4 text-cult-white" />
+                    <FileText className="w-4 h-4 text-cult-text-primary" />
                   </a>
                 )}
               </div>
 
               {stageStatus && (
-                <div className="border-t border-cult-medium-gray pt-3 mt-3">
+                <div className="border-t border-cult-border pt-3 mt-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <div className="text-cult-lighter-gray mb-1">Available</div>
-                      <div className="text-cult-white font-medium">
+                      <div className="text-cult-text-muted mb-1">Available</div>
+                      <div className="text-cult-text-primary font-medium">
                         {stageStatus.available_weight_grams.toFixed(1)}g
                       </div>
                     </div>
                     <div>
-                      <div className="text-cult-lighter-gray mb-1">Allocated</div>
-                      <div className="text-cult-white font-medium">
+                      <div className="text-cult-text-muted mb-1">Allocated</div>
+                      <div className="text-cult-text-primary font-medium">
                         {stageStatus.allocated_weight_grams.toFixed(1)}g
                       </div>
                     </div>
                     <div>
-                      <div className="text-cult-lighter-gray mb-1">Utilization</div>
+                      <div className="text-cult-text-muted mb-1">Utilization</div>
                       <div className={`font-medium ${
                         stageStatus.stage_allocation_percentage >= (stageStatus.over_allocation_critical_threshold || 120)
                           ? 'text-cult-danger'
@@ -289,8 +289,8 @@ export function BatchAllocationSelector({
       </div>
 
       {selectedBatch && !selectedBatchNumbers.includes(batches.find(b => b.batch_id === selectedBatch)?.batch_number || '') && (
-        <div className="bg-cult-near-black border border-cult-medium-gray p-4">
-          <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+        <div className="bg-cult-surface border border-cult-border p-4">
+          <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
             Allocation Weight (grams)
           </label>
           <input
@@ -298,13 +298,13 @@ export function BatchAllocationSelector({
             step="0.1"
             value={allocationWeight}
             onChange={(e) => setAllocationWeight(parseFloat(e.target.value) || 0)}
-            className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all mb-4"
+            className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all mb-4"
           />
 
           <button
             onClick={handleAllocate}
             disabled={allocationWeight <= 0}
-            className="w-full px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Allocate {allocationWeight.toFixed(1)}g from Selected Batch
           </button>

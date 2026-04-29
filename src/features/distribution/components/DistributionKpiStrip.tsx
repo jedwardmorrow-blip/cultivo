@@ -39,8 +39,8 @@ function KpiTile({
       <Wrapper
         onClick={onClick}
         className={`${GLASS} p-4 flex items-center gap-3 w-full text-left relative overflow-hidden transition-all
-          ${onClick ? 'cursor-pointer hover:bg-white/[0.10] hover:border-white/[0.15]' : ''}
-          ${active ? 'border-white/[0.20] bg-white/[0.10] shadow-[0_0_20px_rgba(232,224,212,0.08)]' : ''}`}
+          ${onClick ? 'cursor-pointer hover:bg-cult-surface-active hover:border-cult-border-strong' : ''}
+          ${active ? 'border-cult-border-active bg-cult-surface-active' : ''}`}
       >
         {accent && (
           <div
@@ -55,7 +55,7 @@ function KpiTile({
         )}
 
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative"
+          className="w-9 h-9 rounded-cult flex items-center justify-center flex-shrink-0 relative"
           style={{ backgroundColor: accent ? `${accent}15` : 'rgba(255,255,255,0.06)' }}
         >
           <div style={{ color: accent || 'rgba(255,255,255,0.5)' }}>{icon}</div>

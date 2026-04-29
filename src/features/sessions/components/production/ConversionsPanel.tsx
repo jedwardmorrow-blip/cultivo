@@ -176,10 +176,10 @@ export function ConversionsPanelExpanded({ pendingSessions, onRefresh }: Convers
                 key={session.aggregation_id}
                 type="button"
                 onClick={() => setSelectedSession(session)}
-                className={`w-full text-left rounded-xl border p-3 transition-all hover:bg-white/[0.04] active:scale-[0.99] ${
+                className={`w-full text-left rounded border p-3 transition-colors hover:bg-cult-surface-subtle active:scale-[0.99] ${
                   isUrgent
-                    ? 'border-amber-500/25 bg-amber-500/[0.04]'
-                    : 'border-white/[0.06] bg-white/[0.02]'
+                    ? 'border-cult-warning/30 bg-cult-warning-muted'
+                    : 'border-cult-border-subtle bg-cult-surface-inset'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">

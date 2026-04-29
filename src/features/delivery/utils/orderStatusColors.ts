@@ -18,7 +18,7 @@ const ORDER_STATUS_COLORS: Record<string, OrderStatusStyle> = {
 const READY_STATUSES = new Set(['ready_for_delivery', 'completed', 'delivered']);
 
 export function getOrderStatusStyle(status: string): OrderStatusStyle {
-  return ORDER_STATUS_COLORS[status] || { bg: 'bg-cult-dark-gray/30', text: 'text-cult-silver', border: 'border-cult-medium-gray', label: status.replace(/_/g, ' ') };
+  return ORDER_STATUS_COLORS[status] || { bg: 'bg-cult-surface/30', text: 'text-cult-text-secondary', border: 'border-cult-border', label: status.replace(/_/g, ' ') };
 }
 
 export function isOrderReadyStatus(status: string): boolean {

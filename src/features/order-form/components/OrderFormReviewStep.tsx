@@ -32,9 +32,9 @@ export function OrderFormReviewStep({
 }: OrderFormReviewStepProps) {
   return (
     <div className="p-4 space-y-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 space-y-4">
-        <div className="flex items-center justify-between border-b border-cult-medium-gray pb-3">
-          <h2 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+      <div className="bg-cult-surface border border-cult-border rounded-lg p-4 space-y-4">
+        <div className="flex items-center justify-between border-b border-cult-border pb-3">
+          <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
             Review Order
           </h2>
           <button
@@ -49,13 +49,13 @@ export function OrderFormReviewStep({
 
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-cult-light-gray">Dispensary:</span>
-            <span className="text-cult-white font-semibold text-right">
+            <span className="text-cult-text-muted">Dispensary:</span>
+            <span className="text-cult-text-primary font-semibold text-right">
               {selectedCustomer?.name || 'Not selected'}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-cult-light-gray">Priority:</span>
+            <span className="text-cult-text-muted">Priority:</span>
             <span className={`font-semibold uppercase text-xs px-2 py-1 rounded ${
               priority === 'urgent' ? 'bg-cult-danger-muted text-cult-danger' :
               priority === 'high' ? 'bg-cult-warning-muted text-cult-warning' :
@@ -66,24 +66,24 @@ export function OrderFormReviewStep({
           </div>
           {requestedDeliveryDate && (
             <div className="flex justify-between">
-              <span className="text-cult-light-gray">Delivery Date:</span>
-              <span className="text-cult-white font-semibold">
+              <span className="text-cult-text-muted">Delivery Date:</span>
+              <span className="text-cult-text-primary font-semibold">
                 {new Date(requestedDeliveryDate).toLocaleDateString()}
               </span>
             </div>
           )}
           {deliveryNotes && (
             <div>
-              <div className="text-cult-light-gray mb-1">Delivery Notes:</div>
-              <div className="text-cult-white bg-cult-dark-gray p-2 rounded text-xs">
+              <div className="text-cult-text-muted mb-1">Delivery Notes:</div>
+              <div className="text-cult-text-primary bg-cult-surface p-2 rounded text-xs">
                 {deliveryNotes}
               </div>
             </div>
           )}
           {internalNotes && (
             <div>
-              <div className="text-cult-light-gray mb-1">Internal Notes:</div>
-              <div className="text-cult-white bg-cult-dark-gray p-2 rounded text-xs">
+              <div className="text-cult-text-muted mb-1">Internal Notes:</div>
+              <div className="text-cult-text-primary bg-cult-surface p-2 rounded text-xs">
                 {internalNotes}
               </div>
             </div>
@@ -91,9 +91,9 @@ export function OrderFormReviewStep({
         </div>
       </div>
 
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-cult-medium-gray pb-3">
-          <h2 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+      <div className="bg-cult-surface border border-cult-border rounded-lg p-4 space-y-3">
+        <div className="flex items-center justify-between border-b border-cult-border pb-3">
+          <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
             Order Items
           </h2>
           <button
@@ -117,13 +117,13 @@ export function OrderFormReviewStep({
             return (
               <div
                 key={index}
-                className="flex items-start justify-between gap-3 p-3 bg-cult-dark-gray rounded-lg"
+                className="flex items-start justify-between gap-3 p-3 bg-cult-surface rounded-lg"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-cult-white text-sm mb-1 truncate">
+                  <div className="font-semibold text-cult-text-primary text-sm mb-1 truncate">
                     {selectedProduct.name}
                   </div>
-                  <div className="text-xs text-cult-light-gray space-y-0.5">
+                  <div className="text-xs text-cult-text-muted space-y-0.5">
                     <div>{selectedProduct.strain}</div>
                     <div className="flex items-center gap-2">
                       <span>{item.quantity} {selectedProduct.pricing_unit} × ${item.unit_price.toFixed(2)}</span>
@@ -143,10 +143,10 @@ export function OrderFormReviewStep({
 
         <div className="border-t-2 border-cult-green pt-3 mt-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-sm text-cult-light-gray uppercase tracking-wide">Order Total</span>
+            <span className="text-sm text-cult-text-muted uppercase tracking-wide">Order Total</span>
             <span className="text-2xl font-bold text-cult-green">${totalAmount.toFixed(2)}</span>
           </div>
-          <div className="text-xs text-cult-light-gray text-right">
+          <div className="text-xs text-cult-text-muted text-right">
             {orderItems.length} item{orderItems.length !== 1 ? 's' : ''} • {totalUnits.toFixed(2)} units
           </div>
         </div>

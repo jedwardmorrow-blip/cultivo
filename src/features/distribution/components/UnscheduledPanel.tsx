@@ -45,7 +45,7 @@ export function UnscheduledCompact({ orders, isActive, onClick, onDragStart }: U
                 key={order.id}
                 draggable
                 onDragStart={(e) => onDragStart(e, order)}
-                className="flex items-center justify-between text-[11px] cursor-grab active:cursor-grabbing hover:bg-white/[0.04] rounded-lg px-1.5 py-1 -mx-1.5 transition-colors"
+                className="flex items-center justify-between text-[11px] cursor-grab active:cursor-grabbing hover:bg-cult-surface-subtle rounded-lg px-1.5 py-1 -mx-1.5 transition-colors"
               >
                 <div className="flex items-center gap-1.5 min-w-0">
                   <GripVertical className="w-3 h-3 text-white/15 flex-shrink-0" />
@@ -103,7 +103,7 @@ export function UnscheduledExpanded({ orders, onDragStart }: UnscheduledExpanded
               key={order.id}
               draggable
               onDragStart={(e) => onDragStart(e, order)}
-              className={`${GLASS} p-3 cursor-grab active:cursor-grabbing hover:bg-white/[0.08] transition-colors`}
+              className={`${GLASS} p-3 cursor-grab active:cursor-grabbing hover:bg-cult-surface-overlay transition-colors`}
               style={{ borderLeftWidth: '3px', borderLeftColor: ZONE_HEX[zone.id] || '#A6A6A6' }}
             >
               <div className="flex items-center justify-between">

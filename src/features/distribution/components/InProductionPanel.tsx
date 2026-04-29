@@ -143,7 +143,7 @@ export function InProductionPanel({ onNavigateToDispatch }: InProductionPanelPro
             ))}
           </div>
           {items.length > 4 && (
-            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/[0.05]">
+            <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-cult-border-subtle">
               <span className="text-[10px] text-white/20">+{items.length - 4} more items</span>
               {onNavigateToDispatch && (
                 <span className="text-[10px] text-amber-400/50 flex items-center gap-0.5">

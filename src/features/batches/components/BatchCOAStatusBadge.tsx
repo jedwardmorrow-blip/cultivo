@@ -31,7 +31,7 @@ export function BatchCOAStatusBadge({ status, size = 'sm' }: BatchCOAStatusBadge
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded border uppercase tracking-wider font-montserrat ${sizeClass} ${config.className}`}
+      className={`inline-flex items-center font-medium rounded border uppercase tracking-wider font-mono ${sizeClass} ${config.className}`}
     >
       {config.label}
     </span>

@@ -76,14 +76,14 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
     <div className="space-y-6 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Prospect Pipeline</h1>
-          <p className="text-cult-light-gray mt-2">
+          <h1 className="text-3xl font-bold text-cult-text-primary">Prospect Pipeline</h1>
+          <p className="text-cult-text-muted mt-2">
             {prospects.length} prospects across {STAGES.filter((s) => grouped[s.key].length > 0).length} stages
           </p>
         </div>
         <button
           onClick={load}
-          className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+          className="p-2 text-cult-text-secondary hover:text-cult-text-primary bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-raised transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -100,7 +100,7 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
                 <div className="px-3 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Icon className={`w-4 h-4 ${stage.color}`} />
-                    <span className="text-sm font-semibold text-cult-white uppercase tracking-wider">{stage.label}</span>
+                    <span className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">{stage.label}</span>
                   </div>
                   <span className={`text-xs font-bold ${stage.color}`}>{items.length}</span>
                 </div>
@@ -117,7 +117,7 @@ export function ProspectPipeline({}: ProspectPipelineProps) {
                   />
                 ))}
                 {items.length === 0 && (
-                  <div className="px-3 py-6 text-center text-xs text-cult-medium-gray border border-dashed border-cult-charcoal rounded-lg">
+                  <div className="px-3 py-6 text-center text-xs text-cult-border border border-dashed border-cult-surface-raised rounded-lg">
                     No prospects
                   </div>
                 )}
@@ -174,18 +174,18 @@ function ProspectCard({
   const nextStage = currentIndex < STAGES.length - 2 ? STAGES[currentIndex + 1] : null; // skip closed_lost
 
   return (
-    <div className={`bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden transition-all ${isMoving ? 'opacity-50' : ''}`}>
+    <div className={`bg-cult-surface border border-cult-border rounded-lg overflow-hidden transition-all ${isMoving ? 'opacity-50' : ''}`}>
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
           <button
             onClick={onNavigate}
-            className="text-sm font-medium text-cult-white hover:text-sky-400 transition-colors text-left truncate"
+            className="text-sm font-medium text-cult-text-primary hover:text-sky-400 transition-colors text-left truncate"
           >
             {prospect.name}
           </button>
           <button
             onClick={() => setShowMove(!showMove)}
-            className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors flex-shrink-0"
+            className="p-1 text-cult-border hover:text-cult-text-primary transition-colors flex-shrink-0"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -193,19 +193,19 @@ function ProspectCard({
 
         <div className="mt-1.5 space-y-1">
           {prospect.contact_name && (
-            <div className="flex items-center gap-1.5 text-xs text-cult-light-gray">
-              <Users className="w-3 h-3 text-cult-medium-gray" />
+            <div className="flex items-center gap-1.5 text-xs text-cult-text-muted">
+              <Users className="w-3 h-3 text-cult-border" />
               <span className="truncate">{prospect.contact_name}</span>
             </div>
           )}
           {prospect.city && (
-            <div className="flex items-center gap-1.5 text-xs text-cult-light-gray">
-              <MapPin className="w-3 h-3 text-cult-medium-gray" />
+            <div className="flex items-center gap-1.5 text-xs text-cult-text-muted">
+              <MapPin className="w-3 h-3 text-cult-border" />
               <span>{[prospect.city, prospect.state].filter(Boolean).join(', ')}</span>
             </div>
           )}
           <div className="flex items-center gap-3 mt-1">
-            <div className="flex items-center gap-1 text-xs text-cult-silver">
+            <div className="flex items-center gap-1 text-xs text-cult-text-secondary">
               <Clock className="w-3 h-3" />
               <span>{prospect.days_in_stage}d in stage</span>
             </div>
@@ -223,7 +223,7 @@ function ProspectCard({
           {prospect.phone && (
             <a
               href={`tel:${prospect.phone}`}
-              className="p-1 rounded hover:bg-sky-500/15 text-cult-medium-gray hover:text-sky-400 transition-colors"
+              className="p-1 rounded hover:bg-sky-500/15 text-cult-border hover:text-sky-400 transition-colors"
               title={prospect.phone}
             >
               <Phone className="w-3 h-3" />
@@ -232,7 +232,7 @@ function ProspectCard({
           {prospect.email && (
             <a
               href={`mailto:${prospect.email}`}
-              className="p-1 rounded hover:bg-sky-500/15 text-cult-medium-gray hover:text-sky-400 transition-colors"
+              className="p-1 rounded hover:bg-sky-500/15 text-cult-border hover:text-sky-400 transition-colors"
               title={prospect.email}
             >
               <Mail className="w-3 h-3" />
@@ -253,8 +253,8 @@ function ProspectCard({
 
       {/* Expanded move menu */}
       {showMove && (
-        <div className="border-t border-cult-charcoal px-3 py-2 bg-cult-dark-gray/50">
-          <p className="text-xs text-cult-silver mb-1.5 uppercase tracking-wider">Move to:</p>
+        <div className="border-t border-cult-surface-raised px-3 py-2 bg-cult-surface/50">
+          <p className="text-xs text-cult-text-secondary mb-1.5 uppercase tracking-wider">Move to:</p>
           <div className="flex flex-wrap gap-1">
             {STAGES.filter((s) => s.key !== currentStage).map((s) => {
               const Icon = s.icon;
@@ -292,29 +292,29 @@ function ClosedSection({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <div className={`bg-cult-near-black border ${borderColor} rounded-lg overflow-hidden`}>
-      <div className="px-4 py-3 border-b border-cult-charcoal flex items-center justify-between">
+    <div className={`bg-cult-surface border ${borderColor} rounded-lg overflow-hidden`}>
+      <div className="px-4 py-3 border-b border-cult-surface-raised flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className={`w-4 h-4 ${color}`} />
-          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">{title}</h3>
+          <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">{title}</h3>
         </div>
         <span className={`text-xs font-bold ${color}`}>{prospects.length}</span>
       </div>
-      <div className="divide-y divide-cult-charcoal/50">
+      <div className="divide-y divide-cult-surface-raised/50">
         {prospects.map((p) => (
           <button
             key={p.id}
             onClick={() => onNavigate(p.id)}
-            className="w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-cult-dark-gray/40 transition-colors"
+            className="w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-cult-surface/40 transition-colors"
           >
             <div>
-              <p className="text-sm font-medium text-cult-white">{p.name}</p>
-              <p className="text-xs text-cult-silver">
+              <p className="text-sm font-medium text-cult-text-primary">{p.name}</p>
+              <p className="text-xs text-cult-text-secondary">
                 {p.city && `${p.city}, ${p.state}`}
                 {p.contact_name && ` · ${p.contact_name}`}
               </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-cult-medium-gray" />
+            <ChevronRight className="w-4 h-4 text-cult-border" />
           </button>
         ))}
       </div>

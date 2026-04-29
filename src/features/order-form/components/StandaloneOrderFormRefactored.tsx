@@ -135,18 +135,18 @@ export function StandaloneOrderFormRefactored() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-cult-black flex items-center justify-center p-4">
-        <div className="bg-cult-near-black border border-cult-medium-gray max-w-md w-full p-8 text-center rounded-lg">
+        <div className="bg-cult-surface border border-cult-border max-w-md w-full p-8 text-center rounded-lg">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-cult-green rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-12 h-12 text-cult-black" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-cult-white mb-2 uppercase tracking-wide">
+          <h2 className="text-2xl font-bold text-cult-text-primary mb-2 uppercase tracking-wide">
             Order Submitted
           </h2>
-          <p className="text-cult-light-gray mb-1">Order Number:</p>
+          <p className="text-cult-text-muted mb-1">Order Number:</p>
           <p className="text-cult-green text-3xl font-bold mb-6">{orderNumber}</p>
-          <p className="text-cult-light-gray mb-8">
+          <p className="text-cult-text-muted mb-8">
             Your order has been received and will be processed soon.
           </p>
           <button
@@ -164,15 +164,15 @@ export function StandaloneOrderFormRefactored() {
 
   return (
     <div className="min-h-screen bg-cult-black flex flex-col" ref={formRef}>
-      <div className="sticky top-0 z-40 bg-cult-near-black border-b-2 border-cult-medium-gray shadow-lg">
+      <div className="sticky top-0 z-40 bg-cult-surface border-b-2 border-cult-border shadow-lg">
         <div className="px-4 py-3">
           <div className="flex items-center gap-3 mb-3">
             <Package className="w-6 h-6 text-cult-green flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-cult-white uppercase tracking-wide truncate">
+              <h1 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide truncate">
                 New Order
               </h1>
-              <div className="flex items-center gap-2 text-xs text-cult-light-gray">
+              <div className="flex items-center gap-2 text-xs text-cult-text-muted">
                 <span>{orderItems.length} item{orderItems.length !== 1 ? 's' : ''}</span>
                 <span>•</span>
                 <span className="text-cult-green font-semibold">${totalAmount.toFixed(2)}</span>
@@ -199,10 +199,10 @@ export function StandaloneOrderFormRefactored() {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                         isActive
-                          ? 'bg-cult-green text-cult-black ring-2 ring-cult-green ring-offset-2 ring-offset-cult-near-black'
+                          ? 'bg-cult-green text-cult-black ring-2 ring-cult-green ring-offset-2 ring-offset-cult-surface'
                           : status === 'complete'
                           ? 'bg-cult-green bg-opacity-30 text-cult-green border-2 border-cult-green'
-                          : 'bg-cult-dark-gray text-cult-medium-gray border-2 border-cult-medium-gray'
+                          : 'bg-cult-surface text-cult-border border-2 border-cult-border'
                       }`}
                     >
                       {status === 'complete' && !isActive ? <Check className="w-4 h-4" /> : index + 1}
@@ -210,7 +210,7 @@ export function StandaloneOrderFormRefactored() {
                     {index < 3 && (
                       <div
                         className={`w-4 h-0.5 ${
-                          status === 'complete' ? 'bg-cult-green' : 'bg-cult-dark-gray'
+                          status === 'complete' ? 'bg-cult-green' : 'bg-cult-surface'
                         }`}
                       />
                     )}
@@ -236,8 +236,8 @@ export function StandaloneOrderFormRefactored() {
                   mobileView === view
                     ? 'bg-cult-green text-cult-black'
                     : view === 'review' && !canProceedToReview()
-                    ? 'bg-cult-dark-gray text-cult-medium-gray opacity-50 cursor-not-allowed'
-                    : 'bg-cult-dark-gray text-cult-light-gray hover:bg-cult-medium-gray'
+                    ? 'bg-cult-surface text-cult-border opacity-50 cursor-not-allowed'
+                    : 'bg-cult-surface text-cult-text-muted hover:bg-cult-border'
                 }`}
               >
                 <span className="text-xs font-semibold">{label}</span>
@@ -317,7 +317,7 @@ export function StandaloneOrderFormRefactored() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-cult-near-black border-t-2 border-cult-medium-gray shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-cult-surface border-t-2 border-cult-border">
         <div className="px-4 py-4">
           {mobileView === 'review' ? (
             <button

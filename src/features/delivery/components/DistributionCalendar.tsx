@@ -211,17 +211,17 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
   return (
     <div onDragEnd={handleDragEnd}>
       <div className="mb-4">
-        <h1 className="text-3xl font-bold text-cult-white">Distribution</h1>
+        <h1 className="text-3xl font-bold text-cult-text-primary">Distribution</h1>
       </div>
 
       {/* Tab bar */}
-      <div className="flex items-center gap-1 mb-6 border-b border-cult-medium-gray">
+      <div className="flex items-center gap-1 mb-6 border-b border-cult-border">
         <button
           onClick={() => setActiveTab('calendar')}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
             activeTab === 'calendar'
-              ? 'border-cult-white text-cult-white'
-              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+              ? 'border-cult-accent text-cult-text-primary'
+              : 'border-transparent text-cult-text-muted hover:text-cult-text-primary'
           }`}
         >
           <Truck className="w-4 h-4" />
@@ -231,8 +231,8 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           onClick={() => setActiveTab('documents')}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
             activeTab === 'documents'
-              ? 'border-cult-white text-cult-white'
-              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+              ? 'border-cult-accent text-cult-text-primary'
+              : 'border-transparent text-cult-text-muted hover:text-cult-text-primary'
           }`}
         >
           <Send className="w-4 h-4" />
@@ -242,8 +242,8 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
           onClick={() => setActiveTab('trip-plans')}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px ${
             activeTab === 'trip-plans'
-              ? 'border-cult-white text-cult-white'
-              : 'border-transparent text-cult-light-gray hover:text-cult-white'
+              ? 'border-cult-accent text-cult-text-primary'
+              : 'border-transparent text-cult-text-muted hover:text-cult-text-primary'
           }`}
         >
           <Package className="w-4 h-4" />
@@ -264,15 +264,15 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
       {/* Calendar tab (wrapped so calendar state is preserved) */}
       <div className={activeTab === 'calendar' ? '' : 'hidden'}>
       <div className="mb-6">
-        <p className="text-cult-light-gray">Plan and manage delivery schedules — drag orders to reschedule</p>
+        <p className="text-cult-text-muted">Plan and manage delivery schedules — drag orders to reschedule</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <StatCard
           label="Total Orders"
           value={String(scheduledOrders.length)}
-          borderColor="border-cult-light-gray"
-          valueColor="text-cult-white"
+          borderColor="border-cult-text-muted"
+          valueColor="text-cult-text-primary"
         />
         <StatCard
           label="Scheduled"
@@ -290,56 +290,56 @@ export function DistributionCalendar({ onSelectOrder }: DistributionCalendarProp
         <StatCard
           label="Total Revenue"
           value={formatCurrency(totalRevenue)}
-          borderColor="border-cult-light-gray"
-          valueColor="text-cult-white"
+          borderColor="border-cult-text-muted"
+          valueColor="text-cult-text-primary"
         />
         <StatCard
           label="Needs Prep (7d)"
           value={String(needsPrepCount)}
-          borderColor={needsPrepCount > 0 ? 'border-cult-warning' : 'border-cult-light-gray'}
-          valueColor={needsPrepCount > 0 ? 'text-cult-warning' : 'text-cult-white'}
+          borderColor={needsPrepCount > 0 ? 'border-cult-warning' : 'border-cult-text-muted'}
+          valueColor={needsPrepCount > 0 ? 'text-cult-warning' : 'text-cult-text-primary'}
           icon={needsPrepCount > 0 ? <AlertTriangle className="w-4 h-4 text-cult-warning" /> : undefined}
         />
       </div>
 
-      <div className="bg-cult-near-black border-2 border-cult-medium-gray overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b-2 border-cult-medium-gray bg-cult-black">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-cult-medium-gray transition-colors">
-            <ChevronLeft className="w-5 h-5 text-cult-light-gray" />
+      <div className="bg-cult-surface border-2 border-cult-border overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b-2 border-cult-border bg-cult-black">
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-cult-border transition-colors">
+            <ChevronLeft className="w-5 h-5 text-cult-text-muted" />
           </button>
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">{monthName}</h2>
+            <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">{monthName}</h2>
             <button
               onClick={() => setShowPlanPanel(!showPlanPanel)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-cult transition-all ${
                 showPlanPanel
                   ? 'bg-cult-success/15 text-cult-success border border-cult-success'
-                  : 'bg-cult-charcoal text-cult-light-gray border border-cult-medium-gray hover:border-cult-light-gray hover:text-cult-white'
+                  : 'bg-cult-surface-raised text-cult-text-muted border border-cult-border hover:border-cult-text-muted hover:text-cult-text-primary'
               }`}
             >
               <CalendarPlus className="w-3.5 h-3.5" />
               Plan
               {unscheduledOrders.length > 0 && (
                 <span className={`ml-1 px-1.5 py-0.5 text-xs font-bold rounded-full ${
-                  showPlanPanel ? 'bg-cult-success text-white' : 'bg-cult-medium-gray text-cult-white'
+                  showPlanPanel ? 'bg-cult-success text-white' : 'bg-cult-border text-cult-text-primary'
                 }`}>
                   {unscheduledOrders.length}
                 </span>
               )}
             </button>
           </div>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-cult-medium-gray transition-colors">
-            <ChevronRight className="w-5 h-5 text-cult-light-gray" />
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-cult-border transition-colors">
+            <ChevronRight className="w-5 h-5 text-cult-text-muted" />
           </button>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-cult-light-gray">Loading calendar...</div>
+          <div className="p-12 text-center text-cult-text-muted">Loading calendar...</div>
         ) : (
           <div className="p-4">
             <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-xs font-medium text-cult-light-gray py-2 uppercase tracking-wide">
+                <div key={day} className="text-center text-xs font-medium text-cult-text-muted py-2 uppercase tracking-wide">
                   {day}
                 </div>
               ))}
@@ -420,9 +420,9 @@ function StatCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-cult-near-black border-2 ${borderColor} p-5 transition-all duration-200 hover:scale-[1.01]`}>
+    <div className={`bg-cult-surface border-2 ${borderColor} p-5 transition-all duration-200 hover:scale-[1.01]`}>
       <div className="flex items-center justify-between">
-        <div className="text-sm font-medium text-cult-light-gray uppercase tracking-wider">{label}</div>
+        <div className="text-sm font-medium text-cult-text-muted uppercase tracking-wider">{label}</div>
         {icon}
       </div>
       <div className={`text-3xl font-bold ${valueColor} mt-2`}>{value}</div>
@@ -483,13 +483,13 @@ function DayCell({
           ? 'border-cult-success/60 bg-cult-success/5 animate-pulse'
           : isTodayDate
           ? 'border-cult-warning bg-cult-warning/10'
-          : 'border-cult-medium-gray hover:border-cult-light-gray bg-cult-black'
+          : 'border-cult-border hover:border-cult-text-muted bg-cult-black'
       }`}
     >
       {/* Header row: date + readiness indicator */}
       <div className="flex items-center justify-between mb-1">
         <span className={`text-sm font-medium ${
-          isTodayDate ? 'text-cult-warning font-bold' : 'text-cult-white'
+          isTodayDate ? 'text-cult-warning font-bold' : 'text-cult-text-primary'
         }`}>
           {date.getDate()}
         </span>
@@ -508,21 +508,21 @@ function DayCell({
                 <div key={i} className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
               ))}
               {zoneDotsMap.size > 4 && (
-                <span className="text-[9px] text-cult-lighter-gray ml-0.5">+{zoneDotsMap.size - 4}</span>
+                <span className="text-[9px] text-cult-text-muted ml-0.5">+{zoneDotsMap.size - 4}</span>
               )}
             </div>
-            <span className="text-[10px] text-cult-lighter-gray truncate">
+            <span className="text-[10px] text-cult-text-muted truncate">
               {routeCount} route{routeCount !== 1 ? 's' : ''}
             </span>
           </div>
 
           {/* Revenue — most decision-relevant number */}
-          <div className="text-[13px] text-cult-white font-semibold leading-tight tabular-nums">
+          <div className="text-[13px] text-cult-text-primary font-semibold leading-tight tabular-nums">
             {formatCurrencyShort(totalRevenue)}
           </div>
 
           {/* Order count */}
-          <div className="text-[10px] text-cult-lighter-gray">
+          <div className="text-[10px] text-cult-text-muted">
             {orders.length} order{orders.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -538,7 +538,7 @@ function DayCell({
             } />
           )}
           {totalDuration > 0 && (
-            <span className="text-[10px] text-cult-lighter-gray leading-none truncate">
+            <span className="text-[10px] text-cult-text-muted leading-none truncate">
               ~{formatDuration(totalDuration)}
             </span>
           )}
@@ -571,10 +571,10 @@ function UpcomingDeliveriesTable({
   );
 
   return (
-    <div className="mt-6 bg-cult-near-black border-2 border-cult-medium-gray p-6">
-      <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">Upcoming Deliveries</h3>
+    <div className="mt-6 bg-cult-surface border-2 border-cult-border p-6">
+      <h3 className="text-lg font-semibold text-cult-text-primary mb-4 uppercase tracking-wide">Upcoming Deliveries</h3>
       {sorted.length === 0 ? (
-        <div className="text-center py-8 text-cult-light-gray">No scheduled deliveries this month</div>
+        <div className="text-center py-8 text-cult-text-muted">No scheduled deliveries this month</div>
       ) : (
         <div className="space-y-3">
           {sorted.map(order => {
@@ -583,7 +583,7 @@ function UpcomingDeliveriesTable({
             return (
               <div
                 key={order.id}
-                className="border-2 border-cult-medium-gray hover:border-cult-white transition-colors bg-cult-black"
+                className="border-2 border-cult-border hover:border-cult-accent transition-colors bg-cult-black"
               >
                 <div
                   draggable
@@ -597,7 +597,7 @@ function UpcomingDeliveriesTable({
                     </div>
                     <div>
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="font-medium text-cult-white">{order.order_number}</span>
+                        <span className="font-medium text-cult-text-primary">{order.order_number}</span>
                         <span className={`px-2 py-0.5 text-xs font-medium uppercase tracking-wider ${sc.bg} ${sc.text} border ${sc.border}`}>
                           {sc.label}
                         </span>
@@ -616,25 +616,25 @@ function UpcomingDeliveriesTable({
                           </button>
                         )}
                       </div>
-                      <div className="text-sm text-cult-light-gray">{order.customer_name}</div>
+                      <div className="text-sm text-cult-text-muted">{order.customer_name}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <div className="text-sm text-cult-light-gray">Delivery Date</div>
-                      <div className="font-medium text-cult-white">
+                      <div className="text-sm text-cult-text-muted">Delivery Date</div>
+                      <div className="font-medium text-cult-text-primary">
                         {order.requested_delivery_date
                           ? new Date(order.requested_delivery_date + 'T00:00:00').toLocaleDateString()
                           : 'Not scheduled'}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-cult-light-gray">Amount</div>
-                      <div className="font-medium text-cult-white">{formatCurrency(order.total_amount)}</div>
+                      <div className="text-sm text-cult-text-muted">Amount</div>
+                      <div className="font-medium text-cult-text-primary">{formatCurrency(order.total_amount)}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-cult-light-gray">Items</div>
-                      <div className="font-medium text-cult-white">{order.item_count}</div>
+                      <div className="text-sm text-cult-text-muted">Items</div>
+                      <div className="font-medium text-cult-text-primary">{order.item_count}</div>
                     </div>
                   </div>
                 </div>

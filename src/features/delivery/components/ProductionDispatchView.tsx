@@ -72,8 +72,8 @@ function ToteCard({
           : tote.is_quarantined
           ? 'border-cult-danger/30 bg-cult-danger/5 opacity-60 cursor-not-allowed'
           : !hasStock
-          ? 'border-cult-dark-gray bg-cult-dark-gray/20 opacity-50 cursor-not-allowed'
-          : 'border-cult-dark-gray bg-cult-mid-gray/20 hover:border-cult-accent/50 hover:bg-cult-accent/5 cursor-pointer'
+          ? 'border-cult-surface bg-cult-surface/20 opacity-50 cursor-not-allowed'
+          : 'border-cult-surface bg-cult-mid-gray/20 hover:border-cult-accent/50 hover:bg-cult-accent/5 cursor-pointer'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -142,7 +142,7 @@ function DemandRow({
       className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
         selected
           ? 'border-cult-accent bg-cult-accent/10'
-          : 'border-cult-dark-gray bg-cult-mid-gray/10 hover:border-cult-accent/40 hover:bg-cult-accent/5 cursor-pointer'
+          : 'border-cult-surface bg-cult-mid-gray/10 hover:border-cult-accent/40 hover:bg-cult-accent/5 cursor-pointer'
       }`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -168,7 +168,7 @@ function DemandRow({
           )}
         </div>
       </div>
-      <div className="mt-1.5 h-1 rounded-full bg-cult-dark-gray overflow-hidden">
+      <div className="mt-1.5 h-1 rounded-full bg-cult-surface overflow-hidden">
         <div
           className="h-full rounded-full bg-cult-accent transition-all"
           style={{ width: `${fillPct}%` }}
@@ -238,7 +238,7 @@ const PRIORITY_PRESETS = [
   { label: 'Urgent', value: 10, style: 'text-cult-danger border-cult-danger/30 bg-cult-danger/10' },
   { label: 'High', value: 30, style: 'text-cult-warning border-cult-warning/30 bg-cult-warning/10' },
   { label: 'Normal', value: 50, style: 'text-cult-success border-cult-success/30 bg-cult-success/10' },
-  { label: 'Low', value: 70, style: 'text-cult-text-muted border-cult-dark-gray bg-cult-mid-gray/10' },
+  { label: 'Low', value: 70, style: 'text-cult-text-muted border-cult-surface bg-cult-mid-gray/10' },
 ] as const;
 
 // Determine which processing stages are valid for a tote based on its lifecycle_state
@@ -349,7 +349,7 @@ function ActionPanel({
       {/* Selections summary */}
       <div className="space-y-2">
         <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${
-          selectedTote ? 'border-cult-accent/40 bg-cult-accent/5' : 'border-cult-dark-gray bg-cult-mid-gray/10'
+          selectedTote ? 'border-cult-accent/40 bg-cult-accent/5' : 'border-cult-surface bg-cult-mid-gray/10'
         }`}>
           <Layers className="w-4 h-4 text-cult-accent shrink-0" />
           <div className="min-w-0">
@@ -365,7 +365,7 @@ function ActionPanel({
         </div>
 
         <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${
-          selectedDemand ? 'border-cult-accent/40 bg-cult-accent/5' : 'border-cult-dark-gray bg-cult-mid-gray/10'
+          selectedDemand ? 'border-cult-accent/40 bg-cult-accent/5' : 'border-cult-surface bg-cult-mid-gray/10'
         }`}>
           <ClipboardList className="w-4 h-4 text-cult-accent shrink-0" />
           <div className="min-w-0">
@@ -436,8 +436,8 @@ function ActionPanel({
                   form.stage === stage
                     ? 'border-cult-accent bg-cult-accent/10 text-cult-accent'
                     : disabled
-                    ? 'border-cult-dark-gray text-cult-text-muted opacity-40 cursor-not-allowed'
-                    : 'border-cult-dark-gray text-cult-text-secondary hover:border-cult-accent/40 hover:text-cult-text-primary cursor-pointer'
+                    ? 'border-cult-surface text-cult-text-muted opacity-40 cursor-not-allowed'
+                    : 'border-cult-surface text-cult-text-secondary hover:border-cult-accent/40 hover:text-cult-text-primary cursor-pointer'
                 }`}
               >
                 {PROCESSING_STAGE_LABELS[stage]}
@@ -466,7 +466,7 @@ function ActionPanel({
                 className={`w-full px-3 py-2 rounded-lg border text-sm text-left transition-all ${
                   form.treatment === t
                     ? 'border-cult-accent bg-cult-accent/10 text-cult-accent'
-                    : 'border-cult-dark-gray text-cult-text-secondary hover:border-cult-accent/40 cursor-pointer'
+                    : 'border-cult-surface text-cult-text-secondary hover:border-cult-accent/40 cursor-pointer'
                 }`}
               >
                 {TREATMENT_TYPE_LABELS[t]}
@@ -490,7 +490,7 @@ function ActionPanel({
                 value={form.quantity_units}
                 onChange={(e) => setForm((f) => ({ ...f, quantity_units: e.target.value }))}
                 placeholder="e.g. 50"
-                className="w-full px-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/30 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
+                className="w-full px-3 py-1.5 rounded-lg border border-cult-surface bg-cult-mid-gray/30 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
               />
             ) : (
               <input
@@ -500,7 +500,7 @@ function ActionPanel({
                 value={form.quantity_g}
                 onChange={(e) => setForm((f) => ({ ...f, quantity_g: e.target.value }))}
                 placeholder="e.g. 1200"
-                className="w-full px-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/30 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
+                className="w-full px-3 py-1.5 rounded-lg border border-cult-surface bg-cult-mid-gray/30 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
               />
             )}
           </div>
@@ -515,7 +515,7 @@ function ActionPanel({
                   className={`px-2 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                     form.priority === p.value
                       ? `${p.style} ring-1 ring-cult-accent`
-                      : 'border-cult-dark-gray text-cult-text-muted hover:border-cult-accent/40'
+                      : 'border-cult-surface text-cult-text-muted hover:border-cult-accent/40'
                   }`}
                 >
                   {p.label}
@@ -534,7 +534,7 @@ function ActionPanel({
             type="datetime-local"
             value={form.ready_by}
             onChange={(e) => setForm((f) => ({ ...f, ready_by: e.target.value }))}
-            className="w-full px-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/30 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent"
+            className="w-full px-3 py-1.5 rounded-lg border border-cult-surface bg-cult-mid-gray/30 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent"
           />
         </div>
       )}
@@ -580,7 +580,7 @@ function ActionPanel({
           <button
             type="button"
             onClick={onClear}
-            className="w-full py-2 rounded-lg border border-cult-dark-gray text-sm text-cult-text-muted hover:text-cult-text-primary transition-colors flex items-center justify-center gap-1"
+            className="w-full py-2 rounded-lg border border-cult-surface text-sm text-cult-text-muted hover:text-cult-text-primary transition-colors flex items-center justify-center gap-1"
           >
             <X className="w-3.5 h-3.5" />
             Clear
@@ -655,7 +655,7 @@ export function ProductionDispatchView() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cult-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-white" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-accent" />
       </div>
     );
   }
@@ -690,7 +690,7 @@ export function ProductionDispatchView() {
               value={demandSearch}
               onChange={(e) => setDemandSearch(e.target.value)}
               placeholder="Search orders…"
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/20 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-cult-surface bg-cult-mid-gray/20 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
             />
           </div>
           <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
@@ -733,7 +733,7 @@ export function ProductionDispatchView() {
               value={supplySearch}
               onChange={(e) => setSupplySearch(e.target.value)}
               placeholder="Search batches…"
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-cult-dark-gray bg-cult-mid-gray/20 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-cult-surface bg-cult-mid-gray/20 text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
             />
           </div>
           <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -759,7 +759,7 @@ export function ProductionDispatchView() {
         </div>
 
         {/* ── Panel 3: Action ───────────────────────────────────────────── */}
-        <div className="border-l border-cult-dark-gray pl-4 flex flex-col min-h-0">
+        <div className="border-l border-cult-surface pl-4 flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-cult-text-primary flex items-center gap-2">
               <Zap className="w-4 h-4 text-cult-accent" />
@@ -787,7 +787,7 @@ export function ProductionDispatchView() {
 
       {/* Active Dispatch Queue — queued + in_progress */}
       {dispatched.length > 0 && (
-        <div className="mt-6 border-t border-cult-dark-gray pt-4">
+        <div className="mt-6 border-t border-cult-surface pt-4">
           <h3 className="text-sm font-semibold text-cult-text-primary mb-3 flex items-center gap-2">
             <ChevronRight className="w-4 h-4 text-cult-accent" />
             Active Queue ({dispatched.length})
@@ -795,7 +795,7 @@ export function ProductionDispatchView() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-cult-dark-gray text-left">
+                <tr className="border-b border-cult-surface text-left">
                   <th className="pb-2 text-xs font-medium text-cult-text-muted pr-4">Batch</th>
                   <th className="pb-2 text-xs font-medium text-cult-text-muted pr-4">Stage</th>
                   <th className="pb-2 text-xs font-medium text-cult-text-muted pr-4">Treatment</th>
@@ -805,7 +805,7 @@ export function ProductionDispatchView() {
                   <th className="pb-2 text-xs font-medium text-cult-text-muted">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cult-dark-gray/50">
+              <tbody className="divide-y divide-cult-surface/50">
                 {dispatched.map((item) => (
                   <tr key={item.id} className="hover:bg-cult-mid-gray/10">
                     <td className="py-2 pr-4">
@@ -826,7 +826,7 @@ export function ProductionDispatchView() {
                         : '—'}
                     </td>
                     <td className="py-2 pr-4">
-                      <span className="px-1.5 py-0.5 rounded text-xs bg-cult-mid-gray/40 text-cult-text-secondary border border-cult-dark-gray">
+                      <span className="px-1.5 py-0.5 rounded text-xs bg-cult-mid-gray/40 text-cult-text-secondary border border-cult-surface">
                         {item.priority}
                       </span>
                     </td>

@@ -80,10 +80,10 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
 
   if (loading) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-8">
+      <div className="bg-cult-surface border border-cult-border rounded-lg p-8">
         <div className="flex items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-5 w-5 border-2 border-cult-green border-t-transparent" />
-          <span className="text-cult-silver text-sm">Loading price list...</span>
+          <span className="text-cult-text-secondary text-sm">Loading price list...</span>
         </div>
       </div>
     );
@@ -91,14 +91,14 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
-        <div className="px-5 py-4 border-b border-cult-charcoal/50 flex items-center justify-between">
+      <div className="bg-cult-surface border border-cult-border rounded-lg">
+        <div className="px-5 py-4 border-b border-cult-surface-raised/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-cult-green" />
-            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
               Active Price Overrides
             </h3>
-            <span className="text-xs text-cult-silver bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-text-secondary bg-cult-surface px-2 py-0.5 rounded-full">
               {activeOverrides.length}
             </span>
           </div>
@@ -122,14 +122,14 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
 
         {activeOverrides.length === 0 ? (
           <div className="p-8 text-center">
-            <Tag className="w-8 h-8 text-cult-medium-gray mx-auto mb-2" />
-            <p className="text-cult-silver text-sm">No active price overrides</p>
-            <p className="text-cult-medium-gray text-xs mt-1">
+            <Tag className="w-8 h-8 text-cult-border mx-auto mb-2" />
+            <p className="text-cult-text-secondary text-sm">No active price overrides</p>
+            <p className="text-cult-border text-xs mt-1">
               Add custom pricing for specific products
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-cult-charcoal/30">
+          <div className="divide-y divide-cult-surface-raised/30">
             {activeOverrides.map((override) => (
               <PriceRow key={override.id} override={override} onDelete={handleDelete} />
             ))}
@@ -138,15 +138,15 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
       </div>
 
       {futureOverrides.length > 0 && (
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
-          <div className="px-5 py-3 border-b border-cult-charcoal/50 flex items-center gap-2">
+        <div className="bg-cult-surface border border-cult-border rounded-lg">
+          <div className="px-5 py-3 border-b border-cult-surface-raised/50 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-cult-info" />
-            <h3 className="text-xs font-semibold text-cult-silver uppercase tracking-wider">Scheduled</h3>
-            <span className="text-xs text-cult-silver bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <h3 className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider">Scheduled</h3>
+            <span className="text-xs text-cult-text-secondary bg-cult-surface px-2 py-0.5 rounded-full">
               {futureOverrides.length}
             </span>
           </div>
-          <div className="divide-y divide-cult-charcoal/30">
+          <div className="divide-y divide-cult-surface-raised/30">
             {futureOverrides.map((override) => (
               <PriceRow key={override.id} override={override} onDelete={handleDelete} variant="future" />
             ))}
@@ -155,11 +155,11 @@ export function AccountPriceList({ customerId }: AccountPriceListProps) {
       )}
 
       {expiredOverrides.length > 0 && (
-        <details className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
-          <summary className="px-5 py-3 cursor-pointer text-xs font-semibold text-cult-silver uppercase tracking-wider hover:text-cult-white transition-colors">
+        <details className="bg-cult-surface border border-cult-border rounded-lg">
+          <summary className="px-5 py-3 cursor-pointer text-xs font-semibold text-cult-text-secondary uppercase tracking-wider hover:text-cult-text-primary transition-colors">
             Expired Overrides ({expiredOverrides.length})
           </summary>
-          <div className="divide-y divide-cult-charcoal/30 border-t border-cult-charcoal/50">
+          <div className="divide-y divide-cult-surface-raised/30 border-t border-cult-surface-raised/50">
             {expiredOverrides.map((override) => (
               <PriceRow key={override.id} override={override} onDelete={handleDelete} variant="expired" />
             ))}
@@ -182,17 +182,17 @@ function PriceRow({ override, onDelete, variant }: {
   const opacityClass = variant === 'expired' ? 'opacity-50' : '';
 
   return (
-    <div className={`px-5 py-3 flex items-center justify-between gap-4 group hover:bg-cult-dark-gray/30 transition-colors ${opacityClass}`}>
+    <div className={`px-5 py-3 flex items-center justify-between gap-4 group hover:bg-cult-surface/30 transition-colors ${opacityClass}`}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-cult-white truncate">{override.product_name}</p>
+          <p className="text-sm font-medium text-cult-text-primary truncate">{override.product_name}</p>
           {override.product_sku && (
-            <span className="text-xs font-mono text-cult-medium-gray">{override.product_sku}</span>
+            <span className="text-xs font-mono text-cult-border">{override.product_sku}</span>
           )}
         </div>
         <div className="flex items-center gap-3 mt-0.5">
           {override.standard_price != null && (
-            <span className="text-xs text-cult-medium-gray line-through">
+            <span className="text-xs text-cult-border line-through">
               ${override.standard_price.toFixed(2)}
             </span>
           )}
@@ -213,23 +213,23 @@ function PriceRow({ override, onDelete, variant }: {
       </div>
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="text-right">
-          <p className="text-xs text-cult-medium-gray">
+          <p className="text-xs text-cult-border">
             {variant === 'future' ? 'Starts' : 'Since'} {formatDate(override.effective_date)}
           </p>
           {override.expires_at && (
-            <p className="text-xs text-cult-medium-gray">
+            <p className="text-xs text-cult-border">
               {variant === 'expired' ? 'Expired' : 'Expires'} {formatDate(override.expires_at)}
             </p>
           )}
         </div>
         {override.notes && (
-          <span className="text-xs text-cult-silver max-w-[120px] truncate" title={override.notes}>
+          <span className="text-xs text-cult-text-secondary max-w-[120px] truncate" title={override.notes}>
             {override.notes}
           </span>
         )}
         <button
           onClick={() => onDelete(override.id)}
-          className="p-1.5 text-cult-medium-gray hover:text-cult-danger opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-cult-danger-muted"
+          className="p-1.5 text-cult-border hover:text-cult-danger opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-cult-danger-muted"
           title="Remove override"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -289,12 +289,12 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="px-5 py-4 bg-cult-dark-gray/30 border-b border-cult-charcoal/50">
+    <form onSubmit={handleSubmit} className="px-5 py-4 bg-cult-surface/30 border-b border-cult-surface-raised/50">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="sm:col-span-2" ref={dropdownRef}>
-          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Product</label>
+          <label className="block text-xs font-medium text-cult-text-secondary uppercase tracking-wider mb-1">Product</label>
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
             <input
               type="text"
               value={selectedProduct ? `${selectedProduct.name}${selectedProduct.sku ? ` (${selectedProduct.sku})` : ''}` : searchTerm}
@@ -305,23 +305,23 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
               }}
               onFocus={() => setShowDropdown(true)}
               placeholder="Search products..."
-              className="w-full pl-8 pr-8 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-medium-gray focus:outline-none focus:ring-1 focus:ring-cult-green"
+              className="w-full pl-8 pr-8 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-border focus:outline-none focus:ring-1 focus:ring-cult-green"
             />
             {productId ? (
               <button
                 type="button"
                 onClick={() => { setProductId(''); setSearchTerm(''); }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-cult-medium-gray hover:text-cult-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-cult-border hover:text-cult-text-primary"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
             )}
             {showDropdown && !productId && (
-              <div className="absolute z-50 w-full mt-1 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-2xl max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-cult-surface border border-cult-border rounded-lg max-h-48 overflow-y-auto">
                 {availableProducts.length === 0 ? (
-                  <div className="p-3 text-center text-cult-medium-gray text-xs">
+                  <div className="p-3 text-center text-cult-border text-xs">
                     {searchTerm ? 'No matching products' : 'Type to search...'}
                   </div>
                 ) : (
@@ -337,12 +337,12 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
                           setCustomPrice(String(p.price_per_unit));
                         }
                       }}
-                      className="w-full px-3 py-2 text-left hover:bg-cult-dark-gray transition-colors text-sm"
+                      className="w-full px-3 py-2 text-left hover:bg-cult-surface transition-colors text-sm"
                     >
-                      <span className="text-cult-white">{p.name}</span>
-                      {p.sku && <span className="text-cult-medium-gray text-xs ml-2">{p.sku}</span>}
+                      <span className="text-cult-text-primary">{p.name}</span>
+                      {p.sku && <span className="text-cult-border text-xs ml-2">{p.sku}</span>}
                       {p.price_per_unit != null && (
-                        <span className="text-cult-silver text-xs float-right">${p.price_per_unit}</span>
+                        <span className="text-cult-text-secondary text-xs float-right">${p.price_per_unit}</span>
                       )}
                     </button>
                   ))
@@ -353,7 +353,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Custom Price</label>
+          <label className="block text-xs font-medium text-cult-text-secondary uppercase tracking-wider mb-1">Custom Price</label>
           <input
             type="number"
             step="0.01"
@@ -362,40 +362,40 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
             value={customPrice}
             onChange={(e) => setCustomPrice(e.target.value)}
             placeholder="0.00"
-            className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-medium-gray focus:outline-none focus:ring-1 focus:ring-cult-green"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-border focus:outline-none focus:ring-1 focus:ring-cult-green"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Effective Date</label>
+          <label className="block text-xs font-medium text-cult-text-secondary uppercase tracking-wider mb-1">Effective Date</label>
           <input
             type="date"
             value={effectiveDate}
             onChange={(e) => setEffectiveDate(e.target.value)}
-            className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:ring-1 focus:ring-cult-green"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-green"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
         <div>
-          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Expires (optional)</label>
+          <label className="block text-xs font-medium text-cult-text-secondary uppercase tracking-wider mb-1">Expires (optional)</label>
           <input
             type="date"
             value={expiresAt}
             onChange={(e) => setExpiresAt(e.target.value)}
             min={effectiveDate}
-            className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:ring-1 focus:ring-cult-green"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:ring-1 focus:ring-cult-green"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-cult-silver uppercase tracking-wider mb-1">Notes (optional)</label>
+          <label className="block text-xs font-medium text-cult-text-secondary uppercase tracking-wider mb-1">Notes (optional)</label>
           <input
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Volume discount, promo, etc."
-            className="w-full px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-medium-gray focus:outline-none focus:ring-1 focus:ring-cult-green"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-border focus:outline-none focus:ring-1 focus:ring-cult-green"
           />
         </div>
         <div className="flex items-end gap-2">
@@ -409,7 +409,7 @@ function AddOverrideForm({ products, existingProductIds, onSubmit, onCancel }: {
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 border border-cult-medium-gray text-cult-silver rounded text-xs hover:bg-cult-dark-gray transition-colors"
+            className="px-3 py-2 border border-cult-border text-cult-text-secondary rounded text-xs hover:bg-cult-surface transition-colors"
           >
             Cancel
           </button>

@@ -172,9 +172,9 @@ export function TaskDetailDrawer({
       className="fixed inset-0 z-50 flex items-stretch bg-black/70"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="relative ml-auto bg-cult-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
+      <div className="relative ml-auto bg-cult-surface border-l border-cult-surface w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
         {/* Header — sticky with room context */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/20">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-surface flex-shrink-0 bg-cult-surface-raised/20">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span
               className="w-3 h-3 rounded-full ring-2 ring-black/20 flex-shrink-0"
@@ -183,7 +183,7 @@ export function TaskDetailDrawer({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-bold text-cult-accent">{task.room_name}</span>
-                <span className="text-cult-dark-gray">·</span>
+                <span className="text-cult-surface">·</span>
                 <span
                   className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm ${
                     isPending ? 'bg-zinc-800 text-zinc-400'
@@ -195,15 +195,15 @@ export function TaskDetailDrawer({
                   {task.status === 'carry_forward' ? 'Deferred' : task.status.replace('_', ' ')}
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-cult-white mt-0.5 truncate">{config.label}</h3>
+              <h3 className="text-sm font-bold text-cult-text-primary mt-0.5 truncate">{config.label}</h3>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors flex-shrink-0"
+            className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-surface-raised active:bg-cult-surface-raised/60 rounded-lg transition-colors flex-shrink-0"
           >
-            <X className="w-4 h-4 text-cult-medium-gray" />
+            <X className="w-4 h-4 text-cult-border" />
           </button>
         </div>
 
@@ -237,7 +237,7 @@ export function TaskDetailDrawer({
                 <button
                   type="button"
                   onClick={async () => { await onSkipTask(task.id); onClose(); }}
-                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-silver bg-cult-charcoal/60 border border-cult-dark-gray/60 hover:bg-cult-charcoal rounded-sm transition-colors min-h-[44px]"
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cult-text-secondary bg-cult-surface-raised/60 border border-cult-surface/60 hover:bg-cult-surface-raised rounded-sm transition-colors min-h-[44px]"
                 >
                   <SkipForward className="w-3 h-3" />
                   Skip
@@ -248,11 +248,11 @@ export function TaskDetailDrawer({
 
           {/* ── Staff Assignment (Lead + Crew) ─────────── */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
+            <label className="flex items-center gap-1.5 text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
               <Users className="w-3.5 h-3.5" />
               Assign Staff
             </label>
-            <p className="text-[10px] text-cult-dark-gray mb-2">Tap once for lead. Tap others to add crew.</p>
+            <p className="text-[10px] text-cult-surface mb-2">Tap once for lead. Tap others to add crew.</p>
             {!isCompleted ? (
               <div className="grid grid-cols-3 gap-1.5">
                 {staffOptions.map((s) => {
@@ -269,13 +269,13 @@ export function TaskDetailDrawer({
                           ? 'bg-cult-success-muted border border-cult-success/30 text-cult-success font-semibold'
                           : inCrew
                           ? 'bg-cult-info-muted border border-cult-info/30 text-cult-info font-semibold'
-                          : 'bg-cult-charcoal/30 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-light-gray'
+                          : 'bg-cult-surface-raised/30 border border-cult-surface/50 text-cult-border hover:border-cult-border hover:text-cult-text-muted'
                       }`}
                     >
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                         isLead ? 'bg-cult-success text-white'
                         : inCrew ? 'bg-cult-info text-white'
-                        : 'bg-cult-charcoal text-cult-white'
+                        : 'bg-cult-surface-raised text-cult-text-primary'
                       }`}>
                         {s.first_name.charAt(0)}
                       </span>
@@ -295,7 +295,7 @@ export function TaskDetailDrawer({
               </div>
             ) : (
               <div className="space-y-1">
-                <span className="text-sm text-cult-light-gray">{task.assigned_to_name ?? 'Unassigned'}</span>
+                <span className="text-sm text-cult-text-muted">{task.assigned_to_name ?? 'Unassigned'}</span>
                 {crewMembers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {crewMembers.map((s) => (
@@ -311,7 +311,7 @@ export function TaskDetailDrawer({
 
           {/* ── Estimated Duration ───────────────────── */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
+            <label className="flex items-center gap-1.5 text-xs text-cult-text-muted uppercase tracking-wider mb-2 font-semibold">
               <Clock className="w-3.5 h-3.5" />
               Est. Duration
             </label>
@@ -322,7 +322,7 @@ export function TaskDetailDrawer({
                   value={estimatedDuration}
                   onChange={(e) => setEstimatedDuration(e.target.value)}
                   placeholder="e.g. 30m, 1.5h, 2h"
-                  className="flex-1 bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-sm py-2 px-3 rounded-sm focus:outline-none focus:border-cult-medium-gray placeholder:text-cult-dark-gray"
+                  className="flex-1 bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-sm py-2 px-3 rounded-sm focus:outline-none focus:border-cult-border placeholder:text-cult-surface"
                 />
                 <div className="flex flex-wrap gap-1">
                   {['30m', '1h', '2h', '4h'].map((preset) => (
@@ -333,7 +333,7 @@ export function TaskDetailDrawer({
                       className={`px-2 py-1.5 text-[10px] font-semibold uppercase rounded-sm transition-colors ${
                         estimatedDuration === preset
                           ? 'bg-cult-accent/20 text-cult-accent border border-cult-accent/40'
-                          : 'bg-cult-charcoal border border-cult-dark-gray text-cult-medium-gray hover:text-cult-light-gray'
+                          : 'bg-cult-surface-raised border border-cult-surface text-cult-border hover:text-cult-text-muted'
                       }`}
                     >
                       {preset}
@@ -342,13 +342,13 @@ export function TaskDetailDrawer({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-cult-medium-gray">{task.estimated_duration || '—'}</p>
+              <p className="text-sm text-cult-border">{task.estimated_duration || '—'}</p>
             )}
           </div>
 
           {/* ── Notes ────────────────────────────────── */}
           <div>
-            <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
+            <label className="flex items-center gap-1.5 text-xs text-cult-text-muted uppercase tracking-wider mb-2 font-semibold">
               <StickyNote className="w-3.5 h-3.5" />
               Notes
             </label>
@@ -358,10 +358,10 @@ export function TaskDetailDrawer({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Add task notes or instructions..."
-                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-sm py-2.5 px-3 rounded-sm resize-none focus:outline-none focus:border-cult-medium-gray placeholder:text-cult-dark-gray"
+                className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-sm py-2.5 px-3 rounded-sm resize-none focus:outline-none focus:border-cult-border placeholder:text-cult-surface"
               />
             ) : (
-              <p className="text-sm text-cult-medium-gray">{task.notes || 'No notes'}</p>
+              <p className="text-sm text-cult-border">{task.notes || 'No notes'}</p>
             )}
           </div>
 
@@ -379,11 +379,11 @@ export function TaskDetailDrawer({
           {/* ── Defer / Reschedule (combined) ──────────── */}
           {!isCompleted && (
             <div>
-              <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider mb-2 font-semibold">
+              <label className="flex items-center gap-1.5 text-xs text-cult-text-muted uppercase tracking-wider mb-2 font-semibold">
                 <CalendarClock className="w-3.5 h-3.5" />
                 Defer Task
               </label>
-              <p className="text-[10px] text-cult-dark-gray mb-2.5">Move this task to another day. It will be tracked as deferred.</p>
+              <p className="text-[10px] text-cult-surface mb-2.5">Move this task to another day. It will be tracked as deferred.</p>
 
               <div className="flex flex-wrap gap-2 mb-2">
                 <button
@@ -411,7 +411,7 @@ export function TaskDetailDrawer({
                     value={rescheduleDate}
                     onChange={(e) => setRescheduleDate(e.target.value)}
                     min={tomorrow}
-                    className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-sm py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-medium-gray"
+                    className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-sm py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-border"
                   />
                   <div className="flex items-center gap-2">
                     <button
@@ -425,7 +425,7 @@ export function TaskDetailDrawer({
                     <button
                       type="button"
                       onClick={() => { setShowDatePicker(false); setRescheduleDate(''); }}
-                      className="px-3 py-2.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors min-h-[44px]"
+                      className="px-3 py-2.5 text-xs text-cult-border hover:text-cult-text-muted transition-colors min-h-[44px]"
                     >
                       Cancel
                     </button>
@@ -437,7 +437,7 @@ export function TaskDetailDrawer({
         </div>
 
         {/* Footer actions */}
-        <div className="px-5 py-4 border-t border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/10">
+        <div className="px-5 py-4 border-t border-cult-surface flex-shrink-0 bg-cult-surface-raised/10">
           <div className="flex items-center gap-2">
             {/* Save button — only show when editable changes exist */}
             {hasChanges && !isCompleted && (
@@ -468,7 +468,7 @@ export function TaskDetailDrawer({
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-3 py-2 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors min-h-[40px]"
+                    className="px-3 py-2 text-xs text-cult-border hover:text-cult-text-muted transition-colors min-h-[40px]"
                   >
                     No
                   </button>
@@ -511,7 +511,7 @@ function RecipePreviewPanel({
   if (loading) {
     return (
       <div className="py-3 text-center">
-        <span className="text-xs text-cult-medium-gray animate-pulse">Loading recipe...</span>
+        <span className="text-xs text-cult-border animate-pulse">Loading recipe...</span>
       </div>
     );
   }
@@ -550,15 +550,15 @@ function RecipePreviewPanel({
         onClick={() => setExpanded(!expanded)}
         className="flex items-center justify-between w-full text-left"
       >
-        <label className="flex items-center gap-1.5 text-xs text-cult-light-gray uppercase tracking-wider font-semibold cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-cult-text-muted uppercase tracking-wider font-semibold cursor-pointer">
           <Beaker className="w-3.5 h-3.5 text-cult-info" />
           Feed Recipe
         </label>
         <div className="flex items-center gap-2">
-          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm border ${PHASE_COLORS[recipe.phase] ?? 'text-cult-medium-gray bg-cult-charcoal border-cult-dark-gray'}`}>
+          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm border ${PHASE_COLORS[recipe.phase] ?? 'text-cult-border bg-cult-surface-raised border-cult-surface'}`}>
             {recipe.phase} W{recipe.week_number}
           </span>
-          {expanded ? <ChevronUp className="w-3 h-3 text-cult-dark-gray" /> : <ChevronDown className="w-3 h-3 text-cult-dark-gray" />}
+          {expanded ? <ChevronUp className="w-3 h-3 text-cult-surface" /> : <ChevronDown className="w-3 h-3 text-cult-surface" />}
         </div>
       </button>
 
@@ -567,17 +567,17 @@ function RecipePreviewPanel({
           {/* Target ranges summary */}
           <div className="flex flex-wrap gap-1.5">
             {recipe.targets.target_ec != null && (
-              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-border bg-cult-surface-raised/40 border border-cult-surface/40 rounded-sm">
                 EC {recipe.targets.target_ec.toFixed(1)}
               </span>
             )}
             {recipe.targets.target_ppm_500 != null && (
-              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-border bg-cult-surface-raised/40 border border-cult-surface/40 rounded-sm">
                 PPM {recipe.targets.target_ppm_500}
               </span>
             )}
             {recipe.targets.target_ph_min != null && recipe.targets.target_ph_max != null && (
-              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/40 rounded-sm">
+              <span className="px-2 py-1 text-[10px] font-mono font-semibold text-cult-border bg-cult-surface-raised/40 border border-cult-surface/40 rounded-sm">
                 pH {recipe.targets.target_ph_min.toFixed(1)}–{recipe.targets.target_ph_max.toFixed(1)}
               </span>
             )}
@@ -605,7 +605,7 @@ function RecipePreviewPanel({
             })}
           </div>
 
-          <p className="text-[10px] text-cult-dark-gray italic">
+          <p className="text-[10px] text-cult-surface italic">
             Tap a rate to adjust. Changes save with the task and carry into the completion form.
           </p>
         </div>
@@ -636,9 +636,9 @@ function RecipeProductRow({
 
   return (
     <div className={`flex items-center justify-between px-3 py-2 rounded-sm border text-xs ${
-      isOverridden ? 'bg-cult-warning-muted border-cult-warning/20' : 'bg-cult-charcoal/20 border-cult-dark-gray/30'
+      isOverridden ? 'bg-cult-warning-muted border-cult-warning/20' : 'bg-cult-surface-raised/20 border-cult-surface/30'
     }`}>
-      <span className="text-cult-light-gray font-medium truncate mr-2">{name}</span>
+      <span className="text-cult-text-muted font-medium truncate mr-2">{name}</span>
       {isPhAdjuster ? (
         <span className="text-cult-warning/70 italic text-[10px]">as needed</span>
       ) : editing ? (
@@ -650,19 +650,19 @@ function RecipeProductRow({
           onChange={(e) => onChangeRate(Number(e.target.value))}
           onBlur={() => setEditing(false)}
           autoFocus
-          className="w-20 bg-cult-near-black border border-cult-accent text-cult-white text-xs text-right py-1 px-2 rounded-sm focus:outline-none tabular-nums"
+          className="w-20 bg-cult-surface border border-cult-accent text-cult-text-primary text-xs text-right py-1 px-2 rounded-sm focus:outline-none tabular-nums"
         />
       ) : (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="tabular-nums text-cult-white hover:text-cult-accent transition-colors"
+          className="tabular-nums text-cult-text-primary hover:text-cult-accent transition-colors"
         >
           {rate}
           {maxRate != null && maxRate !== defaultRate && (
-            <span className="text-cult-dark-gray ml-0.5">({defaultRate}–{maxRate})</span>
+            <span className="text-cult-surface ml-0.5">({defaultRate}–{maxRate})</span>
           )}
-          <span className="text-cult-dark-gray ml-1">mL/gal</span>
+          <span className="text-cult-surface ml-1">mL/gal</span>
         </button>
       )}
     </div>

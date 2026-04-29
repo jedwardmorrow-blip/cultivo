@@ -21,7 +21,7 @@ import {
   type NormalizedSession,
 } from './constants';
 
-const GLASS_TILE = 'rounded-2xl border border-white/[0.07] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)]';
+const GLASS_TILE = 'rounded-cult border border-cult-border-subtle bg-cult-surface';
 
 interface SessionCardProps {
   session: NormalizedSession;
@@ -83,7 +83,7 @@ export function SessionCard({ session, onComplete, onCancel, onRefresh }: Sessio
   return (
     <motion.div
       variants={staggerItem}
-      className={`${GLASS_TILE} relative overflow-hidden transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.12] group`}
+      className={`${GLASS_TILE} relative overflow-hidden transition-colors hover:bg-cult-surface-raised hover:border-cult-border group`}
       style={{
         minHeight: needsAttention ? '140px' : '120px',
         backgroundColor: tileBg,
@@ -158,7 +158,7 @@ export function SessionCard({ session, onComplete, onCancel, onRefresh }: Sessio
               type="button"
               onClick={handleTogglePause}
               disabled={pausingId === session.id}
-              className={`p-2 rounded-xl transition-colors disabled:opacity-50 ${
+              className={`p-2 rounded-cult transition-colors disabled:opacity-50 ${
                 session.isPaused
                   ? 'hover:bg-emerald-500/15 text-emerald-400'
                   : 'hover:bg-amber-500/15 text-amber-400'
@@ -170,7 +170,7 @@ export function SessionCard({ session, onComplete, onCancel, onRefresh }: Sessio
             <button
               type="button"
               onClick={() => onCancel(session)}
-              className="p-2 rounded-xl hover:bg-red-500/15 text-red-400/50 hover:text-red-400 transition-colors"
+              className="p-2 rounded-cult hover:bg-red-500/15 text-red-400/50 hover:text-red-400 transition-colors"
               title="Cancel"
             >
               <X className="w-4 h-4" />
@@ -178,7 +178,7 @@ export function SessionCard({ session, onComplete, onCancel, onRefresh }: Sessio
             <button
               type="button"
               onClick={() => onComplete(session)}
-              className="p-2 rounded-xl hover:bg-emerald-500/15 text-emerald-400/50 hover:text-emerald-400 transition-colors"
+              className="p-2 rounded-cult hover:bg-emerald-500/15 text-emerald-400/50 hover:text-emerald-400 transition-colors"
               title="Complete"
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -206,7 +206,7 @@ export function SessionCard({ session, onComplete, onCancel, onRefresh }: Sessio
 
           {/* Package ID chip */}
           {session.packageId && (
-            <span className="text-[10px] text-white/20 font-mono px-2 py-0.5 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+            <span className="text-[10px] text-cult-text-muted font-mono px-2 py-0.5 rounded bg-cult-surface-inset border border-cult-border-faint">
               {session.packageId}
             </span>
           )}

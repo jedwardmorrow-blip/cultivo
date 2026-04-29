@@ -153,7 +153,7 @@ export function VehiclesManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading vehicles...</div>
+        <div className="text-cult-text-muted">Loading vehicles...</div>
       </div>
     );
   }
@@ -162,8 +162,8 @@ export function VehiclesManagement() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Car className="w-6 h-6 text-cult-white" />
-          <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+          <Car className="w-6 h-6 text-cult-text-primary" />
+          <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
             Delivery Vehicles
           </h2>
         </div>
@@ -182,44 +182,44 @@ export function VehiclesManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray overflow-hidden">
+      <div className="bg-cult-surface border border-cult-border overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-cult-black border-b border-cult-medium-gray">
+          <thead className="bg-cult-black border-b border-cult-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Vehicle
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 License Plate
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 VIN
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray">
+          <tbody className="divide-y divide-cult-border">
             {vehicles.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-cult-light-gray">
+                <td colSpan={5} className="px-4 py-8 text-center text-cult-text-muted">
                   No vehicles found. Add your first vehicle to get started.
                 </td>
               </tr>
             ) : (
               vehicles.map((vehicle) => (
                 <tr key={vehicle.id} className="hover:bg-cult-black transition-colors">
-                  <td className="px-4 py-3 text-cult-white">
+                  <td className="px-4 py-3 text-cult-text-primary">
                     {vehicle.year} {vehicle.make} {vehicle.model}
                   </td>
-                  <td className="px-4 py-3 text-cult-light-gray font-mono">
+                  <td className="px-4 py-3 text-cult-text-muted font-mono">
                     {vehicle.license_plate}
                   </td>
-                  <td className="px-4 py-3 text-cult-light-gray font-mono text-sm">
+                  <td className="px-4 py-3 text-cult-text-muted font-mono text-sm">
                     {vehicle.vin}
                   </td>
                   <td className="px-4 py-3">
@@ -248,14 +248,14 @@ export function VehiclesManagement() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openEditModal(vehicle)}
-                        className="p-2 text-cult-light-gray hover:text-cult-white hover:bg-cult-black transition-all"
+                        className="p-2 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-black transition-all"
                         title="Edit vehicle"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(vehicle.id)}
-                        className="p-2 text-cult-light-gray hover:text-cult-danger hover:bg-cult-black transition-all"
+                        className="p-2 text-cult-text-muted hover:text-cult-danger hover:bg-cult-black transition-all"
                         title="Delete vehicle"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -274,10 +274,10 @@ export function VehiclesManagement() {
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
         >
           <div
-            className="bg-cult-near-black border-2 border-cult-medium-gray max-w-md w-full"
+            className="bg-cult-surface border-2 border-cult-border max-w-md w-full"
           >
-            <div className="p-6 border-b border-cult-medium-gray">
-              <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+            <div className="p-6 border-b border-cult-border">
+              <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
                 {editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}
               </h3>
             </div>
@@ -285,41 +285,41 @@ export function VehiclesManagement() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Make
                   </label>
                   <input
                     type="text"
                     value={formData.make}
                     onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Model
                   </label>
                   <input
                     type="text"
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Year
                 </label>
                 <input
                   type="number"
                   value={formData.year}
                   onChange={(e) => setFormData({ ...formData, year: e.target.value ? Number(e.target.value) : '' })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   min="1900"
                   max={new Date().getFullYear() + 1}
                   required
@@ -327,31 +327,31 @@ export function VehiclesManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   License Plate
                 </label>
                 <input
                   type="text"
                   value={formData.license_plate}
                   onChange={(e) => setFormData({ ...formData, license_plate: e.target.value.toUpperCase() })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   VIN
                 </label>
                 <input
                   type="text"
                   value={formData.vin}
                   onChange={(e) => setFormData({ ...formData, vin: e.target.value.toUpperCase() })}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   maxLength={17}
                   required
                 />
-                <p className="mt-1 text-xs text-cult-lighter-gray">
+                <p className="mt-1 text-xs text-cult-text-muted">
                   Vehicle Identification Number (17 characters)
                 </p>
               </div>

@@ -104,7 +104,7 @@ function SummaryCharts({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
       {/* ── Batch Health (Age Pressure) ── */}
-      <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
+      <div className="rounded-cult border border-cult-border/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Batch Health
         </h4>
@@ -132,7 +132,7 @@ function SummaryCharts({
             );
           })}
           {summary.aging_batches > 0 && (
-            <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 text-center">
+            <div className="mt-1.5 pt-1.5 border-t border-cult-border/10 text-center">
               <span className="text-xs text-cult-danger font-semibold">
                 {summary.aging_batches} batch{summary.aging_batches !== 1 ? 'es' : ''} aging — process ASAP
               </span>
@@ -142,7 +142,7 @@ function SummaryCharts({
       </div>
 
       {/* ── SKU Projections ── */}
-      <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
+      <div className="rounded-cult border border-cult-border/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Projected Output
         </h4>
@@ -172,7 +172,7 @@ function SummaryCharts({
             );
           })}
           {demandVsCapacity.committedGrams > 0 && (
-            <div className="mt-1.5 pt-1.5 border-t border-cult-medium-gray/10 flex items-center gap-2">
+            <div className="mt-1.5 pt-1.5 border-t border-cult-border/10 flex items-center gap-2">
               <ShoppingCart className="w-3 h-3 text-cyan-400" />
               <span className="text-xs text-cyan-400">
                 {fmt(demandVsCapacity.committedGrams)} committed
@@ -187,7 +187,7 @@ function SummaryCharts({
       </div>
 
       {/* ── Top 5 Strains (by projected units) ── */}
-      <div className="rounded-xl border border-cult-medium-gray/20 bg-cult-black p-3">
+      <div className="rounded-cult border border-cult-border/20 bg-cult-black p-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
           Top 5 Strains
         </h4>
@@ -335,11 +335,11 @@ function StrainRow({
   const orderCount = demand?.pending_order_count || 0;
 
   return (
-    <div className="border border-cult-medium-gray/20 rounded-xl overflow-hidden">
+    <div className="border border-cult-border/20 rounded-cult overflow-hidden">
       {/* Strain header — clickable */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cult-medium-gray/5 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cult-border/5 transition-colors"
       >
         <Chevron className="w-4 h-4 text-neutral-600 flex-shrink-0" />
         <Leaf className="w-4 h-4 text-cult-success/60 flex-shrink-0" />
@@ -388,7 +388,7 @@ function StrainRow({
 
       {/* Expanded batch list */}
       {isExpanded && (
-        <div className="border-t border-cult-medium-gray/10">
+        <div className="border-t border-cult-border/10">
           {/* Demand detail banner */}
           {demand && demand.pending_order_details.length > 0 && (
             <div className="mx-4 mt-3 mb-2 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/15">
@@ -516,11 +516,12 @@ export function SalesPipeline() {
   /* ── Main render ── */
   return (
     <div className="space-y-1">
+      <h1 className="sr-only">Sales Pipeline</h1>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Package className="w-5 h-5 text-neutral-500" />
-          <h2 className="text-lg font-bold text-neutral-200">Inventory</h2>
+          <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Inventory</h2>
           <span className="text-xs text-neutral-600 ml-1">
             {filtered.length === strains.length
               ? `${strains.length} strains`
@@ -537,8 +538,8 @@ export function SalesPipeline() {
             onClick={() => setShowCharts((v) => !v)}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
               showCharts
-                ? 'text-neutral-200 border-cult-medium-gray/40 bg-cult-medium-gray/10'
-                : 'text-neutral-500 border-cult-medium-gray/20 hover:text-neutral-300 hover:border-cult-medium-gray/40'
+                ? 'text-neutral-200 border-cult-border/40 bg-cult-border/10'
+                : 'text-neutral-500 border-cult-border/20 hover:text-neutral-300 hover:border-cult-border/40'
             }`}
             title="Toggle charts"
           >
@@ -548,7 +549,7 @@ export function SalesPipeline() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-200 border border-cult-medium-gray/30 hover:border-cult-medium-gray/60 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-neutral-200 border border-cult-border/30 hover:border-cult-border/60 transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
@@ -567,7 +568,7 @@ export function SalesPipeline() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search strains…"
-            className="w-full bg-cult-black border border-cult-medium-gray/20 rounded-xl pl-9 pr-9 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-cult-medium-gray/50 transition-colors"
+            className="w-full bg-cult-black border border-cult-border/20 rounded-cult pl-9 pr-9 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-cult-border/50 transition-colors"
           />
           {searchTerm && (
             <button

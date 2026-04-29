@@ -15,7 +15,7 @@ export function AuditOverdueBadge() {
 
   if (loading) {
     return (
-      <div className="h-6 w-36 bg-cult-charcoal/40 rounded animate-pulse" />
+      <div className="h-6 w-36 bg-cult-surface-raised/40 rounded animate-pulse" />
     );
   }
 
@@ -45,7 +45,7 @@ export function AuditOverdueBadge() {
 
   // current
   return (
-    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cult-charcoal/40 border border-cult-medium-gray/40 rounded text-[11px] text-cult-text-muted">
+    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-cult-surface-raised/40 border border-cult-border/40 rounded text-[11px] text-cult-text-muted">
       <CheckCircle className="w-3 h-3 flex-shrink-0" />
       Last audit: {days_since_last_audit ?? '?'} days ago
     </div>

@@ -23,7 +23,7 @@ const NEXT_STAGE: Record<GrowthStage, GrowthStage | null> = {
 
 const STAGE_COLORS: Record<GrowthStage, string> = {
   ...STAGE_BADGE as Record<string, string>,
-  harvested: 'bg-cult-stage-harvest/10 border-cult-stage-harvest/50 text-cult-stage-harvest',
+  harvested: 'bg-cult-surface-inset border-cult-border-subtle text-cult-text-secondary',
 } as Record<GrowthStage, string>;
 
 type PendingAction =
@@ -53,12 +53,12 @@ function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh,
   );
 
   return (
-    <div className="border border-cult-dark-gray bg-cult-near-black hover:border-cult-medium-gray transition-all overflow-hidden">
+    <div className="border border-cult-surface bg-cult-surface hover:border-cult-border transition-all overflow-hidden">
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
         onClick={onToggleExpand}
       >
-        <div className="flex-shrink-0 text-cult-medium-gray">
+        <div className="flex-shrink-0 text-cult-border">
           {isExpanded
             ? <ChevronDown className="w-4 h-4" />
             : <ChevronRight className="w-4 h-4" />
@@ -66,7 +66,7 @@ function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh,
         </div>
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-bold text-cult-white">{group.batch_registry?.batch_number ?? '—'}</span>
+            <span className="font-mono text-sm font-bold text-cult-text-primary">{group.batch_registry?.batch_number ?? '—'}</span>
             <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${stageCls}`}>
               {group.growth_stage}
             </span>
@@ -83,13 +83,13 @@ function PlantGroupRow({ group, isExpanded, onToggleExpand, onAction, onRefresh,
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="text-cult-light-gray text-xs truncate">{group.strains?.name ?? 'Unknown'}</span>
-            <span className="text-cult-medium-gray text-xs">&middot;</span>
-            <span className="text-cult-light-gray text-xs">{group.plant_count} plants</span>
-            <span className="text-cult-medium-gray text-xs">&middot;</span>
-            <span className="text-cult-light-gray text-xs">{group.grow_rooms?.room_code ?? '—'}</span>
-            <span className="text-cult-medium-gray text-xs">&middot;</span>
-            <span className="text-cult-medium-gray text-xs">{daysInStage}d in stage</span>
+            <span className="text-cult-text-muted text-xs truncate">{group.strains?.name ?? 'Unknown'}</span>
+            <span className="text-cult-border text-xs">&middot;</span>
+            <span className="text-cult-text-muted text-xs">{group.plant_count} plants</span>
+            <span className="text-cult-border text-xs">&middot;</span>
+            <span className="text-cult-text-muted text-xs">{group.grow_rooms?.room_code ?? '—'}</span>
+            <span className="text-cult-border text-xs">&middot;</span>
+            <span className="text-cult-border text-xs">{daysInStage}d in stage</span>
           </div>
         </div>
         <div onClick={(e) => e.stopPropagation()}>
@@ -184,15 +184,15 @@ export function PlantGroupsList() {
   const isCloneToVeg = advanceGroup?.growth_stage === 'clone' && nextStageForAdvance === 'veg';
 
   if (loading) {
-    return <div className="p-6 text-cult-light-gray">Loading plant groups...</div>;
+    return <div className="p-6 text-cult-text-muted">Loading plant groups...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Plant Groups</h1>
-          <p className="text-cult-light-gray mt-2">Track plant groups through clone, veg, and flower stages</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Plant Groups</h1>
+          <p className="text-cult-text-muted mt-2">Track plant groups through clone, veg, and flower stages</p>
         </div>
         <Button
           onClick={() => setShowNewModal(true)}
@@ -210,8 +210,8 @@ export function PlantGroupsList() {
       )}
 
       {groups.length === 0 ? (
-        <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-          <p className="text-cult-medium-gray text-sm uppercase tracking-wider">No active plant groups</p>
+        <div className="bg-cult-surface border border-cult-border p-8 text-center">
+          <p className="text-cult-border text-sm uppercase tracking-wider">No active plant groups</p>
         </div>
       ) : (
         <div className="space-y-1">
@@ -291,8 +291,8 @@ export function PlantGroupsList() {
 
       {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6 space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">Advance Stage</h3>
+          <div className="bg-cult-surface border border-cult-border w-full max-w-sm p-6 space-y-4">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">Advance Stage</h3>
 
             {isCloneToVeg && (
               <div className="flex items-start gap-2.5 bg-cult-info-muted border border-cult-info/30 text-cult-info p-3 text-sm">
@@ -305,13 +305,13 @@ export function PlantGroupsList() {
               </div>
             )}
 
-            <p className="text-cult-light-gray text-sm">
+            <p className="text-cult-text-muted text-sm">
               Move{' '}
-              <span className="text-cult-white font-mono">
+              <span className="text-cult-text-primary font-mono">
                 {advanceGroup.batch_registry?.batch_number ?? advanceGroup.strains?.name ?? 'this group'}
               </span>{' '}
-              from <span className="text-cult-white">{advanceGroup.growth_stage}</span> to{' '}
-              <span className="text-cult-white">{nextStageForAdvance}</span>? This cannot be reversed.
+              from <span className="text-cult-text-primary">{advanceGroup.growth_stage}</span> to{' '}
+              <span className="text-cult-text-primary">{nextStageForAdvance}</span>? This cannot be reversed.
             </p>
 
             {actionError && (
@@ -330,7 +330,7 @@ export function PlantGroupsList() {
               </Button>
               <button
                 onClick={() => setPendingAction(null)}
-                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
               >
                 Cancel
               </button>

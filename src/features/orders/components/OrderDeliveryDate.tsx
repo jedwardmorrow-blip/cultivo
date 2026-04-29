@@ -14,8 +14,8 @@ export function OrderDeliveryDate({ orderId, deliveryDate, onUpdate }: OrderDeli
 
   return (
     <div className="text-center relative">
-      <div className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Delivery Date</div>
-      <div className="flex items-center gap-2 px-3 py-2 border-2 border-cult-medium-gray bg-cult-near-black hover:border-cult-success transition-all">
+      <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Delivery Date</div>
+      <div className="flex items-center gap-2 px-3 py-2 border-2 border-cult-border bg-cult-surface hover:border-cult-success transition-all">
         <input
           type="date"
           value={isEditing ? tempDate : (deliveryDate || '')}
@@ -44,7 +44,7 @@ export function OrderDeliveryDate({ orderId, deliveryDate, onUpdate }: OrderDeli
           onClick={(e) => e.stopPropagation()}
           min={getDateInputConstraints().min}
           max={getDateInputConstraints().max}
-          className="outline-none bg-transparent text-cult-white font-medium text-sm cursor-pointer"
+          className="outline-none bg-transparent text-cult-text-primary font-medium text-sm cursor-pointer"
           style={{ colorScheme: 'dark' }}
         />
       </div>

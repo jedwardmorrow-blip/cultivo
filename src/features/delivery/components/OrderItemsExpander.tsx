@@ -56,18 +56,18 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
     <div>
       <button
         onClick={toggle}
-        className="flex items-center gap-1 px-1.5 py-0.5 text-xs text-cult-lighter-gray hover:text-cult-white transition-colors rounded hover:bg-cult-charcoal/50"
+        className="flex items-center gap-1 px-1.5 py-0.5 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors rounded hover:bg-cult-surface-raised/50"
       >
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
         <span className="uppercase tracking-wider font-medium">Items</span>
       </button>
 
       {expanded && (
-        <div className="mt-1.5 ml-1 border-l border-cult-charcoal/50 pl-2.5 space-y-1" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-1.5 ml-1 border-l border-cult-surface-raised/50 pl-2.5 space-y-1" onClick={(e) => e.stopPropagation()}>
           {loading ? (
             <div className="flex items-center gap-1.5 py-2">
-              <Loader2 className="w-3 h-3 text-cult-lighter-gray animate-spin" />
-              <span className="text-xs text-cult-lighter-gray">Loading items...</span>
+              <Loader2 className="w-3 h-3 text-cult-text-muted animate-spin" />
+              <span className="text-xs text-cult-text-muted">Loading items...</span>
             </div>
           ) : items && items.length > 0 ? (
             <>
@@ -75,7 +75,7 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                 <div key={item.id} className="flex items-center gap-2 py-1 text-xs">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-cult-white font-medium truncate">{item.product_name}</span>
+                      <span className="text-cult-text-primary font-medium truncate">{item.product_name}</span>
                       {item.is_sample && (
                         <span className="inline-flex items-center gap-0.5 px-1 py-0.5 text-xs font-semibold uppercase tracking-wider bg-pink-900/30 text-pink-400 border border-pink-600 rounded-sm">
                           <FlaskConical className="w-2 h-2" />
@@ -85,33 +85,33 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       {item.strain_name && (
-                        <span className="text-cult-lighter-gray">{item.strain_name}</span>
+                        <span className="text-cult-text-muted">{item.strain_name}</span>
                       )}
-                      <span className="text-cult-medium-gray">&middot;</span>
-                      <span className="text-cult-light-gray">
+                      <span className="text-cult-border">&middot;</span>
+                      <span className="text-cult-text-muted">
                         {item.quantity} {item.pricing_unit || 'units'}
                       </span>
                       {item.unit_price > 0 && (
                         <>
-                          <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-lighter-gray">{formatCurrency(item.unit_price)}/{item.pricing_unit || 'unit'}</span>
+                          <span className="text-cult-border">&middot;</span>
+                          <span className="text-cult-text-muted">{formatCurrency(item.unit_price)}/{item.pricing_unit || 'unit'}</span>
                         </>
                       )}
                       {item.total_price > 0 && (
                         <>
-                          <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-white font-semibold">{formatCurrency(item.total_price)}</span>
+                          <span className="text-cult-border">&middot;</span>
+                          <span className="text-cult-text-primary font-semibold">{formatCurrency(item.total_price)}</span>
                         </>
                       )}
                       {item.batch_number ? (
                         <>
-                          <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-lighter-gray font-mono text-xs">{item.batch_number}</span>
+                          <span className="text-cult-border">&middot;</span>
+                          <span className="text-cult-text-muted font-mono text-xs">{item.batch_number}</span>
                         </>
                       ) : (
                         <>
-                          <span className="text-cult-medium-gray">&middot;</span>
-                          <span className="text-cult-medium-gray italic text-xs">No batch</span>
+                          <span className="text-cult-border">&middot;</span>
+                          <span className="text-cult-border italic text-xs">No batch</span>
                         </>
                       )}
                     </div>
@@ -122,14 +122,14 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
                   </div>
                 </div>
               ))}
-              <div className="flex items-center justify-between pt-1 border-t border-cult-charcoal/30">
-                <span className="text-xs text-cult-lighter-gray">
+              <div className="flex items-center justify-between pt-1 border-t border-cult-surface-raised/30">
+                <span className="text-xs text-cult-text-muted">
                   {readyCount}/{totalCount} items ready
                 </span>
                 {onSelectOrder && (
                   <button
                     onClick={() => onSelectOrder(orderId)}
-                    className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+                    className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors"
                   >
                     <ExternalLink className="w-2.5 h-2.5" />
                     <span className="uppercase tracking-wider font-medium">View Order</span>
@@ -138,7 +138,7 @@ export function OrderItemsExpander({ orderId, onSelectOrder }: OrderItemsExpande
               </div>
             </>
           ) : (
-            <span className="text-xs text-cult-medium-gray py-1 block">No items found</span>
+            <span className="text-xs text-cult-border py-1 block">No items found</span>
           )}
         </div>
       )}

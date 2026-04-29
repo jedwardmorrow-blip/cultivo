@@ -93,127 +93,127 @@ export function EODSummary() {
         </Button>
       </div>
 
-      <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray mb-6 print:hidden">
+      <div className="bg-cult-surface p-4 rounded-lg shadow border border-cult-border mb-6 print:hidden">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-cult-off-white" />
-            <label className="text-sm font-medium text-cult-off-white">Select Date:</label>
+            <Calendar className="w-5 h-5 text-cult-text-primary" />
+            <label className="text-sm font-medium text-cult-text-primary">Select Date:</label>
           </div>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-3 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+            className="px-4 py-3 bg-cult-black text-cult-text-primary border border-cult-surface-raised rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 print:grid-cols-4">
-        <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-surface p-4 rounded-lg shadow border border-cult-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray">Total Packages</p>
-              <p className="text-2xl font-bold text-cult-white">{stats.totalPackages}</p>
+              <p className="text-sm text-cult-text-muted">Total Packages</p>
+              <p className="text-2xl font-bold text-cult-text-primary">{stats.totalPackages}</p>
             </div>
             <Package className="w-8 h-8 text-cult-green" />
           </div>
         </div>
-        <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-surface p-4 rounded-lg shadow border border-cult-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray">Strains</p>
-              <p className="text-2xl font-bold text-cult-white">{stats.totalStrains}</p>
+              <p className="text-sm text-cult-text-muted">Strains</p>
+              <p className="text-2xl font-bold text-cult-text-primary">{stats.totalStrains}</p>
             </div>
             <FileText className="w-8 h-8 text-cult-info" />
           </div>
         </div>
-        <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-surface p-4 rounded-lg shadow border border-cult-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray">Total Bulk (g)</p>
-              <p className="text-2xl font-bold text-cult-white">{stats.totalWeight.toFixed(0)}</p>
+              <p className="text-sm text-cult-text-muted">Total Bulk (g)</p>
+              <p className="text-2xl font-bold text-cult-text-primary">{stats.totalWeight.toFixed(0)}</p>
             </div>
           </div>
         </div>
-        <div className="bg-cult-near-black p-4 rounded-lg shadow border border-cult-medium-gray">
+        <div className="bg-cult-surface p-4 rounded-lg shadow border border-cult-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-cult-light-gray">Total Units</p>
-              <p className="text-2xl font-bold text-cult-white">{stats.totalUnits}</p>
+              <p className="text-sm text-cult-text-muted">Total Units</p>
+              <p className="text-2xl font-bold text-cult-text-primary">{stats.totalUnits}</p>
             </div>
           </div>
         </div>
       </div>
 
       {packages.length === 0 ? (
-        <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-12 text-center">
-          <Package className="w-16 h-16 text-cult-light-gray mx-auto mb-4" />
-          <p className="text-cult-light-gray text-lg">No consolidated packages for this date</p>
-          <p className="text-cult-light-gray text-sm mt-2">Complete trim or packaging sessions to generate packages</p>
+        <div className="bg-cult-surface rounded-lg shadow border border-cult-border p-12 text-center">
+          <Package className="w-16 h-16 text-cult-text-muted mx-auto mb-4" />
+          <p className="text-cult-text-muted text-lg">No consolidated packages for this date</p>
+          <p className="text-cult-text-muted text-sm mt-2">Complete trim or packaging sessions to generate packages</p>
         </div>
       ) : (
         <div className="space-y-4">
           {Object.entries(groupedPackages).map(([strain, strainPackages]) => (
-            <div key={strain} className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray overflow-hidden">
+            <div key={strain} className="bg-cult-surface rounded-lg shadow border border-cult-border overflow-hidden">
               <button
                 onClick={() => toggleStrain(strain)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-cult-dark-gray transition-colors print:bg-cult-near-black"
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-cult-surface transition-colors print:bg-cult-surface"
               >
                 <div className="flex items-center gap-3">
                   {expandedStrains.has(strain) ? (
-                    <ChevronDown className="w-5 h-5 text-cult-white print:hidden" />
+                    <ChevronDown className="w-5 h-5 text-cult-text-primary print:hidden" />
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-cult-white print:hidden" />
+                    <ChevronRight className="w-5 h-5 text-cult-text-primary print:hidden" />
                   )}
-                  <h2 className="text-xl font-bold text-cult-white">{strain}</h2>
-                  <span className="text-sm text-cult-light-gray">({strainPackages.length} packages)</span>
+                  <h2 className="text-xl font-bold text-cult-text-primary">{strain}</h2>
+                  <span className="text-sm text-cult-text-muted">({strainPackages.length} packages)</span>
                 </div>
-                <div className="text-sm text-cult-light-gray">
+                <div className="text-sm text-cult-text-muted">
                   {strainPackages.find(p => p.strain_abbreviation)?.strain_abbreviation || ''}
                 </div>
               </button>
 
               {expandedStrains.has(strain) && (
-                <div className="border-t border-cult-medium-gray">
+                <div className="border-t border-cult-border">
                   {strainPackages.map((pkg) => (
-                    <div key={pkg.id} className="border-b border-cult-medium-gray last:border-b-0">
+                    <div key={pkg.id} className="border-b border-cult-border last:border-b-0">
                       <button
                         onClick={() => togglePackage(pkg.id)}
-                        className="w-full px-6 py-4 hover:bg-cult-dark-gray transition-colors flex items-center justify-between print:bg-cult-near-black"
+                        className="w-full px-6 py-4 hover:bg-cult-surface transition-colors flex items-center justify-between print:bg-cult-surface"
                       >
                         <div className="flex items-center gap-4">
                           {expandedPackages.has(pkg.id) ? (
-                            <ChevronDown className="w-4 h-4 text-cult-light-gray print:hidden" />
+                            <ChevronDown className="w-4 h-4 text-cult-text-muted print:hidden" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 text-cult-light-gray print:hidden" />
+                            <ChevronRight className="w-4 h-4 text-cult-text-muted print:hidden" />
                           )}
                           <div className="text-left">
                             <p className="font-mono font-bold text-cult-green text-lg">{pkg.package_id}</p>
-                            <p className="text-sm text-cult-light-gray">
+                            <p className="text-sm text-cult-text-muted">
                               {pkg.product_stage} - {pkg.product_type}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
                           {pkg.product_stage === 'Bulk' ? (
-                            <p className="text-lg font-bold text-cult-white">{pkg.total_weight_grams.toFixed(1)}g</p>
+                            <p className="text-lg font-bold text-cult-text-primary">{pkg.total_weight_grams.toFixed(1)}g</p>
                           ) : (
-                            <p className="text-lg font-bold text-cult-white">{pkg.total_units} units</p>
+                            <p className="text-lg font-bold text-cult-text-primary">{pkg.total_units} units</p>
                           )}
-                          <p className="text-xs text-cult-light-gray">{pkg.session_count} session{pkg.session_count !== 1 ? 's' : ''}</p>
+                          <p className="text-xs text-cult-text-muted">{pkg.session_count} session{pkg.session_count !== 1 ? 's' : ''}</p>
                         </div>
                       </button>
 
                       {expandedPackages.has(pkg.id) && packageSources[pkg.id] && (
-                        <div className="bg-cult-dark-gray px-6 py-4">
-                          <p className="text-sm font-medium text-cult-white mb-3">Contributing Sessions:</p>
+                        <div className="bg-cult-surface px-6 py-4">
+                          <p className="text-sm font-medium text-cult-text-primary mb-3">Contributing Sessions:</p>
                           <div className="space-y-2">
                             {packageSources[pkg.id].map((source, idx) => (
-                              <div key={source.id} className="flex items-center justify-between text-sm bg-cult-near-black px-4 py-2 rounded">
-                                <span className="text-cult-light-gray">
+                              <div key={source.id} className="flex items-center justify-between text-sm bg-cult-surface px-4 py-2 rounded">
+                                <span className="text-cult-text-muted">
                                   {source.session_type === 'trim' ? 'Trim Session' : 'Packaging Session'} #{idx + 1}
                                 </span>
-                                <span className="text-cult-white font-medium">
+                                <span className="text-cult-text-primary font-medium">
                                   {source.contribution_weight_grams > 0
                                     ? `${source.contribution_weight_grams.toFixed(1)}g`
                                     : `${source.contribution_units} units`}
@@ -221,11 +221,11 @@ export function EODSummary() {
                               </div>
                             ))}
                           </div>
-                          <div className="mt-3 pt-3 border-t border-cult-medium-gray">
-                            <p className="text-xs text-cult-light-gray">
+                          <div className="mt-3 pt-3 border-t border-cult-border">
+                            <p className="text-xs text-cult-text-muted">
                               <span className="font-medium">Room:</span> {pkg.room}
                             </p>
-                            <p className="text-xs text-cult-light-gray mt-1">
+                            <p className="text-xs text-cult-text-muted mt-1">
                               <span className="font-medium">Created:</span> {new Date(pkg.created_at).toLocaleString()}
                             </p>
                           </div>
@@ -248,17 +248,17 @@ export function EODSummary() {
           .print\\:hidden {
             display: none !important;
           }
-          .bg-cult-near-black {
+          .bg-cult-surface {
             background: white !important;
             border: 1px solid #000 !important;
           }
-          .bg-cult-dark-gray {
+          .bg-cult-surface {
             background: #f5f5f5 !important;
           }
-          .text-cult-white {
+          .text-cult-text-primary {
             color: #000 !important;
           }
-          .text-cult-light-gray {
+          .text-cult-text-muted {
             color: #666 !important;
           }
           .text-cult-green {

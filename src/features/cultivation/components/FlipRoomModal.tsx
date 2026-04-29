@@ -5,265 +5,265 @@ import { todayIso, formatDate } from '../utils/dateUtils';
 import type { GrowRoom, PlantGroup } from '../types';
 
 interface FlipRoomModalProps {
-  room: GrowRoom;
-  plantGroups: PlantGroup[];
-  onClose: () => void;
-  onSuccess: () => void;
+ room: GrowRoom;
+ plantGroups: PlantGroup[];
+ onClose: () => void;
+ onSuccess: () => void;
 }
 
 const DEFAULT_FLOWER_DAYS = 63;
 
 function addDays(iso: string, days: number): string {
-  const d = new Date(iso + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+ const d = new Date(iso + 'T00:00:00');
+ d.setDate(d.getDate() + days);
+ return d.toISOString().slice(0, 10);
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  clone: 'Clone',
-  veg: 'Veg',
-  flower: 'Flower',
-  harvested: 'Harvested',
+ clone: 'Clone',
+ veg: 'Veg',
+ flower: 'Flower',
+ harvested: 'Harvested',
 };
 
 export function FlipRoomModal({ room, plantGroups, onClose, onSuccess }: FlipRoomModalProps) {
-  const [flipDate, setFlipDate] = useState(todayIso());
-  const [harvestDate, setHarvestDate] = useState(addDays(todayIso(), DEFAULT_FLOWER_DAYS));
-  const [harvestManuallySet, setHarvestManuallySet] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+ const [flipDate, setFlipDate] = useState(todayIso());
+ const [harvestDate, setHarvestDate] = useState(addDays(todayIso(), DEFAULT_FLOWER_DAYS));
+ const [harvestManuallySet, setHarvestManuallySet] = useState(false);
+ const [saving, setSaving] = useState(false);
+ const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!harvestManuallySet && flipDate) {
-      setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
-    }
-  }, [flipDate, harvestManuallySet]);
+ useEffect(() => {
+ if (!harvestManuallySet && flipDate) {
+ setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
+ }
+ }, [flipDate, harvestManuallySet]);
 
-  const eligibleGroups = plantGroups.filter(
-    (g) => g.growth_stage !== 'flower' && g.growth_stage !== 'harvested'
-  );
-  const alreadyFlower = plantGroups.filter((g) => g.growth_stage === 'flower');
-  const hasExistingFlipDate = plantGroups.some((g) => g.grow_room_id === room.id);
+ const eligibleGroups = plantGroups.filter(
+ (g) => g.growth_stage !== 'flower' && g.growth_stage !== 'harvested'
+ );
+ const alreadyFlower = plantGroups.filter((g) => g.growth_stage === 'flower');
+ const hasExistingFlipDate = plantGroups.some((g) => g.grow_room_id === room.id);
 
-  const isUpdate = alreadyFlower.length > 0 || hasExistingFlipDate;
+ const isUpdate = alreadyFlower.length > 0 || hasExistingFlipDate;
 
-  async function handleConfirm() {
-    if (!flipDate) { setError('Please select a flip date'); return; }
-    setSaving(true);
-    setError(null);
-    try {
-      await cultivationService.flipRoom({
-        grow_room_id: room.id,
-        flip_date: flipDate,
-        projected_harvest_date: harvestDate || undefined,
-      });
-      onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to flip room');
-    } finally {
-      setSaving(false);
-    }
-  }
+ async function handleConfirm() {
+ if (!flipDate) { setError('Please select a flip date'); return; }
+ setSaving(true);
+ setError(null);
+ try {
+ await cultivationService.flipRoom({
+ grow_room_id: room.id,
+ flip_date: flipDate,
+ projected_harvest_date: harvestDate || undefined,
+ });
+ onSuccess();
+ } catch (err) {
+ setError(err instanceof Error ? err.message : 'Failed to flip room');
+ } finally {
+ setSaving(false);
+ }
+ }
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 bg-cult-opaque-near-black border border-cult-medium-gray w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
-        {/* Fixed header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-cult-medium-gray flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <Flower2 className="w-4 h-4 text-rose-400" />
-            <h2 className="text-sm font-bold text-cult-white uppercase tracking-wider">
-              {isUpdate ? 'Update Flip Date' : 'Flip Room'}: {room.name}
-            </h2>
-          </div>
-          <button onClick={onClose} className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+ return (
+ <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+ <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+ <div className="relative z-10 bg-cult-surface border border-cult-border w-full max-w-lg flex flex-col max-h-[80vh]">
+ {/* Fixed header */}
+ <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border flex-shrink-0">
+ <div className="flex items-center gap-2">
+ <Flower2 className="w-4 h-4 text-rose-400" />
+ <h2 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
+ {isUpdate ? 'Update Flip Date' : 'Flip Room'}: {room.name}
+ </h2>
+ </div>
+ <button onClick={onClose} className="p-1 text-cult-border hover:text-cult-text-primary transition-colors">
+ <X className="w-4 h-4" />
+ </button>
+ </div>
 
-        {/* Scrollable body */}
-        <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
-          {isUpdate && (
-            <div className="bg-cult-warning-muted border border-cult-warning px-3 py-2 text-xs text-cult-warning">
-              This room already has groups at flower stage. Re-triggering will update the flip date on all sections.
-            </div>
-          )}
+ {/* Scrollable body */}
+ <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+ {isUpdate && (
+ <div className="bg-cult-warning-muted border border-cult-warning px-3 py-2 text-xs text-cult-warning">
+ This room already has groups at flower stage. Re-triggering will update the flip date on all sections.
+ </div>
+ )}
 
-          <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-2">Flip Date *</label>
-            <input
-              type="date"
-              value={flipDate}
-              onChange={(e) => setFlipDate(e.target.value)}
-              disabled={saving}
-              className="w-full bg-cult-opaque-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
-            />
-            {flipDate && (
-              <p className="text-xs text-cult-medium-gray mt-1">
-                {formatDate(flipDate)} will be set on all active sections in this room
-              </p>
-            )}
-          </div>
+ <div>
+ <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-2">Flip Date *</label>
+ <input
+ type="date"
+ value={flipDate}
+ onChange={(e) => setFlipDate(e.target.value)}
+ disabled={saving}
+ className="w-full bg-cult-opaque-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
+ />
+ {flipDate && (
+ <p className="text-xs text-cult-border mt-1">
+ {formatDate(flipDate)} will be set on all active sections in this room
+ </p>
+ )}
+ </div>
 
-          <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-2">
-              Projected Harvest Date
-              <span className="text-cult-medium-gray font-normal normal-case ml-1">({DEFAULT_FLOWER_DAYS}-day default)</span>
-            </label>
-            <input
-              type="date"
-              value={harvestDate}
-              onChange={(e) => {
-                setHarvestDate(e.target.value);
-                setHarvestManuallySet(true);
-              }}
-              disabled={saving}
-              className="w-full bg-cult-opaque-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
-            />
-            {harvestDate && (
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-cult-medium-gray">
-                  {formatDate(harvestDate)}
-                  {harvestManuallySet && ' (manually set)'}
-                </p>
-                {harvestManuallySet && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHarvestManuallySet(false);
-                      if (flipDate) setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
-                    }}
-                    className="text-xs text-rose-400 hover:text-rose-300 underline"
-                  >
-                    Reset to default
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+ <div>
+ <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-2">
+ Projected Harvest Date
+ <span className="text-cult-border font-normal normal-case ml-1">({DEFAULT_FLOWER_DAYS}-day default)</span>
+ </label>
+ <input
+ type="date"
+ value={harvestDate}
+ onChange={(e) => {
+ setHarvestDate(e.target.value);
+ setHarvestManuallySet(true);
+ }}
+ disabled={saving}
+ className="w-full bg-cult-opaque-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-rose-500"
+ />
+ {harvestDate && (
+ <div className="flex items-center justify-between mt-1">
+ <p className="text-xs text-cult-border">
+ {formatDate(harvestDate)}
+ {harvestManuallySet && ' (manually set)'}
+ </p>
+ {harvestManuallySet && (
+ <button
+ type="button"
+ onClick={() => {
+ setHarvestManuallySet(false);
+ if (flipDate) setHarvestDate(addDays(flipDate, DEFAULT_FLOWER_DAYS));
+ }}
+ className="text-xs text-rose-400 hover:text-rose-300 underline"
+ >
+ Reset to default
+ </button>
+ )}
+ </div>
+ )}
+ </div>
 
-          {/* Aggregated group summaries instead of individual rows */}
-          <GroupSummary
-            label="will advance to flower"
-            groups={eligibleGroups}
-            accentBorder="border-rose-900"
-            accentBg="bg-rose-950/30"
-            accentText="text-rose-300"
-            showStageTransition
-          />
+ {/* Aggregated group summaries instead of individual rows */}
+ <GroupSummary
+ label="will advance to flower"
+ groups={eligibleGroups}
+ accentBorder="border-rose-900"
+ accentBg="bg-rose-950/30"
+ accentText="text-rose-300"
+ showStageTransition
+ />
 
-          {eligibleGroups.length === 0 && (
-            <div className="bg-cult-opaque-black border border-cult-dark-gray px-3 py-3 text-xs text-cult-medium-gray">
-              No groups eligible for stage advancement in this room. The flip date will still be updated on all active sections.
-            </div>
-          )}
+ {eligibleGroups.length === 0 && (
+ <div className="bg-cult-opaque-black border border-cult-surface px-3 py-3 text-xs text-cult-border">
+ No groups eligible for stage advancement in this room. The flip date will still be updated on all active sections.
+ </div>
+ )}
 
-          {alreadyFlower.length > 0 && (
-            <GroupSummary
-              label="already in flower — not affected"
-              groups={alreadyFlower}
-              accentBorder="border-cult-dark-gray"
-              accentBg="bg-cult-charcoal/30"
-              accentText="text-cult-medium-gray"
-              dimmed
-            />
-          )}
+ {alreadyFlower.length > 0 && (
+ <GroupSummary
+ label="already in flower — not affected"
+ groups={alreadyFlower}
+ accentBorder="border-cult-surface"
+ accentBg="bg-cult-surface-raised/30"
+ accentText="text-cult-border"
+ dimmed
+ />
+ )}
 
-          {error && (
-            <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-3">
-              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-        </div>
+ {error && (
+ <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-xs p-3">
+ <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+ {error}
+ </div>
+ )}
+ </div>
 
-        {/* Fixed footer */}
-        <div className="flex gap-3 px-6 py-4 border-t border-cult-medium-gray flex-shrink-0">
-          <button
-            onClick={handleConfirm}
-            disabled={saving || !flipDate}
-            className="flex items-center gap-2 bg-rose-600 text-white px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Flower2 className="w-3.5 h-3.5" />
-            {saving ? 'Flipping...' : isUpdate ? 'Update Flip Date' : `Flip Room`}
-          </button>
-          <button
-            onClick={onClose}
-            disabled={saving}
-            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Fixed footer */}
+ <div className="flex gap-3 px-6 py-4 border-t border-cult-border flex-shrink-0">
+ <button
+ onClick={handleConfirm}
+ disabled={saving || !flipDate}
+ className="flex items-center gap-2 bg-rose-600 text-white px-5 py-2 text-sm font-bold uppercase tracking-wider hover:bg-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+ >
+ <Flower2 className="w-3.5 h-3.5" />
+ {saving ? 'Flipping...' : isUpdate ? 'Update Flip Date' : `Flip Room`}
+ </button>
+ <button
+ onClick={onClose}
+ disabled={saving}
+ className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
+ >
+ Cancel
+ </button>
+ </div>
+ </div>
+ </div>
+ );
 }
 
 /* ── Aggregated group summary ──────────────────────────── */
 function GroupSummary({
-  label,
-  groups,
-  accentBorder,
-  accentBg,
-  accentText,
-  showStageTransition,
-  dimmed,
+ label,
+ groups,
+ accentBorder,
+ accentBg,
+ accentText,
+ showStageTransition,
+ dimmed,
 }: {
-  label: string;
-  groups: PlantGroup[];
-  accentBorder: string;
-  accentBg: string;
-  accentText: string;
-  showStageTransition?: boolean;
-  dimmed?: boolean;
+ label: string;
+ groups: PlantGroup[];
+ accentBorder: string;
+ accentBg: string;
+ accentText: string;
+ showStageTransition?: boolean;
+ dimmed?: boolean;
 }) {
-  if (groups.length === 0) return null;
+ if (groups.length === 0) return null;
 
-  // Aggregate by strain
-  const byStrain = new Map<string, { name: string; groups: number; plants: number; stages: Set<string> }>();
-  for (const g of groups) {
-    const strainName = g.strains?.name ?? g.strains?.abbreviation ?? 'Unknown';
-    const existing = byStrain.get(strainName) ?? { name: strainName, groups: 0, plants: 0, stages: new Set<string>() };
-    existing.groups++;
-    existing.plants += g.plant_count;
-    existing.stages.add(g.growth_stage);
-    byStrain.set(strainName, existing);
-  }
-  const strains = Array.from(byStrain.values()).sort((a, b) => b.plants - a.plants);
-  const totalPlants = groups.reduce((sum, g) => sum + g.plant_count, 0);
+ // Aggregate by strain
+ const byStrain = new Map<string, { name: string; groups: number; plants: number; stages: Set<string> }>();
+ for (const g of groups) {
+ const strainName = g.strains?.name ?? g.strains?.abbreviation ?? 'Unknown';
+ const existing = byStrain.get(strainName) ?? { name: strainName, groups: 0, plants: 0, stages: new Set<string>() };
+ existing.groups++;
+ existing.plants += g.plant_count;
+ existing.stages.add(g.growth_stage);
+ byStrain.set(strainName, existing);
+ }
+ const strains = Array.from(byStrain.values()).sort((a, b) => b.plants - a.plants);
+ const totalPlants = groups.reduce((sum, g) => sum + g.plant_count, 0);
 
-  return (
-    <div className={dimmed ? 'opacity-50' : ''}>
-      <p className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">
-        {groups.length} group{groups.length !== 1 ? 's' : ''} ({totalPlants} plants) {label}
-      </p>
-      <div className="space-y-1">
-        {strains.map((s) => (
-          <div key={s.name} className={`flex items-center justify-between gap-2 ${accentBg} border ${accentBorder} px-3 py-2`}>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className={`font-mono text-xs font-bold ${accentText}`}>{s.name}</span>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-xs text-cult-medium-gray">
-                {s.groups} group{s.groups !== 1 ? 's' : ''} · {s.plants} plants
-              </span>
-              {showStageTransition && (
-                <>
-                  <span className="text-xs border border-cult-warning text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
-                    {Array.from(s.stages).map((st) => STAGE_LABELS[st] ?? st).join('/')}
-                  </span>
-                  <span className="text-xs text-cult-medium-gray">→</span>
-                  <span className="text-xs border border-rose-700 text-rose-400 px-1.5 py-0.5 uppercase tracking-wider">
-                    Flower
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+ return (
+ <div className={dimmed ? 'opacity-50' : ''}>
+ <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">
+ {groups.length} group{groups.length !== 1 ? 's' : ''} ({totalPlants} plants) {label}
+ </p>
+ <div className="space-y-1">
+ {strains.map((s) => (
+ <div key={s.name} className={`flex items-center justify-between gap-2 ${accentBg} border ${accentBorder} px-3 py-2`}>
+ <div className="flex items-center gap-2 min-w-0">
+ <span className={`font-mono text-xs font-bold ${accentText}`}>{s.name}</span>
+ </div>
+ <div className="flex items-center gap-2 flex-shrink-0">
+ <span className="text-xs text-cult-border">
+ {s.groups} group{s.groups !== 1 ? 's' : ''} · {s.plants} plants
+ </span>
+ {showStageTransition && (
+ <>
+ <span className="text-xs border border-cult-warning text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">
+ {Array.from(s.stages).map((st) => STAGE_LABELS[st] ?? st).join('/')}
+ </span>
+ <span className="text-xs text-cult-border">→</span>
+ <span className="text-xs border border-rose-700 text-rose-400 px-1.5 py-0.5 uppercase tracking-wider">
+ Flower
+ </span>
+ </>
+ )}
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
+ );
 }

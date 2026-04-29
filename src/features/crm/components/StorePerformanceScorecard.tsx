@@ -41,7 +41,7 @@ const HEALTH_CONFIG: Record<string, { label: string; color: string; bg: string; 
 
 const TREND_ICON: Record<string, { icon: typeof TrendingUp; color: string }> = {
   growing: { icon: TrendingUp, color: 'text-cult-success' },
-  stable: { icon: Minus, color: 'text-cult-silver' },
+  stable: { icon: Minus, color: 'text-cult-text-secondary' },
   declining: { icon: TrendingDown, color: 'text-cult-warning' },
   inactive: { icon: TrendingDown, color: 'text-cult-danger' },
 };
@@ -158,13 +158,13 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
             <BarChart3 className="w-5 h-5 text-cult-info" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-cult-white">Store Scorecard</h1>
-            <p className="text-xs text-cult-silver">{accounts.length} accounts · revenue, frequency, mix & compliance</p>
+            <h1 className="text-xl font-bold text-cult-text-primary">Store Scorecard</h1>
+            <p className="text-xs text-cult-text-secondary">{accounts.length} accounts · revenue, frequency, mix & compliance</p>
           </div>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
@@ -173,44 +173,44 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
       {/* Summary Cards — CULT-LOS aligned */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Avg Health Score */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Health</p>
-          <p className="text-2xl font-bold text-cult-white">{avgHealth}</p>
-          <p className="text-xs text-cult-silver">of 100</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Avg Health</p>
+          <p className="text-2xl font-bold text-cult-text-primary">{avgHealth}</p>
+          <p className="text-xs text-cult-text-secondary">of 100</p>
         </div>
         {/* Avg Order Value — CULT-LOS metric */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Avg Order Value</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Avg Order Value</p>
           <p className="text-2xl font-bold text-cult-success">{fmt$(avgOrderValue)}</p>
-          <p className="text-xs text-cult-silver">90-day avg</p>
+          <p className="text-xs text-cult-text-secondary">90-day avg</p>
         </div>
         {/* Active Accounts — CULT-LOS metric */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Active (60d)</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Active (60d)</p>
           <p className="text-2xl font-bold text-cult-info">{orderedLast60}</p>
-          <p className="text-xs text-cult-silver">ordered last 60 days</p>
+          <p className="text-xs text-cult-text-secondary">ordered last 60 days</p>
         </div>
         {/* Product Mix Distribution */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Product Mix</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Product Mix</p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-bold text-cult-success">{mixCounts.full || 0}</span>
-            <span className="text-xs text-cult-medium-gray">/</span>
+            <span className="text-xs text-cult-border">/</span>
             <span className="text-lg font-bold text-cult-warning">{mixCounts.moderate || 0}</span>
-            <span className="text-xs text-cult-medium-gray">/</span>
+            <span className="text-xs text-cult-border">/</span>
             <span className="text-lg font-bold text-cult-warning">{mixCounts.narrow || 0}</span>
           </div>
-          <p className="text-xs text-cult-silver">full / mod / narrow</p>
+          <p className="text-xs text-cult-text-secondary">full / mod / narrow</p>
         </div>
         {/* Visit Compliance */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Visit Compliant</p>
-          <p className="text-2xl font-bold text-cult-white">{visitCompliant}</p>
-          <p className="text-xs text-cult-silver">on track / scheduled</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Visit Compliant</p>
+          <p className="text-2xl font-bold text-cult-text-primary">{visitCompliant}</p>
+          <p className="text-xs text-cult-text-secondary">on track / scheduled</p>
         </div>
         {/* Health filter cards (compact) */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Health Split</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Health Split</p>
           <div className="flex items-center gap-2 mt-1">
             {(['healthy', 'cooling', 'at_risk', 'dormant'] as const).map((label) => {
               const cfg = HEALTH_CONFIG[label];
@@ -222,8 +222,8 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   className={`flex flex-col items-center transition-colors ${filter === label ? cfg.color : ''}`}
                   title={cfg.label}
                 >
-                  <span className={`text-sm font-bold ${filter === label ? cfg.color : 'text-cult-silver'}`}>{count}</span>
-                  <span className="text-xs text-cult-medium-gray">{cfg.label.charAt(0)}</span>
+                  <span className={`text-sm font-bold ${filter === label ? cfg.color : 'text-cult-text-secondary'}`}>{count}</span>
+                  <span className="text-xs text-cult-border">{cfg.label.charAt(0)}</span>
                 </button>
               );
             })}
@@ -234,76 +234,76 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
       {/* Search + Filter Bar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
           <input
             type="text"
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-border focus:outline-none focus:border-cult-info/50"
           />
         </div>
         {filter !== 'all' && (
           <button
             onClick={() => setFilter('all')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
           >
             <Filter className="w-3 h-3" /> Clear filter
           </button>
         )}
-        <p className="text-xs text-cult-medium-gray ml-auto">{sorted.length} accounts</p>
+        <p className="text-xs text-cult-border ml-auto">{sorted.length} accounts</p>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-surface-raised text-xs uppercase tracking-wider text-cult-border">
               <th className="text-left py-2 px-3 font-medium">
-                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-text-secondary transition-colors">
                   Account <SortArrow field="customer_name" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium">
-                <button onClick={() => toggleSort('health_score')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('health_score')} className="hover:text-cult-text-secondary transition-colors">
                   Health <SortArrow field="health_score" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden sm:table-cell">
-                <button onClick={() => toggleSort('avg_order_value_90d')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('avg_order_value_90d')} className="hover:text-cult-text-secondary transition-colors">
                   AOV <SortArrow field="avg_order_value_90d" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">
-                <button onClick={() => toggleSort('orders_90d')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('orders_90d')} className="hover:text-cult-text-secondary transition-colors">
                   Frequency <SortArrow field="orders_90d" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden md:table-cell">
-                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-text-secondary transition-colors">
                   Lifetime <SortArrow field="lifetime_revenue" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden md:table-cell">
-                <button onClick={() => toggleSort('product_types_purchased')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('product_types_purchased')} className="hover:text-cult-text-secondary transition-colors">
                   Mix <SortArrow field="product_types_purchased" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden lg:table-cell">Trend</th>
               <th className="text-center py-2 px-2 font-medium hidden lg:table-cell">
-                <button onClick={() => toggleSort('days_since_last_order')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('days_since_last_order')} className="hover:text-cult-text-secondary transition-colors">
                   Recency <SortArrow field="days_since_last_order" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden xl:table-cell">
-                <button onClick={() => toggleSort('visit_compliance_pct')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('visit_compliance_pct')} className="hover:text-cult-text-secondary transition-colors">
                   Visits <SortArrow field="visit_compliance_pct" />
                 </button>
               </th>
               <th className="py-2 px-2 w-8"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/50">
+          <tbody className="divide-y divide-cult-surface-raised/50">
             {sorted.map((a) => {
               const cfg = HEALTH_CONFIG[a.health_label] || HEALTH_CONFIG.dormant;
               const trend = TREND_ICON[a.revenue_trend] || TREND_ICON.inactive;
@@ -313,7 +313,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
               return (
                 <tr
                   key={a.customer_id}
-                  className="hover:bg-cult-dark-gray/40 transition-colors group"
+                  className="hover:bg-cult-surface/40 transition-colors group"
                 >
                   {/* Account */}
                   <td className="py-2.5 px-3">
@@ -321,10 +321,10 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                       onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)}
                       className="text-left"
                     >
-                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-text-primary font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-xs text-cult-light-gray">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
+                      <p className="text-xs text-cult-text-muted">{a.dispensary_code}{a.city ? ` · ${a.city}` : ''}</p>
                     </button>
                   </td>
                   {/* Health */}
@@ -335,16 +335,16 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   </td>
                   {/* AOV */}
                   <td className="py-2.5 px-2 text-right hidden sm:table-cell">
-                    <span className="text-xs text-cult-silver">{fmt$(a.avg_order_value_90d)}</span>
+                    <span className="text-xs text-cult-text-secondary">{fmt$(a.avg_order_value_90d)}</span>
                   </td>
                   {/* Frequency */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
                     <span className={`text-xs font-medium ${freq.color}`}>{freq.label}</span>
-                    <p className="text-xs text-cult-medium-gray">{a.orders_90d} / 90d</p>
+                    <p className="text-xs text-cult-border">{a.orders_90d} / 90d</p>
                   </td>
                   {/* Lifetime */}
                   <td className="py-2.5 px-2 text-right hidden md:table-cell">
-                    <span className="text-xs text-cult-silver">{fmt$(a.lifetime_revenue)}</span>
+                    <span className="text-xs text-cult-text-secondary">{fmt$(a.lifetime_revenue)}</span>
                   </td>
                   {/* Mix */}
                   <td className="py-2.5 px-2 text-center hidden md:table-cell">
@@ -355,12 +355,12 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                           className={`w-2.5 h-2.5 rounded-full ${
                             i <= mix.dots
                               ? mix.dots === 3 ? 'bg-cult-success' : mix.dots === 2 ? 'bg-cult-warning' : 'bg-cult-warning'
-                              : 'bg-cult-charcoal'
+                              : 'bg-cult-surface-raised'
                           }`}
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-cult-medium-gray mt-0.5">{a.distinct_skus_purchased} SKUs</p>
+                    <p className="text-xs text-cult-border mt-0.5">{a.distinct_skus_purchased} SKUs</p>
                   </td>
                   {/* Trend */}
                   <td className="py-2.5 px-2 text-center hidden lg:table-cell">
@@ -369,11 +369,11 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   {/* Recency */}
                   <td className="py-2.5 px-2 text-center hidden lg:table-cell">
                     {a.days_since_last_order !== null ? (
-                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-cult-danger' : a.days_since_last_order > 30 ? 'text-cult-warning' : 'text-cult-silver'}`}>
+                      <span className={`text-xs ${a.days_since_last_order > 60 ? 'text-cult-danger' : a.days_since_last_order > 30 ? 'text-cult-warning' : 'text-cult-text-secondary'}`}>
                         {a.days_since_last_order}d
                       </span>
                     ) : (
-                      <span className="text-xs text-cult-medium-gray">—</span>
+                      <span className="text-xs text-cult-border">—</span>
                     )}
                   </td>
                   {/* Visit compliance */}
@@ -382,7 +382,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
                   </td>
                   {/* Arrow */}
                   <td className="py-2.5 px-2">
-                    <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors" />
+                    <ChevronRight className="w-3.5 h-3.5 text-cult-border group-hover:text-cult-text-secondary transition-colors" />
                   </td>
                 </tr>
               );
@@ -390,7 +390,7 @@ export function StorePerformanceScorecard({}: StorePerformanceScorecardProps) {
           </tbody>
         </table>
         {sorted.length === 0 && (
-          <div className="py-10 text-center text-sm text-cult-medium-gray border border-dashed border-cult-charcoal rounded-lg mt-2">
+          <div className="py-10 text-center text-sm text-cult-border border border-dashed border-cult-surface-raised rounded-lg mt-2">
             {search || filter !== 'all' ? 'No accounts match your filters' : 'No scorecard data available'}
           </div>
         )}
@@ -406,13 +406,13 @@ function VisitBadge({ status, pct }: { status: string; pct: number }) {
     scheduled: { label: 'Scheduled', color: 'text-cult-info' },
     due_soon: { label: 'Due Soon', color: 'text-cult-warning' },
     overdue: { label: 'Overdue', color: 'text-cult-danger' },
-    never_visited: { label: 'Never', color: 'text-cult-medium-gray' },
+    never_visited: { label: 'Never', color: 'text-cult-border' },
   };
   const c = cfg[status] || cfg.never_visited;
   return (
     <div>
       <span className={`text-xs font-medium ${c.color}`}>{c.label}</span>
-      {pct > 0 && <p className="text-xs text-cult-medium-gray">{Math.round(pct)}%</p>}
+      {pct > 0 && <p className="text-xs text-cult-border">{Math.round(pct)}%</p>}
     </div>
   );
 }

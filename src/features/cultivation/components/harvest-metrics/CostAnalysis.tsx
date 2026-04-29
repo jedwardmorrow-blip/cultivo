@@ -141,23 +141,23 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
   return (
     <div className="space-y-6">
       {/* Assumptions toggle */}
-      <div className="bg-cult-near-black border border-cult-dark-gray">
+      <div className="bg-cult-surface border border-cult-surface">
         <button
           type="button"
           onClick={() => setShowParams(!showParams)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-cult-charcoal/30 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-cult-surface-raised/30 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-cult-medium-gray" />
-            <span className="text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
+            <DollarSign className="w-4 h-4 text-cult-border" />
+            <span className="text-xs text-cult-border uppercase tracking-wider font-semibold">
               Cost Assumptions
             </span>
           </div>
-          <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${showParams ? '' : '-rotate-90'}`} />
+          <ChevronDown className={`w-3.5 h-3.5 text-cult-border transition-transform ${showParams ? '' : '-rotate-90'}`} />
         </button>
 
         {showParams && (
-          <div className="border-t border-cult-dark-gray px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="border-t border-cult-surface px-4 py-3 grid grid-cols-2 md:grid-cols-4 gap-3">
             <ParamInput label="Labor rate ($/hr)" value={params.laborRate} onChange={(v) => setParams((p) => ({ ...p, laborRate: v }))} />
             <ParamInput label="Hrs per harvest" value={params.hoursPerHarvest} onChange={(v) => setParams((p) => ({ ...p, hoursPerHarvest: v }))} />
             <ParamInput label="Dry room $/day" value={params.dryRoomCostPerDay} onChange={(v) => setParams((p) => ({ ...p, dryRoomCostPerDay: v }))} />
@@ -192,11 +192,11 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
       {/* Strain cost efficiency */}
       {strainCosts.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-cult-white uppercase tracking-wider">Cost Efficiency by Strain</h3>
+          <h3 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">Cost Efficiency by Strain</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-cult-dark-gray text-xs uppercase tracking-wider text-cult-medium-gray">
+                <tr className="border-b border-cult-surface text-xs uppercase tracking-wider text-cult-border">
                   <th className="text-left py-2 px-3">Strain</th>
                   <th className="text-right py-2 px-3">Dry Weight</th>
                   <th className="text-right py-2 px-3">Est. Cost</th>
@@ -209,10 +209,10 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
                   const isBest = idx === 0 && sc.cost_per_gram != null;
                   const isWorst = idx === strainCosts.length - 1 && sc.cost_per_gram != null && strainCosts.length > 1;
                   return (
-                    <tr key={sc.strain_name} className="border-b border-cult-dark-gray/50 hover:bg-cult-near-black transition-colors">
+                    <tr key={sc.strain_name} className="border-b border-cult-surface/50 hover:bg-cult-surface transition-colors">
                       <td className="py-2.5 px-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-cult-white font-semibold">{sc.strain_name}</span>
+                          <span className="text-cult-text-primary font-semibold">{sc.strain_name}</span>
                           {isBest && (
                             <span className="flex items-center gap-0.5 text-xs text-cult-success">
                               <TrendingDown className="w-3 h-3" /> lowest
@@ -225,16 +225,16 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
                           )}
                         </div>
                       </td>
-                      <td className="text-right py-2.5 px-3 font-mono text-cult-light-gray">
+                      <td className="text-right py-2.5 px-3 font-mono text-cult-text-muted">
                         {sc.total_dry_grams > 0 ? formatWeight(sc.total_dry_grams) : '—'}
                       </td>
-                      <td className="text-right py-2.5 px-3 font-mono text-cult-light-gray">
+                      <td className="text-right py-2.5 px-3 font-mono text-cult-text-muted">
                         ${sc.est_total.toLocaleString()}
                       </td>
-                      <td className="text-right py-2.5 px-3 font-mono font-semibold text-cult-white">
+                      <td className="text-right py-2.5 px-3 font-mono font-semibold text-cult-text-primary">
                         {sc.cost_per_gram != null ? `$${sc.cost_per_gram.toFixed(2)}` : '—'}
                       </td>
-                      <td className="text-right py-2.5 px-3 font-mono text-cult-light-gray">
+                      <td className="text-right py-2.5 px-3 font-mono text-cult-text-muted">
                         {sc.cost_per_lb != null ? `$${sc.cost_per_lb.toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -249,22 +249,22 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
       {/* Room cost efficiency */}
       {roomCosts.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-cult-white uppercase tracking-wider">Cost Efficiency by Room</h3>
+          <h3 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">Cost Efficiency by Room</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {roomCosts.map((rc) => (
-              <div key={rc.room_code} className="bg-cult-near-black border border-cult-dark-gray p-3">
+              <div key={rc.room_code} className="bg-cult-surface border border-cult-surface p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-sm font-bold text-cult-white">{rc.room_code}</span>
-                  <span className="text-xs text-cult-medium-gray">{rc.harvest_count} harvests</span>
+                  <span className="font-mono text-sm font-bold text-cult-text-primary">{rc.room_code}</span>
+                  <span className="text-xs text-cult-border">{rc.harvest_count} harvests</span>
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <div className="text-xs text-cult-medium-gray uppercase tracking-wider">Est. Cost</div>
-                    <div className="text-sm font-mono text-cult-light-gray">${rc.est_total.toLocaleString()}</div>
+                    <div className="text-xs text-cult-border uppercase tracking-wider">Est. Cost</div>
+                    <div className="text-sm font-mono text-cult-text-muted">${rc.est_total.toLocaleString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-cult-medium-gray uppercase tracking-wider">$/gram</div>
-                    <div className="text-lg font-mono font-bold text-cult-white">
+                    <div className="text-xs text-cult-border uppercase tracking-wider">$/gram</div>
+                    <div className="text-lg font-mono font-bold text-cult-text-primary">
                       {rc.cost_per_gram != null ? `$${rc.cost_per_gram.toFixed(2)}` : '—'}
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
       )}
 
       {/* Disclaimer */}
-      <p className="text-xs text-cult-medium-gray italic">
+      <p className="text-xs text-cult-border italic">
         Cost estimates are based on configurable assumptions and harvest data. Adjust assumptions above to refine projections.
         Actual costs may vary based on labor scheduling, utility rates, and supply chain factors.
       </p>
@@ -289,14 +289,14 @@ export function CostAnalysis({ rows, totals, strainAggregates, roomAggregates }:
 function ParamInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
-      <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-1">{label}</label>
+      <label className="block text-xs text-cult-border uppercase tracking-wider mb-1">{label}</label>
       <input
         type="number"
         min={0}
         step={0.5}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-        className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs text-center py-1.5 rounded-sm focus:outline-none focus:border-cult-accent"
+        className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary text-xs text-center py-1.5 rounded-sm focus:outline-none focus:border-cult-accent"
       />
     </div>
   );
@@ -304,10 +304,10 @@ function ParamInput({ label, value, onChange }: { label: string; value: number; 
 
 function CostCard({ label, value, sub, custom }: { label: string; value: string; sub: string; custom?: React.ReactNode }) {
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray p-3">
-      <div className="text-xs text-cult-medium-gray uppercase tracking-wider">{label}</div>
-      {value && <div className="text-xl font-mono font-bold text-cult-white mt-1">{value}</div>}
-      {sub && <div className="text-xs text-cult-light-gray mt-0.5">{sub}</div>}
+    <div className="bg-cult-surface border border-cult-surface p-3">
+      <div className="text-xs text-cult-border uppercase tracking-wider">{label}</div>
+      {value && <div className="text-xl font-mono font-bold text-cult-text-primary mt-1">{value}</div>}
+      {sub && <div className="text-xs text-cult-text-muted mt-0.5">{sub}</div>}
       {custom}
     </div>
   );
@@ -317,11 +317,11 @@ function CostBar({ label, amount, total, color }: { label: string; amount: numbe
   const pct = total > 0 ? (amount / total) * 100 : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-cult-light-gray w-10">{label}</span>
-      <div className="flex-1 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
+      <span className="text-xs text-cult-text-muted w-10">{label}</span>
+      <div className="flex-1 h-1.5 bg-cult-surface rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-mono text-cult-medium-gray w-12 text-right">${amount.toLocaleString()}</span>
+      <span className="text-xs font-mono text-cult-border w-12 text-right">${amount.toLocaleString()}</span>
     </div>
   );
 }

@@ -139,7 +139,7 @@ export function ProductTypesManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading product types...</div>
+        <div className="text-cult-text-muted">Loading product types...</div>
       </div>
     );
   }
@@ -158,53 +158,53 @@ export function ProductTypesManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+      <div className="bg-cult-surface border border-cult-border p-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Box className="w-6 h-6 text-cult-white" />
-            <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+            <Box className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
               Product Types
             </h2>
           </div>
           <button
             onClick={handleAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+            className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider"
           >
             <Plus className="w-4 h-4" />
             Add Type
           </button>
         </div>
 
-        <div className="mb-6 bg-cult-black border border-cult-medium-gray p-4">
-          <p className="text-sm text-cult-light-gray">
+        <div className="mb-6 bg-cult-black border border-cult-border p-4">
+          <p className="text-sm text-cult-text-muted">
             Product types define the different forms your products take (e.g., Flower, 3.5g Flower, 1g Preroll).
             Each type can be associated with specific stages.
           </p>
         </div>
 
         {adding && (
-          <div className="mb-4 bg-cult-black border border-cult-medium-gray p-6">
+          <div className="mb-4 bg-cult-black border border-cult-border p-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">
+              <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide mb-4">
                 Add New Product Type
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Name *
                   </label>
                   <input
                     type="text"
                     value={editForm.name || ''}
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                     placeholder="e.g., 3.5g Flower"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Base Weight
                   </label>
                   <input
@@ -214,19 +214,19 @@ export function ProductTypesManagement() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, base_weight: e.target.value ? Number(e.target.value) : null })
                     }
-                    className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                     placeholder="Optional"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Unit
                   </label>
                   <select
                     value={editForm.base_unit || 'g'}
                     onChange={(e) => setEditForm({ ...editForm, base_unit: e.target.value })}
-                    className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                   >
                     <option value="g">Gram (g)</option>
                     <option value="oz">Ounce (oz)</option>
@@ -237,7 +237,7 @@ export function ProductTypesManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Applicable Stages
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -247,8 +247,8 @@ export function ProductTypesManagement() {
                       onClick={() => toggleStage(stage.name)}
                       className={`px-4 py-2 border text-sm font-medium uppercase tracking-wider transition-all duration-200 ${
                         editForm.applicable_stages?.includes(stage.name)
-                          ? 'bg-cult-white text-cult-black border-cult-white'
-                          : 'bg-cult-near-black text-cult-white border-cult-medium-gray hover:border-cult-white'
+                          ? 'bg-cult-accent text-cult-opaque-black border-cult-accent'
+                          : 'bg-cult-surface text-cult-text-primary border-cult-border hover:border-cult-accent'
                       }`}
                     >
                       {stage.name}
@@ -258,29 +258,29 @@ export function ProductTypesManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Description
                 </label>
                 <textarea
                   value={editForm.description || ''}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                   rows={2}
-                  className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                  className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                   placeholder="Optional description"
                 />
               </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t border-cult-medium-gray">
+              <div className="flex gap-2 justify-end pt-4 border-t border-cult-border">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                  className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                 >
                   <X className="w-4 h-4" />
                   Cancel
                 </button>
                 <button
                   onClick={() => handleSave()}
-                  className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                  className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                 >
                   <Save className="w-4 h-4" />
                   Save
@@ -292,24 +292,24 @@ export function ProductTypesManagement() {
 
         <div className="space-y-4">
           {types.map((type) => (
-            <div key={type.id} className="bg-cult-black border border-cult-medium-gray p-6">
+            <div key={type.id} className="bg-cult-black border border-cult-border p-6">
               {editingId === type.id ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+                    <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                       Edit Type
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(type.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                       >
                         <Save className="w-4 h-4" />
                         Save
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                       >
                         <X className="w-4 h-4" />
                         Cancel
@@ -319,19 +319,19 @@ export function ProductTypesManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Name *
                       </label>
                       <input
                         type="text"
                         value={editForm.name || ''}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Base Weight
                       </label>
                       <input
@@ -341,18 +341,18 @@ export function ProductTypesManagement() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, base_weight: e.target.value ? Number(e.target.value) : null })
                         }
-                        className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Unit
                       </label>
                       <select
                         value={editForm.base_unit || 'g'}
                         onChange={(e) => setEditForm({ ...editForm, base_unit: e.target.value })}
-                        className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                       >
                         <option value="g">Gram (g)</option>
                         <option value="oz">Ounce (oz)</option>
@@ -363,7 +363,7 @@ export function ProductTypesManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       Applicable Stages
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -373,8 +373,8 @@ export function ProductTypesManagement() {
                           onClick={() => toggleStage(stage.name)}
                           className={`px-4 py-2 border text-sm font-medium uppercase tracking-wider transition-all duration-200 ${
                             editForm.applicable_stages?.includes(stage.name)
-                              ? 'bg-cult-white text-cult-black border-cult-white'
-                              : 'bg-cult-near-black text-cult-white border-cult-medium-gray hover:border-cult-white'
+                              ? 'bg-cult-accent text-cult-opaque-black border-cult-accent'
+                              : 'bg-cult-surface text-cult-text-primary border-cult-border hover:border-cult-accent'
                           }`}
                         >
                           {stage.name}
@@ -384,27 +384,27 @@ export function ProductTypesManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       Description
                     </label>
                     <textarea
                       value={editForm.description || ''}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                       rows={2}
-                      className="w-full px-4 py-3 bg-white border border-cult-medium-gray text-black focus:outline-none focus:border-cult-white"
+                      className="w-full px-4 py-3 bg-white border border-cult-border text-black focus:outline-none focus:border-cult-accent"
                     />
                   </div>
                 </div>
               ) : (
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+                    <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                       {type.name}
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(type)}
-                        className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit
@@ -421,34 +421,34 @@ export function ProductTypesManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">
                         Base Weight
                       </span>
-                      <p className="text-cult-white mt-1 font-medium">
+                      <p className="text-cult-text-primary mt-1 font-medium">
                         {type.base_weight != null ? `${type.base_weight} ${type.base_unit}` : 'N/A'}
                       </p>
                     </div>
 
                     <div className="md:col-span-2">
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">
                         Applicable Stages
                       </span>
-                      <p className="text-cult-white mt-1 font-medium">
+                      <p className="text-cult-text-primary mt-1 font-medium">
                         {type.applicable_stages.join(', ')}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">Status</span>
-                      <p className="text-cult-white mt-1 font-medium">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">Status</span>
+                      <p className="text-cult-text-primary mt-1 font-medium">
                         {type.is_active ? 'Active' : 'Inactive'}
                       </p>
                     </div>
                   </div>
 
                   {type.description && (
-                    <div className="mt-4 pt-4 border-t border-cult-medium-gray">
-                      <p className="text-sm text-cult-light-gray">{type.description}</p>
+                    <div className="mt-4 pt-4 border-t border-cult-border">
+                      <p className="text-sm text-cult-text-muted">{type.description}</p>
                     </div>
                   )}
                 </div>

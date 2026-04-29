@@ -46,13 +46,13 @@ export const RowActionMenu = memo(function RowActionMenu({ actions }: RowActionM
           e.stopPropagation();
           setOpen((prev) => !prev);
         }}
-        className="p-1.5 rounded-md hover:bg-cult-medium-gray/60 text-cult-lighter-gray hover:text-cult-white transition-colors"
+        className="p-1.5 rounded-md hover:bg-cult-border/60 text-cult-text-muted hover:text-cult-text-primary transition-colors"
       >
         <MoreVertical className="w-4 h-4" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-30 min-w-[180px] bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl py-1 animate-fade-in">
+        <div className="absolute right-0 top-full mt-1 z-30 min-w-[180px] bg-cult-surface border border-cult-border rounded-lg py-1 animate-fade-in">
           {visibleActions.map((action, idx) => (
             <button
               key={idx}
@@ -64,7 +64,7 @@ export const RowActionMenu = memo(function RowActionMenu({ actions }: RowActionM
               className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-sm transition-colors ${
                 action.destructive
                   ? 'text-cult-danger hover:bg-cult-danger-muted hover:text-cult-danger'
-                  : 'text-cult-silver hover:bg-cult-dark-gray hover:text-cult-white'
+                  : 'text-cult-text-secondary hover:bg-cult-surface hover:text-cult-text-primary'
               }`}
             >
               {action.icon}

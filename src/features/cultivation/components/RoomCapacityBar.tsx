@@ -8,7 +8,7 @@ export function RoomCapacityBar({ currentCount, capacity, className = '' }: Room
   if (capacity === null || capacity <= 0) {
     return (
       <div className={`flex items-center gap-1.5 ${className}`}>
-        <span className="text-xs text-cult-medium-gray font-mono">{currentCount} plants</span>
+        <span className="text-xs text-cult-border font-mono">{currentCount} plants</span>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export function RoomCapacityBar({ currentCount, capacity, className = '' }: Room
         </span>
         <span className={`text-xs font-mono ${textColor}`}>{pct}%</span>
       </div>
-      <div className="h-1 bg-cult-dark-gray rounded-full overflow-hidden">
+      <div className="h-1 bg-cult-surface rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${pct}%` }}

@@ -60,9 +60,9 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
 
   if (ba.step === 'assign') {
     return (
-      <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
+      <div className="bg-cult-black/80 border border-cult-border/50 rounded-lg mx-4 my-2">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-cult-medium-gray/30">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-cult-border/30">
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-cult-info" />
             <span className="text-sm font-medium text-white">
@@ -90,7 +90,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         </div>
 
         {/* Two-panel layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-cult-medium-gray/30" style={{ minHeight: '280px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-cult-border/30" style={{ minHeight: '280px' }}>
           {/* LEFT: Available Packages */}
           <div className="p-3">
             <div className="text-xs uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1">
@@ -206,7 +206,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
                           ? 'bg-cult-success-muted border border-cult-success/20'
                           : partiallyDrafted
                           ? 'bg-cult-info-muted border border-cult-info/20'
-                          : 'bg-cult-dark-gray/30 border border-transparent'
+                          : 'bg-cult-surface/30 border border-transparent'
                       }`}
                     >
                       <UrgencyDot urgency={order.urgency} />
@@ -234,7 +234,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
 
         {/* Drafted assignments summary bar */}
         {ba.totalDraftCount > 0 && (
-          <div className="border-t border-cult-medium-gray/30 px-4 py-2">
+          <div className="border-t border-cult-border/30 px-4 py-2">
             <div className="flex flex-wrap gap-1">
               {ba.drafts.map(d => (
                 <span
@@ -277,8 +277,8 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
 
   if (ba.step === 'preview') {
     return (
-      <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-cult-medium-gray/30">
+      <div className="bg-cult-black/80 border border-cult-border/50 rounded-lg mx-4 my-2">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-cult-border/30">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4 text-cult-success" />
             <span className="text-sm font-medium text-white">
@@ -293,24 +293,24 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         <div className="px-4 py-3">
           {/* Summary stats */}
           <div className={`grid gap-4 mb-4 ${ba.preview.totalBatchAllocations > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
-            <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+            <div className="bg-cult-surface/40 rounded p-3 text-center">
               <div className="text-lg font-bold text-white">{ba.preview.totalOrderItemsTouched}</div>
               <div className="text-xs uppercase tracking-wider text-gray-500">Orders Filled</div>
             </div>
             {ba.preview.totalUnitsAssigned > 0 && (
-              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+              <div className="bg-cult-surface/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{ba.preview.totalUnitsAssigned}</div>
                 <div className="text-xs uppercase tracking-wider text-gray-500">Pkg Units</div>
               </div>
             )}
             {ba.preview.totalPackagesUsed > 0 && (
-              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+              <div className="bg-cult-surface/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{ba.preview.totalPackagesUsed}</div>
                 <div className="text-xs uppercase tracking-wider text-gray-500">Packages Used</div>
               </div>
             )}
             {ba.preview.totalBatchAllocations > 0 && (
-              <div className="bg-cult-dark-gray/40 rounded p-3 text-center">
+              <div className="bg-cult-surface/40 rounded p-3 text-center">
                 <div className="text-lg font-bold text-white">{formatWeight(ba.preview.totalBatchWeightG)}</div>
                 <div className="text-xs uppercase tracking-wider text-gray-500">Batch Weight</div>
               </div>
@@ -322,7 +322,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
             {ba.drafts.map(d => (
               <div
                 key={d.draftId}
-                className="flex items-center gap-3 px-3 py-2 bg-cult-dark-gray/20 rounded text-sm text-gray-300"
+                className="flex items-center gap-3 px-3 py-2 bg-cult-surface/20 rounded text-sm text-gray-300"
               >
                 <Package className="w-3 h-3 text-cult-info/60" />
                 <span className="font-mono text-xs">{d.packageLabel.slice(-12)}</span>
@@ -352,7 +352,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
         </div>
 
         {/* Action bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-cult-medium-gray/30">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-cult-border/30">
           <button
             onClick={ba.goBackToAssign}
             className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors"
@@ -378,13 +378,13 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
       : 0;
 
     return (
-      <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
+      <div className="bg-cult-black/80 border border-cult-border/50 rounded-lg mx-4 my-2">
         <div className="px-4 py-6 text-center">
           <Loader2 className="w-6 h-6 animate-spin text-cult-info mx-auto mb-3" />
           <div className="text-sm text-gray-300 mb-2">
             Committing assignments… {ba.commitProgress.done}/{ba.commitProgress.total}
           </div>
-          <div className="w-48 mx-auto bg-cult-dark-gray rounded-full h-2 overflow-hidden">
+          <div className="w-48 mx-auto bg-cult-surface rounded-full h-2 overflow-hidden">
             <div
               className="h-full bg-cult-info transition-all duration-300"
               style={{ width: `${pct}%` }}
@@ -400,7 +400,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
   if (ba.step === 'done') {
     const hasErrors = ba.commitErrors.length > 0;
     return (
-      <div className="bg-cult-black/80 border border-cult-medium-gray/50 rounded-lg mx-4 my-2">
+      <div className="bg-cult-black/80 border border-cult-border/50 rounded-lg mx-4 my-2">
         <div className="px-4 py-6 text-center">
           {hasErrors ? (
             <AlertTriangle className="w-6 h-6 text-cult-warning mx-auto mb-3" />
@@ -426,7 +426,7 @@ export function BatchAssignPanel({ context, onClose, onCommitComplete }: BatchAs
               refetchBatches();
               onCommitComplete?.();
             }}
-            className="px-4 py-2 text-sm font-medium bg-cult-dark-gray hover:bg-cult-medium-gray text-white rounded transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-cult-surface hover:bg-cult-border text-white rounded transition-colors"
           >
             Done
           </button>
@@ -454,10 +454,10 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
   const [assignQtys, setAssignQtys] = useState<Record<string, number>>({});
 
   return (
-    <div className={`rounded border ${fullyDrafted ? 'border-cult-success/20 bg-cult-success/5' : 'border-cult-medium-gray/20 bg-cult-dark-gray/20'}`}>
+    <div className={`rounded border ${fullyDrafted ? 'border-cult-success/20 bg-cult-success/5' : 'border-cult-border/20 bg-cult-surface/20'}`}>
       {/* Package header */}
       <div
-        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-cult-dark-gray/30"
+        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-cult-surface/30"
         onClick={() => !fullyDrafted && setExpanded(!expanded)}
       >
         {!fullyDrafted && (
@@ -478,7 +478,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
 
       {/* Expanded: assign to orders */}
       {expanded && !fullyDrafted && (
-        <div className="border-t border-cult-medium-gray/20 px-3 py-2 space-y-1">
+        <div className="border-t border-cult-border/20 px-3 py-2 space-y-1">
           {orders.map(order => {
             const orderRemaining = getRemainingOrderItemQty(order.order_item_id, order.quantity);
             if (orderRemaining <= 0) return null;
@@ -502,7 +502,7 @@ function PackageRow({ pkg, remainingQty, fullyDrafted, orders, onAssign, getRema
                     const v = Math.max(1, Math.min(maxAssignable, parseInt(e.target.value) || 1));
                     setAssignQtys(prev => ({ ...prev, [order.order_item_id]: v }));
                   }}
-                  className="w-14 px-1 py-0.5 bg-cult-dark-gray border border-cult-medium-gray/30 rounded text-xs text-white text-center"
+                  className="w-14 px-1 py-0.5 bg-cult-surface border border-cult-border/30 rounded text-xs text-white text-center"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <button
@@ -630,7 +630,7 @@ function BatchRow({ batch, remainingG, fullyDrafted, orders, onAllocate, getRema
                     const v = Math.max(1, Math.min(Math.round(maxAllocG), parseInt(e.target.value) || 1));
                     setAllocWeights(prev => ({ ...prev, [order.order_item_id]: v }));
                   }}
-                  className="w-16 px-1 py-0.5 bg-cult-dark-gray border border-cult-medium-gray/30 rounded text-xs text-white text-center"
+                  className="w-16 px-1 py-0.5 bg-cult-surface border border-cult-border/30 rounded text-xs text-white text-center"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <span className="text-xs text-gray-500">g</span>

@@ -74,8 +74,8 @@ export function StatusActionPanel({
 
   return (
     <>
-      <div className="bg-cult-near-black border border-cult-charcoal rounded-cult p-4 space-y-3">
-        <h4 className="text-xs font-semibold text-cult-silver uppercase tracking-wider">
+      <div className="bg-cult-surface border border-cult-surface-raised rounded-cult p-4 space-y-3">
+        <h4 className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wider">
           Status Actions
         </h4>
 
@@ -85,7 +85,7 @@ export function StatusActionPanel({
               <Calendar className="w-3.5 h-3.5" />
               Delivery date required
             </div>
-            <p className="text-xs text-cult-silver">
+            <p className="text-xs text-cult-text-secondary">
               Set a delivery date before marking this order as ready.
             </p>
             <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function StatusActionPanel({
                 type="date"
                 value={pendingDate}
                 onChange={(e) => setPendingDate(e.target.value)}
-                className="flex-1 px-3 py-1.5 bg-cult-black border border-cult-charcoal rounded text-xs text-cult-off-white focus:outline-none focus:border-cult-green"
+                className="flex-1 px-3 py-1.5 bg-cult-black border border-cult-surface-raised rounded text-xs text-cult-text-primary focus:outline-none focus:border-cult-green"
               />
               <button
                 onClick={handleDateSubmitAndAdvance}
@@ -104,7 +104,7 @@ export function StatusActionPanel({
               </button>
               <button
                 onClick={() => { setShowDatePrompt(false); setPendingDate(''); }}
-                className="px-2 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+                className="px-2 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
               >
                 Cancel
               </button>
@@ -136,7 +136,7 @@ export function StatusActionPanel({
                     : getTransitionLabel(currentStatus, nextStatus)}
                 </button>
                 {hint && (
-                  <p className="text-xs text-cult-lighter-gray leading-relaxed px-1">
+                  <p className="text-xs text-cult-text-muted leading-relaxed px-1">
                     {hint}
                   </p>
                 )}
@@ -147,7 +147,7 @@ export function StatusActionPanel({
               <button
                 onClick={() => handleTransition(prevStatus)}
                 disabled={!!updating}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-cult-charcoal text-cult-silver hover:text-cult-white hover:border-cult-medium-gray text-xs font-semibold rounded-cult transition-all disabled:opacity-40"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-cult-surface-raised text-cult-text-secondary hover:text-cult-text-primary hover:border-cult-border text-xs font-semibold rounded-cult transition-all disabled:opacity-40"
               >
                 <Undo2 className="w-3.5 h-3.5" />
                 {updating === prevStatus

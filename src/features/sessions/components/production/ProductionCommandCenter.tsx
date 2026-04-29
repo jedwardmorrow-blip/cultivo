@@ -151,17 +151,17 @@ export function ProductionCommandCenter() {
     <div className="p-6 max-w-[1600px] mx-auto space-y-6">
       {/* Header + view toggle */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Production</h1>
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+        <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">PRODUCTION</h1>
+        <div className="flex items-center gap-1 p-1 rounded border border-cult-border-faint bg-cult-surface-inset">
           {(['floor', 'performance'] as const).map(mode => (
             <button
               key={mode}
               type="button"
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-4 py-1.5 rounded text-[11px] font-mono uppercase tracking-[0.14em] transition-colors ${
                 viewMode === mode
-                  ? 'bg-white/[0.08] text-white/70 shadow-sm'
-                  : 'text-white/30 hover:text-white/50'
+                  ? 'bg-cult-surface-raised text-cult-text-primary'
+                  : 'text-cult-text-muted hover:text-cult-text-secondary'
               }`}
             >
               {mode === 'floor' ? 'Floor' : 'Performance'}

@@ -85,9 +85,9 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
     }
   }
 
-  const selectClass = 'w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
+  const selectClass = 'w-full bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
   const inputClass = selectClass;
-  const labelClass = 'block text-xs text-cult-light-gray uppercase tracking-wider mb-1';
+  const labelClass = 'block text-xs text-cult-text-muted uppercase tracking-wider mb-1';
 
   const formContent = (
     <div className="space-y-4">
@@ -97,11 +97,11 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
             <Skull className="w-4 h-4 text-cult-danger" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Log Dead Plants</h3>
-            <p className="text-xs text-cult-medium-gray mt-0.5">Record plant mortality</p>
+            <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">Log Dead Plants</h3>
+            <p className="text-xs text-cult-border mt-0.5">Record plant mortality</p>
           </div>
         </div>
-        <button type="button" onClick={onClose} className="p-1 text-cult-medium-gray hover:text-cult-light-gray transition-colors">
+        <button type="button" onClick={onClose} className="p-1 text-cult-border hover:text-cult-text-muted transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -123,12 +123,12 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
       </div>
 
       {selectedGroup && (
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm px-3 py-2 flex items-center justify-between text-xs">
-          <span className="text-cult-light-gray">
-            Stage: <span className="text-cult-white font-medium capitalize">{selectedGroup.growth_stage}</span>
+        <div className="bg-cult-surface border border-cult-surface rounded-sm px-3 py-2 flex items-center justify-between text-xs">
+          <span className="text-cult-text-muted">
+            Stage: <span className="text-cult-text-primary font-medium capitalize">{selectedGroup.growth_stage}</span>
           </span>
-          <span className="text-cult-light-gray">
-            Plants: <span className="text-cult-white font-medium">{selectedGroup.plant_count}</span>
+          <span className="text-cult-text-muted">
+            Plants: <span className="text-cult-text-primary font-medium">{selectedGroup.plant_count}</span>
           </span>
         </div>
       )}
@@ -140,7 +140,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
             type="button"
             onClick={decrementCount}
             disabled={deadCount <= 1}
-            className="w-10 h-10 flex items-center justify-center rounded-sm bg-cult-charcoal border border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray disabled:opacity-30 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-sm bg-cult-surface-raised border border-cult-surface text-cult-text-muted hover:border-cult-border disabled:opacity-30 transition-colors"
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -153,13 +153,13 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
               const v = parseInt(e.target.value);
               if (!isNaN(v) && v >= 1 && v <= maxCount) setDeadCount(v);
             }}
-            className="w-20 text-center bg-cult-charcoal border border-cult-dark-gray text-cult-white text-lg font-bold py-2 rounded-sm focus:outline-none focus:border-cult-accent"
+            className="w-20 text-center bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-lg font-bold py-2 rounded-sm focus:outline-none focus:border-cult-accent"
           />
           <button
             type="button"
             onClick={incrementCount}
             disabled={deadCount >= maxCount}
-            className="w-10 h-10 flex items-center justify-center rounded-sm bg-cult-charcoal border border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray disabled:opacity-30 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-sm bg-cult-surface-raised border border-cult-surface text-cult-text-muted hover:border-cult-border disabled:opacity-30 transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -177,7 +177,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
               className={`px-3 py-1.5 text-xs rounded-sm border transition-colors ${
                 cause === c
                   ? 'bg-cult-danger-muted border-cult-danger text-cult-danger'
-                  : 'bg-cult-charcoal border-cult-dark-gray text-cult-light-gray hover:border-cult-medium-gray'
+                  : 'bg-cult-surface-raised border-cult-surface text-cult-text-muted hover:border-cult-border'
               }`}
             >
               {formatLabel(c)}
@@ -234,7 +234,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
         className="fixed inset-0 z-50 flex items-end bg-black/60"
         onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
       >
-        <div className="w-full bg-cult-surface-overlay border-t border-cult-medium-gray rounded-t-xl p-5 max-h-[90vh] overflow-y-auto animate-slide-in">
+        <div className="w-full bg-cult-surface-overlay border-t border-cult-border rounded-t-xl p-5 max-h-[90vh] overflow-y-auto animate-slide-in">
           {formContent}
         </div>
       </div>
@@ -247,7 +247,7 @@ export function DeadPlantForm({ prefilledRoomId, onComplete, onClose }: DeadPlan
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
     >
-      <div className="bg-cult-surface-overlay border border-cult-medium-gray w-full max-w-sm p-5 animate-fade-in">
+      <div className="bg-cult-surface-overlay border border-cult-border w-full max-w-sm p-5 animate-fade-in">
         {formContent}
       </div>
     </div>

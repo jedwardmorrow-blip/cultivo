@@ -236,8 +236,8 @@ function OperatorLeaderboard({ trimCompleted, buckingCompleted, packagingComplet
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className={`text-[10px] px-2 py-1 rounded-lg transition-colors ${
-                filter === f ? 'bg-white/[0.08] text-white/60' : 'text-white/25 hover:text-white/40'
+              className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                filter === f ? 'bg-cult-surface-overlay text-cult-text-secondary' : 'text-cult-text-faint hover:text-cult-text-muted'
               }`}
             >
               {f === 'all' ? 'All' : SESSION_TYPE_COLORS[f].label}
@@ -255,7 +255,7 @@ function OperatorLeaderboard({ trimCompleted, buckingCompleted, packagingComplet
             return (
               <div
                 key={`${op.type}-${op.name}`}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+                className="flex items-center gap-3 px-3 py-2 rounded bg-cult-surface-inset border border-cult-border-faint"
               >
                 <span className="w-5 text-center text-sm">{i < 3 ? medals[i] : <span className="text-[10px] text-white/20">{i + 1}</span>}</span>
                 <span className="text-xs text-white/60 flex-1 truncate">{op.name}</span>
@@ -370,7 +370,7 @@ function VarianceSummary({ trimCompleted, buckingCompleted }: { trimCompleted: T
             <span className="text-white/35">Output</span>
             <span className="text-white/60 font-medium">{formatWeight(totalOutput)}</span>
           </div>
-          <div className="h-px bg-white/[0.06]" />
+          <div className="h-px bg-cult-border-subtle" />
           <div className="flex justify-between text-xs">
             <span className="text-white/35">Yield</span>
             <span className={`font-semibold ${yieldPct >= 80 ? 'text-emerald-400' : yieldPct >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
@@ -473,8 +473,8 @@ function CompletedHistory({ allTrim, allBucking, allPackaging }: {
               key={f}
               type="button"
               onClick={() => { setTypeFilter(f); setPage(0); }}
-              className={`text-[10px] px-2 py-1 rounded-lg transition-colors ${
-                typeFilter === f ? 'bg-white/[0.08] text-white/60' : 'text-white/25 hover:text-white/40'
+              className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                typeFilter === f ? 'bg-cult-surface-overlay text-cult-text-secondary' : 'text-cult-text-faint hover:text-cult-text-muted'
               }`}
             >
               {f === 'all' ? 'All' : SESSION_TYPE_COLORS[f].label}
@@ -487,7 +487,7 @@ function CompletedHistory({ allTrim, allBucking, allPackaging }: {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="text-white/25 border-b border-white/[0.06]">
+            <tr className="text-cult-text-faint border-b border-cult-border-subtle">
               <th className="text-left pb-2 font-medium">Date</th>
               <th className="text-left pb-2 font-medium">Operator</th>
               <th className="text-left pb-2 font-medium">Strain</th>
@@ -501,7 +501,7 @@ function CompletedHistory({ allTrim, allBucking, allPackaging }: {
             {pageRows.map(row => {
               const color = SESSION_TYPE_COLORS[row.type];
               return (
-                <tr key={row.id} className="border-b border-white/[0.03] text-white/50">
+                <tr key={row.id} className="border-b border-cult-border-faint text-cult-text-secondary">
                   <td className="py-1.5 text-white/30">{row.date}</td>
                   <td className="py-1.5">{row.worker}</td>
                   <td className="py-1.5">{row.strain}</td>
@@ -523,7 +523,7 @@ function CompletedHistory({ allTrim, allBucking, allPackaging }: {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/[0.04]">
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-cult-border-faint">
           <span className="text-[10px] text-white/20">Page {page + 1} of {totalPages}</span>
           <div className="flex gap-1">
             <button

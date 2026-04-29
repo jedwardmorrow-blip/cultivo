@@ -33,7 +33,7 @@ const LIFECYCLE_DISPLAY: Record<string, { label: string; color: string }> = {
   lab: { label: 'Lab', color: 'text-indigo-400 bg-indigo-900/20 border-indigo-700' },
   // Terminal
   depleted: { label: 'Depleted', color: 'text-orange-400 bg-orange-900/20 border-orange-700' },
-  archived: { label: 'Archived', color: 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray' },
+  archived: { label: 'Archived', color: 'text-cult-text-muted bg-cult-border/20 border-cult-border' },
 };
 
 function isArchivedBatch(batch: BatchWithCOAStatus): boolean {
@@ -43,7 +43,7 @@ function isArchivedBatch(batch: BatchWithCOAStatus): boolean {
 function getLifecycleBadge(state: string) {
   const display = LIFECYCLE_DISPLAY[state] || {
     label: state.replace(/_/g, ' '),
-    color: 'text-cult-light-gray bg-cult-medium-gray/20 border-cult-medium-gray',
+    color: 'text-cult-text-muted bg-cult-border/20 border-cult-border',
   };
   return (
     <span className={`px-2 py-1 text-xs uppercase tracking-wider border ${display.color}`}>
@@ -60,6 +60,7 @@ export function BatchManagement() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('active');
   const [showNewBatchForm, setShowNewBatchForm] = useState(false);
   const [filterCOAStatus, setFilterCOAStatus] = useState<'all' | 'active' | 'missing'>('all');
+  const [showPreHarvest, setShowPreHarvest] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [coaUploadState, setCOAUploadState] = useState<{
     isOpen: boolean;
@@ -172,6 +173,10 @@ export function BatchManagement() {
   const filteredBatches = useMemo(() => {
     let result = tabBatches;
 
+    if (!showPreHarvest && activeTab === 'active') {
+      result = result.filter(batch => !!batch.harvest_date);
+    }
+
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       result = result.filter(batch => {
@@ -185,32 +190,32 @@ export function BatchManagement() {
     }
 
     return result;
-  }, [tabBatches, searchTerm, filterCOAStatus]);
+  }, [tabBatches, searchTerm, filterCOAStatus, showPreHarvest, activeTab]);
 
   const isActive = activeTab === 'active';
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-cult-white text-xl">Loading batches...</div>
+        <div className="text-cult-text-primary text-xl">Loading batches...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface border border-cult-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Package className="w-6 h-6 text-cult-white" />
-            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+            <Package className="w-5 h-5 text-cult-text-muted" />
+            <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">
               Batch Management
-            </h2>
+            </h1>
           </div>
           {isActive && (
             <button
               onClick={() => setShowNewBatchForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider"
+              className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider"
             >
               <Plus className="w-4 h-4" />
               New Batch
@@ -223,14 +228,14 @@ export function BatchManagement() {
             onClick={() => setActiveTab('active')}
             className={`flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wider transition-all ${
               isActive
-                ? 'bg-cult-white text-cult-black'
-                : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                ? 'bg-cult-accent text-cult-opaque-black'
+                : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
             }`}
           >
             <Package className="w-4 h-4" />
             Active
             <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
-              isActive ? 'bg-cult-black/10' : 'bg-cult-medium-gray/30'
+              isActive ? 'bg-cult-black/10' : 'bg-cult-border/30'
             }`}>
               {activeBatches.length}
             </span>
@@ -239,14 +244,14 @@ export function BatchManagement() {
             onClick={() => setActiveTab('archived')}
             className={`flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-wider transition-all ${
               !isActive
-                ? 'bg-cult-white text-cult-black'
-                : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                ? 'bg-cult-accent text-cult-opaque-black'
+                : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
             }`}
           >
             <Archive className="w-4 h-4" />
             Archived
             <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
-              !isActive ? 'bg-cult-black/10' : 'bg-cult-medium-gray/30'
+              !isActive ? 'bg-cult-black/10' : 'bg-cult-border/30'
             }`}>
               {archivedBatches.length}
             </span>
@@ -279,39 +284,39 @@ export function BatchManagement() {
         )}
 
         {isActive && showNewBatchForm && (
-          <div className="mb-6 p-6 bg-cult-black border border-cult-medium-gray">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-4">
+          <div className="mb-6 p-6 bg-cult-black border border-cult-border">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider mb-4">
               Create New Batch
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Batch Number *
                 </label>
                 <input
                   type="text"
                   value={newBatch.batch_number}
                   onChange={(e) => setNewBatch({ ...newBatch, batch_number: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   placeholder="25064H"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Strain *
                 </label>
                 <input
                   type="text"
                   value={newBatch.strain}
                   onChange={(e) => setNewBatch({ ...newBatch, strain: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   placeholder="Strain name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Initial Weight (grams) (Optional)
                 </label>
                 <input
@@ -319,45 +324,45 @@ export function BatchManagement() {
                   step="0.1"
                   value={newBatch.initial_weight_grams || ''}
                   onChange={(e) => setNewBatch({ ...newBatch, initial_weight_grams: e.target.value ? parseFloat(e.target.value) : undefined })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   placeholder="Leave empty if not known"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Harvest Date
                 </label>
                 <input
                   type="date"
                   value={newBatch.harvest_date || ''}
                   onChange={(e) => setNewBatch({ ...newBatch, harvest_date: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Room
                 </label>
                 <input
                   type="text"
                   value={newBatch.room || ''}
                   onChange={(e) => setNewBatch({ ...newBatch, room: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   placeholder="Room number"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                   Notes
                 </label>
                 <input
                   type="text"
                   value={newBatch.notes || ''}
                   onChange={(e) => setNewBatch({ ...newBatch, notes: e.target.value })}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
               </div>
             </div>
@@ -365,13 +370,13 @@ export function BatchManagement() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={handleCreateBatch}
-                className="px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider"
+                className="px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider"
               >
                 Create Batch
               </button>
               <button
                 onClick={() => setShowNewBatchForm(false)}
-                className="px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all font-medium uppercase tracking-wider"
+                className="px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all font-medium uppercase tracking-wider"
               >
                 Cancel
               </button>
@@ -381,18 +386,18 @@ export function BatchManagement() {
 
         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="relative flex-1 min-w-[240px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cult-silver w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-cult-text-secondary w-4 h-4" />
             <input
               type="text"
               placeholder="Search by batch number or strain..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 bg-cult-near-black border border-cult-charcoal text-cult-off-white placeholder-cult-lighter-gray text-sm focus:outline-none focus:border-cult-white focus:ring-1 focus:ring-cult-white/20 transition-all"
+              className="w-full pl-10 pr-10 py-2 bg-cult-surface border border-cult-surface-raised text-cult-text-primary placeholder-cult-text-muted text-sm focus:outline-none focus:border-cult-accent focus:ring-1 focus:ring-cult-text-primary/20 transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-lighter-gray hover:text-cult-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-text-primary transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -400,14 +405,14 @@ export function BatchManagement() {
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="text-sm text-cult-light-gray uppercase tracking-wider whitespace-nowrap">COA:</label>
+            <label className="text-sm text-cult-text-muted uppercase tracking-wider whitespace-nowrap">COA:</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setFilterCOAStatus('all')}
                 className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
                   filterCOAStatus === 'all'
-                    ? 'bg-cult-white text-cult-black'
-                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                    ? 'bg-cult-accent text-cult-opaque-black'
+                    : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
                 }`}
               >
                 All
@@ -416,8 +421,8 @@ export function BatchManagement() {
                 onClick={() => setFilterCOAStatus('active')}
                 className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
                   filterCOAStatus === 'active'
-                    ? 'bg-cult-white text-cult-black'
-                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                    ? 'bg-cult-accent text-cult-opaque-black'
+                    : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
                 }`}
               >
                 With COA
@@ -426,8 +431,8 @@ export function BatchManagement() {
                 onClick={() => setFilterCOAStatus('missing')}
                 className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
                   filterCOAStatus === 'missing'
-                    ? 'bg-cult-white text-cult-black'
-                    : 'border border-cult-medium-gray text-cult-light-gray hover:border-cult-white'
+                    ? 'bg-cult-accent text-cult-opaque-black'
+                    : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
                 }`}
               >
                 Missing COA
@@ -435,50 +440,67 @@ export function BatchManagement() {
             </div>
           </div>
 
-          {(searchTerm || filterCOAStatus !== 'all') && (
-            <span className="text-xs text-cult-lighter-gray whitespace-nowrap">
+          {activeTab === 'active' && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-cult-text-muted uppercase tracking-wider whitespace-nowrap">Pre-harvest:</label>
+              <button
+                onClick={() => setShowPreHarvest(p => !p)}
+                className={`px-3 py-1 text-sm uppercase tracking-wider transition-all ${
+                  showPreHarvest
+                    ? 'bg-cult-accent text-cult-opaque-black'
+                    : 'border border-cult-border text-cult-text-muted hover:border-cult-accent'
+                }`}
+                title={showPreHarvest ? 'Hiding nothing — pre-harvest rows are visible' : 'Pre-harvest placeholder rows hidden by default'}
+              >
+                {showPreHarvest ? 'Showing' : 'Hidden'}
+              </button>
+            </div>
+          )}
+
+          {(searchTerm || filterCOAStatus !== 'all' || (activeTab === 'active' && !showPreHarvest)) && (
+            <span className="text-xs text-cult-text-muted whitespace-nowrap">
               {filteredBatches.length} of {tabBatches.length} batches
             </span>
           )}
         </div>
       </div>
 
-      <div className="bg-cult-near-black border border-cult-medium-gray overflow-hidden">
+      <div className="bg-cult-surface border border-cult-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-cult-medium-gray">
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+              <tr className="border-b border-cult-border">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Batch Number
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Strain
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Harvest Date
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Initial Weight
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   COA Status
                 </th>
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   THC %
                 </th>
-                <th className="text-center py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-center py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Grade
                 </th>
                 {isActive && (
-                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                     Allocation
                   </th>
                 )}
-                <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                   Stage
                 </th>
                 {isActive && (
-                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-light-gray uppercase tracking-wider">
+                  <th className="text-left py-4 px-4 text-xs font-medium text-cult-text-muted uppercase tracking-wider">
                     Actions
                   </th>
                 )}
@@ -492,25 +514,25 @@ export function BatchManagement() {
                 return (
                   <tr
                     key={batch.batch_id}
-                    className="border-b border-cult-medium-gray/30 hover:bg-cult-black transition-colors"
+                    className="border-b border-cult-border/30 hover:bg-cult-black transition-colors"
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-cult-white font-medium">{batch.batch_number}</span>
+                        <span className="text-cult-text-primary font-medium">{batch.batch_number}</span>
                         {hasWarning && (
                           <AlertTriangle className="w-4 h-4 text-cult-warning" />
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-cult-lighter-gray">{batch.strain}</td>
-                    <td className="py-3 px-4 text-cult-lighter-gray text-sm">
+                    <td className="py-3 px-4 text-cult-text-muted">{batch.strain}</td>
+                    <td className="py-3 px-4 text-cult-text-muted text-sm">
                       {batch.harvest_date ? new Date(batch.harvest_date).toLocaleDateString() : '-'}
                     </td>
-                    <td className="py-3 px-4 text-cult-white">
+                    <td className="py-3 px-4 text-cult-text-primary">
                       {batch.initial_weight_grams != null ? `${batch.initial_weight_grams.toFixed(1)}g` : '0g'}
                     </td>
                     <td className="py-3 px-4">{getCOAStatusBadge(batch.coa_status)}</td>
-                    <td className="py-3 px-4 text-cult-white font-medium">
+                    <td className="py-3 px-4 text-cult-text-primary font-medium">
                       {batch.thc_percentage != null ? `${batch.thc_percentage.toFixed(2)}%` : '-'}
                     </td>
                     <td className="py-3 px-4 text-center">
@@ -541,7 +563,7 @@ export function BatchManagement() {
                       <td className="py-3 px-4">
                         {summary && (
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-cult-medium-gray rounded-full overflow-hidden">
+                            <div className="flex-1 h-2 bg-cult-border rounded-full overflow-hidden">
                               <div
                                 className={`h-full transition-all ${
                                   summary.allocation_percentage >= (summary.over_allocation_critical_threshold || 120)
@@ -553,7 +575,7 @@ export function BatchManagement() {
                                 style={{ width: `${Math.min(summary.allocation_percentage, 100)}%` }}
                               />
                             </div>
-                            <span className="text-xs text-cult-light-gray whitespace-nowrap">
+                            <span className="text-xs text-cult-text-muted whitespace-nowrap">
                               {summary.allocation_percentage.toFixed(0)}%
                             </span>
                           </div>
@@ -567,7 +589,7 @@ export function BatchManagement() {
                       <td className="py-3 px-4">
                         <button
                           onClick={() => handleUploadCOA(batch.batch_id, batch.batch_number, batch.strain)}
-                          className="flex items-center gap-2 px-3 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 px-3 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={batch.coa_status === 'active'}
                         >
                           <Upload className="w-4 h-4" />
@@ -585,13 +607,13 @@ export function BatchManagement() {
         {filteredBatches.length === 0 && (
           <div className="py-12 text-center">
             {searchTerm ? (
-              <Search className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+              <Search className="w-12 h-12 text-cult-border mx-auto mb-4" />
             ) : isActive ? (
-              <Package className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+              <Package className="w-12 h-12 text-cult-border mx-auto mb-4" />
             ) : (
-              <Archive className="w-12 h-12 text-cult-medium-gray mx-auto mb-4" />
+              <Archive className="w-12 h-12 text-cult-border mx-auto mb-4" />
             )}
-            <p className="text-cult-light-gray">
+            <p className="text-cult-text-muted">
               {searchTerm
                 ? `No batches matching "${searchTerm}"`
                 : isActive
@@ -609,7 +631,7 @@ export function BatchManagement() {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="mt-3 text-sm text-cult-lighter-gray hover:text-cult-white transition-colors underline underline-offset-2"
+                className="mt-3 text-sm text-cult-text-muted hover:text-cult-text-primary transition-colors underline underline-offset-2"
               >
                 Clear search
               </button>

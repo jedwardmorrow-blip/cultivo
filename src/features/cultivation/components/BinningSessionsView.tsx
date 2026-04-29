@@ -39,12 +39,12 @@ export function BinningSessionsView() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-cult-white">Drying</h2>
-          <p className="text-sm text-cult-medium-gray mt-0.5">Record dry weights after the drying process. Add bin entries, then complete to create inventory.</p>
+          <h2 className="text-lg font-semibold text-cult-text-primary">Drying</h2>
+          <p className="text-sm text-cult-border mt-0.5">Record dry weights after the drying process. Add bin entries, then complete to create inventory.</p>
         </div>
         <button
           onClick={showNewForm}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cult-accent text-cult-opaque-black text-sm font-medium hover:bg-cult-text-muted transition-colors"
         >
           <Plus className="h-4 w-4" />
           New Session
@@ -67,21 +67,21 @@ export function BinningSessionsView() {
         />
       )}
 
-      <div className="flex border-b border-cult-medium-gray">
+      <div className="flex border-b border-cult-border">
         {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               state.activeTab === tab
-                ? 'border-cult-white text-cult-white'
-                : 'border-transparent text-cult-medium-gray hover:text-cult-white'
+                ? 'border-cult-accent text-cult-text-primary'
+                : 'border-transparent text-cult-border hover:text-cult-text-primary'
             }`}
           >
             {TAB_LABELS[tab]}
             {tabCounts[tab] > 0 && (
               <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-                state.activeTab === tab ? 'bg-cult-white text-cult-black' : 'bg-cult-dark-gray text-cult-light-gray'
+                state.activeTab === tab ? 'bg-cult-accent text-cult-opaque-black' : 'bg-cult-surface text-cult-text-muted'
               }`}>
                 {tabCounts[tab]}
               </span>
@@ -91,16 +91,16 @@ export function BinningSessionsView() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-cult-medium-gray py-10 text-center">Loading sessions...</div>
+        <div className="text-sm text-cult-border py-10 text-center">Loading sessions...</div>
       ) : (
         <>
           {state.activeTab === 'pending' && (
             <div className="space-y-2">
               {unbinnedHarvests.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-cult-medium-gray p-8 text-center">
-                  <Scale className="h-8 w-8 text-cult-medium-gray mx-auto mb-3" />
-                  <p className="text-sm font-medium text-cult-white">No harvests awaiting binning</p>
-                  <p className="text-xs text-cult-medium-gray mt-1">Completed harvest sessions will appear here once they have no binning record.</p>
+                <div className="rounded-lg border border-dashed border-cult-border p-8 text-center">
+                  <Scale className="h-8 w-8 text-cult-border mx-auto mb-3" />
+                  <p className="text-sm font-medium text-cult-text-primary">No harvests awaiting binning</p>
+                  <p className="text-xs text-cult-border mt-1">Completed harvest sessions will appear here once they have no binning record.</p>
                 </div>
               ) : (
                 unbinnedHarvests.map((harvest) => (
@@ -119,9 +119,9 @@ export function BinningSessionsView() {
           {state.activeTab !== 'pending' && (
             <div className="space-y-3">
               {sessionsByTab[state.activeTab].length === 0 ? (
-                <div className="rounded-lg border border-dashed border-cult-medium-gray p-8 text-center">
-                  <Clock className="h-8 w-8 text-cult-medium-gray mx-auto mb-3" />
-                  <p className="text-sm font-medium text-cult-white">
+                <div className="rounded-lg border border-dashed border-cult-border p-8 text-center">
+                  <Clock className="h-8 w-8 text-cult-border mx-auto mb-3" />
+                  <p className="text-sm font-medium text-cult-text-primary">
                     No {TAB_LABELS[state.activeTab].toLowerCase()} sessions
                   </p>
                 </div>

@@ -52,17 +52,17 @@ export function SessionCard({ session, onComplete, onCancel, onViewBatch, listBi
   };
 
   return (
-    <div className="rounded-lg border border-cult-medium-gray bg-cult-dark-gray p-4 space-y-3">
+    <div className="rounded-lg border border-cult-border bg-cult-surface p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-cult-white">{strainName}</span>
+            <span className="text-sm font-semibold text-cult-text-primary">{strainName}</span>
             <span className={`text-xs font-medium px-2 py-0.5 rounded border ${statusColor[session.session_status]}`}>
               {session.session_status.charAt(0).toUpperCase() + session.session_status.slice(1)}
             </span>
           </div>
-          <div className="flex items-center gap-3 mt-1 text-xs text-cult-medium-gray flex-wrap">
-            <span>Batch: <span className="font-mono text-cult-light-gray">{batchNumber}</span></span>
+          <div className="flex items-center gap-3 mt-1 text-xs text-cult-border flex-wrap">
+            <span>Batch: <span className="font-mono text-cult-text-muted">{batchNumber}</span></span>
             <span>Harvest: {harvestDate}</span>
             <span>Bin date: {formatDate(session.bin_date)}</span>
           </div>
@@ -70,38 +70,38 @@ export function SessionCard({ session, onComplete, onCancel, onViewBatch, listBi
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="rounded-md bg-cult-black border border-cult-dark-gray px-3 py-2">
-          <div className="text-xs text-cult-medium-gray mb-0.5">Dry Room</div>
-          <div className="text-sm font-medium text-cult-white">{dryRoomName}</div>
-          <div className="text-xs text-cult-medium-gray font-mono">{dryRoomCode}</div>
+        <div className="rounded-md bg-cult-black border border-cult-surface px-3 py-2">
+          <div className="text-xs text-cult-border mb-0.5">Dry Room</div>
+          <div className="text-sm font-medium text-cult-text-primary">{dryRoomName}</div>
+          <div className="text-xs text-cult-border font-mono">{dryRoomCode}</div>
         </div>
 
         {session.session_status !== 'active' && session.dry_weight_grams > 0 && (
-          <div className="rounded-md bg-cult-black border border-cult-dark-gray px-3 py-2">
-            <div className="text-xs text-cult-medium-gray mb-0.5">Dry Weight</div>
-            <div className="text-sm font-semibold text-cult-white">{formatWeight(session.dry_weight_grams)}</div>
-            <div className="text-xs text-cult-medium-gray">{session.dry_weight_grams.toLocaleString()} g</div>
+          <div className="rounded-md bg-cult-black border border-cult-surface px-3 py-2">
+            <div className="text-xs text-cult-border mb-0.5">Dry Weight</div>
+            <div className="text-sm font-semibold text-cult-text-primary">{formatWeight(session.dry_weight_grams)}</div>
+            <div className="text-xs text-cult-border">{session.dry_weight_grams.toLocaleString()} g</div>
           </div>
         )}
 
         {session.session_status !== 'active' && wetWeight !== null && session.dry_weight_grams > 0 && (
-          <div className="rounded-md bg-cult-black border border-cult-dark-gray px-3 py-2">
-            <div className="text-xs text-cult-medium-gray mb-0.5">Yield</div>
+          <div className="rounded-md bg-cult-black border border-cult-surface px-3 py-2">
+            <div className="text-xs text-cult-border mb-0.5">Yield</div>
             <div className={`text-sm font-semibold ${STATUS_SUCCESS_TEXT}`}>{yieldPct(wetWeight, session.dry_weight_grams)}</div>
-            <div className="text-xs text-cult-medium-gray">of {formatWeight(wetWeight)} wet</div>
+            <div className="text-xs text-cult-border">of {formatWeight(wetWeight)} wet</div>
           </div>
         )}
 
         {session.session_status === 'completed' && session.water_loss_grams != null && session.water_loss_grams > 0 && (
-          <div className="rounded-md bg-cult-black border border-cult-dark-gray px-3 py-2">
-            <div className="text-xs text-cult-medium-gray mb-0.5">Water Loss</div>
+          <div className="rounded-md bg-cult-black border border-cult-surface px-3 py-2">
+            <div className="text-xs text-cult-border mb-0.5">Water Loss</div>
             <div className={`text-sm font-semibold ${STATUS_WARN_TEXT}`}>{formatWeight(session.water_loss_grams)}</div>
           </div>
         )}
       </div>
 
       {session.notes && (
-        <p className="text-xs text-cult-medium-gray italic">{session.notes}</p>
+        <p className="text-xs text-cult-border italic">{session.notes}</p>
       )}
 
       {session.session_status === 'active' && (
@@ -128,7 +128,7 @@ export function SessionCard({ session, onComplete, onCancel, onViewBatch, listBi
 
       {session.session_status === 'completed' && session.completed_at && (
         <div className="flex items-center justify-between">
-          <div className="text-xs text-cult-medium-gray flex items-center gap-1">
+          <div className="text-xs text-cult-border flex items-center gap-1">
             <CheckCircle className="h-3 w-3 text-cult-stage-clone" />
             Completed {formatDate(session.completed_at.slice(0, 10))}
           </div>
@@ -168,25 +168,25 @@ export function PendingHarvestRow({ harvest, onStartBinning, startingId, rowErro
   const missingRequirements = !harvest.batch_registry_id || !primaryDryRoomId;
 
   return (
-    <div className="rounded-md border border-cult-medium-gray bg-cult-dark-gray px-4 py-3 space-y-2">
+    <div className="rounded-md border border-cult-border bg-cult-surface px-4 py-3 space-y-2">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Leaf className={`h-3.5 w-3.5 flex-shrink-0 ${STATUS_SUCCESS_TEXT}`} />
-            <span className="text-sm font-medium text-cult-white">{strainName}</span>
+            <span className="text-sm font-medium text-cult-text-primary">{strainName}</span>
           </div>
-          <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-medium-gray flex-wrap">
-            <span>Batch: <span className="font-mono text-cult-light-gray">{batchNumber}</span></span>
+          <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-border flex-wrap">
+            <span>Batch: <span className="font-mono text-cult-text-muted">{batchNumber}</span></span>
             <span>Harvested: {formatDate(harvest.harvest_date)}</span>
             <span>Wet: {formatWeight(wetWeight)}</span>
             {harvest.adjusted_weight_grams && <span className={STATUS_WARN_TEXT}>(adjusted)</span>}
-            {dryRoomLabel && <span>Dry room: <span className="text-cult-light-gray">{dryRoomLabel}</span></span>}
+            {dryRoomLabel && <span>Dry room: <span className="text-cult-text-muted">{dryRoomLabel}</span></span>}
           </div>
         </div>
         <button
           onClick={() => onStartBinning(harvest, primaryDryRoomId || undefined)}
           disabled={isStarting || missingRequirements}
-          className="flex items-center gap-1.5 flex-shrink-0 text-xs px-3 py-1.5 rounded-md bg-cult-white text-cult-black font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 flex-shrink-0 text-xs px-3 py-1.5 rounded-md bg-cult-accent text-cult-opaque-black font-medium hover:bg-cult-text-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isStarting ? (
             <>

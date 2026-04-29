@@ -24,7 +24,7 @@ function OpenSessionList({ sessions, loading }: { sessions: ActiveSession[]; loa
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2].map(i => <div key={i} className="h-8 bg-cult-graphite rounded-cult" />)}
+        {[1, 2].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -45,18 +45,18 @@ function OpenSessionList({ sessions, loading }: { sessions: ActiveSession[]; loa
         const elapsed = s.started_at
           ? Math.round((Date.now() - new Date(s.started_at).getTime()) / 60000)
           : null;
-        const chipClass = TYPE_COLORS[s.type] ?? 'bg-cult-charcoal text-cult-text-muted border-cult-border';
+        const chipClass = TYPE_COLORS[s.type] ?? 'bg-cult-surface-raised text-cult-text-muted border-cult-border';
 
         return (
           <div
             key={s.id}
-            className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0"
+            className="flex items-center justify-between gap-3 py-2 border-b border-cult-surface-raised/50 last:border-b-0"
           >
             <div className="flex items-center gap-2 min-w-0">
               <span className={`text-[10px] px-1.5 py-0.5 rounded border flex-shrink-0 ${chipClass}`}>
                 {s.type}
               </span>
-              <span className="text-[12px] text-cult-off-white truncate">
+              <span className="text-[12px] text-cult-text-primary truncate">
                 {s.batch_number ?? 'No batch'}
               </span>
             </div>
@@ -177,14 +177,14 @@ export function PostProductionHub() {
         <AgingAlertBanner batches={batches} />
 
         {/* Batch Pipeline Preview */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Package className="w-4 h-4" />
             Batch Pipeline
           </h2>
           {batchesLoading ? (
             <div className="animate-pulse grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-cult-graphite rounded-cult" />)}
+              {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-cult-surface rounded-cult" />)}
             </div>
           ) : previewBatches.length === 0 ? (
             <p className="text-[12px] text-cult-text-faint py-2">No active batches.</p>
@@ -198,7 +198,7 @@ export function PostProductionHub() {
         </div>
 
         {/* Active Sessions */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Scissors className="w-4 h-4" />
             Active Sessions

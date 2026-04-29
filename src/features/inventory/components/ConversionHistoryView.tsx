@@ -142,13 +142,13 @@ export function ConversionHistoryView() {
   const conversionsWithVariance = filteredHistory.filter((h) => h.variance_reason).length;
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-6">
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <History className="w-6 h-6 text-cult-white" />
-            <h2 className="text-2xl font-bold text-cult-white">Conversion History</h2>
+            <History className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-2xl font-bold text-cult-text-primary">Conversion History</h2>
           </div>
           <p className="text-cult-text-muted text-sm">
             View past conversions, track performance, and analyze variance trends
@@ -162,7 +162,7 @@ export function ConversionHistoryView() {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'history'
                 ? 'bg-cult-success text-white'
-                : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
+                : 'bg-cult-border text-cult-text-secondary hover:bg-cult-text-muted'
             }`}
           >
             <History className="w-4 h-4 inline mr-2" />
@@ -173,7 +173,7 @@ export function ConversionHistoryView() {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeView === 'metrics'
                 ? 'bg-cult-success text-white'
-                : 'bg-cult-medium-gray text-cult-text-secondary hover:bg-cult-light-gray'
+                : 'bg-cult-border text-cult-text-secondary hover:bg-cult-text-muted'
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
@@ -183,7 +183,7 @@ export function ConversionHistoryView() {
       </div>
 
       {/* Filters */}
-      <div className="bg-cult-dark-gray rounded-lg p-4 mb-6 space-y-4">
+      <div className="bg-cult-surface rounded-lg p-4 mb-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div>
@@ -196,7 +196,7 @@ export function ConversionHistoryView() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Batch, strain, package ID..."
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white placeholder-cult-silver focus:outline-none focus:ring-2 focus:ring-cult-success"
+              className="w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:ring-2 focus:ring-cult-success"
             />
           </div>
 
@@ -209,7 +209,7 @@ export function ConversionHistoryView() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
+              className="w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="7">Last 7 days</option>
               <option value="14">Last 14 days</option>
@@ -225,7 +225,7 @@ export function ConversionHistoryView() {
             <select
               value={strainFilter}
               onChange={(e) => setStrainFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
+              className="w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="">All Strains</option>
               {uniqueStrains.map((strain) => (
@@ -242,7 +242,7 @@ export function ConversionHistoryView() {
             <select
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
-              className="w-full bg-cult-near-black border border-cult-medium-gray rounded-md px-3 py-2 text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-success"
+              className="w-full bg-cult-surface border border-cult-border rounded-md px-3 py-2 text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-success"
             >
               <option value="">All Users</option>
               {uniqueUsers.map((user) => (
@@ -261,7 +261,7 @@ export function ConversionHistoryView() {
             id="variance-filter"
             checked={showVarianceOnly}
             onChange={(e) => setShowVarianceOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-cult-medium-gray bg-cult-near-black text-cult-success focus:ring-2 focus:ring-cult-success"
+            className="w-4 h-4 rounded border-cult-border bg-cult-surface text-cult-success focus:ring-2 focus:ring-cult-success"
           />
           <label htmlFor="variance-filter" className="text-sm text-cult-text-secondary">
             Show only conversions with variance
@@ -271,21 +271,21 @@ export function ConversionHistoryView() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-cult-dark-gray rounded-lg p-4">
+        <div className="bg-cult-surface rounded-lg p-4">
           <div className="text-sm text-cult-text-muted mb-1">Total Conversions</div>
-          <div className="text-2xl font-bold text-cult-white">{filteredHistory.length}</div>
+          <div className="text-2xl font-bold text-cult-text-primary">{filteredHistory.length}</div>
         </div>
-        <div className="bg-cult-dark-gray rounded-lg p-4">
+        <div className="bg-cult-surface rounded-lg p-4">
           <div className="text-sm text-cult-text-muted mb-1">Total Packages</div>
-          <div className="text-2xl font-bold text-cult-white">{totalPackages}</div>
+          <div className="text-2xl font-bold text-cult-text-primary">{totalPackages}</div>
         </div>
-        <div className="bg-cult-dark-gray rounded-lg p-4">
+        <div className="bg-cult-surface rounded-lg p-4">
           <div className="text-sm text-cult-text-muted mb-1">Total Weight</div>
-          <div className="text-2xl font-bold text-cult-white">{totalWeight.toFixed(1)}g</div>
+          <div className="text-2xl font-bold text-cult-text-primary">{totalWeight.toFixed(1)}g</div>
         </div>
-        <div className="bg-cult-dark-gray rounded-lg p-4">
+        <div className="bg-cult-surface rounded-lg p-4">
           <div className="text-sm text-cult-text-muted mb-1">With Variance</div>
-          <div className="text-2xl font-bold text-cult-white">
+          <div className="text-2xl font-bold text-cult-text-primary">
             {conversionsWithVariance}
             <span className="text-sm text-cult-text-muted ml-2">
               ({filteredHistory.length > 0 ? ((conversionsWithVariance / filteredHistory.length) * 100).toFixed(0) : 0}%)
@@ -322,52 +322,52 @@ function HistoryTable({ history }: { history: ConversionHistory[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-cult-medium-gray">
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+          <tr className="border-b border-cult-border">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Date
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Batch
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Strain
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Product
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Packages
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Weight
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Duration
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               User
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Variance
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-cult-medium-gray">
+        <tbody className="divide-y divide-cult-border">
           {history.map((item) => (
-            <tr key={item.conversion_lot_id} className="hover:bg-cult-dark-gray/50 transition-colors">
-              <td className="px-4 py-3 text-sm text-cult-white">
+            <tr key={item.conversion_lot_id} className="hover:bg-cult-surface/50 transition-colors">
+              <td className="px-4 py-3 text-sm text-cult-text-primary">
                 {new Date(item.conversion_date).toLocaleDateString()}
               </td>
-              <td className="px-4 py-3 text-sm text-cult-white font-mono">{item.batch_number}</td>
-              <td className="px-4 py-3 text-sm text-cult-white">{item.strain_name}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-primary font-mono">{item.batch_number}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-primary">{item.strain_name}</td>
               <td className="px-4 py-3 text-sm text-cult-text-secondary">{item.product_name}</td>
-              <td className="px-4 py-3 text-sm text-cult-white text-center">
+              <td className="px-4 py-3 text-sm text-cult-text-primary text-center">
                 {item.package_count}
                 <div className="text-xs text-cult-text-muted">
                   {item.packages_with_stock}/{item.packages_in_inventory} in stock
                 </div>
               </td>
-              <td className="px-4 py-3 text-sm text-cult-white text-right">
+              <td className="px-4 py-3 text-sm text-cult-text-primary text-right">
                 {item.total_weight != null ? `${item.total_weight.toFixed(1)}g` : `${item.total_units} units`}
               </td>
               <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">
@@ -411,43 +411,43 @@ function MetricsTable({ metrics }: { metrics: PerformanceMetrics[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-cult-medium-gray">
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+          <tr className="border-b border-cult-border">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Date
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               User
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Lots
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Packages
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Weight
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Avg Time
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Variance Rate
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
               Avg Variance
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-cult-medium-gray">
+        <tbody className="divide-y divide-cult-border">
           {metrics.map((item, idx) => (
-            <tr key={idx} className="hover:bg-cult-dark-gray/50 transition-colors">
-              <td className="px-4 py-3 text-sm text-cult-white">
+            <tr key={idx} className="hover:bg-cult-surface/50 transition-colors">
+              <td className="px-4 py-3 text-sm text-cult-text-primary">
                 {new Date(item.conversion_date).toLocaleDateString()}
               </td>
-              <td className="px-4 py-3 text-sm text-cult-white">{item.user_name}</td>
-              <td className="px-4 py-3 text-sm text-cult-white text-center">{item.lots_completed}</td>
-              <td className="px-4 py-3 text-sm text-cult-white text-center">{item.packages_created}</td>
-              <td className="px-4 py-3 text-sm text-cult-white text-right">
+              <td className="px-4 py-3 text-sm text-cult-text-primary">{item.user_name}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-primary text-center">{item.lots_completed}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-primary text-center">{item.packages_created}</td>
+              <td className="px-4 py-3 text-sm text-cult-text-primary text-right">
                 {item.total_weight_converted ? `${item.total_weight_converted.toFixed(1)}g` : '-'}
               </td>
               <td className="px-4 py-3 text-sm text-cult-text-secondary text-center">

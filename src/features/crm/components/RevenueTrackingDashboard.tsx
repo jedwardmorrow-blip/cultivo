@@ -169,13 +169,13 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
             <DollarSign className="w-5 h-5 text-cult-success" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-cult-white">Revenue Tracking</h1>
-            <p className="text-xs text-cult-silver">{accounts.length} accounts · {currentMonth}</p>
+            <h1 className="text-xl font-bold text-cult-text-primary">Revenue Tracking</h1>
+            <p className="text-xs text-cult-text-secondary">{accounts.length} accounts · {currentMonth}</p>
           </div>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
@@ -184,28 +184,28 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Current Month Realized */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Realized</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Month Realized</p>
           <p className="text-2xl font-bold text-cult-success">{fmt$(totals.totalRealized)}</p>
-          <p className="text-xs text-cult-silver">completed deliveries</p>
+          <p className="text-xs text-cult-text-secondary">completed deliveries</p>
         </div>
         {/* Current Month Tentative */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Month Tentative</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Month Tentative</p>
           <p className="text-2xl font-bold text-cult-warning">{fmt$(totals.totalTentative)}</p>
-          <p className="text-xs text-cult-silver">pending delivery</p>
+          <p className="text-xs text-cult-text-secondary">pending delivery</p>
         </div>
         {/* Prior Month */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Prior Month</p>
-          <p className="text-2xl font-bold text-cult-white">{fmt$(totals.priorMonthTotal)}</p>
-          <p className="text-xs text-cult-silver">realized</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Prior Month</p>
+          <p className="text-2xl font-bold text-cult-text-primary">{fmt$(totals.priorMonthTotal)}</p>
+          <p className="text-xs text-cult-text-secondary">realized</p>
         </div>
         {/* Rolling 90d */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">90-Day Total</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">90-Day Total</p>
           <p className="text-2xl font-bold text-cult-info">{fmt$(totals.rolling90Total)}</p>
-          <p className="text-xs text-cult-silver">
+          <p className="text-xs text-cult-text-secondary">
             + {fmt$(totals.rolling90Tentative)} tentative
           </p>
         </div>
@@ -215,25 +215,25 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
           className={`rounded-lg px-4 py-3 text-left border transition-colors ${
             filter === 'has_unresolved'
               ? 'bg-cult-danger/15 border-cult-danger/30 ring-1 ring-cult-danger/40'
-              : 'bg-cult-near-black border-cult-medium-gray hover:bg-cult-dark-gray'
+              : 'bg-cult-surface border-cult-border hover:bg-cult-surface'
           }`}
         >
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Unresolved</p>
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Unresolved</p>
           <p className="text-2xl font-bold text-cult-danger">{fmt$(totals.totalUnresolved)}</p>
-          <p className="text-xs text-cult-silver">{totals.unresolvedAccounts} accounts</p>
+          <p className="text-xs text-cult-text-secondary">{totals.unresolvedAccounts} accounts</p>
         </button>
         {/* Lifetime */}
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-1">Lifetime</p>
-          <p className="text-2xl font-bold text-cult-white">{fmt$(totals.lifetimeTotal)}</p>
-          <p className="text-xs text-cult-silver">all time</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-1">Lifetime</p>
+          <p className="text-2xl font-bold text-cult-text-primary">{fmt$(totals.lifetimeTotal)}</p>
+          <p className="text-xs text-cult-text-secondary">all time</p>
         </div>
       </div>
 
       {/* Weekly Trend Bar */}
       {weeklySummary.length > 0 && (
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-cult-medium-gray mb-2">Weekly Revenue (90 days)</p>
+        <div className="bg-cult-surface border border-cult-border rounded-lg px-4 py-3">
+          <p className="text-xs uppercase tracking-wider text-cult-border mb-2">Weekly Revenue (90 days)</p>
           <div className="flex items-end gap-1 h-16">
             {(() => {
               const maxVal = Math.max(...weeklySummary.map(([, d]) => d.realized + d.tentative), 1);
@@ -253,10 +253,10 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
             })()}
           </div>
           <div className="flex items-center gap-4 mt-2">
-            <span className="flex items-center gap-1.5 text-xs text-cult-silver">
+            <span className="flex items-center gap-1.5 text-xs text-cult-text-secondary">
               <span className="w-2 h-2 rounded-sm bg-emerald-500" /> Realized
             </span>
-            <span className="flex items-center gap-1.5 text-xs text-cult-silver">
+            <span className="flex items-center gap-1.5 text-xs text-cult-text-secondary">
               <span className="w-2 h-2 rounded-sm bg-amber-500/40" /> Tentative
             </span>
           </div>
@@ -303,13 +303,13 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
       {/* Search + Filter Bar */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-medium-gray" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-border" />
           <input
             type="text"
             placeholder="Search accounts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-near-black border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-info/50"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-border focus:outline-none focus:border-cult-info/50"
           />
         </div>
         <div className="flex items-center gap-1.5">
@@ -324,7 +324,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs border rounded-lg transition-colors ${
                 filter === key
                   ? `${color} border-current bg-current/10`
-                  : 'text-cult-silver border-cult-medium-gray hover:bg-cult-dark-gray'
+                  : 'text-cult-text-secondary border-cult-border hover:bg-cult-surface'
               }`}
             >
               <Icon className="w-3 h-3" /> {label}
@@ -334,59 +334,59 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
         {filter !== 'all' && (
           <button
             onClick={() => setFilter('all')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-silver border border-cult-medium-gray rounded-lg hover:bg-cult-dark-gray transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-cult-text-secondary border border-cult-border rounded-lg hover:bg-cult-surface transition-colors"
           >
             <Filter className="w-3 h-3" /> Clear
           </button>
         )}
-        <p className="text-xs text-cult-medium-gray ml-auto">{sorted.length} accounts</p>
+        <p className="text-xs text-cult-border ml-auto">{sorted.length} accounts</p>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-charcoal text-xs uppercase tracking-wider text-cult-medium-gray">
+            <tr className="border-b border-cult-surface-raised text-xs uppercase tracking-wider text-cult-border">
               <th className="text-left py-2 px-3 font-medium">
-                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('customer_name')} className="hover:text-cult-text-secondary transition-colors">
                   Account <SortArrow field="customer_name" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium">
-                <button onClick={() => toggleSort('current_month_realized')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('current_month_realized')} className="hover:text-cult-text-secondary transition-colors">
                   This Month <SortArrow field="current_month_realized" />
                 </button>
               </th>
               <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">
-                <button onClick={() => toggleSort('mom_change_pct')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('mom_change_pct')} className="hover:text-cult-text-secondary transition-colors">
                   MoM <SortArrow field="mom_change_pct" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden md:table-cell">
-                <button onClick={() => toggleSort('rolling_90d_realized')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('rolling_90d_realized')} className="hover:text-cult-text-secondary transition-colors">
                   90d Rev <SortArrow field="rolling_90d_realized" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden lg:table-cell">
-                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('lifetime_revenue')} className="hover:text-cult-text-secondary transition-colors">
                   Lifetime <SortArrow field="lifetime_revenue" />
                 </button>
               </th>
               <th className="text-right py-2 px-2 font-medium hidden lg:table-cell">
-                <button onClick={() => toggleSort('total_unresolved_revenue')} className="hover:text-cult-silver transition-colors">
+                <button onClick={() => toggleSort('total_unresolved_revenue')} className="hover:text-cult-text-secondary transition-colors">
                   Unresolved <SortArrow field="total_unresolved_revenue" />
                 </button>
               </th>
               <th className="py-2 px-2 w-8" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/50">
+          <tbody className="divide-y divide-cult-surface-raised/50">
             {sorted.map((a) => {
               const momColor =
-                a.mom_change_pct == null ? 'text-cult-medium-gray'
+                a.mom_change_pct == null ? 'text-cult-border'
                 : a.mom_change_pct > 10 ? 'text-cult-success'
                 : a.mom_change_pct < -10 ? 'text-cult-warning'
-                : 'text-cult-silver';
+                : 'text-cult-text-secondary';
               const MomIcon =
                 a.mom_change_pct == null ? Minus
                 : a.mom_change_pct > 10 ? TrendingUp
@@ -394,14 +394,14 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                 : Minus;
 
               return (
-                <tr key={a.customer_id} className="hover:bg-cult-dark-gray/40 transition-colors group">
+                <tr key={a.customer_id} className="hover:bg-cult-surface/40 transition-colors group">
                   {/* Account */}
                   <td className="py-2.5 px-3">
                     <button onClick={() => navigate(`/crm-account-detail/${a.customer_id}`)} className="text-left">
-                      <p className="text-cult-white font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
+                      <p className="text-cult-text-primary font-medium hover:text-cult-info transition-colors truncate max-w-[200px]">
                         {a.customer_name}
                       </p>
-                      <p className="text-xs text-cult-light-gray">
+                      <p className="text-xs text-cult-text-muted">
                         {a.dispensary_code} · {a.lifetime_order_count} orders
                       </p>
                     </button>
@@ -414,7 +414,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                         <span className="text-xs text-cult-warning ml-1">+{fmt$(a.current_month_tentative)}</span>
                       )}
                     </div>
-                    <p className="text-xs text-cult-medium-gray">{a.current_month_orders} orders</p>
+                    <p className="text-xs text-cult-border">{a.current_month_orders} orders</p>
                   </td>
                   {/* MoM */}
                   <td className="py-2.5 px-2 text-center hidden sm:table-cell">
@@ -425,14 +425,14 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                   </td>
                   {/* 90d */}
                   <td className="py-2.5 px-2 text-right hidden md:table-cell">
-                    <span className="text-xs text-cult-silver">{fmt$(a.rolling_90d_realized)}</span>
+                    <span className="text-xs text-cult-text-secondary">{fmt$(a.rolling_90d_realized)}</span>
                     {a.rolling_90d_tentative > 0 && (
                       <span className="text-xs text-cult-warning/60 ml-1">+{fmt$(a.rolling_90d_tentative)}</span>
                     )}
                   </td>
                   {/* Lifetime */}
                   <td className="py-2.5 px-2 text-right hidden lg:table-cell">
-                    <span className="text-xs text-cult-silver">{fmt$(a.lifetime_revenue)}</span>
+                    <span className="text-xs text-cult-text-secondary">{fmt$(a.lifetime_revenue)}</span>
                   </td>
                   {/* Unresolved */}
                   <td className="py-2.5 px-2 text-right hidden lg:table-cell">
@@ -442,12 +442,12 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
                         <span className="text-xs text-cult-danger/60 ml-1">({a.total_unresolved_orders})</span>
                       </span>
                     ) : (
-                      <span className="text-xs text-cult-medium-gray">—</span>
+                      <span className="text-xs text-cult-border">—</span>
                     )}
                   </td>
                   {/* Arrow */}
                   <td className="py-2.5 px-2">
-                    <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-silver transition-colors" />
+                    <ChevronRight className="w-3.5 h-3.5 text-cult-border group-hover:text-cult-text-secondary transition-colors" />
                   </td>
                 </tr>
               );
@@ -455,7 +455,7 @@ export function RevenueTrackingDashboard({}: RevenueTrackingDashboardProps) {
           </tbody>
         </table>
         {sorted.length === 0 && (
-          <div className="py-10 text-center text-sm text-cult-medium-gray border border-dashed border-cult-charcoal rounded-lg mt-2">
+          <div className="py-10 text-center text-sm text-cult-border border border-dashed border-cult-surface-raised rounded-lg mt-2">
             {search || filter !== 'all' ? 'No accounts match your filters' : 'No revenue data available'}
           </div>
         )}

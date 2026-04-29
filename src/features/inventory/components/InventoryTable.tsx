@@ -152,37 +152,37 @@ export const InventoryTable = memo(function InventoryTable({
 
   if (items.length === 0 && !searchQuery) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg">
+      <div className="bg-cult-surface border border-cult-border rounded-lg">
         <div className="flex flex-col items-center justify-center py-16 px-6">
-          <div className="p-4 rounded-full bg-cult-dark-gray mb-4">
-            {emptyIcon || <Package className="w-8 h-8 text-cult-lighter-gray" />}
+          <div className="p-4 rounded-full bg-cult-surface mb-4">
+            {emptyIcon || <Package className="w-8 h-8 text-cult-text-muted" />}
           </div>
-          <p className="text-cult-silver font-medium">{emptyMessage}</p>
-          {emptySubtext && <p className="text-cult-lighter-gray text-sm mt-1">{emptySubtext}</p>}
+          <p className="text-cult-text-secondary font-medium">{emptyMessage}</p>
+          {emptySubtext && <p className="text-cult-text-muted text-sm mt-1">{emptySubtext}</p>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-cult-near-black rounded-lg border border-cult-medium-gray overflow-hidden">
+    <div className="bg-cult-surface rounded-lg border border-cult-border overflow-hidden">
       {(searchable || gradeFilterable) && (
-        <div className="px-4 py-3 border-b border-cult-medium-gray space-y-3">
+        <div className="px-4 py-3 border-b border-cult-border space-y-3">
           <div className="flex items-center gap-3">
             {searchable && (
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-lighter-gray" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-muted" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-9 pr-4 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-sm text-cult-white placeholder-cult-lighter-gray focus:outline-none focus:border-cult-silver transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-text-secondary transition-colors"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-lighter-gray hover:text-cult-white text-xs"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-text-primary text-xs"
                   >
                     Clear
                   </button>
@@ -191,14 +191,14 @@ export const InventoryTable = memo(function InventoryTable({
             )}
             {gradeFilterable && (
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <Filter className="w-3.5 h-3.5 text-cult-lighter-gray" />
-                <div className="flex gap-0.5 p-0.5 bg-cult-dark-gray rounded-lg border border-cult-medium-gray">
+                <Filter className="w-3.5 h-3.5 text-cult-text-muted" />
+                <div className="flex gap-0.5 p-0.5 bg-cult-surface rounded-lg border border-cult-border">
                   <button
                     onClick={() => setGradeFilter('all')}
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                       gradeFilter === 'all'
-                        ? 'bg-cult-medium-gray text-cult-white shadow-sm'
-                        : 'text-cult-lighter-gray hover:text-cult-white'
+                        ? 'bg-cult-border text-cult-text-primary shadow-sm'
+                        : 'text-cult-text-muted hover:text-cult-text-primary'
                     }`}
                   >
                     All
@@ -213,7 +213,7 @@ export const InventoryTable = memo(function InventoryTable({
                         className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                           isActive
                             ? `${gColors.bg} ${gColors.text} ${gColors.border} border`
-                            : 'text-cult-lighter-gray hover:text-cult-white'
+                            : 'text-cult-text-muted hover:text-cult-text-primary'
                         }`}
                       >
                         {g.label}
@@ -224,8 +224,8 @@ export const InventoryTable = memo(function InventoryTable({
                     onClick={() => setGradeFilter('ungraded')}
                     className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                       gradeFilter === 'ungraded'
-                        ? 'bg-cult-medium-gray/30 text-cult-lighter-gray border border-cult-medium-gray/50'
-                        : 'text-cult-lighter-gray hover:text-cult-white'
+                        ? 'bg-cult-border/30 text-cult-text-muted border border-cult-border/50'
+                        : 'text-cult-text-muted hover:text-cult-text-primary'
                     }`}
                   >
                     Ungraded
@@ -235,12 +235,12 @@ export const InventoryTable = memo(function InventoryTable({
             )}
           </div>
           {(searchQuery || (gradeFilterable && gradeFilter !== 'all')) && (
-            <p className="text-xs text-cult-lighter-gray">
+            <p className="text-xs text-cult-text-muted">
               {sortedItems.length} result{sortedItems.length !== 1 ? 's' : ''} found
               {gradeFilterable && gradeFilter !== 'all' && (
                 <button
                   onClick={() => setGradeFilter('all')}
-                  className="ml-2 text-cult-silver hover:text-cult-white underline"
+                  className="ml-2 text-cult-text-secondary hover:text-cult-text-primary underline"
                 >
                   Clear grade filter
                 </button>
@@ -253,7 +253,7 @@ export const InventoryTable = memo(function InventoryTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-cult-medium-gray">
+            <tr className="border-b border-cult-border">
               {selectable && (
                 <th className="px-4 py-3 w-12">
                   <input
@@ -263,7 +263,7 @@ export const InventoryTable = memo(function InventoryTable({
                       if (input) input.indeterminate = someSelected && !allSelectableSelected;
                     }}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-cult-success"
+                    className="w-4 h-4 rounded border-cult-border cursor-pointer accent-cult-success"
                   />
                 </th>
               )}
@@ -275,22 +275,22 @@ export const InventoryTable = memo(function InventoryTable({
                   <th
                     key={idx}
                     onClick={() => isSortable && handleSort(idx)}
-                    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-cult-silver ${
+                    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-cult-text-secondary ${
                       column.align === 'right' ? 'text-right' :
                       column.align === 'center' ? 'text-center' :
                       'text-left'
-                    } ${isSortable ? 'cursor-pointer select-none hover:text-cult-white transition-colors' : ''}`}
+                    } ${isSortable ? 'cursor-pointer select-none hover:text-cult-text-primary transition-colors' : ''}`}
                   >
                     <span className="inline-flex items-center gap-1">
                       {column.header}
                       {isSortable && (
                         <span className="inline-flex flex-col">
                           {isActive && sortDirection === 'asc' ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-cult-white" />
+                            <ChevronUp className="w-3.5 h-3.5 text-cult-text-primary" />
                           ) : isActive && sortDirection === 'desc' ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-cult-white" />
+                            <ChevronDown className="w-3.5 h-3.5 text-cult-text-primary" />
                           ) : (
-                            <ChevronsUpDown className="w-3.5 h-3.5 text-cult-lighter-gray" />
+                            <ChevronsUpDown className="w-3.5 h-3.5 text-cult-text-muted" />
                           )}
                         </span>
                       )}
@@ -301,10 +301,10 @@ export const InventoryTable = memo(function InventoryTable({
               {renderRowActions && <th className="px-2 py-3 w-12" />}
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray/50">
+          <tbody className="divide-y divide-cult-border/50">
             {sortedItems.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)} className="text-center py-10 text-cult-lighter-gray">
+                <td colSpan={columns.length + (selectable ? 1 : 0) + (renderRowActions ? 1 : 0)} className="text-center py-10 text-cult-text-muted">
                   No results match your search
                 </td>
               </tr>
@@ -317,7 +317,7 @@ export const InventoryTable = memo(function InventoryTable({
                   <tr
                     key={item.id}
                     className={`transition-colors duration-100 ${
-                      isSelected ? 'bg-cult-success-muted' : 'hover:bg-cult-dark-gray/60'
+                      isSelected ? 'bg-cult-success-muted' : 'hover:bg-cult-surface/60'
                     } ${rowClassName ? rowClassName(item) : ''}`}
                   >
                     {selectable && (
@@ -327,10 +327,10 @@ export const InventoryTable = memo(function InventoryTable({
                             type="checkbox"
                             checked={isSelected}
                             onChange={(e) => handleSelectItem(item.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
-                            className="w-4 h-4 rounded border-cult-medium-gray cursor-pointer accent-cult-success"
+                            className="w-4 h-4 rounded border-cult-border cursor-pointer accent-cult-success"
                           />
                         ) : (
-                          <span className="text-xs text-cult-lighter-gray">-</span>
+                          <span className="text-xs text-cult-text-muted">-</span>
                         )}
                       </td>
                     )}
@@ -370,8 +370,8 @@ export const InventoryTable = memo(function InventoryTable({
       </div>
 
       {sortedItems.length > 0 && (
-        <div className="px-4 py-2.5 border-t border-cult-medium-gray/50 flex items-center justify-between">
-          <span className="text-sm text-cult-silver">
+        <div className="px-4 py-2.5 border-t border-cult-border/50 flex items-center justify-between">
+          <span className="text-sm text-cult-text-secondary">
             {sortedItems.length} item{sortedItems.length !== 1 ? 's' : ''}
             {selectable && selectedIds.size > 0 && (
               <span className="ml-2 text-cult-success">({selectedIds.size} selected)</span>

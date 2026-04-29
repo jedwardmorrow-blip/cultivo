@@ -96,12 +96,12 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
       <div className="space-y-4">
         <button
           onClick={() => navigate('/crm-accounts')}
-          className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
+          className="flex items-center gap-1 text-sm text-cult-text-secondary hover:text-cult-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Accounts
         </button>
-        <div className="bg-cult-near-black border border-cult-danger/30 rounded-lg p-8 text-center">
+        <div className="bg-cult-surface border border-cult-danger/30 rounded-lg p-8 text-center">
           <p className="text-cult-danger">{error || 'Account not found'}</p>
         </div>
       </div>
@@ -114,7 +114,7 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/crm-accounts')}
-            className="flex items-center gap-1 text-sm text-cult-silver hover:text-cult-white transition-colors"
+            className="flex items-center gap-1 text-sm text-cult-text-secondary hover:text-cult-text-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Accounts
@@ -159,15 +159,15 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2 space-y-5">
-          <div className="flex items-center gap-1 bg-cult-dark-gray/50 rounded-lg p-1 border border-cult-medium-gray/50">
+          <div className="flex items-center gap-1 bg-cult-surface/50 rounded-lg p-1 border border-cult-border/50">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
                   activeTab === tab.key
-                    ? 'bg-cult-near-black text-cult-white shadow-sm'
-                    : 'text-cult-silver hover:text-cult-white'
+                    ? 'bg-cult-surface text-cult-text-primary shadow-sm'
+                    : 'text-cult-text-secondary hover:text-cult-text-primary'
                 }`}
               >
                 {tab.label}
@@ -184,7 +184,7 @@ export function AccountDetail({ accountId, onCreateOrder, onCreateSampleOrder, o
           )}
 
           {deepDiveRefreshing && (
-            <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
+            <div className="h-0.5 w-full bg-cult-surface rounded overflow-hidden">
               <div className="h-full bg-cult-success/60 rounded animate-pulse w-2/3" />
             </div>
           )}

@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 interface StatsCardProps {
   label: string;
   value: string | number;
-  icon: ReactNode;
+  icon?: ReactNode;
   subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
@@ -18,21 +18,21 @@ export function StatsCard({
   subtitle,
   trend,
   trendValue,
-  accentColor = 'border-cult-medium-gray',
+  accentColor = 'border-cult-border',
 }: StatsCardProps) {
   return (
-    <div className={`relative bg-cult-near-black rounded-lg border ${accentColor} overflow-hidden transition-all duration-200 hover:border-cult-lighter-gray hover:scale-[1.01] group`}>
+    <div className={`relative bg-cult-surface rounded border ${accentColor} overflow-hidden transition-colors hover:border-cult-border-strong group`}>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-2">{label}</p>
-            <p className="text-2xl font-bold text-cult-white tracking-tight">{value}</p>
+            <p className="font-mono uppercase tracking-[0.14em] text-[10px] text-cult-text-muted mb-2">{label}</p>
+            <p className="text-2xl font-semibold text-cult-text-primary tabular-nums">{value}</p>
             {subtitle && (
-              <p className="text-sm text-cult-lighter-gray mt-1.5">{subtitle}</p>
+              <p className="text-sm text-cult-text-muted mt-1.5">{subtitle}</p>
             )}
             {trend && trendValue && (
-              <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${
-                trend === 'up' ? 'text-cult-success' : trend === 'down' ? 'text-cult-danger' : 'text-cult-warning'
+              <div className={`flex items-center gap-1 mt-1.5 font-mono text-[11px] ${
+                trend === 'up' ? 'text-cult-success' : trend === 'down' ? 'text-cult-danger' : 'text-cult-text-muted'
               }`}>
                 {trend === 'up' && <TrendingUp className="w-3 h-3" />}
                 {trend === 'down' && <TrendingDown className="w-3 h-3" />}
@@ -41,9 +41,11 @@ export function StatsCard({
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 p-2.5 rounded-lg bg-cult-dark-gray/80 text-cult-silver group-hover:text-cult-white transition-colors">
-            {icon}
-          </div>
+          {icon && (
+            <div className="flex-shrink-0 text-cult-text-muted">
+              {icon}
+            </div>
+          )}
         </div>
       </div>
     </div>

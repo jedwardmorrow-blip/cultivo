@@ -164,12 +164,12 @@ export function ProductionPlannerView() {
   ) : null;
 
   return (
-    <div className="flex flex-col h-full font-montserrat">
+    <div className="flex flex-col h-full font-sans">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border">
         <div className="flex items-center gap-3">
           <Calendar className="w-5 h-5 text-cult-accent" />
-          <h1 className="text-xl font-bold text-cult-white">Production Planner</h1>
+          <h1 className="text-xl font-bold text-cult-text-primary">Production Planner</h1>
           <span className="text-sm text-cult-text-muted">
             {rooms.length} rooms &middot; {rooms.reduce((s, r) => s + r.total_plants, 0)} plants
           </span>
@@ -182,7 +182,7 @@ export function ProductionPlannerView() {
             className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
               viewMode === 'current'
                 ? 'bg-cult-accent text-cult-bg'
-                : 'text-cult-text-muted hover:text-cult-white'
+                : 'text-cult-text-muted hover:text-cult-text-primary'
             }`}
           >
             Current State
@@ -192,7 +192,7 @@ export function ProductionPlannerView() {
             className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
               viewMode === 'planning'
                 ? 'bg-violet-600 text-white'
-                : 'text-cult-text-muted hover:text-cult-white'
+                : 'text-cult-text-muted hover:text-cult-text-primary'
             }`}
           >
             Planning Mode
@@ -244,7 +244,7 @@ export function ProductionPlannerView() {
                       className={`absolute top-0 bottom-0 border-l ${w.isMonthStart ? 'border-cult-border-strong' : 'border-cult-border/50'}`}
                       style={{ left: w.x }}
                     >
-                      <span className={`absolute top-1 left-1 text-xs ${w.isMonthStart ? 'text-cult-white font-semibold' : 'text-cult-text-muted'}`}>
+                      <span className={`absolute top-1 left-1 text-xs ${w.isMonthStart ? 'text-cult-text-primary font-semibold' : 'text-cult-text-muted'}`}>
                         {w.label}
                       </span>
                     </div>
@@ -275,7 +275,7 @@ export function ProductionPlannerView() {
                     >
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold text-cult-white truncate">{room.room_code}</div>
+                        <div className="text-xs font-bold text-cult-text-primary truncate">{room.room_code}</div>
                         <div className="text-[10px] text-cult-text-muted">{room.total_plants}p &middot; {room.strain_count}s</div>
                       </div>
                       {/* + button (planning mode only) */}

@@ -32,9 +32,9 @@ interface Props {
   sections: RoomSection[];
 }
 
-const inputClass = 'w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
+const inputClass = 'w-full bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-xs py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent';
 const selectClass = inputClass;
-const labelClass = 'block text-xs text-cult-light-gray uppercase tracking-wider mb-1';
+const labelClass = 'block text-xs text-cult-text-muted uppercase tracking-wider mb-1';
 
 function formatLabel(val: string) {
   return val.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -54,14 +54,14 @@ export function ScoutingFields({ data, onChange, sections }: Props) {
         </select>
       </div>
 
-      <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-3 space-y-2">
+      <div className="bg-cult-surface border border-cult-surface rounded-sm p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-cult-light-gray">Pests Found</span>
+          <span className="text-xs text-cult-text-muted">Pests Found</span>
           <button
             type="button"
             onClick={() => set('pest_found', !data.pest_found)}
             className={`w-10 h-5 rounded-full transition-colors relative ${
-              data.pest_found ? 'bg-cult-danger' : 'bg-cult-dark-gray'
+              data.pest_found ? 'bg-cult-danger' : 'bg-cult-surface'
             }`}
           >
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
@@ -91,14 +91,14 @@ export function ScoutingFields({ data, onChange, sections }: Props) {
         )}
       </div>
 
-      <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-3 space-y-2">
+      <div className="bg-cult-surface border border-cult-surface rounded-sm p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-cult-light-gray">Disease Found</span>
+          <span className="text-xs text-cult-text-muted">Disease Found</span>
           <button
             type="button"
             onClick={() => set('disease_found', !data.disease_found)}
             className={`w-10 h-5 rounded-full transition-colors relative ${
-              data.disease_found ? 'bg-cult-danger' : 'bg-cult-dark-gray'
+              data.disease_found ? 'bg-cult-danger' : 'bg-cult-surface'
             }`}
           >
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${

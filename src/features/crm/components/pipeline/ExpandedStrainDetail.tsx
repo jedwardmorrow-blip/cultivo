@@ -13,7 +13,7 @@ interface ExpandedStrainDetailProps {
 
 function MetricBox({ label, value, colorClass }: { label: string; value: string; colorClass: string }) {
   return (
-    <div className="rounded-lg p-2.5 border border-cult-medium-gray/30 bg-cult-black">
+    <div className="rounded-lg p-2.5 border border-cult-border/30 bg-cult-black">
       <div className="text-xs font-bold text-neutral-500 tracking-[0.08em] mb-1">{label}</div>
       <div className={`text-base font-extrabold tabular-nums ${colorClass}`}>{value}</div>
     </div>
@@ -29,7 +29,7 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
   const stageTotal = stageEntries.reduce((sum, [, v]) => sum + v, 0);
 
   return (
-    <div className="px-4 py-3 border-b border-cult-medium-gray/20 bg-[#090909]">
+    <div className="px-4 py-3 border-b border-cult-border/20 bg-[#090909]">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <MetricBox label="SELLABLE FLOWER" value={formatGrams(s.sellableFlowerGrams) + 'g'} colorClass="text-cult-success" />
         <MetricBox label="SELLABLE SMALLS" value={formatGrams(s.sellableSmallsGrams) + 'g'} colorClass="text-cult-success" />
@@ -101,7 +101,7 @@ export function ExpandedStrainDetail({ strain: s, batches, batchesLoading }: Exp
                 : Math.floor((Date.now() - new Date(b.created_at).getTime()) / 86400000);
 
               return (
-                <div key={b.id} className="rounded-lg p-2.5 border border-cult-medium-gray/20 bg-cult-black">
+                <div key={b.id} className="rounded-lg p-2.5 border border-cult-border/20 bg-cult-black">
                   <div className="flex justify-between items-center mb-1.5">
                     <span className="text-xs font-bold text-neutral-300 font-mono">{b.batch_number}</span>
                     <span className="text-xs px-1.5 py-px rounded font-semibold bg-neutral-800/60 text-neutral-500 border border-neutral-700/50">

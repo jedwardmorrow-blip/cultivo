@@ -17,7 +17,7 @@ function getHealthStyle(label: string): { bg: string; text: string; border: stri
     case 'dormant':
       return { bg: 'bg-cult-danger-muted', text: 'text-cult-danger', border: 'border-cult-danger/30', ring: 'ring-cult-danger/20' };
     default:
-      return { bg: 'bg-cult-medium-gray/30', text: 'text-cult-silver', border: 'border-cult-medium-gray/30', ring: 'ring-cult-medium-gray/20' };
+      return { bg: 'bg-cult-border/30', text: 'text-cult-text-secondary', border: 'border-cult-border/30', ring: 'ring-cult-border/20' };
   }
 }
 
@@ -53,7 +53,7 @@ export function AccountHealthBadge({ healthScore, size = 'sm' }: AccountHealthBa
       </div>
       <div className="border-l border-current/20 pl-2.5">
         <p className={`text-xs font-semibold ${style.text}`}>{getHealthLabel(healthScore.health_label)}</p>
-        <p className="text-xs text-cult-silver">{healthScore.revenue_trend}</p>
+        <p className="text-xs text-cult-text-secondary">{healthScore.revenue_trend}</p>
       </div>
     </div>
   );

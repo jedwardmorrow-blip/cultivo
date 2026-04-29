@@ -1,3 +1,4 @@
+import { Icon as KitIcon } from '@/shared/icons';
 import { sectionDefinitions, getActiveSectionId } from './sectionNavigation';
 import type { SectionDefinition } from './sectionNavigation';
 
@@ -18,24 +19,28 @@ export function SectionTabs({ currentView, onSectionChange, allowedSectionIds }:
     <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
       {visibleSections.map((section: SectionDefinition) => {
         const isActive = section.id === activeSectionId;
-        const Icon = section.icon;
+        const LucideIconCmp = section.icon;
 
         return (
           <button
             key={section.id}
             onClick={() => onSectionChange(section.id, section.defaultView)}
             className={`
-              flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-lg text-sm font-medium
-              transition-all duration-200 whitespace-nowrap
+              flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded text-sm font-medium
+              transition-colors duration-150 whitespace-nowrap
               ${
                 isActive
-                  ? 'bg-cult-off-white text-cult-black shadow-sm'
-                  : 'text-cult-silver hover:text-cult-off-white hover:bg-cult-charcoal/60'
+                  ? 'bg-cult-surface-raised border border-cult-border-strong text-cult-accent'
+                  : 'border border-transparent text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-subtle'
               }
             `}
           >
-            <Icon className="w-4 h-4" />
-            <span className={isActive ? "inline sm:inline" : "hidden sm:inline"}>{section.label}</span>
+            {section.iconName ? (
+              <KitIcon name={section.iconName} size={16} />
+            ) : (
+              <LucideIconCmp className="w-4 h-4" />
+            )}
+            <span className={isActive ? "inline" : "hidden xl:inline"}>{section.label}</span>
           </button>
         );
       })}

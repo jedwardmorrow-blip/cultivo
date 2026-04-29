@@ -53,7 +53,7 @@ function runwayBadge(status: string | null) {
     tight: { label: 'Tight', classes: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30' },
     healthy: { label: 'Healthy', classes: 'bg-cult-success-muted text-cult-success border-cult-success/30' },
     surplus: { label: 'Surplus', classes: 'bg-cult-info-muted text-cult-info border-cult-info/30' },
-    no_demand: { label: 'No Demand', classes: 'bg-cult-charcoal text-cult-silver border-cult-charcoal' },
+    no_demand: { label: 'No Demand', classes: 'bg-cult-surface-raised text-cult-text-secondary border-cult-surface-raised' },
     no_stock: { label: 'No Stock', classes: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30' },
   };
   if (!status || !map[status]) return null;
@@ -70,10 +70,10 @@ function confidenceDot(confidence: string | null) {
     high: 'bg-cult-success',
     medium: 'bg-cult-warning',
     low: 'bg-cult-danger',
-    estimated: 'bg-cult-silver',
+    estimated: 'bg-cult-text-secondary',
     calibrated: 'bg-cult-success',
   };
-  const color = confidence ? map[confidence] || 'bg-cult-charcoal' : 'bg-cult-charcoal';
+  const color = confidence ? map[confidence] || 'bg-cult-surface-raised' : 'bg-cult-surface-raised';
   return <span className={`inline-block w-2 h-2 rounded-full ${color}`} title={confidence || 'no data'} />;
 }
 
@@ -85,7 +85,7 @@ function gradeBadge(grade: string | null) {
     C: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     D: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
   };
-  const classes = map[grade] || 'bg-cult-charcoal text-cult-silver border-cult-charcoal';
+  const classes = map[grade] || 'bg-cult-surface-raised text-cult-text-secondary border-cult-surface-raised';
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${classes}`}>
       {grade}
@@ -98,7 +98,7 @@ function completenessBar(pct: number) {
     pct >= 70 ? 'bg-cult-success' : pct >= 40 ? 'bg-cult-warning' : 'bg-cult-danger';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
+      <div className="w-16 h-1.5 bg-cult-surface-raised rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs text-cult-text-muted">{pct}%</span>
@@ -129,7 +129,7 @@ function SortHeader({
     <button
       onClick={() => onSort(field)}
       className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors
-        ${active ? 'text-cult-white' : 'text-cult-text-muted hover:text-cult-silver'}
+        ${active ? 'text-cult-text-primary' : 'text-cult-text-muted hover:text-cult-text-secondary'}
         ${align === 'right' ? 'ml-auto' : ''}`}
     >
       {label}
@@ -151,12 +151,12 @@ function HeroCards({ summary }: { summary: ReturnType<typeof useStrainAnalytics>
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map((card) => (
-        <div key={card.label} className="bg-cult-graphite rounded-cult border border-cult-charcoal p-4">
+        <div key={card.label} className="bg-cult-surface rounded-cult border border-cult-surface-raised p-4">
           <div className="flex items-center gap-2 mb-2">
-            <card.icon className={`w-4 h-4 ${card.accent ? 'text-cult-warning' : 'text-cult-silver'}`} />
+            <card.icon className={`w-4 h-4 ${card.accent ? 'text-cult-warning' : 'text-cult-text-secondary'}`} />
             <span className="text-xs text-cult-text-muted uppercase tracking-wider">{card.label}</span>
           </div>
-          <div className={`text-2xl font-bold ${card.accent ? 'text-cult-warning' : 'text-cult-white'}`}>
+          <div className={`text-2xl font-bold ${card.accent ? 'text-cult-warning' : 'text-cult-text-primary'}`}>
             {card.value}
           </div>
           <div className="text-xs text-cult-text-muted mt-1">{card.sub}</div>
@@ -189,7 +189,7 @@ function FilterBar({
           value={filters.search}
           onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
           placeholder="Search strains..."
-          className="w-full pl-9 pr-3 py-2 bg-cult-graphite border border-cult-charcoal rounded-cult text-sm text-cult-white placeholder:text-cult-text-muted focus:outline-none focus:border-cult-silver/40"
+          className="w-full pl-9 pr-3 py-2 bg-cult-surface border border-cult-surface-raised rounded-cult text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-text-secondary/40"
         />
       </div>
 
@@ -197,7 +197,7 @@ function FilterBar({
       <select
         value={filters.dominance || ''}
         onChange={(e) => setFilters((f) => ({ ...f, dominance: e.target.value || null }))}
-        className="px-3 py-2 bg-cult-graphite border border-cult-charcoal rounded-cult text-sm text-cult-white focus:outline-none focus:border-cult-silver/40"
+        className="px-3 py-2 bg-cult-surface border border-cult-surface-raised rounded-cult text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-secondary/40"
       >
         <option value="">All Types</option>
         <option value="Indica">Indica</option>
@@ -211,7 +211,7 @@ function FilterBar({
       <select
         value={filters.runwayStatus || ''}
         onChange={(e) => setFilters((f) => ({ ...f, runwayStatus: e.target.value || null }))}
-        className="px-3 py-2 bg-cult-graphite border border-cult-charcoal rounded-cult text-sm text-cult-white focus:outline-none focus:border-cult-silver/40"
+        className="px-3 py-2 bg-cult-surface border border-cult-surface-raised rounded-cult text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-secondary/40"
       >
         <option value="">All Runway</option>
         <option value="critical">Critical</option>
@@ -228,7 +228,7 @@ function FilterBar({
         className={`flex items-center gap-1.5 px-3 py-2 rounded-cult text-sm border transition-colors ${
           filters.hasData
             ? 'bg-cult-success-muted text-cult-success border-cult-success/30'
-            : 'bg-cult-graphite text-cult-text-muted border-cult-charcoal hover:text-cult-silver'
+            : 'bg-cult-surface text-cult-text-muted border-cult-surface-raised hover:text-cult-text-secondary'
         }`}
       >
         <Filter className="w-3.5 h-3.5" />
@@ -239,7 +239,7 @@ function FilterBar({
       {hasActiveFilters && (
         <button
           onClick={() => setFilters({ search: '', dominance: null, runwayStatus: null, hasData: false })}
-          className="flex items-center gap-1 px-2 py-2 text-xs text-cult-text-muted hover:text-cult-silver transition-colors"
+          className="flex items-center gap-1 px-2 py-2 text-xs text-cult-text-muted hover:text-cult-text-secondary transition-colors"
         >
           <X className="w-3.5 h-3.5" />
           Clear
@@ -249,7 +249,7 @@ function FilterBar({
       {/* Reload */}
       <button
         onClick={onReload}
-        className="p-2 text-cult-text-muted hover:text-cult-silver transition-colors rounded-cult hover:bg-cult-charcoal/50 ml-auto"
+        className="p-2 text-cult-text-muted hover:text-cult-text-secondary transition-colors rounded-cult hover:bg-cult-surface-raised/50 ml-auto"
         title="Refresh data"
       >
         <RefreshCw className="w-4 h-4" />
@@ -264,13 +264,13 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
   return (
     <tr
       onClick={onClick}
-      className="border-b border-cult-charcoal/50 hover:bg-cult-charcoal/30 cursor-pointer transition-colors group"
+      className="border-b border-cult-surface-raised/50 hover:bg-cult-surface-raised/30 cursor-pointer transition-colors group"
     >
       {/* Strain name */}
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
           <div>
-            <div className="text-sm font-medium text-cult-white group-hover:text-cult-success transition-colors">
+            <div className="text-sm font-medium text-cult-text-primary group-hover:text-cult-success transition-colors">
               {row.display_name}
             </div>
             {row.dominance_type && (
@@ -283,14 +283,14 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
       {/* Sessions & confidence */}
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-cult-silver">{row.total_session_count}</span>
+          <span className="text-sm text-cult-text-secondary">{row.total_session_count}</span>
           {confidenceDot(row.conversion_confidence)}
         </div>
       </td>
 
       {/* Quality: big bud % */}
       <td className="py-3 px-4 text-right">
-        <span className="text-sm text-cult-silver">{formatPct(row.avg_big_bud_pct)}</span>
+        <span className="text-sm text-cult-text-secondary">{formatPct(row.avg_big_bud_pct)}</span>
       </td>
 
       {/* Grade suggestion */}
@@ -300,14 +300,14 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
 
       {/* Inventory */}
       <td className="py-3 px-4 text-right">
-        <span className="text-sm text-cult-silver">{formatLbs(row.total_sellable_lbs)}</span>
+        <span className="text-sm text-cult-text-secondary">{formatLbs(row.total_sellable_lbs)}</span>
       </td>
 
       {/* Runway */}
       <td className="py-3 px-4">
         <div className="flex items-center gap-2 justify-end">
           {row.runway_days !== null && (
-            <span className="text-sm text-cult-silver">{row.runway_days}d</span>
+            <span className="text-sm text-cult-text-secondary">{row.runway_days}d</span>
           )}
           {runwayBadge(row.runway_status)}
         </div>
@@ -316,7 +316,7 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
       {/* Demand */}
       <td className="py-3 px-4 text-right">
         <div>
-          <span className="text-sm text-cult-silver">{formatNum(row.demand_total_units)}</span>
+          <span className="text-sm text-cult-text-secondary">{formatNum(row.demand_total_units)}</span>
           {row.order_count !== null && row.order_count > 0 && (
             <span className="text-xs text-cult-text-muted ml-1">({row.order_count})</span>
           )}
@@ -337,7 +337,7 @@ function StrainRow({ row, onClick }: { row: StrainTableRow; onClick: () => void 
 
       {/* Chevron */}
       <td className="py-3 px-2">
-        <ChevronRight className="w-4 h-4 text-cult-text-muted group-hover:text-cult-silver transition-colors" />
+        <ChevronRight className="w-4 h-4 text-cult-text-muted group-hover:text-cult-text-secondary transition-colors" />
       </td>
     </tr>
   );
@@ -374,10 +374,10 @@ export function StrainAnalyticsDashboard() {
     <div className="space-y-5 pb-8 stagger-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">
+        <h1 className="text-3xl font-bold text-cult-text-primary">
           Strain Analytics
         </h1>
-        <p className="text-cult-light-gray mt-1">
+        <p className="text-cult-text-muted mt-1">
           Genetics library and production intelligence across {summary.totalStrains} active strains
         </p>
       </div>
@@ -394,11 +394,11 @@ export function StrainAnalyticsDashboard() {
       </div>
 
       {/* Table */}
-      <div className="bg-cult-graphite rounded-cult border border-cult-charcoal overflow-hidden">
+      <div className="bg-cult-surface rounded-cult border border-cult-surface-raised overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-cult-charcoal bg-cult-black/30">
+              <tr className="border-b border-cult-surface-raised bg-cult-black/30">
                 <th className="py-3 px-4 text-left">
                   <SortHeader label="Strain" field="strain_name" currentField={sortField} direction={sortDirection} onSort={handleSort} />
                 </th>

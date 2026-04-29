@@ -13,7 +13,7 @@ const BuildingMapView = lazy(() => import('./building-map/BuildingMapView'));
 
 import { isValidStrainAbbreviation } from '../utils';
 import { daysBetween, todayIso } from '../utils/dateUtils';
-import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT, INNER_GLOW, STATUS_WARN_BANNER, STATUS_ERROR_BANNER } from '../constants/stageColors';
+import { ROOM_TYPE_LEFT_BORDER, ROOM_TYPE_TEXT, ROOM_TYPE_DOT, STATUS_WARN_BANNER, STATUS_ERROR_BANNER } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, GrowthStage, SplitAndMoveInput, SplitAndMoveMultiInput } from '../types';
 import { Button, StatCard, PageSkeleton } from '../../../shared/components';
 
@@ -33,16 +33,9 @@ function computeHarvestDays(harvestDate: string | null): number | null {
 
 
 
-/** Inline SVG noise texture — 2% opacity grain for card depth */
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E")`;
-
-/** Top-edge glow color by room type — used for selected state */
-const SELECTED_TOP_GLOW: Record<string, string> = {
-  clone: '0 -2px 12px rgba(14,165,233,0.25)',
-  veg: '0 -2px 12px rgba(16,185,129,0.25)',
-  flower: '0 -2px 12px rgba(244,63,94,0.25)',
-  mother: '0 -2px 12px rgba(245,158,11,0.25)',
-};
+// Removed per CLAUDE.md > Banned patterns:
+//   - NOISE_BG: surfaces are flat, no fake "depth" textures.
+//   - SELECTED_TOP_GLOW: cards don't glow.
 
 interface RoomCommandCardProps {
   state: RoomOperationalState;
@@ -56,25 +49,37 @@ interface RoomCommandCardProps {
 function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: RoomCommandCardProps) {
   const isEmpty = state.occupancy_status === 'empty';
   
-  let pulseClass = '';
+  // Urgency rendered as static dot + mono text label per CLAUDE.md.
+  // No pulse animations, no glow shadows, no animated borders.
   let urgencyBadge = null;
   if (!isEmpty) {
     if (state.urgency_score === 3) {
-      pulseClass = 'animate-[pulseUrgentRed_2s_infinite] border-cult-danger shadow-[0_0_15px_rgba(184,29,36,0.3)] z-10';
-      urgencyBadge = <span className="bg-cult-danger/20 text-cult-danger text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-danger/50">Urgent</span>;
+      urgencyBadge = (
+        <span className="inline-flex items-center gap-1.5 text-cult-danger border border-cult-border-subtle bg-cult-surface-inset font-mono uppercase tracking-[0.14em] text-[10px] px-1.5 py-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cult-danger" />
+          Urgent
+        </span>
+      );
     } else if (state.urgency_score === 2) {
-      pulseClass = 'animate-[pulseUrgentAmber_2s_infinite] border-cult-stage-harvest shadow-[0_0_15px_rgba(245,158,11,0.3)] z-10';
-      urgencyBadge = <span className="bg-cult-stage-harvest/20 text-cult-stage-harvest text-xs uppercase font-bold px-1.5 py-0.5 border border-cult-stage-harvest/50">Attention</span>;
+      urgencyBadge = (
+        <span className="inline-flex items-center gap-1.5 text-cult-text-secondary border border-cult-border-subtle bg-cult-surface-inset font-mono uppercase tracking-[0.14em] text-[10px] px-1.5 py-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cult-warning" />
+          Attention
+        </span>
+      );
     } else if (state.urgency_score === 1) {
-      urgencyBadge = <span className="text-yellow-500 border border-yellow-500/50 bg-yellow-500/10 text-xs uppercase font-bold px-1.5 py-0.5">Watch</span>;
+      urgencyBadge = (
+        <span className="inline-flex items-center gap-1.5 text-cult-text-secondary border border-cult-border-subtle bg-cult-surface-inset font-mono uppercase tracking-[0.14em] text-[10px] px-1.5 py-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cult-text-faint" />
+          Watch
+        </span>
+      );
     }
   }
 
   const borderCls = ROOM_TYPE_LEFT_BORDER[state.room_type] ?? ROOM_TYPE_LEFT_BORDER.mixed;
   const typeTextCls = ROOM_TYPE_TEXT[state.room_type] ?? ROOM_TYPE_TEXT.mixed;
-  const innerGlow = !isEmpty ? (INNER_GLOW[state.room_type] ?? '') : '';
-  const topGlow = isSelected && !isEmpty ? (SELECTED_TOP_GLOW[state.room_type] ?? '') : '';
-  const combinedShadow = [innerGlow, topGlow].filter(Boolean).join(', ') || undefined;
+  const dotCls = ROOM_TYPE_DOT[state.room_type] ?? ROOM_TYPE_DOT.mixed;
 
   const totalTasks = Number(state.tasks_today) || 0;
   const doneTasks = Number(state.tasks_completed_today) || 0;
@@ -85,27 +90,26 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
   return (
     <button
       onClick={onClick}
-      className={`relative w-full text-left bg-cult-near-black border ${pulseClass || (isSelected && !isEmpty ? 'border-cult-border-strong' : 'border-cult-dark-gray')} border-l-4 ${!isEmpty ? borderCls : 'border-l-cult-dark-gray'} hover:bg-cult-black transition-all duration-200 group flex flex-col h-full ${isEmpty ? 'opacity-50 grayscale-[0.5]' : 'hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)]'} animate-card-fade-up`}
-      style={{
-        animationDelay: `${animIndex * 60}ms`,
-        backgroundImage: !isEmpty ? NOISE_BG : undefined,
-        boxShadow: combinedShadow,
-      }}
+      className={`relative w-full text-left bg-cult-surface border ${isSelected && !isEmpty ? 'border-cult-border-strong' : 'border-cult-border'} border-l-4 ${!isEmpty ? borderCls : 'border-l-cult-border'} hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors duration-150 group flex flex-col h-full ${isEmpty ? 'opacity-50 grayscale-[0.5]' : ''} animate-card-fade-up`}
+      style={{ animationDelay: `${animIndex * 60}ms` }}
     >
       <div className="p-4 flex-1 space-y-4 w-full">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-bold text-cult-white">{state.room_code}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${dotCls}`} />
+              <span className="font-mono text-sm font-bold text-cult-text-primary">{state.room_code}</span>
+            </span>
             {urgencyBadge}
           </div>
-          <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${isEmpty ? 'border-cult-dark-gray text-cult-medium-gray' : typeTextCls}`}>
+          <span className={`text-xs px-1.5 py-0.5 uppercase tracking-wider font-bold border ${isEmpty ? 'border-cult-surface text-cult-border' : typeTextCls}`}>
             {isEmpty ? 'Empty' : state.room_type}
           </span>
         </div>
 
         {!isEmpty && (
           <div className="space-y-3">
-            <div className="text-sm text-cult-silver flex items-center justify-between">
+            <div className="text-sm text-cult-text-secondary flex items-center justify-between">
               <span>{state.total_plants} plants &middot; {state.strain_count} strains</span>
               {/* Flower rooms: use days_since_flip (from room_sections flip_date) for accuracy.
                   Veg/clone rooms: fall back to days_in_stage (from plant_group stage_entered_at). */}
@@ -117,10 +121,10 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
             {state.strain_names && state.strain_names.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {state.strain_names.slice(0, 4).map(s => (
-                  <span key={s} className="text-xs border border-cult-dark-gray text-cult-light-gray px-1.5 py-0.5 bg-cult-surface-overlay flex-shrink-0">{s}</span>
+                  <span key={s} className="text-xs border border-cult-surface text-cult-text-muted px-1.5 py-0.5 bg-cult-surface-overlay flex-shrink-0">{s}</span>
                 ))}
                 {state.strain_names.length > 4 && (
-                  <span className="text-xs text-cult-medium-gray px-1 inline-flex items-center">+{state.strain_names.length - 4}</span>
+                  <span className="text-xs text-cult-border px-1 inline-flex items-center">+{state.strain_names.length - 4}</span>
                 )}
               </div>
             )}
@@ -132,7 +136,7 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
               return (
               <div className="bg-cult-surface-overlay border border-cult-border p-2 space-y-1.5 mt-2">
                 {harvestDays !== null && harvestDays > 0 && (
-                  <div className="text-xs text-cult-light-gray flex items-center justify-between">
+                  <div className="text-xs text-cult-text-muted flex items-center justify-between">
                     <span>Harvest in {harvestDays} days</span>
                   </div>
                 )}
@@ -153,12 +157,12 @@ function RoomCommandCard({ state, onClick, animIndex = 0, isSelected = false }: 
         )}
       </div>
 
-      <div className="w-full border-t border-cult-dark-gray bg-cult-surface p-2 mt-auto">
-        <div className="flex items-center justify-between text-xs text-cult-medium-gray mb-1 px-1 font-mono">
+      <div className="w-full border-t border-cult-surface bg-cult-surface p-2 mt-auto">
+        <div className="flex items-center justify-between text-xs text-cult-border mb-1 px-1 font-mono">
           <span>{doneTasks}/{totalTasks} tasks done</span>
           {inProgressTasks > 0 && <span className="text-cult-stage-harvest font-bold">{inProgressTasks} active</span>}
         </div>
-        <div className="h-1.5 w-full bg-cult-dark-gray flex overflow-hidden rounded-sm">
+        <div className="h-1.5 w-full bg-cult-surface flex overflow-hidden rounded-sm">
           {totalTasks > 0 && (
             <>
               <div
@@ -287,8 +291,8 @@ export function CultivationDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">Room Overview</h1>
-        <p className="text-cult-light-gray mt-2">Live operational status</p>
+        <h1 className="text-3xl font-bold text-cult-text-primary">Room Overview</h1>
+        <p className="text-cult-text-muted mt-2">Live operational status</p>
       </div>
 
       {strainsWithoutAbbrev.length > 0 && (
@@ -346,8 +350,8 @@ export function CultivationDashboard() {
         {/* Room Cards */}
         {activeRooms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Package className="w-10 h-10 text-cult-medium-gray" />
-            <p className="text-cult-medium-gray text-sm">No active grow rooms</p>
+            <Package className="w-10 h-10 text-cult-border" />
+            <p className="text-cult-border text-sm">No active grow rooms</p>
           </div>
         ) : (
           <div>
@@ -423,8 +427,8 @@ export function CultivationDashboard() {
 
       {pendingAction?.type === 'advance' && advanceGroup && nextStageForAdvance && nextStageForAdvance !== 'harvested' && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
-          <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6 space-y-4">
-            <h3 className="text-lg font-bold text-cult-white">
+          <div className="bg-cult-surface border border-cult-border w-full max-w-sm p-6 space-y-4">
+            <h3 className="text-lg font-bold text-cult-text-primary">
               Advance Stage
             </h3>
 
@@ -439,13 +443,13 @@ export function CultivationDashboard() {
               </div>
             )}
 
-            <p className="text-cult-light-gray text-sm">
+            <p className="text-cult-text-muted text-sm">
               Move{' '}
-              <span className="text-cult-white font-mono">
+              <span className="text-cult-text-primary font-mono">
                 {advanceGroup.batch_registry?.batch_number ?? advanceGroup.strains?.name ?? 'this group'}
               </span>{' '}
-              from <span className="text-cult-white">{advanceGroup.growth_stage}</span> to{' '}
-              <span className="text-cult-white">{nextStageForAdvance}</span>? This cannot be reversed.
+              from <span className="text-cult-text-primary">{advanceGroup.growth_stage}</span> to{' '}
+              <span className="text-cult-text-primary">{nextStageForAdvance}</span>? This cannot be reversed.
             </p>
 
             {advanceError && (
@@ -464,7 +468,7 @@ export function CultivationDashboard() {
               </Button>
               <button
                 onClick={() => { setPendingAction(null); setAdvanceError(null); }}
-                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
               >
                 Cancel
               </button>

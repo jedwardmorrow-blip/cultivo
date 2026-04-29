@@ -49,12 +49,12 @@ export function MetricsScorecard({ totals }: MetricsScorecardProps) {
       </div>
 
       {totals.total_waste_grams > 0 && (
-        <div className="flex items-center gap-3 bg-cult-near-black border border-cult-dark-gray px-4 py-3">
-          <Trash2 className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
-          <span className="text-sm text-cult-light-gray">
-            Total waste: <span className="text-cult-white font-mono">{formatWeight(totals.total_waste_grams)}</span>
+        <div className="flex items-center gap-3 bg-cult-surface border border-cult-surface px-4 py-3">
+          <Trash2 className="w-4 h-4 text-cult-border flex-shrink-0" />
+          <span className="text-sm text-cult-text-muted">
+            Total waste: <span className="text-cult-text-primary font-mono">{formatWeight(totals.total_waste_grams)}</span>
             {totals.total_wet_grams > 0 && (
-              <span className="text-cult-medium-gray ml-2">
+              <span className="text-cult-border ml-2">
                 ({Math.round((totals.total_waste_grams / totals.total_wet_grams) * 100)}% of wet weight)
               </span>
             )}

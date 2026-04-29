@@ -50,7 +50,7 @@ function StageCell({ stage, weight, units, maxByStage }: {
   return (
     <td className="px-3 py-2.5 text-right relative">
       <CellBackground stage={stage} opacity={opacity} />
-      <span className={`relative z-10 text-sm tabular-nums ${display ? 'text-cult-white font-medium' : 'text-cult-medium-gray'}`}>
+      <span className={`relative z-10 text-sm tabular-nums ${display ? 'text-cult-text-primary font-medium' : 'text-cult-border'}`}>
         {display || '\u2014'}
       </span>
     </td>
@@ -63,14 +63,14 @@ function BatchRow({ batch, grandTotals, onNavigateToInventory }: {
   onNavigateToInventory?: () => void;
 }) {
   return (
-    <tr className="bg-cult-black/60 border-b border-cult-medium-gray/30">
+    <tr className="bg-cult-black/60 border-b border-cult-border/30">
       <td className="px-3 py-2 pl-10">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-cult-light-gray font-mono">{batch.batchNumber}</span>
+          <span className="text-xs text-cult-text-muted font-mono">{batch.batchNumber}</span>
           {onNavigateToInventory && (
             <button
               onClick={(e) => { e.stopPropagation(); onNavigateToInventory(); }}
-              className="text-cult-medium-gray hover:text-cult-green transition-colors"
+              className="text-cult-border hover:text-cult-green transition-colors"
               title="View in Inventory"
             >
               <ExternalLink className="w-3 h-3" />
@@ -98,21 +98,21 @@ export function PipelineStrainRow({ strain, grandTotals, onNavigateToInventory }
   return (
     <>
       <tr
-        className={`border-b border-cult-medium-gray/50 transition-colors ${hasBatches ? 'cursor-pointer hover:bg-cult-near-black/80' : ''}`}
+        className={`border-b border-cult-border/50 transition-colors ${hasBatches ? 'cursor-pointer hover:bg-cult-surface/80' : ''}`}
         onClick={() => hasBatches && setExpanded(!expanded)}
       >
         <td className="px-3 py-3">
           <div className="flex items-center gap-2">
             {hasBatches ? (
               expanded
-                ? <ChevronDown className="w-4 h-4 text-cult-light-gray flex-shrink-0" />
-                : <ChevronRight className="w-4 h-4 text-cult-light-gray flex-shrink-0" />
+                ? <ChevronDown className="w-4 h-4 text-cult-text-muted flex-shrink-0" />
+                : <ChevronRight className="w-4 h-4 text-cult-text-muted flex-shrink-0" />
             ) : (
               <span className="w-4" />
             )}
-            <span className="text-sm font-semibold text-cult-white tracking-wide">{strain.strain}</span>
+            <span className="text-sm font-semibold text-cult-text-primary tracking-wide">{strain.strain}</span>
             {hasBatches && (
-              <span className="text-xs text-cult-medium-gray">{strain.batches.length} batches</span>
+              <span className="text-xs text-cult-border">{strain.batches.length} batches</span>
             )}
           </div>
         </td>

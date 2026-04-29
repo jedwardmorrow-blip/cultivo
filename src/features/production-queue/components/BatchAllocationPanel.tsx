@@ -299,7 +299,7 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
         </div>
 
         {/* Conversion funnel */}
-        <div className="px-2 py-2 rounded-cult bg-cult-dark-gray/30 border border-cult-medium-gray/20">
+        <div className="px-2 py-2 rounded-cult bg-cult-surface/30 border border-cult-border/20">
           <ConversionFunnel conversion={conversion} />
         </div>
 
@@ -312,10 +312,10 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
       </div>
 
       {/* ─── Batch table ─── */}
-      <div className="rounded-cult border border-cult-medium-gray/30 overflow-hidden">
+      <div className="rounded-cult border border-cult-border/30 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-cult-dark-gray/30 text-left">
+            <tr className="bg-cult-surface/30 text-left">
               <th className="px-3 py-2 text-xs uppercase tracking-wider text-gray-600 font-medium">Batch</th>
               <th className="px-3 py-2 text-xs uppercase tracking-wider text-gray-600 font-medium">Harvest</th>
               <th className="px-3 py-2 text-xs uppercase tracking-wider text-gray-600 font-medium">Age</th>
@@ -327,7 +327,7 @@ export function BatchAllocationPanel({ allocation, strainName }: BatchAllocation
             {batches.map(b => (
               <tr
                 key={b.batch_id}
-                className={`border-t border-cult-medium-gray/20 ${
+                className={`border-t border-cult-border/20 ${
                   b.age_pressure === 'aging' ? 'bg-cult-danger/[0.03]' :
                   b.age_pressure === 'watch' ? 'bg-cult-warning/[0.02]' : ''
                 }`}

@@ -107,7 +107,7 @@ const HEALTH_CONFIG: Record<HealthBucket, { label: string; color: string; bgColo
 // âââ Sub-Components ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function HealthBadge({ bucket }: { bucket?: HealthBucket }) {
-  if (!bucket) return <span className="text-cult-medium-gray text-xs">â</span>;
+  if (!bucket) return <span className="text-cult-border text-xs">â</span>;
   const cfg = HEALTH_CONFIG[bucket];
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bgColor} ${cfg.color} border ${cfg.borderColor}`}>
@@ -118,7 +118,7 @@ function HealthBadge({ bucket }: { bucket?: HealthBucket }) {
 }
 
 function MiniScoreBar({ score, max = 100 }: { score?: number; max?: number }) {
-  if (score === undefined || score === null) return <span className="text-cult-medium-gray text-xs">â</span>;
+  if (score === undefined || score === null) return <span className="text-cult-border text-xs">â</span>;
   const pct = Math.min(100, Math.max(0, (score / max) * 100));
   const color =
     pct >= 75 ? 'bg-cult-success' :
@@ -127,10 +127,10 @@ function MiniScoreBar({ score, max = 100 }: { score?: number; max?: number }) {
     'bg-cult-danger';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
+      <div className="w-16 h-1.5 bg-cult-surface rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-cult-silver tabular-nums">{score}</span>
+      <span className="text-xs text-cult-text-secondary tabular-nums">{score}</span>
     </div>
   );
 }
@@ -153,7 +153,7 @@ function SortHeader({
     <button
       onClick={() => onSort(field)}
       className={`flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${
-        isActive ? 'text-cult-white' : 'text-cult-silver hover:text-cult-white'
+        isActive ? 'text-cult-text-primary' : 'text-cult-text-secondary hover:text-cult-text-primary'
       }`}
     >
       {label}
@@ -355,8 +355,8 @@ function OverviewTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <RefreshCw className="w-6 h-6 text-cult-silver animate-spin" />
-        <span className="ml-3 text-cult-silver">Loading accounts...</span>
+        <RefreshCw className="w-6 h-6 text-cult-text-secondary animate-spin" />
+        <span className="ml-3 text-cult-text-secondary">Loading accounts...</span>
       </div>
     );
   }
@@ -374,9 +374,9 @@ function OverviewTab() {
     <div className="space-y-4">
       {/* ââ Health Summary Cards ââ */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-medium-gray/30">
-          <p className="text-xs text-cult-silver mb-1">Avg Health Score</p>
-          <p className="text-xl font-semibold text-cult-white">{healthSummary.avgScore}</p>
+        <div className="bg-cult-surface/50 rounded-lg p-3 border border-cult-border/30">
+          <p className="text-xs text-cult-text-secondary mb-1">Avg Health Score</p>
+          <p className="text-xl font-semibold text-cult-text-primary">{healthSummary.avgScore}</p>
         </div>
         {(Object.keys(HEALTH_CONFIG) as HealthBucket[]).map((bucket) => {
           const cfg = HEALTH_CONFIG[bucket];
@@ -408,7 +408,7 @@ function OverviewTab() {
                 <button
                   key={h.customer_id}
                   onClick={() => navigate(`/crm-account-detail/${h.customer_id}`)}
-                  className="text-xs bg-cult-dark-gray/80 text-cult-warning/80 px-2 py-1 rounded hover:bg-cult-dark-gray transition-colors"
+                  className="text-xs bg-cult-surface/80 text-cult-warning/80 px-2 py-1 rounded hover:bg-cult-surface transition-colors"
                 >
                   {h.customer_name} Â· {formatCurrency(h.revenue_90d)}
                 </button>
@@ -420,21 +420,21 @@ function OverviewTab() {
       {/* ââ Search & Filters ââ */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-border" />
           <input
             type="text"
             placeholder="Search by name, code, or city..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-cult-dark-gray/50 border border-cult-medium-gray/50 rounded-lg text-sm text-cult-white placeholder-cult-medium-gray focus:outline-none focus:border-cult-silver/50"
+            className="w-full pl-9 pr-3 py-2 bg-cult-surface/50 border border-cult-border/50 rounded-lg text-sm text-cult-text-primary placeholder-cult-border focus:outline-none focus:border-cult-text-secondary/50"
           />
         </div>
         <div className="flex items-center gap-1">
-          <Filter className="w-4 h-4 text-cult-medium-gray" />
+          <Filter className="w-4 h-4 text-cult-border" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="bg-cult-dark-gray/50 border border-cult-medium-gray/50 rounded-lg px-2 py-2 text-sm text-cult-silver focus:outline-none"
+            className="bg-cult-surface/50 border border-cult-border/50 rounded-lg px-2 py-2 text-sm text-cult-text-secondary focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -445,21 +445,21 @@ function OverviewTab() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-            className="bg-cult-dark-gray/50 border border-cult-medium-gray/50 rounded-lg px-2 py-2 text-sm text-cult-silver focus:outline-none"
+            className="bg-cult-surface/50 border border-cult-border/50 rounded-lg px-2 py-2 text-sm text-cult-text-secondary focus:outline-none"
           >
             <option value="all">All Types</option>
             <option value="direct">Direct</option>
             <option value="hub_parent">Hub Parent</option>
           </select>
         </div>
-        <span className="text-xs text-cult-medium-gray">{sorted.length} accounts</span>
+        <span className="text-xs text-cult-border">{sorted.length} accounts</span>
       </div>
 
       {/* ââ Table ââ */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-medium-gray/30">
+            <tr className="border-b border-cult-border/30">
               <th className="text-left py-3 px-3 w-8" />
               <th className="text-left py-3 px-3">
                 <SortHeader label="Account" field="name" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
@@ -477,11 +477,11 @@ function OverviewTab() {
                 <SortHeader label="Orders" field="order_count" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
               </th>
               <th className="text-left py-3 px-3">
-                <span className="text-xs font-medium uppercase tracking-wider text-cult-silver">Score</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-cult-text-secondary">Score</span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray/20">
+          <tbody className="divide-y divide-cult-border/20">
             {sorted.map((acct) => {
               const isParent = acct.account_type === 'hub_parent';
               const children = isParent ? childrenByParent.get(acct.customer_id) || [] : [];
@@ -490,10 +490,10 @@ function OverviewTab() {
               return (
                 <React.Fragment key={acct.customer_id}>
                   {/* Parent / Direct row */}
-                  <tr className="hover:bg-cult-dark-gray/30 transition-colors group">
+                  <tr className="hover:bg-cult-surface/30 transition-colors group">
                     <td className="py-2.5 px-3">
                       {isParent && children.length > 0 ? (
-                        <button onClick={() => toggleParent(acct.customer_id)} className="text-cult-medium-gray hover:text-cult-white">
+                        <button onClick={() => toggleParent(acct.customer_id)} className="text-cult-border hover:text-cult-text-primary">
                           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                         </button>
                       ) : (
@@ -503,24 +503,24 @@ function OverviewTab() {
                     <td className="py-2.5 px-3">
                       <button
                         onClick={() => navigate(`/crm-account-detail/${acct.customer_id}`)}
-                        className="text-left hover:text-cult-white transition-colors"
+                        className="text-left hover:text-cult-text-primary transition-colors"
                       >
-                        <span className="text-cult-white font-medium">{acct.name}</span>
-                        <span className="text-cult-medium-gray text-xs ml-2">{acct.customer_code}</span>
+                        <span className="text-cult-text-primary font-medium">{acct.name}</span>
+                        <span className="text-cult-border text-xs ml-2">{acct.customer_code}</span>
                         {isParent && <span className="ml-2 text-xs text-cult-info/70">Hub Â· {children.length} locations</span>}
-                        {acct.city && <span className="block text-xs text-cult-medium-gray">{acct.city}{acct.state ? `, ${acct.state}` : ''}</span>}
+                        {acct.city && <span className="block text-xs text-cult-border">{acct.city}{acct.state ? `, ${acct.state}` : ''}</span>}
                       </button>
                     </td>
                     <td className="py-2.5 px-3">
                       <HealthBadge bucket={acct.health_bucket} />
                     </td>
-                    <td className="py-2.5 px-3 text-right text-cult-silver tabular-nums">
+                    <td className="py-2.5 px-3 text-right text-cult-text-secondary tabular-nums">
                       {formatCurrency(acct.total_revenue)}
                     </td>
-                    <td className="py-2.5 px-3 text-cult-silver text-xs">
+                    <td className="py-2.5 px-3 text-cult-text-secondary text-xs">
                       {formatDate(acct.last_order_date)}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-cult-silver tabular-nums">
+                    <td className="py-2.5 px-3 text-right text-cult-text-secondary tabular-nums">
                       {acct.order_count ?? 'â'}
                     </td>
                     <td className="py-2.5 px-3">
@@ -530,28 +530,28 @@ function OverviewTab() {
 
                   {/* Expanded children */}
                   {isExpanded && children.map((child) => (
-                    <tr key={child.customer_id} className="hover:bg-cult-dark-gray/20 transition-colors bg-cult-near-black/30">
+                    <tr key={child.customer_id} className="hover:bg-cult-surface/20 transition-colors bg-cult-surface/30">
                       <td className="py-2 px-3" />
                       <td className="py-2 px-3 pl-10">
                         <button
                           onClick={() => navigate(`/crm-account-detail/${child.customer_id}`)}
-                          className="text-left hover:text-cult-white transition-colors"
+                          className="text-left hover:text-cult-text-primary transition-colors"
                         >
-                          <span className="text-cult-silver text-sm">{child.name}</span>
-                          <span className="text-cult-medium-gray text-xs ml-2">{child.customer_code}</span>
-                          {child.city && <span className="block text-xs text-cult-medium-gray">{child.city}{child.state ? `, ${child.state}` : ''}</span>}
+                          <span className="text-cult-text-secondary text-sm">{child.name}</span>
+                          <span className="text-cult-border text-xs ml-2">{child.customer_code}</span>
+                          {child.city && <span className="block text-xs text-cult-border">{child.city}{child.state ? `, ${child.state}` : ''}</span>}
                         </button>
                       </td>
                       <td className="py-2 px-3">
                         <HealthBadge bucket={child.health_bucket} />
                       </td>
-                      <td className="py-2 px-3 text-right text-cult-medium-gray tabular-nums text-xs">
+                      <td className="py-2 px-3 text-right text-cult-border tabular-nums text-xs">
                         {formatCurrency(child.total_revenue)}
                       </td>
-                      <td className="py-2 px-3 text-cult-medium-gray text-xs">
+                      <td className="py-2 px-3 text-cult-border text-xs">
                         {formatDate(child.last_order_date)}
                       </td>
-                      <td className="py-2 px-3 text-right text-cult-medium-gray tabular-nums text-xs">
+                      <td className="py-2 px-3 text-right text-cult-border tabular-nums text-xs">
                         {child.order_count ?? 'â'}
                       </td>
                       <td className="py-2 px-3">
@@ -564,7 +564,7 @@ function OverviewTab() {
             })}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-cult-medium-gray">
+                <td colSpan={7} className="py-12 text-center text-cult-border">
                   No accounts match your filters.
                 </td>
               </tr>
@@ -645,16 +645,16 @@ function ContactsTab() {
       {/* Search Bar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-border" />
           <input
             type="text"
             placeholder="Search contacts by name, email, title, or phone..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-cult-dark-gray border border-cult-medium-gray/30 rounded-lg text-cult-silver text-sm placeholder:text-cult-medium-gray/60 focus:outline-none focus:border-cult-silver/50"
+            className="w-full pl-10 pr-4 py-2 bg-cult-surface border border-cult-border/30 rounded-lg text-cult-text-secondary text-sm placeholder:text-cult-border/60 focus:outline-none focus:border-cult-text-secondary/50"
           />
         </div>
-        <div className="text-xs text-cult-medium-gray">
+        <div className="text-xs text-cult-border">
           {contacts.length} contact{contacts.length !== 1 ? 's' : ''}
         </div>
       </div>
@@ -662,66 +662,66 @@ function ContactsTab() {
       {/* Contacts Table */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <RefreshCw className="w-5 h-5 animate-spin text-cult-medium-gray" />
+          <RefreshCw className="w-5 h-5 animate-spin text-cult-border" />
         </div>
       ) : sorted.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-cult-medium-gray">
+        <div className="flex flex-col items-center justify-center py-16 text-cult-border">
           <Users className="w-10 h-10 mb-3 opacity-40" />
           <p className="text-sm">{debouncedQuery ? 'No contacts match your search' : 'No contacts found'}</p>
         </div>
       ) : (
-        <div className="border border-cult-medium-gray/20 rounded-lg overflow-hidden">
+        <div className="border border-cult-border/20 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-cult-dark-gray/60 text-cult-medium-gray text-xs uppercase tracking-wider">
-                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('name')}>
+              <tr className="bg-cult-surface/60 text-cult-border text-xs uppercase tracking-wider">
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-text-secondary" onClick={() => toggleSort('name')}>
                   <span className="flex items-center gap-1">Contact <SortIcon field="name" /></span>
                 </th>
-                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('title')}>
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-text-secondary" onClick={() => toggleSort('title')}>
                   <span className="flex items-center gap-1">Title <SortIcon field="title" /></span>
                 </th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Phone</th>
-                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-silver" onClick={() => toggleSort('customer')}>
+                <th className="px-4 py-3 text-left cursor-pointer hover:text-cult-text-secondary" onClick={() => toggleSort('customer')}>
                   <span className="flex items-center gap-1">Account <SortIcon field="customer" /></span>
                 </th>
                 <th className="px-4 py-3 text-left">Location</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cult-medium-gray/10">
+            <tbody className="divide-y divide-cult-border/10">
               {sorted.map(c => (
-                <tr key={c.id} className="hover:bg-cult-dark-gray/40 transition-colors">
+                <tr key={c.id} className="hover:bg-cult-surface/40 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {c.is_primary && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
-                      <span className="text-cult-silver font-medium">{c.name}</span>
+                      <span className="text-cult-text-secondary font-medium">{c.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-cult-medium-gray">{c.title || '—'}</td>
+                  <td className="px-4 py-3 text-cult-border">{c.title || '—'}</td>
                   <td className="px-4 py-3">
                     {c.email ? (
-                      <a href={'mailto:' + c.email} className="text-cult-medium-gray hover:text-cult-silver flex items-center gap-1">
+                      <a href={'mailto:' + c.email} className="text-cult-border hover:text-cult-text-secondary flex items-center gap-1">
                         <Mail className="w-3 h-3" /> {c.email}
                       </a>
-                    ) : <span className="text-cult-medium-gray/40">—</span>}
+                    ) : <span className="text-cult-border/40">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.phone ? (
-                      <span className="text-cult-medium-gray flex items-center gap-1">
+                      <span className="text-cult-border flex items-center gap-1">
                         <Phone className="w-3 h-3" /> {c.phone}
                       </span>
-                    ) : <span className="text-cult-medium-gray/40">—</span>}
+                    ) : <span className="text-cult-border/40">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => navigate('/crm-account-detail/' + c.customer?.id)}
-                      className="text-cult-silver hover:underline flex items-center gap-1"
+                      className="text-cult-text-secondary hover:underline flex items-center gap-1"
                     >
-                      <Briefcase className="w-3 h-3 text-cult-medium-gray" />
+                      <Briefcase className="w-3 h-3 text-cult-border" />
                       {c.customer?.name || 'Unknown'}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-cult-medium-gray text-xs">
+                  <td className="px-4 py-3 text-cult-border text-xs">
                     {c.customer?.city && c.customer?.state
                       ? c.customer.city + ', ' + c.customer.state
                       : '—'}
@@ -749,15 +749,15 @@ export default function AccountsHub({}: AccountsHubProps) {
       {/* ââ Header ââ */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-cult-white">Accounts Hub</h1>
-          <p className="text-sm text-cult-silver mt-0.5">
+          <h1 className="text-xl font-semibold text-cult-text-primary">Accounts Hub</h1>
+          <p className="text-sm text-cult-text-secondary mt-0.5">
             Unified account management â health, revenue, visits, and contacts in one place.
           </p>
         </div>
       </div>
 
       {/* ââ Tab Bar ââ */}
-      <div className="bg-cult-dark-gray/50 rounded-lg p-1 border border-cult-medium-gray/50 inline-flex">
+      <div className="bg-cult-surface/50 rounded-lg p-1 border border-cult-border/50 inline-flex">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -767,8 +767,8 @@ export default function AccountsHub({}: AccountsHubProps) {
               onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-cult-near-black text-cult-white shadow-sm'
-                  : 'text-cult-silver hover:text-cult-white hover:bg-cult-dark-gray/50'
+                  ? 'bg-cult-surface text-cult-text-primary shadow-sm'
+                  : 'text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface/50'
               }`}
             >
               <Icon className="w-4 h-4" />

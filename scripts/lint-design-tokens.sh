@@ -2,12 +2,15 @@
 # ============================================================================
 # lint-design-tokens.sh
 # ============================================================================
-# Checks for raw white/[opacity] Tailwind patterns in TSX/TS files under src/.
-# These should be replaced with semantic design tokens from the CultOps
-# design system.
+# Catches AI-generated design system violations at commit time.
+# Run via: npm run lint:tokens
 #
-# Mapping table:
+# Two checks:
+#   1. Raw white/[opacity] Tailwind patterns (replaced by semantic tokens)
+#   2. Banned aesthetic patterns (backdrop-blur, large radii, standard shadows,
+#      stage colors as fills, raw Tailwind palette colors, etc)
 #
+# Mapping table for #1:
 #   Raw pattern                  Semantic token
 #   -------------------------    ----------------------------
 #   bg-white/[0.02]              bg-cult-surface-inset
@@ -22,8 +25,14 @@
 #   border-white/[0.10]          border-cult-border
 #   border-white/[0.12]          border-cult-border-active
 #   border-white/[0.15+]         border-cult-border-strong
-#   divide-white/[*]             (use semantic border tokens)
-#   ring-white/[*]               (use semantic border tokens)
+#
+# Banned patterns for #2:
+#   - backdrop-blur-* (any variant): surfaces are opaque
+#   - shadow-sm/md/lg/xl/2xl/3xl: hairlines only, no shadows
+#   - rounded-xl/2xl/3xl: max radius is rounded-cult (12px)
+#   - bg-cult-stage-*/N or border-cult-stage-*/N: stage colors as fills
+#   - animate-[pulseUrgent*]: pulse animations are banned
+#   - hover:-translate-y-*: cards don't float
 #
 # Usage:
 #   bash scripts/lint-design-tokens.sh
@@ -36,21 +45,54 @@
 set -euo pipefail
 
 SRC_DIR="src"
-PATTERN='(bg|border|divide|ring)-white/\['
+fail=0
 
-# Find violations in .ts and .tsx files, excluding node_modules
-violations=$(grep -rn --include='*.ts' --include='*.tsx' -E "$PATTERN" "$SRC_DIR" 2>/dev/null || true)
+# ── Check 1: raw white/[opacity] patterns ─────────────────────────────────
+PATTERN_WHITE='(bg|border|divide|ring)-white/\['
+white_violations=$(grep -rn --include='*.ts' --include='*.tsx' -E "$PATTERN_WHITE" "$SRC_DIR" 2>/dev/null || true)
 
-if [ -z "$violations" ]; then
-  echo "lint-design-tokens: No raw white/[opacity] patterns found. All clean."
+if [ -n "$white_violations" ]; then
+  echo "[lint-tokens] Raw white/[opacity] patterns found. Use semantic tokens."
+  echo "--------------------------------------------------------------------------------"
+  echo "$white_violations"
+  echo "--------------------------------------------------------------------------------"
+  fail=1
+fi
+
+# ── Check 2: banned aesthetic patterns ────────────────────────────────────
+# Each entry is "pattern|description"
+BANNED_PATTERNS=(
+  '\bbackdrop-blur-(sm|md|lg|xl|2xl|3xl|none)\b|backdrop-blur (surfaces are opaque, see CLAUDE.md Banned Patterns)'
+  '\bshadow-(sm|md|lg|xl|2xl|3xl|inner)\b|standard Tailwind shadow (use hairline borders, see CLAUDE.md)'
+  '\brounded-(xl|2xl|3xl)\b|oversized radius (cap at rounded-cult / 12px)'
+  '\b(bg|border)-cult-stage-[a-z]+/[0-9]+\b|stage color as fill or border (use 6px dot marker only)'
+  'animate-\[pulseUrgent(Red|Amber)|urgency pulse animation (use static dot + text label)'
+  'hover:-translate-y-|hover translate (cards do not float)'
+)
+
+for entry in "${BANNED_PATTERNS[@]}"; do
+  pattern="${entry%%|*}"
+  desc="${entry#*|}"
+  # Skip JSDoc / line comments by dropping any matched line whose code portion
+  # (after file:line:) starts with whitespace + `*` or `//`. This lets
+  # CLAUDE.md ban-list mentions inside header comments not trigger the lint.
+  hits=$(grep -rn --include='*.ts' --include='*.tsx' -E "$pattern" "$SRC_DIR" 2>/dev/null \
+    | grep -vE '^[^:]+:[0-9]+:\s*(\*|//)' \
+    || true)
+  if [ -n "$hits" ]; then
+    echo "[lint-tokens] Banned: $desc"
+    echo "--------------------------------------------------------------------------------"
+    echo "$hits"
+    echo "--------------------------------------------------------------------------------"
+    fail=1
+  fi
+done
+
+if [ "$fail" -eq 0 ]; then
+  echo "lint-design-tokens: No violations. All clean."
   exit 0
 fi
 
-echo "lint-design-tokens: Found raw white/[opacity] violations. Use semantic tokens instead."
-echo "--------------------------------------------------------------------------------"
-echo "$violations"
-echo "--------------------------------------------------------------------------------"
 echo ""
-echo "Run 'grep -rn --include=\"*.tsx\" --include=\"*.ts\" -E \"(bg|border|divide|ring)-white/\\[\" src/' to see all hits."
-echo "See scripts/lint-design-tokens.sh for the mapping table."
+echo "See CLAUDE.md > 'Banned patterns (working-instrument)' for the full list and rationale."
 exit 1

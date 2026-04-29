@@ -58,22 +58,22 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
       className="fixed inset-0 z-50 flex items-stretch bg-black/70"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="relative ml-auto bg-cult-opaque-near-black border-l border-cult-dark-gray w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
+      <div className="relative ml-auto bg-cult-surface border-l border-cult-surface w-full max-w-md h-full flex flex-col overflow-hidden animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-dark-gray flex-shrink-0 bg-cult-charcoal/20">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-surface flex-shrink-0 bg-cult-surface-raised/20">
           <div>
-            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Room Schedule</span>
-            <h3 className="text-base font-bold text-cult-white font-mono mt-0.5">{roomCode}</h3>
+            <span className="text-xs text-cult-border uppercase tracking-wider">Room Schedule</span>
+            <h3 className="text-base font-bold text-cult-text-primary font-mono mt-0.5">{roomCode}</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
-            <X className="w-4 h-4 text-cult-medium-gray" />
+          <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-surface-raised active:bg-cult-surface-raised/60 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-cult-border" />
           </button>
         </div>
 
         {/* Breadcrumb step indicator */}
-        <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center gap-1.5 flex-shrink-0 bg-cult-charcoal/10">
+        <div className="px-5 py-2.5 border-b border-cult-surface/50 flex items-center gap-1.5 flex-shrink-0 bg-cult-surface-raised/10">
           {step === 1 ? (
-            <div className="flex items-center gap-1.5 text-xs text-cult-white">
+            <div className="flex items-center gap-1.5 text-xs text-cult-text-primary">
               <span className="w-4 h-4 rounded-full border border-cult-accent bg-cult-accent/20 text-cult-accent flex items-center justify-center text-[9px] font-bold leading-none">1</span>
               <span>Schedules</span>
             </div>
@@ -81,22 +81,22 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
             <button
               type="button"
               onClick={goStep1}
-              className="flex items-center gap-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="flex items-center gap-1.5 text-xs text-cult-border hover:text-cult-text-primary transition-colors"
             >
-              <span className="w-4 h-4 rounded-full border border-cult-medium-gray flex items-center justify-center text-[9px] font-bold leading-none">1</span>
+              <span className="w-4 h-4 rounded-full border border-cult-border flex items-center justify-center text-[9px] font-bold leading-none">1</span>
               <span>Schedules</span>
             </button>
           )}
-          <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
-          <div className={`flex items-center gap-1.5 text-xs ${step === 2 ? 'text-cult-white' : 'text-cult-medium-gray'}`}>
-            <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 2 ? 'border-cult-accent bg-cult-accent/20 text-cult-accent' : 'border-cult-medium-gray'}`}>2</span>
+          <ChevronRight className="w-3 h-3 text-cult-surface flex-shrink-0" />
+          <div className={`flex items-center gap-1.5 text-xs ${step === 2 ? 'text-cult-text-primary' : 'text-cult-border'}`}>
+            <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 2 ? 'border-cult-accent bg-cult-accent/20 text-cult-accent' : 'border-cult-border'}`}>2</span>
             <span>{modeLabel}</span>
           </div>
           {mode !== 'manual' && mode !== 'edit' && (
             <>
-              <ChevronRight className="w-3 h-3 text-cult-dark-gray flex-shrink-0" />
-              <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-cult-success' : 'text-cult-dark-gray'}`}>
-                <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-cult-success bg-cult-success-muted text-cult-success' : 'border-cult-dark-gray'}`}>3</span>
+              <ChevronRight className="w-3 h-3 text-cult-surface flex-shrink-0" />
+              <div className={`flex items-center gap-1.5 text-xs ${step === 3 ? 'text-cult-success' : 'text-cult-surface'}`}>
+                <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none ${step === 3 ? 'border-cult-success bg-cult-success-muted text-cult-success' : 'border-cult-surface'}`}>3</span>
                 <span>Done</span>
               </div>
             </>
@@ -105,8 +105,8 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
 
         {/* Action buttons — Step 1 only */}
         {step === 1 && (
-          <div className="px-5 py-2.5 border-b border-cult-dark-gray/50 flex items-center justify-between flex-shrink-0">
-            <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
+          <div className="px-5 py-2.5 border-b border-cult-surface/50 flex items-center justify-between flex-shrink-0">
+            <span className="text-xs text-cult-border uppercase tracking-wider">
               {schedules.length} active schedule{schedules.length !== 1 ? 's' : ''}
             </span>
             <div className="flex items-center gap-1.5">
@@ -144,11 +144,11 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
             <>
               {schedules.length === 0 && (
                 <div className="text-center py-10">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-cult-charcoal/40 flex items-center justify-center mb-3">
-                    <AlertCircle className="w-5 h-5 text-cult-dark-gray" />
+                  <div className="w-12 h-12 mx-auto rounded-full bg-cult-surface-raised/40 flex items-center justify-center mb-3">
+                    <AlertCircle className="w-5 h-5 text-cult-surface" />
                   </div>
-                  <p className="text-sm text-cult-medium-gray">No schedules configured</p>
-                  <p className="text-xs text-cult-dark-gray mt-1">Apply a template, copy from another room, or create manually</p>
+                  <p className="text-sm text-cult-border">No schedules configured</p>
+                  <p className="text-xs text-cult-surface mt-1">Apply a template, copy from another room, or create manually</p>
                   <div className="mt-4 flex flex-col items-center gap-2">
                     {templates.filter((t) => t.room_type === roomType).length > 0 && (
                       <button
@@ -187,7 +187,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
 
               {/* Save as Template */}
               {schedules.length > 0 && (
-                <div className="border-t border-cult-dark-gray/50 pt-3 mt-4">
+                <div className="border-t border-cult-surface/50 pt-3 mt-4">
                   {savingAsTemplate ? (
                     <div className="space-y-2">
                       <input
@@ -195,7 +195,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                         value={templateName}
                         onChange={(e) => setTemplateName(e.target.value)}
                         placeholder="Template name..."
-                        className="w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm px-3 py-2 rounded-sm focus:outline-none focus:border-cult-accent"
+                        className="w-full bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-sm px-3 py-2 rounded-sm focus:outline-none focus:border-cult-accent"
                         autoFocus
                       />
                       <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                         <button
                           type="button"
                           onClick={() => { setSavingAsTemplate(false); setTemplateName(''); }}
-                          className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray rounded-sm transition-colors"
+                          className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-border hover:text-cult-text-muted rounded-sm transition-colors"
                         >
                           Cancel
                         </button>
@@ -240,7 +240,7 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                     <button
                       type="button"
                       onClick={() => setSavingAsTemplate(true)}
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-white border border-dashed border-cult-dark-gray hover:border-cult-medium-gray rounded-sm transition-colors"
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cult-border hover:text-cult-text-primary border border-dashed border-cult-surface hover:border-cult-border rounded-sm transition-colors"
                     >
                       <Save className="w-3 h-3" />
                       Save as Template
@@ -325,11 +325,11 @@ export function ScheduleEditorDrawer({ roomId, roomCode, schedules, onClose, onC
                 <Check className="w-6 h-6 text-cult-success" />
               </div>
               <p className="text-sm font-semibold text-cult-success">Template applied</p>
-              <p className="text-xs text-cult-medium-gray mt-1">Schedules have been added to {roomCode}</p>
+              <p className="text-xs text-cult-border mt-1">Schedules have been added to {roomCode}</p>
               <button
                 type="button"
                 onClick={goStep1}
-                className="mt-4 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cult-white bg-cult-charcoal border border-cult-medium-gray hover:bg-cult-charcoal/80 rounded-sm transition-colors"
+                className="mt-4 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-cult-text-primary bg-cult-surface-raised border border-cult-border hover:bg-cult-surface-raised/80 rounded-sm transition-colors"
               >
                 Back to Schedules
               </button>

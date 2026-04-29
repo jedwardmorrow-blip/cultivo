@@ -117,7 +117,7 @@ export function AuditCountingView({
           <button
             type="button"
             onClick={onBack}
-            className="p-2 rounded-xl hover:bg-cult-surface-raised transition text-cult-text-muted"
+            className="p-2 rounded-cult hover:bg-cult-surface-raised transition text-cult-text-muted"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -134,15 +134,15 @@ export function AuditCountingView({
           type="button"
           onClick={onMoveToReview}
           disabled={!canReview}
-          className="px-5 py-2.5 rounded-xl bg-cult-accent text-cult-opaque-black font-bold text-sm hover:bg-cult-accent-hover transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-5 py-2 rounded border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 font-mono uppercase tracking-[0.16em] text-[11px]"
         >
           Move to Review
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="rounded-xl border border-cult-border bg-cult-surface-raised p-3">
+      <div className="rounded-cult border border-cult-border bg-cult-surface-raised p-3">
         <div className="flex items-center justify-between text-xs text-cult-text-secondary mb-2">
           <span>{counts.total - pendingCount} of {counts.total} counted</span>
           <span>
@@ -179,7 +179,7 @@ export function AuditCountingView({
 
       {/* Error banner */}
       {error && (
-        <div className="rounded-xl p-3 border border-cult-danger/30 bg-cult-danger/10 text-sm text-cult-danger flex items-center gap-2">
+        <div className="rounded-cult p-3 border border-cult-danger/30 bg-cult-danger/10 text-sm text-cult-danger flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -187,7 +187,7 @@ export function AuditCountingView({
 
       {/* Missing reason warning */}
       {missingReasonCount > 0 && pendingCount === 0 && (
-        <div className="rounded-xl p-3 border border-cult-warning/30 bg-cult-warning/10 text-sm text-cult-warning flex items-center gap-2">
+        <div className="rounded-cult p-3 border border-cult-warning/30 bg-cult-warning/10 text-sm text-cult-warning flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {missingReasonCount} variance line{missingReasonCount > 1 ? 's' : ''} missing a reason — expand to assign before moving to review.
         </div>
@@ -202,13 +202,13 @@ export function AuditCountingView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search packages…"
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
+            className="w-full pl-9 pr-3 py-2 rounded-cult border border-cult-border bg-cult-surface-subtle text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent/50"
           />
         </div>
         <button
           type="button"
           onClick={() => setShowOrphanForm(!showOrphanForm)}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+          className={`px-4 py-2 rounded-cult text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
             showOrphanForm
               ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
               : 'bg-cult-surface-raised text-cult-text-secondary border border-cult-border hover:bg-cult-surface-subtle hover:text-cult-text-primary'
@@ -253,7 +253,7 @@ export function AuditCountingView({
       )}
 
       {/* Lines */}
-      <div className="rounded-2xl border border-cult-border bg-cult-surface-raised overflow-hidden divide-y divide-cult-border-subtle">
+      <div className="rounded-cult border border-cult-border bg-cult-surface-raised overflow-hidden divide-y divide-cult-border-subtle">
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-cult-text-muted text-sm">
             {search ? 'No matches for search' : 'No lines in this filter'}
@@ -420,7 +420,7 @@ function AuditLineRow({ line, expanded, actionLoading, onToggle, onRecordCount, 
               type="button"
               onClick={handleConfirmCount}
               disabled={!actualInput || actionLoading}
-              className="px-4 py-2 rounded-lg bg-cult-accent text-cult-opaque-black font-bold text-xs hover:bg-cult-accent-hover transition disabled:opacity-40"
+              className="px-4 py-2 rounded border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black transition-colors disabled:opacity-40 font-mono uppercase tracking-[0.16em] text-[11px]"
             >
               Confirm Count
             </button>
@@ -653,7 +653,7 @@ function OrphanForm({ defaultStage, actionLoading, onSubmit, onCancel }: OrphanF
   const labelClass = 'text-[10px] font-bold text-cult-text-muted uppercase tracking-wider block mb-1';
 
   return (
-    <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
+    <div className="rounded-cult border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <PackagePlus className="w-4 h-4 text-purple-400" />
@@ -679,7 +679,7 @@ function OrphanForm({ defaultStage, actionLoading, onSubmit, onCancel }: OrphanF
       ) : manualMode ? (
         /* ── Manual Fallback ──────────────────────────────── */
         <>
-          <div className="rounded-xl border border-cult-warning/30 bg-cult-warning/5 p-3 flex items-start gap-2">
+          <div className="rounded-cult border border-cult-warning/30 bg-cult-warning/5 p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-cult-warning shrink-0 mt-0.5" />
             <div className="text-xs text-cult-warning">
               <span className="font-bold">Manual entry mode.</span> This package will be flagged for reconciliation

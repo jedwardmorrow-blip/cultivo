@@ -50,10 +50,10 @@ export function OrderCard({
     <div
       onClick={() => onSelect(order.id)}
       className={`
-        group relative border rounded-cult p-3.5 cursor-pointer transition-all duration-150
+        group relative border rounded p-3.5 cursor-pointer transition-colors duration-150
         ${isSelected
-          ? 'border-cult-success/50 bg-cult-surface-raised ring-1 ring-cult-success/20'
-          : 'border-cult-border bg-cult-surface hover:bg-cult-surface-raised hover:border-cult-border-strong'
+          ? 'border-cult-accent/60 bg-cult-surface-raised'
+          : 'border-cult-border-subtle bg-cult-surface hover:bg-cult-surface-raised hover:border-cult-border'
         }
       `}
     >

@@ -55,13 +55,13 @@ export function ConversionsView() {
 
   if (isLoading) {
     return (
-      <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface rounded-lg shadow border border-cult-border p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-cult-dark-gray rounded w-48 mb-4"></div>
-          <div className="h-32 bg-cult-dark-gray rounded mb-4"></div>
+          <div className="h-8 bg-cult-surface rounded w-48 mb-4"></div>
+          <div className="h-32 bg-cult-surface rounded mb-4"></div>
           <div className="space-y-3">
-            <div className="h-24 bg-cult-dark-gray rounded"></div>
-            <div className="h-24 bg-cult-dark-gray rounded"></div>
+            <div className="h-24 bg-cult-surface rounded"></div>
+            <div className="h-24 bg-cult-surface rounded"></div>
           </div>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function ConversionsView() {
 
   if (error) {
     return (
-      <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface rounded-lg shadow border border-cult-border p-6">
         <div className="bg-cult-danger-muted border border-cult-danger rounded-lg p-4">
           <div className="flex items-center gap-2 text-cult-danger">
             <AlertCircle className="w-5 h-5" />
@@ -82,13 +82,13 @@ export function ConversionsView() {
   }
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray p-6">
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Package className="w-6 h-6 text-cult-white" />
-            <h2 className="text-2xl font-bold text-cult-white">Conversions</h2>
+            <Package className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-2xl font-bold text-cult-text-primary">Conversions</h2>
           </div>
           <p className="text-cult-text-muted text-sm">
             Create packages from completed sessions and finalize to immediately available inventory
@@ -141,7 +141,7 @@ export function ConversionsView() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-amber-400" />
-            <h3 className="text-lg font-semibold text-cult-white">
+            <h3 className="text-lg font-semibold text-cult-text-primary">
               Pending Finalization ({pendingSessions.length})
             </h3>
           </div>
@@ -197,11 +197,11 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
 
   const borderClass = isUrgent
     ? 'border-cult-warning'
-    : 'border-cult-medium-gray';
+    : 'border-cult-border';
 
   const bgClass = isUrgent
     ? 'bg-cult-warning-muted'
-    : 'bg-cult-dark-gray';
+    : 'bg-cult-surface';
 
   return (
     <div className={`border-2 rounded-lg overflow-hidden transition-all ${borderClass} ${bgClass}`}>
@@ -213,14 +213,14 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
           className={`flex-1 text-left p-4 transition-colors ${
             isUrgent
               ? 'hover:bg-cult-warning/10'
-              : 'hover:bg-cult-medium-gray/40'
+              : 'hover:bg-cult-border/40'
           }`}
         >
           <div className="flex items-start justify-between gap-4">
             {/* Main info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-base font-semibold text-cult-white truncate">
+                <h3 className="text-base font-semibold text-cult-text-primary truncate">
                   {session.strain_name}
                 </h3>
                 <span className="text-xs font-medium text-cult-text-muted">
@@ -258,7 +258,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             <div className="text-right shrink-0">
               {isBulk ? (
                 <>
-                  <div className="text-2xl font-bold text-cult-white">
+                  <div className="text-2xl font-bold text-cult-text-primary">
                     {session.output_weight != null ? session.output_weight.toFixed(0) : 0}
                     <span className="text-sm font-normal text-cult-text-muted ml-1">g</span>
                   </div>
@@ -270,7 +270,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-cult-white">
+                  <div className="text-2xl font-bold text-cult-text-primary">
                     {session.output_units || 0}
                     <span className="text-sm font-normal text-cult-text-muted ml-1">units</span>
                   </div>
@@ -295,7 +295,7 @@ function PendingSessionCard({ session, onClick }: PendingSessionCardProps) {
             className={`flex items-center justify-center w-12 border-l transition-colors ${
               isUrgent
                 ? 'border-cult-warning/50 hover:bg-cult-warning/15'
-                : 'border-cult-medium-gray/50 hover:bg-cult-medium-gray/40'
+                : 'border-cult-border/50 hover:bg-cult-border/40'
             }`}
             aria-label={isExpanded ? 'Collapse session breakdown' : 'Expand session breakdown'}
           >
@@ -340,7 +340,7 @@ function SessionBreakdownPanel({
     true
   );
 
-  const borderTop = isUrgent ? 'border-cult-warning/40' : 'border-cult-medium-gray/40';
+  const borderTop = isUrgent ? 'border-cult-warning/40' : 'border-cult-border/40';
   const bg = isUrgent ? 'bg-cult-warning-muted' : 'bg-black/20';
 
   if (isLoading) {
@@ -408,7 +408,7 @@ function SessionBreakdownPanel({
                   ? <span className="font-mono text-cult-text-muted text-xs">{c.source_package_id}</span>
                   : <span className="text-cult-text-faint">—</span>}
               </td>
-              <td className="py-1.5 text-right font-medium text-cult-white">
+              <td className="py-1.5 text-right font-medium text-cult-text-primary">
                 {isBulk
                   ? `${(c.output_weight || 0).toFixed(0)}g`
                   : `${c.output_units || 0}`}
@@ -419,7 +419,7 @@ function SessionBreakdownPanel({
         <tfoot>
           <tr className={`border-t ${isUrgent ? 'border-cult-warning/40' : 'border-white/10'}`}>
             <td colSpan={3} className="pt-2 text-cult-text-muted font-medium">Total</td>
-            <td className="pt-2 text-right font-bold text-cult-white">
+            <td className="pt-2 text-right font-bold text-cult-text-primary">
               {isBulk ? `${total.toFixed(0)}g` : `${total}`}
             </td>
           </tr>

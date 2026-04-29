@@ -38,7 +38,7 @@ function ATPInventoryTable({ rows, loading }: { rows: ATPRow[]; loading: boolean
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -49,7 +49,7 @@ function ATPInventoryTable({ rows, loading }: { rows: ATPRow[]; loading: boolean
     <div className="overflow-x-auto">
       <table className="w-full text-[12px]">
         <thead>
-          <tr className="border-b border-cult-charcoal/60">
+          <tr className="border-b border-cult-surface-raised/60">
             <th className="text-left text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">Strain</th>
             <th className="text-left text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">Format</th>
             <th className="text-right text-cult-text-muted pb-2 pr-3 font-medium uppercase tracking-wider text-[10px]">On Hand</th>
@@ -59,8 +59,8 @@ function ATPInventoryTable({ rows, loading }: { rows: ATPRow[]; loading: boolean
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={`${row.strain}-${row.stage}-${i}`} className="border-b border-cult-charcoal/30 last:border-b-0">
-              <td className="py-2 pr-3 text-cult-off-white font-medium truncate max-w-[120px]">{row.strain}</td>
+            <tr key={`${row.strain}-${row.stage}-${i}`} className="border-b border-cult-surface-raised/30 last:border-b-0">
+              <td className="py-2 pr-3 text-cult-text-primary font-medium truncate max-w-[120px]">{row.strain}</td>
               <td className="py-2 pr-3 text-cult-text-muted truncate max-w-[100px]">{row.stage}</td>
               <td className="py-2 pr-3 text-right text-cult-text-muted tabular-nums">{formatWeight(row.onHand)}</td>
               <td className="py-2 pr-3 text-right text-cult-warning/80 tabular-nums">{formatWeight(row.reserved)}</td>
@@ -81,7 +81,7 @@ function OrderStatusFunnel({ counts, loading }: { counts: OrderStatusCount[]; lo
   if (loading) {
     return (
       <div className="animate-pulse flex gap-2">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 flex-1 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 flex-1 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -157,7 +157,7 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3].map(i => <div key={i} className="h-6 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-6 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -177,8 +177,8 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
 
         return (
           <div key={d.strain} className="flex items-center gap-3">
-            <span className="text-[12px] text-cult-off-white w-28 flex-shrink-0 truncate">{d.strain}</span>
-            <div className="flex-1 bg-cult-charcoal/40 rounded-full h-2 overflow-hidden">
+            <span className="text-[12px] text-cult-text-primary w-28 flex-shrink-0 truncate">{d.strain}</span>
+            <div className="flex-1 bg-cult-surface-raised/40 rounded-full h-2 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   days == null || days >= 14 ? 'bg-cult-success' : days >= 7 ? 'bg-cult-warning' : 'bg-cult-danger'
@@ -345,7 +345,7 @@ export function SalesHub() {
       <div className="space-y-6">
 
         {/* ATP Inventory Table */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <ShoppingCart className="w-4 h-4" />
             Available to Sell (ATP)
@@ -354,7 +354,7 @@ export function SalesHub() {
         </div>
 
         {/* Order Status Funnel */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Truck className="w-4 h-4" />
             Order Status Funnel
@@ -375,7 +375,7 @@ export function SalesHub() {
         )}
 
         {/* Strain Runway Bars */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
             Strain Runway (ATP ÷ Avg Weekly Velocity)
           </h2>

@@ -30,7 +30,7 @@ export function SectionMap({ tables, groups }: SectionMapProps) {
   }
 
   if (cells.length === 0) {
-    return <p className="text-cult-medium-gray text-xs italic">No sections configured</p>;
+    return <p className="text-cult-border text-xs italic">No sections configured</p>;
   }
 
   return (
@@ -40,17 +40,17 @@ export function SectionMap({ tables, groups }: SectionMapProps) {
           key={cell.label}
           className={`border p-2 text-xs text-center ${
             cell.plantCount > 0
-              ? 'bg-cult-charcoal border-cult-dark-gray'
-              : 'bg-cult-near-black border-dashed border-cult-dark-gray'
+              ? 'bg-cult-surface-raised border-cult-surface'
+              : 'bg-cult-surface border-dashed border-cult-surface'
           }`}
         >
-          <p className="text-cult-medium-gray text-xs">{cell.label}</p>
+          <p className="text-cult-border text-xs">{cell.label}</p>
           {cell.plantCount > 0 ? (
             <>
               {cell.strainAbbr && (
-                <p className="text-cult-light-gray font-mono">{cell.strainAbbr}</p>
+                <p className="text-cult-text-muted font-mono">{cell.strainAbbr}</p>
               )}
-              <p className="text-cult-white font-mono">{cell.plantCount}</p>
+              <p className="text-cult-text-primary font-mono">{cell.plantCount}</p>
             </>
           ) : (
             <p className="text-cult-text-faint">Empty</p>

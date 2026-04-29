@@ -56,10 +56,10 @@ export const OrdersList = memo(function OrdersList({
         return (
           <div
             key={order.id}
-            className={`bg-cult-near-black border-2 overflow-hidden hover:border-cult-white transition-all ${
+            className={`bg-cult-surface border-2 overflow-hidden hover:border-cult-accent transition-all ${
               selectedOrderId === order.id
                 ? 'border-cult-info shadow-lg shadow-cult-info/50'
-                : 'border-cult-light-gray'
+                : 'border-cult-text-muted'
             }`}
           >
             <OrderHeader
@@ -75,7 +75,7 @@ export const OrdersList = memo(function OrdersList({
             />
 
             {isExpanded && (
-              <div className="border-t-2 border-cult-medium-gray bg-cult-black" onClick={(e) => e.stopPropagation()}>
+              <div className="border-t-2 border-cult-border bg-cult-black" onClick={(e) => e.stopPropagation()}>
                 <OrderDetailsView
                   order={order}
                   items={items}

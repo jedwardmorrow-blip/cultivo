@@ -203,7 +203,7 @@ export function PlantsByStrainExpanded({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-white/[0.05] border border-white/[0.08] mb-2">
+            <div className="flex items-center gap-2 py-2 px-3 rounded border border-cult-border-subtle bg-cult-surface-inset mb-2">
               <span className="text-[10px] text-white/30 flex-1">
                 {selectedStrains.size > 0 && `${selectedStrains.size} strain${selectedStrains.size > 1 ? 's' : ''}`}
                 {selectedStrains.size > 0 && selectedPlantIds.size > 0 && ' + '}
@@ -248,7 +248,7 @@ export function PlantsByStrainExpanded({
 
         return (
           <div key={key}>
-            <div className="flex items-center gap-2 py-2.5 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.05] transition-colors">
+            <div className="flex items-center gap-2 py-2.5 px-3 rounded bg-cult-surface-inset hover:bg-cult-surface-subtle transition-colors">
               {/* Checkbox */}
               <button
                 type="button"
@@ -404,7 +404,7 @@ function IndividualPlantsDropdown({ groups, selectedPlantIds, onTogglePlant }: {
             key={plant.id}
             type="button"
             onClick={() => onTogglePlant(plant.id)}
-            className="w-full flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+            className="w-full flex items-center gap-2 py-1 px-2 rounded hover:bg-cult-surface-inset transition-colors text-left"
           >
             <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
               isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-white/10 hover:border-white/20'

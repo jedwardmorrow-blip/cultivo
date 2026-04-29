@@ -45,19 +45,19 @@ export function CRMDashboard({ onSelectAccount, onCreateOrder }: CRMDashboardPro
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Sales Dashboard</h1>
-          <p className="text-cult-light-gray mt-2">Account performance and revenue analytics</p>
+          <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Sales Dashboard</h1>
+          <p className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted mt-1.5">Account performance and revenue analytics</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/crm-accounts')}
-            className="px-4 py-2 text-sm font-medium text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+            className="px-4 py-2 font-mono uppercase tracking-[0.16em] text-[11px] text-cult-text-primary bg-cult-surface-inset border border-cult-border rounded hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors"
           >
             View All Accounts
           </button>
           <button
             onClick={reload}
-            className="p-2 text-cult-silver hover:text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+            className="p-2 text-cult-text-muted hover:text-cult-text-primary bg-cult-surface-inset border border-cult-border rounded hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors"
             title="Refresh data"
           >
             {isRefreshing ? (
@@ -78,7 +78,7 @@ export function CRMDashboard({ onSelectAccount, onCreateOrder }: CRMDashboardPro
       />
 
       {isRefreshing && (
-        <div className="h-0.5 w-full bg-cult-dark-gray rounded overflow-hidden">
+        <div className="h-0.5 w-full bg-cult-surface rounded overflow-hidden">
           <div className="h-full bg-cult-success/60 rounded animate-pulse w-2/3" />
         </div>
       )}

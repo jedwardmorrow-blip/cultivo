@@ -4,7 +4,7 @@ function SkeletonBar({ className = '' }: { className?: string }) {
 
 function SkeletonStatCard() {
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-5">
+    <div className="bg-cult-surface border border-cult-border rounded-lg p-5">
       <SkeletonBar className="h-3 w-20 mb-3" />
       <SkeletonBar className="h-8 w-16 mb-2" />
       <SkeletonBar className="h-3 w-28" />
@@ -39,16 +39,16 @@ export function PageSkeleton({ variant = 'dashboard' }: { variant?: 'dashboard' 
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
+      <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
         {variant === 'table' && (
-          <div className="px-5 py-3 border-b border-cult-medium-gray flex gap-4">
+          <div className="px-5 py-3 border-b border-cult-border flex gap-4">
             <SkeletonBar className="h-3 w-16" />
             <SkeletonBar className="h-3 w-20" />
             <SkeletonBar className="h-3 w-16" />
             <SkeletonBar className="h-3 w-12 ml-auto" />
           </div>
         )}
-        <div className="divide-y divide-cult-medium-gray/30">
+        <div className="divide-y divide-cult-border/30">
           {Array.from({ length: 5 }).map((_, i) => (
             <SkeletonTableRow key={i} />
           ))}
@@ -56,7 +56,7 @@ export function PageSkeleton({ variant = 'dashboard' }: { variant?: 'dashboard' 
       </div>
 
       {variant === 'dashboard' && (
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
+        <div className="bg-cult-surface border border-cult-border rounded-lg p-6">
           <SkeletonBar className="h-4 w-32 mb-4" />
           <div className="space-y-3">
             <SkeletonBar className="h-3 w-full" />

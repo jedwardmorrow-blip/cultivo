@@ -188,7 +188,7 @@ export function DispatchSessionModal({
       maxWidth="lg"
     >
       {/* Dispatch context — read-only */}
-      <div className={`mb-5 p-4 rounded-xl border ${colors.border} ${colors.bg}`}>
+      <div className={`mb-5 p-4 rounded-cult border ${colors.border} ${colors.bg}`}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${colors.accent}`} />
@@ -243,7 +243,7 @@ export function DispatchSessionModal({
             }}
             required
             disabled={staffLoading}
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-cult border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
           >
             <option value="">{staffLoading ? 'Loading staff...' : `Select ${staffLabel.toLowerCase()}`}</option>
             {staff.map(member => (
@@ -265,7 +265,7 @@ export function DispatchSessionModal({
             value={pullWeight || ''}
             onChange={(e) => setPullWeight(parseFloat(e.target.value) || 0)}
             required
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-cult border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 transition-colors"
           />
           <p className="text-[11px] text-cult-text-faint mt-1 tabular-nums">
             {(pullWeight / 1000).toFixed(2)} kg · {(pullWeight / 453.592).toFixed(2)} lbs
@@ -283,12 +283,12 @@ export function DispatchSessionModal({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any observations or special instructions..."
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary placeholder-cult-text-faint focus:outline-none focus:border-cult-accent/50 transition-colors resize-none"
+            className="w-full px-3 py-2.5 rounded-cult border border-cult-border bg-cult-surface-raised text-sm text-cult-text-primary placeholder-cult-text-faint focus:outline-none focus:border-cult-accent/50 transition-colors resize-none"
           />
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
+          <div className="p-3 rounded-cult border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             {error}
           </div>
@@ -300,14 +300,14 @@ export function DispatchSessionModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl border border-cult-border text-sm font-medium text-cult-text-muted hover:text-cult-text-primary hover:border-cult-border-strong transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-cult border border-cult-border text-sm font-medium text-cult-text-muted hover:text-cult-text-primary hover:border-cult-border-strong transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting || !staffId || pullWeight <= 0}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${
+            className={`px-5 py-2.5 rounded-cult text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 ${
               submitting
                 ? 'bg-cult-surface-overlay text-cult-text-muted'
                 : 'bg-cult-accent text-cult-black hover:bg-cult-accent/90'

@@ -19,21 +19,21 @@ export function WorkerLayout({ children }: WorkerLayoutProps) {
   return (
     <div className="min-h-screen bg-cult-opaque-black flex flex-col">
       {/* Header */}
-      <header className="bg-cult-opaque-near-black border-b border-cult-dark-gray px-4 py-3 flex items-center justify-between flex-shrink-0 safe-top">
+      <header className="bg-cult-surface border-b border-cult-surface px-4 py-3 flex items-center justify-between flex-shrink-0 safe-top">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-cult-medium-gray rounded-full flex items-center justify-center text-cult-white text-sm font-bold uppercase">
+          <div className="w-8 h-8 bg-cult-border rounded-full flex items-center justify-center text-cult-text-primary text-sm font-bold uppercase">
             {staff.first_name.charAt(0)}
           </div>
           <div>
-            <div className="text-cult-white text-sm font-semibold">{displayName}</div>
-            <div className="text-cult-medium-gray text-xs uppercase tracking-wider">
+            <div className="text-cult-text-primary text-sm font-semibold">{displayName}</div>
+            <div className="text-cult-border text-xs uppercase tracking-wider">
               {staff.role === 'cultivation_manager' ? 'Manager' : staff.role === 'cultivation_lead' ? 'Lead' : 'Cultivator'}
             </div>
           </div>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-1.5 px-3 py-2.5 text-cult-medium-gray hover:text-cult-white active:bg-cult-charcoal/50 transition-colors text-xs uppercase tracking-wider rounded-lg min-h-[44px]"
+          className="flex items-center gap-1.5 px-3 py-2.5 text-cult-border hover:text-cult-text-primary active:bg-cult-surface-raised/50 transition-colors text-xs uppercase tracking-wider rounded-lg min-h-[44px]"
           aria-label="Sign out"
         >
           <LogOut className="w-4 h-4" />

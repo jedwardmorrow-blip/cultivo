@@ -45,7 +45,7 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
           placeholder="Section label (e.g. A, B, Left)"
           disabled={saving}
           autoFocus
-          className="flex-1 min-w-28 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
+          className="flex-1 min-w-28 bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1 text-xs focus:outline-none focus:border-cult-text-muted placeholder-cult-border"
         />
         <input
           type="number"
@@ -55,7 +55,7 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
           onChange={(e) => setSqft(e.target.value)}
           placeholder="sqft (opt)"
           disabled={saving}
-          className="w-24 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
+          className="w-24 bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1 text-xs focus:outline-none focus:border-cult-text-muted placeholder-cult-border"
         />
         <Button
           onClick={handleAdd}
@@ -67,7 +67,7 @@ function AddSectionForm({ onAdd, onCancel }: AddSectionFormProps) {
         <button
           onClick={onCancel}
           disabled={saving}
-          className="px-3 py-1 text-xs uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+          className="px-3 py-1 text-xs uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
         >
           Cancel
         </button>
@@ -96,22 +96,22 @@ function SectionRow({ section, onArchive, onRestore }: SectionRowProps) {
   }
 
   return (
-    <div className={`flex items-center justify-between gap-2 py-1 px-2 text-xs border-b border-cult-dark-gray last:border-0 ${section.is_active ? '' : 'opacity-50'}`}>
+    <div className={`flex items-center justify-between gap-2 py-1 px-2 text-xs border-b border-cult-surface last:border-0 ${section.is_active ? '' : 'opacity-50'}`}>
       <div className="flex items-center gap-2 min-w-0">
-        <span className={`font-mono font-bold ${section.is_active ? 'text-cult-light-gray' : 'text-cult-medium-gray'}`}>
+        <span className={`font-mono font-bold ${section.is_active ? 'text-cult-text-muted' : 'text-cult-border'}`}>
           {section.section_label}
         </span>
         {section.section_sqft && (
-          <span className="text-cult-medium-gray">{section.section_sqft} sqft</span>
+          <span className="text-cult-border">{section.section_sqft} sqft</span>
         )}
-        {!section.is_active && <span className="text-cult-medium-gray italic">archived</span>}
+        {!section.is_active && <span className="text-cult-border italic">archived</span>}
       </div>
       {section.is_active ? (
-        <button onClick={handleArchive} disabled={acting} title="Archive section" className="p-0.5 text-cult-medium-gray hover:text-cult-danger transition-colors disabled:opacity-40">
+        <button onClick={handleArchive} disabled={acting} title="Archive section" className="p-0.5 text-cult-border hover:text-cult-danger transition-colors disabled:opacity-40">
           <Archive className="w-3 h-3" />
         </button>
       ) : (
-        <button onClick={handleRestore} disabled={acting} title="Restore section" className="p-0.5 text-cult-medium-gray hover:text-cult-success transition-colors disabled:opacity-40">
+        <button onClick={handleRestore} disabled={acting} title="Restore section" className="p-0.5 text-cult-border hover:text-cult-success transition-colors disabled:opacity-40">
           <RotateCcw className="w-3 h-3" />
         </button>
       )}
@@ -155,19 +155,19 @@ function TableBlock({
   }
 
   return (
-    <div className={`border ${table.is_active ? 'border-cult-medium-gray' : 'border-cult-dark-gray'} bg-cult-near-black ${!table.is_active ? 'opacity-60' : ''}`}>
+    <div className={`border ${table.is_active ? 'border-cult-border' : 'border-cult-surface'} bg-cult-surface ${!table.is_active ? 'opacity-60' : ''}`}>
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={`text-xs font-bold font-mono ${table.is_active ? 'text-cult-white' : 'text-cult-medium-gray'}`}>
+          <span className={`text-xs font-bold font-mono ${table.is_active ? 'text-cult-text-primary' : 'text-cult-border'}`}>
             Table {table.table_number}
           </span>
           {table.table_name && (
-            <span className="text-xs text-cult-light-gray truncate">— {table.table_name}</span>
+            <span className="text-xs text-cult-text-muted truncate">— {table.table_name}</span>
           )}
           {table.total_sqft && (
-            <span className="text-xs text-cult-medium-gray">{table.total_sqft} sqft</span>
+            <span className="text-xs text-cult-border">{table.total_sqft} sqft</span>
           )}
-          {!table.is_active && <span className="text-xs text-cult-medium-gray italic">archived</span>}
+          {!table.is_active && <span className="text-xs text-cult-border italic">archived</span>}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           {table.is_active && (
@@ -175,7 +175,7 @@ function TableBlock({
               <button
                 onClick={() => setAddingSection((v) => !v)}
                 title="Add section"
-                className="p-1 text-cult-medium-gray hover:text-cult-white transition-colors"
+                className="p-1 text-cult-border hover:text-cult-text-primary transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -183,7 +183,7 @@ function TableBlock({
                 onClick={handleArchiveTable}
                 disabled={acting}
                 title="Archive table"
-                className="p-1 text-cult-medium-gray hover:text-cult-danger transition-colors disabled:opacity-40"
+                className="p-1 text-cult-border hover:text-cult-danger transition-colors disabled:opacity-40"
               >
                 <Archive className="w-3.5 h-3.5" />
               </button>
@@ -194,7 +194,7 @@ function TableBlock({
               onClick={handleRestoreTable}
               disabled={acting}
               title="Restore table"
-              className="p-1 text-cult-medium-gray hover:text-cult-success transition-colors disabled:opacity-40"
+              className="p-1 text-cult-border hover:text-cult-success transition-colors disabled:opacity-40"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -203,7 +203,7 @@ function TableBlock({
       </div>
 
       {(visibleSections.length > 0 || addingSection) && (
-        <div className="border-t border-cult-dark-gray px-3 py-1">
+        <div className="border-t border-cult-surface px-3 py-1">
           {visibleSections.map((s) => (
             <SectionRow
               key={s.id}
@@ -226,10 +226,10 @@ function TableBlock({
       )}
 
       {visibleSections.length === 0 && !addingSection && table.is_active && (
-        <div className="border-t border-cult-dark-gray px-3 py-2">
+        <div className="border-t border-cult-surface px-3 py-2">
           <button
             onClick={() => setAddingSection(true)}
-            className="text-xs text-cult-medium-gray hover:text-cult-light-gray italic transition-colors"
+            className="text-xs text-cult-border hover:text-cult-text-muted italic transition-colors"
           >
             + Add first section
           </button>
@@ -272,7 +272,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-cult-medium-gray uppercase tracking-wider">Add Table</p>
+      <p className="text-xs text-cult-border uppercase tracking-wider">Add Table</p>
       <div className="flex gap-2 items-start flex-wrap">
         <input
           type="number"
@@ -283,7 +283,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
           onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
           placeholder="# *"
           disabled={saving}
-          className="w-16 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
+          className="w-16 bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1.5 text-xs focus:outline-none focus:border-cult-text-muted placeholder-cult-border"
         />
         <input
           type="text"
@@ -291,7 +291,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (optional)"
           disabled={saving}
-          className="flex-1 min-w-28 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
+          className="flex-1 min-w-28 bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1.5 text-xs focus:outline-none focus:border-cult-text-muted placeholder-cult-border"
         />
         <input
           type="number"
@@ -301,7 +301,7 @@ function AddTableForm({ existingNumbers, onAdd }: AddTableFormProps) {
           onChange={(e) => setSqft(e.target.value)}
           placeholder="sqft (opt)"
           disabled={saving}
-          className="w-24 bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray placeholder-cult-medium-gray"
+          className="w-24 bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1.5 text-xs focus:outline-none focus:border-cult-text-muted placeholder-cult-border"
         />
         <Button
           onClick={handleAdd}
@@ -341,7 +341,7 @@ export function LayoutBuilder({ roomId }: LayoutBuilderProps) {
     tables.some((t) => t.sections.some((s) => !s.is_active));
 
   if (loading) {
-    return <p className="text-xs text-cult-medium-gray py-2">Loading layout...</p>;
+    return <p className="text-xs text-cult-border py-2">Loading layout...</p>;
   }
 
   if (error) {
@@ -354,13 +354,13 @@ export function LayoutBuilder({ roomId }: LayoutBuilderProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-cult-light-gray" />
-          <span className="text-xs text-cult-light-gray uppercase tracking-wider font-semibold">Room Layout</span>
+          <Layers className="w-3.5 h-3.5 text-cult-text-muted" />
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider font-semibold">Room Layout</span>
         </div>
         {hasArchivedItems && (
           <button
             onClick={() => setShowArchived((v) => !v)}
-            className="text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+            className="text-xs text-cult-border hover:text-cult-text-muted transition-colors"
           >
             {showArchived ? 'Hide archived' : 'Show archived'}
           </button>
@@ -390,13 +390,13 @@ export function LayoutBuilder({ roomId }: LayoutBuilderProps) {
         ))}
 
         {visibleTables.length === 0 && (
-          <p className="text-xs text-cult-medium-gray italic py-1">
+          <p className="text-xs text-cult-border italic py-1">
             No tables configured yet. Add a table below.
           </p>
         )}
       </div>
 
-      <div className="border-t border-cult-dark-gray pt-3">
+      <div className="border-t border-cult-surface pt-3">
         <AddTableForm
           existingNumbers={allTableNumbers}
           growRoomId={roomId}

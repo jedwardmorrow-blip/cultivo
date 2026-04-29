@@ -75,17 +75,17 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
   const selectedConfig = getTaskTypeConfig(taskType);
 
   return (
-    <div className="bg-cult-charcoal/30 border border-cult-medium-gray/60 p-4 space-y-3.5">
+    <div className="bg-cult-surface-raised/30 border border-cult-border/60 p-4 space-y-3.5">
       {/* Visual preview of selected task type */}
-      <div className="flex items-center gap-2 pb-2 border-b border-cult-dark-gray/50">
+      <div className="flex items-center gap-2 pb-2 border-b border-cult-surface/50">
         <span className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedConfig.color }} />
-        <span className="text-xs font-bold text-cult-white uppercase tracking-wider">
+        <span className="text-xs font-bold text-cult-text-primary uppercase tracking-wider">
           {initial ? 'Edit' : 'New'} — {selectedConfig.label}
         </span>
       </div>
 
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Task Type</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
           {TASK_TYPES.map((t) => {
             const cfg = getTaskTypeConfig(t);
@@ -98,7 +98,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 className={`flex items-center gap-1.5 px-2 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-all ${
                   selected
                     ? 'text-white border'
-                    : 'text-cult-medium-gray bg-cult-charcoal/40 border border-cult-dark-gray/50 hover:border-cult-medium-gray hover:text-cult-light-gray'
+                    : 'text-cult-border bg-cult-surface-raised/40 border border-cult-surface/50 hover:border-cult-border hover:text-cult-text-muted'
                 }`}
                 style={selected ? { backgroundColor: `${cfg.color}20`, borderColor: `${cfg.color}50`, color: cfg.color } : undefined}
               >
@@ -112,15 +112,15 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
 
       {/* Scheduling Mode Toggle */}
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Scheduling Mode</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Scheduling Mode</label>
         <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => setSchedulingMode('calendar')}
             className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
               schedulingMode === 'calendar'
-                ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                ? 'bg-cult-surface-raised text-cult-text-primary border border-cult-border'
+                : 'text-cult-border border border-cult-surface/50 hover:border-cult-border'
             }`}
           >
             Calendar
@@ -131,13 +131,13 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
             className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
               schedulingMode === 'phase_day'
                 ? 'bg-violet-950/60 text-violet-400 border border-violet-700/50'
-                : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                : 'text-cult-border border border-cult-surface/50 hover:border-cult-border'
             }`}
           >
             Phase Day
           </button>
         </div>
-        <p className="mt-1 text-[10px] text-cult-dark-gray">
+        <p className="mt-1 text-[10px] text-cult-surface">
           {schedulingMode === 'calendar'
             ? 'Schedule by day of week or fixed interval'
             : 'Schedule relative to batch stage entry (e.g., day 21 of flower)'}
@@ -148,7 +148,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
       {schedulingMode === 'calendar' && (
         <>
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Recurrence</label>
             <div className="flex gap-1.5">
               {RECURRENCE_OPTIONS.map((r) => (
                 <button
@@ -157,8 +157,8 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                   onClick={() => setRecurrence(r)}
                   className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
                     recurrence === r
-                      ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                      : 'text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                      ? 'bg-cult-surface-raised text-cult-text-primary border border-cult-border'
+                      : 'text-cult-border border border-cult-surface/50 hover:border-cult-border'
                   }`}
                 >
                   {r.charAt(0).toUpperCase() + r.slice(1)}
@@ -169,7 +169,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
 
           {showDayPicker && (
             <div>
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Days</label>
+              <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Days</label>
               <div className="flex gap-1 mb-2">
                 {([
                   { label: 'Weekdays', days: [1, 2, 3, 4, 5] },
@@ -181,7 +181,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                     key={preset.label}
                     type="button"
                     onClick={() => setDayOfWeek([...preset.days])}
-                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-charcoal/50 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-white transition-colors rounded-sm"
+                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-surface-raised/50 border border-cult-surface/50 text-cult-border hover:border-cult-border hover:text-cult-text-primary transition-colors rounded-sm"
                   >
                     {preset.label}
                   </button>
@@ -196,7 +196,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                     className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-sm transition-all ${
                       dayOfWeek.includes(idx)
                         ? 'text-white'
-                        : 'bg-cult-charcoal/40 text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                        : 'bg-cult-surface-raised/40 text-cult-border border border-cult-surface/50 hover:border-cult-border'
                     }`}
                     style={dayOfWeek.includes(idx) ? { backgroundColor: `${selectedConfig.color}30`, color: selectedConfig.color, borderWidth: '1px', borderColor: `${selectedConfig.color}50` } : undefined}
                   >
@@ -209,8 +209,8 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
 
           {recurrence === 'daily' && (
             <div>
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
-                Repeat Every <span className="text-cult-dark-gray font-normal">(days, optional)</span>
+              <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
+                Repeat Every <span className="text-cult-surface font-normal">(days, optional)</span>
               </label>
               <input
                 type="number"
@@ -218,14 +218,14 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 onChange={(e) => setIntervalDays(e.target.value)}
                 placeholder="Leave blank for every day"
                 min="1"
-                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-medium-gray min-h-[44px] placeholder:text-cult-dark-gray"
+                className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-border min-h-[44px] placeholder:text-cult-surface"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
-              Stop After Date <span className="text-cult-dark-gray font-normal">(optional)</span>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
+              Stop After Date <span className="text-cult-surface font-normal">(optional)</span>
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -233,20 +233,20 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate}
-                className="flex-1 bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-medium-gray min-h-[44px]"
+                className="flex-1 bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-cult-border min-h-[44px]"
               />
               {endDate && (
                 <button
                   type="button"
                   onClick={() => setEndDate('')}
-                  className="px-2.5 py-2.5 min-h-[44px] text-xs text-cult-medium-gray hover:text-cult-danger border border-cult-dark-gray/50 hover:border-cult-danger/30 rounded-sm transition-colors"
+                  className="px-2.5 py-2.5 min-h-[44px] text-xs text-cult-border hover:text-cult-danger border border-cult-surface/50 hover:border-cult-danger/30 rounded-sm transition-colors"
                 >
                   Clear
                 </button>
               )}
             </div>
             {endDate && (
-              <p className="mt-1 text-[10px] text-cult-dark-gray">
+              <p className="mt-1 text-[10px] text-cult-surface">
                 Tasks will stop generating after {new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             )}
@@ -259,19 +259,19 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
         <>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Start Day</label>
+              <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Start Day</label>
               <input
                 type="number"
                 value={phaseDayStart}
                 onChange={(e) => setPhaseDayStart(e.target.value)}
                 placeholder="1"
                 min="1"
-                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+                className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-surface"
               />
             </div>
             <div>
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
-                End Day <span className="text-cult-dark-gray font-normal">(opt.)</span>
+              <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
+                End Day <span className="text-cult-surface font-normal">(opt.)</span>
               </label>
               <input
                 type="number"
@@ -279,15 +279,15 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 onChange={(e) => setPhaseDayEnd(e.target.value)}
                 placeholder="∞"
                 min={phaseDayStart || '1'}
-                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+                className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-surface"
               />
             </div>
           </div>
 
           {!isSingleDay && (
             <div>
-              <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">
-                Repeat Every <span className="text-cult-dark-gray font-normal">(days)</span>
+              <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">
+                Repeat Every <span className="text-cult-surface font-normal">(days)</span>
               </label>
               <input
                 type="number"
@@ -295,7 +295,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
                 onChange={(e) => setIntervalDays(e.target.value)}
                 placeholder="Leave blank for every day"
                 min="1"
-                className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-dark-gray"
+                className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2.5 px-2.5 rounded-sm focus:outline-none focus:border-violet-600 min-h-[44px] placeholder:text-cult-surface"
               />
             </div>
           )}
@@ -314,7 +314,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
       )}
 
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Priority</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Priority</label>
         <div className="flex gap-1.5">
           {PRIORITY_OPTIONS.map((p) => (
             <button
@@ -323,8 +323,8 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
               onClick={() => setPriority(p)}
               className={`flex-1 py-2.5 min-h-[44px] text-xs font-semibold uppercase rounded-sm transition-colors ${
                 priority === p
-                  ? PRIORITY_COLOR[p]?.active ?? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                  : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray/50 hover:border-cult-medium-gray'
+                  ? PRIORITY_COLOR[p]?.active ?? 'bg-cult-surface-raised text-cult-text-primary border border-cult-border'
+                  : 'bg-transparent text-cult-border border border-cult-surface/50 hover:border-cult-border'
               }`}
             >
               {p}
@@ -334,13 +334,13 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
       </div>
 
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1.5 font-semibold">Notes</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1.5 font-semibold">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           placeholder="Optional instructions for this task..."
-          className="w-full bg-cult-charcoal/40 border border-cult-dark-gray/50 text-cult-white text-xs py-2 px-2.5 rounded-sm resize-none focus:outline-none focus:border-cult-medium-gray placeholder:text-cult-dark-gray"
+          className="w-full bg-cult-surface-raised/40 border border-cult-surface/50 text-cult-text-primary text-xs py-2 px-2.5 rounded-sm resize-none focus:outline-none focus:border-cult-border placeholder:text-cult-surface"
         />
       </div>
 
@@ -362,7 +362,7 @@ export function ScheduleForm({ roomId, initial, onSave, onDelete, onCancel }: Sc
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+          className="px-3 py-1.5 text-xs text-cult-border hover:text-cult-text-muted transition-colors"
         >
           Cancel
         </button>

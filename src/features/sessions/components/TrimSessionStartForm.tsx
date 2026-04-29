@@ -116,8 +116,8 @@ export function TrimSessionStartForm({
   const packages = form.strain && form.batch_id ? getPackagesForBatch(form.strain, form.batch_id) : [];
 
   return (
-    <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
-      <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">
+    <div className="bg-cult-surface p-6 rounded-lg border-2 border-cult-green mb-6">
+      <h2 className="text-2xl font-bold mb-6 text-cult-text-primary uppercase tracking-wide">
         Start New Trim Session
       </h2>
 
@@ -130,7 +130,7 @@ export function TrimSessionStartForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Trimmer*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Trimmer*</label>
             <select
               value={form.trimmer_staff_id || ''}
               onChange={(e) => {
@@ -145,7 +145,7 @@ export function TrimSessionStartForm({
               }}
               required
               disabled={isSubmitting || staffLoading}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">{staffLoading ? 'Loading staff...' : 'Select trimmer'}</option>
               {staff.map(member => (
@@ -155,7 +155,7 @@ export function TrimSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Strain*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Strain*</label>
             <select
               value={form.strain || ''}
               onChange={(e) => {
@@ -165,7 +165,7 @@ export function TrimSessionStartForm({
               }}
               required
               disabled={isSubmitting}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">Select strain</option>
               {availableStrains.map(strain => (
@@ -175,7 +175,7 @@ export function TrimSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Batch ID*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Batch ID*</label>
             <select
               value={form.batch_id || ''}
               onChange={(e) => {
@@ -184,7 +184,7 @@ export function TrimSessionStartForm({
               }}
               required
               disabled={!form.strain || isSubmitting}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">Select batch</option>
               {batches.map(batch => (
@@ -196,7 +196,7 @@ export function TrimSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Package ID*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Package ID*</label>
             <select
               value={form.package_id || ''}
               onChange={(e) => {
@@ -208,7 +208,7 @@ export function TrimSessionStartForm({
               }}
               required
               disabled={!form.batch_id || isSubmitting}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="">Select package</option>
               {packages.map((pkg: any) => (
@@ -220,7 +220,7 @@ export function TrimSessionStartForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Pulled Weight (g)*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Pulled Weight (g)*</label>
             <input
               type="number"
               step="0.01"
@@ -228,17 +228,17 @@ export function TrimSessionStartForm({
               onChange={(e) => handleChange('pulled_weight', parseFloat(e.target.value))}
               required
               disabled={isSubmitting}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Trim Method</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Trim Method</label>
             <select
               value={form.trim_method || 'hand'}
               onChange={(e) => handleChange('trim_method', e.target.value)}
               disabled={isSubmitting}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             >
               <option value="hand">Hand Trim</option>
               <option value="machine">Machine Trim</option>
@@ -247,13 +247,13 @@ export function TrimSessionStartForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>
+          <label className="block text-sm font-medium text-cult-text-primary mb-1">Notes</label>
           <textarea
             value={form.notes || ''}
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={3}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white focus:ring-2 focus:ring-cult-green disabled:opacity-50"
+            className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary focus:ring-2 focus:ring-cult-green disabled:opacity-50"
             placeholder="Any special notes or observations..."
           />
         </div>
@@ -263,7 +263,7 @@ export function TrimSessionStartForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-6 py-2 bg-cult-dark-gray text-white rounded hover:bg-cult-medium-gray transition disabled:opacity-50"
+            className="px-6 py-2 bg-cult-surface text-white rounded hover:bg-cult-border transition disabled:opacity-50"
           >
             Cancel
           </button>

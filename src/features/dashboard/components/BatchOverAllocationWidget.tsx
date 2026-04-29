@@ -143,7 +143,7 @@ export function BatchOverAllocationWidget() {
                 </div>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="px-4 py-2 bg-cult-danger text-cult-white hover:bg-cult-danger/80 transition-all text-[0.625rem] uppercase tracking-wider font-bold rounded-cult"
+                  className="px-4 py-2 bg-cult-danger text-cult-text-primary hover:bg-cult-danger/80 transition-all text-[0.625rem] uppercase tracking-wider font-bold rounded-cult"
                 >
                   View All
                 </button>

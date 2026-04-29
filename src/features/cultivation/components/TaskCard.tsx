@@ -84,7 +84,7 @@ function TaskOverflowMenu({ taskId, onSkip, onCarryForward }: {
         <MoreVertical className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-36 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-30">
+        <div className="absolute top-full right-0 mt-1 w-36 bg-cult-surface border border-cult-border rounded-sm shadow-lg overflow-hidden animate-fade-in z-30">
           {onSkip && (
             <button
               type="button"
@@ -220,12 +220,12 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
           transform: swiping ? `translateX(${swipeX}px)` : 'translateX(0)',
           transition: swiping ? 'none' : 'transform 0.2s ease-out',
         }}
-        className="relative bg-cult-near-black"
+        className="relative bg-cult-surface"
       >
         <button
           type="button"
           onClick={onClick}
-          className={`w-full text-left hover:bg-cult-charcoal/30 transition-colors px-2.5 sm:px-3 py-2 group ${
+          className={`w-full text-left hover:bg-cult-surface-raised/30 transition-colors px-2.5 sm:px-3 py-2 group ${
             isCarried ? 'border-l-2 border-l-cult-warning bg-cult-warning-muted' :
             task.priority === 'high' ? `border-l-2 ${PRIORITY_COLOR.high.border}` : ''
           }`}
@@ -244,8 +244,8 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
               </span>
 
               {task.assigned_to_name ? (
-                <span className="flex items-center gap-1 text-xs text-cult-light-gray min-w-0">
-                  <span className="w-4 h-4 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white flex-shrink-0">
+                <span className="flex items-center gap-1 text-xs text-cult-text-muted min-w-0">
+                  <span className="w-4 h-4 rounded-full bg-cult-surface-raised flex items-center justify-center text-xs font-bold text-cult-text-primary flex-shrink-0">
                     {task.assigned_to_name.charAt(0)}
                   </span>
                   <span className="truncate">{task.assigned_to_name}</span>
@@ -272,7 +272,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
               )}
 
               {task.estimated_duration && (
-                <span className="hidden sm:flex items-center gap-1 text-xs text-cult-medium-gray">
+                <span className="hidden sm:flex items-center gap-1 text-xs text-cult-border">
                   <Clock className="w-3 h-3" />
                   {task.estimated_duration}
                 </span>
@@ -286,11 +286,11 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
 
           {isMultiDay && task.progress_current != null && task.progress_total != null && (
             <div className="mt-1.5">
-              <div className="flex items-center justify-between text-xs text-cult-light-gray mb-0.5">
+              <div className="flex items-center justify-between text-xs text-cult-text-muted mb-0.5">
                 <span>{task.progress_current}/{task.progress_total} sections</span>
                 <span>{Math.round((task.progress_current / task.progress_total) * 100)}%</span>
               </div>
-              <div className="w-full h-1 bg-cult-charcoal rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-cult-surface-raised rounded-full overflow-hidden">
                 <div
                   className="h-full bg-cult-green rounded-full transition-all"
                   style={{ width: `${(task.progress_current / task.progress_total) * 100}%` }}
@@ -342,7 +342,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
             </button>
 
             {showAssignDropdown && (
-              <div className="absolute top-full right-3 mt-1 w-44 bg-cult-near-black border border-cult-medium-gray rounded-sm shadow-lg overflow-hidden animate-fade-in z-20 max-h-60 overflow-y-auto">
+              <div className="absolute top-full right-3 mt-1 w-44 bg-cult-surface border border-cult-border rounded-sm shadow-lg overflow-hidden animate-fade-in z-20 max-h-60 overflow-y-auto">
                 {staffOptions.map((s) => (
                   <button
                     key={s.id}
@@ -352,21 +352,21 @@ export const TaskCard = memo(function TaskCard({ task, onClick, staffOptions, on
                       onQuickAssign(task.id, s.id);
                       setShowAssignDropdown(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-3 text-sm hover:bg-cult-charcoal active:bg-cult-charcoal/80 transition-colors text-left min-h-[44px] ${
-                      s.is_present === false ? 'text-cult-medium-gray' : 'text-cult-light-gray'
+                    className={`w-full flex items-center gap-2 px-3 py-3 text-sm hover:bg-cult-surface-raised active:bg-cult-surface-raised/80 transition-colors text-left min-h-[44px] ${
+                      s.is_present === false ? 'text-cult-border' : 'text-cult-text-muted'
                     }`}
                   >
                     <span className="relative flex-shrink-0">
-                      <span className="w-5 h-5 rounded-full bg-cult-charcoal flex items-center justify-center text-xs font-bold text-cult-white">
+                      <span className="w-5 h-5 rounded-full bg-cult-surface-raised flex items-center justify-center text-xs font-bold text-cult-text-primary">
                         {s.first_name.charAt(0)}
                       </span>
                       {s.is_present && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-cult-success ring-1 ring-cult-near-black" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-cult-success ring-1 ring-cult-surface" />
                       )}
                     </span>
                     <span>{s.first_name}</span>
                     {s.is_present === false && (
-                      <span className="text-xs text-cult-dark-gray ml-auto">Off</span>
+                      <span className="text-xs text-cult-surface ml-auto">Off</span>
                     )}
                   </button>
                 ))}

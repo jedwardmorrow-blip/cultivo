@@ -44,7 +44,7 @@ export function QualityGradeBadge({
 
   if (loading) {
     return (
-      <span className="inline-block px-2 py-0.5 rounded text-xs bg-cult-medium-gray/20 text-cult-lighter-gray animate-pulse">
+      <span className="inline-block px-2 py-0.5 rounded text-xs bg-cult-border/20 text-cult-text-muted animate-pulse">
         ...
       </span>
     );
@@ -82,10 +82,10 @@ export function QualityGradeBadge({
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-50 mt-1 left-0 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl p-2 min-w-[140px] animate-fade-in"
+          className="absolute z-50 mt-1 left-0 bg-cult-surface border border-cult-border rounded-lg p-2 min-w-[140px] animate-fade-in"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="text-xs text-cult-lighter-gray uppercase tracking-wider px-1 mb-1.5">
+          <div className="text-xs text-cult-text-muted uppercase tracking-wider px-1 mb-1.5">
             Set Grade
           </div>
           <div className="space-y-0.5">
@@ -102,7 +102,7 @@ export function QualityGradeBadge({
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
                     isSelected
                       ? `${gColors.bg} ${gColors.text} ring-1 ring-current`
-                      : `text-cult-silver hover:${gColors.bg} hover:${gColors.text}`
+                      : `text-cult-text-secondary hover:${gColors.bg} hover:${gColors.text}`
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${gColors.bg} ${gColors.border} border`} />
@@ -113,13 +113,13 @@ export function QualityGradeBadge({
           </div>
           {gradeId && (
             <>
-              <div className="border-t border-cult-medium-gray/50 mt-1.5 pt-1.5">
+              <div className="border-t border-cult-border/50 mt-1.5 pt-1.5">
                 <button
                   onClick={() => {
                     onGradeChange?.(null);
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-cult-lighter-gray hover:text-cult-white hover:bg-cult-dark-gray transition-colors"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface transition-colors"
                 >
                   <X className="w-3 h-3" />
                   Clear Grade

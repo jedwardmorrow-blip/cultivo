@@ -30,8 +30,8 @@ export function PipelineStrainTable({
   batchDetails, batchDetailsLoading,
 }: PipelineStrainTableProps) {
   return (
-    <div className="rounded-xl border border-cult-medium-gray/40 overflow-hidden bg-cult-black">
-      <div className="p-3 pb-2 border-b border-cult-medium-gray/20">
+    <div className="rounded-cult border border-cult-border/40 overflow-hidden bg-cult-black">
+      <div className="p-3 pb-2 border-b border-cult-border/20">
         <PipelineFilterBar
           healthFilter={healthFilter}
           setHealthFilter={setHealthFilter}
@@ -42,7 +42,7 @@ export function PipelineStrainTable({
         />
       </div>
 
-      <div className="hidden lg:grid items-center px-3 py-2 border-b border-cult-medium-gray/15 text-xs font-bold text-neutral-600 tracking-[0.08em]"
+      <div className="hidden lg:grid items-center px-3 py-2 border-b border-cult-border/15 text-xs font-bold text-neutral-600 tracking-[0.08em]"
         style={{ gridTemplateColumns: '1.8fr 0.5fr 0.7fr 0.7fr 0.7fr 0.6fr 0.5fr' }}
       >
         <span>STRAIN</span>
@@ -59,7 +59,7 @@ export function PipelineStrainTable({
         return (
           <div key={s.strain}>
             <div
-              className="grid items-center px-3 py-2.5 cursor-pointer transition-colors duration-150 border-b border-cult-medium-gray/10 hover:bg-neutral-900/50"
+              className="grid items-center px-3 py-2.5 cursor-pointer transition-colors duration-150 border-b border-cult-border/10 hover:bg-neutral-900/50"
               style={{ gridTemplateColumns: '1.8fr 0.5fr 0.7fr 0.7fr 0.7fr 0.6fr 0.5fr' }}
               onClick={() => onToggleExpand(s.strain)}
             >

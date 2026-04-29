@@ -110,7 +110,7 @@ function QueuedCard({
   const StageIcon = stageStyle.icon;
 
   return (
-    <div className="rounded-xl border border-cult-border bg-gradient-to-r from-cult-surface-raised to-transparent hover:border-cult-border-strong transition-all duration-200">
+    <div className="rounded-cult border border-cult-border bg-gradient-to-r from-cult-surface-raised to-transparent hover:border-cult-border-strong transition-all duration-200">
       <div className="px-4 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={`w-9 h-9 rounded-lg ${stageStyle.bg} border ${stageStyle.border} flex items-center justify-center shrink-0`}>
@@ -146,7 +146,7 @@ function QueuedCard({
             type="button"
             onClick={() => onReturn(item)}
             disabled={returning}
-            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-cult-border text-cult-text-muted text-xs font-medium hover:text-cult-warning hover:border-cult-warning/30 hover:bg-cult-warning/5 transition-all disabled:opacity-50 disabled:cursor-wait"
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-cult border border-cult-border text-cult-text-muted text-xs font-medium hover:text-cult-warning hover:border-cult-warning/30 hover:bg-cult-warning/5 transition-all disabled:opacity-50 disabled:cursor-wait"
           >
             {returning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
             Return
@@ -154,7 +154,7 @@ function QueuedCard({
           <button
             type="button"
             onClick={() => onStartSession(item)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-cult bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
           >
             <Play className="w-3.5 h-3.5" />
             Start Session
@@ -178,7 +178,7 @@ function ActiveCard({
   const StageIcon = stageStyle.icon;
 
   return (
-    <div className={`rounded-xl border overflow-hidden ${stageStyle.border} ${stageStyle.bg} shadow-[0_0_12px_rgba(255,255,255,0.03)]`}>
+    <div className={`rounded-cult border overflow-hidden ${stageStyle.border} ${stageStyle.bg} shadow-[0_0_12px_rgba(255,255,255,0.03)]`}>
       <div className="px-4 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stageStyle.bg} border ${stageStyle.border} flex items-center justify-center shrink-0 relative`}>
@@ -212,7 +212,7 @@ function ActiveCard({
         <button
           type="button"
           onClick={() => onComplete(session)}
-          className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
+          className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-cult bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
           Complete
@@ -434,7 +434,7 @@ export function ProductionHub() {
   return (
     <HubShell section="Production" icon={Zap} kpis={kpis}>
       {dispatchError && (
-        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger-muted flex items-center gap-3 text-sm text-cult-danger">
+        <div className="mb-4 p-3.5 rounded-cult border border-cult-danger/30 bg-cult-danger-muted flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{dispatchError}</span>
           <button onClick={handleReload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
@@ -449,14 +449,14 @@ export function ProductionHub() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowQuickDispatch(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cult-accent/10 text-cult-accent border border-cult-accent/25 text-xs font-bold hover:bg-cult-accent/20 hover:border-cult-accent/40 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-cult bg-cult-accent/10 text-cult-accent border border-cult-accent/25 text-xs font-bold hover:bg-cult-accent/20 hover:border-cult-accent/40 transition-all"
           >
             <Zap className="w-3.5 h-3.5" />
             Quick Dispatch
           </button>
           <button
             onClick={handleReload}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cult-border text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-cult border border-cult-border text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -506,7 +506,7 @@ export function ProductionHub() {
       {/* ── EMPTY STATE ──────────────────────────────────────────── */}
       {activeSessions.length === 0 && queued.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-cult-text-muted">
-          <div className="w-16 h-16 rounded-2xl bg-cult-surface-raised border border-cult-border-subtle flex items-center justify-center mb-5">
+          <div className="w-16 h-16 rounded-cult bg-cult-surface-raised border border-cult-border-subtle flex items-center justify-center mb-5">
             <Package className="w-8 h-8 opacity-30" />
           </div>
           <p className="text-base font-bold text-cult-text-secondary">No work in queue</p>

@@ -25,7 +25,7 @@ function StatusBadge({ status }: { status: InventoryAudit['status'] }) {
   const styles: Record<string, string> = {
     completed: 'bg-cult-success-muted text-cult-success border-cult-success/30',
     flagged:   'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
-    cancelled: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
+    cancelled: 'bg-cult-surface-raised text-cult-text-muted border-cult-border/40',
   };
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded border font-semibold uppercase tracking-wider ${styles[status] ?? styles.cancelled}`}>
@@ -102,7 +102,7 @@ export function AuditHistoryTable() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <ClipboardCheck className="w-5 h-5 text-cult-accent" />
-          <h2 className="text-[14px] font-semibold text-cult-white uppercase tracking-wider">
+          <h2 className="text-[14px] font-semibold text-cult-text-primary uppercase tracking-wider">
             Inventory Audit History
           </h2>
           <span className="text-[11px] text-cult-text-muted">({total} records)</span>
@@ -111,7 +111,7 @@ export function AuditHistoryTable() {
           <button
             onClick={() => exportToCSV(audits)}
             disabled={audits.length === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-medium-gray text-cult-lighter-gray rounded hover:bg-cult-charcoal disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-border text-cult-text-muted rounded hover:bg-cult-surface-raised disabled:opacity-40 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -127,7 +127,7 @@ export function AuditHistoryTable() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 p-3 bg-cult-near-black border border-cult-dark-gray rounded">
+      <div className="flex flex-wrap items-center gap-3 p-3 bg-cult-surface border border-cult-surface rounded">
         <Filter className="w-3.5 h-3.5 text-cult-text-muted" />
 
         <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export function AuditHistoryTable() {
           <select
             value={filters.status ?? 'all'}
             onChange={e => setFilters({ ...filters, status: e.target.value as 'all' | 'completed' | 'flagged' })}
-            className="bg-cult-charcoal border border-cult-medium-gray text-cult-white text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
+            className="bg-cult-surface-raised border border-cult-border text-cult-text-primary text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
           >
             <option value="all">All</option>
             <option value="completed">Completed</option>
@@ -149,7 +149,7 @@ export function AuditHistoryTable() {
             type="date"
             value={dateFrom}
             onChange={e => { setDateFrom(e.target.value); setFilters({ ...filters, dateFrom: e.target.value || undefined }); }}
-            className="bg-cult-charcoal border border-cult-medium-gray text-cult-white text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
+            className="bg-cult-surface-raised border border-cult-border text-cult-text-primary text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
           />
         </div>
 
@@ -159,7 +159,7 @@ export function AuditHistoryTable() {
             type="date"
             value={dateTo}
             onChange={e => { setDateTo(e.target.value); setFilters({ ...filters, dateTo: e.target.value || undefined }); }}
-            className="bg-cult-charcoal border border-cult-medium-gray text-cult-white text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
+            className="bg-cult-surface-raised border border-cult-border text-cult-text-primary text-[12px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
           />
         </div>
       </div>
@@ -175,7 +175,7 @@ export function AuditHistoryTable() {
       {loading && (
         <div className="animate-pulse space-y-2">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-12 bg-cult-charcoal rounded" />
+            <div key={i} className="h-12 bg-cult-surface-raised rounded" />
           ))}
         </div>
       )}
@@ -185,7 +185,7 @@ export function AuditHistoryTable() {
         <div className="overflow-x-auto">
           <table className="w-full text-[12px]">
             <thead>
-              <tr className="border-b border-cult-medium-gray">
+              <tr className="border-b border-cult-border">
                 {['Audit Period', 'Auditor', 'Calculated End', 'Physical End', 'Variance', 'Status', 'Completed'].map(h => (
                   <th
                     key={h}
@@ -216,10 +216,10 @@ export function AuditHistoryTable() {
                   return (
                     <React.Fragment key={audit.id}>
                       <tr
-                        className="border-b border-cult-charcoal/40 hover:bg-cult-charcoal/20 transition-colors cursor-pointer"
+                        className="border-b border-cult-surface-raised/40 hover:bg-cult-surface-raised/20 transition-colors cursor-pointer"
                         onClick={() => setExpandedAuditId(isExpanded ? null : audit.id)}
                       >
-                        <td className="px-3 py-3 text-cult-white">
+                        <td className="px-3 py-3 text-cult-text-primary">
                           <div className="flex items-center gap-1.5">
                             {isExpanded
                               ? <ChevronDown className="w-3.5 h-3.5 text-cult-accent flex-shrink-0" />
@@ -232,7 +232,7 @@ export function AuditHistoryTable() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-cult-lighter-gray">
+                        <td className="px-3 py-3 text-cult-text-muted">
                           {audit.auditor_name ?? '—'}
                         </td>
                         <td className="px-3 py-3 text-cult-text-primary tabular-nums">
@@ -254,19 +254,19 @@ export function AuditHistoryTable() {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={7} className="px-4 py-4 bg-cult-near-black/50 border-b border-cult-charcoal/40">
+                          <td colSpan={7} className="px-4 py-4 bg-cult-surface/50 border-b border-cult-surface-raised/40">
                             <div className="text-[11px] text-cult-text-muted uppercase tracking-wider font-medium mb-3">
                               Per-Batch Reconciliation
                             </div>
                             <AuditReconciliationTable auditId={audit.id} />
                             {audit.variance_explanation && (
-                              <div className="mt-3 p-3 bg-cult-charcoal/30 rounded space-y-1.5">
+                              <div className="mt-3 p-3 bg-cult-surface-raised/30 rounded space-y-1.5">
                                 <div className="text-[10px] text-cult-text-muted uppercase tracking-wider">Overall Variance Explanation</div>
-                                <div className="text-[12px] text-cult-lighter-gray">{audit.variance_explanation}</div>
+                                <div className="text-[12px] text-cult-text-muted">{audit.variance_explanation}</div>
                                 {audit.corrective_action && (
                                   <>
                                     <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mt-2">Corrective Action</div>
-                                    <div className="text-[12px] text-cult-lighter-gray">{audit.corrective_action}</div>
+                                    <div className="text-[12px] text-cult-text-muted">{audit.corrective_action}</div>
                                   </>
                                 )}
                               </div>
@@ -293,16 +293,16 @@ export function AuditHistoryTable() {
             <button
               onClick={() => setPage(page - 1)}
               disabled={page === 0}
-              className="p-1.5 border border-cult-medium-gray rounded hover:bg-cult-charcoal disabled:opacity-40 transition-colors"
+              className="p-1.5 border border-cult-border rounded hover:bg-cult-surface-raised disabled:opacity-40 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-cult-white" />
+              <ChevronLeft className="w-4 h-4 text-cult-text-primary" />
             </button>
             <button
               onClick={() => setPage(page + 1)}
               disabled={page >= totalPages - 1}
-              className="p-1.5 border border-cult-medium-gray rounded hover:bg-cult-charcoal disabled:opacity-40 transition-colors"
+              className="p-1.5 border border-cult-border rounded hover:bg-cult-surface-raised disabled:opacity-40 transition-colors"
             >
-              <ChevronRight className="w-4 h-4 text-cult-white" />
+              <ChevronRight className="w-4 h-4 text-cult-text-primary" />
             </button>
           </div>
         </div>

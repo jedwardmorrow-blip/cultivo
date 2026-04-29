@@ -165,7 +165,7 @@ export function CrewPanelExpanded({ staff, sessions, getDisplayName }: CrewPanel
           return (
             <div
               key={c.id}
-              className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+              className="flex items-center gap-3 rounded border border-cult-border-subtle bg-cult-surface-inset p-3"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ export function CrewPanelExpanded({ staff, sessions, getDisplayName }: CrewPanel
         {idle.map(c => (
           <div
             key={c.id}
-            className="flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.01] p-3"
+            className="flex items-center gap-3 rounded border border-cult-border-faint bg-cult-surface-inset p-3"
           >
             <div className="w-1.5 h-1.5 rounded-full border border-white/20 flex-shrink-0" />
             <span className="text-sm text-white/30">{c.name}</span>

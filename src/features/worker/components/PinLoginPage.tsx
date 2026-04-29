@@ -147,7 +147,7 @@ export function PinLoginPage() {
                 key={i}
                 onClick={() => handleDigitWithAutoSubmit(d)}
                 disabled={confirming}
-                className="h-16 glass text-cult-text-primary text-2xl font-bold rounded-cult hover:bg-white/[0.10] hover:border-cult-border-strong active:bg-white/[0.14] transition-all disabled:opacity-40"
+                className="h-16 glass text-cult-text-primary text-2xl font-bold rounded-cult hover:bg-cult-surface-active hover:border-cult-border-strong active:bg-cult-surface-overlay transition-all disabled:opacity-40"
               >
                 {d}
               </button>
@@ -159,7 +159,7 @@ export function PinLoginPage() {
         {pin.length >= PIN_LENGTH && !confirming && (
           <button
             onClick={handleSubmit}
-            className="w-full mt-4 py-3 bg-cult-accent text-cult-opaque-black font-bold uppercase tracking-wider text-sm rounded-cult hover:bg-cult-accent-hover hover:shadow-glow-accent transition-all"
+            className="w-full mt-4 py-3 border border-cult-accent text-cult-accent font-mono uppercase tracking-[0.16em] text-[11px] rounded hover:bg-cult-accent hover:text-cult-opaque-black transition-colors"
           >
             Sign In
           </button>

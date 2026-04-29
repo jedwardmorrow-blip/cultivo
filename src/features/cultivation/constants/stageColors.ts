@@ -1,67 +1,71 @@
 /**
  * Consolidated stage color tokens for the cultivation module.
- * Single source of truth — do not redefine these maps in individual components.
  *
- * Uses cult-stage-* Tailwind tokens from tailwind.config.js:
+ * Per CLAUDE.md > Banned patterns:
+ *   - Stage colors are 6px DOT MARKERS only.
+ *   - Never used as fills, tinted backgrounds, or borders on chip bodies.
+ *   - Chip surface = neutral (bg-cult-surface, border-cult-border-subtle).
+ *   - Stage identity = a leading 6px dot using bg-cult-stage-X.
+ *
+ * The legacy maps below (STAGE_BADGE, CHIP_STAGE_COLORS, ROOM_TYPE_COLORS,
+ * ROOM_TYPE_BADGE, ROOM_TYPE_TEXT) all return neutral chip styling. The
+ * dot color comes from ROOM_TYPE_DOT (kept) and the new STAGE_DOT.
+ *
+ * Tokens used:
  *   clone → cult-stage-clone (#0EA5E9)
  *   veg   → cult-stage-veg   (#10B981)
  *   flower→ cult-stage-flower (#F43F5E)
  *   harvest→ cult-stage-harvest (#F59E0B)
  */
 
-/** Badge classes for growth stage labels (text + border + bg) */
+/** Neutral chip surface for stage badges. Pair with STAGE_DOT for the marker. */
+const NEUTRAL_CHIP = 'border-cult-border-subtle bg-cult-surface text-cult-text-secondary';
+
+/** Badge classes for growth stage labels (text + border + bg) — neutral surface. */
 export const STAGE_BADGE: Record<string, string> = {
-  clone: 'text-cult-stage-clone border-cult-stage-clone/30 bg-cult-stage-clone/10',
-  veg: 'text-cult-stage-veg border-cult-stage-veg/30 bg-cult-stage-veg/10',
-  flower: 'text-cult-stage-flower border-cult-stage-flower/30 bg-cult-stage-flower/10',
-  harvested: 'text-cult-text-muted border-cult-border bg-cult-surface-raised',
+  clone: NEUTRAL_CHIP,
+  veg: NEUTRAL_CHIP,
+  flower: NEUTRAL_CHIP,
+  harvested: NEUTRAL_CHIP,
 };
 
-/** Chip colors for batch summary chips by room type */
+/** Chip classes for batch summary chips by room type — neutral surface. */
 export const CHIP_STAGE_COLORS: Record<string, string> = {
-  clone: 'border-cult-stage-clone/40 bg-cult-stage-clone/10 text-cult-stage-clone',
-  veg: 'border-cult-stage-veg/40 bg-cult-stage-veg/10 text-cult-stage-veg',
-  flower: 'border-cult-stage-flower/40 bg-cult-stage-flower/10 text-cult-stage-flower',
-  mother: 'border-cult-stage-harvest/40 bg-cult-stage-harvest/10 text-cult-stage-harvest',
-  mixed: 'border-cult-border-strong bg-cult-surface text-cult-text-secondary',
+  clone: NEUTRAL_CHIP,
+  veg: NEUTRAL_CHIP,
+  flower: NEUTRAL_CHIP,
+  mother: NEUTRAL_CHIP,
+  mixed: NEUTRAL_CHIP,
 };
 
-/** Room card border + subtle bg tint by room type */
+/** Room card border + bg by room type — neutral surface, no tinted bg. */
 export const ROOM_TYPE_COLORS: Record<string, string> = {
-  clone: 'border-cult-stage-clone/50 bg-cult-stage-clone/5',
-  veg: 'border-cult-stage-veg/50 bg-cult-stage-veg/5',
-  flower: 'border-cult-stage-flower/50 bg-cult-stage-flower/5',
-  mother: 'border-cult-stage-harvest/50 bg-cult-stage-harvest/5',
+  clone: 'border-cult-border bg-cult-surface',
+  veg: 'border-cult-border bg-cult-surface',
+  flower: 'border-cult-border bg-cult-surface',
+  mother: 'border-cult-border bg-cult-surface',
   mixed: 'border-cult-border-strong bg-cult-surface',
 };
 
-/** Room type border accent for drawer / detail views */
+/** Room type border accent for drawer / detail views — neutral. */
 export const ROOM_TYPE_BORDER: Record<string, string> = {
-  clone: 'border-cult-stage-clone/50',
-  veg: 'border-cult-stage-veg/50',
-  flower: 'border-cult-stage-flower/50',
-  mother: 'border-cult-stage-harvest/50',
+  clone: 'border-cult-border',
+  veg: 'border-cult-border',
+  flower: 'border-cult-border',
+  mother: 'border-cult-border',
   mixed: 'border-cult-border-strong',
 };
 
-/** Subtle inner glow for room cards (inline boxShadow) */
-export const INNER_GLOW: Record<string, string> = {
-  clone: 'inset 0 0 30px rgba(14,165,233,0.06)',
-  veg: 'inset 0 0 30px rgba(16,185,129,0.06)',
-  flower: 'inset 0 0 30px rgba(244,63,94,0.06)',
-  mother: 'inset 0 0 30px rgba(245,158,11,0.06)',
-};
-
-/** Left-border accent for list rows (task board, digest, dashboard) */
+/** Left-border accent for list rows — neutral hairline. Stage identity comes from a dot. */
 export const ROOM_TYPE_LEFT_BORDER: Record<string, string> = {
-  clone: 'border-l-cult-stage-clone',
-  veg: 'border-l-cult-stage-veg',
-  flower: 'border-l-cult-stage-flower',
-  mother: 'border-l-cult-stage-harvest',
+  clone: 'border-l-cult-border-strong',
+  veg: 'border-l-cult-border-strong',
+  flower: 'border-l-cult-border-strong',
+  mother: 'border-l-cult-border-strong',
   mixed: 'border-l-cult-border',
 };
 
-/** Solid bg color for room-type dot indicators */
+/** Solid bg color for room-type 6px DOT indicators (the canonical stage-color use). */
 export const ROOM_TYPE_DOT: Record<string, string> = {
   clone: 'bg-cult-stage-clone',
   veg: 'bg-cult-stage-veg',
@@ -70,22 +74,33 @@ export const ROOM_TYPE_DOT: Record<string, string> = {
   mixed: 'bg-cult-border',
 };
 
-/** Text + border accent for room-type labels (no background) */
+/** Solid bg color for growth-stage 6px DOT indicators. */
+export const STAGE_DOT: Record<string, string> = {
+  clone: 'bg-cult-stage-clone',
+  veg: 'bg-cult-stage-veg',
+  flower: 'bg-cult-stage-flower',
+  harvest: 'bg-cult-stage-harvest',
+  cure: 'bg-cult-stage-cure',
+  package: 'bg-cult-stage-package',
+  harvested: 'bg-cult-text-faint',
+};
+
+/** Text + border accent for room-type labels (no background) — neutral. */
 export const ROOM_TYPE_TEXT: Record<string, string> = {
-  clone: 'text-cult-stage-clone border-cult-stage-clone',
-  veg: 'text-cult-stage-veg border-cult-stage-veg',
-  flower: 'text-cult-stage-flower border-cult-stage-flower',
-  mother: 'text-cult-stage-harvest border-cult-stage-harvest',
+  clone: 'text-cult-text-secondary border-cult-border',
+  veg: 'text-cult-text-secondary border-cult-border',
+  flower: 'text-cult-text-secondary border-cult-border',
+  mother: 'text-cult-text-secondary border-cult-border',
   mixed: 'text-cult-text-secondary border-cult-border',
 };
 
-/** Full badge classes for settings / management views (text + border + bg) */
+/** Full badge classes for settings / management views — neutral surface. */
 export const ROOM_TYPE_BADGE: Record<string, string> = {
-  clone: 'bg-cult-stage-clone/10 border-cult-stage-clone/50 text-cult-stage-clone',
-  veg: 'bg-cult-stage-veg/10 border-cult-stage-veg/50 text-cult-stage-veg',
-  flower: 'bg-cult-stage-flower/10 border-cult-stage-flower/50 text-cult-stage-flower',
-  mother: 'bg-cult-stage-harvest/10 border-cult-stage-harvest/50 text-cult-stage-harvest',
-  mixed: 'bg-cult-surface border-cult-border-strong text-cult-text-secondary',
+  clone: NEUTRAL_CHIP,
+  veg: NEUTRAL_CHIP,
+  flower: NEUTRAL_CHIP,
+  mother: NEUTRAL_CHIP,
+  mixed: NEUTRAL_CHIP,
 };
 
 // ─── Semantic Status Tokens ───────────────────────────────────────────

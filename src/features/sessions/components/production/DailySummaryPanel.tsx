@@ -92,7 +92,7 @@ export function DailySummaryCompact({ trimStats, buckingStats, packagingStats, i
                   return (
                     <div key={type} className="flex items-center gap-2">
                       <span className="text-[10px] text-white/30 w-8">{color.label.slice(0, 4)}</span>
-                      <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-cult-surface-inset rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${pct}%`, backgroundColor: `${color.rgba}0.5)` }}
@@ -222,7 +222,7 @@ export function DailySummaryExpanded({ trimCompleted, buckingCompleted, packagin
                   return (
                     <div
                       key={row.id}
-                      className="flex items-center gap-3 rounded-lg border border-white/[0.04] bg-white/[0.015] px-3 py-2 text-xs"
+                      className="flex items-center gap-3 rounded border border-cult-border-faint bg-cult-surface-inset px-3 py-2 text-xs"
                     >
                       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color.hex }} />
                       <span className="text-white/50 w-20 truncate">{row.worker}</span>

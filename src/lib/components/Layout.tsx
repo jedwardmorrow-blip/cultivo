@@ -68,8 +68,8 @@ export function Layout({ children }: LayoutProps) {
       <nav
         className="sticky top-0 z-40 bg-cult-surface border-b border-cult-border safe-top"
       >
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
-          <div className="flex items-center justify-between py-3">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between py-3 gap-3">
             <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1">
               <button
                 onClick={handleLogoClick}
@@ -100,19 +100,19 @@ export function Layout({ children }: LayoutProps) {
 
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               <div
-                className="hidden lg:flex flex-col items-end leading-tight"
+                className="hidden xl:flex flex-col items-end leading-tight"
                 style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.10em' }}
               >
                 <span className="text-cult-text-secondary uppercase">Cult Cannabis</span>
                 <span className="text-cult-text-faint uppercase">{buildVersion}</span>
               </div>
 
-              <div className="w-px h-5 bg-cult-border hidden lg:block" />
+              <div className="w-px h-5 bg-cult-border hidden xl:block" />
 
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className={`p-2 transition-colors hidden sm:block ${
+                  className={`p-2 transition-colors hidden 2xl:block ${
                     currentView === 'dashboard'
                       ? 'text-cult-text-primary bg-cult-surface-raised'
                       : 'text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised'
@@ -123,7 +123,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
                 <button
                   onClick={() => navigate('/hub')}
-                  className={`p-2 transition-colors hidden sm:block ${
+                  className={`p-2 transition-colors hidden 2xl:block ${
                     currentView === 'hub' || currentView.startsWith('hub-') || currentView === 'pipeline-planner' || currentView === 'pipeline-forecast' || currentView === 'strain-analytics'
                       ? 'text-cult-text-primary bg-cult-surface-raised'
                       : 'text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised'
@@ -134,7 +134,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
                 <button
                   onClick={() => navigate('/settings')}
-                  className={`p-2 transition-colors hidden sm:block ${
+                  className={`p-2 transition-colors hidden 2xl:block ${
                     currentView === 'settings'
                       ? 'text-cult-text-primary bg-cult-surface-raised'
                       : 'text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised'

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { getStatusColor } from '../utils/orderGrouping';
+import { getStatusColor, getStatusDotClass } from '../utils/orderGrouping';
 import { OrderCard } from './OrderCard';
 import type { Order } from '../types';
 
@@ -49,11 +49,12 @@ function LaneHeader({
   onToggle: () => void;
 }) {
   const statusColors = getStatusColor(lane.status);
+  const dotClass = getStatusDotClass(lane.status);
 
   return (
     <button
       onClick={onToggle}
-      className="w-full flex items-center gap-3 px-4 py-3 bg-cult-surface-raised border border-cult-border rounded-cult hover:border-cult-border-strong transition-all group"
+      className="w-full flex items-center gap-3 px-4 py-3 bg-cult-surface border border-cult-border-subtle rounded hover:border-cult-border transition-colors group"
     >
       <div className="text-cult-text-muted">
         {isExpanded
@@ -62,15 +63,16 @@ function LaneHeader({
         }
       </div>
 
-      <span className={`inline-block px-2.5 py-1 text-xs font-bold border rounded-cult uppercase tracking-wider select-none ${statusColors}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 font-mono uppercase tracking-[0.14em] text-[11px] border rounded select-none ${statusColors}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
         {lane.label}
       </span>
 
-      <span className="text-xs text-cult-text-secondary font-semibold">
+      <span className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted tabular-nums">
         {lane.orders.length} {lane.orders.length === 1 ? 'order' : 'orders'}
       </span>
 
-      <span className="text-xs text-cult-success font-semibold ml-auto">
+      <span className="font-mono text-[12px] text-cult-text-primary tabular-nums ml-auto">
         {formatCurrency(lane.totalAmount)}
       </span>
     </button>

@@ -78,7 +78,7 @@ export function BuckingSessionsRefactored() {
       )}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Bucking Sessions</h1>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Bucking Sessions</h1>
           <p className="text-cult-text-secondary mt-1">Process binned material into bucked flower and smalls</p>
         </div>
         <Button

@@ -128,34 +128,34 @@ export function RouteTestingTool() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+      <div className="bg-cult-surface border border-cult-border p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Navigation className="w-6 h-6 text-cult-white" />
-          <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+          <Navigation className="w-6 h-6 text-cult-text-primary" />
+          <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
             Route Testing Tool
           </h2>
         </div>
 
-        <div className="mb-6 p-4 bg-cult-black border border-cult-medium-gray/50">
+        <div className="mb-6 p-4 bg-cult-black border border-cult-border/50">
           <div className="flex items-center gap-2 mb-2">
-            <MapPin className="w-4 h-4 text-cult-white" />
-            <span className="text-xs text-cult-light-gray uppercase tracking-wider">Facility Location (Origin)</span>
+            <MapPin className="w-4 h-4 text-cult-text-primary" />
+            <span className="text-xs text-cult-text-muted uppercase tracking-wider">Facility Location (Origin)</span>
           </div>
-          <p className="text-sm text-cult-white font-medium">3303 South 40th Street, Phoenix, AZ 85040</p>
-          <p className="text-xs text-cult-lighter-gray mt-1">
+          <p className="text-sm text-cult-text-primary font-medium">3303 South 40th Street, Phoenix, AZ 85040</p>
+          <p className="text-xs text-cult-text-muted mt-1">
             {facilityCoords.latitude.toFixed(6)}, {facilityCoords.longitude.toFixed(6)}
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+            <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
               Select Customer
             </label>
             <select
               value={selectedCustomer}
               onChange={(e) => setSelectedCustomer(e.target.value)}
-              className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+              className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
             >
               <option value="">Choose a customer...</option>
               {customers.map((customer) => (
@@ -165,7 +165,7 @@ export function RouteTestingTool() {
               ))}
             </select>
             {selectedCustomerData && (
-              <p className="mt-2 text-xs text-cult-lighter-gray">
+              <p className="mt-2 text-xs text-cult-text-muted">
                 {selectedCustomerData.address}
                 {hasCoords && ` • ${selectedCustomerData.latitude?.toFixed(4)}, ${selectedCustomerData.longitude?.toFixed(4)}`}
               </p>
@@ -175,7 +175,7 @@ export function RouteTestingTool() {
           <button
             onClick={testRoute}
             disabled={loading || geocoding || !selectedCustomer}
-            className="w-full px-6 py-3 bg-cult-white text-cult-black font-medium uppercase tracking-wider hover:bg-cult-off-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-cult-accent text-cult-opaque-black font-medium uppercase tracking-wider hover:bg-cult-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Calculating Route...' : geocoding ? 'Geocoding Address...' : 'Test Route'}
           </button>
@@ -192,30 +192,30 @@ export function RouteTestingTool() {
       {route && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+            <div className="bg-cult-surface border border-cult-border p-6">
               <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="w-5 h-5 text-cult-white" />
-                <span className="text-sm text-cult-light-gray uppercase tracking-wider">Distance</span>
+                <TrendingUp className="w-5 h-5 text-cult-text-primary" />
+                <span className="text-sm text-cult-text-muted uppercase tracking-wider">Distance</span>
               </div>
-              <p className="text-2xl font-bold text-cult-white">
+              <p className="text-2xl font-bold text-cult-text-primary">
                 {formatDistance(route.distance_meters)}
               </p>
             </div>
 
-            <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+            <div className="bg-cult-surface border border-cult-border p-6">
               <div className="flex items-center gap-3 mb-2">
-                <Clock className="w-5 h-5 text-cult-white" />
-                <span className="text-sm text-cult-light-gray uppercase tracking-wider">Duration</span>
+                <Clock className="w-5 h-5 text-cult-text-primary" />
+                <span className="text-sm text-cult-text-muted uppercase tracking-wider">Duration</span>
               </div>
-              <p className="text-2xl font-bold text-cult-white">
+              <p className="text-2xl font-bold text-cult-text-primary">
                 {formatDuration(route.duration_seconds)}
               </p>
             </div>
 
-            <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+            <div className="bg-cult-surface border border-cult-border p-6">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircle className="w-5 h-5 text-cult-success" />
-                <span className="text-sm text-cult-light-gray uppercase tracking-wider">Status</span>
+                <span className="text-sm text-cult-text-muted uppercase tracking-wider">Status</span>
               </div>
               <p className="text-2xl font-bold text-cult-success">
                 Success
@@ -224,14 +224,14 @@ export function RouteTestingTool() {
           </div>
 
           {route.geometry && selectedCustomerData && (
-            <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+            <div className="bg-cult-surface border border-cult-border p-6">
               <div className="flex items-center gap-3 mb-4">
-                <MapPin className="w-5 h-5 text-cult-white" />
-                <h3 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+                <MapPin className="w-5 h-5 text-cult-text-primary" />
+                <h3 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
                   Route Visualization
                 </h3>
               </div>
-              <div className="border border-cult-medium-gray overflow-hidden">
+              <div className="border border-cult-border overflow-hidden">
                 <LeafletRouteMap
                   origin={facilityCoords}
                   destination={{
@@ -242,7 +242,7 @@ export function RouteTestingTool() {
                   className="w-full h-96"
                 />
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-cult-lighter-gray">
+              <div className="mt-4 flex items-center justify-between text-xs text-cult-text-muted">
                 <span>
                   Interactive map • Drag to pan • Scroll to zoom
                 </span>
@@ -250,7 +250,7 @@ export function RouteTestingTool() {
                   href={`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${facilityCoords.latitude},${facilityCoords.longitude};${selectedCustomerData?.latitude},${selectedCustomerData?.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cult-white hover:underline"
+                  className="text-cult-text-primary hover:underline"
                 >
                   Open in OpenStreetMap ↗
                 </a>
@@ -258,13 +258,13 @@ export function RouteTestingTool() {
             </div>
           )}
 
-          <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+          <div className="bg-cult-surface border border-cult-border p-6">
             <div className="flex items-center gap-3 mb-4">
-              <Navigation className="w-5 h-5 text-cult-white" />
-              <h3 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+              <Navigation className="w-5 h-5 text-cult-text-primary" />
+              <h3 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
                 Turn-by-Turn Directions
               </h3>
-              <span className="text-sm text-cult-light-gray">
+              <span className="text-sm text-cult-text-muted">
                 ({route.instructions.length} steps)
               </span>
             </div>
@@ -273,19 +273,19 @@ export function RouteTestingTool() {
                 {route.instructions.map((instruction, index) => (
                   <div
                     key={index}
-                    className="flex gap-4 p-3 bg-cult-black border border-cult-medium-gray/50 hover:border-cult-light-gray transition-colors"
+                    className="flex gap-4 p-3 bg-cult-black border border-cult-border/50 hover:border-cult-text-muted transition-colors"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cult-white text-cult-black flex items-center justify-center text-sm font-bold">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cult-accent text-cult-opaque-black flex items-center justify-center text-sm font-bold">
                       {instruction.step_number}
                     </div>
                     <div className="flex-1">
-                      <p className="text-cult-white text-sm leading-relaxed">{instruction.instruction_text}</p>
+                      <p className="text-cult-text-primary text-sm leading-relaxed">{instruction.instruction_text}</p>
                       {instruction.street_name && (
-                        <p className="text-xs text-cult-light-gray mt-1">
+                        <p className="text-xs text-cult-text-muted mt-1">
                           on {instruction.street_name}
                         </p>
                       )}
-                      <p className="text-xs text-cult-lighter-gray mt-1">
+                      <p className="text-xs text-cult-text-muted mt-1">
                         {formatDistance(instruction.distance_meters)} • {formatDuration(instruction.duration_seconds)}
                       </p>
                     </div>
@@ -294,9 +294,9 @@ export function RouteTestingTool() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-cult-lighter-gray mx-auto mb-3 opacity-50" />
-                <p className="text-cult-light-gray">No turn-by-turn directions available</p>
-                <p className="text-xs text-cult-lighter-gray mt-2">
+                <AlertCircle className="w-12 h-12 text-cult-text-muted mx-auto mb-3 opacity-50" />
+                <p className="text-cult-text-muted">No turn-by-turn directions available</p>
+                <p className="text-xs text-cult-text-muted mt-2">
                   The routing API returned a route but no detailed instructions
                 </p>
               </div>

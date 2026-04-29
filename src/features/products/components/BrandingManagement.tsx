@@ -144,7 +144,7 @@ export function BrandingManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading branding settings...</div>
+        <div className="text-cult-text-muted">Loading branding settings...</div>
       </div>
     );
   }
@@ -172,12 +172,12 @@ export function BrandingManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+      <div className="bg-cult-surface border border-cult-border p-8">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide mb-2">
+          <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide mb-2">
             Company Logos
           </h2>
-          <p className="text-sm text-cult-light-gray">
+          <p className="text-sm text-cult-text-muted">
             Upload and manage your company logos for different use cases. Recommended format: PNG with transparent background.
             Maximum file size: 5MB.
           </p>
@@ -191,14 +191,14 @@ export function BrandingManagement() {
             return (
               <div
                 key={variant.key}
-                className="border border-cult-medium-gray p-6 bg-cult-black"
+                className="border border-cult-border p-6 bg-cult-black"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-medium text-cult-white uppercase tracking-wide">
+                    <h3 className="text-lg font-medium text-cult-text-primary uppercase tracking-wide">
                       {variant.label}
                     </h3>
-                    <p className="text-sm text-cult-light-gray mt-1">
+                    <p className="text-sm text-cult-text-muted mt-1">
                       {variant.description}
                     </p>
                   </div>
@@ -210,7 +210,7 @@ export function BrandingManagement() {
                       htmlFor={`file-${variant.key}`}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, variant.key)}
-                      className={`block border-2 border-dashed border-cult-medium-gray p-8 text-center cursor-pointer transition-all hover:border-cult-white hover:bg-cult-near-black ${
+                      className={`block border-2 border-dashed border-cult-border p-8 text-center cursor-pointer transition-all hover:border-cult-accent hover:bg-cult-surface ${
                         isUploading ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
@@ -225,17 +225,17 @@ export function BrandingManagement() {
                         disabled={isUploading}
                         className="hidden"
                       />
-                      <Upload className="w-8 h-8 text-cult-light-gray mx-auto mb-3" />
-                      <p className="text-cult-white text-sm font-medium mb-1">
+                      <Upload className="w-8 h-8 text-cult-text-muted mx-auto mb-3" />
+                      <p className="text-cult-text-primary text-sm font-medium mb-1">
                         {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
                       </p>
-                      <p className="text-cult-lighter-gray text-xs">
+                      <p className="text-cult-text-muted text-xs">
                         PNG, JPG, SVG, WebP up to 5MB
                       </p>
                     </label>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center border border-cult-medium-gray p-4 bg-cult-near-black">
+                  <div className="flex flex-col items-center justify-center border border-cult-border p-4 bg-cult-surface">
                     {currentUrl ? (
                       <div className="w-full">
                         <div className="mb-3 flex items-center justify-center bg-white p-4 min-h-[120px]">
@@ -258,8 +258,8 @@ export function BrandingManagement() {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <ImageIcon className="w-12 h-12 text-cult-medium-gray mx-auto mb-2" />
-                        <p className="text-cult-lighter-gray text-sm">No logo uploaded</p>
+                        <ImageIcon className="w-12 h-12 text-cult-border mx-auto mb-2" />
+                        <p className="text-cult-text-muted text-sm">No logo uploaded</p>
                       </div>
                     )}
                   </div>
@@ -270,42 +270,42 @@ export function BrandingManagement() {
         </div>
 
         {logos.logo_upload_date && (
-          <div className="mt-6 p-4 border border-cult-medium-gray bg-cult-near-black">
-            <p className="text-sm text-cult-light-gray">
-              <span className="text-cult-white font-medium">Last updated:</span>{' '}
+          <div className="mt-6 p-4 border border-cult-border bg-cult-surface">
+            <p className="text-sm text-cult-text-muted">
+              <span className="text-cult-text-primary font-medium">Last updated:</span>{' '}
               {new Date(logos.logo_upload_date).toLocaleString()}
             </p>
           </div>
         )}
       </div>
 
-      <div className="mt-8 bg-cult-near-black border border-cult-medium-gray p-6">
-        <h3 className="text-lg font-semibold text-cult-white mb-4 uppercase tracking-wide">
+      <div className="mt-8 bg-cult-surface border border-cult-border p-6">
+        <h3 className="text-lg font-semibold text-cult-text-primary mb-4 uppercase tracking-wide">
           Logo Guidelines
         </h3>
-        <div className="space-y-3 text-sm text-cult-light-gray">
+        <div className="space-y-3 text-sm text-cult-text-muted">
           <p>
-            <span className="text-cult-white font-medium">Dark Logo:</span> Should have dark colors
+            <span className="text-cult-text-primary font-medium">Dark Logo:</span> Should have dark colors
             and will be displayed on light backgrounds. Used in the main navigation and light-themed areas.
           </p>
           <p>
-            <span className="text-cult-white font-medium">Light Logo:</span> Should have light colors
+            <span className="text-cult-text-primary font-medium">Light Logo:</span> Should have light colors
             or white and will be displayed on dark backgrounds. Used when dark mode is enabled.
           </p>
           <p>
-            <span className="text-cult-white font-medium">Invoice Logo:</span> Optimized for printing
+            <span className="text-cult-text-primary font-medium">Invoice Logo:</span> Optimized for printing
             on invoices and documents. Should be high resolution and work well in grayscale.
           </p>
           <p>
-            <span className="text-cult-white font-medium">Label Logo:</span> Used on product labels.
+            <span className="text-cult-text-primary font-medium">Label Logo:</span> Used on product labels.
             Should be compact and clear at small sizes.
           </p>
           <p>
-            <span className="text-cult-white font-medium">Eye Graphic:</span> Brand accent element used
+            <span className="text-cult-text-primary font-medium">Eye Graphic:</span> Brand accent element used
             for decorative purposes and design accents throughout the application.
           </p>
-          <p className="pt-3 border-t border-cult-medium-gray">
-            <span className="text-cult-white font-medium">Best Practices:</span> Use PNG format with
+          <p className="pt-3 border-t border-cult-border">
+            <span className="text-cult-text-primary font-medium">Best Practices:</span> Use PNG format with
             transparent backgrounds for flexibility. Ensure logos are at least 300x300 pixels for print quality.
             Keep file sizes under 2MB for optimal loading performance.
           </p>

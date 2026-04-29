@@ -312,7 +312,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
             value={selectedStrain}
             onChange={(e) => setSelectedStrain(e.target.value)}
             disabled={loadingStrains}
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-dark-gray/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-cult border border-cult-surface/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
           >
             <option value="">{loadingStrains ? 'Loading...' : 'Select strain'}</option>
             {strains.map(s => (
@@ -329,7 +329,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
             value={selectedBatchId}
             onChange={(e) => setSelectedBatchId(e.target.value)}
             disabled={!selectedStrain || loadingBatches}
-            className="w-full px-3 py-2.5 rounded-xl border border-cult-dark-gray/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-cult border border-cult-surface/60 bg-cult-mid-gray/10 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent/50 disabled:opacity-50 transition-colors"
           >
             <option value="">{loadingBatches ? 'Loading...' : 'Select batch'}</option>
             {batches.map(b => (
@@ -341,7 +341,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
 
       {/* Batch metadata badges */}
       {selectedBatch && (
-        <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-cult-dark-gray/25">
+        <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-cult-surface/25">
           <span className="text-sm font-bold font-mono text-cult-text-primary">{selectedBatch.batch_number}</span>
           <div className="flex items-center gap-1.5 ml-2">
             <COABadge status={selectedBatch.coa_status} />
@@ -352,7 +352,7 @@ export function QuickDispatchModal({ isOpen, onClose, onDispatched }: QuickDispa
       )}
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
+        <div className="mb-4 p-3 rounded-cult border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {error}
         </div>

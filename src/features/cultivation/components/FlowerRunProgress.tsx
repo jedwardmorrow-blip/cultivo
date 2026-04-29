@@ -8,10 +8,10 @@ export function FlowerRunProgress({ dayInFlower, estimatedFlowerDays }: FlowerRu
 
   return (
     <div className="space-y-1">
-      <p className="text-xs text-cult-light-gray">
-        Day <span className="text-cult-white font-mono">{dayInFlower}</span> of ~{estimatedFlowerDays}
+      <p className="text-xs text-cult-text-muted">
+        Day <span className="text-cult-text-primary font-mono">{dayInFlower}</span> of ~{estimatedFlowerDays}
       </p>
-      <div className="h-1.5 bg-cult-charcoal overflow-hidden">
+      <div className="h-1.5 bg-cult-surface-raised overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-rose-700 to-rose-400 transition-all duration-500"
           style={{ width: `${pct}%` }}

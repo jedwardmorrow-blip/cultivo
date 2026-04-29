@@ -108,7 +108,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
 
   if (projecting) {
     return (
-      <div className="flex items-center justify-center py-16 text-cult-medium-gray gap-3">
+      <div className="flex items-center justify-center py-16 text-cult-border gap-3">
         <Loader2 className="w-5 h-5 animate-spin" />
         <span className="text-sm">Loading 4-week schedule…</span>
       </div>
@@ -126,7 +126,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
 
   if (activeRooms.length === 0) {
     return (
-      <div className="py-12 text-center text-cult-medium-gray text-sm">
+      <div className="py-12 text-center text-cult-border text-sm">
         No active schedules found. Set up room schedules to see projections here.
       </div>
     );
@@ -135,7 +135,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
   return (
     <div className="relative">
       {/* Legend */}
-      <div className="flex items-center gap-4 mb-3 text-xs text-cult-medium-gray flex-wrap">
+      <div className="flex items-center gap-4 mb-3 text-xs text-cult-border flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-cult-warning/30 border border-cult-warning/50" />
           <span>Collision (≥{COLLISION_COUNT_THRESHOLD} high-labor tasks or &gt;{COLLISION_HOURS_THRESHOLD}h)</span>
@@ -151,13 +151,13 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
       </div>
 
       {/* Scrollable grid */}
-      <div className="overflow-x-auto rounded-sm border border-cult-dark-gray">
+      <div className="overflow-x-auto rounded-sm border border-cult-surface">
         <table className="border-collapse text-xs min-w-max">
           {/* Day header */}
           <thead>
             <tr>
               {/* Room name column */}
-              <th className="sticky left-0 z-10 bg-cult-graphite border-b border-r border-cult-dark-gray px-3 py-2 text-left font-semibold text-cult-light-gray uppercase tracking-wider min-w-[120px] whitespace-nowrap">
+              <th className="sticky left-0 z-10 bg-cult-surface border-b border-r border-cult-surface px-3 py-2 text-left font-semibold text-cult-text-muted uppercase tracking-wider min-w-[120px] whitespace-nowrap">
                 Room
               </th>
               {dayRange.map((dateStr) => {
@@ -171,22 +171,22 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                       : isToday
                         ? 'bg-cult-accent/10'
                         : isWeekend
-                          ? 'bg-cult-charcoal/60'
-                          : 'bg-cult-graphite';
+                          ? 'bg-cult-surface-raised/60'
+                          : 'bg-cult-surface';
                 return (
                   <th
                     key={dateStr}
-                    className={`border-b border-r border-cult-dark-gray px-1.5 py-1 text-center min-w-[72px] ${colBg}`}
+                    className={`border-b border-r border-cult-surface px-1.5 py-1 text-center min-w-[72px] ${colBg}`}
                     title={
                       collision.isCollision
                         ? `⚠ ${collision.highLaborCount} high-labor tasks — ${collision.totalHighLaborHours.toFixed(1)}h total`
                         : undefined
                     }
                   >
-                    <div className={`font-semibold ${isToday ? 'text-cult-accent' : isWeekend ? 'text-cult-medium-gray' : 'text-cult-light-gray'}`}>
+                    <div className={`font-semibold ${isToday ? 'text-cult-accent' : isWeekend ? 'text-cult-border' : 'text-cult-text-muted'}`}>
                       {dayName}
                     </div>
-                    <div className={`text-[10px] ${isToday ? 'text-cult-accent/70' : 'text-cult-medium-gray'}`}>{label}</div>
+                    <div className={`text-[10px] ${isToday ? 'text-cult-accent/70' : 'text-cult-border'}`}>{label}</div>
                     {collision.isCollision && (
                       <div
                         className={`mt-0.5 text-[9px] font-bold uppercase tracking-wide ${
@@ -206,7 +206,7 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
             {activeRooms.map((room) => (
               <tr key={room.id} className="group">
                 {/* Room name — sticky */}
-                <td className="sticky left-0 z-10 bg-cult-graphite group-hover:bg-cult-charcoal/80 border-b border-r border-cult-dark-gray px-3 py-1.5 font-medium text-cult-white whitespace-nowrap">
+                <td className="sticky left-0 z-10 bg-cult-surface group-hover:bg-cult-surface-raised/80 border-b border-r border-cult-surface px-3 py-1.5 font-medium text-cult-text-primary whitespace-nowrap">
                   {room.room_code}
                 </td>
 
@@ -222,15 +222,15 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                         : isToday
                           ? 'bg-cult-accent/5'
                           : isWeekend
-                            ? 'bg-cult-charcoal/40'
-                            : 'bg-cult-graphite/40';
+                            ? 'bg-cult-surface-raised/40'
+                            : 'bg-cult-surface/40';
 
                   const isActive = tooltip?.dateStr === dateStr && tooltip?.roomId === room.id;
 
                   return (
                     <td
                       key={dateStr}
-                      className={`border-b border-r border-cult-dark-gray px-1 py-1 align-top min-w-[72px] min-h-[36px] cursor-pointer hover:bg-cult-charcoal/60 transition-colors ${cellBg} ${isActive ? 'ring-1 ring-inset ring-cult-accent/50' : ''}`}
+                      className={`border-b border-r border-cult-surface px-1 py-1 align-top min-w-[72px] min-h-[36px] cursor-pointer hover:bg-cult-surface-raised/60 transition-colors ${cellBg} ${isActive ? 'ring-1 ring-inset ring-cult-accent/50' : ''}`}
                       onClick={() =>
                         tasks.length > 0
                           ? setTooltip(isActive ? null : { tasks, dateStr, roomId: room.id })
@@ -268,13 +268,13 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
 
       {/* Task detail popover */}
       {tooltip && tooltip.tasks.length > 0 && (
-        <div className="mt-3 p-3 bg-cult-charcoal border border-cult-dark-gray rounded-sm text-xs max-w-sm">
+        <div className="mt-3 p-3 bg-cult-surface-raised border border-cult-surface rounded-sm text-xs max-w-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-semibold text-cult-white">
+            <span className="font-semibold text-cult-text-primary">
               {rooms.find((r) => r.id === tooltip.roomId)?.room_code ?? 'Room'} —{' '}
               {new Date(tooltip.dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
-            <button type="button" onClick={() => setTooltip(null)} className="text-cult-medium-gray hover:text-cult-white text-base leading-none">×</button>
+            <button type="button" onClick={() => setTooltip(null)} className="text-cult-border hover:text-cult-text-primary text-base leading-none">×</button>
           </div>
           <div className="space-y-1.5">
             {tooltip.tasks.map((t, i) => {
@@ -283,17 +283,17 @@ export function WeekTaskGrid({ weekCount = 4 }: WeekTaskGridProps) {
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
-                    <span className="text-cult-light-gray">{cfg.label}</span>
+                    <span className="text-cult-text-muted">{cfg.label}</span>
                     {HIGH_LABOR_TASK_TYPES.has(t.taskType) && (
                       <span className="text-[9px] text-cult-warning font-semibold uppercase">HIGH</span>
                     )}
                   </div>
-                  <span className="text-cult-medium-gray ml-3">{t.estimatedHours}h</span>
+                  <span className="text-cult-border ml-3">{t.estimatedHours}h</span>
                 </div>
               );
             })}
           </div>
-          <div className="mt-2 pt-2 border-t border-cult-dark-gray text-cult-medium-gray">
+          <div className="mt-2 pt-2 border-t border-cult-surface text-cult-border">
             Total: {tooltip.tasks.reduce((s, t) => s + t.estimatedHours, 0).toFixed(1)}h
           </div>
         </div>

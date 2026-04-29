@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { Icon as KitIcon } from '@/shared/icons';
 import type { MenuItem } from './types';
 
 interface NavigationItemProps {
@@ -21,12 +22,12 @@ function getBadgeStyles(color?: string) {
     case 'info':
       return 'bg-cult-info/15 text-cult-info border border-cult-info/30';
     default:
-      return 'bg-white/[0.10] text-cult-text-secondary border border-white/[0.10]';
+      return 'bg-cult-surface-active text-cult-text-secondary border border-cult-border';
   }
 }
 
 export function NavigationItem({ item, isActive, onClick, currentView, depth = 0 }: NavigationItemProps) {
-  const Icon = item.icon;
+  const LucideIconCmp = item.icon;
   const hasChildren = item.children && item.children.length > 0;
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -46,14 +47,14 @@ export function NavigationItem({ item, isActive, onClick, currentView, depth = 0
       <button
         onClick={handleClick}
         className={`
-          w-full flex items-center justify-between px-4 py-2.5 rounded-cult
-          transition-all duration-200 text-sm
+          w-full flex items-center justify-between px-4 py-2.5 rounded
+          transition-colors duration-150 text-sm
           ${
             isActive
-              ? 'bg-cult-off-white text-cult-black font-medium shadow-sm'
+              ? 'bg-cult-accent text-cult-opaque-black font-medium'
               : hasActiveChild
-              ? 'bg-cult-charcoal/50 text-cult-white'
-              : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal'
+              ? 'bg-cult-surface-subtle text-cult-text-primary'
+              : 'text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-subtle'
           }
         `}
         style={paddingLeft ? { paddingLeft } : undefined}
@@ -61,7 +62,11 @@ export function NavigationItem({ item, isActive, onClick, currentView, depth = 0
         aria-expanded={hasChildren ? isExpanded : undefined}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <Icon className="w-4 h-4 flex-shrink-0" />
+          {item.iconName ? (
+            <KitIcon name={item.iconName} size={16} className="flex-shrink-0" />
+          ) : (
+            <LucideIconCmp className="w-4 h-4 flex-shrink-0" />
+          )}
           <span className="truncate">{item.label}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">

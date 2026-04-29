@@ -25,14 +25,14 @@ export function StrainPills({ strains }: StrainPillsProps) {
       {visible.map((s) => (
         <span
           key={s.name}
-          className="inline-flex items-center gap-1 bg-cult-charcoal text-cult-light-gray text-xs px-2 py-0.5 font-mono"
+          className="inline-flex items-center gap-1 bg-cult-surface-raised text-cult-text-muted text-xs px-2 py-0.5 font-mono"
         >
           {abbreviate(s.name)}
-          <span className="text-cult-medium-gray">&times;{s.plant_count}</span>
+          <span className="text-cult-border">&times;{s.plant_count}</span>
         </span>
       ))}
       {overflow > 0 && (
-        <span className="inline-flex items-center text-cult-medium-gray text-xs px-2 py-0.5">
+        <span className="inline-flex items-center text-cult-border text-xs px-2 py-0.5">
           +{overflow} more
         </span>
       )}

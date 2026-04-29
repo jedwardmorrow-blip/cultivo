@@ -68,15 +68,15 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
   return (
     <>
       <tr
-        className="border-b border-cult-charcoal/40 hover:bg-cult-charcoal/20 cursor-pointer"
+        className="border-b border-cult-surface-raised/40 hover:bg-cult-surface-raised/20 cursor-pointer"
         onClick={() => needsExplanation && setExpanded(e => !e)}
       >
-        <td className="px-3 py-2.5 text-[12px] text-cult-lighter-gray w-6">
+        <td className="px-3 py-2.5 text-[12px] text-cult-text-muted w-6">
           {needsExplanation && (expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />)}
         </td>
-        <td className="px-3 py-2.5 text-[12px] text-cult-white font-mono">{item.product_name}</td>
-        <td className="px-3 py-2.5 text-[12px] text-cult-lighter-gray tabular-nums text-right">{formatG(item.expected_qty)}</td>
-        <td className="px-3 py-2.5 text-[12px] text-cult-lighter-gray tabular-nums text-right">{formatG(item.actual_qty)}</td>
+        <td className="px-3 py-2.5 text-[12px] text-cult-text-primary font-mono">{item.product_name}</td>
+        <td className="px-3 py-2.5 text-[12px] text-cult-text-muted tabular-nums text-right">{formatG(item.expected_qty)}</td>
+        <td className="px-3 py-2.5 text-[12px] text-cult-text-muted tabular-nums text-right">{formatG(item.actual_qty)}</td>
         <td className={`px-3 py-2.5 text-[12px] tabular-nums text-right font-medium ${
           item.variance_g < -0.5 ? 'text-cult-danger' : item.variance_g > 0.5 ? 'text-cult-warning' : 'text-cult-success'
         }`}>
@@ -86,9 +86,9 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
       </tr>
 
       {expanded && needsExplanation && (
-        <tr className="border-b border-cult-charcoal/40">
+        <tr className="border-b border-cult-surface-raised/40">
           <td colSpan={6} className="px-3 py-3">
-            <div className="ml-6 space-y-3 bg-cult-charcoal/30 rounded p-3">
+            <div className="ml-6 space-y-3 bg-cult-surface-raised/30 rounded p-3">
               <div>
                 <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
                   Explanation <span className="text-cult-danger">*</span>
@@ -98,7 +98,7 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
                   onChange={e => setExplanation(e.target.value)}
                   rows={2}
                   placeholder="Explain the cause of the variance..."
-                  className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded resize-none"
+                  className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded resize-none"
                 />
               </div>
               <div>
@@ -110,7 +110,7 @@ function LineItemRow({ item, isSupervisor, onUpdate }: LineItemRowProps) {
                   onChange={e => setCorrectiveAction(e.target.value)}
                   rows={2}
                   placeholder="Steps taken or planned to prevent recurrence..."
-                  className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded resize-none"
+                  className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded resize-none"
                 />
               </div>
 
@@ -177,7 +177,7 @@ export function AuditReconciliationTable({ auditId, onAllResolved }: AuditReconc
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-10 bg-cult-charcoal rounded" />)}
+        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-10 bg-cult-surface-raised rounded" />)}
       </div>
     );
   }
@@ -230,10 +230,10 @@ export function AuditReconciliationTable({ auditId, onAllResolved }: AuditReconc
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded border border-cult-medium-gray/40">
+      <div className="overflow-x-auto rounded border border-cult-border/40">
         <table className="w-full">
           <thead>
-            <tr className="bg-cult-charcoal/60 border-b border-cult-medium-gray/40">
+            <tr className="bg-cult-surface-raised/60 border-b border-cult-border/40">
               <th className="w-6" />
               <th className="px-3 py-2 text-left text-[10px] text-cult-text-muted uppercase tracking-wider">Batch / Product</th>
               <th className="px-3 py-2 text-right text-[10px] text-cult-text-muted uppercase tracking-wider">Expected</th>

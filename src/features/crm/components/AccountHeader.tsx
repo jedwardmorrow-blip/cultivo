@@ -29,9 +29,9 @@ function getStatusColor(status: string): string {
   switch (status) {
     case 'active': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
     case 'prospect': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-    case 'inactive': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
+    case 'inactive': return 'bg-cult-border/30 text-cult-text-secondary border-cult-border/30';
     case 'churned': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
-    default: return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
+    default: return 'bg-cult-border/30 text-cult-text-secondary border-cult-border/30';
   }
 }
 
@@ -58,22 +58,22 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
   };
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6">
+    <div className="bg-cult-surface border border-cult-border rounded-lg p-6">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <Building2 className="w-6 h-6 text-cult-silver flex-shrink-0" />
-            <h1 className="text-2xl font-bold text-cult-white truncate">{account.name}</h1>
+            <Building2 className="w-6 h-6 text-cult-text-secondary flex-shrink-0" />
+            <h1 className="text-2xl font-bold text-cult-text-primary truncate">{account.name}</h1>
             {onEdit && (
               <button
                 onClick={onEdit}
-                className="p-1.5 text-cult-medium-gray hover:text-cult-white hover:bg-cult-dark-gray rounded transition-all"
+                className="p-1.5 text-cult-border hover:text-cult-text-primary hover:bg-cult-surface rounded transition-all"
                 title="Edit account info"
               >
                 <Pencil className="w-4 h-4" />
               </button>
             )}
-            <span className="text-sm font-mono text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded">
+            <span className="text-sm font-mono text-cult-text-muted bg-cult-surface px-2 py-0.5 rounded">
               {account.dispensary_code}
             </span>
             <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full uppercase border ${getStatusColor(account.account_status)}`}>
@@ -110,8 +110,8 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {showPipelineMenu && (
-                  <div className="absolute top-full left-0 mt-1 z-50 bg-cult-near-black border border-cult-medium-gray rounded-lg shadow-xl p-1.5 min-w-[160px]">
-                    <p className="px-2 py-1 text-xs text-cult-silver uppercase tracking-wider">Pipeline Stage</p>
+                  <div className="absolute top-full left-0 mt-1 z-50 bg-cult-surface border border-cult-border rounded-lg p-1.5 min-w-[160px]">
+                    <p className="px-2 py-1 text-xs text-cult-text-secondary uppercase tracking-wider">Pipeline Stage</p>
                     {PIPELINE_STAGES.map((s) => (
                       <button
                         key={s.key}
@@ -119,7 +119,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
                         className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors ${
                           s.key === account.pipeline_stage
                             ? `${s.color} font-bold`
-                            : 'text-cult-light-gray hover:bg-cult-dark-gray hover:text-cult-white'
+                            : 'text-cult-text-muted hover:bg-cult-surface hover:text-cult-text-primary'
                         }`}
                       >
                         {s.label}
@@ -133,32 +133,32 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {account.city && (
-              <div className="flex items-center gap-2 text-sm text-cult-light-gray">
-                <MapPin className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-cult-text-muted">
+                <MapPin className="w-4 h-4 text-cult-border flex-shrink-0" />
                 <span>{[account.city, account.state].filter(Boolean).join(', ')}</span>
               </div>
             )}
             {account.phone && (
-              <div className="flex items-center gap-2 text-sm text-cult-light-gray">
-                <Phone className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
-                <a href={`tel:${account.phone}`} className="hover:text-cult-white transition-colors">{account.phone}</a>
+              <div className="flex items-center gap-2 text-sm text-cult-text-muted">
+                <Phone className="w-4 h-4 text-cult-border flex-shrink-0" />
+                <a href={`tel:${account.phone}`} className="hover:text-cult-text-primary transition-colors">{account.phone}</a>
               </div>
             )}
             {account.email && (
-              <div className="flex items-center gap-2 text-sm text-cult-light-gray min-w-0">
-                <Mail className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-cult-text-muted min-w-0">
+                <Mail className="w-4 h-4 text-cult-border flex-shrink-0" />
                 <span className="truncate">{account.email.split(',')[0].trim()}</span>
               </div>
             )}
             {account.license_number && (
-              <div className="flex items-center gap-2 text-sm text-cult-light-gray">
-                <Shield className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-cult-text-muted">
+                <Shield className="w-4 h-4 text-cult-border flex-shrink-0" />
                 <span className="truncate">{account.license_number}</span>
               </div>
             )}
             {account.default_payment_terms && (
-              <div className="flex items-center gap-2 text-sm text-cult-light-gray">
-                <FileText className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-cult-text-muted">
+                <FileText className="w-4 h-4 text-cult-border flex-shrink-0" />
                 <span>{account.default_payment_terms}</span>
               </div>
             )}
@@ -167,7 +167,7 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
           {account.tags.length > 0 && (
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               {account.tags.map((tag) => (
-                <span key={tag} className="px-2 py-0.5 text-xs font-medium bg-cult-dark-gray text-cult-silver rounded-full border border-cult-charcoal">
+                <span key={tag} className="px-2 py-0.5 text-xs font-medium bg-cult-surface text-cult-text-secondary rounded-full border border-cult-surface-raised">
                   {tag}
                 </span>
               ))}
@@ -197,8 +197,8 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
             )}
           </div>
           {monthlyRevenue && monthlyRevenue.some((v) => v > 0) && (
-            <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50 w-full">
-              <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-2">6-Month Revenue Trend</p>
+            <div className="bg-cult-surface/50 rounded-lg p-3 border border-cult-surface-raised/50 w-full">
+              <p className="text-xs font-medium uppercase tracking-wider text-cult-text-secondary mb-2">6-Month Revenue Trend</p>
               <RevenueSparkline data={monthlyRevenue} width={200} height={40} />
             </div>
           )}
@@ -234,10 +234,10 @@ export function AccountHeader({ account, healthScore, monthlyRevenue, onCreateOr
 }
 
 function MetricBlock({ label, value, accent }: { label: string; value: string; accent?: 'success' | 'warning' }) {
-  const valueColor = accent === 'success' ? 'text-cult-success' : accent === 'warning' ? 'text-cult-warning' : 'text-cult-white';
+  const valueColor = accent === 'success' ? 'text-cult-success' : accent === 'warning' ? 'text-cult-warning' : 'text-cult-text-primary';
   return (
-    <div className="bg-cult-dark-gray/50 rounded-lg p-3 border border-cult-charcoal/50">
-      <p className="text-xs font-medium uppercase tracking-wider text-cult-silver mb-1">{label}</p>
+    <div className="bg-cult-surface/50 rounded-lg p-3 border border-cult-surface-raised/50">
+      <p className="text-xs font-medium uppercase tracking-wider text-cult-text-secondary mb-1">{label}</p>
       <p className={`text-lg font-bold ${valueColor}`}>{value}</p>
     </div>
   );

@@ -37,7 +37,7 @@ export function OrderDemandWidget() {
     return (
       <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6">
         <div className="flex items-center justify-center py-8">
-          <div className="text-cult-light-gray">Loading order demand...</div>
+          <div className="text-cult-text-muted">Loading order demand...</div>
         </div>
       </div>
     );
@@ -48,15 +48,15 @@ export function OrderDemandWidget() {
       <div className="border-b border-cult-border p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <Package className="w-6 h-6 text-cult-white" />
-            <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+            <Package className="w-6 h-6 text-cult-text-primary" />
+            <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
               Order Demand Overview
             </h3>
           </div>
           <select
             value={selectedStrain}
             onChange={(e) => setSelectedStrain(e.target.value)}
-            className="px-4 py-2 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+            className="px-4 py-2 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
           >
             <option value="all">All Strains</option>
             {strains.map(strain => (
@@ -69,19 +69,19 @@ export function OrderDemandWidget() {
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-cult-text-secondary" />
-              <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Total Demand</span>
+              <span className="text-xs text-cult-text-muted uppercase tracking-wider">Total Demand</span>
             </div>
-            <div className="text-2xl font-bold text-cult-white">{totalUnitsNeeded}</div>
-            <div className="text-xs text-cult-light-gray mt-1">units needed</div>
+            <div className="text-2xl font-bold text-cult-text-primary">{totalUnitsNeeded}</div>
+            <div className="text-xs text-cult-text-muted mt-1">units needed</div>
           </div>
 
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-cult-success" />
-              <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Packaged</span>
+              <span className="text-xs text-cult-text-muted uppercase tracking-wider">Packaged</span>
             </div>
             <div className="text-2xl font-bold text-cult-success">{totalPackagedAvailable}</div>
-            <div className="text-xs text-cult-light-gray mt-1">
+            <div className="text-xs text-cult-text-muted mt-1">
               {totalUnitsNeeded > 0
                 ? `${Math.round((totalPackagedAvailable / totalUnitsNeeded) * 100)}% ready`
                 : '0% ready'
@@ -92,10 +92,10 @@ export function OrderDemandWidget() {
           <div className="bg-cult-surface-overlay border border-cult-border rounded-cult p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="w-4 h-4 text-cult-warning" />
-              <span className="text-xs text-cult-lighter-gray uppercase tracking-wider">Still Needed</span>
+              <span className="text-xs text-cult-text-muted uppercase tracking-wider">Still Needed</span>
             </div>
             <div className="text-2xl font-bold text-cult-warning">{totalUnitsShortfall}</div>
-            <div className="text-xs text-cult-light-gray mt-1">to package</div>
+            <div className="text-xs text-cult-text-muted mt-1">to package</div>
           </div>
         </div>
       </div>
@@ -103,7 +103,7 @@ export function OrderDemandWidget() {
       <div className="p-6">
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {filteredRequirements.length === 0 ? (
-            <div className="text-center py-8 text-cult-lighter-gray">
+            <div className="text-center py-8 text-cult-text-muted">
               No pending orders with inventory requirements
             </div>
           ) : (
@@ -114,17 +114,17 @@ export function OrderDemandWidget() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h4 className="text-cult-white font-bold">{req.product_name}</h4>
-                    <div className="text-sm text-cult-light-gray mt-1">
+                    <h4 className="text-cult-text-primary font-bold">{req.product_name}</h4>
+                    <div className="text-sm text-cult-text-muted mt-1">
                       {req.strain} • {req.order_count} order{req.order_count !== 1 ? 's' : ''}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-cult-white">
+                    <div className="text-lg font-bold text-cult-text-primary">
                       {req.total_units_needed} units
                     </div>
                     {req.earliest_delivery_date && (
-                      <div className="text-xs text-cult-lighter-gray mt-1">
+                      <div className="text-xs text-cult-text-muted mt-1">
                         Due: {new Date(req.earliest_delivery_date).toLocaleDateString()}
                       </div>
                     )}
@@ -133,7 +133,7 @@ export function OrderDemandWidget() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-cult-border">
                   <div>
-                    <div className="text-xs text-cult-lighter-gray mb-1">Packaged</div>
+                    <div className="text-xs text-cult-text-muted mb-1">Packaged</div>
                     <div className={`font-bold ${
                       req.packaged_units_available >= req.total_units_needed
                         ? 'text-cult-success'
@@ -143,13 +143,13 @@ export function OrderDemandWidget() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-cult-lighter-gray mb-1">Bulk Available</div>
-                    <div className="text-cult-white font-bold">
+                    <div className="text-xs text-cult-text-muted mb-1">Bulk Available</div>
+                    <div className="text-cult-text-primary font-bold">
                       {req.bulk_grams_available.toFixed(0)}g
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-cult-lighter-gray mb-1">Bucked Needed</div>
+                    <div className="text-xs text-cult-text-muted mb-1">Bucked Needed</div>
                     <div className={`font-bold ${
                       req.bucked_grams_needed > 0 ? 'text-cult-danger' : 'text-cult-success'
                     }`}>

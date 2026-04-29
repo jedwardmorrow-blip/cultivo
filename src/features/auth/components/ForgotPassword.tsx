@@ -56,7 +56,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
             <button
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-white/[0.07] hover:border-cult-border-strong transition-all"
+              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-cult-surface-raised hover:border-cult-border-strong transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
@@ -114,7 +114,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
             <button
               type="button"
               onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-white/[0.07] hover:border-cult-border-strong transition-all"
+              className="w-full flex items-center justify-center gap-2 glass-input rounded-cult py-3 text-cult-text-primary font-medium uppercase tracking-wider hover:bg-cult-surface-raised hover:border-cult-border-strong transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

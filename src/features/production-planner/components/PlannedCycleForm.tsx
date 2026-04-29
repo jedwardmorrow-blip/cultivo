@@ -115,16 +115,16 @@ export function PlannedCycleForm({ room, strainStats, editing, onSave, onClose }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md bg-cult-bg border border-cult-border rounded-lg shadow-2xl">
+      <div className="w-full max-w-md bg-cult-bg border border-cult-border rounded-lg">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-cult-border">
           <div>
-            <h2 className="text-base font-bold text-cult-white">
+            <h2 className="text-base font-bold text-cult-text-primary">
               {editing ? 'Edit Planned Cycle' : 'New Planned Cycle'}
             </h2>
             <p className="text-xs text-cult-text-muted mt-0.5">{room.room_name}</p>
           </div>
-          <button onClick={onClose} className="text-cult-text-muted hover:text-cult-white transition-colors">
+          <button onClick={onClose} className="text-cult-text-muted hover:text-cult-text-primary transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -140,7 +140,7 @@ export function PlannedCycleForm({ room, strainStats, editing, onSave, onClose }
               value={strainId}
               onChange={(e) => setStrainId(e.target.value)}
               disabled={!!editing}
-              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-white disabled:opacity-50 focus:outline-none focus:border-cult-accent"
+              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary disabled:opacity-50 focus:outline-none focus:border-cult-accent"
             >
               <option value="">Select strain…</option>
               {activeStrains.map((s) => (
@@ -163,7 +163,7 @@ export function PlannedCycleForm({ room, strainStats, editing, onSave, onClose }
               value={plantCount}
               onChange={(e) => setPlantCount(e.target.value)}
               placeholder="e.g. 60"
-              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-white placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent"
+              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent"
             />
             {room.capacity_plants && (
               <p className="text-[11px] text-cult-text-muted mt-1">
@@ -181,7 +181,7 @@ export function PlannedCycleForm({ room, strainStats, editing, onSave, onClose }
               type="date"
               value={flowerStartDate}
               onChange={(e) => setFlowerStartDate(e.target.value)}
-              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-white focus:outline-none focus:border-cult-accent [color-scheme:dark]"
+              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent [color-scheme:dark]"
             />
           </div>
 
@@ -229,7 +229,7 @@ export function PlannedCycleForm({ room, strainStats, editing, onSave, onClose }
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-1.5 text-sm text-cult-text-secondary hover:text-cult-white border border-cult-border rounded transition-colors"
+                className="px-4 py-1.5 text-sm text-cult-text-secondary hover:text-cult-text-primary border border-cult-border rounded transition-colors"
               >
                 Cancel
               </button>
@@ -265,7 +265,7 @@ function ComputedField({
     : '—';
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className={highlight ? 'text-cult-white font-medium' : 'text-cult-text-muted'}>
+      <span className={highlight ? 'text-cult-text-primary font-medium' : 'text-cult-text-muted'}>
         {label}
         {note && <span className="ml-1 text-cult-text-muted font-normal">{note}</span>}
       </span>

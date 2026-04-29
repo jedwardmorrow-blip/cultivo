@@ -1,4 +1,5 @@
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { Icon as KitIcon } from '@/shared/icons';
 import { NavigationItem } from './NavigationItem';
 import type { MenuSection } from './types';
 
@@ -19,7 +20,7 @@ export function NavigationSection({
   onNavigate,
   isAdmin,
 }: NavigationSectionProps) {
-  const Icon = section.icon;
+  const LucideIconCmp = section.icon;
   const hasActiveItem = section.items.some((item) => item.id === currentView);
 
   const visibleItems = section.items.filter((item) => {
@@ -38,14 +39,18 @@ export function NavigationSection({
           transition-colors duration-200
           ${
             hasActiveItem
-              ? 'text-cult-white'
-              : 'text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50'
+              ? 'text-cult-text-primary'
+              : 'text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface-raised/50'
           }
         `}
         aria-expanded={isExpanded}
       >
         <div className="flex items-center gap-2.5">
-          <Icon className="w-4 h-4" />
+          {section.iconName ? (
+            <KitIcon name={section.iconName} size={16} />
+          ) : (
+            <LucideIconCmp className="w-4 h-4" />
+          )}
           <span className="text-xs font-bold uppercase tracking-wider">{section.label}</span>
         </div>
         {isExpanded ? (

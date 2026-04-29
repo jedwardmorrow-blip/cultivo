@@ -71,7 +71,7 @@ export function PipelineFilterBar({
         <select
           value={sortMode}
           onChange={e => setSortMode(e.target.value as SortMode)}
-          className="text-xs font-semibold rounded-md px-2 py-[3px] border cursor-pointer outline-none bg-cult-black text-neutral-400 border-cult-medium-gray/40"
+          className="text-xs font-semibold rounded-md px-2 py-[3px] border cursor-pointer outline-none bg-cult-black text-neutral-400 border-cult-border/40"
         >
           <option value="revenue">Revenue</option>
           <option value="health">Health</option>

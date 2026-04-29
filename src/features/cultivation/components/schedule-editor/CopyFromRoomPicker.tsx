@@ -24,19 +24,19 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold text-cult-info uppercase tracking-wider">Copy schedules to {targetRoomCode}</p>
-          <p className="text-xs text-cult-dark-gray mt-0.5">Select a source room below</p>
+          <p className="text-xs text-cult-surface mt-0.5">Select a source room below</p>
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="px-2.5 py-1 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+          className="px-2.5 py-1 text-xs text-cult-border hover:text-cult-text-muted transition-colors"
         >
           Cancel
         </button>
       </div>
 
       {roomsWithSchedules.length === 0 ? (
-        <p className="text-xs text-cult-medium-gray py-4 text-center">No other rooms have schedules to copy from</p>
+        <p className="text-xs text-cult-border py-4 text-center">No other rooms have schedules to copy from</p>
       ) : (
         <div className="space-y-1.5">
           {roomsWithSchedules.map((room) => {
@@ -48,17 +48,17 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
                 type="button"
                 disabled={copying}
                 onClick={() => onCopy(room.id)}
-                className="w-full text-left bg-cult-charcoal/30 border border-cult-dark-gray/60 hover:border-cult-info/40 hover:bg-cult-info-muted p-3 transition-all disabled:opacity-50"
+                className="w-full text-left bg-cult-surface-raised/30 border border-cult-surface/60 hover:border-cult-info/40 hover:bg-cult-info-muted p-3 transition-all disabled:opacity-50"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.color }} />
-                    <span className="text-xs font-bold text-cult-white uppercase tracking-wider font-mono">{room.room_code}</span>
+                    <span className="text-xs font-bold text-cult-text-primary uppercase tracking-wider font-mono">{room.room_code}</span>
                     <span className={`px-1.5 py-0.5 text-xs uppercase tracking-wider rounded-sm ${meta.bg} ${meta.border} border`} style={{ color: meta.color }}>
                       {meta.label}
                     </span>
                   </div>
-                  <span className="text-xs text-cult-medium-gray">
+                  <span className="text-xs text-cult-border">
                     {roomSchedules.length} schedule{roomSchedules.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -73,7 +73,7 @@ export function CopyFromRoomPicker({ targetRoomId, targetRoomCode, allRooms, sch
                       >
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />
                         {cfg.label}
-                        <span className="text-cult-dark-gray ml-0.5">{s.recurrence === 'daily' ? 'D' : s.recurrence === 'weekly' ? 'W' : s.recurrence === 'biweekly' ? 'B' : 'M'}</span>
+                        <span className="text-cult-surface ml-0.5">{s.recurrence === 'daily' ? 'D' : s.recurrence === 'weekly' ? 'W' : s.recurrence === 'biweekly' ? 'B' : 'M'}</span>
                       </span>
                     );
                   })}

@@ -61,7 +61,7 @@ export function TripPlanCompleteForm({ plan, onClose, onCompleted }: TripPlanCom
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-lg">
+      <div className="bg-gray-900 rounded-lg w-full max-w-lg">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
           <div>

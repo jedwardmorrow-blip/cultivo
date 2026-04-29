@@ -66,27 +66,27 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
       onClick={onClose}
     >
       <div
-        className="bg-cult-near-black border-2 border-cult-light-gray shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+        className="bg-cult-surface border-2 border-cult-text-muted max-w-2xl w-full max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 border-b-2 border-cult-medium-gray bg-cult-black">
+        <div className="p-5 border-b-2 border-cult-border bg-cult-black">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+              <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                 {date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </h2>
               <div className="flex items-center gap-4 mt-1">
-                <span className="text-xs text-cult-light-gray">
+                <span className="text-xs text-cult-text-muted">
                   {orders.length} order{orders.length !== 1 ? 's' : ''}
                 </span>
-                <span className="text-xs text-cult-light-gray">
+                <span className="text-xs text-cult-text-muted">
                   {activeZones.length} zone{activeZones.length !== 1 ? 's' : ''}
                 </span>
-                <span className="text-xs text-cult-light-gray">
+                <span className="text-xs text-cult-text-muted">
                   {readyCount}/{orders.length} ready
                 </span>
                 {totalDuration > 0 && (
-                  <span className="text-xs text-cult-light-gray">
+                  <span className="text-xs text-cult-text-muted">
                     ~{formatDuration(totalDuration)} est. drive
                   </span>
                 )}
@@ -94,7 +94,7 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-cult-light-gray hover:text-cult-white transition-colors rounded-cult hover:bg-cult-charcoal"
+              className="p-1.5 text-cult-text-muted hover:text-cult-text-primary transition-colors rounded-cult hover:bg-cult-surface-raised"
             >
               <X className="w-5 h-5" />
             </button>
@@ -107,43 +107,43 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
             const zoneValue = zoneOrders.reduce((sum, o) => sum + o.total_amount, 0);
             return (
               <div key={zone.id}>
-                <div className={`flex items-center justify-between px-5 py-2 ${zone.bgColor} border-b border-cult-charcoal/50`}>
+                <div className={`flex items-center justify-between px-5 py-2 ${zone.bgColor} border-b border-cult-surface-raised/50`}>
                   <div className="flex items-center gap-2">
                     <div className={`w-2.5 h-2.5 rounded-full ${zone.dotColor}`} />
                     <span className={`text-xs font-semibold uppercase tracking-wider ${zone.color}`}>
                       {zone.label}
                     </span>
-                    <span className="text-xs text-cult-lighter-gray">
+                    <span className="text-xs text-cult-text-muted">
                       ({zoneOrders.length})
                     </span>
                   </div>
-                  <span className="text-xs text-cult-light-gray font-medium">
+                  <span className="text-xs text-cult-text-muted font-medium">
                     {formatCurrency(zoneValue)}
                   </span>
                 </div>
 
-                <div className="divide-y divide-cult-charcoal/50">
+                <div className="divide-y divide-cult-surface-raised/50">
                   {zoneOrders.map(order => {
                     const miles = getApproxMiles(order.customer_lat, order.customer_lon);
                     return (
                       <div key={order.id} className="hover:bg-cult-black/50 transition-colors">
                         <div className="flex items-center px-5 py-3">
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-cult-white">
+                            <div className="text-sm font-medium text-cult-text-primary">
                               {order.customer_name}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-cult-lighter-gray">{order.order_number}</span>
+                              <span className="text-xs text-cult-text-muted">{order.order_number}</span>
                               {miles !== null && (
                                 <>
-                                  <span className="text-xs text-cult-medium-gray">&middot;</span>
-                                  <span className="text-xs text-cult-lighter-gray">{miles} mi</span>
+                                  <span className="text-xs text-cult-border">&middot;</span>
+                                  <span className="text-xs text-cult-text-muted">{miles} mi</span>
                                 </>
                               )}
                               {order.cached_duration_seconds && order.cached_duration_seconds > 0 && (
                                 <>
-                                  <span className="text-xs text-cult-medium-gray">&middot;</span>
-                                  <span className="text-xs text-cult-lighter-gray">
+                                  <span className="text-xs text-cult-border">&middot;</span>
+                                  <span className="text-xs text-cult-text-muted">
                                     {formatDuration(order.cached_duration_seconds)}
                                   </span>
                                 </>
@@ -152,7 +152,7 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
                           </div>
                           <div className="flex items-center gap-3 flex-shrink-0">
                             <ReadinessBadge status={order.status} />
-                            <span className="text-sm font-semibold text-cult-white">
+                            <span className="text-sm font-semibold text-cult-text-primary">
                               {formatCurrency(order.total_amount)}
                             </span>
                           </div>
@@ -169,17 +169,17 @@ export function DayDetailModal({ date, orders, onClose, onSelectOrder }: DayDeta
           })}
         </div>
 
-        <div className="p-4 border-t-2 border-cult-medium-gray bg-cult-black">
+        <div className="p-4 border-t-2 border-cult-border bg-cult-black">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {activeZones.map(zone => (
                 <div key={zone.id} className="flex items-center gap-1">
                   <div className={`w-2 h-2 rounded-full ${zone.dotColor}`} />
-                  <span className="text-xs text-cult-lighter-gray">{zone.label}</span>
+                  <span className="text-xs text-cult-text-muted">{zone.label}</span>
                 </div>
               ))}
             </div>
-            <div className="text-base font-semibold text-cult-white">
+            <div className="text-base font-semibold text-cult-text-primary">
               Total: <span className="text-cult-success">{formatCurrency(totalValue)}</span>
             </div>
           </div>

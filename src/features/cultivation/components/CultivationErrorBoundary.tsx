@@ -46,10 +46,10 @@ export class CultivationErrorBoundary extends Component<Props, State> {
           <div className="flex items-center gap-3 rounded-lg border border-cult-danger bg-cult-danger-muted px-6 py-4 max-w-md">
             <AlertTriangle className="h-6 w-6 text-cult-danger flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-cult-white">
+              <h3 className="text-sm font-semibold text-cult-text-primary">
                 {isChunk ? 'App update available' : 'Something went wrong in Cultivation'}
               </h3>
-              <p className="text-xs text-cult-medium-gray mt-1">
+              <p className="text-xs text-cult-border mt-1">
                 {isChunk
                   ? 'A new version has been deployed. Please reload to get the latest.'
                   : (this.state.error?.message || 'An unexpected error occurred.')}
@@ -64,7 +64,7 @@ export class CultivationErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false, error: null });
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-cult-accent text-cult-opaque-black text-sm font-medium hover:bg-cult-text-muted transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
             {isChunk ? 'Reload Page' : 'Try Again'}

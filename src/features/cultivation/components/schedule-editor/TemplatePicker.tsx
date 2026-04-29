@@ -19,19 +19,19 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold text-cult-warning uppercase tracking-wider">Apply Template</p>
-          <p className="text-xs text-cult-dark-gray mt-0.5">Select a template to apply its schedules</p>
+          <p className="text-xs text-cult-surface mt-0.5">Select a template to apply its schedules</p>
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="px-2.5 py-1 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+          className="px-2.5 py-1 text-xs text-cult-border hover:text-cult-text-muted transition-colors"
         >
           Cancel
         </button>
       </div>
 
       {matchingTemplates.length === 0 && otherTemplates.length === 0 ? (
-        <p className="text-xs text-cult-medium-gray py-4 text-center">No templates available yet. Create schedules and save them as a template.</p>
+        <p className="text-xs text-cult-border py-4 text-center">No templates available yet. Create schedules and save them as a template.</p>
       ) : (
         <div className="space-y-1.5">
           {[...matchingTemplates, ...otherTemplates].map((tmpl) => {
@@ -45,12 +45,12 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
                 className={`w-full text-left border p-3 transition-all disabled:opacity-50 ${
                   isMatch
                     ? 'bg-cult-warning-muted border-cult-warning/30 hover:border-cult-warning/50 hover:bg-cult-warning-muted'
-                    : 'bg-cult-charcoal/30 border-cult-dark-gray/60 hover:border-cult-medium-gray hover:bg-cult-charcoal/50'
+                    : 'bg-cult-surface-raised/30 border-cult-surface/60 hover:border-cult-border hover:bg-cult-surface-raised/50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-cult-white">{tmpl.name}</span>
+                    <span className="text-xs font-bold text-cult-text-primary">{tmpl.name}</span>
                     {tmpl.is_default && (
                       <span className="text-[9px] text-cult-warning uppercase font-bold px-1 py-0.5 bg-cult-warning-muted border border-cult-warning/20 rounded-sm">
                         Default
@@ -62,10 +62,10 @@ export function TemplatePicker({ templates, roomType, applying, onApply, onCance
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-cult-dark-gray uppercase">{tmpl.room_type}</span>
+                  <span className="text-[10px] text-cult-surface uppercase">{tmpl.room_type}</span>
                 </div>
                 {tmpl.description && (
-                  <p className="text-[11px] text-cult-medium-gray mb-2">{tmpl.description}</p>
+                  <p className="text-[11px] text-cult-border mb-2">{tmpl.description}</p>
                 )}
                 <div className="flex flex-wrap gap-1">
                   {tmpl.schedules.map((s, i) => {

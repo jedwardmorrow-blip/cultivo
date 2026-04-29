@@ -85,7 +85,7 @@ export function CustomerForm({ customer, isOpen, onClose, onSave, isSubmitting }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2">
               Basic Information
             </h3>
 
@@ -106,7 +106,7 @@ export function CustomerForm({ customer, isOpen, onClose, onSave, isSubmitting }
               />
             </FormField>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               License Information
             </h3>
 
@@ -136,7 +136,7 @@ export function CustomerForm({ customer, isOpen, onClose, onSave, isSubmitting }
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2">
               Delivery Address
             </h3>
 
@@ -176,7 +176,7 @@ export function CustomerForm({ customer, isOpen, onClose, onSave, isSubmitting }
               />
             </FormField>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               Contact Information
             </h3>
 

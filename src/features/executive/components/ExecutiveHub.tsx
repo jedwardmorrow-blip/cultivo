@@ -43,7 +43,7 @@ function DeptHealthChips({ depts, loading }: { depts: DeptHealth[]; loading: boo
   if (loading) {
     return (
       <div className="flex gap-3 flex-wrap animate-pulse">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 w-36 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 w-36 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -55,7 +55,7 @@ function DeptHealthChips({ depts, loading }: { depts: DeptHealth[]; loading: boo
         return (
           <div
             key={d.name}
-            className={`flex items-center gap-2 px-3 py-2 rounded-cult border border-cult-charcoal/60 ${s.bg}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-cult border border-cult-surface-raised/60 ${s.bg}`}
           >
             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
             <div>
@@ -73,7 +73,7 @@ function AttentionAlertStrip({ alerts, loading }: { alerts: Alert[]; loading: bo
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3].map(i => <div key={i} className="h-10 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-10 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -92,7 +92,7 @@ function AttentionAlertStrip({ alerts, loading }: { alerts: Alert[]; loading: bo
       {alerts.map((alert, i) => (
         <div
           key={i}
-          className="flex items-start gap-3 py-2 border-b border-cult-charcoal/40 last:border-b-0"
+          className="flex items-start gap-3 py-2 border-b border-cult-surface-raised/40 last:border-b-0"
         >
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded border flex-shrink-0 mt-0.5 ${alertSeverityStyle[alert.severity]}`}
@@ -100,7 +100,7 @@ function AttentionAlertStrip({ alerts, loading }: { alerts: Alert[]; loading: bo
             {alert.type}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[12px] text-cult-off-white">{alert.label}</div>
+            <div className="text-[12px] text-cult-text-primary">{alert.label}</div>
             <div className="text-[11px] text-cult-text-faint">{alert.detail}</div>
           </div>
         </div>
@@ -120,14 +120,14 @@ function RevenueSummaryPanel({
 }) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="bg-cult-charcoal/30 rounded-cult p-4">
+      <div className="bg-cult-surface-raised/30 rounded-cult p-4">
         <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">Recognized (30d)</div>
         <div className="text-[24px] font-semibold text-cult-success tabular-nums">
           {loading ? '—' : formatCurrencyShort(recognized)}
         </div>
         <div className="text-[11px] text-cult-text-faint mt-1">completed orders</div>
       </div>
-      <div className="bg-cult-charcoal/30 rounded-cult p-4">
+      <div className="bg-cult-surface-raised/30 rounded-cult p-4">
         <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">Pipeline (open)</div>
         <div className="flex items-center gap-2">
           <div className="text-[24px] font-semibold text-cult-accent tabular-nums">
@@ -431,7 +431,7 @@ export function ExecutiveHub() {
           {showDetails ? (
             <div className="space-y-6 mt-4">
               {/* Department Health */}
-              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider">
                     Department Health
@@ -445,7 +445,7 @@ export function ExecutiveHub() {
               </div>
 
               {/* Attention Alert Strip */}
-              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
                 <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-cult-warning" />
                   Attention Required
@@ -454,7 +454,7 @@ export function ExecutiveHub() {
               </div>
 
               {/* Revenue Summary */}
-              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
                 <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
                   Revenue Summary
@@ -467,7 +467,7 @@ export function ExecutiveHub() {
               </div>
 
               {/* Headcount Activity */}
-              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
                 <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
                   Headcount Activity
                 </h2>
@@ -480,7 +480,7 @@ export function ExecutiveHub() {
               {kpis.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                   {kpis.map((k) => (
-                    <div key={k.label} className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-3">
+                    <div key={k.label} className="bg-cult-surface border border-cult-surface rounded-cult p-3">
                       <div className="text-[10px] uppercase tracking-widest text-cult-text-muted font-mono mb-1">
                         {k.label}
                       </div>
