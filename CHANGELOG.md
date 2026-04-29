@@ -4,6 +4,78 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-29 - Cultivation Command Center · Claude Design v2 port (PR1 + PR1.5)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Section actions wired (move, kill, print group, print plants, advance)
+**Branch:** `cmd-center-a-prototype-port`
+**Brain canon:** `cultivation_command_center_brief_v1` (id `c961c2f9-172b-406d-b871-da1740560780`)
+
+### What changed
+
+Replaces the 3,121-line legacy `CommandCenter.tsx` (Liquid Glass aesthetic, framer-motion, hardcoded hex) with a port of the Claude Design v2 prototype against the new Cultivo working-instrument DS. Hairline only, no glass, no shadow, no gradient, no backdrop-blur.
+
+### New surface structure
+
+- Identity strip + cycle strip at the top.
+- Card-swap body: tasks main panel by default, four compact rail cards (Schedule, Plants, Tables, Environment) that swap into the main panel on click.
+- Two-stage featured-tile click on the rooms grid (first click features col-span-2 row-span-2, second click expands).
+- Silence-is-signal AttentionStrip (urgency >= 2 only).
+- Always-on Labor strip with sparkline trend tail.
+- Empty rooms collapse into a single hairline strip; active rooms section by stage (Flower / Veg / Clone / Mother).
+- Tables + Sections layout rotated 90° (tables side-by-side, sections vertical).
+- View Transitions API on tile-to-expanded morph (Chrome / Edge); fallback elsewhere.
+
+### New atoms / molecules
+
+- `cultivation/components/CommandCenter/index.tsx` — top-level component (replaces legacy file).
+- `cultivation/components/CommandCenter/useCommandCenterData.ts` — production-to-prototype field adapter.
+- `cultivation/components/CommandCenter/CommandCenter.css` — full hairline DS styles.
+- `cultivation/types/taskSchemas.ts` — unified schema marrying `TASK_TYPE_CONFIG` with completion fields per task_type. Environmental Check expanded to 7 fields.
+- `cultivation/constants/cyclePhaseMarkers.ts` — Stretch / Bulk / Flush / Ripen for flower; Establish / Growth / Flip for veg; Misting / Transplant for clone.
+- `cultivation/constants/environmentalTargets.ts` — manual targets per room type (Temp, RH, VPD, CO2). Renders with "manual" tag; flips to "live" when sensor integration lands.
+
+### Section actions (PR1.5)
+
+Click a section in the Tables view to reveal:
+- Move (mounts existing `MoveToRoomModal` with split-and-move support).
+- Print group (mounts `PlantGroupLabelPrintModal` via `usePlantGroupLabel.openGroupLabel`).
+- Print plants (per-plant labels via `openPlantLabels`).
+- Advance → next stage (clone → veg → flower → harvested) with confirmation modal.
+- Kill (mounts existing `DeadPlantForm`).
+
+### Behavior preserved end-to-end
+
+Every plant-print, move, split-and-move, kill, and stage-advance behavior from legacy reaches the same services through the same hooks. Zero feature loss for the floor-actions surface.
+
+### Behavior parked for PR2 / PR3
+
+- Multi-day reschedule calendar with dnd-kit (PR2)
+- Schedule auto-generation on mount (PR2)
+- Multi-person task assignment + promote-to-lead (PR2)
+- Per-task-type log writes (batch_tank_mix_log, scouting_log, ipm_spray_log, etc) (PR2)
+- Inline tank mix recipe inside batch_tank_mix tasks (PR3)
+- Inline + global add task (PR3)
+- Interactive feed recipe scaling (PR3)
+- Cross-room labor aggregation drawer (PR3)
+
+### Reference
+
+- Legacy file preserved at `_inbound/cmd-center-prototype-2026-04-29/CommandCenter.legacy.tsx` (3,121 lines, untouched).
+- Prototype HTML + JSX at `_inbound/cmd-center-prototype-2026-04-29/`.
+- Brain rows promoted: `cultivo_atom_pending_cell_v1`, `cultivo_molecule_phase_hero_v1`, `cultivo_atom_sparkline_status_tail_v1`, `cultivation_task_completion_schema_v1`.
+
+### Design decisions locked
+
+A. Two-stage featured-tile click stays.
+B. FAB pattern dropped; replaced by inline `+ add` in task list header and header-right global add.
+C. Brief written before implementation (this row exists; the brief is canon).
+D. All 11 carry-forward features stay through the PR1 → PR3 arc.
+E. Single-file port (not feature-aligned decomposition) for v1.
+F. Temp / humidity placeholder cells with manual tag, JSONB log for environmental_check until v2 sensor table.
+
+---
+
 ## 2026-04-11 - Plant Audit UI (Phase A — baseline reset tool)
 
 **Type:** Feature — Cultivation

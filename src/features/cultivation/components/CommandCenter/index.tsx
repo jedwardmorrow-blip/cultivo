@@ -1,0 +1,1259 @@
+/**
+ * Cultivation Command Center — port of Claude Design v2 prototype
+ *
+ * Source canon: cultivation_command_center_brief_v1 (brain row c961c2f9)
+ * Prototype reference: _inbound/cmd-center-prototype-2026-04-29/
+ * Legacy reference: _inbound/cmd-center-prototype-2026-04-29/CommandCenter.legacy.tsx
+ *
+ * PR1 scope: prototype port + tokens + task complete + harvest + env placeholders.
+ * PR2 adds dnd-kit reschedule, PinnedCellPopover, label printing, move-with-split,
+ *     dead plant logging, stage advance.
+ * PR3 adds lead promotion, tank mix inline editor, labor drawer, global add.
+ */
+
+import { useState, useMemo, useCallback } from 'react';
+import { useCommandCenterData, type RoomShape, type TaskShape } from './useCommandCenterData';
+import { CYCLE_PHASE_MARKERS } from '../../constants/cyclePhaseMarkers';
+import { getTaskCompletionSchema, type TaskCompletionField } from '../../types/taskSchemas';
+import { TASK_TYPE_CONFIG, type TaskType, type TaskStatus } from '../../types';
+import { useRoomSections } from '../../hooks/useRoomSections';
+import { usePlantGroups } from '../../hooks/usePlantGroups';
+import { useGrowRooms } from '../../hooks/useGrowRooms';
+import { usePlantGroupLabel } from '../../hooks/usePlantGroupLabel';
+import { HarvestWorkflow } from '../harvest';
+import { MoveToRoomModal } from '../MoveToRoomModal';
+import { DeadPlantForm } from '../DeadPlantForm';
+import { PlantGroupLabelPrintModal } from '../PlantGroupLabelPrintModal';
+import type { PlantGroup, GrowthStage } from '../../types';
+import './CommandCenter.css';
+
+// ── Static helpers (hoisted out of components) ──────────────
+const STAGE_DOT_CLASS: Record<string, string> = {
+  flower: 'd-flower',
+  veg: 'd-veg',
+  clone: 'd-clone',
+  mother: 'd-mother',
+  mixed: 'd-mixed',
+};
+
+function formatToday(): string {
+  return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatHm(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+  } catch { return '—'; }
+}
+
+function shortDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function urgencyClass(u: number): string {
+  if (u >= 3) return 'urgent';
+  if (u >= 2) return 'warning';
+  return '';
+}
+
+function urgencyColor(u: number): string {
+  if (u >= 3) return 'var(--status-bad)';
+  if (u >= 2) return 'var(--status-warn)';
+  return 'var(--op-ink-3)';
+}
+
+function urgencyMessage(r: RoomShape): string {
+  if (r.harvestDays !== null && r.harvestDays <= 0) return `${Math.abs(r.harvestDays)}d overdue`;
+  if (r.harvestDays !== null && r.harvestDays <= 7) return `Harvest in ${r.harvestDays}d`;
+  if (r.day !== null && r.day > 35 && r.type === 'veg') return `${r.day}d in veg`;
+  if (r.urgency >= 2) return 'Needs attention';
+  return '';
+}
+
+function harvestLabel(r: RoomShape): string {
+  if (r.harvestDays !== null && r.harvestDays <= 0) {
+    return r.harvestDate ? `projected ${shortDate(r.harvestDate)}` : 'overdue';
+  }
+  if (r.harvestDays !== null) {
+    return r.harvestDate ? `${r.harvestDays}d · projected ${shortDate(r.harvestDate)}` : `${r.harvestDays}d`;
+  }
+  if (r.type === 'veg' && r.day !== null) return `~${Math.max(0, r.cycleDays - r.day)}d to flip`;
+  if (r.type === 'clone' && r.day !== null) return `${Math.max(0, r.cycleDays - r.day)}d to transplant`;
+  if (r.type === 'mother') return 'perpetual';
+  return '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AttentionStrip — silence is signal, urgency >= 2 only
+// ═══════════════════════════════════════════════════════════════
+function AttentionStrip({ rooms, onRoomClick }: { rooms: RoomShape[]; onRoomClick: (id: string) => void }) {
+  const items = useMemo(
+    () => rooms.filter(r => r.urgency >= 2 && !r.empty)
+      .toSorted((a, b) => b.urgency - a.urgency),
+    [rooms]
+  );
+  if (items.length === 0) return null;
+
+  return (
+    <div className="attn">
+      <span className="ml" style={{ flexShrink: 0 }}>Attention</span>
+      {items.map(r => (
+        <button key={r.room_id} className="attn-item" type="button" onClick={() => onRoomClick(r.room_id)}>
+          <span className={`d ${r.urgency >= 3 ? 'd-bad' : 'd-warn'}`} />
+          <span className="attn-code">{r.code}</span>
+          <span style={{ color: urgencyColor(r.urgency) }}>{urgencyMessage(r)}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SparklineWithStatusTail — atom from cultivo_atom_sparkline_status_tail_v1
+// ═══════════════════════════════════════════════════════════════
+function Spark({ data, status, height = 20 }: { data: number[]; status?: 'ok' | 'warn' | 'bad'; height?: number }) {
+  const max = Math.max(...data, 1);
+  const tailColor = status === 'ok' ? 'var(--status-ok)'
+    : status === 'warn' ? 'var(--status-warn)'
+    : status === 'bad' ? 'var(--status-bad)'
+    : 'var(--op-ink-2)';
+  return (
+    <span className="cell-spark" style={{ height }}>
+      {data.map((v, i) => (
+        <span key={i} className="cell-spark-bar" style={{
+          height: `${Math.max(2, (v / max) * height)}px`,
+          background: i === data.length - 1 ? tailColor : undefined,
+        }} />
+      ))}
+    </span>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PendingCell — atom from cultivo_atom_pending_cell_v1
+// ═══════════════════════════════════════════════════════════════
+function PendingCell({ label, reason }: { label: string; reason: string }) {
+  return (
+    <button type="button" className="cell pending-cell no-click" style={{ cursor: 'default' }}>
+      <span className="cell-label" style={{ color: 'var(--op-ink-4)' }}>{label}</span>
+      <span className="cell-val pending">—</span>
+      <span className="cell-sub pending">{reason}</span>
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Labor strip — 5 cells, on-canvas, always visible
+// ═══════════════════════════════════════════════════════════════
+type LaborTotals = { total: number; done: number; active: number; pending: number; unassigned: number };
+
+function LaborStrip({ totals, roomCount, topType, sparks }: {
+  totals: LaborTotals;
+  roomCount: number;
+  topType: string;
+  sparks: { total: number[]; done: number[] };
+}) {
+  const pct = totals.total > 0 ? Math.round((totals.done / totals.total) * 100) : 0;
+  return (
+    <div className="sec">
+      <div className="sec-hd">
+        <span className="ml">Labor</span>
+        <span className="ml-sm ml-r">{new Date().toLocaleDateString('en-US', { weekday: 'short' })} · today</span>
+      </div>
+      <div className="cells" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+        <button type="button" className="cell">
+          <span className="cell-label">Total Tasks</span>
+          <span className="cell-val">{totals.total}</span>
+          <span className="cell-sub">across {roomCount} rooms</span>
+          <Spark data={sparks.total} />
+        </button>
+        <button type="button" className="cell">
+          <span className="cell-label"><span className="d d-ok" /> Done</span>
+          <span className="cell-val">{totals.done}</span>
+          <span className="cell-sub">{pct}% complete</span>
+          <Spark data={sparks.done} status="ok" />
+        </button>
+        <button type="button" className="cell">
+          <span className="cell-label"><span className="d d-warn" /> Active</span>
+          <span className="cell-val">{totals.active}</span>
+          <span className="cell-sub">{totals.unassigned} unassigned</span>
+        </button>
+        <button type="button" className="cell">
+          <span className="cell-label">Pending</span>
+          <span className="cell-val">{totals.pending}</span>
+          <span className="cell-sub">queue</span>
+        </button>
+        <button type="button" className="cell">
+          <span className="cell-label">Top Type</span>
+          <span className="cell-val" style={{ fontSize: 16 }}>{topType || '—'}</span>
+          <span className="cell-sub">most common today</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RoomCard — tile in the grid; supports featured (col-span-2 row-span-2)
+// ═══════════════════════════════════════════════════════════════
+function RoomCard({ room, tasks, isFeatured, onClick }: {
+  room: RoomShape;
+  tasks: TaskShape[];
+  isFeatured: boolean;
+  onClick: (id: string) => void;
+}) {
+  if (room.empty) {
+    return (
+      <button type="button" className="rm empty" disabled>
+        <div className="rm-top">
+          <span className="d d-muted" />
+          <span className="rm-code">{room.code}</span>
+          <span className="rm-type">{room.type}</span>
+        </div>
+        <span className="rm-stats" style={{ marginTop: 'auto', color: 'var(--op-ink-4)' }}>Empty</span>
+      </button>
+    );
+  }
+
+  const done = tasks.filter(t => t.status === 'completed').length;
+  const active = tasks.filter(t => t.status === 'in_progress').length;
+  const pend = tasks.length - done - active;
+  const urgLabel = urgencyMessage(room);
+  const dotClass = STAGE_DOT_CLASS[room.type] ?? 'd-mixed';
+
+  const upcomingPills = isFeatured && tasks.length > 0
+    ? tasks.filter(t => t.status !== 'completed' && t.status !== 'skipped').slice(0, 4)
+    : [];
+
+  return (
+    <button
+      type="button"
+      className={`rm ${urgencyClass(room.urgency)} ${isFeatured ? 'featured' : ''}`}
+      onClick={() => onClick(room.room_id)}
+      style={{ ['--vt-room' as string]: `cmd-room-${room.code}` }}
+    >
+      <div className="rm-top">
+        <span className={`d ${dotClass}`} />
+        <span className="rm-code">{room.code}</span>
+        <span className="rm-type">{room.type}</span>
+        {urgLabel ? (
+          <span className="rm-urg" style={{ color: urgencyColor(room.urgency) }}>{urgLabel}</span>
+        ) : null}
+      </div>
+      <span className="rm-big">{room.plants}</span>
+      <span className="rm-stats">
+        <span>{room.strains.length} strain{room.strains.length === 1 ? '' : 's'}</span>
+        {room.day !== null ? <span>Day {room.day}</span> : null}
+      </span>
+      {room.strains.length > 0 ? (
+        <div className="rm-strains">
+          {room.strains.slice(0, isFeatured ? 8 : 4).map(s => (
+            <span key={s} className="rm-strain">{s}</span>
+          ))}
+          {room.strains.length > (isFeatured ? 8 : 4) ? (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--op-ink-4)' }}>
+              +{room.strains.length - (isFeatured ? 8 : 4)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      <div className="rm-ft">
+        <span className="rm-harv" style={{ color: urgencyColor(room.urgency) }}>{harvestLabel(room)}</span>
+        {tasks.length > 0 ? (
+          <div className="rm-tasks">
+            <div className="tbar">
+              {done > 0 ? <span className="tseg done" style={{ width: done * 6 }} /> : null}
+              {active > 0 ? <span className="tseg act" style={{ width: active * 6 }} /> : null}
+              {pend > 0 ? <span className="tseg pend" style={{ width: pend * 6 }} /> : null}
+            </div>
+            {done}/{tasks.length}
+          </div>
+        ) : null}
+      </div>
+      {isFeatured && upcomingPills.length > 0 ? (
+        <div className="rm-ft-extra">
+          <div className="rm-ft-tasks">
+            {upcomingPills.map(t => (
+              <span key={t.id} className="rm-task-pill">{TASK_TYPE_CONFIG[t.type as TaskType]?.label ?? t.type}</span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PhaseHero — molecule from cultivo_molecule_phase_hero_v1
+// ═══════════════════════════════════════════════════════════════
+function PhaseHero({ room }: { room: RoomShape }) {
+  const markers = CYCLE_PHASE_MARKERS[room.type] ?? [];
+  const day = room.day ?? 0;
+  const cycleDays = room.cycleDays || 1;
+  const pct = Math.min(100, (day / cycleDays) * 100);
+  const labelLeft = room.flipDate ? `Flip ${shortDate(room.flipDate)} · Day 1` : 'Start Day 1';
+  const labelRight = room.harvestDate
+    ? `Harvest ~${shortDate(room.harvestDate)} · Day ${cycleDays}`
+    : room.type === 'mother' ? 'perpetual' : `Cycle ~Day ${cycleDays}`;
+
+  if (room.type === 'mother') {
+    return (
+      <div className="phase-hero">
+        <div className="phase-track" style={{ background: 'var(--op-line)' }} />
+        <div className="phase-labels"><span /><span style={{ color: 'var(--op-ink-3)' }}>perpetual</span><span /></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="phase-hero">
+      <div className="phase-track">
+        <div className="phase-fill" style={{ width: `${pct}%` }}>
+          <div className="phase-now" />
+        </div>
+        <div className="phase-markers">
+          {markers.map(m => (
+            <span key={m.label} className="phase-marker" style={{ left: `${m.position}%` }}>{m.label}</span>
+          ))}
+        </div>
+      </div>
+      <div className="phase-labels">
+        <span>{labelLeft}</span>
+        <span style={{ color: 'var(--accent)' }}>Day {day} — today</span>
+        <span>{labelRight}</span>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Stats strip (legacy card layout, retained for PR2 reference)
+// ═══════════════════════════════════════════════════════════════
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _StatsStripLegacy({ room, tasks }: { room: RoomShape; tasks: TaskShape[] }) {
+  const done = tasks.filter(t => t.status === 'completed').length;
+  const cycleLeft = room.day !== null ? Math.max(0, room.cycleDays - room.day) : null;
+  return (
+    <>
+      <div className="cells" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
+        <div className="cell no-click">
+          <span className="cell-label">Plants</span>
+          <span className="cell-val">{room.plants}</span>
+          <span className="cell-sub">{room.strains.length} strain{room.strains.length === 1 ? '' : 's'}</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">Day</span>
+          <span className="cell-val">{room.day ?? '—'}</span>
+          <span className="cell-sub">of {room.cycleDays} cycle</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">Harvest</span>
+          <span className="cell-val proj">{room.harvestDays !== null ? `${Math.abs(room.harvestDays)}d` : (cycleLeft !== null ? `${cycleLeft}d` : '—')}</span>
+          <span className="cell-sub">{room.harvestDate ? `projected ${shortDate(room.harvestDate)}` : (room.type === 'veg' ? 'to flip' : '')}</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label"><span className={`d ${done === tasks.length && tasks.length > 0 ? 'd-ok' : 'd-muted'}`} /> Tasks</span>
+          <span className="cell-val">{done}/{tasks.length}</span>
+          <span className="cell-sub">{tasks.length - done === 0 ? 'all done' : `${tasks.length - done} remaining`}</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">Flipped</span>
+          <span className="cell-val" style={{ fontSize: 14 }}>{room.flipDate ? shortDate(room.flipDate) : '—'}</span>
+          <span className="cell-sub">{room.flipDate && room.day !== null ? `${room.day} days ago` : ''}</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">Strains</span>
+          <span className="cell-val">{room.strains.length}</span>
+          <span className="cell-sub">{room.strains.slice(0, 3).join(' · ')}</span>
+        </div>
+      </div>
+      {/* Environmental row — manual tag, swaps to 'live' when sensors integrate */}
+      <div className="cells" style={{ gridTemplateColumns: 'repeat(4, 1fr)', borderTop: '1px solid var(--op-line)' }}>
+        <div className="cell no-click">
+          <span className="cell-label">Temp</span>
+          <span className="cell-val" style={{ fontSize: 18 }}>{room.envTarget.temp_f}<span style={{ fontSize: 11, color: 'var(--op-ink-3)' }}>°F</span></span>
+          <span className="cell-tag">manual · target</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">RH</span>
+          <span className="cell-val" style={{ fontSize: 18 }}>{room.envTarget.rh_pct}<span style={{ fontSize: 11, color: 'var(--op-ink-3)' }}>%</span></span>
+          <span className="cell-tag">manual · target</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">VPD</span>
+          <span className="cell-val" style={{ fontSize: 18 }}>{room.envTarget.vpd_kpa}<span style={{ fontSize: 11, color: 'var(--op-ink-3)' }}>kPa</span></span>
+          <span className="cell-tag">manual · target</span>
+        </div>
+        <div className="cell no-click">
+          <span className="cell-label">CO2</span>
+          <span className="cell-val" style={{ fontSize: 18 }}>{room.envTarget.co2_ppm}<span style={{ fontSize: 11, color: 'var(--op-ink-3)' }}>{room.envTarget.co2_ppm === 'ambient' ? '' : 'ppm'}</span></span>
+          <span className="cell-tag">manual · target</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Task row + completion modal (schema-driven)
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// SectionsLayout — physical room tables and sections with plant counts
+// PR1: read-only with strain breakdown on click
+// PR2: PinnedCellPopover with move/kill/print/advance actions (legacy carry-forward)
+// ═══════════════════════════════════════════════════════════════
+const NEXT_STAGE: Record<string, GrowthStage | null> = {
+  clone: 'veg',
+  veg: 'flower',
+  flower: 'harvested',
+  mother: null,
+  harvested: null,
+};
+
+function SectionsLayout({ roomId }: { roomId: string }) {
+  const { tables, hasSections, loading } = useRoomSections(roomId);
+  const {
+    groups,
+    moveToRoom,
+    splitAndMoveToRoom,
+    splitAndMoveMultipleToRoom,
+    advanceStage,
+    reload: reloadGroups,
+  } = usePlantGroups({ stage: 'active' });
+  const { rooms: growRooms } = useGrowRooms();
+  const labelHook = usePlantGroupLabel();
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [movingGroups, setMovingGroups] = useState<PlantGroup[] | null>(null);
+  const [killingRoomId, setKillingRoomId] = useState<string | null>(null);
+  const [advancingGroups, setAdvancingGroups] = useState<PlantGroup[] | null>(null);
+  const [advanceLoading, setAdvanceLoading] = useState(false);
+
+  // Plant groups located in this room
+  const roomGroups = useMemo(() => groups.filter(g => g.grow_room_id === roomId), [groups, roomId]);
+
+  // Section -> plant groups (for action targeting)
+  const sectionGroupMap = useMemo(() => {
+    const m = new Map<string, PlantGroup[]>();
+    for (const g of roomGroups) {
+      const sectionId = (g as unknown as { room_section_id?: string | null }).room_section_id;
+      if (!sectionId) continue;
+      const arr = m.get(sectionId) ?? [];
+      arr.push(g);
+      m.set(sectionId, arr);
+    }
+    return m;
+  }, [roomGroups]);
+
+  // Section -> { total, strains } for display
+  const sectionIndex = useMemo(() => {
+    const byId = new Map<string, { total: number; strains: Map<string, { abbr: string; name: string; count: number }> }>();
+    for (const g of roomGroups) {
+      const sectionId = (g as unknown as { room_section_id?: string | null }).room_section_id;
+      if (!sectionId) continue;
+      const entry = byId.get(sectionId) ?? { total: 0, strains: new Map() };
+      const count = g.plant_count ?? 0;
+      entry.total += count;
+      const abbr = g.strains?.abbreviation ?? '???';
+      const name = g.strains?.name ?? '';
+      const sEntry = entry.strains.get(abbr) ?? { abbr, name, count: 0 };
+      sEntry.count += count;
+      entry.strains.set(abbr, sEntry);
+      byId.set(sectionId, entry);
+    }
+    return byId;
+  }, [roomGroups]);
+
+  // Action handlers — wire through to existing services
+  const handleMove = useCallback((sectionId: string) => {
+    const grps = sectionGroupMap.get(sectionId) ?? [];
+    if (grps.length === 0) return;
+    setMovingGroups(grps);
+  }, [sectionGroupMap]);
+
+  const handleKill = useCallback((_sectionId: string) => {
+    setKillingRoomId(roomId);
+  }, [roomId]);
+
+  const handlePrintGroup = useCallback(async (sectionId: string) => {
+    const grps = sectionGroupMap.get(sectionId) ?? [];
+    if (grps.length === 0) return;
+    await labelHook.openGroupLabel(grps[0]);
+  }, [sectionGroupMap, labelHook]);
+
+  const handlePrintPlants = useCallback(async (sectionId: string) => {
+    const grps = sectionGroupMap.get(sectionId) ?? [];
+    if (grps.length === 0) return;
+    await labelHook.openPlantLabels(grps[0]);
+  }, [sectionGroupMap, labelHook]);
+
+  const handleAdvance = useCallback((sectionId: string) => {
+    const grps = sectionGroupMap.get(sectionId) ?? [];
+    if (grps.length === 0) return;
+    setAdvancingGroups(grps);
+  }, [sectionGroupMap]);
+
+  const confirmAdvance = useCallback(async () => {
+    if (!advancingGroups || advanceLoading) return;
+    setAdvanceLoading(true);
+    try {
+      for (const g of advancingGroups) {
+        const next = NEXT_STAGE[g.growth_stage];
+        if (next) await advanceStage(g.id, next);
+      }
+      await reloadGroups();
+    } finally {
+      setAdvanceLoading(false);
+      setAdvancingGroups(null);
+    }
+  }, [advancingGroups, advanceLoading, advanceStage, reloadGroups]);
+
+  if (loading) {
+    return <div className="tbl-empty-hint">loading layout…</div>;
+  }
+  if (!hasSections || tables.length === 0) {
+    return <div className="tbl-empty-hint">No tables configured for this room → Room Setup</div>;
+  }
+
+  const selectedDetail = selectedSectionId ? sectionIndex.get(selectedSectionId) : null;
+  const selectedSection = selectedSectionId
+    ? tables.flatMap(t => t.sections).find(s => s.id === selectedSectionId) ?? null
+    : null;
+
+  return (
+    <div className="tbl-wrap">
+      {tables.map(t => {
+        const tableTotal = t.sections.reduce((sum, s) => sum + (sectionIndex.get(s.id)?.total ?? 0), 0);
+        return (
+          <div key={t.id} className="tbl">
+            <div className="tbl-hd">
+              <div className="tbl-hd-row">
+                <span className="tbl-num">T{t.table_number}</span>
+                {t.table_name ? <span className="tbl-name">{t.table_name}</span> : null}
+              </div>
+              <span className="tbl-total">{tableTotal} plant{tableTotal === 1 ? '' : 's'} · {t.sections.length} section{t.sections.length === 1 ? '' : 's'}</span>
+            </div>
+            {t.sections.length === 0 ? (
+              <div className="tbl-empty-hint">No sections defined</div>
+            ) : (
+              <div className="tbl-grid">
+                {t.sections.map(s => {
+                  const occ = sectionIndex.get(s.id);
+                  const count = occ?.total ?? 0;
+                  const dominantStrain = occ
+                    ? Array.from(occ.strains.values()).toSorted((a, b) => b.count - a.count)[0]?.abbr
+                    : null;
+                  const isSelected = s.id === selectedSectionId;
+                  const isEmpty = count === 0;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={`tbl-cell ${isEmpty ? 'empty' : ''} ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        if (isEmpty) return;
+                        setSelectedSectionId(prev => (prev === s.id ? null : s.id));
+                      }}
+                    >
+                      <div className="tbl-cell-row">
+                        <span className="tbl-cell-lbl">{s.section_label}</span>
+                        <span className="tbl-cell-ct">{count > 0 ? count : '—'}</span>
+                      </div>
+                      {dominantStrain ? <span className="tbl-cell-strain">{dominantStrain}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {selectedSection && selectedDetail && t.sections.some(s => s.id === selectedSection.id) ? (
+              <div className="tbl-detail">
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4 }}>
+                  <span className="tbl-num">{selectedSection.section_label}</span>
+                  <span className="tbl-name">{selectedDetail.total} plants · {selectedDetail.strains.size} strain{selectedDetail.strains.size === 1 ? '' : 's'}</span>
+                  <button type="button"
+                    onClick={() => setSelectedSectionId(null)}
+                    style={{ marginLeft: 'auto', background: 'none', border: 0, color: 'var(--op-ink-3)', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}
+                  >close</button>
+                </div>
+                {Array.from(selectedDetail.strains.values()).toSorted((a, b) => b.count - a.count).map(s => (
+                  <div key={s.abbr} className="tbl-detail-strain">
+                    <span className="tbl-detail-abbr">{s.abbr}</span>
+                    <span className="tbl-detail-ct">{s.count}</span>
+                    <span className="tbl-detail-name">{s.name}</span>
+                  </div>
+                ))}
+                <div className="tbl-actions">
+                  <button type="button" className="tbl-action" onClick={() => handleMove(selectedSection.id)}>
+                    Move
+                  </button>
+                  <button type="button" className="tbl-action" onClick={() => handlePrintGroup(selectedSection.id)}>
+                    Print group
+                  </button>
+                  <button type="button" className="tbl-action" onClick={() => handlePrintPlants(selectedSection.id)}>
+                    Print plants
+                  </button>
+                  {(() => {
+                    const grps = sectionGroupMap.get(selectedSection.id) ?? [];
+                    const stage = grps[0]?.growth_stage;
+                    const next = stage ? NEXT_STAGE[stage] : null;
+                    return (
+                      <button
+                        type="button"
+                        className="tbl-action accent"
+                        disabled={!next}
+                        onClick={() => handleAdvance(selectedSection.id)}
+                      >
+                        {next ? `Advance → ${next}` : 'Advance'}
+                      </button>
+                    );
+                  })()}
+                  <button type="button" className="tbl-action danger" onClick={() => handleKill(selectedSection.id)}>
+                    Kill
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+
+      {/* Move modal */}
+      {movingGroups && movingGroups.length > 0 ? (
+        <div className="cmd-modal-overlay" onClick={() => setMovingGroups(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 720 }}>
+            <MoveToRoomModal
+              group={movingGroups[0]}
+              groups={movingGroups.length > 1 ? movingGroups : undefined}
+              rooms={growRooms}
+              onMove={async (toRoomId) => {
+                await moveToRoom(movingGroups[0].id, toRoomId);
+                setMovingGroups(null);
+              }}
+              onSplitAndMove={async (input) => {
+                await splitAndMoveToRoom(input);
+                setMovingGroups(null);
+              }}
+              onSplitAndMoveMultiple={async (input) => {
+                await splitAndMoveMultipleToRoom(input);
+                setMovingGroups(null);
+              }}
+              onCancel={() => setMovingGroups(null)}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Kill (dead plant) modal */}
+      {killingRoomId ? (
+        <DeadPlantForm
+          prefilledRoomId={killingRoomId}
+          onComplete={() => { setKillingRoomId(null); void reloadGroups(); }}
+          onClose={() => setKillingRoomId(null)}
+        />
+      ) : null}
+
+      {/* Advance stage confirmation */}
+      {advancingGroups ? (
+        <div className="cmd-modal-overlay" onClick={() => !advanceLoading && setAdvancingGroups(null)}>
+          <div className="cmd-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="cmd-modal-hd">
+              <span className="ml">Advance stage</span>
+              <button type="button" className="cmd-modal-close" disabled={advanceLoading} onClick={() => setAdvancingGroups(null)}>✕</button>
+            </div>
+            <div className="cmd-confirm">
+              <span className="ml">From → To</span>
+              <span className="cmd-confirm-strong">
+                {advancingGroups[0]?.growth_stage ?? '—'} → {NEXT_STAGE[advancingGroups[0]?.growth_stage ?? ''] ?? '—'}
+              </span>
+              <span>{advancingGroups.length} group{advancingGroups.length === 1 ? '' : 's'} · {advancingGroups.reduce((s, g) => s + (g.plant_count ?? 0), 0)} plants</span>
+            </div>
+            <div className="cmd-modal-ft">
+              <button type="button" className="cmd-modal-cancel" disabled={advanceLoading} onClick={() => setAdvancingGroups(null)}>Cancel</button>
+              <button type="button" className="act-btn" style={{ flex: 1 }} disabled={advanceLoading} onClick={confirmAdvance}>
+                {advanceLoading ? 'Advancing…' : 'Confirm advance'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Print labels modal — both group and per-plant modes */}
+      <PlantGroupLabelPrintModal
+        isOpen={labelHook.isOpen}
+        isLoading={labelHook.isLoading}
+        isPrinting={labelHook.isPrinting}
+        labelData={labelHook.labelData}
+        logoDataUrl={labelHook.logoDataUrl}
+        error={labelHook.error}
+        onClose={labelHook.closeLabel}
+        onPrint={labelHook.printLabels}
+      />
+    </div>
+  );
+}
+
+function TaskRow({ task, onToggle, onOpenComplete }: {
+  task: TaskShape;
+  onToggle: () => void;
+  onOpenComplete: () => void;
+}) {
+  const isDone = task.status === 'completed';
+  const isActive = task.status === 'in_progress';
+  const label = TASK_TYPE_CONFIG[task.type as TaskType]?.label ?? task.type;
+
+  function handleClick() {
+    if (isDone) return;
+    if (isActive) { onOpenComplete(); return; }
+    onToggle();
+  }
+
+  return (
+    <div className="tl-row" onClick={handleClick}>
+      <div className={`tl-chk ${isDone ? 'done' : isActive ? 'act' : ''}`}>{isDone ? '✓' : ''}</div>
+      <span className={`tl-name ${isDone ? 'struck' : ''}`}>{label}</span>
+      {task.assignee
+        ? <span className="tl-who">{task.assignee.slice(0, 8).toUpperCase()}</span>
+        : <span className="tl-who unassigned">UNASSIGNED</span>}
+      <span className="tl-time">{formatHm(task.time)}</span>
+    </div>
+  );
+}
+
+function TaskCompleteModal({ task, onClose, onComplete }: {
+  task: TaskShape;
+  onClose: () => void;
+  onComplete: (values: Record<string, string>) => void;
+}) {
+  const schema = getTaskCompletionSchema(task.type);
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const f of schema.fields) init[f.key] = '';
+    return init;
+  });
+
+  const set = useCallback((key: string, val: string) => {
+    setValues(prev => ({ ...prev, [key]: val }));
+  }, []);
+
+  const label = TASK_TYPE_CONFIG[task.type as TaskType]?.label ?? task.type;
+
+  return (
+    <div className="cmd-modal-overlay" onClick={onClose}>
+      <div className="cmd-modal-card" onClick={e => e.stopPropagation()}>
+        <div className="cmd-modal-hd">
+          <span className="ml">Complete · {label}</span>
+          <button type="button" className="cmd-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="cmd-modal-bd">
+          {schema.fields.map((f: TaskCompletionField) => (
+            <div key={f.key} className="cmd-modal-row">
+              <span className="cmd-modal-key">{f.label}</span>
+              {f.type === 'select' ? (
+                <select className="cmd-modal-input" value={values[f.key]} onChange={e => set(f.key, e.target.value)}>
+                  <option value="">—</option>
+                  {f.options?.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : f.type === 'textarea' ? (
+                <textarea className="cmd-modal-input textarea" placeholder={f.placeholder} value={values[f.key]} onChange={e => set(f.key, e.target.value)} />
+              ) : (
+                <input className="cmd-modal-input" type={f.type} placeholder={f.placeholder} value={values[f.key]} onChange={e => set(f.key, e.target.value)} />
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="cmd-modal-ft">
+          <button type="button" className="cmd-modal-cancel" onClick={onClose}>Cancel</button>
+          <button type="button" className="act-btn" style={{ flex: 1 }} onClick={() => onComplete(values)}>Complete Task</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Expanded room view — phase hero, stats, tasks main, sidebar swap
+// ═══════════════════════════════════════════════════════════════
+function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog }: {
+  room: RoomShape;
+  tasks: TaskShape[];
+  onBack: () => void;
+  onUpdateStatus: (id: string, status: TaskStatus) => Promise<unknown>;
+  onCompleteWithLog: (id: string) => Promise<unknown>;
+}) {
+  const [completingTask, setCompletingTask] = useState<TaskShape | null>(null);
+  const [showHarvest, setShowHarvest] = useState(false);
+  const [focusedCard, setFocusedCard] = useState<null | 'schedule' | 'plants' | 'tables' | 'env'>(null);
+
+  const done = tasks.filter(t => t.status === 'completed').length;
+  const dotClass = STAGE_DOT_CLASS[room.type] ?? 'd-mixed';
+  const harvUrg = urgencyMessage(room);
+
+  const handleToggle = useCallback((task: TaskShape) => {
+    if (task.status === 'pending') {
+      void onUpdateStatus(task.id, 'in_progress');
+    }
+  }, [onUpdateStatus]);
+
+  const handleCompleteSubmit = useCallback(async (_values: Record<string, string>) => {
+    if (!completingTask) return;
+    await onCompleteWithLog(completingTask.id);
+    setCompletingTask(null);
+  }, [completingTask, onCompleteWithLog]);
+
+  const cycleLeft = room.day !== null ? Math.max(0, room.cycleDays - room.day) : null;
+  const harvestVal = room.harvestDays !== null ? `${Math.abs(room.harvestDays)}d` : (cycleLeft !== null ? `${cycleLeft}d` : '—');
+  const harvestSub = room.harvestDate ? `projected ${shortDate(room.harvestDate)}` : (room.type === 'veg' ? 'to flip' : '');
+  const remaining = tasks.length - done;
+  const sortedTasks = useMemo(
+    () => tasks.toSorted((a, b) => {
+      const order = (s: TaskStatus) => s === 'in_progress' ? 0 : s === 'pending' ? 1 : 2;
+      return order(a.status) - order(b.status);
+    }),
+    [tasks]
+  );
+
+  return (
+    <div className="exp" style={{ ['--vt-room' as string]: `cmd-room-${room.code}` }}>
+      {/* Strip 1: identity + actions, hairline only */}
+      <div className="exp-strip">
+        <div className="exp-id">
+          <button type="button" className="back-btn" onClick={onBack}>← Rooms</button>
+          <span className={`d ${dotClass}`} />
+          <span className="exp-code">{room.code}</span>
+          <span className="exp-meta">
+            <span>{room.type}</span>
+            {room.day !== null ? <span>Day {room.day}</span> : null}
+            <span>{room.plants} plants</span>
+          </span>
+          {room.strains.length > 0 ? (
+            <span className="strain-mini">{room.strains.slice(0, 4).join(' · ')}{room.strains.length > 4 ? ` +${room.strains.length - 4}` : ''}</span>
+          ) : null}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+            {harvUrg ? (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: urgencyColor(room.urgency) }}>{harvUrg}</span>
+            ) : null}
+            {room.type === 'flower' ? (
+              <button type="button" className="act-btn" onClick={() => setShowHarvest(true)}>Harvest</button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Strip 2: phase + room context (combined into one read) */}
+      <div className="exp-strip">
+        <div className="exp-strip-hd">
+          <span className="ml">Cycle</span>
+          <span className="ml-sm">{room.flipDate ? `flipped ${shortDate(room.flipDate)}` : (room.type === 'mother' ? 'perpetual' : 'pre-flip')}</span>
+        </div>
+        <div className="exp-context">
+          <div className="ctx-cell ctx-phase">
+            <PhaseHero room={room} />
+          </div>
+          <div className="ctx-cell">
+            <span className="ctx-label">Day</span>
+            <span className="ctx-val">{room.day ?? '—'}</span>
+            <span className="ctx-sub">of {room.cycleDays}</span>
+          </div>
+          <div className="ctx-cell">
+            <span className="ctx-label">Harvest</span>
+            <span className="ctx-val proj">{harvestVal}</span>
+            <span className="ctx-sub">{harvestSub}</span>
+          </div>
+          <div className="ctx-cell">
+            <span className="ctx-label">Plants</span>
+            <span className="ctx-val">{room.plants}</span>
+            <span className="ctx-sub">{room.strains.length} strain{room.strains.length === 1 ? '' : 's'}</span>
+          </div>
+          <div className="ctx-cell">
+            <span className="ctx-label">Mortality</span>
+            <span className="ctx-val">—</span>
+            <span className="ctx-sub">PR3</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Strip 2 was tasks; now hoisted into the card-swap body below */}
+      <div className="exp-body">
+        {/* Main panel — tasks (default) or focused card content */}
+        <div className="exp-main">
+          {focusedCard === null ? (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Today</span>
+                <span className="ml-sm">{done}/{tasks.length} done · {remaining === 0 ? 'all clear' : `${remaining} to go`}</span>
+                <span className="ml-sm" style={{ marginLeft: 'auto' }}>tap row to start · tap again to log</span>
+              </div>
+              <div className="exp-main-bd no-pad">
+                <div className="exp-tasks">
+                  {sortedTasks.length > 0 ? (
+                    sortedTasks.map(t => (
+                      <TaskRow
+                        key={t.id}
+                        task={t}
+                        onToggle={() => handleToggle(t)}
+                        onOpenComplete={() => setCompletingTask(t)}
+                      />
+                    ))
+                  ) : (
+                    <div className="cmd-empty">No tasks scheduled today</div>
+                  )}
+                  <button type="button" className="tl-add" onClick={() => alert('Inline add — PR3')}>+ add task</button>
+                </div>
+              </div>
+            </>
+          ) : focusedCard === 'schedule' ? (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Schedule</span>
+                <span className="ml-sm">3-day lookahead</span>
+                <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
+              </div>
+              <div className="exp-main-bd">
+                <div className="sched-row" style={{ padding: '8px 0' }}>
+                  <span className="sched-day today">Today</span>
+                  <span className="sched-tasks">{tasks.length} task{tasks.length === 1 ? '' : 's'} · {done} done · {tasks.length - done} remaining</span>
+                </div>
+                <div className="sched-row" style={{ padding: '8px 0' }}>
+                  <span className="sched-day">Tomorrow</span>
+                  <span className="sched-tasks pending-hint">live multi-day calendar with drag-to-reschedule lands in PR2</span>
+                </div>
+                <div className="sched-row" style={{ padding: '8px 0' }}>
+                  <span className="sched-day">Wed</span>
+                  <span className="sched-tasks pending-hint">PR2</span>
+                </div>
+              </div>
+            </>
+          ) : focusedCard === 'plants' ? (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Plants</span>
+                <span className="ml-sm">{room.plants} total · {room.strains.length} strain{room.strains.length === 1 ? '' : 's'}</span>
+                <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
+              </div>
+              <div className="exp-main-bd">
+                {room.strains.length > 0 ? (
+                  <div className="rail-strains" style={{ gap: 6 }}>
+                    {room.strains.map(s => <span key={s} className="rail-strain-pill">{s}</span>)}
+                  </div>
+                ) : <div className="pending-hint">No strains assigned</div>}
+                <div style={{ marginTop: 12, padding: '10px 0 0', borderTop: '1px dashed var(--op-line)', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--op-ink-4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  PR2 · per-group breakdown with section anchors · split-and-move
+                </div>
+              </div>
+            </>
+          ) : focusedCard === 'tables' ? (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Tables + Sections</span>
+                <span className="ml-sm">tap a section to see strain mix · PR2 · move/kill/print/advance</span>
+                <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
+              </div>
+              <div className="exp-main-bd">
+                <SectionsLayout roomId={room.room_id} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Environment</span>
+                <span className="ml-sm">manual targets · sensor integration pending</span>
+                <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
+              </div>
+              <div className="exp-main-bd no-pad">
+                <div className="exp-env">
+                  <div className="env-cell">
+                    <span className="env-label">Temp</span>
+                    <span className="env-val">{room.envTarget.temp_f}</span>
+                    <span className="env-unit">°F</span>
+                    <span className="env-tag">manual</span>
+                  </div>
+                  <div className="env-cell">
+                    <span className="env-label">RH</span>
+                    <span className="env-val">{room.envTarget.rh_pct}</span>
+                    <span className="env-unit">%</span>
+                    <span className="env-tag">manual</span>
+                  </div>
+                  <div className="env-cell">
+                    <span className="env-label">VPD</span>
+                    <span className="env-val">{room.envTarget.vpd_kpa}</span>
+                    <span className="env-unit">kPa</span>
+                    <span className="env-tag">manual</span>
+                  </div>
+                  <div className="env-cell">
+                    <span className="env-label">CO2</span>
+                    <span className="env-val">{room.envTarget.co2_ppm}</span>
+                    <span className="env-unit">{room.envTarget.co2_ppm === 'ambient' ? '' : 'ppm'}</span>
+                    <span className="env-tag">manual</span>
+                  </div>
+                </div>
+                <div style={{ padding: '12px 16px', borderTop: '1px solid var(--op-line)', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--op-ink-4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  v2 · live readings via Aroya / Trolmaster
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Rail — compact cards, click to swap into main */}
+        <div className="exp-rail-wrap">
+          {focusedCard !== null ? (
+            <button type="button" className="exp-rail-tasks" onClick={() => setFocusedCard(null)}>
+              <span className="ml">Tasks</span>
+              <span className="ml-sm">{done}/{tasks.length} · {remaining === 0 ? 'clear' : `${remaining} open`}</span>
+              <span className="exp-back" style={{ marginLeft: 'auto' }}>open</span>
+            </button>
+          ) : null}
+          {focusedCard !== 'schedule' ? (
+            <button type="button" className="rail-card" onClick={() => setFocusedCard('schedule')}>
+              <div className="rail-card-hd"><span className="ml">Schedule</span><span className="ml-sm" style={{ marginLeft: 'auto' }}>3-day</span></div>
+              <div className="rail-card-bd compact">
+                <span className="rail-stat"><span className="rail-stat-val">{tasks.length}</span><span className="rail-stat-lbl">today</span></span>
+                <span className="rail-stat"><span className="rail-stat-val">{done}</span><span className="rail-stat-lbl">done</span></span>
+                <span className="rail-stat"><span className="rail-stat-val">{tasks.length - done}</span><span className="rail-stat-lbl">left</span></span>
+              </div>
+            </button>
+          ) : null}
+          {focusedCard !== 'plants' ? (
+            <button type="button" className="rail-card" onClick={() => setFocusedCard('plants')}>
+              <div className="rail-card-hd"><span className="ml">Plants</span><span className="ml-sm" style={{ marginLeft: 'auto' }}>{room.plants}</span></div>
+              <div className="rail-card-bd">
+                <div className="rail-strains">
+                  {room.strains.slice(0, 5).map(s => <span key={s} className="rail-strain-pill">{s}</span>)}
+                  {room.strains.length > 5 ? <span className="rail-strain-pill">+{room.strains.length - 5}</span> : null}
+                </div>
+              </div>
+            </button>
+          ) : null}
+          {focusedCard !== 'tables' ? (
+            <button type="button" className="rail-card" onClick={() => setFocusedCard('tables')}>
+              <div className="rail-card-hd"><span className="ml">Tables</span><span className="ml-sm" style={{ marginLeft: 'auto' }}>tap to expand</span></div>
+              <div className="rail-card-bd compact">
+                <span className="rail-stat"><span className="rail-stat-val">{room.plants}</span><span className="rail-stat-lbl">plants placed</span></span>
+              </div>
+            </button>
+          ) : null}
+          {focusedCard !== 'env' ? (
+            <button type="button" className="rail-card" onClick={() => setFocusedCard('env')}>
+              <div className="rail-card-hd"><span className="ml">Environment</span><span className="ml-sm" style={{ marginLeft: 'auto' }}>manual</span></div>
+              <div className="rail-card-bd compact">
+                <span className="rail-stat"><span className="rail-stat-val">{room.envTarget.temp_f}</span><span className="rail-stat-unit">°F</span></span>
+                <span className="rail-stat"><span className="rail-stat-val">{room.envTarget.rh_pct}</span><span className="rail-stat-unit">%</span></span>
+                <span className="rail-stat"><span className="rail-stat-val">{room.envTarget.vpd_kpa}</span><span className="rail-stat-unit">kPa</span></span>
+              </div>
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {completingTask ? (
+        <TaskCompleteModal
+          task={completingTask}
+          onClose={() => setCompletingTask(null)}
+          onComplete={handleCompleteSubmit}
+        />
+      ) : null}
+      {showHarvest ? (
+        <div className="cmd-modal-overlay" onClick={() => setShowHarvest(false)}>
+          <div className="cmd-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
+            <div className="cmd-modal-hd">
+              <span className="ml">Harvest · {room.code}</span>
+              <button type="button" className="cmd-modal-close" onClick={() => setShowHarvest(false)}>✕</button>
+            </div>
+            <div className="cmd-modal-bd" style={{ padding: 0 }}>
+              <HarvestWorkflow
+                initialRoomId={room.room_id}
+                onComplete={() => setShowHarvest(false)}
+                onCancel={() => setShowHarvest(false)}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Top-level CommandCenter
+// ═══════════════════════════════════════════════════════════════
+export function CommandCenter() {
+  const data = useCommandCenterData();
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [featuredRoomId, setFeaturedRoomId] = useState<string | null>(null);
+
+  // Auto-feature: closest-to-harvest flower room (preserves cult-ops behavior)
+  const defaultFeaturedId = useMemo(() => {
+    const flower = data.rooms.filter(r => r.type === 'flower' && !r.empty);
+    if (flower.length === 0) return null;
+    const sorted = flower.toSorted((a, b) => {
+      const ad = a.harvestDays ?? Infinity;
+      const bd = b.harvestDays ?? Infinity;
+      return ad - bd;
+    });
+    return sorted[0]?.room_id ?? null;
+  }, [data.rooms]);
+
+  const activeFeaturedId = featuredRoomId ?? defaultFeaturedId;
+  const selectedRoom = useMemo(
+    () => selectedRoomId ? data.rooms.find(r => r.room_id === selectedRoomId) ?? null : null,
+    [selectedRoomId, data.rooms]
+  );
+  const selectedTasks = useMemo(
+    () => selectedRoom ? (data.tasksByRoom.get(selectedRoom.room_id) ?? []) : [],
+    [selectedRoom, data.tasksByRoom]
+  );
+
+  // Helper: dispatch a state change wrapped in document.startViewTransition when supported
+  const transition = useCallback((apply: () => void) => {
+    type DocWithVT = Document & { startViewTransition?: (cb: () => void) => unknown };
+    const doc = document as DocWithVT;
+    if (typeof doc.startViewTransition === 'function') {
+      doc.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  }, []);
+
+  // Two-stage click: first click features, second click expands (with view transition)
+  const handleTileClick = useCallback((roomId: string) => {
+    if (activeFeaturedId === roomId) {
+      transition(() => setSelectedRoomId(roomId));
+    } else {
+      setFeaturedRoomId(roomId);
+    }
+  }, [activeFeaturedId, transition]);
+
+  // Direct expand (from AttentionStrip — skip featuring)
+  const handleAttentionClick = useCallback((roomId: string) => {
+    transition(() => setSelectedRoomId(roomId));
+  }, [transition]);
+
+  const handleBack = useCallback(() => {
+    type DocWithVT = Document & { startViewTransition?: (cb: () => void) => unknown };
+    const doc = document as DocWithVT;
+    if (typeof doc.startViewTransition === 'function') {
+      doc.startViewTransition(() => setSelectedRoomId(null));
+    } else {
+      setSelectedRoomId(null);
+    }
+  }, []);
+
+  // Top task type today
+  const topType = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of data.tasks) {
+      counts.set(t.type, (counts.get(t.type) ?? 0) + 1);
+    }
+    let best = ''; let max = 0;
+    counts.forEach((n, k) => { if (n > max) { best = k; max = n; } });
+    return TASK_TYPE_CONFIG[best as TaskType]?.label ?? best;
+  }, [data.tasks]);
+
+  // Room sectioning — active rooms grouped by stage; empty collapsed to a strip
+  const roomSections = useMemo(() => {
+    const active = data.rooms.filter(r => !r.empty);
+    const empty = data.rooms.filter(r => r.empty);
+    return {
+      flower: active.filter(r => r.type === 'flower'),
+      veg: active.filter(r => r.type === 'veg'),
+      clone: active.filter(r => r.type === 'clone'),
+      mother: active.filter(r => r.type === 'mother'),
+      other: active.filter(r => !['flower', 'veg', 'clone', 'mother'].includes(r.type)),
+      empty,
+    };
+  }, [data.rooms]);
+
+  // Static sparks for now; PR3 wires real 7-day rollups
+  const sparks = useMemo(() => ({
+    total: [18, 21, 24, 19, 25, 22, data.totals.total],
+    done: [10, 14, 18, 12, 20, 16, data.totals.done],
+  }), [data.totals.total, data.totals.done]);
+
+  if (data.loading) {
+    return <div className="cmd"><div className="cmd-loading">loading cultivation state…</div></div>;
+  }
+
+  const activeRooms = data.rooms.filter(r => !r.empty).length;
+
+  return (
+    <div className="cmd">
+      <div className="hdr">
+        <div className="hdr-l">
+          <span className="hdr-title">Cultivation Command</span>
+          <span className="hdr-meta">{formatToday()}</span>
+          <span className="hdr-meta">tasks <strong>{data.totals.done} / {data.totals.total}</strong> today</span>
+        </div>
+        <div className="hdr-r">
+          <button type="button" className="hdr-add" onClick={() => alert('Global add — coming in PR3')}>+ add</button>
+          <span className="hdr-live">live</span>
+        </div>
+      </div>
+
+      {selectedRoom ? (
+        <ExpandedRoom
+          room={selectedRoom}
+          tasks={selectedTasks}
+          onBack={handleBack}
+          onUpdateStatus={data.updateStatus}
+          onCompleteWithLog={(id) => data.completeWithLog(id, 'daily_task_log', id, null)}
+        />
+      ) : (
+        <>
+          <AttentionStrip rooms={data.rooms} onRoomClick={handleAttentionClick} />
+          <LaborStrip
+            totals={data.totals}
+            roomCount={activeRooms}
+            topType={topType}
+            sparks={sparks}
+          />
+          <div className="sec">
+            <div className="sec-hd">
+              <span className="ml">Rooms</span>
+              <span className="ml-sm ml-r">{activeRooms} active · {roomSections.empty.length} empty</span>
+            </div>
+            {(['flower', 'veg', 'clone', 'mother', 'other'] as const).map(stage => {
+              const list = roomSections[stage];
+              if (list.length === 0) return null;
+              const label = stage === 'other' ? 'Mixed' : stage.charAt(0).toUpperCase() + stage.slice(1);
+              const totalPlants = list.reduce((sum, r) => sum + r.plants, 0);
+              return (
+                <div key={stage} className="rooms-section">
+                  <div className="rooms-section-hd">
+                    <span className="ml">{label}</span>
+                    <span className="ml-sm">{list.length} room{list.length === 1 ? '' : 's'} · {totalPlants} plants</span>
+                  </div>
+                  <div className="rooms">
+                    {list.map(r => (
+                      <RoomCard
+                        key={r.room_id}
+                        room={r}
+                        tasks={data.tasksByRoom.get(r.room_id) ?? []}
+                        isFeatured={r.room_id === activeFeaturedId}
+                        onClick={handleTileClick}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {roomSections.empty.length > 0 ? (
+              <div className="rooms-empty-strip">
+                <span className="ml">Empty</span>
+                {roomSections.empty.map(r => (
+                  <button key={r.room_id} type="button" className="rooms-empty-pill" onClick={() => handleAttentionClick(r.room_id)}>
+                    {r.code}
+                  </button>
+                ))}
+                <span className="ml-sm" style={{ marginLeft: 'auto' }}>{roomSections.empty.length} room{roomSections.empty.length === 1 ? '' : 's'} · ready for plant-in</span>
+              </div>
+            ) : null}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default CommandCenter;
