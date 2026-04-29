@@ -244,6 +244,21 @@
 .cmd .tl-add { display: flex; align-items: center; justify-content: center; padding: 10px 16px; border-top: 1px dashed var(--op-line); font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); cursor: pointer; background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100%; transition: color 120ms; letter-spacing: 0.1em; text-transform: uppercase; }
 .cmd .tl-add:hover { color: var(--accent); }
 
+/* Multi-person assignment inline expansion */
+.cmd .tl-assignees { background: none; border: 0; color: var(--op-ink-3); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; cursor: pointer; padding: 4px 8px; border-radius: var(--r-xs); transition: color 120ms, background 120ms; display: flex; align-items: center; gap: 6px; }
+.cmd .tl-assignees:hover { color: var(--op-ink); background: var(--op-surface-2); }
+.cmd .tl-assignees .unassigned { color: var(--status-warn); }
+.cmd .tl-arr { font-size: 9px; opacity: 0.7; }
+.cmd .tl-assignees-bd { padding: 10px 16px 12px; background: var(--op-surface-2); border-bottom: 1px solid var(--op-line); display: flex; flex-direction: column; gap: 8px; }
+.cmd .tl-assignees-list { display: flex; flex-direction: column; gap: 4px; }
+.cmd .tl-assignee { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; }
+.cmd .tl-role { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 1px 6px; border: 1px solid var(--op-line-strong); border-radius: var(--r-xs); color: var(--op-ink-3); }
+.cmd .tl-role.lead { color: var(--accent); border-color: var(--accent); }
+.cmd .tl-name-mono { color: var(--op-ink); }
+.cmd .tl-promote { background: none; border: 0; color: var(--op-ink-3); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; padding: 2px 6px; margin-left: auto; transition: color 120ms; }
+.cmd .tl-promote:hover { color: var(--accent); }
+.cmd .tl-assign-add { display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px dashed var(--op-line); }
+
 /* ── Sidebar cards ──────────────────────────────────────── */
 .cmd .sidebar-wrap { display: flex; flex-direction: column; gap: 14px; }
 .cmd .sidebar-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

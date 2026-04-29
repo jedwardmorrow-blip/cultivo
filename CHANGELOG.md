@@ -4,6 +4,48 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-29 - Cultivation Command Center · PR2 (task completion + assignment + auto-gen)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Per-task-type log writes + multi-person assignment live
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+PR2 wires three legacy behaviors into the new Command Center, restoring full task parity vs cult-ops:
+
+1. **Per-task-type log writes** — replaced the simple PR1 completion modal with a delegating wrapper around the existing `TaskCompletionForm`. Each completion now writes the correct typed log row (`ipm_spray_log`, `batch_tank_mix_log`, `scouting_log`, `defoliation_log`, `cleaning_log`, `training_log`, `custom_task_log`, `saturation_check_log`, `irrigation_audit_log`) plus the `daily_task_instances` audit pointer via `completion_ref_table` / `completion_ref_id`.
+
+2. **Multi-person task assignment with promote-to-lead** — every task row now has an inline assignee summary (`N assigned ▸` / `unassigned ▸`). Click to expand the row inline and see the full assignee list with role badges. Each non-lead assignee shows a "promote → lead" action. A "+ add staff…" select adds the next person as crew (or as lead if they're the first). Wired through `useTaskAssignments` (`assignToTask`, `promoteToLead`, `getForTask`) — the same hook the legacy used.
+
+3. **Auto-generation of today's tasks from active schedules** — `useGenerateTasksFromSchedules` now runs once on mount of the Command Center, after the rooms and tasks queries settle. Idempotent (existing tasks ignored), silent on failure (best-effort), refetches on success.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — TaskRow split into row + inline TaskRowAssignees panel; TaskCompletionForm wired with `toTaskCardData` adapter; `useTaskAssignments` + `useActiveStaff` integration.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — auto-gen on first mount via `useGenerateTasksFromSchedules`.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — new styles for assignee chip, role badges, promote-to-lead button, inline expansion panel.
+
+### Behavior parity with legacy (now complete for tasks)
+
+| Behavior | Status |
+|---|---|
+| Per-task-type log writes (ipm/spray/scouting/etc) | ✅ via TaskCompletionForm delegation |
+| Multi-person assignment | ✅ |
+| Promote-to-lead | ✅ |
+| Single-person quick-assign | ✅ via TaskCompletionForm staff dropdown |
+| Auto-gen tasks from schedules on mount | ✅ |
+
+### Still parked
+
+- PR3: dnd-kit reschedule calendar (defer; legacy ScheduleCalendarExpanded needs full restyle), inline tank mix recipe inside batch_tank_mix tasks, inline + global add task wired, interactive feed recipe scaling, cross-room labor drawer.
+
+### Build
+
+`npm run build` passes (exit 0, 12.6s). CommandCenter chunk holds steady at ~155 KB / 36 KB gzip.
+
+---
+
 ## 2026-04-29 - Cultivation Command Center · Claude Design v2 port (PR1 + PR1.5)
 
 **Type:** Feature — Cultivation

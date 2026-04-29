@@ -2,9 +2,10 @@
 // Keeps the new CommandCenter component free of supabase plumbing and
 // gives a single place to evolve the data contract per the brief.
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useRoomOperationalState } from '../../hooks/useRoomOperationalState';
 import { useDailyTasks } from '../../hooks/useDailyTasks';
+import { useGenerateTasksFromSchedules } from '../../hooks/useGenerateTasksFromSchedules';
 import { CYCLE_DEFAULTS } from '../../constants/cyclePhaseMarkers';
 import { getEnvTarget, type EnvTarget } from '../../constants/environmentalTargets';
 import { todayIso } from '../../utils/dateUtils';
@@ -48,6 +49,18 @@ export function useCommandCenterData() {
     createTask,
     refetch: refetchTasks,
   } = useDailyTasks(today);
+
+  // Auto-generate today's tasks from active schedules on first mount.
+  // Same behavior as legacy: silent, idempotent (existing tasks ignored), one-shot per session.
+  const { generate } = useGenerateTasksFromSchedules();
+  const hasGeneratedRef = useRef(false);
+  useEffect(() => {
+    if (hasGeneratedRef.current || roomsLoading || tasksLoading) return;
+    hasGeneratedRef.current = true;
+    generate(today)
+      .then(result => { if (result.created > 0) void refetchTasks(); })
+      .catch(() => { /* silent — auto-gen is best-effort */ });
+  }, [roomsLoading, tasksLoading, today, generate, refetchTasks]);
 
   const rooms = useMemo<RoomShape[]>(() => {
     return opsRooms.map(r => {

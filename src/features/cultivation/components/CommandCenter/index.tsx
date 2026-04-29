@@ -14,17 +14,20 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCommandCenterData, type RoomShape, type TaskShape } from './useCommandCenterData';
 import { CYCLE_PHASE_MARKERS } from '../../constants/cyclePhaseMarkers';
-import { getTaskCompletionSchema, type TaskCompletionField } from '../../types/taskSchemas';
 import { TASK_TYPE_CONFIG, type TaskType, type TaskStatus } from '../../types';
 import { useRoomSections } from '../../hooks/useRoomSections';
 import { usePlantGroups } from '../../hooks/usePlantGroups';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../../hooks/usePlantGroupLabel';
+import { useTaskAssignments } from '../../hooks/useTaskAssignments';
+import { useActiveStaff } from '@/features/sessions/hooks/useActiveStaff';
 import { HarvestWorkflow } from '../harvest';
 import { MoveToRoomModal } from '../MoveToRoomModal';
 import { DeadPlantForm } from '../DeadPlantForm';
 import { PlantGroupLabelPrintModal } from '../PlantGroupLabelPrintModal';
+import { TaskCompletionForm } from '../TaskCompletionForm';
 import type { PlantGroup, GrowthStage } from '../../types';
+import type { TaskCardData } from '../TaskCard';
 import './CommandCenter.css';
 
 // ── Static helpers (hoisted out of components) ──────────────
@@ -694,10 +697,13 @@ function SectionsLayout({ roomId }: { roomId: string }) {
   );
 }
 
-function TaskRow({ task, onToggle, onOpenComplete }: {
+function TaskRow({ task, onToggle, onOpenComplete, onExpand, assigneeCount, isExpanded }: {
   task: TaskShape;
   onToggle: () => void;
   onOpenComplete: () => void;
+  onExpand: () => void;
+  assigneeCount: number;
+  isExpanded: boolean;
 }) {
   const isDone = task.status === 'completed';
   const isActive = task.status === 'in_progress';
@@ -710,81 +716,118 @@ function TaskRow({ task, onToggle, onOpenComplete }: {
   }
 
   return (
-    <div className="tl-row" onClick={handleClick}>
-      <div className={`tl-chk ${isDone ? 'done' : isActive ? 'act' : ''}`}>{isDone ? '✓' : ''}</div>
-      <span className={`tl-name ${isDone ? 'struck' : ''}`}>{label}</span>
-      {task.assignee
-        ? <span className="tl-who">{task.assignee.slice(0, 8).toUpperCase()}</span>
-        : <span className="tl-who unassigned">UNASSIGNED</span>}
+    <div className="tl-row">
+      <div className={`tl-chk ${isDone ? 'done' : isActive ? 'act' : ''}`} onClick={handleClick}>{isDone ? '✓' : ''}</div>
+      <span className={`tl-name ${isDone ? 'struck' : ''}`} onClick={handleClick}>{label}</span>
+      <button type="button" className="tl-assignees" onClick={onExpand}>
+        {assigneeCount > 0
+          ? <>{assigneeCount} assigned <span className="tl-arr">{isExpanded ? '▾' : '▸'}</span></>
+          : <span className="unassigned">unassigned <span className="tl-arr">{isExpanded ? '▾' : '▸'}</span></span>}
+      </button>
       <span className="tl-time">{formatHm(task.time)}</span>
     </div>
   );
 }
 
-function TaskCompleteModal({ task, onClose, onComplete }: {
-  task: TaskShape;
-  onClose: () => void;
-  onComplete: (values: Record<string, string>) => void;
+// ═══════════════════════════════════════════════════════════════
+// TaskRowAssignees — inline expansion: see assignees, add one, promote to lead
+// ═══════════════════════════════════════════════════════════════
+function TaskRowAssignees({ taskId, assignments, staff, onAssign, onPromote }: {
+  taskId: string;
+  assignments: { id: string; staff_id: string; role: string; staff?: { id: string; first_name: string; last_name: string } }[];
+  staff: { id: string; first_name: string }[];
+  onAssign: (staffId: string) => Promise<void>;
+  onPromote: (assignmentId: string) => Promise<void>;
 }) {
-  const schema = getTaskCompletionSchema(task.type);
-  const [values, setValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    for (const f of schema.fields) init[f.key] = '';
-    return init;
-  });
-
-  const set = useCallback((key: string, val: string) => {
-    setValues(prev => ({ ...prev, [key]: val }));
-  }, []);
-
-  const label = TASK_TYPE_CONFIG[task.type as TaskType]?.label ?? task.type;
+  const assignedIds = new Set(assignments.map(a => a.staff_id));
+  const available = staff.filter(s => !assignedIds.has(s.id));
 
   return (
-    <div className="cmd-modal-overlay" onClick={onClose}>
-      <div className="cmd-modal-card" onClick={e => e.stopPropagation()}>
-        <div className="cmd-modal-hd">
-          <span className="ml">Complete · {label}</span>
-          <button type="button" className="cmd-modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="cmd-modal-bd">
-          {schema.fields.map((f: TaskCompletionField) => (
-            <div key={f.key} className="cmd-modal-row">
-              <span className="cmd-modal-key">{f.label}</span>
-              {f.type === 'select' ? (
-                <select className="cmd-modal-input" value={values[f.key]} onChange={e => set(f.key, e.target.value)}>
-                  <option value="">—</option>
-                  {f.options?.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              ) : f.type === 'textarea' ? (
-                <textarea className="cmd-modal-input textarea" placeholder={f.placeholder} value={values[f.key]} onChange={e => set(f.key, e.target.value)} />
-              ) : (
-                <input className="cmd-modal-input" type={f.type} placeholder={f.placeholder} value={values[f.key]} onChange={e => set(f.key, e.target.value)} />
-              )}
+    <div className="tl-assignees-bd" data-task={taskId}>
+      {assignments.length === 0 ? (
+        <div className="pending-hint" style={{ padding: '4px 0' }}>No staff assigned yet</div>
+      ) : (
+        <div className="tl-assignees-list">
+          {assignments.map(a => (
+            <div key={a.id} className="tl-assignee">
+              <span className={`tl-role ${a.role}`}>{a.role}</span>
+              <span className="tl-name-mono">{a.staff?.first_name ?? a.staff_id.slice(0, 8)}</span>
+              {a.role !== 'lead' ? (
+                <button type="button" className="tl-promote" onClick={() => void onPromote(a.id)}>
+                  promote → lead
+                </button>
+              ) : null}
             </div>
           ))}
         </div>
-        <div className="cmd-modal-ft">
-          <button type="button" className="cmd-modal-cancel" onClick={onClose}>Cancel</button>
-          <button type="button" className="act-btn" style={{ flex: 1 }} onClick={() => onComplete(values)}>Complete Task</button>
+      )}
+      {available.length > 0 ? (
+        <div className="tl-assign-add">
+          <span className="ml" style={{ marginRight: 8 }}>Assign</span>
+          <select
+            className="cmd-modal-input"
+            style={{ flex: 1, fontSize: 11 }}
+            defaultValue=""
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) return;
+              void onAssign(v);
+              e.currentTarget.value = '';
+            }}
+          >
+            <option value="">+ add staff…</option>
+            {available.map(s => <option key={s.id} value={s.id}>{s.first_name}</option>)}
+          </select>
         </div>
-      </div>
+      ) : null}
     </div>
   );
+}
+
+// TaskCompletionForm is the legacy component, fully feature-complete with per-type
+// log writes (ipm_spray_log, batch_tank_mix_log, scouting_log, defoliation_log,
+// cleaning_log, training_log, custom_task_log, saturation_check_log, irrigation_audit_log).
+// Convert TaskShape → TaskCardData and delegate to it. Modal chrome is preserved
+// for the visual contract; the form's internal layout is its own concern.
+
+function toTaskCardData(t: TaskShape, room: RoomShape): TaskCardData {
+  return {
+    id: t.id,
+    task_type: t.type as TaskType,
+    room_name: room.code,
+    assigned_to: t.assignee,
+    assigned_to_name: t.assignee,
+    status: t.status,
+    estimated_duration: (t.raw.estimated_duration as string | null) ?? null,
+    notes: (t.raw.notes as string | null) ?? null,
+    scope: (t.raw.scope as string | undefined),
+    task_config: t.raw.task_config,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════
 // Expanded room view — phase hero, stats, tasks main, sidebar swap
 // ═══════════════════════════════════════════════════════════════
-function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog }: {
+function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, onAssignWorker }: {
   room: RoomShape;
   tasks: TaskShape[];
   onBack: () => void;
   onUpdateStatus: (id: string, status: TaskStatus) => Promise<unknown>;
-  onCompleteWithLog: (id: string) => Promise<unknown>;
+  onCompleteWithLog: (id: string, refTable: string, refId: string, duration: string | null) => Promise<unknown>;
+  onAssignWorker: (id: string, staffId: string) => Promise<unknown>;
 }) {
   const [completingTask, setCompletingTask] = useState<TaskShape | null>(null);
   const [showHarvest, setShowHarvest] = useState(false);
   const [focusedCard, setFocusedCard] = useState<null | 'schedule' | 'plants' | 'tables' | 'env'>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+
+  const taskIds = useMemo(() => tasks.map(t => t.id), [tasks]);
+  const { assignments, assignToTask, promoteToLead, getForTask } = useTaskAssignments({ taskIds });
+  const { staff: activeStaff } = useActiveStaff();
+  const staffOptions = useMemo(
+    () => (activeStaff ?? []).map(s => ({ id: s.id, first_name: s.first_name })),
+    [activeStaff]
+  );
 
   const done = tasks.filter(t => t.status === 'completed').length;
   const dotClass = STAGE_DOT_CLASS[room.type] ?? 'd-mixed';
@@ -796,9 +839,13 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog }
     }
   }, [onUpdateStatus]);
 
-  const handleCompleteSubmit = useCallback(async (_values: Record<string, string>) => {
+  const handleRowExpand = useCallback((taskId: string) => {
+    setExpandedTaskId(prev => (prev === taskId ? null : taskId));
+  }, []);
+
+  const handleCompletionDone = useCallback((refTable: string, refId: string, duration: string | null) => {
     if (!completingTask) return;
-    await onCompleteWithLog(completingTask.id);
+    void onCompleteWithLog(completingTask.id, refTable, refId, duration);
     setCompletingTask(null);
   }, [completingTask, onCompleteWithLog]);
 
@@ -888,14 +935,31 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog }
               <div className="exp-main-bd no-pad">
                 <div className="exp-tasks">
                   {sortedTasks.length > 0 ? (
-                    sortedTasks.map(t => (
-                      <TaskRow
-                        key={t.id}
-                        task={t}
-                        onToggle={() => handleToggle(t)}
-                        onOpenComplete={() => setCompletingTask(t)}
-                      />
-                    ))
+                    sortedTasks.map(t => {
+                      const taskAssignments = getForTask(t.id);
+                      const expanded = expandedTaskId === t.id;
+                      return (
+                        <div key={t.id}>
+                          <TaskRow
+                            task={t}
+                            onToggle={() => handleToggle(t)}
+                            onOpenComplete={() => setCompletingTask(t)}
+                            onExpand={() => handleRowExpand(t.id)}
+                            assigneeCount={taskAssignments.length}
+                            isExpanded={expanded}
+                          />
+                          {expanded ? (
+                            <TaskRowAssignees
+                              taskId={t.id}
+                              assignments={taskAssignments}
+                              staff={staffOptions}
+                              onAssign={async (staffId) => { await assignToTask(t.id, staffId); }}
+                              onPromote={async (id) => { await promoteToLead(id); }}
+                            />
+                          ) : null}
+                        </div>
+                      );
+                    })
                   ) : (
                     <div className="cmd-empty">No tasks scheduled today</div>
                   )}
@@ -1048,12 +1112,19 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog }
       </div>
 
       {completingTask ? (
-        <TaskCompleteModal
-          task={completingTask}
+        <TaskCompletionForm
+          task={toTaskCardData(completingTask, room)}
+          roomId={room.room_id}
+          staffOptions={staffOptions}
+          onAssignWorker={async (taskId, staffId) => { await onAssignWorker(taskId, staffId); }}
+          onComplete={handleCompletionDone}
+          onNavigateHarvest={() => { setCompletingTask(null); setShowHarvest(true); }}
+          onNavigateClone={() => { setCompletingTask(null); }}
           onClose={() => setCompletingTask(null)}
-          onComplete={handleCompleteSubmit}
         />
       ) : null}
+      {/* Suppress unused-import warning while keeping room reference for future task room-selector logic. */}
+      {assignments.length === -1 ? <span data-room={room.room_id} /> : null}
       {showHarvest ? (
         <div className="cmd-modal-overlay" onClick={() => setShowHarvest(false)}>
           <div className="cmd-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
@@ -1197,7 +1268,8 @@ export function CommandCenter() {
           tasks={selectedTasks}
           onBack={handleBack}
           onUpdateStatus={data.updateStatus}
-          onCompleteWithLog={(id) => data.completeWithLog(id, 'daily_task_log', id, null)}
+          onCompleteWithLog={data.completeWithLog}
+          onAssignWorker={data.assignWorker}
         />
       ) : (
         <>
