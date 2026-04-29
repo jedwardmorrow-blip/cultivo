@@ -17,8 +17,6 @@ export interface HomeData {
     deliveredMTD: number;
     forecastEOM: number;
     scheduledRemaining: number; // forecastEOM - deliveredMTD, the still-to-land piece
-    bookedSpark: number[]; // 30d daily booked $ totals from orders.created_at
-    deliveredSpark: number[]; // 30d daily delivered $ from realized v_order_revenue_base
   };
   cash: {
     arOutstanding: number;
@@ -67,7 +65,6 @@ export interface HomeData {
     top3Pct: number;
     medianDtfDays: number;
     dtfSampleSize: number;
-    new24hSpark: number[]; // 30d daily new-order count from orders.created_at
   };
   exceptions: {
     roomsAttention: number;
@@ -76,6 +73,16 @@ export interface HomeData {
     auditFindings: number;
     negativeBalances: number;
   };
+  /**
+   * 30-day spark arrays keyed by home_cell_manifest_v1 cell_id. Mixed source:
+   * three cells (revenue.booked_mtd, revenue.delivered_mtd, fulfillment.new_24h_count)
+   * derive directly from orders + v_order_revenue_base for accuracy. Everything
+   * else reads from home_metric_snapshot via cell_spark_batch (populated daily
+   * by fn_capture_home_metric_snapshot at 06:00 AZ via pg_cron). Cells with
+   * fewer than the requested days will return shorter arrays; Sparkline handles
+   * 1..30 lengths gracefully.
+   */
+  sparks: Record<string, number[]>;
 }
 
 const EMPTY: HomeData = {
@@ -83,14 +90,7 @@ const EMPTY: HomeData = {
   error: null,
   loadedAt: 0,
   header: { tasksDoneToday: 0, tasksTotalToday: 0 },
-  revenue: {
-    bookedMTD: 0,
-    deliveredMTD: 0,
-    forecastEOM: 0,
-    scheduledRemaining: 0,
-    bookedSpark: [],
-    deliveredSpark: [],
-  },
+  revenue: { bookedMTD: 0, deliveredMTD: 0, forecastEOM: 0, scheduledRemaining: 0 },
   cash: { arOutstanding: 0, arAtRisk: 0, cashForecast14d: 0 },
   coverage: {
     soldNotDeliveredUSD: 0,
@@ -134,7 +134,6 @@ const EMPTY: HomeData = {
     top3Pct: 0,
     medianDtfDays: 0,
     dtfSampleSize: 0,
-    new24hSpark: [],
   },
   exceptions: {
     roomsAttention: 0,
@@ -143,6 +142,7 @@ const EMPTY: HomeData = {
     auditFindings: 0,
     negativeBalances: 0,
   },
+  sparks: {},
 };
 
 function todayISO(): string {
@@ -236,6 +236,7 @@ export function useHomeData(): HomeData {
           deliveredCycleRes,
           orders30dRes,
           delivered30dRes,
+          sparkBatchRes,
         ] = await Promise.all([
           supabase
             .from('v_order_revenue_base')
@@ -326,6 +327,9 @@ export function useHomeData(): HomeData {
             .eq('is_realized', true)
             .gte('canonical_delivery_date', plusDaysISO(-30))
             .lte('canonical_delivery_date', today),
+          // Sparkline source for everything else: daily snapshots from
+          // home_metric_snapshot, captured by pg_cron at 06:00 AZ.
+          supabase.rpc('cell_spark_batch', { p_days: 30 }),
         ]);
 
         if (cancelled) return;
@@ -565,6 +569,34 @@ export function useHomeData(): HomeData {
           30
         );
 
+        // Snapshot-driven sparks: bucket cell_spark_batch rows by cell_id and
+        // pad to 30 entries oldest-first. Cells with fewer captured days
+        // produce shorter arrays; Sparkline.tsx handles 1..30 lengths.
+        const sparkRows = (sparkBatchRes.data ?? []) as Array<{
+          cell_id: string;
+          captured_for_date: string;
+          value_numeric: number | null;
+        }>;
+        const sparkByCell: Record<string, Array<{ d: string; v: number }>> = {};
+        for (const r of sparkRows) {
+          if (!sparkByCell[r.cell_id]) sparkByCell[r.cell_id] = [];
+          sparkByCell[r.cell_id].push({
+            d: r.captured_for_date,
+            v: Number(r.value_numeric ?? 0),
+          });
+        }
+        const sparks: Record<string, number[]> = {
+          'revenue.booked_mtd': bookedSpark,
+          'revenue.delivered_mtd': deliveredSpark,
+          'fulfillment.new_24h_count': new24hSpark,
+        };
+        for (const [cellId, points] of Object.entries(sparkByCell)) {
+          if (cellId in sparks) continue; // direct-derived already populated
+          sparks[cellId] = points
+            .sort((a, b) => (a.d < b.d ? -1 : 1))
+            .map((p) => p.v);
+        }
+
         // Net cover: lbs-vs-lbs.
         // Supply lbs = ready + in-process projected to clear + incoming from harvest.
         // Commitment lbs from order_items.quantity where demand_unit='g'.
@@ -578,14 +610,7 @@ export function useHomeData(): HomeData {
           error: null,
           loadedAt: Date.now(),
           header: { tasksDoneToday, tasksTotalToday },
-          revenue: {
-            bookedMTD,
-            deliveredMTD,
-            forecastEOM,
-            scheduledRemaining,
-            bookedSpark,
-            deliveredSpark,
-          },
+          revenue: { bookedMTD, deliveredMTD, forecastEOM, scheduledRemaining },
           cash: { arOutstanding, arAtRisk, cashForecast14d },
           coverage: {
             soldNotDeliveredUSD,
@@ -629,7 +654,6 @@ export function useHomeData(): HomeData {
             top3Pct,
             medianDtfDays,
             dtfSampleSize,
-            new24hSpark,
           },
           exceptions: {
             roomsAttention,
@@ -638,6 +662,7 @@ export function useHomeData(): HomeData {
             auditFindings,
             negativeBalances,
           },
+          sparks,
         });
       } catch (e) {
         if (cancelled) return;

@@ -80,14 +80,14 @@ export function Home() {
           label="BOOKED MTD"
           primary={fmtUSD(d.revenue.bookedMTD)}
           secondary="month-to-date"
-          spark={d.revenue.bookedSpark}
+          spark={d.sparks['revenue.booked_mtd']}
           drillRoute="/sales-hub?focus=booked"
         />
         <Cell
           label="DELIVERED MTD"
           primary={fmtUSD(d.revenue.deliveredMTD)}
           secondary={`${fmtPct((d.revenue.deliveredMTD / Math.max(d.revenue.bookedMTD, 1)) * 100)} of booked`}
-          spark={d.revenue.deliveredSpark}
+          spark={d.sparks['revenue.delivered_mtd']}
           drillRoute="/sales-hub?focus=delivered"
         />
         <PendingCell
@@ -110,6 +110,7 @@ export function Home() {
           primary={fmtUSD(d.revenue.forecastEOM)}
           secondary={`${fmtUSD(d.revenue.deliveredMTD)} delivered · ${fmtUSD(d.revenue.scheduledRemaining)} scheduled`}
           projected
+          spark={d.sparks['revenue.forecast_eom']}
           drillRoute="/sales-hub?focus=forecast"
         />
         <PendingCell
@@ -147,6 +148,7 @@ export function Home() {
           label="AR OUTSTANDING"
           primary={fmtUSD(d.cash.arOutstanding)}
           secondary="open invoices"
+          spark={d.sparks['cash.ar_outstanding']}
           drillRoute="/sales-hub?focus=ar"
         />
         <Cell
@@ -154,12 +156,14 @@ export function Home() {
           primary={fmtUSD(d.cash.arAtRisk)}
           secondary="outstanding > 30d"
           marker={arRiskMarker}
+          spark={d.sparks['cash.ar_at_risk']}
           drillRoute="/sales-hub?focus=ar-aging"
         />
         <Cell
           label="CASH FORECAST 14D"
           primary={fmtUSD(d.cash.cashForecast14d)}
           secondary="due in next 14 days"
+          spark={d.sparks['cash.cash_forecast_14d']}
           drillRoute="/sales-hub?focus=ar-aging"
         />
         <PendingCell
@@ -184,18 +188,21 @@ export function Home() {
           label="SOLD NOT DELIVERED"
           primary={fmtUSD(d.coverage.soldNotDeliveredUSD)}
           secondary={`${fmtLbs(d.coverage.soldNotDeliveredLbs)} · ${fmtCount(d.coverage.soldNotDeliveredCount)} orders`}
+          spark={d.sparks['coverage.sold_not_delivered_usd']}
           drillRoute="/distribution-command-center?focus=open-commitments"
         />
         <Cell
           label="READY"
           primary={fmtLbs(d.coverage.readyLbs)}
           secondary="sellable today"
+          spark={d.sparks['coverage.ready_lbs']}
           drillRoute="/inventory-all?focus=ready"
         />
         <Cell
           label="IN PROCESS 14D"
           primary={fmtLbs(d.coverage.inProcessLbs)}
           secondary="drying + bucked + trim + bulk"
+          spark={d.sparks['coverage.in_process_lbs']}
           drillRoute="/inventory-all?focus=in-process"
         />
         <Cell
@@ -209,6 +216,7 @@ export function Home() {
               : 'no harvests in window'
           }
           projected={d.coverage.incoming14dEstimated}
+          spark={d.sparks['coverage.incoming_14d_lbs']}
           drillRoute="/cultivation-dashboard?focus=incoming"
         />
         <Cell
@@ -216,6 +224,7 @@ export function Home() {
           primary={fmtPct(d.coverage.netCoverPct)}
           secondary={`${fmtLbs(d.coverage.readyLbs + d.coverage.inProcessLbs + d.coverage.incoming14dLbs)} supply / ${fmtLbs(d.coverage.soldNotDeliveredLbs)} need`}
           marker={netCoverMarker}
+          spark={d.sparks['coverage.net_cover_pct']}
           drillRoute="/distribution-command-center?focus=cover"
         />
       </Section>
@@ -254,12 +263,14 @@ export function Home() {
           primary={fmtLbs(d.pipeline.thisWeekHarvestLbs)}
           secondary="projected wet"
           projected
+          spark={d.sparks['pipeline.this_week_harvest_lbs']}
           drillRoute="/cultivation-dashboard?focus=week"
         />
         <Cell
           label="DELIVERIES THIS WEEK"
           primary={fmtUSD(d.pipeline.next7dDeliveriesUSD)}
           secondary={`${fmtCount(d.pipeline.next7dDeliveriesCount)} orders · today through +7d`}
+          spark={d.sparks['pipeline.deliveries_this_week_usd']}
           drillRoute="/distribution-command-center?focus=7d"
         />
         <Cell
@@ -275,6 +286,7 @@ export function Home() {
               : 'no orders 8-14d out'
           }
           marker={forwardBookMarker}
+          spark={d.sparks['pipeline.forward_book_usd']}
           drillRoute="/distribution-command-center?focus=14d"
         />
         <Cell
@@ -282,6 +294,7 @@ export function Home() {
           primary={fmtCount(d.pipeline.overdueCount)}
           secondary={fmtUSD(d.pipeline.overdueUSD) + ' at risk'}
           marker={overdueMarker}
+          spark={d.sparks['pipeline.overdue_count']}
           drillRoute="/distribution-command-center?focus=overdue"
         />
       </Section>
@@ -291,24 +304,28 @@ export function Home() {
           label="BINNED"
           primary={fmtLbs(d.conversion.binnedLbs)}
           secondary="wet-trimmed, in bins"
+          spark={d.sparks['conversion.binned_lbs']}
           drillRoute="/cultivation-performance?focus=binned"
         />
         <Cell
           label="BUCKED"
           primary={fmtLbs(d.conversion.buckedLbs)}
           secondary="ready for trim"
+          spark={d.sparks['conversion.bucked_lbs']}
           drillRoute="/cultivation-performance?focus=bucked"
         />
         <Cell
           label="TRIMMED"
           primary={fmtLbs(d.conversion.trimmedLbs)}
           secondary="bulk + smalls"
+          spark={d.sparks['conversion.trimmed_lbs']}
           drillRoute="/cultivation-performance?focus=trimmed"
         />
         <Cell
           label="PACKAGED"
           primary={fmtLbs(d.conversion.packagedLbs)}
           secondary="jarred for retail"
+          spark={d.sparks['conversion.packaged_lbs']}
           drillRoute="/cultivation-performance?focus=packaged"
         />
       </Section>
@@ -318,13 +335,14 @@ export function Home() {
           label="OPEN ORDERS"
           primary={fmtUSD(d.fulfillment.openUSD)}
           secondary={`${fmtCount(d.fulfillment.openCount)} orders`}
+          spark={d.sparks['fulfillment.open_usd']}
           drillRoute="/orders?focus=open"
         />
         <Cell
           label="NEW 24H"
           primary={fmtCount(d.fulfillment.new24hCount)}
           secondary={fmtUSD(d.fulfillment.new24hUSD)}
-          spark={d.fulfillment.new24hSpark}
+          spark={d.sparks['fulfillment.new_24h_count']}
           drillRoute="/orders?focus=new"
         />
         <Cell
@@ -332,6 +350,7 @@ export function Home() {
           primary={fmtCount(d.fulfillment.lateCount)}
           secondary={fmtUSD(d.fulfillment.lateUSD)}
           marker={overdueMarker}
+          spark={d.sparks['fulfillment.late_count']}
           drillRoute="/orders?focus=late"
         />
         <Cell
@@ -339,6 +358,7 @@ export function Home() {
           primary={fmtPct(d.fulfillment.top3Pct)}
           secondary="of MTD revenue · by chain"
           marker={top3Marker}
+          spark={d.sparks['fulfillment.top3_pct']}
           drillRoute="/crm-accounts-hub?focus=concentration"
         />
         <Cell
@@ -354,6 +374,7 @@ export function Home() {
               : 'no realized orders in window'
           }
           marker={dtfMarker}
+          spark={d.sparks['fulfillment.dtf_median_days']}
           drillRoute="/orders?focus=cycle-time"
         />
       </Section>
@@ -364,6 +385,7 @@ export function Home() {
           primary={fmtCount(d.exceptions.roomsAttention)}
           secondary={`of ${d.exceptions.roomsTotal}`}
           marker={d.exceptions.roomsAttention > 0 ? 'warn' : null}
+          spark={d.sparks['exceptions.rooms_attention']}
           drillRoute="/executive-hub?filter=attention"
         />
         <Cell
@@ -371,6 +393,7 @@ export function Home() {
           primary={fmtCount(d.exceptions.stuckSessions)}
           secondary="active, zero weight"
           marker={d.exceptions.stuckSessions > 0 ? 'warn' : null}
+          spark={d.sparks['exceptions.stuck_sessions']}
           drillRoute="/production-queue?filter=stuck"
         />
         <PendingCell
@@ -390,6 +413,7 @@ export function Home() {
           primary={fmtCount(d.exceptions.auditFindings)}
           secondary="open"
           marker={d.exceptions.auditFindings > 0 ? 'warn' : null}
+          spark={d.sparks['exceptions.audit_findings']}
           drillRoute="/inventory-audits?filter=open"
         />
         <Cell
@@ -397,6 +421,7 @@ export function Home() {
           primary={fmtCount(d.exceptions.negativeBalances)}
           secondary="data integrity"
           marker={d.exceptions.negativeBalances > 0 ? 'bad' : null}
+          spark={d.sparks['exceptions.negative_balances']}
           drillRoute="/inventory-all?filter=negative"
         />
       </Section>
