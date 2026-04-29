@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cultivation Command · Redesign</title>
+<link rel="stylesheet" href="tokens/brand-tokens.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Cultivation Command Center — Redesign Prototype
+   Built in the Home surface language: hairline grids, 6px dots,
+   mono labels, vanilla CSS tokens, zero decoration.
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--op-canvas);
+  color: var(--op-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.cmd-root {
+  padding: 18px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.cmd-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--op-line);
+  padding-bottom: 12px;
+}
+.cmd-header-l {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.cmd-header-title {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.cmd-header-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--op-ink-2);
+}
+.cmd-header-tasks {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--op-ink-2);
+}
+.cmd-header-tasks strong {
+  color: var(--op-ink);
+  font-weight: 500;
+}
+.cmd-header-r {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Section (from Home surface) ─────────────────────────── */
+.cmd-section {
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.cmd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.cmd-section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+}
+.cmd-section-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-4);
+  margin-left: auto;
+}
+
+/* ── Status dot (6px) ────────────────────────────────────── */
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot-clone { background: var(--stage-clone); }
+.dot-veg { background: var(--stage-veg); }
+.dot-flower { background: var(--stage-flower); }
+.dot-mother { background: var(--stage-mother); }
+.dot-ok { background: var(--status-ok); }
+.dot-warn { background: var(--status-warn); }
+.dot-bad { background: var(--status-bad); }
+.dot-muted { background: var(--op-ink-4); }
+
+/* ── Attention strip ─────────────────────────────────────── */
+.cmd-attention {
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  overflow-x: auto;
+}
+.cmd-attention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 0;
+}
+.cmd-attention-item:hover { color: var(--op-ink); }
+.cmd-attention-code {
+  font-weight: 600;
+  color: var(--op-ink);
+}
+.cmd-attention-msg {
+  color: var(--op-ink-2);
+}
+.cmd-attention-msg.bad { color: var(--status-bad); }
+.cmd-attention-msg.warn { color: var(--status-warn); }
+
+/* ── Room grid ───────────────────────────────────────────── */
+.cmd-rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--op-line);
+}
+.cmd-room {
+  background: var(--op-canvas);
+  padding: 14px 16px;
+  cursor: pointer;
+  border: 0;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 120ms ease;
+  min-height: 120px;
+}
+.cmd-room:hover { background: var(--op-surface); }
+.cmd-room.empty { opacity: 0.35; cursor: default; }
+.cmd-room.empty:hover { background: var(--op-canvas); }
+.cmd-room-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cmd-room-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--op-ink);
+}
+.cmd-room-type {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+}
+.cmd-room-urgency {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cmd-room-stats {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-2);
+  display: flex;
+  gap: 12px;
+}
+.cmd-room-primary {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--op-ink);
+  line-height: 1.1;
+}
+.cmd-room-strains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.cmd-room-strain {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--op-ink-3);
+  border: 1px solid var(--op-line);
+  padding: 1px 6px;
+  letter-spacing: 0.04em;
+}
+.cmd-room-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--op-line);
+}
+.cmd-room-harvest {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.cmd-room-tasks {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-3);
+}
+.cmd-task-bar {
+  display: flex;
+  gap: 2px;
+  height: 4px;
+}
+.cmd-task-seg {
+  height: 4px;
+  border-radius: 1px;
+}
+.cmd-task-seg.done { background: var(--status-ok); }
+.cmd-task-seg.active { background: var(--status-warn); }
+.cmd-task-seg.pending { background: var(--op-ink-4); }
+
+/* ── Labor overview section ──────────────────────────────── */
+.cmd-labor-cells {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--op-canvas);
+}
+.cmd-labor-cells > .cmd-cell:not(:last-child) {
+  border-right: 1px solid var(--op-line);
+}
+
+/* ── Cell (from Home) ────────────────────────────────────── */
+.cmd-cell {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 120ms ease;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+}
+.cmd-cell:hover { background: var(--op-surface); }
+.cmd-cell-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cmd-cell-primary {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--op-ink);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.cmd-cell-secondary {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-2);
+  letter-spacing: 0.02em;
+}
+
+/* ── Expanded room view ──────────────────────────────────── */
+.cmd-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cmd-expanded-header {
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.cmd-expanded-header-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.cmd-back-btn {
+  background: none;
+  border: 1px solid var(--op-line-strong);
+  color: var(--op-ink-2);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.cmd-back-btn:hover {
+  color: var(--op-ink);
+  border-color: var(--op-ink-3);
+}
+.cmd-expanded-room-code {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+}
+.cmd-expanded-room-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-3);
+  display: flex;
+  gap: 12px;
+}
+.cmd-expanded-stats {
+  display: grid;
+  grid-template-columns: repeat(var(--cells, 6), 1fr);
+  background: var(--op-canvas);
+}
+.cmd-expanded-stats > .cmd-cell:not(:last-child) {
+  border-right: 1px solid var(--op-line);
+}
+
+.cmd-expanded-body {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 14px;
+}
+@media (max-width: 1024px) {
+  .cmd-expanded-body { grid-template-columns: 1fr; }
+}
+
+/* ── Task list ───────────────────────────────────────────── */
+.cmd-tasks {
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.cmd-task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--op-line);
+  transition: background 120ms;
+  cursor: pointer;
+}
+.cmd-task-row:last-child { border-bottom: 0; }
+.cmd-task-row:hover { background: var(--op-surface-2); }
+.cmd-task-check {
+  width: 18px; height: 18px;
+  border: 1px solid var(--op-line-strong);
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cmd-task-check.done {
+  background: var(--status-ok);
+  border-color: var(--status-ok);
+}
+.cmd-task-check.done::after {
+  content: '✓';
+  font-size: 11px;
+  color: var(--op-canvas);
+  font-weight: 700;
+}
+.cmd-task-check.active {
+  border-color: var(--status-warn);
+}
+.cmd-task-check.active::after {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  background: var(--status-warn);
+}
+.cmd-task-name {
+  font-size: 13px;
+  color: var(--op-ink);
+  flex: 1;
+}
+.cmd-task-name.done-text {
+  color: var(--op-ink-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--op-ink-4);
+}
+.cmd-task-assignee {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--op-ink-3);
+  letter-spacing: 0.06em;
+}
+.cmd-task-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--op-ink-4);
+}
+
+/* ── Sidebar cards ───────────────────────────────────────── */
+.cmd-sidebar-card {
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.cmd-sidebar-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.cmd-sidebar-card-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+}
+.cmd-sidebar-card-body {
+  padding: 12px 16px;
+}
+.cmd-sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.cmd-sidebar-row:not(:last-child) {
+  border-bottom: 1px solid var(--op-line);
+}
+.cmd-sidebar-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--op-ink-4);
+  width: 72px;
+  flex-shrink: 0;
+}
+.cmd-sidebar-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--op-ink);
+}
+
+/* ── Schedule mini ───────────────────────────────────────── */
+.cmd-schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.cmd-schedule-day {
+  width: 60px;
+  color: var(--op-ink-4);
+  flex-shrink: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.cmd-schedule-tasks {
+  color: var(--op-ink-2);
+  font-size: 11px;
+}
+
+/* ── Phase bar ───────────────────────────────────────────── */
+.cmd-phase-bar {
+  height: 3px;
+  background: var(--op-surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+.cmd-phase-fill {
+  height: 100%;
+  background: var(--op-ink-3);
+  border-radius: 2px;
+}
+
+/* ── Room layout grid placeholder ────────────────────────── */
+.cmd-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+.cmd-layout-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--op-line);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--op-ink-4);
+  letter-spacing: 0.06em;
+}
+.cmd-layout-cell.occupied {
+  background: var(--op-surface-2);
+  color: var(--op-ink-3);
+}
+
+/* ── Feed recipe ─────────────────────────────────────────── */
+.cmd-feed-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 60px;
+  gap: 8px;
+  padding: 5px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  align-items: center;
+}
+.cmd-feed-row:not(:last-child) {
+  border-bottom: 1px solid var(--op-line);
+}
+.cmd-feed-name { color: var(--op-ink-2); }
+.cmd-feed-val { color: var(--op-ink); text-align: right; }
+.cmd-feed-unit { color: var(--op-ink-4); font-size: 10px; }
+
+/* ── Action button (instrument style) ────────────────────── */
+.cmd-action {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.cmd-action:hover {
+  background: var(--accent);
+  color: var(--op-canvas);
+}
+
+/* ── View toggle ─────────────────────────────────────────── */
+.cmd-views {
+  display: flex;
+  gap: 2px;
+}
+.cmd-view-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--op-ink-3);
+  cursor: pointer;
+  transition: all 120ms;
+}
+.cmd-view-btn:hover { color: var(--op-ink-2); }
+.cmd-view-btn.active {
+  background: var(--op-surface-2);
+  border-color: var(--op-line-strong);
+  color: var(--accent);
+}
+
+/* ── Prototype chrome ────────────────────────────────────── */
+.proto-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--op-ink-4);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 0;
+  border-top: 1px solid var(--op-line);
+  margin-top: 24px;
+}
+</style>
+</head>
+<body>
+
+<div class="cmd-root" id="app">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCREEN 1: Grid View
+       ═══════════════════════════════════════════════════════ -->
+  <div id="grid-view">
+
+    <!-- Header -->
+    <div class="cmd-header">
+      <div class="cmd-header-l">
+        <span class="cmd-header-title">Cultivation Command</span>
+        <span class="cmd-header-date">Mon, Apr 28, 2026</span>
+        <span class="cmd-header-tasks">tasks <strong>14 / 23</strong> today</span>
+      </div>
+      <div class="cmd-header-r">live</div>
+    </div>
+
+    <!-- Attention strip -->
+    <div class="cmd-attention">
+      <span class="cmd-section-label" style="flex-shrink: 0;">Attention</span>
+      <button class="cmd-attention-item" onclick="showRoom('F-03')">
+        <span class="dot dot-bad"></span>
+        <span class="cmd-attention-code">F-03</span>
+        <span class="cmd-attention-msg bad">4d overdue</span>
+      </button>
+      <button class="cmd-attention-item" onclick="showRoom('F-01')">
+        <span class="dot dot-warn"></span>
+        <span class="cmd-attention-code">F-01</span>
+        <span class="cmd-attention-msg warn">Harvest in 3d</span>
+      </button>
+      <button class="cmd-attention-item" onclick="showRoom('V-02')">
+        <span class="dot dot-warn"></span>
+        <span class="cmd-attention-code">V-02</span>
+        <span class="cmd-attention-msg warn">38d in veg</span>
+      </button>
+    </div>
+
+    <!-- Labor overview -->
+    <div class="cmd-section">
+      <div class="cmd-section-header">
+        <span class="cmd-section-label">Labor</span>
+        <span class="cmd-section-count">Mon · 5 staff on</span>
+      </div>
+      <div class="cmd-labor-cells">
+        <div class="cmd-cell">
+          <span class="cmd-cell-label">Total Tasks</span>
+          <span class="cmd-cell-primary">23</span>
+          <span class="cmd-cell-secondary">across 8 rooms</span>
+        </div>
+        <div class="cmd-cell">
+          <span class="cmd-cell-label"><span class="dot dot-ok"></span> Done</span>
+          <span class="cmd-cell-primary">14</span>
+          <span class="cmd-cell-secondary">61% complete</span>
+        </div>
+        <div class="cmd-cell">
+          <span class="cmd-cell-label"><span class="dot dot-warn"></span> In Progress</span>
+          <span class="cmd-cell-primary">3</span>
+          <span class="cmd-cell-secondary">2 assigned</span>
+        </div>
+        <div class="cmd-cell">
+          <span class="cmd-cell-label">Pending</span>
+          <span class="cmd-cell-primary">6</span>
+          <span class="cmd-cell-secondary">4 unassigned</span>
+        </div>
+        <div class="cmd-cell">
+          <span class="cmd-cell-label">Top Type</span>
+          <span class="cmd-cell-primary">Feed</span>
+          <span class="cmd-cell-secondary">8 tank mix tasks</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rooms grid -->
+    <div class="cmd-section">
+      <div class="cmd-section-header">
+        <span class="cmd-section-label">Rooms</span>
+        <span class="cmd-section-count">10 active · 2 empty</span>
+      </div>
+      <div class="cmd-rooms">
+
+        <!-- F-03: Urgent -->
+        <button class="cmd-room" onclick="showRoom('F-03')">
+          <div class="cmd-room-top">
+            <span class="dot dot-flower"></span>
+            <span class="cmd-room-code">F-03</span>
+            <span class="cmd-room-type">Flower</span>
+            <span class="cmd-room-urgency" style="color: var(--status-bad);">Overdue 4d</span>
+          </div>
+          <span class="cmd-room-primary">312</span>
+          <span class="cmd-room-stats">
+            <span>3 strains</span>
+            <span>Day 56</span>
+          </span>
+          <div class="cmd-room-strains">
+            <span class="cmd-room-strain">GMO</span>
+            <span class="cmd-room-strain">ZSH</span>
+            <span class="cmd-room-strain">RNZ</span>
+          </div>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--status-bad);">4d overdue · projected 24 Apr</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 12px;"></span>
+                <span class="cmd-task-seg active" style="width: 4px;"></span>
+                <span class="cmd-task-seg pending" style="width: 8px;"></span>
+              </div>
+              2/4
+            </div>
+          </div>
+        </button>
+
+        <!-- F-01: Warning -->
+        <button class="cmd-room" onclick="showRoom('F-01')">
+          <div class="cmd-room-top">
+            <span class="dot dot-flower"></span>
+            <span class="cmd-room-code">F-01</span>
+            <span class="cmd-room-type">Flower</span>
+            <span class="cmd-room-urgency" style="color: var(--status-warn);">3d to harvest</span>
+          </div>
+          <span class="cmd-room-primary">248</span>
+          <span class="cmd-room-stats">
+            <span>3 strains</span>
+            <span>Day 42</span>
+          </span>
+          <div class="cmd-room-strains">
+            <span class="cmd-room-strain">GMO</span>
+            <span class="cmd-room-strain">RNZ</span>
+            <span class="cmd-room-strain">ZSH</span>
+          </div>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--status-warn);">3d · projected 1 May · 3 groups ready</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 16px;"></span>
+                <span class="cmd-task-seg pending" style="width: 4px;"></span>
+              </div>
+              4/5
+            </div>
+          </div>
+        </button>
+
+        <!-- F-02: Normal flower -->
+        <button class="cmd-room" onclick="showRoom('F-02')">
+          <div class="cmd-room-top">
+            <span class="dot dot-flower"></span>
+            <span class="cmd-room-code">F-02</span>
+            <span class="cmd-room-type">Flower</span>
+          </div>
+          <span class="cmd-room-primary">180</span>
+          <span class="cmd-room-stats">
+            <span>2 strains</span>
+            <span>Day 21</span>
+          </span>
+          <div class="cmd-room-strains">
+            <span class="cmd-room-strain">PPZ</span>
+            <span class="cmd-room-strain">GLC</span>
+          </div>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--op-ink-3);">35d · projected 2 Jun</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 8px;"></span>
+                <span class="cmd-task-seg pending" style="width: 8px;"></span>
+              </div>
+              1/3
+            </div>
+          </div>
+        </button>
+
+        <!-- V-01 -->
+        <button class="cmd-room" onclick="showRoom('V-01')">
+          <div class="cmd-room-top">
+            <span class="dot dot-veg"></span>
+            <span class="cmd-room-code">V-01</span>
+            <span class="cmd-room-type">Veg</span>
+          </div>
+          <span class="cmd-room-primary">420</span>
+          <span class="cmd-room-stats">
+            <span>4 strains</span>
+            <span>Day 28</span>
+          </span>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--op-ink-3);">~14d to flip</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 12px;"></span>
+              </div>
+              3/3
+            </div>
+          </div>
+        </button>
+
+        <!-- V-02: Watch -->
+        <button class="cmd-room" onclick="showRoom('V-02')">
+          <div class="cmd-room-top">
+            <span class="dot dot-veg"></span>
+            <span class="cmd-room-code">V-02</span>
+            <span class="cmd-room-type">Veg</span>
+            <span class="cmd-room-urgency" style="color: var(--op-ink-3);">38d in veg</span>
+          </div>
+          <span class="cmd-room-primary">360</span>
+          <span class="cmd-room-stats">
+            <span>3 strains</span>
+            <span>Day 38</span>
+          </span>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--op-ink-3);">overdue for flip</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 8px;"></span>
+                <span class="cmd-task-seg pending" style="width: 4px;"></span>
+              </div>
+              2/3
+            </div>
+          </div>
+        </button>
+
+        <!-- C-01 -->
+        <button class="cmd-room" onclick="showRoom('C-01')">
+          <div class="cmd-room-top">
+            <span class="dot dot-clone"></span>
+            <span class="cmd-room-code">C-01</span>
+            <span class="cmd-room-type">Clone</span>
+          </div>
+          <span class="cmd-room-primary">500</span>
+          <span class="cmd-room-stats">
+            <span>5 strains</span>
+            <span>Day 12</span>
+          </span>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--op-ink-3);">9d to transplant</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 8px;"></span>
+              </div>
+              2/2
+            </div>
+          </div>
+        </button>
+
+        <!-- M-01 -->
+        <button class="cmd-room" onclick="showRoom('M-01')">
+          <div class="cmd-room-top">
+            <span class="dot dot-mother"></span>
+            <span class="cmd-room-code">M-01</span>
+            <span class="cmd-room-type">Mother</span>
+          </div>
+          <span class="cmd-room-primary">24</span>
+          <span class="cmd-room-stats">
+            <span>8 strains</span>
+          </span>
+          <div class="cmd-room-footer">
+            <span class="cmd-room-harvest" style="color: var(--op-ink-3);">perpetual</span>
+            <div class="cmd-room-tasks">
+              <div class="cmd-task-bar">
+                <span class="cmd-task-seg done" style="width: 8px;"></span>
+              </div>
+              1/1
+            </div>
+          </div>
+        </button>
+
+        <!-- F-04: empty -->
+        <button class="cmd-room empty">
+          <div class="cmd-room-top">
+            <span class="dot dot-muted"></span>
+            <span class="cmd-room-code">F-04</span>
+            <span class="cmd-room-type">Flower</span>
+          </div>
+          <span class="cmd-room-stats" style="margin-top: auto;">Empty</span>
+        </button>
+
+        <!-- V-03: empty -->
+        <button class="cmd-room empty">
+          <div class="cmd-room-top">
+            <span class="dot dot-muted"></span>
+            <span class="cmd-room-code">V-03</span>
+            <span class="cmd-room-type">Veg</span>
+          </div>
+          <span class="cmd-room-stats" style="margin-top: auto;">Empty</span>
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCREEN 2: Expanded Room View (F-01)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="room-view" style="display: none;">
+
+    <!-- Header -->
+    <div class="cmd-header">
+      <div class="cmd-header-l">
+        <span class="cmd-header-title">Cultivation Command</span>
+        <span class="cmd-header-date">Mon, Apr 28, 2026</span>
+      </div>
+      <div class="cmd-header-r">live</div>
+    </div>
+
+    <div class="cmd-expanded">
+
+      <!-- Room header card -->
+      <div class="cmd-expanded-header">
+        <div class="cmd-expanded-header-top">
+          <button class="cmd-back-btn" onclick="showGrid()">← Rooms</button>
+          <span class="dot dot-flower"></span>
+          <span class="cmd-expanded-room-code" id="room-code-display">F-01</span>
+          <span class="cmd-expanded-room-meta">
+            <span>Flower</span>
+            <span>Day 42</span>
+            <span>248 plants</span>
+            <span>3 strains</span>
+          </span>
+          <span style="margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--status-warn);">Harvest in 3d · projected 1 May</span>
+          <button class="cmd-action" style="margin-left: 16px;">Harvest</button>
+        </div>
+        <div class="cmd-expanded-stats" style="--cells: 6;">
+          <div class="cmd-cell">
+            <span class="cmd-cell-label">Plants</span>
+            <span class="cmd-cell-primary">248</span>
+            <span class="cmd-cell-secondary">3 groups</span>
+          </div>
+          <div class="cmd-cell">
+            <span class="cmd-cell-label">Day</span>
+            <span class="cmd-cell-primary">42</span>
+            <span class="cmd-cell-secondary">of 63 cycle</span>
+          </div>
+          <div class="cmd-cell">
+            <span class="cmd-cell-label">Harvest</span>
+            <span class="cmd-cell-primary" style="font-style: italic;">3d</span>
+            <span class="cmd-cell-secondary">projected 1 May</span>
+          </div>
+          <div class="cmd-cell">
+            <span class="cmd-cell-label"><span class="dot dot-ok"></span> Tasks</span>
+            <span class="cmd-cell-primary">4/5</span>
+            <span class="cmd-cell-secondary">1 pending</span>
+          </div>
+          <div class="cmd-cell">
+            <span class="cmd-cell-label">Flipped</span>
+            <span class="cmd-cell-primary">17 Mar</span>
+            <span class="cmd-cell-secondary">42 days ago</span>
+          </div>
+          <div class="cmd-cell">
+            <span class="cmd-cell-label">Strains</span>
+            <span class="cmd-cell-primary">3</span>
+            <span class="cmd-cell-secondary">GMO · RNZ · ZSH</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body: Tasks + Sidebar -->
+      <div class="cmd-expanded-body">
+
+        <!-- Left: Tasks -->
+        <div class="cmd-tasks">
+          <div class="cmd-section-header">
+            <span class="cmd-section-label">Today's Tasks</span>
+            <span class="cmd-section-count">4/5 done</span>
+          </div>
+          <div class="cmd-task-row">
+            <div class="cmd-task-check done"></div>
+            <span class="cmd-task-name done-text">Batch Tank Mix</span>
+            <span class="cmd-task-assignee">MARIA</span>
+            <span class="cmd-task-time">08:14</span>
+          </div>
+          <div class="cmd-task-row">
+            <div class="cmd-task-check done"></div>
+            <span class="cmd-task-name done-text">Scouting</span>
+            <span class="cmd-task-assignee">CARLOS</span>
+            <span class="cmd-task-time">09:22</span>
+          </div>
+          <div class="cmd-task-row">
+            <div class="cmd-task-check done"></div>
+            <span class="cmd-task-name done-text">IPM Spray</span>
+            <span class="cmd-task-assignee">MARIA</span>
+            <span class="cmd-task-time">10:05</span>
+          </div>
+          <div class="cmd-task-row">
+            <div class="cmd-task-check done"></div>
+            <span class="cmd-task-name done-text">Defoliation</span>
+            <span class="cmd-task-assignee">CARLOS</span>
+            <span class="cmd-task-time">11:30</span>
+          </div>
+          <div class="cmd-task-row">
+            <div class="cmd-task-check active"></div>
+            <span class="cmd-task-name">Environmental Check</span>
+            <span class="cmd-task-assignee" style="color: var(--status-warn);">UNASSIGNED</span>
+            <span class="cmd-task-time">—</span>
+          </div>
+        </div>
+
+        <!-- Right: Sidebar cards -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+
+          <!-- Schedule -->
+          <div class="cmd-sidebar-card">
+            <div class="cmd-sidebar-card-header">
+              <span class="cmd-sidebar-card-label">Schedule</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4);">Day 42 / 63</span>
+            </div>
+            <div class="cmd-sidebar-card-body">
+              <div class="cmd-phase-bar">
+                <div class="cmd-phase-fill" style="width: 67%;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-bottom: 10px;">
+                <span>Flip 17 Mar</span>
+                <span>Harvest ~1 May</span>
+              </div>
+              <div class="cmd-schedule-row">
+                <span class="cmd-schedule-day">Today</span>
+                <span class="cmd-schedule-tasks">Env check</span>
+              </div>
+              <div class="cmd-schedule-row">
+                <span class="cmd-schedule-day">Tomorrow</span>
+                <span class="cmd-schedule-tasks">Feed · Scouting</span>
+              </div>
+              <div class="cmd-schedule-row">
+                <span class="cmd-schedule-day">Wed</span>
+                <span class="cmd-schedule-tasks">Defoliation</span>
+              </div>
+              <div style="border-top: 1px solid var(--op-line); margin-top: 8px; padding-top: 8px;">
+                <div class="cmd-schedule-row">
+                  <span class="cmd-schedule-day" style="color: var(--status-warn);">Day 45</span>
+                  <span class="cmd-schedule-tasks">Flush start · 1 May</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plants by Strain -->
+          <div class="cmd-sidebar-card">
+            <div class="cmd-sidebar-card-header">
+              <span class="cmd-sidebar-card-label">Plants</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4);">248 total</span>
+            </div>
+            <div class="cmd-sidebar-card-body">
+              <div class="cmd-sidebar-row">
+                <span class="cmd-sidebar-key">GMO</span>
+                <span class="cmd-sidebar-val">96</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S1-A · S1-B</span>
+              </div>
+              <div class="cmd-sidebar-row">
+                <span class="cmd-sidebar-key">RNZ</span>
+                <span class="cmd-sidebar-val">84</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S2-A</span>
+              </div>
+              <div class="cmd-sidebar-row">
+                <span class="cmd-sidebar-key">ZSH</span>
+                <span class="cmd-sidebar-val">68</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S3-A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Room Layout -->
+          <div class="cmd-sidebar-card">
+            <div class="cmd-sidebar-card-header">
+              <span class="cmd-sidebar-card-label">Layout</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4);">4 sections</span>
+            </div>
+            <div class="cmd-sidebar-card-body">
+              <div class="cmd-layout-grid">
+                <div class="cmd-layout-cell occupied">S1-A<br>48</div>
+                <div class="cmd-layout-cell occupied">S1-B<br>48</div>
+                <div class="cmd-layout-cell occupied">S2-A<br>84</div>
+                <div class="cmd-layout-cell occupied">S3-A<br>68</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feed Recipe -->
+          <div class="cmd-sidebar-card">
+            <div class="cmd-sidebar-card-header">
+              <span class="cmd-sidebar-card-label">Feed Recipe</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4);">Week 6</span>
+            </div>
+            <div class="cmd-sidebar-card-body">
+              <div class="cmd-feed-row" style="color: var(--op-ink-3); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;">
+                <span>Nutrient</span>
+                <span style="text-align: right;">mL/gal</span>
+                <span style="text-align: right;">EC</span>
+              </div>
+              <div class="cmd-feed-row">
+                <span class="cmd-feed-name">Canna A</span>
+                <span class="cmd-feed-val">4.0</span>
+                <span class="cmd-feed-val">—</span>
+              </div>
+              <div class="cmd-feed-row">
+                <span class="cmd-feed-name">Canna B</span>
+                <span class="cmd-feed-val">4.0</span>
+                <span class="cmd-feed-val">—</span>
+              </div>
+              <div class="cmd-feed-row">
+                <span class="cmd-feed-name">PK 13/14</span>
+                <span class="cmd-feed-val">1.5</span>
+                <span class="cmd-feed-val">—</span>
+              </div>
+              <div class="cmd-feed-row" style="border-top: 1px solid var(--op-line-strong); padding-top: 8px;">
+                <span class="cmd-feed-name" style="font-weight: 500; color: var(--op-ink);">Target</span>
+                <span class="cmd-feed-val">—</span>
+                <span class="cmd-feed-val" style="color: var(--accent);">2.4</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="proto-note">
+    Prototype · Cultivation Command Center redesigned in Home surface language · hairline grid · 6px dots · mono labels · zero decoration
+  </div>
+
+</div>
+
+<script>
+function showRoom(code) {
+  document.getElementById('grid-view').style.display = 'none';
+  document.getElementById('room-view').style.display = 'block';
+  document.getElementById('room-code-display').textContent = code;
+}
+function showGrid() {
+  document.getElementById('room-view').style.display = 'none';
+  document.getElementById('grid-view').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
