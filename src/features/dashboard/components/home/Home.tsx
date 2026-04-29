@@ -80,12 +80,14 @@ export function Home() {
           label="BOOKED MTD"
           primary={fmtUSD(d.revenue.bookedMTD)}
           secondary="month-to-date"
+          spark={d.revenue.bookedSpark}
           drillRoute="/sales-hub?focus=booked"
         />
         <Cell
           label="DELIVERED MTD"
           primary={fmtUSD(d.revenue.deliveredMTD)}
           secondary={`${fmtPct((d.revenue.deliveredMTD / Math.max(d.revenue.bookedMTD, 1)) * 100)} of booked`}
+          spark={d.revenue.deliveredSpark}
           drillRoute="/sales-hub?focus=delivered"
         />
         <PendingCell
@@ -322,6 +324,7 @@ export function Home() {
           label="NEW 24H"
           primary={fmtCount(d.fulfillment.new24hCount)}
           secondary={fmtUSD(d.fulfillment.new24hUSD)}
+          spark={d.fulfillment.new24hSpark}
           drillRoute="/orders?focus=new"
         />
         <Cell

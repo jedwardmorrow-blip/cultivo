@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Sparkline } from './Sparkline';
 
 export type CellMarker = 'ok' | 'warn' | 'bad' | null;
 
@@ -9,6 +10,7 @@ export interface CellProps {
   drillRoute?: string;
   marker?: CellMarker;
   projected?: boolean;
+  spark?: number[] | null;
   onClick?: () => void;
 }
 
@@ -19,6 +21,7 @@ export function Cell({
   drillRoute,
   marker,
   projected,
+  spark,
   onClick,
 }: CellProps) {
   const navigate = useNavigate();
@@ -32,7 +35,10 @@ export function Cell({
         {marker && <span className={`home-cell-marker ${marker}`} />}
         {label}
       </span>
-      <span className={`home-cell-primary${projected ? ' projected' : ''}`}>{primary}</span>
+      <span className="home-cell-primary-row">
+        <span className={`home-cell-primary${projected ? ' projected' : ''}`}>{primary}</span>
+        {spark && spark.length > 0 && <Sparkline data={spark} marker={marker} />}
+      </span>
       {secondary && <span className="home-cell-secondary">{secondary}</span>}
     </button>
   );

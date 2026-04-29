@@ -17,6 +17,8 @@ export interface HomeData {
     deliveredMTD: number;
     forecastEOM: number;
     scheduledRemaining: number; // forecastEOM - deliveredMTD, the still-to-land piece
+    bookedSpark: number[]; // 30d daily booked $ totals from orders.created_at
+    deliveredSpark: number[]; // 30d daily delivered $ from realized v_order_revenue_base
   };
   cash: {
     arOutstanding: number;
@@ -65,6 +67,7 @@ export interface HomeData {
     top3Pct: number;
     medianDtfDays: number;
     dtfSampleSize: number;
+    new24hSpark: number[]; // 30d daily new-order count from orders.created_at
   };
   exceptions: {
     roomsAttention: number;
@@ -80,7 +83,14 @@ const EMPTY: HomeData = {
   error: null,
   loadedAt: 0,
   header: { tasksDoneToday: 0, tasksTotalToday: 0 },
-  revenue: { bookedMTD: 0, deliveredMTD: 0, forecastEOM: 0, scheduledRemaining: 0 },
+  revenue: {
+    bookedMTD: 0,
+    deliveredMTD: 0,
+    forecastEOM: 0,
+    scheduledRemaining: 0,
+    bookedSpark: [],
+    deliveredSpark: [],
+  },
   cash: { arOutstanding: 0, arAtRisk: 0, cashForecast14d: 0 },
   coverage: {
     soldNotDeliveredUSD: 0,
@@ -124,6 +134,7 @@ const EMPTY: HomeData = {
     top3Pct: 0,
     medianDtfDays: 0,
     dtfSampleSize: 0,
+    new24hSpark: [],
   },
   exceptions: {
     roomsAttention: 0,
@@ -162,6 +173,33 @@ function yesterdayISO(): string {
   return d.toISOString();
 }
 
+/**
+ * Bucket rows into N daily totals, oldest-first. Used to feed the home's
+ * 30d sparklines. Only call with date strings or Date-parseable values; null
+ * dates contribute nothing.
+ */
+function bucketByDay<T>(
+  rows: T[],
+  getDate: (r: T) => string | null | undefined,
+  getValue: (r: T) => number,
+  days: number
+): number[] {
+  const buckets = new Array(days).fill(0) as number[];
+  const startMs = Date.now() - (days - 1) * 86_400_000;
+  const startDay = Math.floor(startMs / 86_400_000);
+  for (const r of rows) {
+    const ds = getDate(r);
+    if (!ds) continue;
+    const t = new Date(ds).getTime();
+    if (Number.isNaN(t)) continue;
+    const day = Math.floor(t / 86_400_000);
+    const idx = day - startDay;
+    if (idx < 0 || idx >= days) continue;
+    buckets[idx] += getValue(r);
+  }
+  return buckets;
+}
+
 export function useHomeData(): HomeData {
   const [data, setData] = useState<HomeData>(EMPTY);
 
@@ -196,6 +234,8 @@ export function useHomeData(): HomeData {
           auditFindingsRes,
           negativeBalancesRes,
           deliveredCycleRes,
+          orders30dRes,
+          delivered30dRes,
         ] = await Promise.all([
           supabase
             .from('v_order_revenue_base')
@@ -269,6 +309,23 @@ export function useHomeData(): HomeData {
             .select('order_date, scheduled_delivery_date')
             .eq('is_realized', true)
             .gte('order_date', plusDaysISO(-30)),
+          // Sparkline source: every order created in the last 30 days, used
+          // for revenue.bookedSpark and fulfillment.new24hSpark. Honest data,
+          // bucketed client-side. Bigger sparkline coverage (cash, coverage,
+          // exceptions, conversion) needs a home_metric_snapshot table; that
+          // is the data-plumbing follow-up.
+          supabase
+            .from('orders')
+            .select('total_amount, created_at')
+            .gte('created_at', plusDaysISO(-30)),
+          // Sparkline source: realized orders by canonical_delivery_date in
+          // the last 30 days, for revenue.deliveredSpark.
+          supabase
+            .from('v_order_revenue_base')
+            .select('total_amount, canonical_delivery_date')
+            .eq('is_realized', true)
+            .gte('canonical_delivery_date', plusDaysISO(-30))
+            .lte('canonical_delivery_date', today),
         ]);
 
         if (cancelled) return;
@@ -479,6 +536,35 @@ export function useHomeData(): HomeData {
         const auditFindings = (auditFindingsRes.data ?? []).length;
         const negativeBalances = (negativeBalancesRes.data ?? []).length;
 
+        // 30d sparklines (honest sources only — see Promise.all comment for
+        // the data-plumbing follow-up that lights up the rest).
+        const orders30d = (orders30dRes.data ?? []) as Array<{
+          total_amount: number;
+          created_at: string | null;
+        }>;
+        const delivered30d = (delivered30dRes.data ?? []) as Array<{
+          total_amount: number;
+          canonical_delivery_date: string | null;
+        }>;
+        const bookedSpark = bucketByDay(
+          orders30d,
+          (r) => r.created_at,
+          (r) => Number(r.total_amount || 0),
+          30
+        );
+        const new24hSpark = bucketByDay(
+          orders30d,
+          (r) => r.created_at,
+          () => 1,
+          30
+        );
+        const deliveredSpark = bucketByDay(
+          delivered30d,
+          (r) => r.canonical_delivery_date,
+          (r) => Number(r.total_amount || 0),
+          30
+        );
+
         // Net cover: lbs-vs-lbs.
         // Supply lbs = ready + in-process projected to clear + incoming from harvest.
         // Commitment lbs from order_items.quantity where demand_unit='g'.
@@ -492,7 +578,14 @@ export function useHomeData(): HomeData {
           error: null,
           loadedAt: Date.now(),
           header: { tasksDoneToday, tasksTotalToday },
-          revenue: { bookedMTD, deliveredMTD, forecastEOM, scheduledRemaining },
+          revenue: {
+            bookedMTD,
+            deliveredMTD,
+            forecastEOM,
+            scheduledRemaining,
+            bookedSpark,
+            deliveredSpark,
+          },
           cash: { arOutstanding, arAtRisk, cashForecast14d },
           coverage: {
             soldNotDeliveredUSD,
@@ -536,6 +629,7 @@ export function useHomeData(): HomeData {
             top3Pct,
             medianDtfDays,
             dtfSampleSize,
+            new24hSpark,
           },
           exceptions: {
             roomsAttention,

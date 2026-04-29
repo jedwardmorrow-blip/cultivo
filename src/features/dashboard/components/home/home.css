@@ -153,6 +153,18 @@
 .home-cell-marker.warn { background: var(--status-warn); }
 .home-cell-marker.bad { background: var(--status-bad); }
 
+.home-cell-primary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+.home-cell-spark {
+  flex-shrink: 0;
+  display: block;
+  opacity: 0.85;
+}
 .home-cell-primary {
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 22px;
