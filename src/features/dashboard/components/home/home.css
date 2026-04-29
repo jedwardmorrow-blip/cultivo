@@ -58,30 +58,60 @@
   letter-spacing: 0.08em;
 }
 
-/* ── Section (hairline-grid row) ─────────────────────────────── */
+/* ── Section: gapped card (B) outer + hairline interior (C) ──── */
 .home-section {
-  border-top: 1px solid var(--op-line);
-  display: grid;
-  grid-template-columns: 140px 1fr;
+  background: var(--op-surface);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.home-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
 }
 .home-section-label {
-  padding: 14px 16px;
-  border-right: 1px solid var(--op-line);
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--op-ink-3);
-  display: flex;
-  align-items: flex-start;
 }
+.home-section-marker {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.home-section-marker.ok { background: var(--status-ok); }
+.home-section-marker.warn { background: var(--status-warn); }
+.home-section-marker.bad { background: var(--status-bad); }
+
 .home-section-cells {
   display: grid;
   grid-template-columns: repeat(var(--cells, 5), 1fr);
+  background: var(--op-canvas);
 }
 .home-section-cells > .home-cell:not(:last-child),
 .home-section-cells > .home-cell-pending:not(:last-child) {
   border-right: 1px solid var(--op-line);
+}
+
+/* ── Top grid: Revenue + Cash side by side at ≥1280px ────────── */
+.home-grid-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 1280px) {
+  .home-grid-top {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* ── Cell ─────────────────────────────────────────────────────── */
@@ -134,6 +164,11 @@
 .home-cell-primary.dim {
   color: var(--op-ink-3);
 }
+/* Num estimate-vs-realized: italic = estimated, roman = realized
+   (Cultivo kit primitive, cultivo_kit_extensions_for_pipeline_v1) */
+.home-cell-primary.projected {
+  font-style: italic;
+}
 .home-cell-secondary {
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 11px;
@@ -146,10 +181,9 @@
   border-bottom: 1px dotted var(--op-line-strong);
 }
 
-/* ── Floor plan body ─────────────────────────────────────────── */
+/* ── Floor plan body (mounts inside a Section card) ─────────── */
 .home-floorplan {
-  border-top: 1px solid var(--op-line);
-  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
   padding: 14px 0 0;
 }
 /* Override the standalone FloorPlanLive viewport-height defaults

@@ -8,10 +8,19 @@ export interface CellProps {
   secondary?: string;
   drillRoute?: string;
   marker?: CellMarker;
+  projected?: boolean;
   onClick?: () => void;
 }
 
-export function Cell({ label, primary, secondary, drillRoute, marker, onClick }: CellProps) {
+export function Cell({
+  label,
+  primary,
+  secondary,
+  drillRoute,
+  marker,
+  projected,
+  onClick,
+}: CellProps) {
   const navigate = useNavigate();
   const handle = () => {
     if (onClick) onClick();
@@ -23,7 +32,7 @@ export function Cell({ label, primary, secondary, drillRoute, marker, onClick }:
         {marker && <span className={`home-cell-marker ${marker}`} />}
         {label}
       </span>
-      <span className="home-cell-primary">{primary}</span>
+      <span className={`home-cell-primary${projected ? ' projected' : ''}`}>{primary}</span>
       {secondary && <span className="home-cell-secondary">{secondary}</span>}
     </button>
   );

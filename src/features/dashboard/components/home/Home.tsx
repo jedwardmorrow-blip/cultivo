@@ -1,11 +1,22 @@
 import { useHomeData } from '../../hooks/useHomeData';
 import { HomeHeader } from './Header';
 import { Section } from './Section';
-import { Cell } from './Cell';
+import { Cell, type CellMarker } from './Cell';
 import { PendingCell } from './PendingCell';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 import { fmtUSD, fmtLbs, fmtPct, fmtCount, fmtDate, daysFromToday } from './format';
 import './home.css';
+
+const SEV_RANK: Record<NonNullable<CellMarker>, number> = { ok: 1, warn: 2, bad: 3 };
+function rollupSeverity(...markers: (CellMarker | undefined)[]): CellMarker {
+  // Section header surfaces only warn/bad — silence is good news at section level.
+  let worst: CellMarker = null;
+  for (const m of markers) {
+    if (m !== 'warn' && m !== 'bad') continue;
+    if (!worst || SEV_RANK[m] > SEV_RANK[worst]) worst = m;
+  }
+  return worst;
+}
 
 export function Home() {
   const d = useHomeData();
@@ -37,6 +48,24 @@ export function Home() {
   const dtfMarker =
     d.fulfillment.medianDtfDays > 14 ? 'bad' : d.fulfillment.medianDtfDays > 7 ? 'warn' : null;
 
+  const nextHarvestMarker: CellMarker = (() => {
+    if (!d.pipeline.nextHarvestRoom) return null;
+    const days = daysFromToday(d.pipeline.nextHarvestDate) ?? 0;
+    return days < 0 ? 'bad' : days <= 3 ? 'warn' : null;
+  })();
+  const forwardBookMarker: CellMarker = d.pipeline.forward8to14dCount === 0 ? 'warn' : null;
+
+  const cashSev = rollupSeverity(arRiskMarker);
+  const coverageSev = rollupSeverity(netCoverMarker);
+  const pipelineSev = rollupSeverity(nextHarvestMarker, forwardBookMarker, overdueMarker);
+  const fulfillmentSev = rollupSeverity(overdueMarker, top3Marker, dtfMarker);
+  const exceptionsSev = rollupSeverity(
+    d.exceptions.roomsAttention > 0 ? 'warn' : null,
+    d.exceptions.stuckSessions > 0 ? 'warn' : null,
+    d.exceptions.auditFindings > 0 ? 'warn' : null,
+    d.exceptions.negativeBalances > 0 ? 'bad' : null,
+  );
+
   return (
     <div className="home-root">
       <HomeHeader
@@ -45,6 +74,7 @@ export function Home() {
         loadedAt={d.loadedAt}
       />
 
+      <div className="home-grid-top">
       <Section label="Revenue" cellCount={5}>
         <Cell
           label="BOOKED MTD"
@@ -77,6 +107,7 @@ export function Home() {
           label="FORECAST EOM"
           primary={fmtUSD(d.revenue.forecastEOM)}
           secondary={`${fmtUSD(d.revenue.deliveredMTD)} delivered · ${fmtUSD(d.revenue.scheduledRemaining)} scheduled`}
+          projected
           drillRoute="/sales-hub?focus=forecast"
         />
         <PendingCell
@@ -93,7 +124,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Cash" cellCount={5}>
+      <Section label="Cash" cellCount={5} severity={cashSev}>
         <PendingCell
           label="CASH MTD"
           meta={{
@@ -144,7 +175,9 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Coverage" cellCount={5}>
+      </div>
+
+      <Section label="Coverage" cellCount={5} severity={coverageSev}>
         <Cell
           label="SOLD NOT DELIVERED"
           primary={fmtUSD(d.coverage.soldNotDeliveredUSD)}
@@ -173,6 +206,7 @@ export function Home() {
                 }`
               : 'no harvests in window'
           }
+          projected={d.coverage.incoming14dEstimated}
           drillRoute="/cultivation-dashboard?focus=incoming"
         />
         <Cell
@@ -184,9 +218,11 @@ export function Home() {
         />
       </Section>
 
-      <FloorPlanCanvas />
+      <Section label="Facility">
+        <FloorPlanCanvas />
+      </Section>
 
-      <Section label="Pipeline" cellCount={5}>
+      <Section label="Pipeline" cellCount={5} severity={pipelineSev}>
         <Cell
           label="NEXT HARVEST"
           primary={
@@ -208,17 +244,14 @@ export function Home() {
                 })()
               : 'no harvest scheduled'
           }
-          marker={(() => {
-            if (!d.pipeline.nextHarvestRoom) return null;
-            const days = daysFromToday(d.pipeline.nextHarvestDate) ?? 0;
-            return days < 0 ? 'bad' : days <= 3 ? 'warn' : null;
-          })()}
+          marker={nextHarvestMarker}
           drillRoute="/cultivation-dashboard?focus=next"
         />
         <Cell
           label="THIS WEEK HARVEST"
           primary={fmtLbs(d.pipeline.thisWeekHarvestLbs)}
           secondary="projected wet"
+          projected
           drillRoute="/cultivation-dashboard?focus=week"
         />
         <Cell
@@ -239,7 +272,7 @@ export function Home() {
               ? `${fmtCount(d.pipeline.forward8to14dCount)} orders · 8-14d out`
               : 'no orders 8-14d out'
           }
-          marker={d.pipeline.forward8to14dCount === 0 ? 'warn' : null}
+          marker={forwardBookMarker}
           drillRoute="/distribution-command-center?focus=14d"
         />
         <Cell
@@ -278,7 +311,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Fulfillment" cellCount={5}>
+      <Section label="Fulfillment" cellCount={5} severity={fulfillmentSev}>
         <Cell
           label="OPEN ORDERS"
           primary={fmtUSD(d.fulfillment.openUSD)}
@@ -322,7 +355,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Exceptions" cellCount={5}>
+      <Section label="Exceptions" cellCount={5} severity={exceptionsSev}>
         <Cell
           label="ROOMS ATTENTION"
           primary={fmtCount(d.exceptions.roomsAttention)}
